@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, BookOpen, ShieldAlert, Activity } from "lucide-react";
+import { Users, BookOpen, ShieldAlert, Activity, Megaphone } from "lucide-react";
 
 export default function AdminDashboard() {
   return (
