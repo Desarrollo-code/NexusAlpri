@@ -1,0 +1,219 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String           @id @default(cuid())
+  name                String
+  email               String           @unique
+  password            String
+  avatar              String?
+  role                UserRole         @default(STUDENT)
+  isTwoFactorEnabled  Boolean          @default(false)
+  twoFactorSecret     String?
+  registeredDate      DateTime         @default(now())
+  announcements       Announcement[]
+  enrollments         Enrollment[]
+  coursesAsInstructor Course[]
+  progress            CourseProgress[]
+  uploadedResources   Resource[]
+  calendarEvents      CalendarEvent[]  @relation("EventAttendees")
+}
+
+model Course {
+  id              String         @id @default(cuid())
+  title           String
+  description     String         @db.Text
+  imageUrl        String?
+  category        String?
+  status          CourseStatus   @default(DRAFT)
+  publicationDate DateTime?
+  instructorId    String
+  instructor      User           @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  modules         Module[]
+  enrollments     Enrollment[]
+  progress        CourseProgress[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Module {
+  id        String   @id @default(cuid())
+  title     String
+  order     Int
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons   Lesson[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Lesson {
+  id       String    @id @default(cuid())
+  title    String
+  content  String?   @db.Text
+  type     LessonType
+  order    Int
+  moduleId String
+  module   Module    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  quiz     Quiz?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Quiz {
+  id          String     @id @default(cuid())
+  title       String
+  description String?    @db.Text
+  lessonId    String     @unique
+  lesson      Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  questions   Question[]
+}
+
+model Question {
+  id       String         @id @default(cuid())
+  text     String         @db.Text
+  type     QuestionType
+  order    Int
+  quizId   String
+  quiz     Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options  AnswerOption[]
+}
+
+model AnswerOption {
+  id         String   @id @default(cuid())
+  text       String
+  isCorrect  Boolean
+  feedback   String?  @db.Text
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model Enrollment {
+  userId     String
+  courseId   String
+  enrolledAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([userId, courseId])
+}
+
+model CourseProgress {
+  userId             String
+  courseId           String
+  completedLessonIds String[]
+  progressPercentage Float  @default(0)
+  user               User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course             Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([userId, courseId])
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  date      DateTime @default(now())
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  audience  Json
+}
+
+model CalendarEvent {
+  id           String            @id @default(cuid())
+  title        String
+  description  String?           @db.Text
+  start        DateTime
+  end          DateTime
+  allDay       Boolean
+  location     String?
+  audienceType EventAudienceType
+  color        String?
+  attendees    User[]            @relation("EventAttendees")
+}
+
+model Resource {
+  id          String       @id @default(cuid())
+  title       String
+  type        ResourceType
+  url         String?
+  category    String
+  tags        String[]
+  uploadDate  DateTime     @default(now())
+  uploaderId  String
+  uploader    User         @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  pin         String?
+  parentId    String?
+  parent      Resource?    @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Resource[]   @relation("FolderHierarchy")
+}
+
+model PlatformSettings {
+  id                         String   @id @default(cuid())
+  platformName               String   @default("NexusAlpri")
+  allowPublicRegistration    Boolean  @default(true)
+  enableEmailNotifications   Boolean  @default(true)
+  require2faForAdmins        Boolean  @default(false)
+  idleTimeoutMinutes         Int      @default(20)
+  enableIdleTimeout          Boolean  @default(true)
+  passwordMinLength          Int      @default(8)
+  passwordRequireUppercase   Boolean  @default(true)
+  passwordRequireLowercase   Boolean  @default(true)
+  passwordRequireNumber      Boolean  @default(true)
+  passwordRequireSpecialChar Boolean  @default(true)
+  resourceCategories         String[]
+  updatedAt                  DateTime @updatedAt
+}
+
+enum UserRole {
+  STUDENT
+  INSTRUCTOR
+  ADMINISTRATOR
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  SCHEDULED
+}
+
+enum LessonType {
+  TEXT
+  VIDEO
+  QUIZ
+  FILE
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  SINGLE_CHOICE
+  TRUE_FALSE
+}
+
+enum EventAudienceType {
+  ALL
+  STUDENT
+  INSTRUCTOR
+  ADMINISTRATOR
+  SPECIFIC
+}
+
+enum ResourceType {
+  FOLDER
+  DOCUMENT
+  GUIDE
+  MANUAL
+  POLICY
+  VIDEO
+  OTHER
+}
