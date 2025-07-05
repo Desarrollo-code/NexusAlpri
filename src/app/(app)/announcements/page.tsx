@@ -1,56 +1,375 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { PlusCircle } from "lucide-react";
-import { announcements } from "@/lib/data";
-import { cookies } from "next/headers";
 
-const getPriorityVariant = (priority: string) => {
-    switch(priority.toLowerCase()) {
-        case 'urgente': return 'destructive';
-        case 'importante': return 'secondary';
-        default: return 'outline';
-    }
+'use client';
+
+import { AnnouncementCard } from '@/components/announcement-card';
+import { Button, buttonVariants } from '@/components/ui/button';
+import type { Announcement as AnnouncementType, UserRole } from '@/types'; 
+import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import type { Announcement as PrismaAnnouncement, User as PrismaUser } from '@prisma/client';
+
+interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
+  author: { id: string; name: string; email?: string } | null;
+  audience: UserRole[] | 'ALL' | string;
 }
 
+
 export default function AnnouncementsPage() {
-  const cookieStore = cookies();
-  const role = cookieStore.get('user_role')?.value;
-  const canPost = role === 'administrator' || role === 'instructor';
+  const { user } = useAuth();
+  const { toast } = useToast();
+  
+  const [allAnnouncements, setAllAnnouncements] = useState<DisplayAnnouncement[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const [showCreateEditModal, setShowCreateEditModal] = useState(false);
+  const [announcementToEdit, setAnnouncementToEdit] = useState<DisplayAnnouncement | null>(null);
+
+  // Simplified state for the form's audience select
+  const [formAudience, setFormAudience] = useState<UserRole | 'ALL'>('ALL');
+  const [formTitle, setFormTitle] = useState('');
+  const [formContent, setFormContent] = useState('');
+
+  const [announcementToDelete, setAnnouncementToDelete] = useState<DisplayAnnouncement | null>(null);
+  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false); // For create, edit, delete operations
+
+  const fetchAnnouncements = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/announcements', { cache: 'no-store' });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to fetch announcements: ${response.statusText}`);
+      }
+      const data: PrismaAnnouncement[] = await response.json();
+      
+      const displayData: DisplayAnnouncement[] = data.map(ann => {
+        let parsedAudience: UserRole[] | 'ALL' = 'ALL';
+        if (typeof ann.audience === 'string') {
+          if (ann.audience === 'ALL') {
+            parsedAudience = 'ALL';
+          } else {
+            try {
+              const arr = JSON.parse(ann.audience);
+              if (Array.isArray(arr)) {
+                parsedAudience = arr as UserRole[];
+              }
+            } catch (e) {
+              console.warn("Invalid audience format for announcement:", ann.id, ann.audience);
+            }
+          }
+        } else if (Array.isArray(ann.audience)) { 
+            parsedAudience = ann.audience as UserRole[];
+        }
+        return {
+          ...ann,
+          audience: parsedAudience, 
+          author: ann.author ? { id: ann.author.id, name: ann.author.name } : null,
+        };
+      });
+      setAllAnnouncements(displayData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar los anuncios');
+      setAllAnnouncements([]);
+      toast({ title: "Error al cargar anuncios", description: err instanceof Error ? err.message : 'No se pudieron cargar los anuncios.', variant: "destructive"});
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    fetchAnnouncements();
+  }, [fetchAnnouncements]);
+
+  const relevantAnnouncements = useMemo(() => {
+    return allAnnouncements
+      .filter(ann => {
+        if (ann.audience === 'ALL') return true;
+        if (user && Array.isArray(ann.audience) && ann.audience.includes(user.role)) return true;
+        return false;
+      });
+  }, [user, allAnnouncements]);
+
+  const resetFormAndState = () => {
+    setFormTitle('');
+    setFormContent('');
+    setFormAudience('ALL');
+    setAnnouncementToEdit(null);
+  }
+
+  const handleOpenCreateModal = () => {
+    resetFormAndState();
+    setShowCreateEditModal(true);
+  };
+
+  const handleOpenEditModal = (announcement: DisplayAnnouncement) => {
+    setAnnouncementToEdit(announcement);
+    setFormTitle(announcement.title);
+    setFormContent(announcement.content);
     
+    // Set form audience state based on the announcement's audience
+    if (announcement.audience === 'ALL') {
+        setFormAudience('ALL');
+    } else if (Array.isArray(announcement.audience) && announcement.audience.length > 0) {
+        setFormAudience(announcement.audience[0]); // UI only supports single role selection
+    } else {
+        setFormAudience('ALL'); // Fallback
+    }
+    
+    setShowCreateEditModal(true);
+  };
+
+
+  const handleSaveAnnouncement = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!formTitle || !formContent) {
+      toast({ title: "Error", description: "El título y el contenido son obligatorios.", variant: "destructive" });
+      return;
+    }
+    if (!user || !user.id) {
+        toast({ title: "Error", description: "Debes estar autenticado para guardar un anuncio.", variant: "destructive"});
+        return;
+    }
+
+    setIsProcessing(true);
+    const method = announcementToEdit ? 'PUT' : 'POST';
+    const endpoint = announcementToEdit ? `/api/announcements/${announcementToEdit.id}` : '/api/announcements';
+    
+    const audiencePayload = formAudience === 'ALL' ? 'ALL' : JSON.stringify([formAudience]);
+
+    const payload = {
+        title: formTitle,
+        content: formContent,
+        authorId: user.id, 
+        audience: audiencePayload,
+    };
+
+    try {
+      const response = await fetch(endpoint, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to ${announcementToEdit ? 'update' : 'create'} announcement`);
+      }
+      
+      toast({ 
+          title: announcementToEdit ? "Anuncio Actualizado" : "Anuncio Creado", 
+          description: `El anuncio "${formTitle}" ha sido ${announcementToEdit ? 'actualizado' : 'publicado'}.` 
+      });
+      setShowCreateEditModal(false);
+      resetFormAndState();
+      fetchAnnouncements(); 
+    } catch (err) {
+      toast({ 
+          title: `Error al ${announcementToEdit ? 'actualizar' : 'crear'} anuncio`, 
+          description: err instanceof Error ? err.message : `No se pudo ${announcementToEdit ? 'actualizar' : 'crear'} el anuncio.`, 
+          variant: "destructive" 
+      });
+    } finally {
+        setIsProcessing(false);
+    }
+  };
+
+  const handleDeleteAnnouncement = async () => {
+    if (!announcementToDelete) return;
+    setIsProcessing(true);
+    try {
+      const response = await fetch(`/api/announcements/${announcementToDelete.id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete announcement');
+      }
+      toast({ title: 'Anuncio Eliminado', description: `El anuncio "${announcementToDelete.title}" ha sido eliminado.` });
+      fetchAnnouncements();
+    } catch (err) {
+      toast({ title: 'Error al eliminar', description: err instanceof Error ? err.message : 'No se pudo eliminar el anuncio.', variant: 'destructive' });
+    } finally {
+      setIsProcessing(false);
+      setShowDeleteConfirmDialog(false);
+      setAnnouncementToDelete(null);
+    }
+  };
+
+  const openDeleteConfirmation = (announcementId: string) => {
+    const annToDel = allAnnouncements.find(ann => ann.id === announcementId);
+    if (annToDel) {
+      setAnnouncementToDelete(annToDel);
+      setShowDeleteConfirmDialog(true);
+    }
+  };
+
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold font-headline">Anuncios</h1>
-          <p className="text-muted-foreground">Comunicados, noticias y notificaciones importantes.</p>
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 className="text-3xl font-bold font-headline mb-2">Anuncios y Comunicados</h1>
+            <p className="text-muted-foreground">Mantente informado sobre las últimas novedades de NexusAlpri.</p>
         </div>
-        {canPost && (
-            <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Nuevo Anuncio
-            </Button>
+        {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
+          <Dialog open={showCreateEditModal} onOpenChange={(isOpen) => {
+              setShowCreateEditModal(isOpen);
+              if (!isOpen) resetFormAndState();
+          }}>
+            <DialogTrigger asChild>
+              <Button onClick={handleOpenCreateModal}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Crear Anuncio
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[525px]">
+              <DialogHeader>
+                <DialogTitle>{announcementToEdit ? 'Editar Anuncio' : 'Crear Nuevo Anuncio'}</DialogTitle>
+                <DialogDescription>
+                  {announcementToEdit ? 'Modifica los detalles del anuncio.' : 'Redacta y publica un nuevo comunicado para los usuarios.'}
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSaveAnnouncement} className="grid gap-4 py-4">
+                <div className="space-y-1">
+                  <Label htmlFor="title">Título <span className="text-destructive">*</span></Label>
+                  <Input 
+                    id="title" 
+                    value={formTitle}
+                    onChange={(e) => setFormTitle(e.target.value)}
+                    placeholder="Título del anuncio" 
+                    required
+                    disabled={isProcessing}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="content">Contenido <span className="text-destructive">*</span></Label>
+                  <Textarea 
+                    id="content" 
+                    value={formContent}
+                    onChange={(e) => setFormContent(e.target.value)}
+                    placeholder="Escribe aquí el contenido del anuncio..." 
+                    className="col-span-3 min-h-[100px]" 
+                    required
+                    disabled={isProcessing}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="audience">Dirigido a <span className="text-destructive">*</span></Label>
+                   <Select 
+                      name="audience" 
+                      value={formAudience}
+                      onValueChange={(value) => setFormAudience(value as UserRole | 'ALL')}
+                      required
+                      disabled={isProcessing}
+                    >
+                      <SelectTrigger id="audience" className="col-span-3">
+                         <SelectValue placeholder="Seleccionar audiencia" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">Todos</SelectItem>
+                        <SelectItem value="STUDENT">Estudiantes</SelectItem>
+                        <SelectItem value="INSTRUCTOR">Instructores</SelectItem>
+                        <SelectItem value="ADMINISTRATOR">Administradores</SelectItem>
+                      </SelectContent>
+                    </Select>
+                </div>
+                 <p className="text-xs text-muted-foreground text-center pt-2">
+                    Los campos marcados con <span className="text-destructive">*</span> son obligatorios.
+                </p>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => { setShowCreateEditModal(false); resetFormAndState();}} disabled={isProcessing}>Cancelar</Button>
+                  <Button type="submit" disabled={isProcessing}>
+                    {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (announcementToEdit ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />) }
+                    {announcementToEdit ? 'Guardar Cambios' : 'Publicar Anuncio'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         )}
       </div>
 
-      <div className="space-y-4">
-        {announcements.map(announcement => (
-          <Card key={announcement.id}>
-            <CardHeader>
-                <div className="flex justify-between items-center">
-                    <CardTitle className="font-headline text-xl">{announcement.title}</CardTitle>
-                    <Badge variant={getPriorityVariant(announcement.priority)}>{announcement.priority}</Badge>
-                </div>
-              <CardDescription>
-                Publicado por {announcement.author} el {new Date(announcement.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>{announcement.content}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="ml-2">Cargando anuncios...</p>
+        </div>
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center py-12 text-destructive">
+          <AlertTriangle className="h-8 w-8 mb-2" />
+          <p className="font-semibold">Error al cargar anuncios</p>
+          <p className="text-sm">{error}</p>
+          <Button onClick={fetchAnnouncements} variant="outline" className="mt-4">Reintentar</Button>
+        </div>
+      ) : relevantAnnouncements.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {relevantAnnouncements.map((announcement: DisplayAnnouncement) => (
+            <AnnouncementCard 
+                key={announcement.id} 
+                announcement={announcement}
+                onDelete={openDeleteConfirmation}
+                onEdit={handleOpenEditModal}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <Megaphone className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-xl font-semibold mb-2">No hay anuncios recientes</h3>
+          <p className="text-muted-foreground">Vuelve más tarde para ver las últimas novedades o crea uno nuevo si tienes permisos.</p>
+        </div>
+      )}
+
+      <AlertDialog open={showDeleteConfirmDialog} onOpenChange={setShowDeleteConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás realmente seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. El anuncio "<strong>{announcementToDelete?.title}</strong>" será eliminado permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isProcessing}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteAnnouncement} 
+              disabled={isProcessing}
+              className={buttonVariants({ variant: "destructive" })}
+            >
+              {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+              Sí, eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
-  )
+  );
 }
