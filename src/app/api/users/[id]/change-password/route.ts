@@ -1,0 +1,64 @@
+
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
+import { getSession } from '@/lib/auth';
+
+export async function POST(req: Request, { params }: { params: { id: string } }) {
+    const session = await getSession();
+    if (!session || session.id !== params.id) {
+        return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
+    }
+
+    try {
+        const { currentPassword, newPassword, confirmPassword } = await req.json();
+
+        if (newPassword !== confirmPassword) {
+            return NextResponse.json({ message: 'Las nuevas contraseñas no coinciden' }, { status: 400 });
+        }
+        
+        // Password policy check (could be moved to a shared util)
+        const settings = await prisma.platformSettings.findFirst();
+        if (settings) {
+            if (newPassword.length < settings.passwordMinLength) {
+                return NextResponse.json({ message: `La contraseña debe tener al menos ${settings.passwordMinLength} caracteres.` }, { status: 400 });
+            }
+            if (settings.passwordRequireUppercase && !/[A-Z]/.test(newPassword)) {
+                return NextResponse.json({ message: "La contraseña debe contener al menos una mayúscula." }, { status: 400 });
+            }
+            if (settings.passwordRequireLowercase && !/[a-z]/.test(newPassword)) {
+                return NextResponse.json({ message: "La contraseña debe contener al menos una minúscula." }, { status: 400 });
+            }
+            if (settings.passwordRequireNumber && !/\d/.test(newPassword)) {
+                return NextResponse.json({ message: "La contraseña debe contener al menos un número." }, { status: 400 });
+            }
+            if (settings.passwordRequireSpecialChar && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword)) {
+                return NextResponse.json({ message: "La contraseña debe contener al menos un carácter especial." }, { status: 400 });
+            }
+        }
+
+
+        const user = await prisma.user.findUnique({ where: { id: params.id } });
+        if (!user || !user.password) {
+            return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
+        }
+        
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isPasswordValid) {
+            return NextResponse.json({ message: 'La contraseña actual es incorrecta' }, { status: 400 });
+        }
+
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+        await prisma.user.update({
+            where: { id: params.id },
+            data: { password: hashedNewPassword },
+        });
+
+        return NextResponse.json({ message: 'Contraseña actualizada exitosamente' });
+
+    } catch (error) {
+        console.error('[CHANGE_PASSWORD_ERROR]', error);
+        return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
+    }
+}
