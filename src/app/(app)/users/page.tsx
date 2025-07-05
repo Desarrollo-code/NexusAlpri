@@ -68,6 +68,8 @@ export default function UsersPage() {
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
   const [showChangeRoleDialog, setShowChangeRoleDialog] = useState(false);
 
+  // Form state
+  const [isProcessing, setIsProcessing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editRole, setEditRole] = useState<UserRole>('STUDENT');
@@ -103,12 +105,11 @@ export default function UsersPage() {
     fetchUsers();
   }, [currentUser, router, fetchUsers]);
   
-  const getInitials = (name: string) => {
+  const getInitials = (name?: string | null) => {
     if (!name) return '??';
     const names = name.split(' ');
-    if (names.length > 1) {
-      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-    }
+    if (names.length > 1 && names[0] && names[names.length - 1]) return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
     return name.substring(0, 2).toUpperCase();
   };
 
@@ -163,6 +164,7 @@ export default function UsersPage() {
       toast({ title: "Error", description: "La contraseña debe tener al menos 6 caracteres.", variant: "destructive"});
       return;
     }
+    setIsProcessing(true);
 
     const userData: any = { 
       name: editName, 
@@ -195,12 +197,13 @@ export default function UsersPage() {
         description: `El usuario ${savedUser.name} ha sido ${userToEdit ? 'actualizado' : 'creado'}.` 
       });
       fetchUsers(); 
-    } catch (err) {
-      toast({ title: "Error al guardar", description: err instanceof Error ? err.message : 'No se pudo guardar el usuario.', variant: "destructive" });
-    } finally {
       setShowAddEditModal(false);
       setUserToEdit(null); 
       resetFormFields();
+    } catch (err) {
+      toast({ title: "Error al guardar", description: err instanceof Error ? err.message : 'No se pudo guardar el usuario.', variant: "destructive" });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -212,6 +215,7 @@ export default function UsersPage() {
         setUserToDelete(null);
         return;
     }
+    setIsProcessing(true);
     try {
       const response = await fetch(`/api/users/${userToDelete.id}`, { method: 'DELETE' });
       if (!response.ok) {
@@ -225,6 +229,7 @@ export default function UsersPage() {
     } finally {
       setShowDeleteConfirmDialog(false);
       setUserToDelete(null);
+      setIsProcessing(false);
     }
   };
 
@@ -238,6 +243,7 @@ export default function UsersPage() {
         return;
     }
     
+    setIsProcessing(true);
     try {
       const response = await fetch(`/api/users/${userToChangeRole.id}`, {
         method: 'PUT',
@@ -251,11 +257,12 @@ export default function UsersPage() {
       }
       toast({ title: "Rol Actualizado", description: `El rol de ${userToChangeRole.name} ha sido cambiado a ${selectedNewRole}.` });
       fetchUsers(); 
+      setShowChangeRoleDialog(false);
+      setUserToChangeRole(null);
     } catch (err) {
       toast({ title: "Error al cambiar rol", description: err instanceof Error ? err.message : 'No se pudo cambiar el rol.', variant: "destructive" });
     } finally {
-      setShowChangeRoleDialog(false);
-      setUserToChangeRole(null);
+      setIsProcessing(false);
     }
   };
 
@@ -298,15 +305,15 @@ export default function UsersPage() {
                 <form onSubmit={handleAddEditUser} className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="name" className="text-right">Nombre</Label>
-                        <Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nombre completo" className="col-span-3" required />
+                        <Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nombre completo" className="col-span-3" required disabled={isProcessing} />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="email" className="text-right">Email</Label>
-                        <Input id="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="usuario@ejemplo.com" className="col-span-3" required/>
+                        <Input id="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="usuario@ejemplo.com" className="col-span-3" required disabled={isProcessing}/>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="role" className="text-right">Rol</Label>
-                        <Select name="role" value={editRole} onValueChange={(value) => setEditRole(value as UserRole)} required>
+                        <Select name="role" value={editRole} onValueChange={(value) => setEditRole(value as UserRole)} required disabled={isProcessing}>
                             <SelectTrigger className="col-span-3">
                                 <SelectValue placeholder="Seleccionar rol" />
                             </SelectTrigger>
@@ -320,7 +327,7 @@ export default function UsersPage() {
                     {!userToEdit && (
                        <div className="grid grid-cols-4 items-center gap-4">
                           <Label htmlFor="password" className="text-right">Contraseña</Label>
-                          <Input id="password" type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Mínimo 6 caracteres" className="col-span-3" required />
+                          <Input id="password" type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Mínimo 8 caracteres" className="col-span-3" required disabled={isProcessing}/>
                         </div>
                     )}
                     <DialogFooter>
@@ -328,15 +335,18 @@ export default function UsersPage() {
                             setShowAddEditModal(false);
                             setUserToEdit(null);
                             resetFormFields();
-                        }}>Cancelar</Button>
-                        <Button type="submit">{userToEdit ? "Guardar Cambios" : "Crear Usuario"}</Button>
+                        }} disabled={isProcessing}>Cancelar</Button>
+                        <Button type="submit" disabled={isProcessing}>
+                            {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            {userToEdit ? "Guardar Cambios" : "Crear Usuario"}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>
       </div>
 
-      <Card glow>
+      <Card>
         <CardHeader>
             <div className="flex items-center justify-between">
                 <CardTitle>Lista de Usuarios</CardTitle>
@@ -384,7 +394,7 @@ export default function UsersPage() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                             <Avatar className="h-9 w-9">
-                                <AvatarImage src={u.avatar || `https://placehold.co/100x100.png?text=${getInitials(u.name)}`} alt={u.name} />
+                                <AvatarImage src={u.avatar || undefined} alt={u.name} data-ai-hint="user avatar" />
                                 <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
                             </Avatar>
                             <div className="font-medium">{u.name}</div>
@@ -450,8 +460,10 @@ export default function UsersPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteUser} className={buttonVariants({ variant: "destructive" })}>Sí, eliminar usuario</AlertDialogAction>
+            <AlertDialogCancel disabled={isProcessing} onClick={() => setShowDeleteConfirmDialog(false)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteUser} disabled={isProcessing} className={buttonVariants({ variant: "destructive" })}>
+              {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : "Sí, eliminar usuario"}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -474,7 +486,7 @@ export default function UsersPage() {
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="new-role" className="text-right">Nuevo Rol</Label>
-                      <Select name="new-role" value={selectedNewRole} onValueChange={(value) => setSelectedNewRole(value as UserRole)} required>
+                      <Select name="new-role" value={selectedNewRole} onValueChange={(value) => setSelectedNewRole(value as UserRole)} required disabled={isProcessing}>
                           <SelectTrigger className="col-span-3">
                               <SelectValue placeholder="Seleccionar nuevo rol" />
                           </SelectTrigger>
@@ -489,12 +501,7 @@ export default function UsersPage() {
                       <Button type="button" variant="outline" onClick={() => {
                           setShowChangeRoleDialog(false);
                           setUserToChangeRole(null);
-                      }}>Cancelar</Button>
-                      <Button type="submit">Guardar Rol</Button>
-                  </DialogFooter>
-              </form>
-          </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
+                      }} disabled={isProcessing}>Cancelar</Button>
+                      <Button type="submit" disabled={isProcessing}>
+                          {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                          Guardar Rol
