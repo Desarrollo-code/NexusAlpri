@@ -10,12 +10,12 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Loader2, ShieldAlert } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { user, login, settings } = useAuth();
+  const { user, login, settings, isLoading: isAuthLoading } = useAuth();
   const { toast } = useToast();
   
   const [name, setName] = useState('');
@@ -35,16 +35,35 @@ export default function SignUpPage() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
+
     if (password !== confirmPassword) {
         setError("Las contraseñas no coinciden.");
         return;
     }
-    
-    // Basic password policy check (can be expanded)
-    if(password.length < 8) {
-        setError("La contraseña debe tener al menos 8 caracteres.");
-        return;
+
+    if (settings) {
+        if (password.length < settings.passwordMinLength) {
+            setError(`La contraseña debe tener al menos ${settings.passwordMinLength} caracteres.`);
+            return;
+        }
+        if (settings.passwordRequireUppercase && !/[A-Z]/.test(password)) {
+            setError("La contraseña debe contener al menos una letra mayúscula.");
+            return;
+        }
+        if (settings.passwordRequireLowercase && !/[a-z]/.test(password)) {
+            setError("La contraseña debe contener al menos una letra minúscula.");
+            return;
+        }
+        if (settings.passwordRequireNumber && !/\d/.test(password)) {
+            setError("La contraseña debe contener al menos un número.");
+            return;
+        }
+        if (settings.passwordRequireSpecialChar && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+            setError("La contraseña debe contener al menos un carácter especial.");
+            return;
+        }
     }
+
 
     setIsLoading(true);
 
@@ -67,32 +86,59 @@ export default function SignUpPage() {
     } catch (error) {
        const errorMessage = (error as Error).message;
        setError(errorMessage);
-       toast({
-        title: 'Error de registro',
-        description: errorMessage,
-        variant: 'destructive',
-      });
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (isAuthLoading || !settings) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-background">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
   
-  if (settings && !settings.allowPublicRegistration) {
+  if (!settings.allowPublicRegistration) {
       return (
-          <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-              <Alert variant="destructive" className="max-w-md text-center">
-                  <AlertTitle>Registro Deshabilitado</AlertTitle>
-                  <AlertDescription>
-                      El registro público no está permitido en este momento. Por favor, contacta a un administrador.
-                  </AlertDescription>
-                   <div className="mt-4">
-                      <Button asChild variant="secondary">
-                          <Link href="/sign-in">Volver a Iniciar Sesión</Link>
-                      </Button>
-                  </div>
-              </Alert>
-          </div>
-      )
+        <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+              <div className="mb-4">
+              <Image
+                src="/uploads/images/logo-nexusalpri.png"
+                alt="NexusAlpri Logo"
+                width={120}
+                height={97.5}
+                priority
+                data-ai-hint="logo education"
+              />
+            </div>
+            <Card className="w-full max-w-sm animate-fade-in-up">
+                <CardHeader>
+                    <CardTitle className="text-center text-xl font-headline">Registro Deshabilitado</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                    <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-4" />
+                    <p className="text-sm text-muted-foreground">
+                        El registro de nuevas cuentas está deshabilitado. Solo un administrador puede crear una cuenta para ti.
+                    </p>
+                    <Button asChild variant="link" className="mt-4 text-primary">
+                        <Link href="/sign-in">Volver a Inicio de Sesión</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+             <div className="fixed bottom-4 right-4 z-0 pointer-events-none">
+              <Image
+                src="/uploads/images/watermark-alprigrama.png" 
+                alt="Alprigrama S.A.S. Watermark"
+                width={70} 
+                height={70} 
+                className="opacity-40" 
+                priority 
+                data-ai-hint="company logo"
+              />
+            </div>
+        </div>
+      );
   }
 
   return (
@@ -189,3 +235,5 @@ export default function SignUpPage() {
         />
       </div>
     </div>
+  );
+}
