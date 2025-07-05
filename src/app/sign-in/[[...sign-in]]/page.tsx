@@ -220,7 +220,6 @@ export default function SignInPage() {
           width={70}
           height={70}
           className="opacity-40"
-          priority
           data-ai-hint="company logo"
         />
       </div>

@@ -214,7 +214,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             width={70} 
             height={70} 
             className="opacity-40" 
-            priority 
           />
         </div>
       </SidebarInset>

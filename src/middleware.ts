@@ -1,27 +1,57 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { getSession } from '@/lib/auth';
 
-const protectedRoutes = ['/dashboard', '/courses', '/my-courses', '/profile', '/settings', '/resources', '/announcements', '/calendar', '/enrollments', '/manage-courses'];
-const publicRoutes = ['/sign-in', '/sign-up', '/api/auth/login', '/api/auth/logout'];
+const PUBLIC_PATHS = ['/sign-in', '/sign-up'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const session = await getSession(request);
 
-  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
-
-  if (isProtectedRoute) {
-    const session = await getSession(request);
-    if (!session) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/sign-in';
-      url.searchParams.set('redirectedFrom', pathname);
-      return NextResponse.redirect(url);
-    }
+  // Check if the path is for static files or API routes and let them pass
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/static') ||
+    pathname.match(/\.(.*)$/)
+  ) {
+    return NextResponse.next();
   }
 
+  const isPublicPath = PUBLIC_PATHS.some(p => pathname.startsWith(p));
+
+  // If user is logged in
+  if (session) {
+    // If they try to access a public-only path (like sign-in), redirect to dashboard
+    if (isPublicPath) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    // Otherwise, allow access to protected routes
+    return NextResponse.next();
+  }
+
+  // If user is not logged in
+  if (!session && !isPublicPath) {
+    // If they try to access a protected route, redirect to sign-in
+    const url = request.nextUrl.clone();
+    url.pathname = '/sign-in';
+    url.searchParams.set('redirectedFrom', pathname);
+    return NextResponse.redirect(url);
+  }
+
+  // Allow access to public paths for non-logged-in users
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/((?!api/auth/register|api/settings|_next/static|_next/image|favicon.ico|uploads).*)'],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
 };
