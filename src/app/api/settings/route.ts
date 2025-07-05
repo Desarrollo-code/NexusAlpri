@@ -1,0 +1,69 @@
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { getSession } from '@/lib/auth';
+import type { PlatformSettings } from '@/types';
+
+const DEFAULT_SETTINGS: Omit<PlatformSettings, 'id' | 'updatedAt'> = {
+  platformName: "NexusAlpri",
+  allowPublicRegistration: true,
+  enableEmailNotifications: true,
+  resourceCategories: ["Recursos Humanos", "TI y Seguridad", "Marketing", "Ventas", "Legal", "Operaciones", "Finanzas", "Formación Interna", "Documentación de Producto", "General"],
+  passwordMinLength: 8,
+  passwordRequireUppercase: true,
+  passwordRequireLowercase: true,
+  passwordRequireNumber: true,
+  passwordRequireSpecialChar: true,
+  enableIdleTimeout: true,
+  idleTimeoutMinutes: 20,
+  require2faForAdmins: false,
+};
+
+// GET /api/settings - Fetches platform settings
+export async function GET() {
+  try {
+    let settings = await prisma.platformSettings.findFirst();
+
+    if (!settings) {
+      // If no settings exist, create them with default values
+      settings = await prisma.platformSettings.create({
+        data: DEFAULT_SETTINGS,
+      });
+    }
+    
+    return NextResponse.json(settings);
+  } catch (error) {
+    console.error('[SETTINGS_GET_ERROR]', error);
+    // If there's a DB error, return the default settings object to allow the app to function.
+    const fallbackSettings = {
+        ...DEFAULT_SETTINGS,
+        id: 'default-settings', // a dummy id
+        updatedAt: new Date(),
+    };
+    return NextResponse.json(fallbackSettings);
+  }
+}
+
+// POST /api/settings - Updates platform settings
+export async function POST(req: Request) {
+  try {
+    const session = await getSession();
+    if (!session || session.role !== 'ADMINISTRATOR') {
+      return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
+    }
+
+    const dataToSave: Omit<PlatformSettings, 'id' | 'updatedAt'> = await req.json();
+    
+    const currentSettings = await prisma.platformSettings.findFirst();
+
+    const updatedSettings = await prisma.platformSettings.upsert({
+      where: { id: currentSettings?.id || 'non-existent-id-for-upsert' }, // Use a placeholder if no settings exist
+      update: dataToSave,
+      create: dataToSave,
+    });
+
+    return NextResponse.json(updatedSettings);
+  } catch (error) {
+    console.error('[SETTINGS_POST_ERROR]', error);
+    return NextResponse.json({ message: 'Error interno del servidor al guardar la configuración' }, { status: 500 });
+  }
+}
