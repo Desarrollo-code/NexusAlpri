@@ -275,7 +275,6 @@ export default function UsersPage() {
     return <div className="flex h-full items-center justify-center"><p>Acceso denegado. Serás redirigido.</p></div>;
   }
   
-
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -505,3 +504,11 @@ export default function UsersPage() {
                       <Button type="submit" disabled={isProcessing}>
                           {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                           Guardar Rol
+                      </Button>
+                  </DialogFooter>
+              </form>
+          </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
