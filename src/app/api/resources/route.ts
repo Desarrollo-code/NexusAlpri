@@ -35,8 +35,8 @@ export async function GET(req: NextRequest) {
 }
 
 // POST a new resource (file or folder)
-export async function POST(req: Request) {
-    const session = await getSession();
+export async function POST(req: NextRequest) {
+    const session = await getSession(req);
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
