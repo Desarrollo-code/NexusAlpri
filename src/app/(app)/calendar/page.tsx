@@ -177,6 +177,7 @@ export default function CalendarPage() {
       audienceType: formAudienceMode,
       attendeeIds: formAudienceMode === 'SPECIFIC' ? formAttendees : [],
       color: formColor,
+      creatorId: user?.id,
     };
 
     const endpoint = eventToEdit ? `/api/events/${eventToEdit.id}` : '/api/events';
@@ -259,9 +260,9 @@ export default function CalendarPage() {
               <AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}
             </div>
           ) : (
-            <div className="flex justify-center items-center py-4">
+            <div className="p-2 sm:p-4">
               <ColorfulCalendar
-                className="w-full max-w-md mx-auto sm:max-w-lg md:max-w-xl" 
+                className="w-full"
                 events={calendarEvents}
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}

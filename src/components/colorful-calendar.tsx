@@ -96,25 +96,28 @@ export default function ColorfulCalendar({
       }}
       className={className} // Permite pasar clases de Tailwind desde el componente padre para tamaño y posición
       classNames={{
+        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+        month: "space-y-4 w-full",
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-xl font-semibold", // Mes/Año más grande
+        caption_label: "text-base font-semibold",
         nav: "space-x-1 flex items-center",
-        nav_button: "h-10 w-10 bg-transparent p-0 opacity-70 hover:opacity-100", // Botones de navegación más grandes
+        nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
         table: "w-full border-collapse space-y-1",
-        head_row: "flex w-full",
-        head_cell: "text-muted-foreground rounded-md w-full font-normal text-base", // Días de la semana más grandes
+        head_row: "flex",
+        head_cell:
+          "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] text-center",
         row: "flex w-full mt-2",
-        cell: "text-center text-lg p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+        cell: "text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
-          "h-14 w-14 p-0 font-normal aria-selected:opacity-100", // Celdas de día más grandes
-          "flex items-center justify-center" // Centra el contenido dentro de la celda del día
+          "w-full h-auto p-0 font-normal aria-selected:opacity-100 aspect-square",
+          "flex items-center justify-center rounded-md"
         ),
         day_range_end: "day-range-end",
         day_selected:
-          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        day_today: "bg-accent text-accent-foreground",
+          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-md",
+        day_today: "bg-accent text-accent-foreground rounded-md",
         day_outside:
           "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
         day_disabled: "text-muted-foreground opacity-50",
