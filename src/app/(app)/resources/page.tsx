@@ -56,7 +56,7 @@ interface ApiResource extends Omit<PrismaResource, 'uploader' | 'tags' | 'type' 
   tags: string[];
   type: PrismaResourceType;
   uploadDate: string;
-  pin: string | null;
+  hasPin: boolean;
   description: string | null;
 }
 
@@ -72,7 +72,7 @@ function mapApiResourceToAppResource(apiResource: ApiResource): AppResourceType 
     uploadDate: apiResource.uploadDate,
     uploaderId: apiResource.uploaderId || undefined,
     uploaderName: apiResource.uploader?.name || 'N/A',
-    hasPin: !!apiResource.pin,
+    hasPin: apiResource.hasPin,
     parentId: apiResource.parentId,
   };
 }
@@ -187,7 +187,7 @@ const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
     );
 };
 
-const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit, onSort, sortColumn, sortDirection }: { resource: AppResourceType, onDelete: (id: string) => void, onPreview: () => void, onDownload: () => void, onEdit: (resource: AppResourceType) => void, onSort: any, sortColumn: string, sortDirection: string }) => {
+const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit }: { resource: AppResourceType, onDelete: (id: string) => void, onPreview: () => void, onDownload: () => void, onEdit: (resource: AppResourceType) => void }) => {
     const { user } = useAuth();
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
     const isFolder = resource.type === 'FOLDER';
@@ -208,9 +208,10 @@ const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit, o
                     </div>
                 </div>
             </TableCell>
-            <TableCell className="hidden sm:table-cell">{isFolder ? '—' : resource.category}</TableCell>
-            <TableCell className="hidden md:table-cell">{getFileFormat(resource.url)}</TableCell>
-            <TableCell className="hidden lg:table-cell">{new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'America/Bogota' })}</TableCell>
+            <TableCell className="hidden md:table-cell">{resource.uploaderName}</TableCell>
+            <TableCell>{isFolder ? '—' : resource.category}</TableCell>
+            <TableCell className="hidden lg:table-cell">{getFileFormat(resource.url)}</TableCell>
+            <TableCell className="hidden lg:table-cell">{new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</TableCell>
             <TableCell className="text-right">
                  <div className="flex items-center justify-end gap-1">
                     {!isFolder && (
@@ -821,7 +822,7 @@ export default function ResourcesPage() {
                            {folders.map(item => <ResourceGridItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => {}} onEdit={handleOpenEditModal} />)}
                         </div>
                     ) : (
-                        <Card><Table><TableBody>{folders.map(item => <ResourceListItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => {}} onEdit={handleOpenEditModal} onSort={handleSort} sortColumn={sortColumn} sortDirection={sortDirection} />)}</TableBody></Table></Card>
+                        <Card><Table><TableBody>{folders.map(item => <ResourceListItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => {}} onEdit={handleOpenEditModal} />)}</TableBody></Table></Card>
                     )}
                 </div>
             )}
@@ -838,14 +839,15 @@ export default function ResourcesPage() {
                                 <TableHeader>
                                     <TableRow>
                                         <SortableHeader column="title" label="Nombre" />
+                                        <TableHead className="hidden md:table-cell">Subido por</TableHead>
                                         <SortableHeader column="category" label="Categoría" />
-                                        <TableHead className="hidden md:table-cell">Formato</TableHead>
-                                        <SortableHeader column="uploadDate" label="Fecha de subida" />
+                                        <TableHead className="hidden lg:table-cell">Formato</TableHead>
+                                        <SortableHeader column="uploadDate" label="Fecha" />
                                         <TableHead className="text-right">Acciones</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {files.map(item => <ResourceListItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => handleAccessResource(item, 'download')} onEdit={handleOpenEditModal} onSort={handleSort} sortColumn={sortColumn} sortDirection={sortDirection} />)}
+                                    {files.map(item => <ResourceListItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => handleAccessResource(item, 'download')} onEdit={handleOpenEditModal} />)}
                                 </TableBody>
                             </Table>
                         </Card>
