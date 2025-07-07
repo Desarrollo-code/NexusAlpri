@@ -12,7 +12,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const { attendeeIds, ...restOfBody } = body;
 
@@ -47,7 +47,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     try {
-        const { id } = params;
+        const { id } = await params;
         await prisma.calendarEvent.delete({ where: { id } });
         return new NextResponse(null, { status: 204 });
     } catch (error) {

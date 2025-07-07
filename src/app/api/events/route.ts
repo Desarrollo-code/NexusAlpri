@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
+import type { UserRole } from '@/types';
 
 // GET all events relevant to the user
 export async function GET(req: NextRequest) {
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
       where: {
         OR: [
           { audienceType: 'ALL' },
-          { audienceType: user.role },
+          { audienceType: user.role as UserRole },
           { attendees: { some: { id: user.id } } },
         ],
       },
@@ -56,6 +57,7 @@ export async function POST(req: NextRequest) {
     
     const dataToCreate: any = {
       ...restOfBody,
+      creatorId: session.id, // Assign creator from session
     };
 
     if (attendeeIds && Array.isArray(attendeeIds) && attendeeIds.length > 0) {
