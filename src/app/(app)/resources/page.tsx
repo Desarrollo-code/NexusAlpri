@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
-import { Search, UploadCloud, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, KeyRound, Pin, PinOff, MoreVertical, Folder, FileText, Video, Info, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, BookManual, FileShield } from 'lucide-react';
+import { Search, UploadCloud, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, KeyRound, Pin, PinOff, MoreVertical, Folder, FileText, Video, Info, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Notebook, FileShield } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -80,7 +80,7 @@ const getIconForType = (type: AppResourceType['type']) => {
       case 'FOLDER': return <Folder className="h-5 w-5 text-yellow-500" />;
       case 'DOCUMENT': return <FileText className="h-5 w-5 text-blue-500" />;
       case 'GUIDE': return <Info className="h-5 w-5 text-green-500" />;
-      case 'MANUAL': return <BookManual className="h-5 w-5 text-indigo-500" />;
+      case 'MANUAL': return <Notebook className="h-5 w-5 text-indigo-500" />;
       case 'POLICY': return <FileShield className="h-5 w-5 text-red-500" />;
       case 'VIDEO': return <Video className="h-5 w-5 text-purple-500" />;
       default: return <FileQuestion className="h-5 w-5 text-gray-500" />;
@@ -93,7 +93,7 @@ const getPreviewIconForType = (type: AppResourceType['type']) => {
         case 'FOLDER': return <Folder className={cn(className, "text-yellow-500/80")} />;
         case 'DOCUMENT': return <FileText className={cn(className, "text-blue-500/80")} />;
         case 'GUIDE': return <Info className={cn(className, "text-green-500/80")} />;
-        case 'MANUAL': return <BookManual className={cn(className, "text-indigo-500/80")} />;
+        case 'MANUAL': return <Notebook className={cn(className, "text-indigo-500/80")} />;
         case 'POLICY': return <FileShield className={cn(className, "text-red-500/80")} />;
         case 'VIDEO': return <Video className={cn(className, "text-purple-500/80")} />;
         default: return <FileQuestion className={cn(className, "text-primary")} />;
