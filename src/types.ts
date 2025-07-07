@@ -142,6 +142,16 @@ export interface Announcement {
     priority?: 'Normal' | 'Urgente';
 }
 
+// --- NOTIFICATIONS ---
+export interface Notification {
+    id: string;
+    userId: string;
+    title: string;
+    description?: string;
+    date: string; // ISO string from DB
+    link?: string;
+    read: boolean;
+}
 
 // --- CALENDAR ---
 export type EventAudienceType = 'ALL' | UserRole | 'SPECIFIC';

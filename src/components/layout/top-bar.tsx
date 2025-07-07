@@ -22,28 +22,6 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Notification as AppNotification } from '@/types'; 
 import { useToast } from '@/hooks/use-toast';
-import type { Notification as PrismaNotification, User as PrismaUser } from '@prisma/client';
-
-const READ_NOTIFICATIONS_LS_KEY = 'nexusAlpriReadNotifications';
-
-interface ApiNotificationFromDb extends Omit<PrismaNotification, 'user' | 'date'> {
-  user: { id: string; name: string | null } | null; 
-  date: string; 
-}
-
-
-function mapApiNotificationToAppNotification(apiNotification: ApiNotificationFromDb, readIds: string[]): AppNotification {
-  return {
-    id: apiNotification.id,
-    userId: apiNotification.userId,
-    title: apiNotification.title,
-    description: apiNotification.description || undefined,
-    date: apiNotification.date, 
-    link: apiNotification.link || undefined,
-    read: readIds.includes(apiNotification.id),
-    userName: apiNotification.user?.name,
-  };
-}
 
 const timeSince = (dateString: string): string => {
     const date = new Date(dateString);
@@ -102,18 +80,6 @@ export function TopBar() {
     return currentNavItem?.label || 'NexusAlpri'; 
   };
 
-
-  const getReadNotificationIds = useCallback((): string[] => {
-    try {
-      if (typeof window === 'undefined') return [];
-      const stored = localStorage.getItem(READ_NOTIFICATIONS_LS_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch (e) {
-      console.error("Failed to parse read notifications from localStorage", e);
-      return [];
-    }
-  }, []);
-
   const fetchNotifications = useCallback(async () => {
     if (!user?.id) { 
         setIsLoadingNotifications(false);
@@ -128,11 +94,8 @@ export function TopBar() {
         const errorData = await response.json();
         throw new Error(errorData.message || `Failed to fetch notifications: ${response.statusText}`);
       }
-      const data: ApiNotificationFromDb[] = await response.json();
-      const readIds = getReadNotificationIds();
-      
-      const processedNotifications = data.map(n => mapApiNotificationToAppNotification(n, readIds));
-      setNotifications(processedNotifications);
+      const data: AppNotification[] = await response.json();
+      setNotifications(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar notificaciones';
       setNotificationError(errorMessage);
@@ -140,7 +103,7 @@ export function TopBar() {
     } finally {
       setIsLoadingNotifications(false);
     }
-  }, [getReadNotificationIds, user?.id]); 
+  }, [user?.id]); 
 
   useEffect(() => {
     if (user) { 
@@ -156,34 +119,33 @@ export function TopBar() {
 
   const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
 
-  const markAsReadStorage = (idsToMark: string[]) => {
-    try {
-      if (typeof window === 'undefined') return;
-      const currentReadIds = getReadNotificationIds();
-      const newReadIds = Array.from(new Set([...currentReadIds, ...idsToMark]));
-      localStorage.setItem(READ_NOTIFICATIONS_LS_KEY, JSON.stringify(newReadIds));
-    } catch (e) {
-        console.error("Failed to save read notifications to localStorage", e);
-        toast({ title: "Error", description: "No se pudo guardar el estado de las notificaciones.", variant: "destructive"});
-    }
-  };
-  
   const handleNotificationClick = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, read: true } : n))
-    );
-    markAsReadStorage([id]);
     const notification = notifications.find(n => n.id === id);
-    if (notification?.link) {
-      // Navigation will be handled by Link component if present
+    if (notification && !notification.read) {
+        // Optimistic UI update
+        setNotifications(prev =>
+          prev.map(n => (n.id === id ? { ...n, read: true } : n))
+        );
+        // Fire and forget API call
+        fetch('/api/notifications', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: [id], read: true }),
+        }).catch(e => console.error("Failed to mark notification as read:", e));
     }
   };
   
   const handleMarkAllRead = () => {
     const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
     if (unreadIds.length > 0) {
+      // Optimistic UI update
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-      markAsReadStorage(unreadIds);
+      // Fire and forget API call
+      fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: 'all', read: true }),
+      }).catch(e => console.error("Failed to mark all as read:", e));
     }
   };
 
