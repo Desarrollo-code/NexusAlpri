@@ -12,7 +12,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   try {
-    const { id } = await params;
+    const awaitedParams = await params;
+    const { id } = awaitedParams;
     const body = await req.json();
     const { attendeeIds, ...restOfBody } = body;
 
@@ -24,6 +25,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (attendeeIds && Array.isArray(attendeeIds)) {
       dataToUpdate.attendees = {
         set: attendeeIds.map((attendeeId: string) => ({ id: attendeeId })),
+      };
+    } else {
+      // If attendeeIds is not provided or empty, ensure we disconnect all attendees
+      dataToUpdate.attendees = {
+        set: [],
       };
     }
 
@@ -47,7 +53,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     try {
-        const { id } = await params;
+        const awaitedParams = await params;
+        const { id } = awaitedParams;
         await prisma.calendarEvent.delete({ where: { id } });
         return new NextResponse(null, { status: 204 });
     } catch (error) {
