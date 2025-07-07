@@ -403,7 +403,7 @@ export default function UsersPage() {
                       <TableCell>
                         <Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{u.role.toLowerCase()}</Badge>
                       </TableCell>
-                      <TableCell className="hidden md:table-cell">{u.registeredDate ? new Date(u.registeredDate).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'America/Bogota'}) : 'N/A'}</TableCell>
+                      <TableCell className="hidden md:table-cell">{u.registeredDate ? new Date(u.registeredDate).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'short', timeStyle: 'medium' }) : 'N/A'}</TableCell>
                       <TableCell>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
