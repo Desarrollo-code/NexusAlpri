@@ -1,11 +1,11 @@
 // src/app/(app)/calendar/page.tsx
 
-'use client';
+'use client'; // Esto indica que es un componente de cliente en Next.js
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/auth-context'; // Asegúrate de que esta ruta sea correcta
 import { PlusCircle, Loader2, AlertTriangle, Trash2, MapPin, Calendar as CalendarIcon, Clock, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'; // Componentes UI de Shadcn/ui
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -33,12 +33,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { CalendarEvent, User, EventAudienceType } from '@/types'; // Importa tus tipos
 import { format, isSameDay } from 'date-fns';
-import { es } from 'date-fns/locale';
-import ColorfulCalendar from '@/components/colorful-calendar'; 
+import { es } from 'date-fns/locale'; // Para formatear fechas en español
+// Importamos tu componente ColorfulCalendar que ya tiene las correcciones de tamaño interno
+import ColorfulCalendar from '@/components/colorful-calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils'; // Utilidad para combinar clases de Tailwind
 
 export default function CalendarPage() {
   const { user } = useAuth();
@@ -88,6 +89,7 @@ export default function CalendarPage() {
   }, [toast]);
 
   const fetchUsers = useCallback(async () => {
+    // Solo permitir cargar usuarios si el usuario logueado es ADMINISTRADOR o INSTRUCTOR
     if (!user || (user.role !== 'ADMINISTRATOR' && user.role !== 'INSTRUCTOR')) return;
     try {
       const res = await fetch('/api/users');
@@ -212,22 +214,35 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-6">
+      {/* Contenedor principal del grid: Una columna en móviles, dos columnas grandes en desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <Card className="shadow-lg lg:col-span-3">
+        {/* Panel Izquierdo: Contiene el calendario */}
+        <Card className="shadow-lg lg:col-span-3"> {/* La Card ocupa 3 de 5 columnas en pantallas grandes */}
           {isLoading ? (
             <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center min-h-[400px] text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar.</div>
           ) : (
-            <ColorfulCalendar
-              events={calendarEvents}
-              selectedDate={selectedDate}
-              onDateSelect={setSelectedDate}
-            />
+            // ***** CAMBIO AQUI: Centrar el calendario dentro de su Card *****
+            // El ColorfulCalendar ya tiene un 'max-w-xl' dentro de su componente.
+            // 'mx-auto' lo centrará horizontalmente si hay espacio libre en la Card.
+            // Añadimos 'flex justify-center items-center' al div contenedor para asegurar el centrado,
+            // si la Card no lo hace por sí misma. O se puede aplicar directo a la Card
+            // Si la Card tiene padding y el calendario un max-width, mx-auto es suficiente.
+            // Vamos a envolver el calendario en un div flex para mayor control del centrado
+            <div className="flex justify-center items-center py-4"> {/* Añade padding vertical para estética */}
+              <ColorfulCalendar
+                className="mx-auto" // Aplica mx-auto para centrarlo horizontalmente
+                events={calendarEvents}
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
+              />
+            </div>
           )}
         </Card>
 
-        <div className="lg:col-span-2">
+        {/* Panel Derecho: Contiene la lista de eventos del día seleccionado */}
+        <div className="lg:col-span-2"> {/* Ocupa 2 de 5 columnas en pantallas grandes */}
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-lg">
@@ -273,6 +288,7 @@ export default function CalendarPage() {
         </div>
       </div>
 
+      {/* Diálogo para Crear/Editar Eventos */}
       <Dialog open={showEventModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowEventModal(isOpen); }}>
         {/* Aumentamos el tamaño máximo del diálogo a 3xl para dar más espacio si es necesario */}
         <DialogContent className="sm:max-w-2xl md:max-w-3xl overflow-y-auto max-h-[90vh]">
@@ -325,12 +341,13 @@ export default function CalendarPage() {
             <div className="sm:col-span-2 lg:col-span-3"> {/* Ocupa el ancho completo para centrar */}
               <Label>Color del Evento</Label>
               <div className="flex flex-wrap gap-3 mt-2 justify-start"> {/* flex-wrap para responsividad */}
+                {/* Asegúrate de que tus variables CSS personalizadas para los colores (ej: --event-blue) estén definidas en globals.css o similar */}
                 {['blue', 'green', 'red', 'orange', 'default'].map((colorOption) => (
                   <div
                     key={colorOption}
                     className={`h-8 w-8 rounded-full cursor-pointer border-2 ${formColor === colorOption ? 'border-primary scale-110' : 'border-transparent'} flex items-center justify-center transition-all duration-200 ease-in-out`}
                     onClick={() => setFormColor(colorOption)}
-                    style={{ backgroundColor: `hsl(var(--event-${colorOption}))` }}
+                    style={{ backgroundColor: `hsl(var(--event-${colorOption}))` }} // Usa variables CSS para el color
                     title={colorOption}
                   >
                     {formColor === colorOption && (
@@ -405,6 +422,7 @@ export default function CalendarPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Alerta de Confirmación de Eliminación */}
       <AlertDialog open={!!eventToDelete} onOpenChange={(isOpen) => !isOpen && setEventToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
