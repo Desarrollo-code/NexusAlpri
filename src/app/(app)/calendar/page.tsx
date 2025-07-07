@@ -241,9 +241,9 @@ export default function CalendarPage() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <Card className="shadow-lg lg:col-span-3 bg-dark-background text-light-text border-border"> {/* Ajuste de color de fondo y borde */}
+        <Card className="shadow-lg lg:col-span-3 bg-card text-foreground border-border">
           {isLoading ? (
-            <div className="flex items-center justify-center min-h-[400px] text-light-text">
+            <div className="flex items-center justify-center min-h-[400px]">
               <Loader2 className="animate-spin h-8 w-8 text-primary" />
             </div>
           ) : error ? (
@@ -253,13 +253,7 @@ export default function CalendarPage() {
           ) : (
             <div className="flex justify-center items-center py-4">
               <ColorfulCalendar
-                // Tamaño: 'max-w-4xl' para hacerlo más grande.
-                // Posición: `ml-auto` empuja a la derecha, `mr-10` define un margen a la derecha.
-                // Puedes ajustar `mr-10` (que son 40px) para moverlo más o menos a la derecha.
-                // Si quieres centrarlo y solo desplazarlo, la alternativa es:
-                // className="w-full max-w-4xl mx-auto transform translate-x-4"
-                // Donde `translate-x-4` lo movería 16px a la derecha del centro.
-                className="w-full max-w-4xl ml-40" // Este lo alinea a la derecha con un margen.
+                className="w-full max-w-md mx-auto sm:max-w-lg md:max-w-xl" 
                 events={calendarEvents}
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
@@ -269,9 +263,9 @@ export default function CalendarPage() {
         </Card>
 
         <div className="lg:col-span-2">
-          <Card className="shadow-lg bg-dark-background text-light-text border-border"> {/* Ajuste de color de fondo y borde */}
+          <Card className="shadow-lg bg-card text-foreground border-border">
             <CardHeader>
-              <CardTitle className="text-lg text-primary-foreground"> {/* Título en color de contraste */}
+              <CardTitle className="text-lg text-foreground">
                 Eventos para el {selectedDate ? format(selectedDate, "d 'de' MMMM", { locale: es }) : "..."}
               </CardTitle>
             </CardHeader>
@@ -305,7 +299,7 @@ export default function CalendarPage() {
                   </div>
                 )}
               </ScrollArea>
-              <Separator className="my-4 bg-border" /> {/* Separador con color de contraste */}
+              <Separator className="my-4 bg-border" />
               <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => handleOpenCreateModal(selectedDate)}>
                 <PlusCircle className="mr-2 h-4 w-4" /> Crear Evento
               </Button>
@@ -315,32 +309,31 @@ export default function CalendarPage() {
       </div>
 
       <Dialog open={showEventModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowEventModal(isOpen); }}>
-        {/* Aumentamos el tamaño máximo del diálogo a 3xl para dar más espacio si es necesario */}
-        <DialogContent className="sm:max-w-2xl md:max-w-3xl overflow-y-auto max-h-[90vh] bg-black">
+        <DialogContent className="sm:max-w-2xl overflow-y-auto max-h-[90vh] bg-card">
           <DialogHeader>
-            <DialogTitle className="text-primary-foreground">{eventToEdit ? 'Editar Evento' : 'Crear Nuevo Evento'}</DialogTitle>
+            <DialogTitle className="text-foreground">{eventToEdit ? 'Editar Evento' : 'Crear Nuevo Evento'}</DialogTitle>
             <DialogDescription className="text-muted-foreground">Completa los detalles del evento.</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 py-2">
-            <div className="sm:col-span-2 lg:col-span-3">
+          <form onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 py-2">
+            <div className="sm:col-span-2">
               <Label htmlFor="event-title" className="text-foreground">Título del Evento</Label>
               <Input id="event-title" value={formTitle} onChange={e => setFormTitle(e.target.value)} required disabled={isSaving} className="bg-input text-foreground border-border" />
             </div>
 
-            <div className="sm:col-span-2 lg:col-span-3">
-              <Label htmlFor="event-location" className="text-foreground">Ubicación o Plataforma (Ej: Sala 3, Zoom)</Label>
+            <div className="sm:col-span-2">
+              <Label htmlFor="event-location" className="text-foreground">Ubicación (Ej: Sala 3, Zoom)</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input id="event-location" value={formLocation} onChange={e => setFormLocation(e.target.value)} disabled={isSaving} className="pl-10 bg-input text-foreground border-border" />
               </div>
             </div>
 
-            <div className="sm:col-span-2 lg:col-span-3">
+            <div className="sm:col-span-2">
               <Label htmlFor="event-description" className="text-foreground">Descripción (Opcional)</Label>
               <Textarea id="event-description" value={formDescription} onChange={e => setFormDescription(e.target.value)} disabled={isSaving} rows={3} className="bg-input text-foreground border-border" />
             </div>
 
-            <div className="lg:col-span-3 flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <div className="sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
               <div className="flex items-center space-x-2 flex-shrink-0">
                 <Switch id="all-day" checked={formAllDay} onCheckedChange={setFormAllDay} disabled={isSaving} className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-input" />
                 <Label htmlFor="all-day" className="text-foreground">Todo el día</Label>
@@ -359,7 +352,7 @@ export default function CalendarPage() {
               )}
             </div>
 
-            <div className="sm:col-span-2 lg:col-span-3">
+            <div className="sm:col-span-2">
               <Label className="text-foreground">Color del Evento</Label>
               <div className="flex flex-wrap gap-3 mt-2 justify-start">
                 {['blue', 'green', 'red', 'orange', 'default'].map((colorOption) => (
@@ -378,25 +371,25 @@ export default function CalendarPage() {
               </div>
             </div>
 
-            <div className="sm:col-span-2 lg:col-span-3">
+            <div className="sm:col-span-2">
               <Label className="text-foreground">Dirigido a</Label>
               <RadioGroup
                 value={formAudienceMode}
                 onValueChange={(value) => setFormAudienceMode(value as EventAudienceType)}
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mt-2"
+                className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2"
               >
                 <div className="flex items-center space-x-2 text-foreground"><RadioGroupItem value="ALL" id="audience-all" className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" /><Label htmlFor="audience-all">Todos</Label></div>
-                <div className="flex items-center space-x-2 text-foreground"><RadioGroupItem value="ADMINISTRATOR" id="audience-admin" className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" /><Label htmlFor="audience-admin">Administradores</Label></div>
+                <div className="flex items-center space-x-2 text-foreground"><RadioGroupItem value="ADMINISTRATOR" id="audience-admin" className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" /><Label htmlFor="audience-admin">Admins</Label></div>
                 <div className="flex items-center space-x-2 text-foreground"><RadioGroupItem value="INSTRUCTOR" id="audience-instructor" className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" /><Label htmlFor="audience-instructor">Instructores</Label></div>
                 <div className="flex items-center space-x-2 text-foreground"><RadioGroupItem value="STUDENT" id="audience-student" className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" /><Label htmlFor="audience-student">Estudiantes</Label></div>
-                <div className="flex items-center space-x-2 text-foreground"><RadioGroupItem value="SPECIFIC" id="audience-specific" className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" /><Label htmlFor="audience-specific">Personas Específicas</Label></div>
+                <div className="flex items-center space-x-2 text-foreground"><RadioGroupItem value="SPECIFIC" id="audience-specific" className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" /><Label htmlFor="audience-specific">Específicos</Label></div>
               </RadioGroup>
             </div>
 
             {formAudienceMode === 'SPECIFIC' && (
-              <div className="sm:col-span-2 lg:col-span-3">
+              <div className="sm:col-span-2">
                 <Label className="text-foreground">Asistentes Específicos</Label>
-                <ScrollArea className="h-40 w-full rounded-md border border-border p-2 bg-input"> {/* Fondo del scroll área */}
+                <ScrollArea className="h-40 w-full rounded-md border border-border p-2 bg-input">
                   <div className="space-y-2">
                     {allUsers.length > 0 ? allUsers.map((u) => (
                       <div key={u.id} className="flex items-center space-x-2 p-1 hover:bg-accent/50 rounded-sm transition-colors">
@@ -420,17 +413,17 @@ export default function CalendarPage() {
               </div>
             )}
 
-            <DialogFooter className="sm:col-span-2 lg:col-span-3 mt-4 flex justify-between w-full">
+            <DialogFooter className="sm:col-span-2 mt-4 flex flex-col-reverse sm:flex-row sm:justify-between w-full gap-2">
               <div>
                 {eventToEdit && (
-                  <Button type="button" variant="destructive" onClick={() => { setEventToDelete(eventToEdit); setShowEventModal(false); }} disabled={isSaving}>
+                  <Button type="button" variant="destructive" onClick={() => { setEventToDelete(eventToEdit); setShowEventModal(false); }} disabled={isSaving} className="w-full sm:w-auto">
                     <Trash2 className="mr-2" /> Eliminar
                   </Button>
                 )}
               </div>
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={() => setShowEventModal(false)} disabled={isSaving} className="border-border text-foreground hover:bg-muted">Cancelar</Button>
-                <Button type="submit" disabled={isSaving} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <div className="flex flex-col-reverse sm:flex-row gap-2">
+                <Button type="button" variant="outline" onClick={() => setShowEventModal(false)} disabled={isSaving} className="w-full sm:w-auto">Cancelar</Button>
+                <Button type="submit" disabled={isSaving} className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto">
                   {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (eventToEdit ? <Save className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />) }
                   {eventToEdit ? 'Guardar Cambios' : 'Crear Evento'}
                 </Button>
@@ -441,15 +434,15 @@ export default function CalendarPage() {
       </Dialog>
 
       <AlertDialog open={!!eventToDelete} onOpenChange={(isOpen) => !isOpen && setEventToDelete(null)}>
-        <AlertDialogContent className="bg-dark-background text-light-text border-border"> {/* Ajuste de color */}
+        <AlertDialogContent className="bg-card text-foreground border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-primary-foreground">¿Confirmar eliminación?</AlertDialogTitle>
+            <AlertDialogTitle className="text-foreground">¿Confirmar eliminación?</AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">
               Esta acción no se puede deshacer. Se eliminará el evento "<strong>{eventToDelete?.title}</strong>".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isSaving} className="border-border text-foreground hover:bg-muted">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isSaving}>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteEvent} disabled={isSaving} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
               {isSaving && <Loader2 className="mr-2 animate-spin" />}
               Sí, eliminar

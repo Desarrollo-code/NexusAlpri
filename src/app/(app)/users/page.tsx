@@ -346,21 +346,21 @@ export default function UsersPage() {
       </div>
 
       <Card>
-        <CardHeader>
-            <div className="flex items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className='flex-grow'>
                 <CardTitle>Lista de Usuarios</CardTitle>
-                <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                        type="search" 
-                        placeholder="Buscar usuarios..." 
-                        className="pl-8 w-full md:w-[300px]" 
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
+                <CardDescription>Visualiza y gestiona todos los usuarios registrados.</CardDescription>
             </div>
-            <CardDescription>Visualiza y gestiona todos los usuarios registrados.</CardDescription>
+            <div className="relative w-full sm:w-auto">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    type="search" 
+                    placeholder="Buscar usuarios..." 
+                    className="pl-8 w-full sm:w-[300px]" 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -376,7 +376,7 @@ export default function UsersPage() {
               <Button onClick={fetchUsers} variant="outline" className="mt-4">Reintentar</Button>
             </div>
           ) : (
-            <>
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -438,14 +438,14 @@ export default function UsersPage() {
                   ))}
                 </TableBody>
               </Table>
-              {filteredUsers.length === 0 && !isLoading && !error && (
+              </div>
+              )}
+               {filteredUsers.length === 0 && !isLoading && !error && (
                 <p className="text-center text-muted-foreground py-8">No se encontraron usuarios que coincidan con la búsqueda.</p>
               )}
                {usersList.length === 0 && !isLoading && !error && (
                 <p className="text-center text-muted-foreground py-8">No hay usuarios registrados. Añade el primero para empezar.</p>
               )}
-            </>
-          )}
         </CardContent>
       </Card>
 

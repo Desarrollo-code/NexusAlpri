@@ -911,8 +911,7 @@ export default function EditCoursePage() {
     return (
         <FormProvider {...methods}>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pb-24">
-                {/* Header */}
-                 <div className="flex items-center justify-between p-4 border-b bg-background sticky top-0 z-20 -mx-6 px-6">
+                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b bg-background sticky top-0 z-20 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
                     <div className="flex items-center gap-4">
                         <Button asChild variant="outline" type="button" size="sm">
                             <Link href="/manage-courses">
@@ -935,9 +934,7 @@ export default function EditCoursePage() {
                     </div>
                 </div>
                 
-                {/* Main Content Area */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-2">
-                    {/* Left Column */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
                         <Card>
                             <CardHeader>
@@ -1030,7 +1027,6 @@ export default function EditCoursePage() {
                         </Card>
                     </div>
 
-                    {/* Right Column */}
                     <div className="lg:col-span-1 space-y-6">
                          <Card>
                             <CardHeader><CardTitle>Configuración</CardTitle></CardHeader>
@@ -1112,8 +1108,7 @@ export default function EditCoursePage() {
                     </div>
                 </div>
 
-                {/* Sticky Footer for Actions */}
-                 <div className="fixed bottom-0 left-0 md:left-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)] right-0 bg-background/95 backdrop-blur-sm border-t p-4 z-20">
+                <div className="fixed bottom-0 left-0 md:left-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)] right-0 bg-background/95 backdrop-blur-sm border-t p-4 z-20">
                     <div className="max-w-screen-2xl mx-auto flex justify-end gap-2">
                         {!isNewCourse && (
                             <DropdownMenu>

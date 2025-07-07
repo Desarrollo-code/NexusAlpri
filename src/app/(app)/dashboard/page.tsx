@@ -348,7 +348,7 @@ export default function DashboardPage() {
       { href: '/my-courses', label: 'Mis Cursos', icon: GraduationCap, description: 'Continúa tu aprendizaje.' },
       { href: '/courses', label: 'Explorar Cursos', icon: BookOpen, description: 'Descubre nuevas oportunidades.' },
       { href: '/resources', label: 'Biblioteca', icon: Folder, description: 'Accede a guías y materiales.' },
-      { href: '/announcements', label: 'Anuncios', icon: Megaphone, description: 'Revisa las últimas noticias.' },
+      { href: '/announcements', label: 'Anuncios', icon: 'Revisa las últimas noticias.' },
     ],
   };
   const linksToShow = quickLinks[user.role] || [];
@@ -371,7 +371,7 @@ export default function DashboardPage() {
           {statsError && <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar estadísticas: {statsError}</div>}
           {adminStats && !isLoadingStats && !statsError && (
             <>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total de Usuarios</CardTitle><Users className="h-5 w-5 text-sky-400" />
@@ -410,7 +410,7 @@ export default function DashboardPage() {
                 </Card>
               </div>
               
-              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+              <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base"><BarChart3 className="h-5 w-5 text-primary"/>Distribución de Cursos</CardTitle>
@@ -491,7 +491,7 @@ export default function DashboardPage() {
         </section>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
            {user.role === 'INSTRUCTOR' && (
               <section>
@@ -499,7 +499,7 @@ export default function DashboardPage() {
                 {isLoadingTaughtCourses && <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando mis cursos...</div>}
                 {taughtCoursesError && <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar cursos: {taughtCoursesError}</div>}
                 {!isLoadingTaughtCourses && !taughtCoursesError && taughtCourses.length > 0 && (
-                  <div className="grid gap-6 md:grid-cols-2">
+                  <div className="grid gap-6 sm:grid-cols-2">
                     {taughtCourses.map(course => (
                       <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
                          {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
@@ -521,7 +521,7 @@ export default function DashboardPage() {
                 {isLoadingMyCourses && <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando...</div>}
                 {myCoursesError && <div className="text-destructive"><AlertTriangle className="inline mr-2"/>Error: {myCoursesError}</div>}
                 {!isLoadingMyCourses && !myCoursesError && myDashboardCourses.length > 0 && (
-                  <div className="grid gap-6 md:grid-cols-2">
+                  <div className="grid gap-6 sm:grid-cols-2">
                     {myDashboardCourses.map(course => (
                       <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
                         {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="education student" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
