@@ -111,7 +111,8 @@ const getYoutubeVideoId = (url: string | undefined): string | null => {
         videoId = urlObj.pathname.substring(1);
       }
     } catch (e) {
-      return null;
+      const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      return match ? match[1] : null;
     }
     return videoId;
 };
@@ -122,11 +123,11 @@ const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
     const isFolder = resource.type === 'FOLDER';
     
-    const isImage = !isFolder && resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
-    const youtubeId = !isFolder && resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
-    const isPdf = !isFolder && resource.url && /\.pdf$/i.test(resource.url);
-
     const Thumbnail = () => {
+        const isImage = !isFolder && resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
+        const youtubeId = !isFolder && resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
+        const isPdf = !isFolder && resource.url && /\.pdf$/i.test(resource.url);
+
         if (isImage) {
             return <Image src={resource.url!} alt={resource.title} fill className="object-cover" data-ai-hint="resource file" />;
         }
@@ -230,6 +231,7 @@ export default function ResourcesPage() {
   const [newResourceType, setNewResourceType] = useState<AppResourceType['type'] | ''>('');
   const [newResourceCategory, setNewResourceCategory] = useState('');
   const [newResourceFile, setNewResourceFile] = useState<File | null>(null);
+  const [newResourceUrl, setNewResourceUrl] = useState('');
   
   const [showEditModal, setShowEditModal] = useState(false);
   const [resourceToEdit, setResourceToEdit] = useState<AppResourceType | null>(null);
@@ -352,6 +354,7 @@ export default function ResourcesPage() {
     setNewResourceType('');
     setNewResourceCategory('');
     setNewResourceFile(null);
+    setNewResourceUrl('');
     setUploadProgress(0);
     const fileInput = document.getElementById('resource-file') as HTMLInputElement;
     if (fileInput) fileInput.value = '';
@@ -359,30 +362,36 @@ export default function ResourcesPage() {
 
   const handleCreateFile = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!newResourceTitle || !newResourceType || !newResourceCategory || !newResourceFile) {
-        toast({ title: "Error", description: "Todos los campos y un archivo son obligatorios.", variant: "destructive" });
+    if (!newResourceTitle || !newResourceType || !newResourceCategory || (!newResourceFile && !newResourceUrl)) {
+        toast({ title: "Error", description: "Todos los campos son obligatorios. Debes adjuntar un archivo o proveer una URL.", variant: "destructive" });
         return;
     }
-    if (!user?.id) { return; }
+    if (newResourceFile && newResourceUrl) {
+        toast({ title: "Error", description: "Por favor, proporciona solo un archivo o una URL, no ambos.", variant: "destructive" });
+        return;
+    }
+    if (!user?.id) return;
 
     setIsSubmittingResource(true);
-    let finalResourceUrl: string | undefined = undefined;
+    let finalResourceUrl = newResourceUrl;
 
-    setIsUploadingFile(true);
-    setUploadProgress(0);
-    const formData = new FormData();
-    formData.append('file', newResourceFile);
-    try {
-      const result: { url: string } = await uploadWithProgress('/api/upload/resource-file', formData, setUploadProgress);
-      finalResourceUrl = result.url;
-    } catch (err) {
-      toast({ title: "Error de Subida", description: (err as Error).message, variant: "destructive" });
-      setIsUploadingFile(false);
-      setIsSubmittingResource(false);
-      return;
+    if (newResourceFile) {
+        setIsUploadingFile(true);
+        setUploadProgress(0);
+        const formData = new FormData();
+        formData.append('file', newResourceFile);
+        try {
+          const result: { url: string } = await uploadWithProgress('/api/upload/resource-file', formData, setUploadProgress);
+          finalResourceUrl = result.url;
+        } catch (err) {
+          toast({ title: "Error de Subida", description: (err as Error).message, variant: "destructive" });
+          setIsUploadingFile(false);
+          setIsSubmittingResource(false);
+          return;
+        }
+        setIsUploadingFile(false);
     }
-    setIsUploadingFile(false);
-
+    
     try {
       const payload = { title: newResourceTitle, type: newResourceType, category: newResourceCategory, url: finalResourceUrl, uploaderId: user.id, parentId: currentFolderId };
       const response = await fetch('/api/resources', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -513,7 +522,7 @@ export default function ResourcesPage() {
         if (currentFolderId) {
             newBreadcrumbs.push({ id: currentFolderId, title: currentFolder?.title || '...' });
         } else {
-            newBreadcrumbs.push({ id: null, title: 'Biblioteca' });
+            // This is the root level
         }
         setBreadcrumbs(newBreadcrumbs);
         setCurrentFolderId(resource.id);
@@ -557,7 +566,7 @@ export default function ResourcesPage() {
   
   const resourceTypeOptions: { value: AppResourceType['type']; label: string }[] = [
     { value: 'DOCUMENT', label: 'Documento' }, { value: 'GUIDE', label: 'Guía' }, { value: 'MANUAL', label: 'Manual' },
-    { value: 'POLICY', label: 'Política' }, { value: 'VIDEO', label: 'Video (Enlace a archivo de video)' }, { value: 'OTHER', label: 'Otro' },
+    { value: 'POLICY', label: 'Política' }, { value: 'VIDEO', label: 'Video (Enlace o archivo)' }, { value: 'OTHER', label: 'Otro' },
   ];
 
 
@@ -592,8 +601,18 @@ export default function ResourcesPage() {
                      <div className="space-y-1"><Label htmlFor="resource-title">Título <span className="text-destructive">*</span></Label><Input id="resource-title" value={newResourceTitle} onChange={(e) => setNewResourceTitle(e.target.value)} required disabled={isSubmittingResource} /></div>
                      <div className="space-y-1"><Label htmlFor="resource-type">Tipo <span className="text-destructive">*</span></Label><Select name="resource-type" value={newResourceType} onValueChange={(v) => setNewResourceType(v as AppResourceType['type'])} required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent>{resourceTypeOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></div>
                      <div className="space-y-1"><Label htmlFor="resource-category">Categoría <span className="text-destructive">*</span></Label><Select name="resource-category" value={newResourceCategory} onValueChange={setNewResourceCategory} required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{settings?.resourceCategories.sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-                     <div className="space-y-1"><Label htmlFor="resource-file">Archivo <span className="text-destructive">*</span></Label><Input id="resource-file" type="file" onChange={(e) => setNewResourceFile(e.target.files ? e.target.files[0] : null)} disabled={isSubmittingResource} required />{isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}</div>
-                     <DialogFooter><Button type="button" variant="outline" onClick={() => setShowCreateFileModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Guardar</Button></DialogFooter>
+                     <Separator />
+                      <div className="space-y-1">
+                        <Label htmlFor="resource-file">Subir Archivo</Label>
+                        <Input id="resource-file" type="file" onChange={(e) => setNewResourceFile(e.target.files ? e.target.files[0] : null)} disabled={isSubmittingResource || !!newResourceUrl} />
+                        {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
+                      </div>
+                      <div className="text-center text-xs text-muted-foreground">O</div>
+                      <div className="space-y-1">
+                        <Label htmlFor="resource-url">Pegar URL (ej. YouTube)</Label>
+                        <Input id="resource-url" type="url" placeholder="https://..." value={newResourceUrl} onChange={e => setNewResourceUrl(e.target.value)} disabled={isSubmittingResource || !!newResourceFile} />
+                      </div>
+                     <DialogFooter className="pt-4"><Button type="button" variant="outline" onClick={() => setShowCreateFileModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Guardar</Button></DialogFooter>
                   </form>
                 </DialogContent>
               </Dialog>
@@ -702,9 +721,9 @@ export default function ResourcesPage() {
                 }
 
                 const url = previewResource.url;
-                const isImage = url.toLowerCase().match(/\.(jpeg|jpg|gif|png|webp|svg)$/);
-                const isVideoFile = url.toLowerCase().match(/\.(mp4|webm|ogv)$/);
                 const youtubeId = getYoutubeVideoId(url);
+                const isImage = !youtubeId && url.toLowerCase().match(/\.(jpeg|jpg|gif|png|webp|svg)$/);
+                const isVideoFile = !youtubeId && url.toLowerCase().match(/\.(mp4|webm|ogv)$/);
                 const isPdf = url.toLowerCase().endsWith('.pdf');
                 const isOfficeDoc = url.toLowerCase().endsWith('.docx') || url.toLowerCase().endsWith('.xlsx');
 
