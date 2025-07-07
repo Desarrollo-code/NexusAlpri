@@ -293,6 +293,59 @@ export default function ResourcesPage() {
     };
   }, [allApiResources, searchTerm]);
   
+    // Effect for handling file conversions for preview
+  useEffect(() => {
+    if (!previewResource || !previewResource.url) {
+        setPreviewHtml(null);
+        return;
+    }
+
+    const fileUrl = previewResource.url;
+    const isDocx = fileUrl.toLowerCase().endsWith('.docx');
+    const isXlsx = fileUrl.toLowerCase().endsWith('.xlsx');
+    
+    if (!isDocx && !isXlsx) {
+        setPreviewHtml(null);
+        setConversionError(null);
+        return;
+    }
+
+    const convertFile = async () => {
+        setIsConverting(true);
+        setConversionError(null);
+        setPreviewHtml(null);
+
+        try {
+            const response = await fetch(fileUrl);
+            if (!response.ok) {
+                throw new Error(`Error al descargar el archivo: ${response.statusText}`);
+            }
+            const arrayBuffer = await response.arrayBuffer();
+            
+            if (isDocx) {
+                const result = await mammoth.convertToHtml({ arrayBuffer });
+                setPreviewHtml(result.value);
+            } else if (isXlsx) {
+                const workbook = XLSX.read(arrayBuffer, { type: 'buffer' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const html = XLSX.utils.sheet_to_html(worksheet);
+                setPreviewHtml(html);
+            }
+
+        } catch (e) {
+            console.error("Conversion error:", e);
+            setConversionError(e instanceof Error ? e.message : "Error al convertir el archivo para la previsualización.");
+        } finally {
+            setIsConverting(false);
+        }
+    };
+    
+    convertFile();
+
+  }, [previewResource]);
+
+
   // --- Event Handlers ---
   const resetCreateForm = () => {
     setNewResourceTitle('');
@@ -502,67 +555,10 @@ export default function ResourcesPage() {
     }
   };
   
-  const renderOfficePreview = () => {
-    return (
-        <div className="text-center py-8 flex flex-col items-center justify-center gap-4 h-full">
-            {previewResource && getPreviewIconForType(previewResource.type)}
-            <h3 className="text-lg font-semibold">Previsualización no disponible en el navegador</h3>
-            <p className="text-muted-foreground max-w-sm">Este tipo de archivo se debe descargar para poder visualizarlo.</p>
-            <Button asChild>
-                <Link href={previewResource?.url || '#'} target="_blank" rel="noopener noreferrer" download>
-                    <Download className="mr-2 h-4 w-4" /> Descargar para ver
-                </Link>
-            </Button>
-            <p className="text-xs text-muted-foreground mt-4 max-w-sm">Nota: El visor de Google Docs solo funciona en entornos de producción con acceso público, por lo que se ha deshabilitado para mejorar la fiabilidad.</p>
-        </div>
-    );
-  };
-  
-  useEffect(() => {
-    if (!previewResource || !previewResource.url) {
-        setPreviewHtml(null);
-        return;
-    }
-
-    const fileUrl = previewResource.url;
-    const isDocx = fileUrl.toLowerCase().endsWith('.docx');
-    const isXlsx = fileUrl.toLowerCase().endsWith('.xlsx');
-
-    if (isDocx || isXlsx) {
-       setPreviewHtml('office'); // Use a special string to trigger office preview message
-    } else {
-        setPreviewHtml(null);
-        setConversionError(null);
-    }
-  }, [previewResource]);
-
   const resourceTypeOptions: { value: AppResourceType['type']; label: string }[] = [
     { value: 'DOCUMENT', label: 'Documento' }, { value: 'GUIDE', label: 'Guía' }, { value: 'MANUAL', label: 'Manual' },
     { value: 'POLICY', label: 'Política' }, { value: 'VIDEO', label: 'Video (Enlace a archivo de video)' }, { value: 'OTHER', label: 'Otro' },
   ];
-
-  const renderSimplePreviewContent = () => {
-    if (!previewResource || !previewResource.url) return <div className="text-center py-8"><p className="text-muted-foreground">No hay previsualización disponible.</p></div>;
-    
-    const url = previewResource.url;
-    
-    const isImage = url.toLowerCase().match(/\.(jpeg|jpg|gif|png|webp|svg)$/);
-    const isVideoFile = url.toLowerCase().match(/\.(mp4|webm|ogv)$/);
-    const youtubeId = getYoutubeVideoId(url);
-    const isPdf = url.toLowerCase().endsWith('.pdf');
-
-    if (youtubeId) return <iframe className="w-full aspect-video rounded-md" src={`https://www.youtube.com/embed/${youtubeId}`} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>;
-    
-    if (isImage) return <div className="flex justify-center items-center h-full"><Image src={url} alt={previewResource.title} width={800} height={600} className="object-contain max-h-[70vh] rounded-md" data-ai-hint="resource preview" /></div>;
-    
-    if (isVideoFile) return <video controls src={url} className="w-full rounded-md max-h-[70vh]">Tu navegador no soporta el tag de video.</video>;
-
-    if (isPdf) {
-        return <iframe src={url} className="w-full h-[75vh] border-none rounded-md" title={previewResource.title}></iframe>;
-    }
-    
-    return renderOfficePreview();
-  };
 
 
   return (
@@ -692,11 +688,47 @@ export default function ResourcesPage() {
         <DialogContent className="max-w-4xl w-[90vw] h-auto max-h-[90vh] flex flex-col p-4 sm:p-6">
           <DialogHeader className="pr-10"><DialogTitle className="truncate">{previewResource?.title}</DialogTitle><DialogDescription>Categoría: {previewResource?.category}</DialogDescription></DialogHeader>
           <ScrollArea className="flex-grow rounded-lg bg-muted/20 p-2">
-             {previewHtml === 'office' ? (
-                renderOfficePreview()
-            ) : (
-                renderSimplePreviewContent()
-            )}
+            {(() => {
+                if (!previewResource || !previewResource.url) {
+                    return <div className="text-center py-8"><p className="text-muted-foreground">No hay previsualización disponible.</p></div>;
+                }
+
+                if (isConverting) {
+                    return <div className="flex flex-col items-center justify-center h-full gap-2"><Loader2 className="h-8 w-8 animate-spin" /><p>Convirtiendo para previsualización...</p></div>;
+                }
+
+                if (conversionError) {
+                    return <div className="flex flex-col items-center justify-center h-full gap-2 text-destructive"><AlertTriangle className="h-8 w-8" /><p>Error en la previsualización</p><p className="text-xs">{conversionError}</p></div>;
+                }
+
+                const url = previewResource.url;
+                const isImage = url.toLowerCase().match(/\.(jpeg|jpg|gif|png|webp|svg)$/);
+                const isVideoFile = url.toLowerCase().match(/\.(mp4|webm|ogv)$/);
+                const youtubeId = getYoutubeVideoId(url);
+                const isPdf = url.toLowerCase().endsWith('.pdf');
+                const isOfficeDoc = url.toLowerCase().endsWith('.docx') || url.toLowerCase().endsWith('.xlsx');
+
+                if (isOfficeDoc && previewHtml) {
+                    return <div className="prose dark:prose-invert max-w-none p-4 bg-background rounded-md" dangerouslySetInnerHTML={{ __html: previewHtml }} />;
+                }
+                if (youtubeId) return <iframe className="w-full aspect-video rounded-md" src={`https://www.youtube.com/embed/${youtubeId}`} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>;
+                if (isImage) return <div className="flex justify-center items-center h-full"><Image src={url} alt={previewResource.title} width={800} height={600} className="object-contain max-h-[70vh] rounded-md" data-ai-hint="resource preview" /></div>;
+                if (isVideoFile) return <video controls src={url} className="w-full rounded-md max-h-[70vh]">Tu navegador no soporta el tag de video.</video>;
+                if (isPdf) return <iframe src={url} className="w-full h-[75vh] border-none rounded-md" title={previewResource.title}></iframe>;
+
+                return (
+                    <div className="text-center py-8 flex flex-col items-center justify-center gap-4 h-full">
+                        {getPreviewIconForType(previewResource.type)}
+                        <h3 className="text-lg font-semibold">Previsualización no disponible</h3>
+                        <p className="text-muted-foreground max-w-sm">Este tipo de archivo se debe descargar para poder visualizarlo.</p>
+                        <Button asChild>
+                            <Link href={url || '#'} target="_blank" rel="noopener noreferrer" download>
+                                <Download className="mr-2 h-4 w-4" /> Descargar para ver
+                            </Link>
+                        </Button>
+                    </div>
+                );
+            })()}
           </ScrollArea>
         </DialogContent>
       </Dialog>
