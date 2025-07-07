@@ -2,10 +2,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import type { NextRequest } from 'next/server';
 
 // GET all events relevant to the user
-export async function GET() {
-  const session = await getSession();
+export async function GET(req: NextRequest) {
+  const session = await getSession(req);
   if (!session) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
@@ -43,22 +44,28 @@ export async function GET() {
 }
 
 // POST (create) a new event
-export async function POST(req: Request) {
-  const session = await getSession();
+export async function POST(req: NextRequest) {
+  const session = await getSession(req);
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
   try {
     const body = await req.json();
+    const { attendeeIds, ...restOfBody } = body;
+    
+    const dataToCreate: any = {
+      ...restOfBody,
+    };
+
+    if (attendeeIds && Array.isArray(attendeeIds) && attendeeIds.length > 0) {
+      dataToCreate.attendees = {
+        connect: attendeeIds.map((attendeeId: string) => ({ id: attendeeId })),
+      };
+    }
     
     const newEvent = await prisma.calendarEvent.create({
-      data: {
-        ...body,
-        attendees: body.attendeeIds ? {
-          connect: body.attendeeIds.map((attendeeId: string) => ({ id: attendeeId }))
-        } : undefined
-      },
+      data: dataToCreate,
     });
     
     return NextResponse.json(newEvent, { status: 201 });

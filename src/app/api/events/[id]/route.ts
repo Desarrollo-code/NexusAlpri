@@ -2,10 +2,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import type { NextRequest } from 'next/server';
 
 // PUT (update) an event
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-  const session = await getSession();
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getSession(req);
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
@@ -13,16 +14,22 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   try {
     const { id } = params;
     const body = await req.json();
-    
+    const { attendeeIds, ...restOfBody } = body;
+
+    const dataToUpdate: any = {
+      ...restOfBody,
+    };
+
+    // Use 'set' to replace the list of attendees with the new one.
+    if (attendeeIds && Array.isArray(attendeeIds)) {
+      dataToUpdate.attendees = {
+        set: attendeeIds.map((attendeeId: string) => ({ id: attendeeId })),
+      };
+    }
+
     const updatedEvent = await prisma.calendarEvent.update({
       where: { id },
-      data: {
-        ...body,
-        // Ensure attendeeIds are handled correctly if provided
-        attendees: body.attendeeIds ? {
-          set: body.attendeeIds.map((attendeeId: string) => ({ id: attendeeId }))
-        } : undefined
-      },
+      data: dataToUpdate,
     });
 
     return NextResponse.json(updatedEvent);
@@ -33,8 +40,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 // DELETE an event
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-    const session = await getSession();
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+    const session = await getSession(req);
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
