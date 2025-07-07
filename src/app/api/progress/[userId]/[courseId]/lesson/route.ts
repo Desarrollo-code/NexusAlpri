@@ -29,12 +29,13 @@ export async function POST(req: Request, { params }: { params: { userId: string,
                 data: {
                     userId,
                     courseId,
-                    completedLessonIds: [],
+                    completedLessonIds: '[]', // Stored as a JSON string
                 }
             });
         }
         
-        let completedIds = new Set(progress.completedLessonIds);
+        const completedIds = new Set<string>(JSON.parse(progress.completedLessonIds || '[]'));
+        
         if (completed) {
             completedIds.add(lessonId);
         } else {
@@ -47,12 +48,16 @@ export async function POST(req: Request, { params }: { params: { userId: string,
         const updatedProgress = await prisma.courseProgress.update({
             where: { userId_courseId: { userId, courseId } },
             data: {
-                completedLessonIds: newCompletedLessonIds,
+                completedLessonIds: JSON.stringify(newCompletedLessonIds), // Stringify for DB
                 progressPercentage: progressPercentage
             },
         });
         
-        return NextResponse.json(updatedProgress);
+        // Return parsed data to the client
+        return NextResponse.json({
+            ...updatedProgress,
+            completedLessonIds: newCompletedLessonIds
+        });
 
     } catch (error) {
         console.error('[PROGRESS_UPDATE_ERROR]', error);

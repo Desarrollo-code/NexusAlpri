@@ -15,7 +15,13 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         if (!resource) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
-        return NextResponse.json(resource);
+        
+        const parsedResource = {
+            ...resource,
+            tags: JSON.parse(resource.tags || '[]'),
+        };
+
+        return NextResponse.json(parsedResource);
     } catch (error) {
         console.error('[RESOURCE_GET_ERROR]', error);
         return NextResponse.json({ message: 'Error al obtener el recurso' }, { status: 500 });
@@ -43,10 +49,17 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
         const updatedResource = await prisma.resource.update({
             where: { id: params.id },
-            data: { title, category, tags },
+            data: { 
+                title, 
+                category, 
+                tags: JSON.stringify(tags || []) // Stringify tags
+            },
         });
 
-        return NextResponse.json(updatedResource);
+        return NextResponse.json({
+            ...updatedResource,
+            tags: JSON.parse(updatedResource.tags || '[]') // Return parsed tags
+        });
     } catch (error) {
         console.error('[RESOURCE_PUT_ERROR]', error);
         return NextResponse.json({ message: 'Error al actualizar el recurso' }, { status: 500 });

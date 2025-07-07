@@ -18,10 +18,11 @@ export async function GET(req: Request, { params }: { params: { userId: string, 
             where: { userId_courseId: { userId, courseId } },
         });
         
+        const totalLessons = await prisma.lesson.count({
+            where: { module: { courseId: courseId } },
+        });
+
         if (!progress) {
-            const totalLessons = await prisma.lesson.count({
-                where: { module: { courseId: courseId } },
-            });
             // Return a default progress object if none exists
             return NextResponse.json({
                 userId,
@@ -33,13 +34,12 @@ export async function GET(req: Request, { params }: { params: { userId: string, 
             });
         }
 
-        const totalLessons = await prisma.lesson.count({
-            where: { module: { courseId: courseId } },
-        });
+        const completedLessonIds = JSON.parse(progress.completedLessonIds || '[]');
 
         return NextResponse.json({
             ...progress,
-            completedLessonsCount: progress.completedLessonIds.length,
+            completedLessonIds: completedLessonIds, // Return as array
+            completedLessonsCount: completedLessonIds.length,
             totalLessons: totalLessons,
         });
 
