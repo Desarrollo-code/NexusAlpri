@@ -16,6 +16,21 @@ interface AuthContextType {
   updateSettings: (updatedData: Partial<PlatformSettings>) => void;
 }
 
+const DEFAULT_SETTINGS: PlatformSettings = {
+    platformName: "NexusAlpri",
+    allowPublicRegistration: true,
+    enableEmailNotifications: true,
+    resourceCategories: [],
+    passwordMinLength: 8,
+    passwordRequireUppercase: true,
+    passwordRequireLowercase: true,
+    passwordRequireNumber: true,
+    passwordRequireSpecialChar: true,
+    enableIdleTimeout: true,
+    idleTimeoutMinutes: 20,
+    require2faForAdmins: false,
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -28,15 +43,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     try {
       const [settingsRes, userRes] = await Promise.all([
-        fetch('/api/settings'),
-        fetch('/api/auth/me'),
+        fetch('/api/settings').catch(e => {
+            console.error("Network error fetching settings:", e);
+            return { ok: false, json: () => Promise.resolve({ message: "Network error" }) } as any as Response;
+        }),
+        fetch('/api/auth/me').catch(e => {
+            console.error("Network error fetching user session:", e);
+            return { ok: false, json: () => Promise.resolve({ user: null }) } as any as Response;
+        }),
       ]);
 
       if (settingsRes.ok) {
         const settingsData = await settingsRes.json();
         setSettings(settingsData);
       } else {
-        throw new Error('Failed to fetch settings');
+        console.warn('Could not fetch platform settings, using default values. This may be due to a database connection issue.');
+        setSettings(DEFAULT_SETTINGS);
       }
 
       if (userRes.ok) {
@@ -46,23 +68,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
       }
     } catch (error) {
-      console.error("Failed to initialize auth:", error);
+      console.error("An unexpected error occurred during session initialization:", error);
       setUser(null);
-      // Set default settings on error
-      setSettings({
-        platformName: "NexusAlpri",
-        allowPublicRegistration: true,
-        enableEmailNotifications: true,
-        resourceCategories: [],
-        passwordMinLength: 8,
-        passwordRequireUppercase: true,
-        passwordRequireLowercase: true,
-        passwordRequireNumber: true,
-        passwordRequireSpecialChar: true,
-        enableIdleTimeout: true,
-        idleTimeoutMinutes: 20,
-        require2faForAdmins: false,
-      });
+      setSettings(DEFAULT_SETTINGS);
     } finally {
       setIsLoading(false);
     }
@@ -86,7 +94,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to call logout API", error);
     } finally {
       setUser(null);
-      // A hard redirect is better for logout to ensure all state is cleared.
       window.location.href = '/sign-in';
     }
   }, []);
