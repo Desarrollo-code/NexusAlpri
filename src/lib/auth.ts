@@ -47,7 +47,8 @@ export async function createSession(user: Partial<User>) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   const session = await encrypt({ user: userPayload, expires: expires.toISOString() });
 
-  cookies().set('session', session, { expires, httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/' });
+  // The error log suggests this needs to be awaited in Next.js 15+ with Turbopack
+  await cookies().set('session', session, { expires, httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/' });
 }
 
 export async function getSession(request?: NextRequest) {
@@ -74,5 +75,6 @@ export async function getSession(request?: NextRequest) {
 }
 
 export async function deleteSession() {
-  cookies().set('session', '', { expires: new Date(0), path: '/' });
+  // The error log suggests this needs to be awaited in Next.js 15+ with Turbopack
+  await cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
