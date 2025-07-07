@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     
     try {
         const body = await req.json();
-        const { title, type, url, category, tags, parentId } = body;
+        const { title, type, url, category, tags, parentId, description } = body;
 
         if (!title || !type) {
             return NextResponse.json({ message: 'Título y tipo son requeridos' }, { status: 400 });
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
             data: {
                 title,
                 type,
+                description,
                 url: url || null,
                 category: category || 'General',
                 tags: JSON.stringify(tags || []), // Stringify tags

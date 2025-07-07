@@ -48,6 +48,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import mammoth from 'mammoth';
 import * as XLSX from 'xlsx';
+import { Textarea } from '@/components/ui/textarea';
 
 // --- Types and Mappers ---
 interface ApiResource extends Omit<PrismaResource, 'uploader' | 'tags' | 'type' | 'uploadDate' | 'pin'> {
@@ -56,12 +57,14 @@ interface ApiResource extends Omit<PrismaResource, 'uploader' | 'tags' | 'type' 
   type: PrismaResourceType;
   uploadDate: string;
   pin: string | null;
+  description: string | null;
 }
 
 function mapApiResourceToAppResource(apiResource: ApiResource): AppResourceType {
   return {
     id: apiResource.id,
     title: apiResource.title,
+    description: apiResource.description || undefined,
     type: apiResource.type as AppResourceType['type'],
     category: apiResource.category || 'General',
     tags: apiResource.tags,
@@ -175,18 +178,32 @@ const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
     const { user } = useAuth();
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
     const isFolder = resource.type === 'FOLDER';
+
+    const getFileFormat = (url?: string) => {
+        if (!url || isFolder) return '—';
+        const extension = url.split('.').pop()?.split('?')[0];
+        return extension ? extension.toUpperCase() : 'Enlace';
+    };
     
     return (
         <TableRow className="cursor-pointer" onClick={onPreview}>
-            <TableCell>
+            <TableCell className="w-[45%]">
                 <div className="flex items-center gap-3">
                     {getIconForType(resource.type)}
-                    <span className="font-medium">{resource.title}</span>
-                    {resource.hasPin && <KeyRound className="h-4 w-4 text-amber-400" />}
+                    <div className="flex-grow overflow-hidden">
+                        <div className="flex items-center gap-1.5">
+                            <span className="font-medium truncate">{resource.title}</span>
+                            {resource.hasPin && <KeyRound className="h-4 w-4 text-amber-400 shrink-0" />}
+                        </div>
+                        {resource.description && (
+                            <p className="text-xs text-muted-foreground truncate">{resource.description}</p>
+                        )}
+                    </div>
                 </div>
             </TableCell>
-            <TableCell className="hidden md:table-cell">{resource.uploaderName}</TableCell>
-            <TableCell className="hidden lg:table-cell">{new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Bogota' })}</TableCell>
+            <TableCell className="hidden sm:table-cell">{isFolder ? '—' : resource.category}</TableCell>
+            <TableCell className="hidden md:table-cell">{getFileFormat(resource.url)}</TableCell>
+            <TableCell className="hidden lg:table-cell">{new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'America/Bogota' })}</TableCell>
             <TableCell className="text-right">
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -231,6 +248,7 @@ export default function ResourcesPage() {
   const [newResourceTitle, setNewResourceTitle] = useState('');
   const [newResourceType, setNewResourceType] = useState<AppResourceType['type'] | ''>('');
   const [newResourceCategory, setNewResourceCategory] = useState('');
+  const [newResourceDescription, setNewResourceDescription] = useState('');
   const [newResourceFile, setNewResourceFile] = useState<File | null>(null);
   const [newResourceUrl, setNewResourceUrl] = useState('');
   
@@ -238,6 +256,7 @@ export default function ResourcesPage() {
   const [resourceToEdit, setResourceToEdit] = useState<AppResourceType | null>(null);
   const [editResourceTitle, setEditResourceTitle] = useState('');
   const [editResourceCategory, setEditResourceCategory] = useState('');
+  const [editResourceDescription, setEditResourceDescription] = useState('');
   const [editResourceTags, setEditResourceTags] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [editResourcePin, setEditResourcePin] = useState('');
@@ -366,6 +385,7 @@ export default function ResourcesPage() {
     setNewResourceTitle('');
     setNewResourceType('');
     setNewResourceCategory('');
+    setNewResourceDescription('');
     setNewResourceFile(null);
     setNewResourceUrl('');
     setUploadProgress(0);
@@ -410,7 +430,7 @@ export default function ResourcesPage() {
     }
     
     try {
-      const payload = { title: newResourceTitle, type: newResourceType, category: newResourceCategory, url: finalResourceUrl, uploaderId: user.id, parentId: currentFolderId };
+      const payload = { title: newResourceTitle, type: newResourceType, category: newResourceCategory, url: finalResourceUrl, uploaderId: user.id, parentId: currentFolderId, description: newResourceDescription };
       const response = await fetch('/api/resources', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to create resource');
       toast({ title: "Recurso Creado", description: `El recurso "${newResourceTitle}" ha sido añadido.` });
@@ -472,6 +492,7 @@ export default function ResourcesPage() {
     setResourceToEdit(resource);
     setEditResourceTitle(resource.title);
     setEditResourceCategory(resource.category);
+    setEditResourceDescription(resource.description || '');
     setEditResourceTags(resource.tags.join(', '));
     setEditResourcePin('');
     setShowEditModal(true);
@@ -484,7 +505,7 @@ export default function ResourcesPage() {
     setIsSavingEdit(true);
     try {
       const tagsArray = editResourceTags.split(',').map(tag => tag.trim()).filter(Boolean);
-      const payload = { title: editResourceTitle, category: editResourceCategory, tags: tagsArray };
+      const payload = { title: editResourceTitle, category: editResourceCategory, tags: tagsArray, description: editResourceDescription };
       const response = await fetch(`/api/resources/${resourceToEdit.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to update resource');
       toast({ title: "Recurso Actualizado", description: "Los cambios han sido guardados." });
@@ -614,6 +635,7 @@ export default function ResourcesPage() {
                   <DialogHeader><DialogTitle>Subir Nuevo Recurso</DialogTitle><DialogDescription>Completa los detalles para añadir un nuevo recurso a la biblioteca.</DialogDescription></DialogHeader>
                   <form onSubmit={handleCreateFile} className="grid gap-4 py-4">
                      <div className="space-y-1"><Label htmlFor="resource-title">Título <span className="text-destructive">*</span></Label><Input id="resource-title" value={newResourceTitle} onChange={(e) => setNewResourceTitle(e.target.value)} required disabled={isSubmittingResource} /></div>
+                     <div className="space-y-1"><Label htmlFor="resource-description">Descripción (Opcional)</Label><Textarea id="resource-description" value={newResourceDescription} onChange={(e) => setNewResourceDescription(e.target.value)} disabled={isSubmittingResource} rows={3} /></div>
                      <div className="space-y-1"><Label htmlFor="resource-type">Tipo <span className="text-destructive">*</span></Label><Select name="resource-type" value={newResourceType} onValueChange={(v) => setNewResourceType(v as AppResourceType['type'])} required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent>{resourceTypeOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></div>
                      <div className="space-y-1"><Label htmlFor="resource-category">Categoría <span className="text-destructive">*</span></Label><Select name="resource-category" value={newResourceCategory} onValueChange={setNewResourceCategory} required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{settings?.resourceCategories.sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
                      <Separator />
@@ -733,7 +755,7 @@ export default function ResourcesPage() {
                            {files.map(item => <ResourceGridItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => handleAccessResource(item, 'download')} onEdit={handleOpenEditModal} />)}
                         </div>
                     ) : (
-                        <Card><Table><TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead className="hidden md:table-cell">Propietario</TableHead><TableHead className="hidden lg:table-cell">Fecha de subida</TableHead><TableHead className="text-right">Acciones</TableHead></TableRow></TableHeader><TableBody>{files.map(item => <ResourceListItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => handleAccessResource(item, 'download')} onEdit={handleOpenEditModal} />)}</TableBody></Table></Card>
+                        <Card><Table><TableHeader><TableRow><TableHead className="w-[45%]">Nombre</TableHead><TableHead className="hidden sm:table-cell">Categoría</TableHead><TableHead className="hidden md:table-cell">Formato</TableHead><TableHead className="hidden lg:table-cell">Fecha de subida</TableHead><TableHead className="text-right">Acciones</TableHead></TableRow></TableHeader><TableBody>{files.map(item => <ResourceListItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => handleAccessResource(item, 'download')} onEdit={handleOpenEditModal} />)}</TableBody></Table></Card>
                     )}
                 </div>
             )}
@@ -749,6 +771,7 @@ export default function ResourcesPage() {
           <form onSubmit={handleSaveResourceEdit} className="grid gap-4 py-4">
             <div className="space-y-1"><Label htmlFor="edit-resource-title">Título</Label><Input id="edit-resource-title" value={editResourceTitle} onChange={(e) => setEditResourceTitle(e.target.value)} required disabled={isSavingEdit || isSavingPin} /></div>
             {resourceToEdit?.type !== 'FOLDER' && (<>
+              <div className="space-y-1"><Label htmlFor="edit-resource-description">Descripción (Opcional)</Label><Textarea id="edit-resource-description" value={editResourceDescription} onChange={(e) => setEditResourceDescription(e.target.value)} disabled={isSavingEdit || isSavingPin} rows={3}/></div>
               <div className="space-y-1"><Label htmlFor="edit-resource-category">Categoría</Label><Select name="edit-resource-category" value={editResourceCategory} onValueChange={setEditResourceCategory} required disabled={isSavingEdit || isSavingPin}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{settings?.resourceCategories.sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
               <div className="space-y-1"><Label htmlFor="edit-resource-tags">Etiquetas</Label><Input id="edit-resource-tags" value={editResourceTags} onChange={(e) => setEditResourceTags(e.target.value)} disabled={isSavingEdit || isSavingPin} /></div>
             </>)}

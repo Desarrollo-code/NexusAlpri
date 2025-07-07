@@ -45,14 +45,15 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
              return NextResponse.json({ message: 'No tienes permiso para editar este recurso' }, { status: 403 });
         }
 
-        const { title, category, tags } = await req.json();
+        const { title, category, tags, description } = await req.json();
 
         const updatedResource = await prisma.resource.update({
             where: { id: params.id },
             data: { 
                 title, 
                 category, 
-                tags: JSON.stringify(tags || []) // Stringify tags
+                tags: JSON.stringify(tags || []), // Stringify tags
+                description,
             },
         });
 

@@ -1,3 +1,4 @@
+
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
 
@@ -118,6 +119,7 @@ export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY'
 export interface EnterpriseResource {
     id: string;
     title: string;
+    description?: string;
     type: ResourceType;
     category: string;
     tags: string[];
