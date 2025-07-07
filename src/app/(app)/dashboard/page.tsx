@@ -46,6 +46,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import type { ChartConfig } from "@/components/ui/chart"
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
@@ -92,18 +93,20 @@ const MiniTrendChart = ({ data, color }: { data: { value: number }[], color: str
 
 export default function DashboardPage() {
   // --- HOOKS ---
-  // All hooks must be declared at the top level, before any conditional logic or returns.
   const { user } = useAuth();
   
   const [adminStats, setAdminStats] = useState<AdminDashboardStats | null>(null);
+  const [studentStats, setStudentStats] = useState<{ enrolled: number; completed: number } | null>(null);
+  const [instructorStats, setInstructorStats] = useState<{ taught: number } | null>(null);
+
   const [recentAnnouncements, setRecentAnnouncements] = useState<DisplayAnnouncement[]>([]);
   const [taughtCourses, setTaughtCourses] = useState<AppCourseType[]>([]);
   const [myDashboardCourses, setMyDashboardCourses] = useState<EnrolledCourse[]>([]);
 
-  const [isLoadingStats, setIsLoadingStats] = useState(false);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [isLoadingAnnouncements, setIsLoadingAnnouncements] = useState(true);
-  const [isLoadingTaughtCourses, setIsLoadingTaughtCourses] = useState(false);
-  const [isLoadingMyCourses, setIsLoadingMyCourses] = useState(false);
+  const [isLoadingTaughtCourses, setIsLoadingTaughtCourses] = useState(true);
+  const [isLoadingMyCourses, setIsLoadingMyCourses] = useState(true);
   
   const [statsError, setStatsError] = useState<string | null>(null);
   const [announcementsError, setAnnouncementsError] = useState<string | null>(null);
@@ -113,7 +116,10 @@ export default function DashboardPage() {
   const [showWelcome, setShowWelcome] = useState(false);
 
   const fetchAdminStats = useCallback(async () => {
-    if (user?.role !== 'ADMINISTRATOR') return;
+    if (user?.role !== 'ADMINISTRATOR') {
+        setIsLoadingStats(false);
+        return;
+    }
     setIsLoadingStats(true);
     setStatsError(null);
     try {
@@ -158,7 +164,10 @@ export default function DashboardPage() {
   }, []);
 
   const fetchTaughtCourses = useCallback(async () => {
-    if (!user || user.role !== 'INSTRUCTOR') return;
+    if (!user || user.role !== 'INSTRUCTOR') {
+        setIsLoadingTaughtCourses(false);
+        return;
+    };
     setIsLoadingTaughtCourses(true);
     setTaughtCoursesError(null);
     try {
@@ -166,6 +175,7 @@ export default function DashboardPage() {
       const response = await fetch(`/api/courses?${queryParams.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch taught courses');
       const data: ApiCourseForManage[] = await response.json();
+      setInstructorStats({ taught: data.length });
       setTaughtCourses(data.map(mapApiCourseToAppCourse).slice(0, 3)); 
     } catch (err) {
       setTaughtCoursesError(err instanceof Error ? err.message : 'Unknown error fetching taught courses');
@@ -175,7 +185,10 @@ export default function DashboardPage() {
   }, [user]);
 
   const fetchMyDashboardCourses = useCallback(async () => {
-    if (!user || user.role !== 'STUDENT') return;
+    if (!user || user.role !== 'STUDENT') {
+        setIsLoadingMyCourses(false);
+        return;
+    }
     setIsLoadingMyCourses(true);
     setMyCoursesError(null);
     try {
@@ -184,8 +197,11 @@ export default function DashboardPage() {
       const data: any[] = await response.json();
       const mappedCourses: EnrolledCourse[] = data.map(item => ({
         id: item.id, title: item.title, description: item.description, instructor: item.instructorName || 'N/A',
-        imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, enrolledAt: item.enrolledAt, isEnrolled: true, instructorId: item.instructorId, status: 'PUBLISHED', modules: []
+        imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, enrolledAt: item.enrolledAt, isEnrolled: true, instructorId: item.instructorId, status: 'PUBLISHED', modules: [],
+        progressPercentage: item.progressPercentage || 0,
       }));
+      const completedCount = mappedCourses.filter(c => c.progressPercentage === 100).length;
+      setStudentStats({ enrolled: mappedCourses.length, completed: completedCount });
       setMyDashboardCourses(mappedCourses.slice(0, 3)); 
     } catch (err) {
       setMyCoursesError(err instanceof Error ? err.message : 'Unknown error fetching enrolled courses');
@@ -256,14 +272,10 @@ export default function DashboardPage() {
     }));
   }, [adminStats?.usersByRole]);
 
-  // --- EARLY RETURN GUARD ---
-  // If the user is not loaded yet, display a loader. This prevents hooks from being called conditionally.
   if (!user) {
     return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /> Cargando...</div>;
   }
   
-  // --- LOGIC & COMPONENTS DEPENDENT ON USER ---
-  // This code only runs if 'user' is guaranteed to be defined.
   const handleDismissWelcome = () => {
     setShowWelcome(false);
     if (user?.id) {
@@ -358,18 +370,84 @@ export default function DashboardPage() {
   const trendData3 = [{value: 5}, {value: 8}, {value: 6}, {value: 12}, {value: 10}, {value: 15}];
   const trendData4 = [{value: 15}, {value: 12}, {value: 18}, {value: 15}, {value: 22}, {value: 20}];
 
-  // --- RENDER ---
   return (
     <div className="space-y-8">
 
       {showWelcome && <WelcomeGuide />}
 
+      {user.role === 'STUDENT' && (
+        <section>
+          {isLoadingMyCourses ? (
+             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><Skeleton className="h-5 w-32" /></CardHeader><CardContent><Skeleton className="h-8 w-12" /></CardContent></Card>
+                <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><Skeleton className="h-5 w-36" /></CardHeader><CardContent><Skeleton className="h-8 w-12" /></CardContent></Card>
+             </div>
+          ) : studentStats ? (
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Cursos Inscritos</CardTitle>
+                  <BookOpen className="h-5 w-5 text-sky-400" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{studentStats.enrolled}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Cursos Completados</CardTitle>
+                  <CheckCircle className="h-5 w-5 text-emerald-400" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{studentStats.completed}</div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : null}
+        </section>
+      )}
+
+      {user.role === 'INSTRUCTOR' && (
+         <section>
+          {isLoadingTaughtCourses ? (
+             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><Skeleton className="h-5 w-32" /></CardHeader><CardContent><Skeleton className="h-8 w-12" /></CardContent></Card>
+                <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><Skeleton className="h-5 w-36" /></CardHeader><CardContent><Skeleton className="h-8 w-12" /><p className="text-xs text-muted-foreground mt-1">Próximamente</p></CardContent></Card>
+             </div>
+          ) : instructorStats ? (
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+               <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Cursos Impartidos</CardTitle>
+                  <BookMarked className="h-5 w-5 text-sky-400" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{instructorStats.taught}</div>
+                </CardContent>
+              </Card>
+               <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Estudiantes</CardTitle>
+                  <Users className="h-5 w-5 text-emerald-400" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">N/A</div>
+                  <p className="text-xs text-muted-foreground">Próximamente</p>
+                </CardContent>
+              </Card>
+            </div>
+          ) : null}
+        </section>
+      )}
+
       {user.role === 'ADMINISTRATOR' && (
         <section className="space-y-6">
           <h2 className="text-2xl font-semibold font-headline">Estadísticas de la Plataforma</h2>
-          {isLoadingStats && <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando estadísticas...</div>}
-          {statsError && <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar estadísticas: {statsError}</div>}
-          {adminStats && !isLoadingStats && !statsError && (
+          {isLoadingStats ? (
+            <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando estadísticas...</div>
+            ) : statsError ? (
+            <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar estadísticas: {statsError}</div>
+            ) : adminStats ? (
             <>
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 <Card>
@@ -487,7 +565,7 @@ export default function DashboardPage() {
                 </Card>
               </div>
             </>
-          )}
+          ) : null}
         </section>
       )}
 
@@ -495,7 +573,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 space-y-6">
            {user.role === 'INSTRUCTOR' && (
               <section>
-                <h2 className="text-2xl font-semibold font-headline mb-4">Mis Cursos Impartidos</h2>
+                <h2 className="text-2xl font-semibold font-headline mb-4">Mis Cursos Impartidos Recientemente</h2>
                 {isLoadingTaughtCourses && <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando mis cursos...</div>}
                 {taughtCoursesError && <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar cursos: {taughtCoursesError}</div>}
                 {!isLoadingTaughtCourses && !taughtCoursesError && taughtCourses.length > 0 && (
@@ -517,7 +595,7 @@ export default function DashboardPage() {
 
            {user.role === 'STUDENT' && (
               <section>
-                <h2 className="text-2xl font-semibold font-headline mb-4">Mis Cursos Inscritos</h2>
+                <h2 className="text-2xl font-semibold font-headline mb-4">Continuar Aprendiendo</h2>
                 {isLoadingMyCourses && <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando...</div>}
                 {myCoursesError && <div className="text-destructive"><AlertTriangle className="inline mr-2"/>Error: {myCoursesError}</div>}
                 {!isLoadingMyCourses && !myCoursesError && myDashboardCourses.length > 0 && (
@@ -573,3 +651,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
