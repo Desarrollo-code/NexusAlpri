@@ -10,9 +10,9 @@ import {
   BookOpen, 
   Users, 
   Megaphone, 
-  FolderKanban, 
-  ListPlus, 
-  SettingsIcon, 
+  Folder, 
+  BookMarked, 
+  Settings, 
   CheckCircle, 
   FileText, 
   UsersRound, 
@@ -28,7 +28,8 @@ import {
   BarChart3, 
   LineChart as LineChartIcon,
   Rocket,
-  X
+  X,
+  TrendingUp,
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
@@ -333,20 +334,20 @@ export default function DashboardPage() {
   const quickLinks = {
     ADMINISTRATOR: [
       { href: '/users', label: 'Gestionar Usuarios', icon: Users, description: 'Administra cuentas y roles.' },
-      { href: '/manage-courses', label: 'Gestionar Cursos', icon: ListPlus, description: 'Crea y edita cursos.' },
-      { href: '/resources', label: 'Biblioteca', icon: FolderKanban, description: 'Administra recursos globales.' },
-      { href: '/settings', label: 'Configuración', icon: SettingsIcon, description: 'Ajusta la plataforma.' },
+      { href: '/manage-courses', label: 'Gestionar Cursos', icon: BookMarked, description: 'Crea y edita cursos.' },
+      { href: '/resources', label: 'Biblioteca', icon: Folder, description: 'Administra recursos globales.' },
+      { href: '/settings', label: 'Configuración', icon: Settings, description: 'Ajusta la plataforma.' },
     ],
     INSTRUCTOR: [
-      { href: '/manage-courses', label: 'Mis Cursos', icon: ListPlus, description: 'Diseña y actualiza tus cursos.' },
-      { href: '/enrollments', label: 'Progreso Estudiantes', icon: UsersRound, description: 'Supervisa el avance.' },
+      { href: '/manage-courses', label: 'Mis Cursos', icon: BookMarked, description: 'Diseña y actualiza tus cursos.' },
+      { href: '/enrollments', label: 'Progreso Estudiantes', icon: TrendingUp, description: 'Supervisa el avance.' },
        { href: '/courses', label: 'Explorar Cursos', icon: BookOpen, description: 'Descubre nuevo contenido.' },
       { href: '/announcements', label: 'Anuncios', icon: Megaphone, description: 'Mantente al día.' },
     ],
     STUDENT: [
       { href: '/my-courses', label: 'Mis Cursos', icon: GraduationCap, description: 'Continúa tu aprendizaje.' },
       { href: '/courses', label: 'Explorar Cursos', icon: BookOpen, description: 'Descubre nuevas oportunidades.' },
-      { href: '/resources', label: 'Biblioteca', icon: FolderKanban, description: 'Accede a guías y materiales.' },
+      { href: '/resources', label: 'Biblioteca', icon: Folder, description: 'Accede a guías y materiales.' },
       { href: '/announcements', label: 'Anuncios', icon: Megaphone, description: 'Revisa las últimas noticias.' },
     ],
   };

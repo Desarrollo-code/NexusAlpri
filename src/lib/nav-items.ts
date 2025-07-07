@@ -4,14 +4,14 @@ import {
   LayoutDashboard,
   BookOpen,
   GraduationCap,
-  FolderKanban,
+  Folder,
   Megaphone,
   Users,
   Settings,
-  ListPlus,
+  BookMarked,
   ShieldCheck,
-  UsersRound,
-  Calendar,
+  TrendingUp,
+  CalendarDays,
 } from 'lucide-react';
 
 
@@ -37,7 +37,7 @@ const navItems: NavItem[] = [
       {
         href: '/resources',
         label: 'Recursos Empresa',
-        icon: FolderKanban,
+        icon: Folder,
         roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
       },
       {
@@ -49,7 +49,7 @@ const navItems: NavItem[] = [
       {
         href: '/calendar',
         label: 'Calendario',
-        icon: Calendar,
+        icon: CalendarDays,
         roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
       },
       {
@@ -58,8 +58,8 @@ const navItems: NavItem[] = [
         icon: ShieldCheck,
         roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
         subItems: [
-            { href: '/manage-courses', label: 'Gestionar Cursos', icon: ListPlus, roles: ['ADMINISTRATOR', 'INSTRUCTOR'] },
-            { href: '/enrollments', label: 'Inscritos y Progreso', icon: UsersRound, roles: ['ADMINISTRATOR', 'INSTRUCTOR'] },
+            { href: '/manage-courses', label: 'Gestionar Cursos', icon: BookMarked, roles: ['ADMINISTRATOR', 'INSTRUCTOR'] },
+            { href: '/enrollments', label: 'Inscritos y Progreso', icon: TrendingUp, roles: ['ADMINISTRATOR', 'INSTRUCTOR'] },
             { href: '/users', label: 'Gestión de Usuarios', icon: Users, roles: ['ADMINISTRATOR'] },
             { href: '/settings', label: 'Configuración', icon: Settings, roles: ['ADMINISTRATOR'] },
         ]

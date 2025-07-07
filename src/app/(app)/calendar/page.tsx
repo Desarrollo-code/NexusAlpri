@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { PlusCircle, Loader2, AlertTriangle, Trash2, MapPin, Calendar as CalendarIcon, Clock, Check } from 'lucide-react';
+import { PlusCircle, Loader2, AlertTriangle, Trash2, MapPin, Calendar as CalendarIcon, Clock, Check, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -431,7 +431,7 @@ export default function CalendarPage() {
               <div className="flex gap-2">
                 <Button type="button" variant="outline" onClick={() => setShowEventModal(false)} disabled={isSaving} className="border-border text-foreground hover:bg-muted">Cancelar</Button>
                 <Button type="submit" disabled={isSaving} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  {isSaving && <Loader2 className="mr-2 animate-spin" />}
+                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (eventToEdit ? <Save className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />) }
                   {eventToEdit ? 'Guardar Cambios' : 'Crear Evento'}
                 </Button>
               </div>
