@@ -1,3 +1,4 @@
+
 // En /home/user/studio/src/app/(app)/manage-courses/[courseId]/edit/page.tsx
 
 'use client';
@@ -987,7 +988,21 @@ export default function EditCoursePage() {
                                                                                     <div className="flex-grow">
                                                                                         <Input {...methods.register(`modules.${moduleIndex}.title` as FormModulesPath)} placeholder="Título del Módulo" className="text-base font-semibold border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-auto p-0" disabled={isSaving} onClick={(e) => e.stopPropagation()} />
                                                                                     </div>
-                                                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => { e.stopPropagation(); setItemToDeleteDetails({ type: 'module', id: module.id, name: module.title, moduleIndex }); }} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                                                                                    <div
+                                                                                        role="button"
+                                                                                        aria-label="Eliminar módulo"
+                                                                                        onClick={(e) => {
+                                                                                            e.stopPropagation();
+                                                                                            if (isSaving) return;
+                                                                                            setItemToDeleteDetails({ type: 'module', id: module.id, name: module.title, moduleIndex });
+                                                                                        }}
+                                                                                        className={cn(
+                                                                                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-destructive transition-colors hover:bg-destructive/10",
+                                                                                            isSaving ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                                                                                        )}
+                                                                                    >
+                                                                                        <Trash2 className="h-4 w-4" />
+                                                                                    </div>
                                                                                 </div>
                                                                             </AccordionTrigger>
                                                                             <AccordionContent className="p-4 border-t bg-muted/20">
