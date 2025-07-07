@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
-import { Search, UploadCloud, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, KeyRound, Pin, PinOff, MoreVertical, Folder, FileText, Video, Info, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Notebook, Shield } from 'lucide-react';
+import { Search, UploadCloud, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, KeyRound, Pin, PinOff, MoreVertical, Folder, FileText, Video, Info, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Notebook, Shield, Filter } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -214,6 +214,7 @@ export default function ResourcesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   // Folder navigation state
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
@@ -285,15 +286,27 @@ export default function ResourcesPage() {
   }, [fetchResources, currentFolderId]);
 
   const { folders, files } = useMemo(() => {
-    const filtered = allApiResources.filter(resource =>
-      resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (resource.tags && resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
-    );
+    const filtered = allApiResources.filter(resource => {
+      // Category filter logic (only applies to files)
+      const matchesCategory = selectedCategory === 'all' || resource.category === selectedCategory;
+      
+      // Search filter logic
+      const matchesSearch = resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (resource.tags && resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
+
+      // Folders are always visible at their level, unless filtered out by search
+      if (resource.type === 'FOLDER') {
+        return matchesSearch;
+      }
+      
+      return matchesCategory && matchesSearch;
+    });
+
     return {
       folders: filtered.filter(item => item.type === 'FOLDER'),
       files: filtered.filter(item => item.type !== 'FOLDER'),
     };
-  }, [allApiResources, searchTerm]);
+  }, [allApiResources, searchTerm, selectedCategory]);
   
     // Effect for handling file conversions for preview
   useEffect(() => {
@@ -362,12 +375,16 @@ export default function ResourcesPage() {
 
   const handleCreateFile = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!newResourceTitle || !newResourceType || !newResourceCategory || (!newResourceFile && !newResourceUrl)) {
-        toast({ title: "Error", description: "Todos los campos son obligatorios. Debes adjuntar un archivo o proveer una URL.", variant: "destructive" });
+    if (!newResourceTitle || !newResourceType || !newResourceCategory) {
+        toast({ title: "Error", description: "Título, tipo y categoría son obligatorios.", variant: "destructive" });
         return;
     }
-    if (newResourceType !== 'VIDEO' && newResourceFile && newResourceUrl) {
-        toast({ title: "Error", description: "Por favor, proporciona solo un archivo o una URL, no ambos.", variant: "destructive" });
+    if (newResourceType !== 'VIDEO' && !newResourceFile && !newResourceUrl) {
+        toast({ title: "Error", description: "Debes adjuntar un archivo o proveer una URL.", variant: "destructive" });
+        return;
+    }
+    if (newResourceType === 'VIDEO' && !newResourceUrl) {
+        toast({ title: "Error", description: "Para videos, debes proveer una URL.", variant: "destructive" });
         return;
     }
     if (!user?.id) return;
@@ -519,12 +536,10 @@ export default function ResourcesPage() {
     if (resource.type === 'FOLDER') {
         const currentFolder = allApiResources.find(f => f.id === currentFolderId);
         const newBreadcrumbs = [...breadcrumbs];
-        if (currentFolderId) {
+        if (currentFolder) {
             newBreadcrumbs.push({ id: currentFolderId, title: currentFolder?.title || '...' });
-        } else {
-            // This is the root level
         }
-        setBreadcrumbs(newBreadcrumbs);
+        setBreadcrumbs(prev => [...prev, {id: resource.id, title: resource.title}]);
         setCurrentFolderId(resource.id);
         return;
     }
@@ -629,29 +644,67 @@ export default function ResourcesPage() {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 rounded-lg border p-3 bg-card shadow-sm">
-        <div className="flex items-center text-sm text-muted-foreground">
-          <button onClick={() => handleBreadcrumbClick(null, 0)} className="hover:text-primary flex items-center gap-1"><Home className="h-4 w-4 text-primary"/> Biblioteca</button>
-          {breadcrumbs.map((crumb, index) => (
-            <React.Fragment key={crumb.id || 'root'}>
-              <ChevronRight className="h-4 w-4 mx-1" />
-              <button onClick={() => handleBreadcrumbClick(crumb.id, index + 1)} className="hover:text-primary">{crumb.title}</button>
-            </React.Fragment>
-          ))}
-        </div>
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <div className="relative w-full md:flex-1 md:max-w-xs">
+       <Card className="p-4 space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Breadcrumbs */}
+          <div className="flex items-center text-sm text-muted-foreground overflow-x-auto whitespace-nowrap pb-2 md:pb-0">
+            <button onClick={() => handleBreadcrumbClick(null, 0)} className="hover:text-primary flex items-center gap-1 shrink-0"><Home className="h-4 w-4 text-primary"/> Biblioteca</button>
+            {breadcrumbs.map((crumb, index) => (
+              <React.Fragment key={crumb.id || 'root'}>
+                <ChevronRight className="h-4 w-4 mx-1 shrink-0" />
+                <button onClick={() => handleBreadcrumbClick(crumb.id, index + 1)} className="hover:text-primary shrink-0 truncate">{crumb.title}</button>
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* Search and View Toggles */}
+          <div className="flex items-center gap-4 w-full md:w-auto shrink-0">
+            <div className="relative w-full md:flex-1 md:max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input type="search" placeholder="Buscar en esta carpeta..." className="pl-10 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
-          </div>
-          <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground sr-only md:not-sr-only">Vista:</span>
-              <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('list')}><List className="h-5 w-5"/></Button>
-              <Button variant={view === 'grid' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('grid')}><LayoutGrid className="h-5 w-5"/></Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('list')} aria-label="Vista de lista"><List className="h-5 w-5"/></Button>
+              <Button variant={view === 'grid' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('grid')} aria-label="Vista de cuadrícula"><LayoutGrid className="h-5 w-5"/></Button>
+            </div>
           </div>
         </div>
-      </div>
 
+        {/* Category Filters (only show if not inside a folder) */}
+        {!currentFolderId && (
+          <>
+            <Separator />
+            <div>
+              <Label className="text-sm font-semibold text-muted-foreground flex items-center gap-2 mb-3">
+                <Filter className="h-4 w-4" />
+                Filtrar por Categoría
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                    variant={selectedCategory === 'all' ? 'default' : 'outline'}
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => setSelectedCategory('all')}
+                >
+                    Todas
+                </Button>
+                {settings?.resourceCategories.sort().map(category => (
+                    <Button
+                        key={category}
+                        variant={selectedCategory === category ? 'default' : 'outline'}
+                        size="sm"
+                        className="rounded-full"
+                        onClick={() => setSelectedCategory(category)}
+                    >
+                        {category}
+                    </Button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </Card>
+      
       {isLoading ? (
         <div className="flex justify-center items-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2">Cargando recursos...</p></div>
       ) : error ? (
