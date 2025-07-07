@@ -1,11 +1,11 @@
 // src/app/(app)/calendar/page.tsx
 
-'use client'; // Esto indica que es un componente de cliente en Next.js
+'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useAuth } from '@/contexts/auth-context'; // Asegúrate de que esta ruta sea correcta
+import { useAuth } from '@/contexts/auth-context';
 import { PlusCircle, Loader2, AlertTriangle, Trash2, MapPin, Calendar as CalendarIcon, Clock, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button'; // Componentes UI de Shadcn/ui
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -31,15 +31,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { CalendarEvent, User, EventAudienceType } from '@/types'; // Importa tus tipos
+import type { CalendarEvent, User, EventAudienceType } from '@/types';
 import { format, isSameDay } from 'date-fns';
-import { es } from 'date-fns/locale'; // Para formatear fechas en español
-// Importamos tu componente ColorfulCalendar que ya tiene las correcciones de tamaño interno
+import { es } from 'date-fns/locale';
 import ColorfulCalendar from '@/components/colorful-calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { cn } from '@/lib/utils'; // Utilidad para combinar clases de Tailwind
+import { cn } from '@/lib/utils';
 
 export default function CalendarPage() {
   const { user } = useAuth();
@@ -49,55 +48,67 @@ export default function CalendarPage() {
   const [error, setError] = useState<string | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
 
-  // State for the new layout
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
-  // Modal state
   const [showEventModal, setShowEventModal] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Delete confirmation state
   const [eventToDelete, setEventToDelete] = useState<CalendarEvent | null>(null);
 
-  // Form state
   const [formTitle, setFormTitle] = useState('');
-  const [formDescription, setFormDescription] = '';
-  const [formLocation, setFormLocation] = '';
-  const [formStartDate, setFormStartDate] = '';
-  const [formEndDate, setFormEndDate] = '';
+  const [formDescription, setFormDescription] = useState('');
+  const [formLocation, setFormLocation] = useState('');
+  const [formStartDate, setFormStartDate] = useState('');
+  const [formEndDate, setFormEndDate] = useState('');
   const [formAllDay, setFormAllDay] = useState(true);
   const [formAudienceMode, setFormAudienceMode] = useState<EventAudienceType>('SPECIFIC');
   const [formAttendees, setFormAttendees] = useState<string[]>([]);
-  // Nuevo estado para el color del evento en el formulario
-  const [formColor, setFormColor] = useState<string>('default'); // Default color
+  const [formColor, setFormColor] = useState<string>('default');
 
   const fetchEvents = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await fetch('/api/events');
-      if (!response.ok) throw new Error('Failed to fetch events');
+      if (!response.ok) {
+        // Mejor manejo de errores: intenta leer el error del cuerpo si no es JSON válido
+        const errorText = await response.text();
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.message || 'Failed to fetch events');
+        } catch {
+          // Si no es JSON, usa el texto crudo o un mensaje genérico
+          throw new Error(errorText || 'Failed to fetch events');
+        }
+      }
       const data: CalendarEvent[] = await response.json();
       setEvents(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
-      toast({ title: 'Error', description: "No se pudieron cargar los eventos del calendario.", variant: 'destructive' });
+      toast({ title: 'Error', description: `No se pudieron cargar los eventos del calendario: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
   }, [toast]);
 
   const fetchUsers = useCallback(async () => {
-    // Solo permitir cargar usuarios si el usuario logueado es ADMINISTRADOR o INSTRUCTOR
     if (!user || (user.role !== 'ADMINISTRATOR' && user.role !== 'INSTRUCTOR')) return;
     try {
       const res = await fetch('/api/users');
-      if (!res.ok) throw new Error("Failed to fetch users");
+      if (!res.ok) {
+         const errorText = await res.text();
+         try {
+           const errorData = JSON.parse(errorText);
+           throw new Error(errorData.message || "Failed to fetch users");
+         } catch {
+           throw new Error(errorText || "Failed to fetch users");
+         }
+      }
       const data = await res.json();
       setAllUsers(data.users || []);
     } catch (err) {
-      toast({ title: 'Error', description: "No se pudieron cargar los usuarios para la lista de asistentes.", variant: 'destructive' });
+      toast({ title: 'Error', description: `No se pudieron cargar los usuarios: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
     }
   }, [toast, user]);
 
@@ -117,7 +128,7 @@ export default function CalendarPage() {
     setFormAllDay(true);
     setFormAudienceMode('SPECIFIC');
     setFormAttendees([]);
-    setFormColor('default'); // Restablecer color a default
+    setFormColor('default');
     setEventToEdit(null);
   }
 
@@ -125,8 +136,8 @@ export default function CalendarPage() {
     resetForm();
     const targetDate = date || new Date();
     const dateString = format(targetDate, 'yyyy-MM-dd');
-    setFormStartDate(`${dateString}T09:00`); // Hora por defecto
-    setFormEndDate(`${dateString}T10:00`); // Hora por defecto
+    setFormStartDate(`${dateString}T09:00`);
+    setFormEndDate(`${dateString}T10:00`);
     setShowEventModal(true);
   };
 
@@ -136,14 +147,13 @@ export default function CalendarPage() {
     setFormDescription(event.description || '');
     setFormLocation(event.location || '');
     setFormAllDay(event.allDay);
-    // Format dates for datetime-local input
     const start = new Date(event.start);
     const end = new Date(event.end);
     setFormStartDate(format(start, "yyyy-MM-dd'T'HH:mm"));
     setFormEndDate(format(end, "yyyy-MM-dd'T'HH:mm"));
     setFormAudienceMode(event.audienceType || 'SPECIFIC');
     setFormAttendees(event.attendees?.map(a => a.id) || []);
-    setFormColor(event.color || 'default'); // Carga el color del evento al editar
+    setFormColor(event.color || 'default');
     setShowEventModal(true);
   }
 
@@ -160,7 +170,7 @@ export default function CalendarPage() {
       allDay: formAllDay,
       audienceType: formAudienceMode,
       attendeeIds: formAudienceMode === 'SPECIFIC' ? formAttendees : [],
-      color: formColor, // Envía el color al backend
+      color: formColor,
     };
 
     const endpoint = eventToEdit ? `/api/events/${eventToEdit.id}` : '/api/events';
@@ -172,13 +182,21 @@ export default function CalendarPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!response.ok) throw new Error(await response.text());
+      if (!response.ok) {
+        const errorText = await response.text();
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.message || 'Failed to save event');
+        } catch {
+          throw new Error(errorText || 'Failed to save event');
+        }
+      }
 
       toast({ title: 'Éxito', description: `Evento ${eventToEdit ? 'actualizado' : 'creado'} correctamente.` });
       setShowEventModal(false);
       fetchEvents();
     } catch (err) {
-      toast({ title: 'Error', description: `No se pudo guardar el evento.`, variant: 'destructive' });
+      toast({ title: 'Error', description: `No se pudo guardar el evento: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
     } finally {
       setIsSaving(false);
     }
@@ -189,19 +207,26 @@ export default function CalendarPage() {
     setIsSaving(true);
     try {
       const response = await fetch(`/api/events/${eventToDelete.id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Failed to delete event');
+      if (!response.ok) {
+        const errorText = await response.text();
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.message || 'Failed to delete event');
+        } catch {
+          throw new Error(errorText || 'Failed to delete event');
+        }
+      }
       toast({ title: 'Éxito', description: 'Evento eliminado.' });
       setEventToDelete(null);
       fetchEvents();
-      setShowEventModal(false); // Close edit modal if it was open for the deleted event
+      setShowEventModal(false);
     } catch (err) {
-      toast({ title: 'Error', description: 'No se pudo eliminar el evento.', variant: 'destructive' });
+      toast({ title: 'Error', description: `No se pudo eliminar el evento: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
     } finally {
       setIsSaving(false);
     }
   }
 
-  // Los eventos para el calendario se pasan directamente, sin necesidad de FullCalendar formatting
   const calendarEvents = useMemo(() => events, [events]);
 
   const selectedDayEvents = useMemo(() => {
@@ -214,21 +239,22 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-6">
-      {/* Contenedor principal del grid: Una columna en móviles, dos columnas grandes en desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Panel Izquierdo: Contiene el calendario */}
-        <Card className="shadow-lg lg:col-span-3"> {/* La Card ocupa 3 de 5 columnas en pantallas grandes */}
+        <Card className="shadow-lg lg:col-span-3">
           {isLoading ? (
             <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
           ) : error ? (
-            <div className="flex flex-col items-center justify-center min-h-[400px] text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar.</div>
+            <div className="flex flex-col items-center justify-center min-h-[400px] text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}</div>
           ) : (
-            <div className="flex justify-center items-center py-4"> {/* Contenedor para centrar el calendario */}
+            <div className="flex justify-center items-center py-4">
               <ColorfulCalendar
-                // ***** CAMBIO CLAVE AQUÍ: Ajustar el max-w-* para agrandar el calendario y centrarlo *****
-                // El 'w-full' hace que ocupe todo el ancho disponible, pero 'max-w-2xl' lo limita.
-                // 'mx-auto' lo centra horizontalmente dentro de su contenedor.
-                className="mx-auto w-full max-w-2xl" // Puedes probar con max-w-3xl o max-w-4xl si quieres que sea aún más grande
+                // ***** AJUSTES CLAVE AQUÍ para TAMAÑO y POSICIÓN *****
+                // 'max-w-3xl' para un tamaño más grande (puedes probar 'max-w-4xl' si quieres más).
+                // 'mx-auto' para centrado inicial.
+                // 'ml-auto' + 'mr-auto' se pueden usar si necesitas más control, pero 'mx-auto' suele bastar.
+                // Si quieres empujar a la derecha, puedes intentar 'ml-auto' sin 'mr-auto'
+                // o usar un padding/margin específico, por ejemplo: 'ml-8'
+                className="w-full max-w-3xl mx-auto" // Prueba con max-w-3xl. Si necesitas moverlo más, ajusta los márgenes.
                 events={calendarEvents}
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
@@ -237,8 +263,7 @@ export default function CalendarPage() {
           )}
         </Card>
 
-        {/* Panel Derecho: Contiene la lista de eventos del día seleccionado */}
-        <div className="lg:col-span-2"> {/* Ocupa 2 de 5 columnas en pantallas grandes */}
+        <div className="lg:col-span-2">
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-lg">
@@ -284,22 +309,19 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* Diálogo para Crear/Editar Eventos */}
       <Dialog open={showEventModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowEventModal(isOpen); }}>
-        {/* Aumentamos el tamaño máximo del diálogo a 3xl para dar más espacio si es necesario */}
         <DialogContent className="sm:max-w-2xl md:max-w-3xl overflow-y-auto max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>{eventToEdit ? 'Editar Evento' : 'Crear Nuevo Evento'}</DialogTitle>
             <DialogDescription>Completa los detalles del evento.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 py-2">
-            {/* Título y Descripción: Full-width en móviles, 2/3 en tablets, 1/3 en grandes */}
-            <div className="sm:col-span-2 lg:col-span-3"> {/* Título en línea completa */}
+            <div className="sm:col-span-2 lg:col-span-3">
               <Label htmlFor="event-title">Título del Evento</Label>
               <Input id="event-title" value={formTitle} onChange={e => setFormTitle(e.target.value)} required disabled={isSaving} />
             </div>
 
-            <div className="sm:col-span-2 lg:col-span-3"> {/* Ubicación en línea completa */}
+            <div className="sm:col-span-2 lg:col-span-3">
               <Label htmlFor="event-location">Ubicación o Plataforma (Ej: Sala 3, Zoom)</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -307,20 +329,18 @@ export default function CalendarPage() {
               </div>
             </div>
 
-            <div className="sm:col-span-2 lg:col-span-3"> {/* Descripción en línea completa */}
+            <div className="sm:col-span-2 lg:col-span-3">
               <Label htmlFor="event-description">Descripción (Opcional)</Label>
-              <Textarea id="event-description" value={formDescription} onChange={e => setFormDescription(e.target.value)} disabled={isSaving} rows={3} /> {/* Aumentamos las filas para mejor visualización */}
+              <Textarea id="event-description" value={formDescription} onChange={e => setFormDescription(e.target.value)} disabled={isSaving} rows={3} />
             </div>
 
-            {/* Fechas y Horas: Agrupados y flexibles */}
-            <div className="lg:col-span-3 flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4"> {/* Contenedor para "Todo el día" y fechas/horas */}
+            <div className="lg:col-span-3 flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
               <div className="flex items-center space-x-2 flex-shrink-0">
                 <Switch id="all-day" checked={formAllDay} onCheckedChange={setFormAllDay} disabled={isSaving} />
                 <Label htmlFor="all-day">Todo el día</Label>
               </div>
-              {/* Inputs de fecha/hora: Ocultar si es todo el día, alinear en una fila */}
               {!formAllDay && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow w-full"> {/* Flex-grow para que ocupe el espacio restante */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow w-full">
                   <div>
                     <Label htmlFor="start-date">Inicio</Label>
                     <Input id="start-date" type="datetime-local" value={formStartDate} onChange={e => setFormStartDate(e.target.value)} required disabled={isSaving} />
@@ -333,17 +353,15 @@ export default function CalendarPage() {
               )}
             </div>
 
-            {/* Selector de Color: Centrado si está solo, o en una columna */}
-            <div className="sm:col-span-2 lg:col-span-3"> {/* Ocupa el ancho completo para centrar */}
+            <div className="sm:col-span-2 lg:col-span-3">
               <Label>Color del Evento</Label>
-              <div className="flex flex-wrap gap-3 mt-2 justify-start"> {/* flex-wrap para responsividad */}
-                {/* Asegúrate de que tus variables CSS personalizadas para los colores (ej: --event-blue) estén definidas en globals.css o similar */}
+              <div className="flex flex-wrap gap-3 mt-2 justify-start">
                 {['blue', 'green', 'red', 'orange', 'default'].map((colorOption) => (
                   <div
                     key={colorOption}
                     className={`h-8 w-8 rounded-full cursor-pointer border-2 ${formColor === colorOption ? 'border-primary scale-110' : 'border-transparent'} flex items-center justify-center transition-all duration-200 ease-in-out`}
                     onClick={() => setFormColor(colorOption)}
-                    style={{ backgroundColor: `hsl(var(--event-${colorOption}))` }} // Usa variables CSS para el color
+                    style={{ backgroundColor: `hsl(var(--event-${colorOption}))` }}
                     title={colorOption}
                   >
                     {formColor === colorOption && (
@@ -354,13 +372,12 @@ export default function CalendarPage() {
               </div>
             </div>
 
-            {/* Dirigido a: Radio Group flexible */}
-            <div className="sm:col-span-2 lg:col-span-3"> {/* Ocupa el ancho completo */}
+            <div className="sm:col-span-2 lg:col-span-3">
               <Label>Dirigido a</Label>
               <RadioGroup
                 value={formAudienceMode}
                 onValueChange={(value) => setFormAudienceMode(value as EventAudienceType)}
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mt-2" // Más columnas si hay espacio
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mt-2"
               >
                 <div className="flex items-center space-x-2"><RadioGroupItem value="ALL" id="audience-all" /><Label htmlFor="audience-all">Todos</Label></div>
                 <div className="flex items-center space-x-2"><RadioGroupItem value="ADMINISTRATOR" id="audience-admin" /><Label htmlFor="audience-admin">Administradores</Label></div>
@@ -370,9 +387,8 @@ export default function CalendarPage() {
               </RadioGroup>
             </div>
 
-            {/* Asistentes Específicos: Scrollable y con estilo mejorado */}
             {formAudienceMode === 'SPECIFIC' && (
-              <div className="sm:col-span-2 lg:col-span-3"> {/* Ocupa el ancho completo */}
+              <div className="sm:col-span-2 lg:col-span-3">
                 <Label>Asistentes Específicos</Label>
                 <ScrollArea className="h-40 w-full rounded-md border p-2">
                   <div className="space-y-2">
@@ -397,7 +413,6 @@ export default function CalendarPage() {
               </div>
             )}
 
-            {/* Footer del Diálogo */}
             <DialogFooter className="sm:col-span-2 lg:col-span-3 mt-4 flex justify-between w-full">
               <div>
                 {eventToEdit && (
@@ -418,7 +433,6 @@ export default function CalendarPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Alerta de Confirmación de Eliminación */}
       <AlertDialog open={!!eventToDelete} onOpenChange={(isOpen) => !isOpen && setEventToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

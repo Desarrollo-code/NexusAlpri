@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
-import { Calendar } from '@/components/ui/calendar'; // Este es el componente Calendar de Shadcn/ui que contiene las clases base
+import { Calendar } from '@/components/ui/calendar'; // Este es el componente Calendar de Shadcn/ui
 
 interface ColorfulCalendarProps {
   events: CalendarEvent[];
@@ -23,7 +23,7 @@ const getEventColorClass = (color?: string): string => {
     case 'green':
       return 'bg-event-green';
     case 'red':
-      return 'bg-event-red'; // Asumo que tienes una clase específica para 'red'
+      return 'bg-event-red';
     case 'orange':
       return 'bg-event-orange';
     case 'default':
@@ -58,7 +58,7 @@ export default function ColorfulCalendar({
   events,
   selectedDate,
   onDateSelect,
-  className, // Recibe la prop className aquí
+  className,
 }: ColorfulCalendarProps) {
   const eventsByDay = useMemo(() => {
     const grouped: Record<string, CalendarEvent[]> = {};
@@ -89,29 +89,22 @@ export default function ColorfulCalendar({
       components={{
         DayContent: CustomDayContent,
       }}
-      // ***** CAMBIO CLAVE AQUÍ: Pasar la clase del componente padre y ajustar tamaños internos *****
-      // El 'className' recibido permite que el 'max-w-*' y 'mx-auto' de page.tsx funcionen.
-      // Los 'classNames' internos ajustan el tamaño de los elementos dentro del calendario.
-      className={className} // <--- Permite clases externas (como max-w-2xl y mx-auto)
+      className={className} // Permite clases externas (como max-w- y mx-auto)
       classNames={{
-        // Aumenta el tamaño general del contenedor principal del calendario si es necesario
-        // months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        // month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-xl font-semibold", // Aumentado a text-xl
+        caption_label: "text-xl font-semibold", // Mes/Año más grande
         nav: "space-x-1 flex items-center",
-        nav_button: "h-10 w-10 bg-transparent p-0 opacity-70 hover:opacity-100", // Aumentado a h-10 w-10
+        nav_button: "h-10 w-10 bg-transparent p-0 opacity-70 hover:opacity-100", // Botones de navegación más grandes
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
         table: "w-full border-collapse space-y-1",
         head_row: "flex w-full",
-        head_cell: "text-muted-foreground rounded-md w-full font-normal text-base", // Aumentado a text-base
+        head_cell: "text-muted-foreground rounded-md w-full font-normal text-base", // Días de la semana más grandes
         row: "flex w-full mt-2",
-        // ***** CLASE CLAVE PARA EL TAMAÑO DE LOS DÍAS INDIVIDUALES *****
         cell: "text-center text-lg p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
-          "h-14 w-14 p-0 font-normal aria-selected:opacity-100", // Aumentado a h-14 w-14 y el texto a text-lg
-          "flex items-center justify-center" // Asegura que el contenido del día esté centrado
+          "h-14 w-14 p-0 font-normal aria-selected:opacity-100", // Celdas de día más grandes
+          "flex items-center justify-center"
         ),
         day_range_end: "day-range-end",
         day_selected:
@@ -124,8 +117,6 @@ export default function ColorfulCalendar({
           "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",
       }}
-      // Ajusta los iconos si es necesario, ya estaban bien en h-6 w-6 de la vez anterior
-      // components={{ IconLeft: ({ ...props }) => <ChevronLeft className="h-6 w-6" {...props} />, IconRight: ({ ...props }) => <ChevronRight className="h-6 w-6" {...props} /> }}
     />
   );
 }
