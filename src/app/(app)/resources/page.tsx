@@ -366,7 +366,7 @@ export default function ResourcesPage() {
         toast({ title: "Error", description: "Todos los campos son obligatorios. Debes adjuntar un archivo o proveer una URL.", variant: "destructive" });
         return;
     }
-    if (newResourceFile && newResourceUrl) {
+    if (newResourceType !== 'VIDEO' && newResourceFile && newResourceUrl) {
         toast({ title: "Error", description: "Por favor, proporciona solo un archivo o una URL, no ambos.", variant: "destructive" });
         return;
     }
@@ -602,16 +602,25 @@ export default function ResourcesPage() {
                      <div className="space-y-1"><Label htmlFor="resource-type">Tipo <span className="text-destructive">*</span></Label><Select name="resource-type" value={newResourceType} onValueChange={(v) => setNewResourceType(v as AppResourceType['type'])} required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent>{resourceTypeOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></div>
                      <div className="space-y-1"><Label htmlFor="resource-category">Categoría <span className="text-destructive">*</span></Label><Select name="resource-category" value={newResourceCategory} onValueChange={setNewResourceCategory} required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{settings?.resourceCategories.sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
                      <Separator />
-                      <div className="space-y-1">
-                        <Label htmlFor="resource-file">Subir Archivo</Label>
-                        <Input id="resource-file" type="file" onChange={(e) => setNewResourceFile(e.target.files ? e.target.files[0] : null)} disabled={isSubmittingResource || !!newResourceUrl} />
-                        {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
-                      </div>
-                      <div className="text-center text-xs text-muted-foreground">O</div>
-                      <div className="space-y-1">
-                        <Label htmlFor="resource-url">Pegar URL (ej. YouTube)</Label>
-                        <Input id="resource-url" type="url" placeholder="https://..." value={newResourceUrl} onChange={e => setNewResourceUrl(e.target.value)} disabled={isSubmittingResource || !!newResourceFile} />
-                      </div>
+                     {newResourceType === 'VIDEO' ? (
+                        <div className="space-y-1">
+                          <Label htmlFor="resource-url">Pegar URL de Video (ej. YouTube)</Label>
+                          <Input id="resource-url" type="url" placeholder="https://..." value={newResourceUrl} onChange={e => setNewResourceUrl(e.target.value)} required disabled={isSubmittingResource} />
+                        </div>
+                     ) : (
+                        <>
+                          <div className="space-y-1">
+                            <Label htmlFor="resource-file">Subir Archivo</Label>
+                            <Input id="resource-file" type="file" onChange={(e) => setNewResourceFile(e.target.files ? e.target.files[0] : null)} disabled={isSubmittingResource || !!newResourceUrl} />
+                            {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
+                          </div>
+                          <div className="text-center text-xs text-muted-foreground">O</div>
+                          <div className="space-y-1">
+                            <Label htmlFor="resource-url-alt">Pegar URL de recurso externo</Label>
+                            <Input id="resource-url-alt" type="url" placeholder="https://..." value={newResourceUrl} onChange={e => setNewResourceUrl(e.target.value)} disabled={isSubmittingResource || !!newResourceFile} />
+                          </div>
+                        </>
+                     )}
                      <DialogFooter className="pt-4"><Button type="button" variant="outline" onClick={() => setShowCreateFileModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Guardar</Button></DialogFooter>
                   </form>
                 </DialogContent>
