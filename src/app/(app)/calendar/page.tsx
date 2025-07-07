@@ -62,10 +62,10 @@ export default function CalendarPage() {
 
   // Form state
   const [formTitle, setFormTitle] = useState('');
-  const [formDescription, setFormDescription] = useState('');
-  const [formLocation, setFormLocation] = useState('');
-  const [formStartDate, setFormStartDate] = useState('');
-  const [formEndDate, setFormEndDate] = useState('');
+  const [formDescription, setFormDescription] = '';
+  const [formLocation, setFormLocation] = '';
+  const [formStartDate, setFormStartDate] = '';
+  const [formEndDate, setFormEndDate] = '';
   const [formAllDay, setFormAllDay] = useState(true);
   const [formAudienceMode, setFormAudienceMode] = useState<EventAudienceType>('SPECIFIC');
   const [formAttendees, setFormAttendees] = useState<string[]>([]);
@@ -223,16 +223,12 @@ export default function CalendarPage() {
           ) : error ? (
             <div className="flex flex-col items-center justify-center min-h-[400px] text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar.</div>
           ) : (
-            // ***** CAMBIO AQUI: Centrar el calendario dentro de su Card *****
-            // El ColorfulCalendar ya tiene un 'max-w-xl' dentro de su componente.
-            // 'mx-auto' lo centrará horizontalmente si hay espacio libre en la Card.
-            // Añadimos 'flex justify-center items-center' al div contenedor para asegurar el centrado,
-            // si la Card no lo hace por sí misma. O se puede aplicar directo a la Card
-            // Si la Card tiene padding y el calendario un max-width, mx-auto es suficiente.
-            // Vamos a envolver el calendario en un div flex para mayor control del centrado
-            <div className="flex justify-center items-center py-4"> {/* Añade padding vertical para estética */}
+            <div className="flex justify-center items-center py-4"> {/* Contenedor para centrar el calendario */}
               <ColorfulCalendar
-                className="mx-auto" // Aplica mx-auto para centrarlo horizontalmente
+                // ***** CAMBIO CLAVE AQUÍ: Ajustar el max-w-* para agrandar el calendario y centrarlo *****
+                // El 'w-full' hace que ocupe todo el ancho disponible, pero 'max-w-2xl' lo limita.
+                // 'mx-auto' lo centra horizontalmente dentro de su contenedor.
+                className="mx-auto w-full max-w-2xl" // Puedes probar con max-w-3xl o max-w-4xl si quieres que sea aún más grande
                 events={calendarEvents}
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
