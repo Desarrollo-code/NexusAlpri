@@ -1,4 +1,3 @@
-
 // src/app/(app)/calendar/page.tsx
 
 'use client';
@@ -49,7 +48,7 @@ export default function CalendarPage() {
   const [error, setError] = useState<string | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
 
-  // Inicializa selectedDate con la fecha actual. Este es el punto clave.
+  // Initialize selectedDate with the current date.
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   const [showEventModal, setShowEventModal] = useState(false);
@@ -68,13 +67,16 @@ export default function CalendarPage() {
   const [formAttendees, setFormAttendees] = useState<string[]>([]);
   const [formColor, setFormColor] = useState<string>('default');
 
+  // Authorization check for editing
+  const canEdit = useMemo(() => user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR', [user]);
+
   const fetchEvents = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await fetch('/api/events');
       if (!response.ok) {
-        // Manejo de errores más robusto para respuestas no-JSON
+        // More robust error handling for non-JSON responses
         const errorText = await response.text();
         try {
           const errorData = JSON.parse(errorText);
@@ -94,8 +96,8 @@ export default function CalendarPage() {
   }, [toast]);
 
   const fetchUsers = useCallback(async () => {
-    // Solo admins e instructores pueden ver/gestionar usuarios
-    if (!user || (user.role !== 'ADMINISTRATOR' && user.role !== 'INSTRUCTOR')) return;
+    // Only admins and instructors can see/manage users
+    if (!canEdit) return;
     try {
       const res = await fetch('/api/users');
       if (!res.ok) {
@@ -112,10 +114,10 @@ export default function CalendarPage() {
     } catch (err) {
       toast({ title: 'Error', description: `No se pudieron cargar los usuarios: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
     }
-  }, [toast, user]);
+  }, [toast, canEdit]);
 
   useEffect(() => {
-    if (user) { // Asegura que solo se intenten cargar datos si hay un usuario logeado
+    if (user) { // Ensures data is only fetched if a user is logged in
       fetchEvents();
       fetchUsers();
     }
@@ -135,15 +137,16 @@ export default function CalendarPage() {
   }
 
   const handleOpenCreateModal = (date?: Date) => {
+    if (!canEdit) return;
     resetForm();
-    const targetDate = date || new Date(); // Si no se pasa fecha, usa la actual
+    const targetDate = date || new Date(); // Use current date if none is passed
     const dateString = format(targetDate, 'yyyy-MM-dd');
-    setFormStartDate(`${dateString}T09:00`); // Hora por defecto
-    setFormEndDate(`${dateString}T10:00`); // Hora por defecto
+    setFormStartDate(`${dateString}T09:00`); // Default time
+    setFormEndDate(`${dateString}T10:00`); // Default time
     setShowEventModal(true);
   };
 
-  const handleOpenEditModal = (event: CalendarEvent) => {
+  const handleOpenEventModal = (event: CalendarEvent) => {
     setEventToEdit(event);
     setFormTitle(event.title);
     setFormDescription(event.description || '');
@@ -161,6 +164,7 @@ export default function CalendarPage() {
 
   const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) return;
     setIsSaving(true);
 
     const payload = {
@@ -196,7 +200,7 @@ export default function CalendarPage() {
 
       toast({ title: 'Éxito', description: `Evento ${eventToEdit ? 'actualizado' : 'creado'} correctamente.` });
       setShowEventModal(false);
-      fetchEvents(); // Refresca los eventos después de guardar
+      fetchEvents(); // Refresh events after saving
     } catch (err) {
       toast({ title: 'Error', description: `No se pudo guardar el evento: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
     } finally {
@@ -205,7 +209,7 @@ export default function CalendarPage() {
   }
 
   const handleDeleteEvent = async () => {
-    if (!eventToDelete) return; // Asegura que hay un evento seleccionado para borrar
+    if (!eventToDelete || !canEdit) return;
     setIsSaving(true);
     try {
       const response = await fetch(`/api/events/${eventToDelete.id}`, { method: 'DELETE' });
@@ -219,9 +223,9 @@ export default function CalendarPage() {
         }
       }
       toast({ title: 'Éxito', description: 'Evento eliminado.' });
-      setEventToDelete(null); // Limpia el evento a eliminar
-      fetchEvents(); // Refresca los eventos después de eliminar
-      setShowEventModal(false); // Cierra el modal de edición si estaba abierto
+      setEventToDelete(null); // Clean the event to delete
+      fetchEvents(); // Refresh events after deleting
+      setShowEventModal(false); // Close edit modal if it was open
     } catch (err) {
       toast({ title: 'Error', description: `No se pudo eliminar el evento: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
     } finally {
@@ -232,11 +236,14 @@ export default function CalendarPage() {
   const calendarEvents = useMemo(() => events, [events]);
 
   const selectedDayEvents = useMemo(() => {
-    if (!selectedDate) return []; // Retorna un array vacío si no hay fecha seleccionada
+    if (!selectedDate) return []; // Return empty array if no date is selected
     return events
       .filter(event => isSameDay(new Date(event.start), selectedDate))
-      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()); // Ordena por hora de inicio
+      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()); // Sort by start time
   }, [events, selectedDate]);
+  
+  const modalTitle = !canEdit && eventToEdit ? "Detalles del Evento" : (eventToEdit ? 'Editar Evento' : 'Crear Nuevo Evento');
+  const modalDescription = !canEdit && eventToEdit ? "Aquí puedes ver la información del evento." : (eventToEdit ? "Modifica los detalles del evento." : "Completa los detalles para agendar un nuevo evento.");
 
 
   return (
@@ -275,7 +282,7 @@ export default function CalendarPage() {
                 {selectedDayEvents.length > 0 ? (
                   <div className="space-y-3">
                     {selectedDayEvents.map(event => (
-                      <div key={event.id} onClick={() => handleOpenEditModal(event)} className="p-3 rounded-lg border border-border flex items-start gap-3 cursor-pointer hover:bg-muted transition-colors">
+                      <div key={event.id} onClick={() => handleOpenEventModal(event)} className="p-3 rounded-lg border border-border flex items-start gap-3 cursor-pointer hover:bg-muted transition-colors">
                         <div className={cn('mt-1 h-2.5 w-2.5 rounded-full flex-shrink-0', `bg-event-${event.color || 'default'}`)}></div>
                         <div className="flex-grow">
                           <p className="font-semibold text-sm text-foreground">{event.title}</p>
@@ -301,9 +308,11 @@ export default function CalendarPage() {
                 )}
               </ScrollArea>
               <Separator className="my-4 bg-border" />
-              <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => handleOpenCreateModal(selectedDate)}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Crear Evento
-              </Button>
+              {canEdit && (
+                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => handleOpenCreateModal(selectedDate)}>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Crear Evento
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -312,42 +321,42 @@ export default function CalendarPage() {
       <Dialog open={showEventModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowEventModal(isOpen); }}>
         <DialogContent className="sm:max-w-2xl overflow-y-auto max-h-[90vh] bg-card">
           <DialogHeader>
-            <DialogTitle className="text-foreground">{eventToEdit ? 'Editar Evento' : 'Crear Nuevo Evento'}</DialogTitle>
-            <DialogDescription className="text-muted-foreground">Completa los detalles del evento.</DialogDescription>
+            <DialogTitle className="text-foreground">{modalTitle}</DialogTitle>
+            <DialogDescription className="text-muted-foreground">{modalDescription}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 py-2">
             <div className="sm:col-span-2">
               <Label htmlFor="event-title" className="text-foreground">Título del Evento</Label>
-              <Input id="event-title" value={formTitle} onChange={e => setFormTitle(e.target.value)} required disabled={isSaving} className="bg-input text-foreground border-border" />
+              <Input id="event-title" value={formTitle} onChange={e => setFormTitle(e.target.value)} required disabled={isSaving || !canEdit} className="bg-input text-foreground border-border" />
             </div>
 
             <div className="sm:col-span-2">
               <Label htmlFor="event-location" className="text-foreground">Ubicación (Ej: Sala 3, Zoom)</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input id="event-location" value={formLocation} onChange={e => setFormLocation(e.target.value)} disabled={isSaving} className="pl-10 bg-input text-foreground border-border" />
+                <Input id="event-location" value={formLocation} onChange={e => setFormLocation(e.target.value)} disabled={isSaving || !canEdit} className="pl-10 bg-input text-foreground border-border" />
               </div>
             </div>
 
             <div className="sm:col-span-2">
               <Label htmlFor="event-description" className="text-foreground">Descripción (Opcional)</Label>
-              <Textarea id="event-description" value={formDescription} onChange={e => setFormDescription(e.target.value)} disabled={isSaving} rows={3} className="bg-input text-foreground border-border" />
+              <Textarea id="event-description" value={formDescription} onChange={e => setFormDescription(e.target.value)} disabled={isSaving || !canEdit} rows={3} className="bg-input text-foreground border-border" />
             </div>
 
             <div className="sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
               <div className="flex items-center space-x-2 flex-shrink-0">
-                <Switch id="all-day" checked={formAllDay} onCheckedChange={setFormAllDay} disabled={isSaving} className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-input" />
+                <Switch id="all-day" checked={formAllDay} onCheckedChange={setFormAllDay} disabled={isSaving || !canEdit} className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-input" />
                 <Label htmlFor="all-day" className="text-foreground">Todo el día</Label>
               </div>
               {!formAllDay && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow w-full">
                   <div>
                     <Label htmlFor="start-date" className="text-foreground">Inicio</Label>
-                    <Input id="start-date" type="datetime-local" value={formStartDate} onChange={e => setFormStartDate(e.target.value)} required disabled={isSaving} className="bg-input text-foreground border-border" />
+                    <Input id="start-date" type="datetime-local" value={formStartDate} onChange={e => setFormStartDate(e.target.value)} required disabled={isSaving || !canEdit} className="bg-input text-foreground border-border" />
                   </div>
                   <div>
                     <Label htmlFor="end-date" className="text-foreground">Fin</Label>
-                    <Input id="end-date" type="datetime-local" value={formEndDate} onChange={e => setFormEndDate(e.target.value)} required disabled={isSaving} className="bg-input text-foreground border-border" />
+                    <Input id="end-date" type="datetime-local" value={formEndDate} onChange={e => setFormEndDate(e.target.value)} required disabled={isSaving || !canEdit} className="bg-input text-foreground border-border" />
                   </div>
                 </div>
               )}
@@ -359,8 +368,12 @@ export default function CalendarPage() {
                 {['blue', 'green', 'red', 'orange', 'default'].map((colorOption) => (
                   <div
                     key={colorOption}
-                    className={`h-8 w-8 rounded-full cursor-pointer border-2 ${formColor === colorOption ? 'border-primary scale-110' : 'border-transparent'} flex items-center justify-center transition-all duration-200 ease-in-out`}
-                    onClick={() => setFormColor(colorOption)}
+                    className={cn(
+                        "h-8 w-8 rounded-full border-2 flex items-center justify-center transition-all duration-200 ease-in-out",
+                        formColor === colorOption ? 'border-primary scale-110' : 'border-transparent',
+                        canEdit ? "cursor-pointer" : "cursor-default"
+                    )}
+                    onClick={() => canEdit && setFormColor(colorOption)}
                     style={{ backgroundColor: `hsl(var(--event-${colorOption}))` }}
                     title={colorOption}
                   >
@@ -378,6 +391,7 @@ export default function CalendarPage() {
                 value={formAudienceMode}
                 onValueChange={(value) => setFormAudienceMode(value as EventAudienceType)}
                 className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2"
+                disabled={isSaving || !canEdit}
               >
                 <div className="flex items-center space-x-2 text-foreground"><RadioGroupItem value="ALL" id="audience-all" className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" /><Label htmlFor="audience-all">Todos</Label></div>
                 <div className="flex items-center space-x-2 text-foreground"><RadioGroupItem value="ADMINISTRATOR" id="audience-admin" className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" /><Label htmlFor="audience-admin">Admins</Label></div>
@@ -403,6 +417,7 @@ export default function CalendarPage() {
                               : setFormAttendees(formAttendees.filter((id) => id !== u.id));
                           }}
                           className="border-border data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                          disabled={isSaving || !canEdit}
                         />
                         <Label htmlFor={`attendee-${u.id}`} className="font-normal cursor-pointer text-foreground">
                           {u.name} <span className="text-xs text-muted-foreground">({u.email})</span>
@@ -415,26 +430,34 @@ export default function CalendarPage() {
             )}
 
             <DialogFooter className="sm:col-span-2 mt-4 flex flex-col-reverse sm:flex-row sm:justify-between w-full gap-2">
-              <div>
-                {eventToEdit && (
-                  <Button type="button" variant="destructive" onClick={() => { setEventToDelete(eventToEdit); setShowEventModal(false); }} disabled={isSaving} className="w-full sm:w-auto">
-                    <Trash2 className="mr-2" /> Eliminar
-                  </Button>
-                )}
-              </div>
-              <div className="flex flex-col-reverse sm:flex-row gap-2">
-                <Button type="button" variant="outline" onClick={() => setShowEventModal(false)} disabled={isSaving} className="w-full sm:w-auto">Cancelar</Button>
-                <Button type="submit" disabled={isSaving} className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto">
-                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (eventToEdit ? <Save className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />) }
-                  {eventToEdit ? 'Guardar Cambios' : 'Crear Evento'}
-                </Button>
-              </div>
+               {canEdit ? (
+                <>
+                  <div>
+                    {eventToEdit && (
+                      <Button type="button" variant="destructive" onClick={() => { setEventToDelete(eventToEdit); setShowEventModal(false); }} disabled={isSaving} className="w-full sm:w-auto">
+                        <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+                      </Button>
+                    )}
+                  </div>
+                  <div className="flex flex-col-reverse sm:flex-row gap-2">
+                    <Button type="button" variant="outline" onClick={() => setShowEventModal(false)} disabled={isSaving} className="w-full sm:w-auto">Cancelar</Button>
+                    <Button type="submit" disabled={isSaving} className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto">
+                      {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (eventToEdit ? <Save className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />) }
+                      {eventToEdit ? 'Guardar Cambios' : 'Crear Evento'}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                 <div className="flex justify-end w-full">
+                    <Button type="button" variant="outline" onClick={() => setShowEventModal(false)} className="w-full sm:w-auto">Cerrar</Button>
+                 </div>
+              )}
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!eventToDelete} onOpenChange={(isOpen) => !isOpen && setEventToDelete(null)}>
+      <AlertDialog open={!!eventToDelete && canEdit} onOpenChange={(isOpen) => !isOpen && setEventToDelete(null)}>
         <AlertDialogContent className="bg-card text-foreground border-border">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-foreground">¿Confirmar eliminación?</AlertDialogTitle>
