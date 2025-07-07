@@ -46,8 +46,8 @@ export default function CalendarPage() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
-
+  const [allUsers, setAllUsers] = useState<User[]>([]).
+  
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   const [showEventModal, setShowEventModal] = useState(false);
@@ -72,14 +72,12 @@ export default function CalendarPage() {
     try {
       const response = await fetch('/api/events');
       if (!response.ok) {
-        // Mejor manejo de errores: intenta leer el error del cuerpo si no es JSON válido
         const errorText = await response.text();
         try {
           const errorData = JSON.parse(errorText);
           throw new Error(errorData.message || 'Failed to fetch events');
         } catch {
-          // Si no es JSON, usa el texto crudo o un mensaje genérico
-          throw new Error(errorText || 'Failed to fetch events');
+          throw new Error(errorText || `Failed to fetch events. Server responded with: ${errorText.substring(0, 100)}...`);
         }
       }
       const data: CalendarEvent[] = await response.json();
@@ -102,7 +100,7 @@ export default function CalendarPage() {
            const errorData = JSON.parse(errorText);
            throw new Error(errorData.message || "Failed to fetch users");
          } catch {
-           throw new Error(errorText || "Failed to fetch users");
+           throw new Error(errorText || `Failed to fetch users. Server responded with: ${errorText.substring(0, 100)}...`);
          }
       }
       const data = await res.json();
@@ -188,7 +186,7 @@ export default function CalendarPage() {
           const errorData = JSON.parse(errorText);
           throw new Error(errorData.message || 'Failed to save event');
         } catch {
-          throw new Error(errorText || 'Failed to save event');
+          throw new Error(errorText || `Failed to save event. Server responded with: ${errorText.substring(0, 100)}...`);
         }
       }
 
@@ -213,7 +211,7 @@ export default function CalendarPage() {
           const errorData = JSON.parse(errorText);
           throw new Error(errorData.message || 'Failed to delete event');
         } catch {
-          throw new Error(errorText || 'Failed to delete event');
+          throw new Error(errorText || `Failed to delete event. Server responded with: ${errorText.substring(0, 100)}...`);
         }
       }
       toast({ title: 'Éxito', description: 'Evento eliminado.' });
@@ -233,7 +231,7 @@ export default function CalendarPage() {
     if (!selectedDate) return [];
     return events
       .filter(event => isSameDay(new Date(event.start), selectedDate))
-      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+      .sort((a, b) => new Date(a.start).getTime() - new Date(b.end).getTime()); // Corrección: era event.end.getTime()
   }, [events, selectedDate]);
 
 
@@ -242,19 +240,31 @@ export default function CalendarPage() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <Card className="shadow-lg lg:col-span-3">
           {isLoading ? (
-            <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
+            <div className="flex items-center justify-center min-h-[400px] bg-dark-background text-light-text rounded-lg p-4">
+              <Loader2 className="animate-spin h-8 w-8 text-primary" />
+            </div>
           ) : error ? (
-            <div className="flex flex-col items-center justify-center min-h-[400px] text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}</div>
+            <div className="flex flex-col items-center justify-center min-h-[400px] text-destructive bg-dark-background text-light-text rounded-lg p-4">
+              <AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}
+            </div>
           ) : (
-            <div className="flex justify-center items-center py-4">
+            // ***** CAMBIO CLAVE AQUÍ: Para mover a la derecha, usamos ml-auto y mr-X *****
+            // Esto empuja el calendario a la derecha hasta el margen derecho especificado.
+            // O puedes centrarlo y usar un margen positivo a la izquierda.
+            <div className="flex justify-center items-center py-4"> {/* Mantener el centrado del contenedor */}
               <ColorfulCalendar
-                // ***** AJUSTES CLAVE AQUÍ para TAMAÑO y POSICIÓN *****
-                // 'max-w-3xl' para un tamaño más grande (puedes probar 'max-w-4xl' si quieres más).
-                // 'mx-auto' para centrado inicial.
-                // 'ml-auto' + 'mr-auto' se pueden usar si necesitas más control, pero 'mx-auto' suele bastar.
-                // Si quieres empujar a la derecha, puedes intentar 'ml-auto' sin 'mr-auto'
-                // o usar un padding/margin específico, por ejemplo: 'ml-8'
-                className="w-full max-w-3xl mx-auto" // Prueba con max-w-3xl. Si necesitas moverlo más, ajusta los márgenes.
+                // Ajuste de tamaño: max-w-4xl (aún más grande).
+                // Ajuste de posición:
+                // `ml-auto` empuja el componente lo más a la derecha posible.
+                // `mr-10` le da un margen derecho de 2.5rem (40px) desde el borde derecho del contenedor.
+                // Experimenta con `mr-` (ej: mr-4, mr-8, mr-12) para encontrar la posición perfecta.
+                // Si quieres centrarlo y solo moverlo un poco a la derecha, usa `mx-auto` y luego `translate-x-X`
+                // o un `margin-left` fijo, pero eso puede ser más complicado con Tailwind's responsive classes.
+                // Esta combinación `ml-auto mr-10` lo alinea a la derecha con un offset.
+                className="w-full max-w-4xl ml-auto mr-10" // Este lo empuja a la derecha. Ajusta `mr-10` si es necesario.
+                // Si solo quieres moverlo UN POQUITO a la derecha del centro,
+                // usa `mx-auto` y añade `transform translate-x-4` o similar
+                // className="w-full max-w-4xl mx-auto transform translate-x-4" // Alternativa para mover un poco desde el centro
                 events={calendarEvents}
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
