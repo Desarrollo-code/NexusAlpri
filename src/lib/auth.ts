@@ -1,3 +1,4 @@
+
 import 'server-only';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
@@ -50,7 +51,8 @@ export async function createSession(user: Partial<User>) {
 }
 
 export async function getSession(request?: NextRequest) {
-  const sessionCookie = request ? request.cookies.get('session')?.value : cookies().get('session')?.value;
+  const cookieStore = request ? request.cookies : cookies();
+  const sessionCookie = cookieStore.get('session')?.value;
 
   if (!sessionCookie) {
     return null;
@@ -63,7 +65,8 @@ export async function getSession(request?: NextRequest) {
   }
   
   if (new Date(decryptedSession.expires) < new Date()) {
-      await deleteSession(); // Clean up expired cookie
+      // The session is expired and will be treated as null.
+      // The client will be redirected by the middleware.
       return null;
   }
 
