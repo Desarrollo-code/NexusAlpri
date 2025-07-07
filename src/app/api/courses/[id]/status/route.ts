@@ -15,7 +15,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         const { id } = params;
         const { status } = await req.json();
 
-        if (!['DRAFT', 'PUBLISHED', 'ARCHIVED'].includes(status)) {
+        if (!['DRAFT', 'PUBLISHED', 'ARCHIVED', 'SCHEDULED'].includes(status)) {
             return NextResponse.json({ message: 'Estado inválido' }, { status: 400 });
         }
 
