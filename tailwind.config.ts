@@ -62,6 +62,13 @@ export default {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+        event: {
+          blue: 'hsl(var(--event-blue))',
+          green: 'hsl(var(--event-green))',
+          red: 'hsl(var(--event-red))',
+          orange: 'hsl(var(--event-orange))',
+          default: 'hsl(var(--event-default))',
+        },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',
           foreground: 'hsl(var(--sidebar-foreground))',

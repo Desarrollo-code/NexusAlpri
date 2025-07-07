@@ -34,11 +34,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { CalendarEvent, User, EventAudienceType } from '@/types'; // Importa tus tipos
 import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-// IMPORTACIÓN CAMBIADA
-import ColorfulCalendar from '@/components/colorful-calendar'; // Importa tu nuevo calendario personalizado
+import ColorfulCalendar from '@/components/colorful-calendar'; 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { cn } from '@/lib/utils';
 
 export default function CalendarPage() {
   const { user } = useAuth();
@@ -49,7 +49,7 @@ export default function CalendarPage() {
   const [allUsers, setAllUsers] = useState<User[]>([]);
 
   // State for the new layout
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   // Modal state
   const [showEventModal, setShowEventModal] = useState(false);
@@ -203,6 +203,7 @@ export default function CalendarPage() {
   const calendarEvents = useMemo(() => events, [events]);
 
   const selectedDayEvents = useMemo(() => {
+    if (!selectedDate) return [];
     return events
       .filter(event => isSameDay(new Date(event.start), selectedDate))
       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
@@ -218,12 +219,10 @@ export default function CalendarPage() {
           ) : error ? (
             <div className="flex flex-col items-center justify-center min-h-[400px] text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar.</div>
           ) : (
-            // CAMBIO AQUÍ: Usar ColorfulCalendar en lugar de AppCalendar
             <ColorfulCalendar
               events={calendarEvents}
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
-              onEventClick={handleOpenEditModal}
             />
           )}
         </Card>
@@ -232,7 +231,7 @@ export default function CalendarPage() {
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-lg">
-                Eventos para el {format(selectedDate, "d 'de' MMMM", { locale: es })}
+                Eventos para el {selectedDate ? format(selectedDate, "d 'de' MMMM", { locale: es }) : "..."}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -241,9 +240,7 @@ export default function CalendarPage() {
                   <div className="space-y-3">
                     {selectedDayEvents.map(event => (
                       <div key={event.id} onClick={() => handleOpenEditModal(event)} className="p-3 rounded-lg border flex items-start gap-3 cursor-pointer hover:bg-muted transition-colors">
-                        {/* Aquí usamos el color del evento para el punto en el panel lateral */}
-                        {/* Asegúrate que `event.color` sea uno de los nombres que mapean a tus variables CSS */}
-                        <div className={`mt-1 h-2.5 w-2.5 rounded-full flex-shrink-0 bg-event-border-${event.color || 'default'}`}></div>
+                        <div className={cn('mt-1 h-2.5 w-2.5 rounded-full flex-shrink-0', `bg-event-${event.color || 'default'}`)}></div>
                         <div className="flex-grow">
                           <p className="font-semibold text-sm">{event.title}</p>
                           <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
