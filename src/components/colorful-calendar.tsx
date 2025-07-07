@@ -16,6 +16,7 @@ interface ColorfulCalendarProps {
   className?: string; // Para pasar clases de Tailwind desde el componente padre
 }
 
+// Colores personalizados del tema, si no están definidos, usa valores por defecto
 const getEventColorClass = (color?: string): string => {
   switch (color) {
     case 'blue':
@@ -32,20 +33,22 @@ const getEventColorClass = (color?: string): string => {
   }
 };
 
+// Componente para renderizar el contenido de cada día
 function CustomDayContent(props: DayContentProps) {
   const { date } = props;
+  // Accede a los eventos pasados a través de activeModifiers
   const { eventsForDay } = props.activeModifiers as { eventsForDay?: CalendarEvent[] };
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
-      <span>{format(date, 'd')}</span>
+      <span className="text-foreground">{format(date, 'd')}</span> {/* Asegura que el número del día tenga el color de texto apropiado */}
       {eventsForDay && eventsForDay.length > 0 && (
         <div className="absolute bottom-1.5 flex justify-center items-center space-x-1">
-          {eventsForDay.slice(0, 4).map((event) => (
+          {eventsForDay.slice(0, 4).map((event) => ( // Muestra hasta 4 puntos de evento
             <div
               key={event.id}
               className={cn('h-1.5 w-1.5 rounded-full', getEventColorClass(event.color))}
-              title={event.title}
+              title={event.title} // Muestra el título al pasar el ratón
             />
           ))}
         </div>
@@ -60,6 +63,7 @@ export default function ColorfulCalendar({
   onDateSelect,
   className,
 }: ColorfulCalendarProps) {
+  // Memoiza los eventos por día para mejorar el rendimiento
   const eventsByDay = useMemo(() => {
     const grouped: Record<string, CalendarEvent[]> = {};
     for (const event of events) {
@@ -72,6 +76,7 @@ export default function ColorfulCalendar({
     return grouped;
   }, [events]);
 
+  // Modificadores para DayPicker para inyectar eventos en CustomDayContent
   const modifiers = useMemo(() => ({
     eventsForDay: (date: Date) => {
       const dayKey = format(date, 'yyyy-MM-dd');
@@ -84,27 +89,27 @@ export default function ColorfulCalendar({
       mode="single"
       selected={selectedDate}
       onSelect={onDateSelect}
-      locale={es}
+      locale={es} // Usa el idioma español
       modifiers={modifiers}
       components={{
-        DayContent: CustomDayContent,
+        DayContent: CustomDayContent, // Usa nuestro componente personalizado para los días
       }}
-      className={className}
+      className={className} // Permite pasar clases de Tailwind desde el componente padre para tamaño y posición
       classNames={{
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-xl font-semibold",
+        caption_label: "text-xl font-semibold", // Mes/Año más grande
         nav: "space-x-1 flex items-center",
-        nav_button: "h-10 w-10 bg-transparent p-0 opacity-70 hover:opacity-100",
+        nav_button: "h-10 w-10 bg-transparent p-0 opacity-70 hover:opacity-100", // Botones de navegación más grandes
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
         table: "w-full border-collapse space-y-1",
         head_row: "flex w-full",
-        head_cell: "text-muted-foreground rounded-md w-full font-normal text-base",
+        head_cell: "text-muted-foreground rounded-md w-full font-normal text-base", // Días de la semana más grandes
         row: "flex w-full mt-2",
         cell: "text-center text-lg p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
-          "h-14 w-14 p-0 font-normal aria-selected:opacity-100",
-          "flex items-center justify-center"
+          "h-14 w-14 p-0 font-normal aria-selected:opacity-100", // Celdas de día más grandes
+          "flex items-center justify-center" // Centra el contenido dentro de la celda del día
         ),
         day_range_end: "day-range-end",
         day_selected:
