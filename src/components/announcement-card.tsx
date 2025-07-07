@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,8 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { Announcement, UserRole } from '@/types';
 import { User, Clock, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { format, parseISO } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 interface AnnouncementCardProps {
   announcement: Announcement;
@@ -40,14 +39,16 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
   
   const formatDate = (dateString: string) => {
     try {
-      return format(parseISO(dateString), "d 'de' MMMM, yyyy", { locale: es });
+      // Always format using the specified timezone to ensure consistency
+      return new Date(dateString).toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'America/Bogota',
+      });
     } catch (error) {
-      // Fallback for potentially invalid date formats from older data
-      try {
-        return new Date(dateString).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Bogota' });
-      } catch {
-        return dateString;
-      }
+      // Fallback for any unexpected invalid date format
+      return 'Fecha inválida';
     }
   };
 

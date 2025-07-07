@@ -1,3 +1,4 @@
+
 // src/app/(app)/calendar/page.tsx
 
 'use client';
@@ -280,7 +281,7 @@ export default function CalendarPage() {
                           <p className="font-semibold text-sm text-foreground">{event.title}</p>
                           <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
                             <Clock className="h-3 w-3" />
-                            {event.allDay ? 'Todo el día' : `${format(new Date(event.start), 'HH:mm')} - ${format(new Date(event.end), 'HH:mm')}`}
+                            {event.allDay ? 'Todo el día' : `${new Date(event.start).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Bogota' })} - ${new Date(event.end).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Bogota' })}`}
                           </p>
                           {event.location && (
                             <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
