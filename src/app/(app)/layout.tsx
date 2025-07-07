@@ -118,7 +118,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   
   const handleIdleLogout = useCallback(() => {
     // Check if user is still considered logged in to prevent multiple calls
-    if (localStorage.getItem('nexus-user')) {
+    if (user) { // Check against the user state
         logout();
         toast({
             title: "Sesión Expirada",
@@ -126,7 +126,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             variant: "destructive"
         });
     }
-  }, [logout, toast]);
+  }, [logout, toast, user]);
   
   const idleTimeoutMinutes = settings?.idleTimeoutMinutes || 20;
   const isIdleTimeoutEnabled = settings?.enableIdleTimeout ?? true;
@@ -139,6 +139,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [isLoading, user, router]);
 
+  const navItems = getNavItemsForRole(user?.role || 'STUDENT');
+
+  const [openAccordionValue, setOpenAccordionValue] = useState<string[]>(() => {
+    const parentItem = navItems.find(item =>
+      item.subItems?.some(sub => sub.href && pathname.startsWith(sub.href))
+    );
+    return parentItem ? [parentItem.label] : [];
+  });
+  
   if (isLoading || !user || !settings) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
@@ -146,16 +155,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-
-  const navItems = getNavItemsForRole(user.role);
-  
-  // Lazy initializer to set the default open accordion based on the current path
-  const [openAccordionValue, setOpenAccordionValue] = useState<string[]>(() => {
-    const parentItem = navItems.find(item =>
-      item.subItems?.some(sub => sub.href && pathname.startsWith(sub.href))
-    );
-    return parentItem ? [parentItem.label] : [];
-  });
 
   return (
     <SidebarProvider defaultOpen>
