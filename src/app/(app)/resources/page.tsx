@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
-import { Search, UploadCloud, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, Lock, Pin, PinOff, MoreVertical, Folder, FileText, Video, Info, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Notebook, Shield, Filter } from 'lucide-react';
+import { Search, UploadCloud, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, Lock, Pin, PinOff, MoreVertical, Folder, FileText, Video, Info, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Notebook, Shield, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -120,6 +120,12 @@ const getYoutubeVideoId = (url: string | undefined): string | null => {
     return videoId;
 };
 
+const getFileFormat = (url?: string) => {
+    if (!url) return 'Enlace';
+    const extension = url.split('.').pop()?.split('?')[0];
+    return extension ? extension.toUpperCase() : 'URL';
+};
+
 // --- Sub-components for Page ---
 const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }: { resource: AppResourceType, onDelete: (id: string) => void, onPreview: () => void, onDownload: () => void, onEdit: (resource: AppResourceType) => void }) => {
     const { user } = useAuth();
@@ -181,20 +187,14 @@ const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
     );
 };
 
-const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit }: { resource: AppResourceType, onDelete: (id: string) => void, onPreview: () => void, onDownload: () => void, onEdit: (resource: AppResourceType) => void }) => {
+const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit, onSort, sortColumn, sortDirection }: { resource: AppResourceType, onDelete: (id: string) => void, onPreview: () => void, onDownload: () => void, onEdit: (resource: AppResourceType) => void, onSort: any, sortColumn: string, sortDirection: string }) => {
     const { user } = useAuth();
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
     const isFolder = resource.type === 'FOLDER';
-
-    const getFileFormat = (url?: string) => {
-        if (!url || isFolder) return '—';
-        const extension = url.split('.').pop()?.split('?')[0];
-        return extension ? extension.toUpperCase() : 'Enlace';
-    };
     
     return (
         <TableRow className="cursor-pointer" onClick={onPreview}>
-            <TableCell className="w-[45%]">
+            <TableCell>
                 <div className="flex items-center gap-3">
                     {getIconForType(resource.type)}
                     <div className="flex-grow overflow-hidden">
@@ -212,16 +212,22 @@ const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
             <TableCell className="hidden md:table-cell">{getFileFormat(resource.url)}</TableCell>
             <TableCell className="hidden lg:table-cell">{new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'America/Bogota' })}</TableCell>
             <TableCell className="text-right">
-                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onClick={onPreview}><Eye className="mr-2 h-4 w-4 text-sky-500" /> {isFolder ? 'Abrir' : 'Ver'}</DropdownMenuItem>
-                        {!isFolder && <DropdownMenuItem onClick={onDownload} disabled={!resource.url}><Download className="mr-2 h-4 w-4 text-green-500" /> Descargar</DropdownMenuItem>}
-                        {canModify && (<><Separator /><DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4 text-blue-500" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem></>)}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                 <div className="flex items-center justify-end gap-1">
+                    {!isFolder && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); onDownload(); }} aria-label="Descargar">
+                            <Download className="h-4 w-4" />
+                        </Button>
+                    )}
+                     <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                            <DropdownMenuItem onClick={onPreview}><Eye className="mr-2 h-4 w-4 text-sky-500" /> {isFolder ? 'Abrir' : 'Ver'}</DropdownMenuItem>
+                            {canModify && (<><Separator /><DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4 text-blue-500" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem></>)}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </TableCell>
         </TableRow>
     );
@@ -239,6 +245,10 @@ export default function ResourcesPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedFormat, setSelectedFormat] = useState<string>('all');
+  
+  const [sortColumn, setSortColumn] = useState<'title' | 'category' | 'uploadDate'>('title');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Folder navigation state
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
@@ -311,28 +321,65 @@ export default function ResourcesPage() {
     fetchResources(currentFolderId);
   }, [fetchResources, currentFolderId]);
 
-  const { folders, files } = useMemo(() => {
+  const { folders, files, availableFormats } = useMemo(() => {
+    let formats = new Set<string>();
+
     const filtered = allApiResources.filter(resource => {
-      // Category filter logic (only applies to files)
-      const matchesCategory = selectedCategory === 'all' || resource.category === selectedCategory;
-      
+      // Add format to the set for the filter dropdown
+      if (resource.type !== 'FOLDER' && resource.url) {
+        formats.add(getFileFormat(resource.url));
+      }
+
       // Search filter logic
       const matchesSearch = resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (resource.description && resource.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (resource.tags && resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
 
-      // Folders are always visible at their level, unless filtered out by search
       if (resource.type === 'FOLDER') {
         return matchesSearch;
       }
       
-      return matchesCategory && matchesSearch;
+      const matchesCategory = selectedCategory === 'all' || resource.category === selectedCategory;
+      const matchesFormat = selectedFormat === 'all' || getFileFormat(resource.url) === selectedFormat;
+
+      return matchesCategory && matchesSearch && matchesFormat;
     });
+    
+    const sortedFiles = filtered.filter(item => item.type !== 'FOLDER')
+      .sort((a, b) => {
+          let compareA: string | number | Date = '';
+          let compareB: string | number | Date = '';
+
+          switch (sortColumn) {
+              case 'title':
+                  compareA = a.title.toLowerCase();
+                  compareB = b.title.toLowerCase();
+                  break;
+              case 'category':
+                  compareA = a.category.toLowerCase();
+                  compareB = b.category.toLowerCase();
+                  break;
+              case 'uploadDate':
+                  compareA = new Date(a.uploadDate);
+                  compareB = new Date(b.uploadDate);
+                  break;
+          }
+
+          if (compareA < compareB) {
+              return sortDirection === 'asc' ? -1 : 1;
+          }
+          if (compareA > compareB) {
+              return sortDirection === 'asc' ? 1 : -1;
+          }
+          return 0;
+      });
 
     return {
       folders: filtered.filter(item => item.type === 'FOLDER'),
-      files: filtered.filter(item => item.type !== 'FOLDER'),
+      files: sortedFiles,
+      availableFormats: Array.from(formats).sort()
     };
-  }, [allApiResources, searchTerm, selectedCategory]);
+  }, [allApiResources, searchTerm, selectedCategory, selectedFormat, sortColumn, sortDirection]);
   
     // Effect for handling file conversions for preview
   useEffect(() => {
@@ -607,9 +654,33 @@ export default function ResourcesPage() {
     }
   };
   
+  const handleSort = (column: 'title' | 'category' | 'uploadDate') => {
+    if (sortColumn === column) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const SortableHeader = ({ column, label }: { column: 'title' | 'category' | 'uploadDate', label: string }) => (
+    <TableHead
+      className="cursor-pointer hover:bg-muted/50"
+      onClick={() => handleSort(column)}
+    >
+      <div className="flex items-center gap-2">
+        {label}
+        {sortColumn === column && (
+          sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+        )}
+      </div>
+    </TableHead>
+  );
+
+  
   const resourceTypeOptions: { value: AppResourceType['type']; label: string }[] = [
     { value: 'DOCUMENT', label: 'Documento' }, { value: 'GUIDE', label: 'Guía' }, { value: 'MANUAL', label: 'Manual' },
-    { value: 'POLICY', label: 'Política' }, { value: 'VIDEO', label: 'Video (Enlace o archivo)' }, { value: 'OTHER', label: 'Otro' },
+    { value: 'POLICY', label: 'Política' }, { value: 'VIDEO', label: 'Video (Enlace)' }, { value: 'OTHER', label: 'Otro' },
   ];
 
 
@@ -675,7 +746,6 @@ export default function ResourcesPage() {
 
        <Card className="p-4 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {/* Breadcrumbs */}
           <div className="flex items-center text-sm text-muted-foreground overflow-x-auto whitespace-nowrap pb-2 md:pb-0">
             <button onClick={() => handleBreadcrumbClick(null, 0)} className="hover:text-primary flex items-center gap-1 shrink-0"><Home className="h-4 w-4 text-primary"/> Biblioteca</button>
             {breadcrumbs.map((crumb, index) => (
@@ -686,7 +756,6 @@ export default function ResourcesPage() {
             ))}
           </div>
 
-          {/* Search and View Toggles */}
           <div className="flex items-center gap-4 w-full md:w-auto shrink-0">
             <div className="relative w-full md:flex-1 md:max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -699,35 +768,37 @@ export default function ResourcesPage() {
           </div>
         </div>
 
-        {/* Category Filters (only show if not inside a folder) */}
         {!currentFolderId && (
           <>
             <Separator />
-            <div>
-              <Label className="text-sm font-semibold text-muted-foreground flex items-center gap-2 mb-3">
-                <Filter className="h-4 w-4" />
-                Filtrar por Categoría
-              </Label>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                    variant={selectedCategory === 'all' ? 'default' : 'outline'}
-                    size="sm"
-                    className="rounded-full"
-                    onClick={() => setSelectedCategory('all')}
-                >
-                    Todas
-                </Button>
-                {settings?.resourceCategories.sort().map(category => (
-                    <Button
-                        key={category}
-                        variant={selectedCategory === category ? 'default' : 'outline'}
-                        size="sm"
-                        className="rounded-full"
-                        onClick={() => setSelectedCategory(category)}
-                    >
-                        {category}
-                    </Button>
-                ))}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="category-filter" className="text-sm shrink-0">Categoría:</Label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger id="category-filter" className="w-[180px]">
+                    <SelectValue placeholder="Categoría" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    {settings?.resourceCategories.sort().map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="format-filter" className="text-sm shrink-0">Formato:</Label>
+                <Select value={selectedFormat} onValueChange={setSelectedFormat}>
+                  <SelectTrigger id="format-filter" className="w-[140px]">
+                    <SelectValue placeholder="Formato" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    {availableFormats.map(format => (
+                       <SelectItem key={format} value={format}>{format}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </>
@@ -750,7 +821,7 @@ export default function ResourcesPage() {
                            {folders.map(item => <ResourceGridItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => {}} onEdit={handleOpenEditModal} />)}
                         </div>
                     ) : (
-                        <Card><Table><TableBody>{folders.map(item => <ResourceListItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => {}} onEdit={handleOpenEditModal} />)}</TableBody></Table></Card>
+                        <Card><Table><TableBody>{folders.map(item => <ResourceListItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => {}} onEdit={handleOpenEditModal} onSort={handleSort} sortColumn={sortColumn} sortDirection={sortDirection} />)}</TableBody></Table></Card>
                     )}
                 </div>
             )}
@@ -762,7 +833,22 @@ export default function ResourcesPage() {
                            {files.map(item => <ResourceGridItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => handleAccessResource(item, 'download')} onEdit={handleOpenEditModal} />)}
                         </div>
                     ) : (
-                        <Card><Table><TableHeader><TableRow><TableHead className="w-[45%]">Nombre</TableHead><TableHead className="hidden sm:table-cell">Categoría</TableHead><TableHead className="hidden md:table-cell">Formato</TableHead><TableHead className="hidden lg:table-cell">Fecha de subida</TableHead><TableHead className="text-right">Acciones</TableHead></TableRow></TableHeader><TableBody>{files.map(item => <ResourceListItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => handleAccessResource(item, 'download')} onEdit={handleOpenEditModal} />)}</TableBody></Table></Card>
+                        <Card>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <SortableHeader column="title" label="Nombre" />
+                                        <SortableHeader column="category" label="Categoría" />
+                                        <TableHead className="hidden md:table-cell">Formato</TableHead>
+                                        <SortableHeader column="uploadDate" label="Fecha de subida" />
+                                        <TableHead className="text-right">Acciones</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {files.map(item => <ResourceListItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => handleAccessResource(item, 'download')} onEdit={handleOpenEditModal} onSort={handleSort} sortColumn={sortColumn} sortDirection={sortDirection} />)}
+                                </TableBody>
+                            </Table>
+                        </Card>
                     )}
                 </div>
             )}
