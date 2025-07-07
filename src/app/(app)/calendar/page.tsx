@@ -259,7 +259,7 @@ export default function CalendarPage() {
                 // Si quieres centrarlo y solo desplazarlo, la alternativa es:
                 // className="w-full max-w-4xl mx-auto transform translate-x-4"
                 // Donde `translate-x-4` lo movería 16px a la derecha del centro.
-                className="w-full max-w-4xl ml-55"//Este alinea a la derecha
+                className="w-full max-w-4xl ml-40"// Este lo alinea a la derecha con un margen.
                 events={calendarEvents}
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
