@@ -208,7 +208,7 @@ export default function EnrollmentsPage() {
 
   return (
     <div className="space-y-8">
-      <Card glow>
+      <Card>
         <CardHeader>
           <CardTitle className="text-2xl font-headline flex items-center gap-2"><UsersRound /> {pageTitle}</CardTitle>
           <CardDescription>{pageDescription}</CardDescription>
@@ -239,7 +239,7 @@ export default function EnrollmentsPage() {
           </div>
 
           {selectedCourse && (
-            <Card className="mt-6 bg-muted/30" glow>
+            <Card className="mt-6 bg-muted/30">
               <CardHeader>
                 <CardTitle className="text-xl">Estudiantes Inscritos en: {selectedCourse.title}</CardTitle>
                  <div className="flex justify-between items-center pt-2">

@@ -106,7 +106,7 @@ export default function SettingsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-          <Card glow>
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary"/>Apariencia y Generales</CardTitle>
               <CardDescription>Configuraciones básicas de la plataforma.</CardDescription>
@@ -124,7 +124,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card glow>
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><BellDot className="h-5 w-5 text-primary"/>Notificaciones</CardTitle>
               <CardDescription>Configura cómo se gestionan las notificaciones.</CardDescription>
@@ -150,7 +150,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card glow>
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary"/>Seguridad y Acceso</CardTitle>
               <CardDescription>Gestiona las políticas de seguridad y registro.</CardDescription>
@@ -252,7 +252,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card glow>
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary"/>Gestión de Categorías de Recursos</CardTitle>
               <CardDescription>Añade o elimina categorías para los filtros de la biblioteca de recursos.</CardDescription>
@@ -301,7 +301,7 @@ export default function SettingsPage() {
         </div>
 
         <div className="lg:col-span-1 space-y-6">
-            <Card className="sticky top-24" glow>
+            <Card className="sticky top-24">
                 <CardHeader>
                     <CardTitle>Guardar Cambios</CardTitle>
                 </CardHeader>
