@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
-import { Search, UploadCloud, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, KeyRound, Pin, PinOff, MoreVertical, Folder, FileText, Video, Info, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Notebook, Shield, Filter } from 'lucide-react';
+import { Search, UploadCloud, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, Lock, Pin, PinOff, MoreVertical, Folder, FileText, Video, Info, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Notebook, Shield, Filter } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -131,16 +131,24 @@ const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
         const youtubeId = !isFolder && resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
         const isPdf = !isFolder && resource.url && /\.pdf$/i.test(resource.url);
 
-        if (isImage) {
-            return <Image src={resource.url!} alt={resource.title} fill className="object-cover" data-ai-hint="resource file" />;
-        }
-        if (youtubeId) {
-            return <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail"/>;
-        }
-        if (isPdf) {
-             return <FileText className="h-16 w-16 text-red-500/80" />;
-        }
-        return getPreviewIconForType(resource.type);
+        return (
+            <>
+                {isImage ? (
+                    <Image src={resource.url!} alt={resource.title} fill className="object-cover" data-ai-hint="resource file" />
+                ) : youtubeId ? (
+                    <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail"/>
+                ) : isPdf ? (
+                    <FileText className="h-16 w-16 text-red-500/80" />
+                ) : (
+                    getPreviewIconForType(resource.type)
+                )}
+                {resource.hasPin && (
+                    <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
+                        <Lock className="h-3 w-3 text-amber-400" />
+                    </div>
+                )}
+            </>
+        );
     };
 
     return (
@@ -156,7 +164,6 @@ const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
                     {getIconForType(resource.type)}
                     <span className="font-medium text-sm truncate">{resource.title}</span>
                 </div>
-                {resource.hasPin && <KeyRound className="h-4 w-4 text-amber-400 shrink-0" title="Protegido"/>}
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                         <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 -mr-2">
@@ -193,7 +200,7 @@ const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
                     <div className="flex-grow overflow-hidden">
                         <div className="flex items-center gap-1.5">
                             <span className="font-medium truncate">{resource.title}</span>
-                            {resource.hasPin && <KeyRound className="h-4 w-4 text-amber-400 shrink-0" />}
+                            {resource.hasPin && <Lock className="h-4 w-4 text-amber-400 shrink-0" />}
                         </div>
                         {resource.description && (
                             <p className="text-xs text-muted-foreground truncate">{resource.description}</p>
@@ -777,7 +784,7 @@ export default function ResourcesPage() {
             </>)}
             <DialogFooter><Button type="button" variant="outline" onClick={() => setShowEditModal(false)} disabled={isSavingEdit || isSavingPin}>Cancelar</Button><Button type="submit" disabled={isSavingEdit || isSavingPin}>{isSavingEdit ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Guardar</Button></DialogFooter>
           </form>
-          {user?.role === 'ADMINISTRATOR' && resourceToEdit?.type !== 'FOLDER' && (<><Separator /><div className="space-y-3 pt-4"><h4 className="font-medium flex items-center gap-2"><KeyRound className="h-4 w-4 text-amber-500" />PIN de Seguridad</h4><p className="text-sm text-muted-foreground">Protege este recurso con un PIN.</p><div className="flex items-center gap-2"><Input id="edit-resource-pin" type="password" placeholder="Ingresa un PIN (mín. 4 caracteres)" value={editResourcePin} onChange={(e) => setEditResourcePin(e.target.value.replace(/\D/g, ''))} maxLength={16} disabled={isSavingPin || isSavingEdit} /><Button onClick={handleSavePin} disabled={isSavingPin || isSavingEdit || !editResourcePin}>{isSavingPin && !resourceToEdit?.hasPin ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pin className="h-4 w-4" />}</Button></div>{resourceToEdit?.hasPin && (<Button variant="destructive" className="w-full" onClick={handleRemovePin} disabled={isSavingPin || isSavingEdit}>{isSavingPin ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PinOff className="mr-2 h-4 w-4" />}Quitar PIN</Button>)}</div></>)}
+          {user?.role === 'ADMINISTRATOR' && resourceToEdit?.type !== 'FOLDER' && (<><Separator /><div className="space-y-3 pt-4"><h4 className="font-medium flex items-center gap-2"><Lock className="h-4 w-4 text-amber-500" />PIN de Seguridad</h4><p className="text-sm text-muted-foreground">Protege este recurso con un PIN.</p><div className="flex items-center gap-2"><Input id="edit-resource-pin" type="password" placeholder="Ingresa un PIN (mín. 4 caracteres)" value={editResourcePin} onChange={(e) => setEditResourcePin(e.target.value.replace(/\D/g, ''))} maxLength={16} disabled={isSavingPin || isSavingEdit} /><Button onClick={handleSavePin} disabled={isSavingPin || isSavingEdit || !editResourcePin}>{isSavingPin && !resourceToEdit?.hasPin ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pin className="h-4 w-4" />}</Button></div>{resourceToEdit?.hasPin && (<Button variant="destructive" className="w-full" onClick={handleRemovePin} disabled={isSavingPin || isSavingEdit}>{isSavingPin ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PinOff className="mr-2 h-4 w-4" />}Quitar PIN</Button>)}</div></>)}
         </DialogContent>
       </Dialog>
 
@@ -839,7 +846,10 @@ export default function ResourcesPage() {
       
       <Dialog open={!!resourceToUnlock} onOpenChange={(isOpen) => { if(!isOpen) { setResourceToUnlock(null); setPinInput(''); setPinError(null); } }}>
         <DialogContent className="sm:max-w-md">
-            <DialogHeader><DialogTitle>Se requiere PIN de acceso</DialogTitle><DialogDescription>Ingresa el PIN para acceder a "<strong>{resourceToUnlock?.resource.title}</strong>".</DialogDescription></DialogHeader>
+            <DialogHeader>
+                <DialogTitle className="flex items-center gap-2"><Lock className="h-5 w-5 text-amber-500" />Se requiere PIN de acceso</DialogTitle>
+                <DialogDescription>Ingresa el PIN para acceder a "<strong>{resourceToUnlock?.resource.title}</strong>".</DialogDescription>
+            </DialogHeader>
             <form onSubmit={handleVerifyPin}><div className="space-y-2 py-4"><Label htmlFor="pin-input" className="sr-only">PIN</Label><Input id="pin-input" type="password" placeholder="Ingresa el PIN" value={pinInput} onChange={e => { setPinInput(e.target.value.replace(/\D/g, '')); setPinError(null); }} autoFocus />{pinError && <p className="text-sm text-destructive">{pinError}</p>}</div><DialogFooter><Button type="button" variant="outline" onClick={() => setResourceToUnlock(null)}>Cancelar</Button><Button type="submit" disabled={isVerifyingPin || pinInput.length < 4}>{isVerifyingPin && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Verificar</Button></DialogFooter></form>
         </DialogContent>
       </Dialog>
