@@ -275,7 +275,7 @@ export default function CalendarPage() {
 
       <Dialog open={showEventModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowEventModal(isOpen); }}>
         {/* Aumentamos el tamaño máximo del diálogo a 3xl para dar más espacio si es necesario */}
-        <DialogContent className="sm:max-w-2xl md:max-w-3xl overflow-y-auto max-h-[90vh]">
+        <DialogContent className="sm:max-w-2xl md:max-w-3xl overflow-y-auto max-h-[90vh] bg-black">
           <DialogHeader>
             <DialogTitle>{eventToEdit ? 'Editar Evento' : 'Crear Nuevo Evento'}</DialogTitle>
             <DialogDescription>Completa los detalles del evento.</DialogDescription>
