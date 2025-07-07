@@ -360,7 +360,7 @@ export default function DashboardPage() {
       { href: '/my-courses', label: 'Mis Cursos', icon: GraduationCap, description: 'Continúa tu aprendizaje.' },
       { href: '/courses', label: 'Explorar Cursos', icon: BookOpen, description: 'Descubre nuevas oportunidades.' },
       { href: '/resources', label: 'Biblioteca', icon: Folder, description: 'Accede a guías y materiales.' },
-      { href: '/announcements', label: 'Anuncios', icon: 'Revisa las últimas noticias.' },
+      { href: '/announcements', label: 'Anuncios', icon: Megaphone, description: 'Revisa las últimas noticias.' },
     ],
   };
   const linksToShow = quickLinks[user.role] || [];
@@ -651,5 +651,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
