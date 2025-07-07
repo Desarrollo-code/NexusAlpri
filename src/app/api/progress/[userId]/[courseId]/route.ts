@@ -2,10 +2,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import type { NextRequest } from 'next/server';
 
 // Get progress for a specific user in a course
-export async function GET(req: Request, { params }: { params: { userId: string, courseId: string } }) {
-    const session = await getSession();
+export async function GET(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
+    const session = await getSession(req);
     const { userId, courseId } = params;
 
     // A user can only see their own progress. Admins/instructors might have different authorization logic.

@@ -1,7 +1,9 @@
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import type { PlatformSettings } from '@/types';
+import type { NextRequest } from 'next/server';
 
 // The default settings, but with arrays that will be stringified for the DB
 const DEFAULT_DB_SETTINGS = {
@@ -28,7 +30,7 @@ const parseDbSettings = (dbSettings: any): PlatformSettings => {
 };
 
 // GET /api/settings - Fetches platform settings
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     let settings = await prisma.platformSettings.findFirst();
 
@@ -53,9 +55,9 @@ export async function GET() {
 }
 
 // POST /api/settings - Updates platform settings
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const session = await getSession();
+    const session = await getSession(req);
     if (!session || session.role !== 'ADMINISTRATOR') {
       return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }

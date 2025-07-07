@@ -2,8 +2,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import type { NextRequest } from 'next/server';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const announcements = await prisma.announcement.findMany({
       orderBy: { date: 'desc' },
@@ -16,8 +17,8 @@ export async function GET() {
   }
 }
 
-export async function POST(req: Request) {
-  const session = await getSession();
+export async function POST(req: NextRequest) {
+  const session = await getSession(req);
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }

@@ -2,10 +2,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import type { NextRequest } from 'next/server';
 
 // GET all enrollments (ADMIN only)
-export async function GET() {
-    const session = await getSession();
+export async function GET(req: NextRequest) {
+    const session = await getSession(req);
     if (!session || session.role !== 'ADMINISTRATOR') {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }

@@ -1,11 +1,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { getSession } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
-  const session = await getSession();
+  const session = await getSession(req);
   if (!session) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
@@ -29,6 +29,8 @@ export async function POST(req: NextRequest) {
   const buffer = Buffer.from(bytes);
 
   const dir = join(process.cwd(), 'public', 'uploads', 'avatars');
+  await mkdir(dir, { recursive: true });
+  
   const filename = `${session.id}-${Date.now()}-${file.name.replace(/\s/g, '_')}`;
   const path = join(dir, filename);
 

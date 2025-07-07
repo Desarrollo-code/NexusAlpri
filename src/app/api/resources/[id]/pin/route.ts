@@ -3,9 +3,10 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { getSession } from '@/lib/auth';
+import type { NextRequest } from 'next/server';
 
-async function checkAuth(resourceId: string) {
-    const session = await getSession();
+async function checkAuth(req: NextRequest, resourceId: string) {
+    const session = await getSession(req);
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return { authorized: false, error: NextResponse.json({ message: 'No autorizado' }, { status: 403 }) };
     }
@@ -20,8 +21,8 @@ async function checkAuth(resourceId: string) {
 }
 
 // Set a PIN
-export async function POST(req: Request, { params }: { params: { id: string } }) {
-    const auth = await checkAuth(params.id);
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+    const auth = await checkAuth(req, params.id);
     if (!auth.authorized) return auth.error;
     
     try {
@@ -46,8 +47,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 }
 
 // Remove a PIN
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-    const auth = await checkAuth(params.id);
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+    const auth = await checkAuth(req, params.id);
     if (!auth.authorized) return auth.error;
 
     try {

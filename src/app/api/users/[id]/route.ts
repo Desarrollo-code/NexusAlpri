@@ -1,12 +1,12 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { getSession } from '@/lib/auth';
 
 // GET a specific user
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-    const session = await getSession();
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+    const session = await getSession(req);
     if (!session || (session.role !== 'ADMINISTRATOR' && session.id !== params.id)) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
@@ -26,8 +26,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 // PUT (update) a user
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-    const session = await getSession();
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+    const session = await getSession(req);
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
@@ -73,8 +73,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 // DELETE a user
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-    const session = await getSession();
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+    const session = await getSession(req);
     if (!session || session.role !== 'ADMINISTRATOR') {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }

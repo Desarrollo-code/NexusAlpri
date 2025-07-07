@@ -2,9 +2,10 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import type { NextRequest } from 'next/server';
 
 // GET a specific resource
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     try {
         const resource = await prisma.resource.findUnique({
             where: { id: params.id },
@@ -30,8 +31,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
 
 // PUT (update) a resource
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-    const session = await getSession();
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+    const session = await getSession(req);
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
@@ -68,8 +69,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 // DELETE a resource
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-     const session = await getSession();
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+     const session = await getSession(req);
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }

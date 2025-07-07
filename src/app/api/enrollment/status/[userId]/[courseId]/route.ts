@@ -2,10 +2,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import type { NextRequest } from 'next/server';
 
 // Check if a user is enrolled in a specific course
-export async function GET(req: Request, { params }: { params: { userId: string, courseId: string } }) {
-    const session = await getSession();
+export async function GET(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
+    const session = await getSession(req);
     const { userId, courseId } = params;
 
     if (!session || session.id !== userId) {

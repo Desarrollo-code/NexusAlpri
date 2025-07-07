@@ -2,10 +2,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import type { NextRequest } from 'next/server';
 
 // Get all courses a specific user is enrolled in
-export async function GET(req: Request, { params }: { params: { userId: string } }) {
-    const session = await getSession();
+export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+    const session = await getSession(req);
     if (!session || session.id !== params.userId) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }

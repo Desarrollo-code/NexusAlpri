@@ -2,10 +2,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import type { NextRequest } from 'next/server';
 
 // GET enrollments for a specific course
-export async function GET(req: Request, { params }: { params: { courseId: string } }) {
-    const session = await getSession();
+export async function GET(req: NextRequest, { params }: { params: { courseId: string } }) {
+    const session = await getSession(req);
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
@@ -26,8 +27,8 @@ export async function GET(req: Request, { params }: { params: { courseId: string
 }
 
 // POST to enroll/unenroll a user from a course
-export async function POST(req: Request) {
-    const session = await getSession();
+export async function POST(req: NextRequest) {
+    const session = await getSession(req);
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
