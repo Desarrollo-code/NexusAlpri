@@ -10,7 +10,7 @@ const DEFAULT_DB_SETTINGS = {
   platformName: "NexusAlpri",
   allowPublicRegistration: true,
   enableEmailNotifications: true,
-  resourceCategories: JSON.stringify(["Recursos Humanos", "TI y Seguridad", "Marketing", "Ventas", "Legal", "Operaciones", "Finanzas", "Formación Interna", "Documentación de Producto", "General"]),
+  resourceCategories: ["Recursos Humanos", "TI y Seguridad", "Marketing", "Ventas", "Legal", "Operaciones", "Finanzas", "Formación Interna", "Documentación de Producto", "General"],
   passwordMinLength: 8,
   passwordRequireUppercase: true,
   passwordRequireLowercase: true,
@@ -19,14 +19,6 @@ const DEFAULT_DB_SETTINGS = {
   enableIdleTimeout: true,
   idleTimeoutMinutes: 20,
   require2faForAdmins: false,
-};
-
-// A helper to parse settings from the DB
-const parseDbSettings = (dbSettings: any): PlatformSettings => {
-    return {
-        ...dbSettings,
-        resourceCategories: JSON.parse(dbSettings.resourceCategories || '[]'),
-    };
 };
 
 // GET /api/settings - Fetches platform settings
@@ -41,7 +33,7 @@ export async function GET(req: NextRequest) {
       });
     }
     
-    return NextResponse.json(parseDbSettings(settings));
+    return NextResponse.json(settings);
   } catch (error) {
     console.error('[SETTINGS_GET_ERROR]', error);
     // If there's a DB error, return the parsed default settings object to allow the app to function.
@@ -50,7 +42,7 @@ export async function GET(req: NextRequest) {
         id: 'default-settings', // a dummy id
         updatedAt: new Date(),
     };
-    return NextResponse.json(parseDbSettings(fallbackSettings));
+    return NextResponse.json(fallbackSettings);
   }
 }
 
@@ -66,7 +58,6 @@ export async function POST(req: NextRequest) {
     
     const dataToSave = {
         ...dataFromClient,
-        resourceCategories: JSON.stringify(dataFromClient.resourceCategories || []),
     };
 
     // Remove fields that should not be manually set by client
@@ -81,7 +72,7 @@ export async function POST(req: NextRequest) {
       create: dataToSave,
     });
 
-    return NextResponse.json(parseDbSettings(updatedSettings));
+    return NextResponse.json(updatedSettings);
   } catch (error) {
     console.error('[SETTINGS_POST_ERROR]', error);
     return NextResponse.json({ message: 'Error interno del servidor al guardar la configuración' }, { status: 500 });

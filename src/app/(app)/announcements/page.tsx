@@ -72,19 +72,8 @@ export default function AnnouncementsPage() {
       
       const displayData: DisplayAnnouncement[] = data.map(ann => {
         let parsedAudience: UserRole[] | 'ALL' = 'ALL';
-        if (typeof ann.audience === 'string') {
-          if (ann.audience === 'ALL') {
-            parsedAudience = 'ALL';
-          } else {
-            try {
-              const arr = JSON.parse(ann.audience);
-              if (Array.isArray(arr)) {
-                parsedAudience = arr as UserRole[];
-              }
-            } catch (e) {
-              console.warn("Invalid audience format for announcement:", ann.id, ann.audience);
-            }
-          }
+        if (ann.audience === 'ALL') {
+          parsedAudience = 'ALL';
         } else if (Array.isArray(ann.audience)) { 
             parsedAudience = ann.audience as UserRole[];
         }
@@ -162,7 +151,7 @@ export default function AnnouncementsPage() {
     const method = announcementToEdit ? 'PUT' : 'POST';
     const endpoint = announcementToEdit ? `/api/announcements/${announcementToEdit.id}` : '/api/announcements';
     
-    const audiencePayload = formAudience === 'ALL' ? 'ALL' : JSON.stringify([formAudience]);
+    const audiencePayload = formAudience === 'ALL' ? 'ALL' : [formAudience];
 
     const payload = {
         title: formTitle,
@@ -329,7 +318,7 @@ export default function AnnouncementsPage() {
           <Button onClick={fetchAnnouncements} variant="outline" className="mt-4">Reintentar</Button>
         </div>
       ) : relevantAnnouncements.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {relevantAnnouncements.map((announcement: DisplayAnnouncement) => (
             <AnnouncementCard 
                 key={announcement.id} 

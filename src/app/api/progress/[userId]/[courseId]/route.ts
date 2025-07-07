@@ -35,7 +35,7 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
             });
         }
 
-        const completedLessonIds = JSON.parse(progress.completedLessonIds || '[]');
+        const completedLessonIds = (progress.completedLessonIds as string[]) || [];
 
         return NextResponse.json({
             ...progress,

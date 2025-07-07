@@ -17,12 +17,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
         
-        const parsedResource = {
-            ...resource,
-            tags: JSON.parse(resource.tags || '[]'),
-        };
-
-        return NextResponse.json(parsedResource);
+        return NextResponse.json(resource);
     } catch (error) {
         console.error('[RESOURCE_GET_ERROR]', error);
         return NextResponse.json({ message: 'Error al obtener el recurso' }, { status: 500 });
@@ -53,15 +48,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             data: { 
                 title, 
                 category, 
-                tags: JSON.stringify(tags || []), // Stringify tags
+                tags: tags || [],
                 description,
             },
         });
 
-        return NextResponse.json({
-            ...updatedResource,
-            tags: JSON.parse(updatedResource.tags || '[]') // Return parsed tags
-        });
+        return NextResponse.json(updatedResource);
     } catch (error) {
         console.error('[RESOURCE_PUT_ERROR]', error);
         return NextResponse.json({ message: 'Error al actualizar el recurso' }, { status: 500 });

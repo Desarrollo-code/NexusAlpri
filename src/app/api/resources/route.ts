@@ -20,11 +20,10 @@ export async function GET(req: NextRequest) {
             ],
         });
         
-        // Don't expose the PIN hash to the client and parse tags
-        const safeResources = resources.map(({ pin, tags, ...resource }) => ({
+        // Don't expose the PIN hash to the client
+        const safeResources = resources.map(({ pin, ...resource }) => ({
             ...resource,
             hasPin: !!pin,
-            tags: JSON.parse(tags || '[]'),
         }));
 
         return NextResponse.json(safeResources);
@@ -60,7 +59,7 @@ export async function POST(req: NextRequest) {
                 description,
                 url: url || null,
                 category: category || 'General',
-                tags: JSON.stringify(tags || []), // Stringify tags
+                tags: tags || [],
                 uploaderId: session.id,
                 parentId: parentId || null,
             },
@@ -71,7 +70,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ 
             ...safeResource, 
             hasPin: !!pin,
-            tags: JSON.parse(safeResource.tags || '[]') // Return parsed tags
         }, { status: 201 });
 
     } catch (error) {
