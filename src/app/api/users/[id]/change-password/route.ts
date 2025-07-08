@@ -17,7 +17,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             return NextResponse.json({ message: 'Las nuevas contraseñas no coinciden' }, { status: 400 });
         }
         
-        // Password policy check (could be moved to a shared util)
+        // Password policy check
         const settings = await prisma.platformSettings.findFirst();
         if (settings) {
             if (newPassword.length < settings.passwordMinLength) {
