@@ -34,16 +34,19 @@ const getEventColorClass = (color?: string): string => {
 function CustomDayContent(props: DayContentProps) {
   const { date, activeModifiers } = props;
   const { eventsForDay } = activeModifiers as { eventsForDay?: CalendarEvent[] };
+  const hasEvents = eventsForDay && eventsForDay.length > 0;
 
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center">
-      <span>{format(date, 'd')}</span>
-      {eventsForDay && eventsForDay.length > 0 && (
+      <span className={cn(hasEvents && "font-bold")}>
+        {format(date, 'd')}
+      </span>
+      {hasEvents && (
         <div className="absolute bottom-1.5 flex justify-center items-center space-x-1">
           {eventsForDay.slice(0, 3).map((event) => (
             <div
               key={event.id}
-              className={cn('h-1.5 w-1.5 rounded-full', getEventColorClass(event.color))}
+              className={cn('h-2 w-2 rounded-full', getEventColorClass(event.color))}
               title={event.title}
             />
           ))}
