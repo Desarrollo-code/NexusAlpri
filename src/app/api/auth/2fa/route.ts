@@ -79,7 +79,10 @@ export async function POST(req: NextRequest) {
     }
   
     try {
-      const { action, userId, token, password } = await req.json();
+      const { searchParams } = new URL(req.url);
+      const action = searchParams.get('action');
+      const body = await req.json();
+      const { userId, token, password } = body;
   
       if (session.id !== userId) {
         return NextResponse.json({ message: 'Acción no permitida' }, { status: 403 });
@@ -89,14 +92,19 @@ export async function POST(req: NextRequest) {
         case 'generate':
           return await handleGenerate(userId);
         case 'verify':
+          if (!token) return NextResponse.json({ message: 'Token es requerido para la verificación' }, { status: 400 });
           return await handleVerify(userId, token);
         case 'disable':
+          if (!password) return NextResponse.json({ message: 'Contraseña es requerida para desactivar' }, { status: 400 });
           return await handleDisable(userId, password);
         default:
-          return NextResponse.json({ message: 'Acción inválida' }, { status: 400 });
+          return NextResponse.json({ message: 'Acción inválida proporcionada' }, { status: 400 });
       }
     } catch (error) {
       console.error('[2FA_ACTION_ERROR]', error);
+      if (error instanceof SyntaxError) {
+        return NextResponse.json({ message: 'El cuerpo de la solicitud no es un JSON válido.' }, { status: 400 });
+      }
       return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
     }
 }
