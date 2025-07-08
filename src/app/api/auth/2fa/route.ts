@@ -73,7 +73,7 @@ async function handleDisable(userId: string, pass: string) {
 }
 
 export async function POST(req: NextRequest) {
-    const session = await getSession();
+    const session = await getSession(req);
     if (!session) {
       return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
