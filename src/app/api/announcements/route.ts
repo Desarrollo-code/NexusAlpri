@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
+import { sendEmail } from '@/lib/email';
+import { AnnouncementEmail } from '@/components/emails/announcement-email';
+import type { UserRole } from '@/types';
 
 export async function GET(req: NextRequest) {
   try {
@@ -39,7 +42,41 @@ export async function POST(req: NextRequest) {
         authorId: session.id,
         date: new Date(),
       },
+      include: {
+        author: { select: { name: true } }
+      }
     });
+
+    // --- NEW EMAIL LOGIC ---
+    const settings = await prisma.platformSettings.findFirst();
+    if (settings?.enableEmailNotifications) {
+        let targetUsers: { email: string }[] = [];
+
+        if (audience === 'ALL') {
+            targetUsers = await prisma.user.findMany({ select: { email: true } });
+        } else if (Array.isArray(audience)) {
+            targetUsers = await prisma.user.findMany({
+                where: { role: { in: audience as UserRole[] } },
+                select: { email: true }
+            });
+        }
+        
+        const recipientEmails = targetUsers.map(u => u.email).filter(Boolean);
+
+        if (recipientEmails.length > 0) {
+            await sendEmail({
+                to: recipientEmails,
+                subject: `Nuevo Anuncio en ${settings.platformName}: ${title}`,
+                react: AnnouncementEmail({
+                    title,
+                    content,
+                    authorName: newAnnouncement.author?.name || 'Sistema',
+                    platformName: settings.platformName,
+                }),
+            });
+        }
+    }
+    // --- END NEW EMAIL LOGIC ---
 
     return NextResponse.json(newAnnouncement, { status: 201 });
   } catch (error) {

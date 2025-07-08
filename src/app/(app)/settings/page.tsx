@@ -145,7 +145,7 @@ export default function SettingsPage() {
                 />
               </div>
                <p className="text-xs text-muted-foreground">
-                Nota: La funcionalidad de envío de correos real no está implementada. Esto solo guarda la preferencia.
+                Requiere configurar una API key del proveedor de correo en las variables de entorno.
               </p>
             </CardContent>
           </Card>
