@@ -534,7 +534,7 @@ export default function EditCoursePage() {
     const params = useParams();
     const router = useRouter();
     const { toast } = useToast();
-    const { user, isLoading: isAuthLoading } = useAuth();
+    const { user, settings, isLoading: isAuthLoading } = useAuth();
 
     const courseId = (params?.courseId as string) || '';
     const isNewCourse = courseId === 'new';
@@ -1033,7 +1033,29 @@ export default function EditCoursePage() {
                             <CardContent className="space-y-4">
                                 <div>
                                     <Label htmlFor="category">Categoría</Label>
-                                    <Input id="category" {...methods.register('category', { required: 'La categoría es obligatoria' })} placeholder="Ej: Programación, Diseño" disabled={isSaving} />
+                                    <Controller
+                                        control={control}
+                                        name="category"
+                                        rules={{ required: 'La categoría es obligatoria' }}
+                                        render={({ field }) => (
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                value={field.value || ''}
+                                                disabled={isSaving}
+                                            >
+                                                <SelectTrigger id="category">
+                                                    <SelectValue placeholder="Selecciona una categoría" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {(settings?.resourceCategories || []).sort().map(cat => (
+                                                        <SelectItem key={cat} value={cat}>
+                                                            {cat}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        )}
+                                    />
                                     {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>}
                                 </div>
                                 <div>

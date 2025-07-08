@@ -93,7 +93,7 @@ const MiniTrendChart = ({ data, color }: { data: { value: number }[], color: str
 
 export default function DashboardPage() {
   // --- HOOKS ---
-  const { user } = useAuth();
+  const { user, settings } = useAuth();
   
   const [adminStats, setAdminStats] = useState<AdminDashboardStats | null>(null);
   const [studentStats, setStudentStats] = useState<{ enrolled: number; completed: number } | null>(null);
@@ -114,6 +114,11 @@ export default function DashboardPage() {
   const [myCoursesError, setMyCoursesError] = useState<string | null>(null);
 
   const [showWelcome, setShowWelcome] = useState(false);
+
+  const shouldSetup2fa = useMemo(() => {
+    if (!settings || !user) return false;
+    return settings.require2faForAdmins && user.role === 'ADMINISTRATOR' && !user.isTwoFactorEnabled;
+  }, [settings, user]);
 
   const fetchAdminStats = useCallback(async () => {
     if (user?.role !== 'ADMINISTRATOR') {
@@ -374,6 +379,17 @@ export default function DashboardPage() {
     <div className="space-y-8">
 
       {showWelcome && <WelcomeGuide />}
+
+      {shouldSetup2fa && (
+        <Alert variant="destructive" className="mb-8">
+            <ShieldAlert className="h-4 w-4" />
+            <AlertTitle>Acción de Seguridad Requerida</AlertTitle>
+            <AlertDescription>
+                La política de la plataforma requiere que todos los administradores usen autenticación de dos factores. 
+                Por favor, <Link href="/profile" className="font-bold underline">activa 2FA en tu perfil</Link> para asegurar tu cuenta.
+            </AlertDescription>
+        </Alert>
+      )}
 
       {user.role === 'STUDENT' && (
         <section>

@@ -59,6 +59,18 @@ export async function POST(req: NextRequest) {
             if (password.length < settings.passwordMinLength) {
                 return NextResponse.json({ message: `La contraseña debe tener al menos ${settings.passwordMinLength} caracteres.` }, { status: 400 });
             }
+            if (settings.passwordRequireUppercase && !/[A-Z]/.test(password)) {
+                return NextResponse.json({ message: "La contraseña debe contener al menos una mayúscula." }, { status: 400 });
+            }
+            if (settings.passwordRequireLowercase && !/[a-z]/.test(password)) {
+                return NextResponse.json({ message: "La contraseña debe contener al menos una minúscula." }, { status: 400 });
+            }
+            if (settings.passwordRequireNumber && !/\d/.test(password)) {
+                return NextResponse.json({ message: "La contraseña debe contener al menos un número." }, { status: 400 });
+            }
+            if (settings.passwordRequireSpecialChar && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+                return NextResponse.json({ message: "La contraseña debe contener al menos un carácter especial." }, { status: 400 });
+            }
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
