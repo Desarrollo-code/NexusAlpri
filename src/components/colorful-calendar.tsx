@@ -32,15 +32,15 @@ const getEventColorClass = (color?: string): string => {
 };
 
 function CustomDayContent(props: DayContentProps) {
-  const { date } = props;
-  const { eventsForDay } = props.activeModifiers as { eventsForDay?: CalendarEvent[] };
+  const { date, activeModifiers } = props;
+  const { eventsForDay } = activeModifiers as { eventsForDay?: CalendarEvent[] };
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-start pt-1.5">
-      <span className="text-sm">{format(date, 'd')}</span>
+    <div className="relative w-full h-full flex flex-col items-center justify-center">
+      <span>{format(date, 'd')}</span>
       {eventsForDay && eventsForDay.length > 0 && (
         <div className="absolute bottom-1.5 flex justify-center items-center space-x-1">
-          {eventsForDay.slice(0, 4).map((event) => (
+          {eventsForDay.slice(0, 3).map((event) => (
             <div
               key={event.id}
               className={cn('h-1.5 w-1.5 rounded-full', getEventColorClass(event.color))}
@@ -72,11 +72,16 @@ export default function ColorfulCalendar({
   }, [events]);
 
   const modifiers = useMemo(() => ({
+    weekends: { dayOfWeek: [0, 6] as const },
     eventsForDay: (date: Date) => {
       const dayKey = format(date, 'yyyy-MM-dd');
       return eventsByDay[dayKey] || [];
     },
   }), [eventsByDay]);
+
+  const modifierClassNames = useMemo(() => ({
+    weekends: 'text-destructive',
+  }), []);
 
   return (
     <Calendar
@@ -85,6 +90,7 @@ export default function ColorfulCalendar({
       onSelect={onDateSelect}
       locale={es}
       modifiers={modifiers}
+      modifierClassNames={modifierClassNames}
       components={{
         DayContent: CustomDayContent,
       }}
