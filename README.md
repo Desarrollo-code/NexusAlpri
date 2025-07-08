@@ -20,9 +20,11 @@ La plataforma se organiza en torno a tres roles de usuario clave (Estudiante, In
 
 ### Para Instructores y Administradores:
 
-*   **Gestión de Cursos Completa:** Crea, edita y publica cursos. Organiza el contenido en módulos y lecciones, que pueden incluir videos, texto, archivos descargables y quizzes interactivos.
-*   **Editor de Contenido Drag & Drop:** Reordena módulos y lecciones fácilmente arrastrando y soltando.
-*   **Gestión de Inscritos:** Supervisa el progreso de los estudiantes en los cursos que impartes.
+*   **Gestión de Cursos Completa:** Crea, edita y publica cursos. Define títulos, descripciones y categorías para una fácil organización.
+*   **Contenido Multimedia Interactivo:** Organiza el curso en módulos y lecciones. Cada lección puede contener **videos de YouTube, texto enriquecido, enlaces externos, archivos descargables (PDF, imágenes, etc.) y quizzes interactivos** para evaluar el conocimiento.
+*   **Imagen de Portada Perfecta:** Al crear un curso, sube una imagen y utiliza la **herramienta integrada para recortar y adaptar la imagen**, asegurando que la portada se vea profesional y atractiva en el catálogo.
+*   **Editor de Contenido Drag & Drop:** Reordena fácilmente módulos y lecciones simplemente arrastrándolos y soltándolos, permitiendo una estructuración rápida e intuitiva del material de estudio.
+*   **Gestión de Inscritos:** Supervisa el progreso de los estudiantes en los cursos que impartes y visualiza quiénes están inscritos.
 
 ### Funcionalidades Exclusivas para Administradores:
 
