@@ -48,11 +48,11 @@ function CustomDayContent(props: CustomDayContentProps) {
                 {format(date, 'd')}
             </span>
             {hasEvents && (
-                <div className="absolute bottom-1.5 flex justify-center items-center space-x-1">
+                <div className="absolute bottom-1.5 flex justify-center items-center space-x-1.5">
                 {eventsForDay.slice(0, 4).map((event) => (
                     <div
                         key={event.id}
-                        className={cn('h-2 w-2 rounded-full', getEventColorClass(event.color))}
+                        className={cn('h-2.5 w-2.5 rounded-full', getEventColorClass(event.color))}
                         title={event.title}
                     />
                 ))}
@@ -108,8 +108,8 @@ export default function ColorfulCalendar({
           "w-full h-full p-0 font-normal aria-selected:opacity-100",
           "flex items-center justify-center rounded-full"
         ),
-        day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        day_today: "bg-accent text-accent-foreground",
+        day_selected: "bg-secondary text-secondary-foreground hover:bg-secondary/90 focus:bg-secondary/90",
+        day_today: "bg-secondary text-secondary-foreground",
         day_outside: "day-outside text-muted-foreground opacity-50",
         day_disabled: "text-muted-foreground opacity-50",
         day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
