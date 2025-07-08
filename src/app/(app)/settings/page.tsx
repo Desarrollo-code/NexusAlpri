@@ -144,9 +144,6 @@ export default function SettingsPage() {
                     disabled={isSaving}
                 />
               </div>
-               <p className="text-xs text-muted-foreground">
-                Requiere configurar una API key del proveedor de correo en las variables de entorno.
-              </p>
             </CardContent>
           </Card>
 
