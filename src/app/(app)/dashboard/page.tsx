@@ -42,7 +42,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from "recharts"
 import type { ChartConfig } from "@/components/ui/chart"
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -308,8 +308,8 @@ export default function DashboardPage() {
     }
 
     return (
-        <Alert className="relative bg-primary/5 border-primary/20 shadow-md mb-8">
-             <Button variant="ghost" size="icon" onClick={handleDismissWelcome} className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:bg-primary/10 z-10">
+        <Alert className="relative bg-primary/10 border-primary/20 shadow-md mb-8">
+             <Button variant="ghost" size="icon" onClick={handleDismissWelcome} className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:bg-primary/20 z-10">
                 <X className="h-4 w-4" />
                 <span className="sr-only">Cerrar</span>
             </Button>
@@ -517,7 +517,7 @@ export default function DashboardPage() {
                             />
                             <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                                 {courseStatusChartData.map((entry, index) => (
-                                    <Bar key={entry.status} dataKey="count" fill={`hsl(var(--chart-${index + 1}))`} />
+                                    <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${index + 1}))`} />
                                 ))}
                             </Bar>
                           </BarChart>
@@ -554,7 +554,7 @@ export default function DashboardPage() {
                               />
                                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                                 {userRolesChartData.map((entry, index) => (
-                                    <Bar key={entry.role} dataKey="count" fill={`hsl(var(--chart-${index + 1}))`} />
+                                    <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${index + 1}))`} />
                                 ))}
                                </Bar>
                             </BarChart>

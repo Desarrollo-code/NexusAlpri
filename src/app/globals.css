@@ -4,31 +4,31 @@
 
 @layer base {
   :root {
-    --background: 0 0% 12%;
+    --background: 0 0% 19%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 16%;
+    --card: 0 0% 24%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 12%;
+    --popover: 0 0% 19%;
     --popover-foreground: 0 0% 98%;
     --primary: 262 52% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 20%;
+    --secondary: 0 0% 28%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 20%;
+    --muted: 0 0% 28%;
     --muted-foreground: 0 0% 65%;
     --accent: 261 51% 51%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
+    --border: 0 0% 30%;
+    --input: 0 0% 30%;
     --ring: 261 51% 51%;
     --chart-1: 198 93% 60%; /* Bright Cyan */
     --chart-2: 350 91% 60%; /* Vibrant Pink */
     --chart-3: 145 83% 55%; /* Lively Green */
     --chart-4: 45 93% 55%; /* Sunny Yellow */
     --chart-5: 280 89% 65%; /* Electric Violet */
-    --sidebar-background: 0 0% 10%;
+    --sidebar-background: 0 0% 14%;
     --sidebar-foreground: 0 0% 80%;
     --sidebar-primary: 262 52% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
