@@ -387,7 +387,7 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Inscritos</CardTitle>
-                  <BookOpen className="h-5 w-5 text-sky-400" />
+                  <BookOpen className="h-5 w-5 text-chart-1" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{studentStats.enrolled}</div>
@@ -396,7 +396,7 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Completados</CardTitle>
-                  <CheckCircle className="h-5 w-5 text-emerald-400" />
+                  <CheckCircle className="h-5 w-5 text-chart-3" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{studentStats.completed}</div>
@@ -419,7 +419,7 @@ export default function DashboardPage() {
                <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Impartidos</CardTitle>
-                  <BookMarked className="h-5 w-5 text-sky-400" />
+                  <BookMarked className="h-5 w-5 text-chart-1" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{instructorStats.taught}</div>
@@ -428,7 +428,7 @@ export default function DashboardPage() {
                <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Estudiantes</CardTitle>
-                  <Users className="h-5 w-5 text-emerald-400" />
+                  <Users className="h-5 w-5 text-chart-3" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">N/A</div>
@@ -452,7 +452,7 @@ export default function DashboardPage() {
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total de Usuarios</CardTitle><Users className="h-5 w-5 text-sky-400" />
+                    <CardTitle className="text-sm font-medium">Total de Usuarios</CardTitle><Users className="h-5 w-5 text-chart-1" />
                   </CardHeader>
                   <CardContent className="flex justify-between items-end">
                     <div className="text-2xl font-bold">{adminStats.totalUsers}</div>
@@ -461,16 +461,16 @@ export default function DashboardPage() {
                 </Card>
                  <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total de Cursos</CardTitle><BookOpenCheck className="h-5 w-5 text-emerald-400" />
+                    <CardTitle className="text-sm font-medium">Total de Cursos</CardTitle><BookOpenCheck className="h-5 w-5 text-chart-2" />
                   </CardHeader>
                   <CardContent className="flex justify-between items-end">
                     <div className="text-2xl font-bold">{adminStats.totalCourses}</div>
-                    <MiniTrendChart data={trendData2} color="hsl(var(--chart-3))" />
+                    <MiniTrendChart data={trendData2} color="hsl(var(--chart-2))" />
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Cursos Publicados</CardTitle><Activity className="h-5 w-5 text-amber-400" />
+                    <CardTitle className="text-sm font-medium">Cursos Publicados</CardTitle><Activity className="h-5 w-5 text-chart-4" />
                   </CardHeader>
                   <CardContent className="flex justify-between items-end">
                     <div className="text-2xl font-bold">{adminStats.totalPublishedCourses}</div>
@@ -479,11 +479,11 @@ export default function DashboardPage() {
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Inscripciones</CardTitle><UsersRound className="h-5 w-5 text-rose-400" />
+                    <CardTitle className="text-sm font-medium">Total Inscripciones</CardTitle><UsersRound className="h-5 w-5 text-chart-5" />
                   </CardHeader>
                   <CardContent className="flex justify-between items-end">
                     <div className="text-2xl font-bold">{adminStats.totalEnrollments}</div>
-                    <MiniTrendChart data={trendData4} color="hsl(var(--chart-2))" />
+                    <MiniTrendChart data={trendData4} color="hsl(var(--chart-5))" />
                   </CardContent>
                 </Card>
               </div>
