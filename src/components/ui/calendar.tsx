@@ -34,14 +34,14 @@ function Calendar({
         table: "w-full border-collapse",
         head_row: "flex w-full",
         head_cell:
-          "text-muted-foreground rounded-md w-full font-normal text-[0.8rem]",
+          "text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem]",
         row: "flex w-full mt-2",
         cell: cn(
-          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 w-full aspect-square"
+          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 flex-1 aspect-square"
         ),
         day: "h-full w-full p-0 font-normal rounded-full transition-colors flex items-center justify-center",
         day_selected:
-          "bg-primary text-primary-foreground hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
+          "bg-primary text-primary-foreground rounded-full hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
         day_today: "bg-accent text-accent-foreground rounded-full",
         day_outside: "text-muted-foreground opacity-30",
         day_disabled: "text-muted-foreground opacity-50",
