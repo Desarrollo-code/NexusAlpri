@@ -10,19 +10,19 @@
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 19%;
     --popover-foreground: 0 0% 98%;
-    --primary: 262 52% 50%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 28%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 28%;
     --muted-foreground: 0 0% 65%;
-    --accent: 261 51% 51%;
+    --accent: 221 83% 53%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 30%;
     --input: 0 0% 30%;
-    --ring: 261 51% 51%;
+    --ring: 221 83% 53%;
     --chart-1: 198 93% 60%; /* Bright Cyan */
     --chart-2: 350 91% 60%; /* Vibrant Pink */
     --chart-3: 145 83% 55%; /* Lively Green */
@@ -30,19 +30,19 @@
     --chart-5: 280 89% 65%; /* Electric Violet */
     --sidebar-background: 0 0% 14%;
     --sidebar-foreground: 0 0% 80%;
-    --sidebar-primary: 262 52% 50%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 20%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 261 51% 51%;
+    --sidebar-ring: 221 83% 53%;
     
     /* Event Colors */
     --event-blue: 217 91% 60%;
     --event-green: 142 71% 45%;
     --event-red: 0 84% 60%;
     --event-orange: 35 92% 55%;
-    --event-default: 261 51% 51%;
+    --event-default: 221 83% 53%;
   }
 
   .light {
@@ -52,19 +52,19 @@
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 262 52% 50%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 261 51% 51%;
-    --accent-foreground: 0 0% 9%;
+    --accent: 221 83% 53%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 262 52% 50%;
+    --ring: 221 83% 53%;
     --chart-1: 198 93% 60%; /* Bright Cyan */
     --chart-2: 350 91% 60%; /* Vibrant Pink */
     --chart-3: 145 83% 55%; /* Lively Green */
@@ -72,7 +72,7 @@
     --chart-5: 280 89% 65%; /* Electric Violet */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
