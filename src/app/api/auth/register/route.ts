@@ -6,6 +6,11 @@ import type { User } from '@/types';
 
 export async function POST(req: NextRequest) {
   try {
+    const settings = await prisma.platformSettings.findFirst();
+    if (settings && !settings.allowPublicRegistration) {
+      return NextResponse.json({ message: 'El registro público está deshabilitado por el administrador.' }, { status: 403 });
+    }
+
     const { name, email, password } = await req.json();
 
     if (!name || !email || !password) {

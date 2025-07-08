@@ -156,7 +156,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
                     <div className="space-y-0.5">
                         <Label htmlFor="allowPublicRegistration" className="text-base">Registro Público</Label>
-                        <p className="text-sm text-muted-foreground">Permitir que nuevos estudiantes se registren públicamente.</p>
+                        <p className="text-sm text-muted-foreground">Controla si los usuarios pueden crear sus propias cuentas. Si está desactivado, solo los administradores pueden añadir nuevos usuarios.</p>
                     </div>
                     <Switch 
                         id="allowPublicRegistration" 
@@ -165,9 +165,6 @@ export default function SettingsPage() {
                         disabled={isSaving}
                     />
                 </div>
-                 <p className="text-xs text-muted-foreground -mt-4">
-                    Nota: Esta opción ahora controla activamente el proceso de registro de nuevos usuarios.
-                 </p>
 
                 <Separator/>
 
