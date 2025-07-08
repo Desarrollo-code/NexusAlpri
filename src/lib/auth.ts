@@ -48,7 +48,7 @@ export async function createSession(user: Partial<User>) {
   const session = await encrypt({ user: userPayload, expires: expires.toISOString() });
 
   const cookieStore = cookies();
-  await cookieStore.set('session', session, { expires, httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/' });
+  cookieStore.set('session', session, { expires, httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/' });
 }
 
 export async function getSession(request?: NextRequest) {
@@ -76,5 +76,5 @@ export async function getSession(request?: NextRequest) {
 
 export async function deleteSession() {
   const cookieStore = cookies();
-  await cookieStore.set('session', '', { expires: new Date(0), path: '/' });
+  cookieStore.set('session', '', { expires: new Date(0), path: '/' });
 }

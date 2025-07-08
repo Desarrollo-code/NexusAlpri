@@ -6,9 +6,10 @@ import type { NextRequest } from 'next/server';
 
 // GET a specific course by ID
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
   try {
     const course = await prisma.course.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         instructor: { select: { id: true, name: true } },
         modules: {
@@ -54,6 +55,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
+  const { id } = params;
+
   try {
     const courseData = await req.json();
     const { title, description, imageUrl, category, status, publicationDate, modules } = courseData;
@@ -63,7 +66,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         return NextResponse.json({ message: 'Título y descripción son requeridos' }, { status: 400 });
     }
 
-    const course = await prisma.course.findUnique({ where: { id: params.id } });
+    const course = await prisma.course.findUnique({ where: { id } });
     if (!course) {
       return NextResponse.json({ message: 'Curso no encontrado' }, { status: 404 });
     }
@@ -76,7 +79,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     await prisma.$transaction(async (tx) => {
       // 1. Update course basic details
       await tx.course.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           title,
           description,
@@ -94,7 +97,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         // Delete modules that are not in the incoming list
         await tx.module.deleteMany({
           where: {
-            courseId: params.id,
+            courseId: id,
             NOT: { id: { in: incomingModuleIds } },
           },
         });
@@ -110,7 +113,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           const modulePayload = {
             title: moduleData.title,
             order: moduleIndex,
-            courseId: params.id,
+            courseId: id,
           };
 
           const savedModule = await tx.module.upsert({
@@ -218,7 +221,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     
     // Fetch the fully populated course to return to the client
     const finalCourse = await prisma.course.findUnique({
-        where: { id: params.id },
+        where: { id },
         include: {
             instructor: { select: { id: true, name: true } },
             modules: {
@@ -257,8 +260,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
+    const { id } = params;
+
     try {
-        const course = await prisma.course.findUnique({ where: { id: params.id } });
+        const course = await prisma.course.findUnique({ where: { id } });
         if (!course) {
             return NextResponse.json({ message: 'Curso no encontrado' }, { status: 404 });
         }
@@ -266,7 +271,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
             return NextResponse.json({ message: 'No tienes permiso para eliminar este curso' }, { status: 403 });
         }
         
-        await prisma.course.delete({ where: { id: params.id } });
+        await prisma.course.delete({ where: { id } });
 
         return new NextResponse(null, { status: 204 });
     } catch (error) {

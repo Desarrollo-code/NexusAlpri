@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
@@ -10,9 +11,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
+  const { id } = params;
+
   try {
-    const awaitedParams = await params;
-    const { id } = awaitedParams;
     const body = await req.json();
     const { attendeeIds, ...restOfBody } = body;
 
@@ -51,9 +52,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
+    const { id } = params;
     try {
-        const awaitedParams = await params;
-        const { id } = awaitedParams;
         await prisma.calendarEvent.delete({ where: { id } });
         return new NextResponse(null, { status: 204 });
     } catch (error) {

@@ -7,16 +7,13 @@ import type { NextRequest } from 'next/server';
 // Get all courses a specific user is enrolled in
 export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
     const session = await getSession(req);
-    // Await params as per Next.js 15+ and Turbopack requirement
-    const awaitedParams = await params;
+    const { userId } = params;
 
-    if (!session || session.id !== awaitedParams.userId) {
+    if (!session || session.id !== userId) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
     try {
-        const { userId } = awaitedParams;
-
         const enrollments = await prisma.enrollment.findMany({
             where: { userId },
             include: {
