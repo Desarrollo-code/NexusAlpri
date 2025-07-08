@@ -5,14 +5,14 @@ import { getSession } from '@/lib/auth';
 import type { CourseStatus } from '@/types';
 import type { NextRequest } from 'next/server';
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, context: { params: { id: string } }) {
     const session = await getSession(req);
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
     
     try {
-        const { id } = params;
+        const { id } = context.params;
         const { status } = await req.json();
 
         if (!['DRAFT', 'PUBLISHED', 'ARCHIVED', 'SCHEDULED'].includes(status)) {

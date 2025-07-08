@@ -21,8 +21,8 @@ async function checkAuth(req: NextRequest, resourceId: string) {
 }
 
 // Set a PIN
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-    const auth = await checkAuth(req, params.id);
+export async function POST(req: NextRequest, context: { params: { id: string } }) {
+    const auth = await checkAuth(req, context.params.id);
     if (!auth.authorized) return auth.error;
     
     try {
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         const hashedPin = await bcrypt.hash(pin, 10);
         
         await prisma.resource.update({
-            where: { id: params.id },
+            where: { id: context.params.id },
             data: { pin: hashedPin },
         });
 
@@ -47,13 +47,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 }
 
 // Remove a PIN
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-    const auth = await checkAuth(req, params.id);
+export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
+    const auth = await checkAuth(req, context.params.id);
     if (!auth.authorized) return auth.error;
 
     try {
         await prisma.resource.update({
-            where: { id: params.id },
+            where: { id: context.params.id },
             data: { pin: null },
         });
         return NextResponse.json({ message: 'PIN eliminado correctamente' });

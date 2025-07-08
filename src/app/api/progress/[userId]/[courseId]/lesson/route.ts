@@ -5,9 +5,9 @@ import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
 // Update lesson completion status
-export async function POST(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
+export async function POST(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
     const session = await getSession(req);
-    const { userId, courseId } = params;
+    const { userId, courseId } = context.params;
 
     if (!session || session.id !== userId) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });

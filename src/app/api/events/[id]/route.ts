@@ -5,13 +5,13 @@ import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
 // PUT (update) an event
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, context: { params: { id: string } }) {
   const session = await getSession(req);
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id } = params;
+  const { id } = context.params;
 
   try {
     const body = await req.json();
@@ -46,13 +46,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE an event
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
     const session = await getSession(req);
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const { id } = params;
+    const { id } = context.params;
     try {
         await prisma.calendarEvent.delete({ where: { id } });
         return new NextResponse(null, { status: 204 });

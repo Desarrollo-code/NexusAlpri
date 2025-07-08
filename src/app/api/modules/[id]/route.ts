@@ -5,14 +5,14 @@
 
 import { NextResponse } from 'next/server';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-    return NextResponse.json({ message: `GET module ${params.id} - Not Implemented` }, { status: 501 });
+export async function GET(req: Request, context: { params: { id: string } }) {
+    return NextResponse.json({ message: `GET module ${context.params.id} - Not Implemented` }, { status: 501 });
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-    return NextResponse.json({ message: `PUT module ${params.id} - Not Implemented` }, { status: 501 });
+export async function PUT(req: Request, context: { params: { id: string } }) {
+    return NextResponse.json({ message: `PUT module ${context.params.id} - Not Implemented` }, { status: 501 });
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-    return NextResponse.json({ message: `DELETE module ${params.id} - Not Implemented` }, { status: 501 });
+export async function DELETE(req: Request, context: { params: { id: string } }) {
+    return NextResponse.json({ message: `DELETE module ${context.params.id} - Not Implemented` }, { status: 501 });
 }

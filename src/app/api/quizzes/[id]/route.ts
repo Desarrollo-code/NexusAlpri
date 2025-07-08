@@ -5,10 +5,10 @@
 
 import { NextResponse } from 'next/server';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-    return NextResponse.json({ message: `GET quiz ${params.id} - Not Implemented` }, { status: 501 });
+export async function GET(req: Request, context: { params: { id: string } }) {
+    return NextResponse.json({ message: `GET quiz ${context.params.id} - Not Implemented` }, { status: 501 });
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-    return NextResponse.json({ message: `PUT quiz ${params.id} - Not Implemented` }, { status: 501 });
+export async function PUT(req: Request, context: { params: { id: string } }) {
+    return NextResponse.json({ message: `PUT quiz ${context.params.id} - Not Implemented` }, { status: 501 });
 }
