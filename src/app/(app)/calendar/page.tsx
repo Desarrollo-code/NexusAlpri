@@ -366,7 +366,7 @@ export default function CalendarPage() {
             <div className="sm:col-span-2">
               <Label className="text-foreground">Color del Evento</Label>
               <div className="flex flex-wrap gap-3 mt-2 justify-start">
-                {['blue', 'green', 'red', 'orange', 'default'].map((colorOption) => (
+                {['blue', 'green', 'red', 'yellow', 'purple', 'cyan', 'default'].map((colorOption) => (
                   <div
                     key={colorOption}
                     className={cn(
@@ -376,7 +376,7 @@ export default function CalendarPage() {
                     )}
                     onClick={() => canEdit && setFormColor(colorOption)}
                     style={{ backgroundColor: `hsl(var(--event-${colorOption}))` }}
-                    title={colorOption}
+                    title={colorOption.charAt(0).toUpperCase() + colorOption.slice(1)}
                   >
                     {formColor === colorOption && (
                       <Check className="h-4 w-4 text-primary-foreground" />

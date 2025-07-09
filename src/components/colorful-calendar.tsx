@@ -28,8 +28,12 @@ const getEventColorClass = (color?: string): string => {
       return 'bg-event-green';
     case 'red':
       return 'bg-event-red';
-    case 'orange':
-      return 'bg-event-orange';
+    case 'yellow':
+      return 'bg-event-yellow';
+    case 'purple':
+      return 'bg-event-purple';
+    case 'cyan':
+      return 'bg-event-cyan';
     case 'default':
     default:
       return 'bg-event-default';
@@ -41,21 +45,52 @@ function CustomDayContent(props: CustomDayContentProps) {
     const dayKey = format(date, 'yyyy-MM-dd');
     const eventsForDay = eventsByDay[dayKey] || [];
     const hasEvents = eventsForDay.length > 0;
+    
+    // Cap at 5 points to avoid visual clutter
+    const pointsToShow = eventsForDay.slice(0, 5); 
+    const totalPoints = pointsToShow.length;
+    
+    // Distribute points across a 160-degree arc at the bottom of the cell.
+    const arcDegrees = 160; 
+    const angleIncrement = totalPoints > 1 ? arcDegrees / (totalPoints - 1) : 0;
+    const startAngle = -arcDegrees / 2; // Center the arc
 
     return (
-        <div className="relative w-full h-full flex flex-col items-center justify-center">
-            <span className={cn(hasEvents && "font-bold")}>
+        <div className="relative w-full h-full flex items-center justify-center group">
+            {/* The date number */}
+            <span className={cn(
+                "z-10",
+                "group-aria-selected:font-semibold"
+            )}>
                 {format(date, 'd')}
             </span>
+
+            {/* Semicircle container for event dots */}
             {hasEvents && (
-                <div className="absolute bottom-1.5 flex justify-center items-center space-x-1.5">
-                {eventsForDay.slice(0, 4).map((event) => (
-                    <div
-                        key={event.id}
-                        className={cn('h-2.5 w-2.5 rounded-full', getEventColorClass(event.color))}
-                        title={event.title}
-                    />
-                ))}
+                <div className="absolute inset-0 pointer-events-none">
+                    {pointsToShow.map((event, index) => {
+                        const angle = startAngle + (angleIncrement * index);
+                        // Using translateY with a percentage of the parent's height for radius
+                        const style = {
+                            transform: `rotate(${angle}deg) translateY(-40%) rotate(-${angle}deg)`
+                        };
+
+                        return (
+                            <div
+                                key={`${event.id}-${index}`}
+                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                                style={style}
+                            >
+                                <div
+                                    className={cn(
+                                        'h-[6px] w-[6px] rounded-full',
+                                        getEventColorClass(event.color)
+                                    )}
+                                    title={event.title}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>

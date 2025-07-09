@@ -38,10 +38,12 @@
     --sidebar-ring: 221 83% 53%;
     
     /* Event Colors */
-    --event-blue: 217 91% 60%;
-    --event-green: 142 71% 45%;
     --event-red: 0 84% 60%;
-    --event-orange: 35 92% 55%;
+    --event-green: 145 63% 49%;
+    --event-blue: 217 91% 60%;
+    --event-yellow: 37 92% 51%;
+    --event-purple: 258 90% 67%;
+    --event-cyan: 191 95% 44%;
     --event-default: 221 83% 53%;
   }
 
