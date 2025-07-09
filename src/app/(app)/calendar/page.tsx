@@ -89,7 +89,7 @@ export default function CalendarPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/events');
+      const response = await fetch('/api/events', { cache: 'no-store' });
       if (!response.ok) {
         // More robust error handling for non-JSON responses
         const errorText = await response.text();
