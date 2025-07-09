@@ -24,23 +24,29 @@ const DEFAULT_DB_SETTINGS = {
 // GET /api/settings - Fetches platform settings
 export async function GET(req: NextRequest) {
   try {
-    let settings = await prisma.platformSettings.findFirst();
+    let dbSettings = await prisma.platformSettings.findFirst();
 
-    if (!settings) {
+    if (!dbSettings) {
       // If no settings exist, create them with default values
-      settings = await prisma.platformSettings.create({
+      dbSettings = await prisma.platformSettings.create({
         data: DEFAULT_DB_SETTINGS,
       });
     }
     
-    return NextResponse.json(settings);
+    // Transform JSON fields to arrays for the client
+    const settingsToReturn: PlatformSettings = {
+        ...dbSettings,
+        // The type from prisma is JsonValue, we cast it to what the client expects
+        resourceCategories: (dbSettings.resourceCategories as string[]) ?? [],
+    };
+    
+    return NextResponse.json(settingsToReturn);
+
   } catch (error) {
     console.error('[SETTINGS_GET_ERROR]', error);
     // If there's a DB error, return the parsed default settings object to allow the app to function.
-    const fallbackSettings = {
+    const fallbackSettings: PlatformSettings = {
         ...DEFAULT_DB_SETTINGS,
-        id: 'default-settings', // a dummy id
-        updatedAt: new Date(),
     };
     return NextResponse.json(fallbackSettings);
   }
@@ -66,13 +72,18 @@ export async function POST(req: NextRequest) {
     
     const currentSettings = await prisma.platformSettings.findFirst();
 
-    const updatedSettings = await prisma.platformSettings.upsert({
+    const updatedDbSettings = await prisma.platformSettings.upsert({
       where: { id: currentSettings?.id || 'non-existent-id-for-upsert' },
       update: dataToSave,
       create: dataToSave,
     });
+    
+    const settingsToReturn: PlatformSettings = {
+        ...updatedDbSettings,
+        resourceCategories: (updatedDbSettings.resourceCategories as string[]) ?? [],
+    };
 
-    return NextResponse.json(updatedSettings);
+    return NextResponse.json(settingsToReturn);
   } catch (error) {
     console.error('[SETTINGS_POST_ERROR]', error);
     return NextResponse.json({ message: 'Error interno del servidor al guardar la configuración' }, { status: 500 });
