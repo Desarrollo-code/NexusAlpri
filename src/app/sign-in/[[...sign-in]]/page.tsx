@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -217,9 +218,10 @@ export default function SignInPage() {
         <Image
           src="/uploads/images/watermark-alprigrama.png"
           alt="Alprigrama S.A.S. Watermark"
-          width={70}
-          height={70}
-          className="opacity-40"
+          width={120}
+          height={120}
+          className="opacity-40 w-[70px] h-auto"
+          priority
           data-ai-hint="company logo"
         />
       </div>

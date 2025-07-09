@@ -165,9 +165,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
              <Image 
               src="/uploads/images/logo-nexusalpri.png" 
               alt="NexusAlpri Logo" 
-              width={32} 
-              height={32}
-              className="group-data-[collapsible=icon]:mx-auto"
+              width={120} 
+              height={97.5}
+              className="group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-auto group-data-[collapsible=icon]:mx-auto w-8 h-auto"
               priority
               data-ai-hint="logo education"
             />
@@ -211,9 +211,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <Image
             src="/uploads/images/watermark-alprigrama.png" 
             alt="Alprigrama S.A.S. Watermark"
-            width={70} 
-            height={70} 
-            className="opacity-40" 
+            width={120} 
+            height={120} 
+            className="opacity-40 w-[70px] h-auto"
+            priority 
           />
         </div>
       </SidebarInset>
