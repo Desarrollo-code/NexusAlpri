@@ -46,11 +46,8 @@ const getEventColorClass = (color?: string): string => {
     case 'blue': return 'bg-event-blue';
     case 'green': return 'bg-event-green';
     case 'red': return 'bg-event-red';
-    case 'yellow': return 'bg-event-yellow';
-    case 'purple': return 'bg-event-purple';
-    case 'cyan': return 'bg-event-cyan';
     case 'orange': return 'bg-event-orange';
-    default: return 'bg-event-purple';
+    default: return 'bg-event-blue';
   }
 };
 
@@ -79,7 +76,7 @@ export default function CalendarPage() {
   const [formAllDay, setFormAllDay] = useState(true);
   const [formAudienceMode, setFormAudienceMode] = useState<EventAudienceType>('SPECIFIC');
   const [formAttendees, setFormAttendees] = useState<string[]>([]);
-  const [formColor, setFormColor] = useState<string>('purple');
+  const [formColor, setFormColor] = useState<string>('blue');
 
   // Authorization check for editing
   const canEdit = useMemo(() => user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR', [user]);
@@ -145,7 +142,7 @@ export default function CalendarPage() {
     setFormAllDay(true);
     setFormAudienceMode('SPECIFIC');
     setFormAttendees([]);
-    setFormColor('purple');
+    setFormColor('blue');
     setEventToEdit(null);
   }
 
@@ -171,7 +168,7 @@ export default function CalendarPage() {
     setFormEndDate(format(end, "yyyy-MM-dd'T'HH:mm"));
     setFormAudienceMode(event.audienceType || 'SPECIFIC');
     setFormAttendees(event.attendees?.map(a => a.id) || []);
-    setFormColor(event.color || 'purple');
+    setFormColor(event.color || 'blue');
     setShowEventModal(true);
   }
 
@@ -212,6 +209,7 @@ export default function CalendarPage() {
 
       toast({ title: 'Éxito', description: `Evento ${eventToEdit ? 'actualizado' : 'creado'} correctamente.` });
       
+      // Manually update the event in the local state to reflect changes instantly.
       if (eventToEdit) {
         setEvents(prevEvents => prevEvents.map(event => event.id === updatedEvent.id ? updatedEvent : event));
       } else {
@@ -301,7 +299,7 @@ export default function CalendarPage() {
                   <div className="space-y-3">
                     {selectedDayEvents.map(event => (
                       <div key={event.id} onClick={() => handleOpenEventModal(event)} className="p-3 rounded-lg border border-border flex items-start gap-3 cursor-pointer hover:bg-muted transition-colors">
-                        <div className={cn('mt-1 h-2.5 w-2.5 rounded-full flex-shrink-0', getEventColorClass(event.color || 'purple'))}></div>
+                        <div className={cn('mt-1 h-2.5 w-2.5 rounded-full flex-shrink-0', getEventColorClass(event.color || 'blue'))}></div>
                         <div className="flex-grow">
                           <p className="font-semibold text-sm text-foreground">{event.title}</p>
                           <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
@@ -383,7 +381,7 @@ export default function CalendarPage() {
             <div className="sm:col-span-2">
               <Label className="text-foreground">Color del Evento</Label>
               <div className="flex flex-wrap gap-3 mt-2 justify-start">
-                {['blue', 'green', 'red', 'yellow', 'purple', 'cyan', 'orange'].map((colorOption) => (
+                {['orange', 'green', 'blue', 'red'].map((colorOption) => (
                   <div
                     key={colorOption}
                     className={cn(

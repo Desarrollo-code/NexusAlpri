@@ -67,7 +67,6 @@ export default {
           green: 'hsl(var(--event-green))',
           red: 'hsl(var(--event-red))',
           orange: 'hsl(var(--event-orange))',
-          default: 'hsl(var(--event-default))',
         },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',

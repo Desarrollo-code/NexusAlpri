@@ -48,11 +48,7 @@
     --event-red: 350 91% 60%;       /* Vibrant Pink/Red */
     --event-green: 145 83% 55%;     /* Lively Green */
     --event-blue: 210 90% 60%;      /* Bright Blue */
-    --event-yellow: 45 93% 55%;     /* Sunny Yellow */
-    --event-purple: 280 89% 65%;    /* Electric Violet */
-    --event-cyan: 187 100% 42%;     /* Sharp Cyan */
     --event-orange: 25 95% 53%;   /* Vivid Orange */
-    --event-default: 262 83% 58%;   /* Primary Violet */
   }
 
   .light {
@@ -98,11 +94,7 @@
     --event-red: 350 86% 58%;
     --event-green: 145 78% 50%;
     --event-blue: 210 85% 55%;
-    --event-yellow: 45 88% 50%;
-    --event-purple: 280 84% 60%;
-    --event-cyan: 187 95% 40%;
     --event-orange: 25 90% 50%;
-    --event-default: 262 75% 50%;
   }
 }
 
