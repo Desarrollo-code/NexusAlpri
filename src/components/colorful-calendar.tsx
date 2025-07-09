@@ -22,21 +22,15 @@ interface CustomDayContentProps extends DayContentProps {
 
 const getEventColorClass = (color?: string): string => {
   switch (color) {
-    case 'blue':
-      return 'bg-event-blue';
-    case 'green':
-      return 'bg-event-green';
-    case 'red':
-      return 'bg-event-red';
-    case 'yellow':
-      return 'bg-event-yellow';
-    case 'purple':
-      return 'bg-event-purple';
-    case 'cyan':
-      return 'bg-event-cyan';
+    case 'blue': return 'bg-event-blue';
+    case 'green': return 'bg-event-green';
+    case 'red': return 'bg-event-red';
+    case 'yellow': return 'bg-event-yellow';
+    case 'purple': return 'bg-event-purple';
+    case 'cyan': return 'bg-event-cyan';
+    case 'orange': return 'bg-event-orange';
     case 'default':
-    default:
-      return 'bg-event-default';
+    default: return 'bg-event-default';
   }
 };
 

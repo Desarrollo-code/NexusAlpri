@@ -40,6 +40,21 @@ import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 
+
+const getEventColorClass = (color?: string): string => {
+  switch (color) {
+    case 'blue': return 'bg-event-blue';
+    case 'green': return 'bg-event-green';
+    case 'red': return 'bg-event-red';
+    case 'yellow': return 'bg-event-yellow';
+    case 'purple': return 'bg-event-purple';
+    case 'cyan': return 'bg-event-cyan';
+    case 'orange': return 'bg-event-orange';
+    case 'default':
+    default: return 'bg-event-default';
+  }
+};
+
 export default function CalendarPage() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -177,7 +192,6 @@ export default function CalendarPage() {
       audienceType: formAudienceMode,
       attendeeIds: formAudienceMode === 'SPECIFIC' ? formAttendees : [],
       color: formColor,
-      creatorId: user?.id,
     };
 
     const endpoint = eventToEdit ? `/api/events/${eventToEdit.id}` : '/api/events';
@@ -284,7 +298,7 @@ export default function CalendarPage() {
                   <div className="space-y-3">
                     {selectedDayEvents.map(event => (
                       <div key={event.id} onClick={() => handleOpenEventModal(event)} className="p-3 rounded-lg border border-border flex items-start gap-3 cursor-pointer hover:bg-muted transition-colors">
-                        <div className={cn('mt-1 h-2.5 w-2.5 rounded-full flex-shrink-0', `bg-event-${event.color || 'default'}`)}></div>
+                        <div className={cn('mt-1 h-2.5 w-2.5 rounded-full flex-shrink-0', getEventColorClass(event.color))}></div>
                         <div className="flex-grow">
                           <p className="font-semibold text-sm text-foreground">{event.title}</p>
                           <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
