@@ -105,7 +105,7 @@ export default function CourseDetailPage() {
   const [isConsolidating, setIsConsolidating] = useState(false);
   const [isFinalProgressVisible, setIsFinalProgressVisible] = useState(false);
 
-  const [activeAccordionItem, setActiveAccordionItem] = useState<string | undefined>(undefined);
+  const [activeAccordionItems, setActiveAccordionItems] = useState<string[]>([]);
   const contentRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
@@ -159,7 +159,9 @@ export default function CourseDetailPage() {
       const apiCourseData: ApiDetailedCourse = await courseResponse.json();
       const appCourseData = mapApiDetailedCourseToAppCourse(apiCourseData);
       setCourse(appCourseData);
-      if (appCourseData.modules?.[0]) setActiveAccordionItem(appCourseData.modules[0].id);
+      if (appCourseData.modules?.[0]?.id) {
+        setActiveAccordionItems([appCourseData.modules[0].id]);
+      }
 
       const enrollmentData = enrollmentStatusResponse?.ok ? await enrollmentStatusResponse.json() : { isEnrolled: false };
       setIsEnrolled(enrollmentData.isEnrolled);
@@ -402,7 +404,7 @@ export default function CourseDetailPage() {
               <h2 className="text-xl font-semibold font-headline mb-4">Contenido del Curso</h2>
               {isLoading && modulesForDisplay.length === 0 && <div className="flex items-center text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin mr-2" />Cargando contenido...</div>}
 
-              <Accordion type="single" collapsible className="w-full" value={activeAccordionItem} onValueChange={setActiveAccordionItem}>
+              <Accordion type="multiple" className="w-full" value={activeAccordionItems} onValueChange={setActiveAccordionItems}>
                 {modulesForDisplay.map((moduleItem) => (
                   <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b border-border last:border-b-0">
                     <AccordionTrigger className="text-md font-semibold hover:no-underline py-4 px-2 hover:bg-muted/50 rounded-md data-[state=open]:bg-muted/80" onClick={() => handleAccordionTriggerClick(moduleItem.lessons)}>
