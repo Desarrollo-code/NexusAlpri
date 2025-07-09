@@ -84,6 +84,14 @@ export async function POST(req: NextRequest) {
     
     const newEvent = await prisma.calendarEvent.create({
       data: dataToCreate,
+      include: {
+        attendees: {
+          select: { id: true, name: true, email: true },
+        },
+        creator: {
+          select: { id: true, name: true }
+        }
+      }
     });
     
     return NextResponse.json(newEvent, { status: 201 });

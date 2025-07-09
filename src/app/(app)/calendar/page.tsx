@@ -1,3 +1,4 @@
+
 // src/app/(app)/calendar/page.tsx
 
 'use client';
@@ -50,7 +51,6 @@ const getEventColorClass = (color?: string): string => {
     case 'purple': return 'bg-event-purple';
     case 'cyan': return 'bg-event-cyan';
     case 'orange': return 'bg-event-orange';
-    case 'default':
     default: return 'bg-event-purple';
   }
 };
@@ -91,7 +91,6 @@ export default function CalendarPage() {
     try {
       const response = await fetch('/api/events', { cache: 'no-store' });
       if (!response.ok) {
-        // More robust error handling for non-JSON responses
         const errorText = await response.text();
         try {
           const errorData = JSON.parse(errorText);
@@ -132,7 +131,7 @@ export default function CalendarPage() {
   }, [toast, canEdit]);
 
   useEffect(() => {
-    if (user) { // Ensures data is only fetched if a user is logged in
+    if (user) { 
       fetchEvents();
       fetchUsers();
     }
@@ -154,10 +153,10 @@ export default function CalendarPage() {
   const handleOpenCreateModal = (date?: Date) => {
     if (!canEdit) return;
     resetForm();
-    const targetDate = date || new Date(); // Use current date if none is passed
+    const targetDate = date || new Date(); 
     const dateString = format(targetDate, 'yyyy-MM-dd');
-    setFormStartDate(`${dateString}T09:00`); // Default time
-    setFormEndDate(`${dateString}T10:00`); // Default time
+    setFormStartDate(`${dateString}T09:00`); 
+    setFormEndDate(`${dateString}T10:00`); 
     setShowEventModal(true);
   };
 
@@ -207,19 +206,20 @@ export default function CalendarPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      const updatedEvent = await response.json();
       if (!response.ok) {
-        const errorText = await response.text();
-        try {
-          const errorData = JSON.parse(errorText);
-          throw new Error(errorData.message || 'Failed to save event');
-        } catch {
-          throw new Error(errorText || `Failed to save event. Server responded with: ${errorText.substring(0, 100)}...`);
-        }
+        throw new Error(updatedEvent.message || 'Failed to save event');
       }
 
       toast({ title: 'Éxito', description: `Evento ${eventToEdit ? 'actualizado' : 'creado'} correctamente.` });
+      
+      if (eventToEdit) {
+        setEvents(prevEvents => prevEvents.map(event => event.id === updatedEvent.id ? updatedEvent : event));
+      } else {
+        setEvents(prevEvents => [...prevEvents, updatedEvent]);
+      }
+      
       setShowEventModal(false);
-      fetchEvents(); // Refresh events after saving
     } catch (err) {
       toast({ title: 'Error', description: `No se pudo guardar el evento: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
     } finally {
@@ -242,9 +242,9 @@ export default function CalendarPage() {
         }
       }
       toast({ title: 'Éxito', description: 'Evento eliminado.' });
-      setEventToDelete(null); // Clean the event to delete
-      fetchEvents(); // Refresh events after deleting
-      setShowEventModal(false); // Close edit modal if it was open
+      setEvents(prevEvents => prevEvents.filter(event => event.id !== eventToDelete.id));
+      setEventToDelete(null); 
+      setShowEventModal(false); 
     } catch (err) {
       toast({ title: 'Error', description: `No se pudo eliminar el evento: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
     } finally {
@@ -255,10 +255,10 @@ export default function CalendarPage() {
   const calendarEvents = useMemo(() => events, [events]);
 
   const selectedDayEvents = useMemo(() => {
-    if (!selectedDate) return []; // Return empty array if no date is selected
+    if (!selectedDate) return []; 
     return events
       .filter(event => isSameDay(new Date(event.start), selectedDate))
-      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()); // Sort by start time
+      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()); 
   }, [events, selectedDate]);
   
   const modalTitle = !canEdit && eventToEdit ? "Detalles del Evento" : (eventToEdit ? 'Editar Evento' : 'Crear Nuevo Evento');

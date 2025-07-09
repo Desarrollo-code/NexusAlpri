@@ -56,6 +56,14 @@ export async function PUT(
     const updatedEvent = await prisma.calendarEvent.update({
       where: { id },
       data: dataToUpdate,
+      include: {
+        attendees: {
+          select: { id: true, name: true, email: true },
+        },
+        creator: {
+          select: { id: true, name: true }
+        }
+      }
     });
 
     return NextResponse.json(updatedEvent);
