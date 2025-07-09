@@ -54,11 +54,21 @@ El esquema se define en `prisma/schema.prisma`. Los modelos principales son:
 
 ### 3.2. Migraciones
 
-Las migraciones se gestionan con Prisma Migrate. Para crear una nueva migración después de modificar `schema.prisma`:
+Cada vez que modificas el archivo `schema.prisma`, la estructura de tu base de datos debe ser actualizada para reflejar esos cambios. Este proceso se gestiona con **Prisma Migrate**.
+
+Para crear y aplicar una nueva migración, ejecuta el siguiente comando en tu terminal:
 ```bash
 npm run prisma:migrate -- --name <nombre_descriptivo_de_la_migracion>
 ```
-Esto aplicará los cambios a la base de datos y creará un nuevo archivo de migración SQL.
+**Ejemplo:**
+```bash
+npm run prisma:migrate -- --name "add_progress_tracking_to_courses"
+```
+
+**¿Qué hace este comando?**
+1.  **Compara:** Analiza tu `schema.prisma` y lo compara con el estado actual de la base de datos.
+2.  **Genera un Archivo SQL:** Crea un nuevo archivo de migración dentro de la carpeta `prisma/migrations/`. Este archivo contiene las instrucciones SQL necesarias para actualizar la base de datos (ej. `CREATE TABLE`, `ALTER COLUMN`, etc.). Darle un nombre descriptivo es una excelente práctica.
+3.  **Aplica la Migración:** Ejecuta el archivo SQL contra la base de datos, actualizando su estructura.
 
 ## 4. Documentación de API Endpoints
 
@@ -104,4 +114,3 @@ La autenticación se realiza a través de un token JWT en una cookie de sesión.
 *   **Formularios:** Utilizar `react-hook-form` para la gestión de formularios complejos.
 *   **Código Asíncrono:** Utilizar `async/await` para operaciones asíncronas.
 *   **Comentarios:** Añadir comentarios JSDoc a funciones complejas y a las props de los componentes para clarificar su propósito.
-
