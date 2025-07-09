@@ -95,11 +95,16 @@ export default function CoursesPage() {
                             (course.description && course.description.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const isPublished = course.status === 'PUBLISHED';
-      const isNotEnrolled = !enrolledCourseIds.includes(course.id);
 
-      return matchesSearch && isPublished && isNotEnrolled;
+      // Students only see courses they are not enrolled in.
+      // Admins and Instructors see all published courses to have a complete overview.
+      const isVisibleForRole = user?.role === 'STUDENT'
+          ? !enrolledCourseIds.includes(course.id)
+          : true;
+
+      return matchesSearch && isPublished && isVisibleForRole;
     });
-  }, [allCoursesForDisplay, searchTerm, enrolledCourseIds]);
+  }, [allCoursesForDisplay, searchTerm, enrolledCourseIds, user?.role]);
 
   const groupedCourses = useMemo(() => {
     return filteredCourses.reduce((acc, course) => {
@@ -113,11 +118,13 @@ export default function CoursesPage() {
   }, [filteredCourses]);
 
   const handleEnrollmentChange = (courseId: string, newStatus: boolean) => {
-    // Optimistically update the UI by removing the course from the catalog view
+    // Optimistically update the UI by adding/removing the course from the enrolled list
     if (newStatus) {
         setEnrolledCourseIds(prev => [...prev, courseId]);
+    } else {
+        setEnrolledCourseIds(prev => prev.filter(id => id !== courseId));
     }
-    // A full refresh signal can also be sent if needed
+    // A full refresh signal can also be sent if a more robust update is needed
     // setEnrollmentUpdatedSignal(prev => prev + 1); 
   };
 
@@ -141,7 +148,7 @@ export default function CoursesPage() {
           />
         </div>
         <div className="text-sm text-muted-foreground pt-2 border-t">
-          Mostrando {filteredCourses.length} de {allCoursesForDisplay.filter(c => c.status === 'PUBLISHED' && !enrolledCourseIds.includes(c.id)).length} cursos disponibles para inscribirse.
+           Mostrando {filteredCourses.length} cursos disponibles.
         </div>
       </Card>
 
@@ -166,7 +173,7 @@ export default function CoursesPage() {
                         {courses.map((course: AppCourseType) => (
                             <CourseCard 
                                 key={course.id} 
-                                course={course} 
+                                course={{...course, isEnrolled: enrolledCourseIds.includes(course.id)}}
                                 userRole={user?.role || null}
                                 onEnrollmentChange={handleEnrollmentChange}
                             />
@@ -182,7 +189,7 @@ export default function CoursesPage() {
           <p className="text-muted-foreground">
             {searchTerm 
               ? 'No hay cursos que coincidan con tu búsqueda.' 
-              : 'Ya estás inscrito en todos los cursos o no hay cursos publicados.'
+              : 'Actualmente no hay cursos publicados que cumplan con los criterios de visualización.'
             }
           </p>
         </div>
