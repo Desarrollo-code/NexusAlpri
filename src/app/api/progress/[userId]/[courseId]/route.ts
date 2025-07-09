@@ -29,11 +29,26 @@ export async function GET(req: NextRequest, context: { params: { userId: string,
             });
         }
 
-        const completedLessonIds = (progress.completedLessonIds as LessonCompletionRecord[]) || [];
+        let completedLessonIds: LessonCompletionRecord[] = [];
+        if (progress.completedLessonIds) {
+            // Handle both array (from direct JSON) and string (from DB) representations
+            if (Array.isArray(progress.completedLessonIds)) {
+                completedLessonIds = progress.completedLessonIds as LessonCompletionRecord[];
+            } else {
+                 try {
+                    const parsed = JSON.parse(progress.completedLessonIds as string);
+                    if (Array.isArray(parsed)) {
+                        completedLessonIds = parsed;
+                    }
+                 } catch (e) {
+                    console.error("Failed to parse completedLessonIds JSON in GET route:", progress.completedLessonIds, e);
+                 }
+            }
+        }
 
         return NextResponse.json({
             ...progress,
-            completedLessonIds: completedLessonIds, // Return as array of objects
+            completedLessonIds, // Send the parsed array to the client
         });
 
     } catch (error) {

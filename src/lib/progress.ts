@@ -1,6 +1,7 @@
 
 import prisma from '@/lib/prisma';
 import type { LessonCompletionRecord } from '@/types';
+import type { JsonValue } from "@prisma/client/runtime/library";
 
 
 interface UpdateParams {
@@ -25,7 +26,7 @@ async function calculateWeightedProgress(completedRecords: LessonCompletionRecor
     });
 
     if (allLessons.length === 0) {
-        return 100;
+        return 0; // A course with no lessons is 0% complete.
     }
 
     let totalPossibleScore = 0;
@@ -63,8 +64,21 @@ export async function updateLessonCompletionStatus({ userId, courseId, lessonId,
     });
 
     let currentRecords: LessonCompletionRecord[] = [];
-    if (progress && Array.isArray(progress.completedLessonIds)) {
-        currentRecords = progress.completedLessonIds as LessonCompletionRecord[];
+    if (progress && progress.completedLessonIds) {
+        // Correctly parse the JSON field which might be a string or already an array.
+        if (Array.isArray(progress.completedLessonIds)) {
+            currentRecords = progress.completedLessonIds as LessonCompletionRecord[];
+        } else {
+            try {
+                // It might be a JSON string.
+                const parsed = JSON.parse(progress.completedLessonIds as string);
+                if(Array.isArray(parsed)) {
+                    currentRecords = parsed;
+                }
+            } catch (e) {
+                console.error("Failed to parse completedLessonIds JSON:", progress.completedLessonIds, e);
+            }
+        }
     }
     
     // Check if a record for this lesson already exists
@@ -89,13 +103,13 @@ export async function updateLessonCompletionStatus({ userId, courseId, lessonId,
     const updatedProgress = await prisma.courseProgress.upsert({
         where: { userId_courseId: { userId, courseId } },
         update: {
-            completedLessonIds: currentRecords,
+            completedLessonIds: currentRecords as unknown as JsonValue,
             progressPercentage: progressPercentage,
         },
         create: {
             userId,
             courseId,
-            completedLessonIds: currentRecords,
+            completedLessonIds: currentRecords as unknown as JsonValue,
             progressPercentage: progressPercentage,
         },
     });
