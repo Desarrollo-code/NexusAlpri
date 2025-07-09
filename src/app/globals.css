@@ -4,47 +4,55 @@
 
 @layer base {
   :root {
-    --background: 0 0% 3.9%;
+    --background: 0 0% 2%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 9%;
+    --card: 0 0% 7%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
+    --popover: 0 0% 2%;
     --popover-foreground: 0 0% 98%;
-    --primary: 198 93% 60%;
-    --primary-foreground: 0 0% 3.9%;
+
+    /* New Primary Color: Vibrant Violet */
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 98%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 0 0% 98%;
+    --ring: 262 83% 58%;
+
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 63%;
-    --accent: 198 93% 60%;
-    --accent-foreground: 0 0% 3.9%;
-    --destructive: 0 63% 31%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 15%;
     --input: 0 0% 15%;
-    --ring: 198 93% 60%;
-    --chart-1: 198 93% 60%;
-    --chart-2: 350 91% 60%;
-    --chart-3: 145 83% 55%;
-    --chart-4: 45 93% 55%;
-    --chart-5: 280 89% 65%;
+
+    /* New Diverse Chart Colors */
+    --chart-1: 210 90% 60%;  /* Bright Blue */
+    --chart-2: 145 83% 55%;  /* Lively Green */
+    --chart-3: 45 93% 55%;   /* Sunny Yellow */
+    --chart-4: 25 95% 53%;   /* Vivid Orange */
+    --chart-5: 350 91% 60%;  /* Vibrant Pink */
+
+    /* Sidebar colors remain consistent */
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 80%;
-    --sidebar-primary: 198 93% 60%;
-    --sidebar-primary-foreground: 0 0% 3.9%;
+    --sidebar-primary: 262 83% 58%;
+    --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 0 0% 12%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 0 0% 12%;
-    --sidebar-ring: 198 93% 60%;
+    --sidebar-ring: 262 83% 58%;
     
-    /* Event Colors */
-    --event-red: 0 100% 65%;
-    --event-green: 124 39% 59%;
-    --event-blue: 212 90% 61%;
-    --event-yellow: 51 100% 50%;
-    --event-purple: 291 64% 42%;
-    --event-cyan: 187 100% 42%;
-    --event-default: 198 93% 60%;
+    /* New Diverse Event Colors */
+    --event-red: 350 91% 60%;       /* Vibrant Pink/Red */
+    --event-green: 145 83% 55%;     /* Lively Green */
+    --event-blue: 210 90% 60%;      /* Bright Blue */
+    --event-yellow: 45 93% 55%;     /* Sunny Yellow */
+    --event-purple: 280 89% 65%;    /* Electric Violet */
+    --event-cyan: 187 100% 42%;     /* Sharp Cyan */
+    --event-orange: 25 95% 53%;     /* Vivid Orange */
+    --event-default: 262 83% 58%;   /* Primary Violet */
   }
 
   .light {
@@ -54,32 +62,47 @@
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 198 93% 45%;
+    
+    /* Light Theme Primary */
+    --primary: 262 75% 50%;
     --primary-foreground: 0 0% 98%;
+    --accent: 262 75% 50%;
+    --accent-foreground: 0 0% 98%;
+    --ring: 262 75% 50%;
+    
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 198 93% 45%;
-    --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 198 93% 45%;
-    --chart-1: 198 93% 60%; /* Bright Cyan */
-    --chart-2: 350 91% 60%; /* Vibrant Pink */
-    --chart-3: 145 83% 55%; /* Lively Green */
-    --chart-4: 45 93% 55%; /* Sunny Yellow */
-    --chart-5: 280 89% 65%; /* Electric Violet */
+    
+    /* Chart and Event colors can remain vibrant for light mode */
+    --chart-1: 210 85% 55%;
+    --chart-2: 145 78% 50%;
+    --chart-3: 45 88% 50%;
+    --chart-4: 25 90% 50%;
+    --chart-5: 350 86% 58%;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 198 93% 45%;
+    --sidebar-primary: 262 75% 50%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 198 93% 45%;
+    --sidebar-ring: 262 75% 50%;
+    
+    --event-red: 350 86% 58%;
+    --event-green: 145 78% 50%;
+    --event-blue: 210 85% 55%;
+    --event-yellow: 45 88% 50%;
+    --event-purple: 280 84% 60%;
+    --event-cyan: 187 95% 40%;
+    --event-orange: 25 90% 50%;
+    --event-default: 262 75% 50%;
   }
 }
 

@@ -69,6 +69,7 @@ export default {
           yellow: 'hsl(var(--event-yellow))',
           purple: 'hsl(var(--event-purple))',
           cyan: 'hsl(var(--event-cyan))',
+          orange: 'hsl(var(--event-orange))',
           default: 'hsl(var(--event-default))',
         },
         sidebar: {

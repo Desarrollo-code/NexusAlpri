@@ -366,7 +366,7 @@ export default function CalendarPage() {
             <div className="sm:col-span-2">
               <Label className="text-foreground">Color del Evento</Label>
               <div className="flex flex-wrap gap-3 mt-2 justify-start">
-                {['blue', 'green', 'red', 'yellow', 'purple', 'cyan', 'default'].map((colorOption) => (
+                {['blue', 'green', 'red', 'yellow', 'purple', 'cyan', 'orange', 'default'].map((colorOption) => (
                   <div
                     key={colorOption}
                     className={cn(
