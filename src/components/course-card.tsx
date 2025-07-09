@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -5,12 +6,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import type { Course as AppCourse, EnrolledCourse, UserRole } from '@/types';
 import { Layers, ArrowRight, Check, Plus, Loader2, X } from 'lucide-react';
+import { CircularProgress } from '@/components/ui/circular-progress';
 
 interface CourseCardProps {
   course: AppCourse | EnrolledCourse;
@@ -140,21 +141,21 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
         </CardHeader>
       </Link>
       <CardContent className="p-4 flex-grow">
-        <p className="text-sm text-muted-foreground line-clamp-2">
-            Por {course.instructor}
-        </p>
-         <div className="text-xs text-muted-foreground mt-2 flex items-center">
-            <Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount} Módulos
+        <div className="flex justify-between items-start">
+            <div className="flex-grow pr-4">
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                    Por {course.instructor}
+                </p>
+                <div className="text-xs text-muted-foreground mt-2 flex items-center">
+                    <Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount} Módulos
+                </div>
+            </div>
+            {typeof progress === 'number' && (
+                <div className="shrink-0">
+                    <CircularProgress value={progress} size={40} strokeWidth={4} valueTextClass="text-xs font-semibold" />
+                </div>
+            )}
         </div>
-        {typeof progress === 'number' && (
-          <div className="mt-4 space-y-1">
-             <div className="flex justify-between items-center">
-                <p className="text-xs font-medium text-muted-foreground">Progreso</p>
-                <p className="text-xs font-semibold text-primary">{Math.round(progress)}%</p>
-             </div>
-             <Progress value={progress} className="h-2" />
-          </div>
-        )}
       </CardContent>
       <CardFooter className="p-4 border-t pt-4">
         <EnrollmentButton />

@@ -19,6 +19,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { QuizViewer } from '@/components/quiz-viewer';
+import { CircularProgress } from '@/components/ui/circular-progress';
 
 // Extend Prisma types to include nested relations for type safety
 interface PrismaLessonWithQuiz extends PrismaLesson {
@@ -447,23 +448,23 @@ export default function CourseDetailPage() {
                 <CardTitle className="text-xl font-headline">Tu Progreso</CardTitle>
                 {!user && <CardDescription className="text-xs">Inicia sesión para ver tu progreso.</CardDescription>}
                 </CardHeader>
-                <CardContent className="space-y-3">
-                {courseProgress?.progressPercentage ? (
+                <CardContent className="flex flex-col items-center justify-center space-y-4 py-6">
+                {courseProgress ? (
                     courseProgress.progressPercentage >= 100 ? (
-                    <div className="text-center p-4 bg-green-100 dark:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-700 space-y-3">
-                        <Award className="mx-auto h-12 w-12 text-green-600 dark:text-green-400" />
-                        <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">¡Felicidades, has completado el curso!</h3>
-                        <p className="text-4xl font-bold">{Math.round(courseProgress.progressPercentage)}%</p>
+                    <div className="text-center p-4 space-y-3">
+                        <Award className="mx-auto h-16 w-16 text-green-500" />
+                        <h3 className="text-xl font-semibold text-green-700 dark:text-green-300">¡Felicidades, has completado el curso!</h3>
+                        <p className="text-2xl font-bold text-muted-foreground">Puntuación Final: 100%</p>
                     </div>
                     ) : (
                     <>
-                        <Progress value={courseProgress.progressPercentage} className="w-full h-3" />
-                        <p className="text-sm text-center text-muted-foreground">Tu puntuación final: {Math.round(courseProgress.progressPercentage || 0)}%</p>
+                        <CircularProgress value={courseProgress.progressPercentage || 0} size={150} strokeWidth={12} />
+                        <p className="text-sm text-center text-muted-foreground pt-2">Tu puntuación final.</p>
                     </>
                     )
                 ) : (
                     <div className="text-center p-4 space-y-3">
-                        <p className="text-muted-foreground">Completa todas las lecciones para ver tu progreso final.</p>
+                        <p className="text-muted-foreground max-w-xs">Completa todas las lecciones y presiona el botón para consolidar y ver tu progreso final.</p>
                          <Button onClick={handleConsolidateProgress} disabled={!isCourseProvisionallyComplete || isConsolidating} className="w-full">
                             {isConsolidating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
                             {isConsolidating ? 'Calculando...' : 'Revisar Mi Progreso'}
@@ -477,4 +478,3 @@ export default function CourseDetailPage() {
     </div>
   );
 }
-
