@@ -46,14 +46,13 @@ function CustomDayContent(props: CustomDayContentProps) {
     const eventsForDay = eventsByDay[dayKey] || [];
     const hasEvents = eventsForDay.length > 0;
     
-    // Cap at 5 points to avoid visual clutter
-    const pointsToShow = eventsForDay.slice(0, 5); 
+    // Cap at 6 points to avoid visual clutter
+    const pointsToShow = eventsForDay.slice(0, 6); 
     const totalPoints = pointsToShow.length;
     
-    // Distribute points across a 160-degree arc at the bottom of the cell.
-    const arcDegrees = 160; 
-    const angleIncrement = totalPoints > 1 ? arcDegrees / (totalPoints - 1) : 0;
-    const startAngle = -arcDegrees / 2; // Center the arc
+    // Distribute points across a 140-degree arc at the bottom of the cell.
+    const arcDegrees = 140; 
+    const radius = 45; // As a percentage of the parent's half-width/height
 
     return (
         <div className="relative w-full h-full flex items-center justify-center group">
@@ -67,18 +66,30 @@ function CustomDayContent(props: CustomDayContentProps) {
 
             {/* Semicircle container for event dots */}
             {hasEvents && (
-                <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute w-full h-full top-0 left-0 pointer-events-none">
                     {pointsToShow.map((event, index) => {
-                        const angle = startAngle + (angleIncrement * index);
-                        // Using translateY with a percentage of the parent's height for radius
+                        // We start from an angle of 20 degrees to 160 degrees to form the bottom arc
+                        const angleDeg = totalPoints > 1
+                          ? (180 - arcDegrees) / 2 + (arcDegrees / (totalPoints - 1)) * index
+                          : 90; // Center if only one dot
+                        
+                        const angleRad = (angleDeg * Math.PI) / 180;
+                        
+                        // Calculate position. We use sin for Y because 90deg is straight down.
+                        const x = radius * Math.cos(angleRad);
+                        const y = radius * Math.sin(angleRad);
+                        
                         const style = {
-                            transform: `rotate(${angle}deg) translateY(-40%) rotate(-${angle}deg)`
+                            left: `calc(50% + ${x}%)`,
+                            top: `calc(50% + ${y}%)`,
+                            // We also translate to center the dot itself
+                            transform: 'translate(-50%, -50%)',
                         };
 
                         return (
                             <div
                                 key={`${event.id}-${index}`}
-                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                                className="absolute"
                                 style={style}
                             >
                                 <div
