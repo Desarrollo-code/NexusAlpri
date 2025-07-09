@@ -19,7 +19,13 @@ export async function POST(req: NextRequest, context: { params: { userId: string
             return NextResponse.json({ message: 'lessonId y el estado "completed" son requeridos.' }, { status: 400 });
         }
         
-        const updatedProgress = await updateLessonCompletionStatus(userId, courseId, lessonId, completed);
+        // This endpoint now only handles 'view' type completions
+        const updatedProgress = await updateLessonCompletionStatus({
+            userId,
+            courseId,
+            lessonId,
+            type: 'view',
+        });
         
         return NextResponse.json(updatedProgress);
 

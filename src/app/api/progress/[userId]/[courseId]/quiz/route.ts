@@ -3,8 +3,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import { updateLessonCompletionStatus } from '@/lib/progress';
-
-const PASSING_SCORE = 80; // 80% to pass the quiz
+import prisma from '@/lib/prisma';
 
 // Submit quiz result and update progress
 export async function POST(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
@@ -22,10 +21,15 @@ export async function POST(req: NextRequest, context: { params: { userId: string
             return NextResponse.json({ message: 'lessonId y score son requeridos.' }, { status: 400 });
         }
         
-        // Mark the lesson as complete regardless of the score
-        const updatedProgress = await updateLessonCompletionStatus(userId, courseId, lessonId, true);
+        const updatedProgress = await updateLessonCompletionStatus({
+            userId,
+            courseId,
+            lessonId,
+            type: 'quiz',
+            score,
+        });
 
-        const passed = score >= PASSING_SCORE;
+        const passed = score >= 80;
         const message = passed
             ? 'Quiz aprobado y progreso actualizado.'
             : 'Quiz enviado. Tu progreso ha sido actualizado.';

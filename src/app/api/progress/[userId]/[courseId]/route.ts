@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
+import type { LessonCompletionRecord } from '@/types';
 
 // Get progress for a specific user in a course
 export async function GET(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
@@ -19,29 +20,20 @@ export async function GET(req: NextRequest, context: { params: { userId: string,
             where: { userId_courseId: { userId, courseId } },
         });
         
-        const totalLessons = await prisma.lesson.count({
-            where: { module: { courseId: courseId } },
-        });
-
         if (!progress) {
-            // Return a default progress object if none exists
             return NextResponse.json({
                 userId,
                 courseId,
                 completedLessonIds: [],
                 progressPercentage: 0,
-                completedLessonsCount: 0,
-                totalLessons: totalLessons,
             });
         }
 
-        const completedLessonIds = (progress.completedLessonIds as string[]) || [];
+        const completedLessonIds = (progress.completedLessonIds as LessonCompletionRecord[]) || [];
 
         return NextResponse.json({
             ...progress,
-            completedLessonIds: completedLessonIds, // Return as array
-            completedLessonsCount: completedLessonIds.length,
-            totalLessons: totalLessons,
+            completedLessonIds: completedLessonIds, // Return as array of objects
         });
 
     } catch (error) {

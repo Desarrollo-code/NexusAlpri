@@ -1,62 +1,96 @@
 import prisma from '@/lib/prisma';
+import type { LessonCompletionRecord } from '@/types';
+
+
+interface UpdateParams {
+    userId: string;
+    courseId: string;
+    lessonId: string;
+    type: 'view' | 'quiz';
+    score?: number;
+}
 
 /**
- * Updates the completion status of a lesson for a user and recalculates the course progress.
- * @param userId The ID of the user.
- * @param courseId The ID of the course.
- * @param lessonId The ID of the lesson to update.
- * @param completed The new completion status of the lesson.
+ * Calculates the weighted progress percentage for a course.
+ * Quizzes contribute to the score based on their result, other lessons contribute fully.
+ * @param completedRecords The records of completed lessons.
+ * @param totalLessons The total number of lessons in the course.
+ * @returns The final weighted progress percentage.
+ */
+async function calculateWeightedProgress(completedRecords: LessonCompletionRecord[], courseId: string): Promise<number> {
+    const allLessons = await prisma.lesson.findMany({
+        where: { module: { courseId } },
+        select: { id: true, type: true }
+    });
+
+    if (allLessons.length === 0) {
+        return 100;
+    }
+
+    let totalPossibleScore = 0;
+    let achievedScore = 0;
+
+    for (const lesson of allLessons) {
+        // Each lesson, regardless of type, contributes a max of 100 points to the total possible score.
+        totalPossibleScore += 100;
+
+        const completionRecord = completedRecords.find(r => r.lessonId === lesson.id);
+
+        if (completionRecord) {
+            if (completionRecord.type === 'quiz' && typeof completionRecord.score === 'number') {
+                // Quiz score contributes directly to the achieved score.
+                achievedScore += completionRecord.score;
+            } else if (completionRecord.type === 'view') {
+                // A viewed lesson contributes a full 100 points.
+                achievedScore += 100;
+            }
+        }
+    }
+
+    return totalPossibleScore > 0 ? (achievedScore / totalPossibleScore) * 100 : 0;
+}
+
+
+/**
+ * Updates the completion status of a lesson for a user and recalculates the weighted course progress.
+ * @param params The parameters for the update.
  * @returns The updated course progress record.
  */
-export async function updateLessonCompletionStatus(userId: string, courseId: string, lessonId: string, completed: boolean) {
-    const totalLessons = await prisma.lesson.count({
-        where: { module: { courseId } },
-    });
-
-    if (totalLessons === 0) {
-        // Avoid division by zero and handle courses with no lessons
-        const progressRecord = await prisma.courseProgress.upsert({
-            where: { userId_courseId: { userId, courseId } },
-            update: { progressPercentage: 100 },
-            create: { userId, courseId, completedLessonIds: [], progressPercentage: 100 },
-        });
-        return progressRecord;
-    }
-
-    // Find or create the progress record for the user in the course
-    let progress = await prisma.courseProgress.findUnique({
+export async function updateLessonCompletionStatus({ userId, courseId, lessonId, type, score }: UpdateParams) {
+    const progress = await prisma.courseProgress.findUnique({
         where: { userId_courseId: { userId, courseId } },
     });
 
-    if (!progress) {
-        progress = await prisma.courseProgress.create({
-            data: {
-                userId,
-                courseId,
-                completedLessonIds: [],
-                progressPercentage: 0,
-            }
-        });
+    let currentRecords: LessonCompletionRecord[] = [];
+    if (progress && Array.isArray(progress.completedLessonIds)) {
+        currentRecords = progress.completedLessonIds as LessonCompletionRecord[];
     }
     
-    // Use a Set for efficient add/delete operations
-    const completedIds = new Set<string>((progress.completedLessonIds as string[]) || []);
-    
-    if (completed) {
-        completedIds.add(lessonId);
-    } else {
-        completedIds.delete(lessonId);
-    }
-    
-    const newCompletedLessonIds = Array.from(completedIds);
-    const progressPercentage = (newCompletedLessonIds.length / totalLessons) * 100;
+    // Remove any existing record for this lesson to ensure no duplicates
+    const filteredRecords = currentRecords.filter(r => r.lessonId !== lessonId);
 
-    // Update the record with the new list of completed lessons and the calculated percentage
-    const updatedProgress = await prisma.courseProgress.update({
+    // Add the new or updated completion record
+    const newRecord: LessonCompletionRecord = { lessonId, type };
+    if (type === 'quiz' && typeof score === 'number') {
+        newRecord.score = score;
+    }
+    const newRecords = [...filteredRecords, newRecord];
+    
+    // Recalculate weighted progress
+    const progressPercentage = await calculateWeightedProgress(newRecords, courseId);
+    
+    // Update or create the progress record in the database
+    const updatedProgress = await prisma.courseProgress.upsert({
         where: { userId_courseId: { userId, courseId } },
-        data: {
-            completedLessonIds: newCompletedLessonIds,
-            progressPercentage: progressPercentage
+        update: {
+            completedLessonIds: newRecords,
+            progressPercentage: progressPercentage,
+        },
+        create: {
+            userId,
+            courseId,
+            completedLessonIds: newRecords,
+            progressPercentage: progressPercentage,
         },
     });
     

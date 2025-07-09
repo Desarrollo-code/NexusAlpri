@@ -1,3 +1,6 @@
+
+import type { JsonValue } from "@prisma/client/runtime/library";
+
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
 
@@ -102,13 +105,17 @@ export interface EnrolledCourse extends Course {
     progressPercentage?: number;
 }
 
+export interface LessonCompletionRecord {
+  lessonId: string;
+  type: 'view' | 'quiz';
+  score?: number; // Only for 'quiz' type
+}
+
 export interface CourseProgress {
     userId: string;
     courseId: string;
-    completedLessonIds: string[];
+    completedLessonIds: LessonCompletionRecord[];
     progressPercentage: number;
-    completedLessonsCount: number;
-    totalLessons: number;
 }
 
 

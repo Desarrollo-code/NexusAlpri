@@ -4,11 +4,11 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, LessonType, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption, CourseProgress } from '@/types';
+import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, LessonType, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption, CourseProgress, LessonCompletionRecord } from '@/types';
 import Image from 'next/image';
 import { Progress } from "@/components/ui/progress";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -89,7 +89,6 @@ function getYouTubeVideoId(url: string): string | null {
       videoId = urlObj.pathname.substring(1);
     }
   } catch (e) {
-    // Fallback for cases where URL might be just the ID string
     const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
     return match ? match[1] : null;
   }
@@ -104,15 +103,12 @@ export default function CourseDetailPage() {
   const { user } = useAuth();
 
   const [course, setCourse] = useState<AppCourse | null>(null);
-  const [overallProgress, setOverallProgress] = useState(0);
-  const [completedLessonsCount, setCompletedLessonsCount] = useState(0);
-  const [totalLessons, setTotalLessons] = useState(0);
+  const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isSavingProgress, setIsSavingProgress] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null);
+  const [isUpdatingProgress, setIsUpdatingProgress] = useState<string | null>(null); // holds lessonId being updated
   
-  const [lessonCompletion, setLessonCompletion] = useState<Record<string, boolean>>({});
   const [activeAccordionItem, setActiveAccordionItem] = useState<string | undefined>(undefined);
 
   const modulesForDisplay = useMemo(() => {
@@ -124,7 +120,6 @@ export default function CourseDetailPage() {
 
   const isCreatorViewingCourse = useMemo(() => {
     if (!user || !course) return false;
-    // An Admin or the assigned Instructor are considered creators/editors
     return user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === course.instructorId);
   }, [user, course]);
 
@@ -133,73 +128,43 @@ export default function CourseDetailPage() {
       if (!user || !user.id || !courseId || !isEnrolled) return;
       try {
         const progressResponse = await fetch(`/api/progress/${user.id}/${courseId}`, { cache: 'no-store' });
-        if (progressResponse.ok) {
-          const progressData: CourseProgress = await progressResponse.json();
-          const initialCompletion: Record<string, boolean> = {};
-          if (progressData && progressData.completedLessonIds) {
-            progressData.completedLessonIds.forEach(id => {
-              initialCompletion[id] = true;
-            });
-          }
-          setLessonCompletion(initialCompletion);
-          setOverallProgress(progressData.progressPercentage || 0);
-          setCompletedLessonsCount(progressData.completedLessonsCount || 0);
-          setTotalLessons(progressData.totalLessons || modulesForDisplay.flatMap(m => m.lessons).length);
+        if (!progressResponse.ok) {
+            setCourseProgress(null);
         } else {
-            setLessonCompletion({});
-            setOverallProgress(0);
-            setCompletedLessonsCount(0);
-            setTotalLessons(modulesForDisplay.flatMap(m => m.lessons).length);
+          const progressData: CourseProgress = await progressResponse.json();
+          setCourseProgress(progressData);
         }
       } catch (err) {
           console.error("Failed to fetch progress", err);
+          setCourseProgress(null);
       }
-  }, [courseId, user, isEnrolled, modulesForDisplay]);
+  }, [courseId, user, isEnrolled]);
 
   const fetchCourseDetailsAndEnrollment = useCallback(async () => {
     if (!courseId) return;
     setIsLoading(true);
     setError(null);
     try {
-      const fetchPromises: [Promise<Response>, Promise<Response | null>] = [
+      const [courseResponse, enrollmentStatusResponse] = await Promise.all([
         fetch(`/api/courses/${courseId}`, { cache: 'no-store' }),
-        user && user.id ? fetch(`/api/enrollment/status/${user.id}/${courseId}`, { cache: 'no-store' }) : Promise.resolve(null)
-      ];
-      
-      const [courseResponse, enrollmentStatusResponseOpt] = await Promise.all(fetchPromises);
+        user ? fetch(`/api/enrollment/status/${user.id}/${courseId}`, { cache: 'no-store' }) : Promise.resolve(null)
+      ]);
 
-      if (!courseResponse.ok) {
-        if (courseResponse.status === 404) throw new Error('Curso no encontrado');
-        const errorData = await courseResponse.json();
-        throw new Error(errorData.message || `Failed to fetch course details: ${courseResponse.statusText}`);
-      }
+      if (!courseResponse.ok) throw new Error(courseResponse.status === 404 ? 'Curso no encontrado' : 'Failed to fetch course details');
       const apiCourseData: ApiDetailedCourse = await courseResponse.json();
       const appCourseData = mapApiDetailedCourseToAppCourse(apiCourseData);
       setCourse(appCourseData);
 
-      if (appCourseData.modules && appCourseData.modules.length > 0 && appCourseData.modules[0]) {
-        setActiveAccordionItem(appCourseData.modules[0].id);
-      }
+      if (appCourseData.modules?.[0]) setActiveAccordionItem(appCourseData.modules[0].id);
       
-      let isActuallyEnrolled = false;
-      if (enrollmentStatusResponseOpt) {
-        if (enrollmentStatusResponseOpt.ok) {
-            const enrollmentData: { isEnrolled: boolean } = await enrollmentStatusResponseOpt.json();
-            setIsEnrolled(enrollmentData.isEnrolled);
-            isActuallyEnrolled = enrollmentData.isEnrolled;
-        } else {
-            setIsEnrolled(false);
-        }
-      } else {
-          setIsEnrolled(false);
-      }
+      const enrollmentData = enrollmentStatusResponse && enrollmentStatusResponse.ok ? await enrollmentStatusResponse.json() : { isEnrolled: false };
+      setIsEnrolled(enrollmentData.isEnrolled);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar el curso y su progreso');
+      setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido');
       setCourse(null);
-      setLessonCompletion({});
       setIsEnrolled(false);
-      toast({ title: "Error al cargar", description: err instanceof Error ? err.message : 'No se pudo cargar el curso o su progreso.', variant: "destructive"});
+      toast({ title: "Error al Cargar", description: err instanceof Error ? err.message : 'No se pudo cargar el curso.', variant: "destructive"});
     } finally {
       setIsLoading(false);
     }
@@ -214,47 +179,28 @@ export default function CourseDetailPage() {
           fetchProgress();
       }
   }, [isLoading, isEnrolled, fetchProgress]);
-
-  const handleModuleExpansion = async (module: AppModule) => {
-    if (!isEnrolled || !user?.id) return;
-
-    const lessonsToComplete = module.lessons.filter(
-      lesson => lesson.type !== 'QUIZ' && !lessonCompletion[lesson.id]
-    );
-    
-    if (lessonsToComplete.length === 0) return;
-    
-    const oldCompletionState = { ...lessonCompletion };
-    
-    // Optimistic UI update
-    setLessonCompletion(prev => {
-      const newState = { ...prev };
-      lessonsToComplete.forEach(lesson => {
-        newState[lesson.id] = true;
-      });
-      return newState;
-    });
+  
+  const handleMarkLessonViewed = async (lessonId: string) => {
+    if (!user?.id || !courseId) return;
+    setIsUpdatingProgress(lessonId);
 
     try {
-      // We can make this more efficient by batching, but for now this is fine
-      for (const lesson of lessonsToComplete) {
-        await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lessonId: lesson.id, completed: true }),
+        const response = await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lessonId, completed: true }),
         });
-      }
-      await fetchProgress(); // Re-sync with server's calculated progress
+        if (!response.ok) throw new Error((await response.json()).message || 'Error al actualizar progreso');
+        
+        await fetchProgress(); // Re-sync with server
+        toast({ title: "Progreso Actualizado", description: "Lección marcada como vista." });
     } catch (err) {
-      setLessonCompletion(oldCompletionState); // Rollback on failure
-      toast({
-        title: "Error al Guardar Progreso",
-        description: "No se pudo actualizar tu progreso. Inténtalo de nuevo.",
-        variant: "destructive",
-      });
+        toast({ title: "Error", description: err instanceof Error ? err.message : 'No se pudo guardar tu progreso.', variant: "destructive" });
+    } finally {
+        setIsUpdatingProgress(null);
     }
   };
-  
+
   const getLessonIcon = (type: LessonType | undefined) => {
     switch(type) {
       case 'VIDEO': return <Tv2 className="h-5 w-5 text-primary flex-shrink-0" />;
@@ -265,9 +211,8 @@ export default function CourseDetailPage() {
     }
   };
   
-  const handleQuizCompleted = async (lessonId: string, score: number) => {
+  const handleQuizCompleted = async () => {
     // This callback is now primarily for re-fetching the progress state from the server
-    // after the QuizViewer has submitted the score to the backend.
     await fetchProgress();
   };
 
@@ -371,33 +316,29 @@ export default function CourseDetailPage() {
   };
 
 
-  if (isLoading && !course && (isEnrolled === null && user)) { 
+  if (isLoading || isEnrolled === null) { 
     return ( <div className="flex flex-col items-center justify-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-primary mb-2" /><p className="text-lg">Cargando detalles del curso...</p></div> );
   }
-  if (isLoading && !course && !user) {
-      return ( <div className="flex flex-col items-center justify-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-primary mb-2" /><p className="text-lg">Cargando...</p></div> );
-  }
   if (error && !course) {
-     return ( <div className="flex flex-col items-center justify-center min-h-screen text-destructive"><AlertTriangle className="h-10 w-10 mb-2" /><p className="text-lg font-semibold">Error al cargar el curso</p><p className="text-sm mb-4">{error}</p><Button onClick={() => router.back()} variant="outline" className="mr-2">Volver al catálogo</Button><Button onClick={fetchCourseDetailsAndEnrollment}>Reintentar</Button></div> );
-  }
-  if (!course && !isLoading) {
-    return ( <div className="flex flex-col items-center justify-center min-h-screen"><AlertTriangle className="h-10 w-10 text-muted-foreground mb-2" /><p className="text-lg text-muted-foreground">Curso no encontrado.</p><Button onClick={() => router.back()} variant="outline" className="mt-4">Volver al catálogo</Button></div> );
+     return ( <div className="flex flex-col items-center justify-center min-h-screen text-destructive"><AlertTriangle className="h-10 w-10 mb-2" /><p className="text-lg font-semibold">Error al cargar el curso</p><p className="text-sm mb-4">{error}</p><Button onClick={() => router.back()} variant="outline" className="mr-2">Volver</Button><Button onClick={fetchCourseDetailsAndEnrollment}>Reintentar</Button></div> );
   }
   if (!course) {
-     return ( <div className="flex flex-col items-center justify-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-primary mb-2" /><p className="text-lg">Cargando...</p></div> );
+    return ( <div className="flex flex-col items-center justify-center min-h-screen"><AlertTriangle className="h-10 w-10 text-muted-foreground mb-2" /><p className="text-lg text-muted-foreground">Curso no encontrado.</p><Button onClick={() => router.back()} variant="outline" className="mt-4">Volver</Button></div> );
   }
+  
+  const totalLessonsCount = modulesForDisplay.reduce((acc, mod) => acc + mod.lessons.length, 0);
 
   return (
     <div className="space-y-8">
         {isCreatorViewingCourse ? (
             <Button asChild variant="outline" className="mb-6 print:hidden">
                 <Link href={`/manage-courses/${course.id}/edit`}>
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Volver a Gestión de Contenido
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Volver a Gestión
                 </Link>
             </Button>
         ) : (
             <Button variant="outline" onClick={() => router.back()} className="mb-6 print:hidden">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Volver al Catálogo
+            <ArrowLeft className="mr-2 h-4 w-4" /> Volver
             </Button>
         )}
 
@@ -429,33 +370,43 @@ export default function CourseDetailPage() {
               <Accordion type="single" collapsible className="w-full" value={activeAccordionItem} onValueChange={setActiveAccordionItem}>
                 {modulesForDisplay.map((moduleItem) => (
                   <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b border-border last:border-b-0">
-                    <AccordionTrigger 
-                        className="text-md font-semibold hover:no-underline py-4 px-2 hover:bg-muted/50 rounded-md data-[state=open]:bg-muted/80"
-                        onClick={() => handleModuleExpansion(moduleItem)}
-                    >
+                    <AccordionTrigger className="text-md font-semibold hover:no-underline py-4 px-2 hover:bg-muted/50 rounded-md data-[state=open]:bg-muted/80">
                       {moduleItem.title}
                     </AccordionTrigger>
                     <AccordionContent className="pt-1 pb-3 px-2">
                       {moduleItem.lessons.length > 0 ? (
                         <ul className="space-y-3">
                           {moduleItem.lessons.map(lesson => {
-                            const isCompletedByUser = isEnrolled && lessonCompletion[lesson.id];
+                            const isCompleted = !!courseProgress?.completedLessonIds.find(l => l.lessonId === lesson.id);
                             return (
-                            <li key={lesson.id} className={`p-3 rounded-md border ${isCompletedByUser ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700' : 'bg-card'}`}>
+                            <li key={lesson.id} className={`p-3 rounded-md border ${isCompleted ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700' : 'bg-card'}`}>
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-grow">
                                         <div className="flex items-center gap-2 mb-2">
                                             {getLessonIcon(lesson.type)}
-                                            <span className={`font-medium ${isCompletedByUser ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{lesson.title}</span>
+                                            <span className={`font-medium ${isCompleted ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{lesson.title}</span>
                                         </div>
                                         {renderLessonContent(lesson)}
                                     </div>
 
-                                    {isEnrolled && isCompletedByUser && (
-                                        <div className="flex flex-col items-center gap-1 text-green-600">
-                                            <CheckCircle className="h-5 w-5" />
-                                            <span className="text-xs font-medium hidden sm:inline">Visto</span>
-                                        </div>
+                                    {isEnrolled && lesson.type !== 'QUIZ' && (
+                                        <Button 
+                                            size="sm" 
+                                            variant={isCompleted ? "secondary" : "default"}
+                                            onClick={() => handleMarkLessonViewed(lesson.id)}
+                                            disabled={isUpdatingProgress === lesson.id}
+                                            className="mt-2"
+                                        >
+                                            {isUpdatingProgress === lesson.id ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : isCompleted ? (
+                                                <>
+                                                <CheckCircle className="mr-2 h-4 w-4" /> Visto
+                                                </>
+                                            ) : (
+                                                'Marcar como Visto'
+                                            )}
+                                        </Button>
                                     )}
                                 </div>
                             </li>
@@ -468,7 +419,7 @@ export default function CourseDetailPage() {
                   </AccordionItem>
                 ))}
               </Accordion>
-               {modulesForDisplay.length === 0 && !isLoading && <p className="text-muted-foreground text-center py-4">El contenido detallado de este curso (módulos y lecciones) aún no está disponible.</p>}
+               {modulesForDisplay.length === 0 && !isLoading && <p className="text-muted-foreground text-center py-4">El contenido de este curso aún no está disponible.</p>}
             </CardContent>
           </Card>
         </div>
@@ -479,33 +430,26 @@ export default function CourseDetailPage() {
                 <CardHeader>
                 <CardTitle className="text-xl font-headline">Tu Progreso</CardTitle>
                 {!user && <CardDescription className="text-xs">Inicia sesión para ver tu progreso.</CardDescription>}
-                {user && isEnrolled === false && <CardDescription className="text-xs">Inscríbete para hacer seguimiento de tu progreso.</CardDescription>}
+                {user && !isEnrolled && <CardDescription className="text-xs">Inscríbete para hacer seguimiento de tu progreso.</CardDescription>}
                 </CardHeader>
                 <CardContent className="space-y-3">
                 {user && isEnrolled ? ( 
-                    overallProgress >= 100 ? (
+                    courseProgress && courseProgress.progressPercentage >= 100 ? (
                     <div className="text-center p-4 bg-green-100 dark:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-700 space-y-3">
                         <Award className="mx-auto h-12 w-12 text-green-600 dark:text-green-400" />
                         <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">¡Felicidades, has completado el curso!</h3>
                     </div>
-                    ) : (
+                    ) : courseProgress ? (
                     <>
-                        <Progress value={overallProgress} className="w-full h-3" />
-                        <p className="text-sm text-center text-muted-foreground">{Math.round(overallProgress)}% completado</p>
-                        {overallProgress > 0 ? (
-                        <Button className="w-full mt-2 bg-primary hover:bg-primary/90">
-                            Continuar Aprendiendo
-                        </Button>
-                        ) : (
-                        <Button className="w-full mt-2 bg-primary hover:bg-primary/90">
-                            Comenzar Curso
-                        </Button>
-                        )}
+                        <Progress value={courseProgress.progressPercentage} className="w-full h-3" />
+                        <p className="text-sm text-center text-muted-foreground">{Math.round(courseProgress.progressPercentage || 0)}% completado ({courseProgress.completedLessonIds.length}/{totalLessonsCount})</p>
                     </>
+                    ) : (
+                       <p className="text-sm text-muted-foreground text-center">Aún no has iniciado este curso.</p>
                     )
                 ) : (
                     <p className="text-sm text-muted-foreground text-center">
-                    {user && isEnrolled === null ? "Cargando estado de inscripción..." : user ? "Inscríbete en el curso para ver tu progreso." : "Inicia sesión para ver tu progreso."}
+                    {user ? "Inscríbete en el curso para ver tu progreso." : "Inicia sesión para ver tu progreso."}
                     </p>
                 )}
                 </CardContent>
@@ -515,4 +459,3 @@ export default function CourseDetailPage() {
     </div>
   );
 }
-
