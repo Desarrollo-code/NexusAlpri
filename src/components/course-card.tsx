@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -57,12 +56,17 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
         onEnrollmentChange(course.id, enroll);
       }
       
-      toast({
-        title: enroll ? '¡Inscripción Exitosa!' : 'Inscripción Cancelada',
-        description: enroll
-          ? `Ahora estás inscrito en "${course.title}".`
-          : `Has cancelado tu inscripción a "${course.title}".`,
-      });
+      if (enroll) {
+        toast({
+          title: '¡Inscripción Exitosa!',
+          description: `El curso "${course.title}" ha sido añadido. Lo encontrarás en la sección 'Mis Cursos'.`,
+        });
+      } else {
+        toast({
+            title: 'Inscripción Cancelada',
+            description: `Has cancelado tu inscripción a "${course.title}".`,
+        });
+      }
 
     } catch (error) {
       toast({
