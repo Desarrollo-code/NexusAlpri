@@ -80,7 +80,7 @@ export default function CalendarPage() {
   const [formAllDay, setFormAllDay] = useState(true);
   const [formAudienceMode, setFormAudienceMode] = useState<EventAudienceType>('SPECIFIC');
   const [formAttendees, setFormAttendees] = useState<string[]>([]);
-  const [formColor, setFormColor] = useState<string>('default');
+  const [formColor, setFormColor] = useState<string>('purple');
 
   // Authorization check for editing
   const canEdit = useMemo(() => user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR', [user]);
@@ -147,7 +147,7 @@ export default function CalendarPage() {
     setFormAllDay(true);
     setFormAudienceMode('SPECIFIC');
     setFormAttendees([]);
-    setFormColor('default');
+    setFormColor('purple');
     setEventToEdit(null);
   }
 
@@ -173,7 +173,7 @@ export default function CalendarPage() {
     setFormEndDate(format(end, "yyyy-MM-dd'T'HH:mm"));
     setFormAudienceMode(event.audienceType || 'SPECIFIC');
     setFormAttendees(event.attendees?.map(a => a.id) || []);
-    setFormColor(event.color || 'default');
+    setFormColor(event.color || 'purple');
     setShowEventModal(true);
   }
 
@@ -384,7 +384,7 @@ export default function CalendarPage() {
             <div className="sm:col-span-2">
               <Label className="text-foreground">Color del Evento</Label>
               <div className="flex flex-wrap gap-3 mt-2 justify-start">
-                {['blue', 'green', 'red', 'yellow', 'purple', 'cyan', 'orange', 'default'].map((colorOption) => (
+                {['blue', 'green', 'red', 'yellow', 'purple', 'cyan', 'orange'].map((colorOption) => (
                   <div
                     key={colorOption}
                     className={cn(
