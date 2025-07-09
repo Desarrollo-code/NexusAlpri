@@ -94,11 +94,11 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || 'Error al guardar el resultado');
 
-            if (data.passed) {
-                toast({ title: "¡Quiz Aprobado!", description: "Tu progreso ha sido actualizado." });
-            } else {
-                toast({ title: "Quiz Enviado", description: "No alcanzaste la puntuación para aprobar." });
-            }
+            toast({
+                title: data.passed ? "¡Quiz Aprobado!" : "Quiz Enviado",
+                description: data.message, // Use the message directly from the API
+            });
+
        } catch (err) {
             toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudo guardar el resultado del quiz.", variant: "destructive"});
        } finally {

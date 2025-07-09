@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
@@ -5,7 +6,7 @@ import { updateLessonCompletionStatus } from '@/lib/progress';
 
 const PASSING_SCORE = 80; // 80% to pass the quiz
 
-// Submit quiz result and update progress if passed
+// Submit quiz result and update progress
 export async function POST(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
     const session = await getSession(req);
     const { userId, courseId } = context.params;
@@ -20,15 +21,16 @@ export async function POST(req: NextRequest, context: { params: { userId: string
         if (typeof score !== 'number' || !lessonId) {
             return NextResponse.json({ message: 'lessonId y score son requeridos.' }, { status: 400 });
         }
+        
+        // Mark the lesson as complete regardless of the score
+        const updatedProgress = await updateLessonCompletionStatus(userId, courseId, lessonId, true);
 
-        if (score >= PASSING_SCORE) {
-            // If the user passed, mark the lesson as complete.
-            const updatedProgress = await updateLessonCompletionStatus(userId, courseId, lessonId, true);
-            return NextResponse.json({ message: 'Quiz aprobado y progreso actualizado.', passed: true, progress: updatedProgress });
-        } else {
-            // If the user failed, we just acknowledge the submission without changing progress.
-            return NextResponse.json({ message: 'Quiz enviado, pero no aprobado.', passed: false });
-        }
+        const passed = score >= PASSING_SCORE;
+        const message = passed
+            ? 'Quiz aprobado y progreso actualizado.'
+            : 'Quiz enviado. Tu progreso ha sido actualizado.';
+
+        return NextResponse.json({ message, passed, progress: updatedProgress });
 
     } catch (error) {
         console.error('[QUIZ_SUBMIT_ERROR]', error);
