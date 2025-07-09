@@ -145,7 +145,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
     return (
       <Card className="mt-4 border-primary/20">
         <CardHeader className="text-center">
-            <Award className="mx-auto h-12 w-12 text-primary" />
+            <Award className="mx-auto h-12 w-12 text-primary" fill="currentColor" />
             <CardTitle className="text-2xl font-bold">Resultados del Quiz</CardTitle>
             <CardDescription>{quiz.title}</CardDescription>
         </CardHeader>
@@ -173,8 +173,8 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
                                     !isCorrectAnswer && isSelectedAnswer ? "bg-red-100/80 border-red-300 dark:bg-red-900/30 dark:border-red-700" : ""
                                 )}>
                                     <div className="flex-shrink-0 pt-0.5">
-                                        {isCorrectAnswer ? <CheckCircle className="h-4 w-4 text-green-600" /> : 
-                                         (isSelectedAnswer ? <XCircle className="h-4 w-4 text-red-600" /> : <div className="h-4 w-4" />)}
+                                        {isCorrectAnswer ? <CheckCircle className="h-4 w-4 text-green-600" fill="currentColor" /> : 
+                                         (isSelectedAnswer ? <XCircle className="h-4 w-4 text-red-600" fill="currentColor" /> : <div className="h-4 w-4" />)}
                                     </div>
                                     <div className="flex-grow">
                                         <p>{option.text}</p>
@@ -204,7 +204,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
     <Card className="my-4 shadow-lg">
       <CardHeader>
         <div className="flex items-center gap-3">
-            <MessageCircleQuestion className="h-8 w-8 text-primary"/>
+            <MessageCircleQuestion className="h-8 w-8 text-primary" fill="currentColor"/>
             <div>
                 <CardTitle>{quiz.title}</CardTitle>
                 <CardDescription>{quiz.description || "Responde las siguientes preguntas."}</CardDescription>

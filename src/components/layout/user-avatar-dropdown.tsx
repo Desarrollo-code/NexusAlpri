@@ -60,21 +60,21 @@ export function UserAvatarDropdown() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/profile" className="cursor-pointer">
-            <UserCircle className="mr-2 h-4 w-4 text-primary" />
+            <UserCircle className="mr-2 h-4 w-4 text-primary" fill="currentColor" />
             <span>Perfil</span>
           </Link>
         </DropdownMenuItem>
         {userAppRole === 'ADMINISTRATOR' && (
             <DropdownMenuItem asChild>
                  <Link href="/settings" className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <Settings className="mr-2 h-4 w-4 text-muted-foreground" fill="currentColor" />
                     <span>Configuración</span>
                  </Link>
             </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive focus:text-destructive-foreground focus:bg-destructive">
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="mr-2 h-4 w-4" fill="currentColor" />
           <span>Cerrar Sesión</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

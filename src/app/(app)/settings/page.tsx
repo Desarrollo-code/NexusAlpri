@@ -108,7 +108,7 @@ export default function SettingsPage() {
         <div className="lg:col-span-2 space-y-8">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary"/>Apariencia y Generales</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary" fill="currentColor"/>Apariencia y Generales</CardTitle>
               <CardDescription>Configuraciones básicas de la plataforma.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -126,7 +126,7 @@ export default function SettingsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><BellDot className="h-5 w-5 text-primary"/>Notificaciones</CardTitle>
+              <CardTitle className="flex items-center gap-2"><BellDot className="h-5 w-5 text-primary" fill="currentColor"/>Notificaciones</CardTitle>
               <CardDescription>Configura cómo se gestionan las notificaciones.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -149,7 +149,7 @@ export default function SettingsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary"/>Seguridad y Acceso</CardTitle>
+              <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" fill="currentColor"/>Seguridad y Acceso</CardTitle>
               <CardDescription>Gestiona las políticas de seguridad y registro.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -248,7 +248,7 @@ export default function SettingsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary"/>Gestión de Categorías de Recursos</CardTitle>
+              <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary" />Gestión de Categorías de Recursos</CardTitle>
               <CardDescription>Añade o elimina categorías para los filtros de la biblioteca de recursos.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -272,7 +272,7 @@ export default function SettingsPage() {
                   <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
                     {formState.resourceCategories.map(category => (
                       <div key={category} className="flex items-center justify-between p-2.5 border rounded-lg bg-card text-sm">
-                        <span className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/>{category}</span>
+                        <span className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground" fill="currentColor"/>{category}</span>
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -280,7 +280,7 @@ export default function SettingsPage() {
                           onClick={() => handleRemoveCategory(category)}
                           disabled={isSaving}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" fill="currentColor" />
                           <span className="sr-only">Eliminar {category}</span>
                         </Button>
                       </div>
@@ -304,7 +304,7 @@ export default function SettingsPage() {
                         Asegúrate de que todas las configuraciones son correctas antes de guardar.
                     </p>
                     <Button className="w-full" onClick={handleSaveSettings} disabled={isSaving || isLoading}>
-                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" fill="currentColor" />}
                         {isSaving ? 'Guardando...' : 'Guardar Configuración'}
                     </Button>
                 </CardContent>

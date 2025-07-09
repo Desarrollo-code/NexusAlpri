@@ -235,7 +235,7 @@ export default function AnnouncementsPage() {
           }}>
             <DialogTrigger asChild>
               <Button onClick={handleOpenCreateModal}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Crear Anuncio
+                <PlusCircle className="mr-2 h-4 w-4" fill="currentColor" /> Crear Anuncio
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[525px]">
@@ -295,7 +295,7 @@ export default function AnnouncementsPage() {
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => { setShowCreateEditModal(false); resetFormAndState();}} disabled={isProcessing}>Cancelar</Button>
                   <Button type="submit" disabled={isProcessing}>
-                    {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (announcementToEdit ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />) }
+                    {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (announcementToEdit ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" fill="currentColor" />) }
                     {announcementToEdit ? 'Guardar Cambios' : 'Publicar Anuncio'}
                   </Button>
                 </DialogFooter>
@@ -312,7 +312,7 @@ export default function AnnouncementsPage() {
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-12 text-destructive">
-          <AlertTriangle className="h-8 w-8 mb-2" />
+          <AlertTriangle className="h-8 w-8 mb-2" fill="currentColor" />
           <p className="font-semibold">Error al cargar anuncios</p>
           <p className="text-sm">{error}</p>
           <Button onClick={fetchAnnouncements} variant="outline" className="mt-4">Reintentar</Button>
@@ -330,7 +330,7 @@ export default function AnnouncementsPage() {
         </div>
       ) : (
         <div className="text-center py-12">
-          <Megaphone className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <Megaphone className="mx-auto h-12 w-12 text-muted-foreground mb-4" fill="currentColor" />
           <h3 className="text-xl font-semibold mb-2">No hay anuncios recientes</h3>
           <p className="text-muted-foreground">Vuelve más tarde para ver las últimas novedades o crea uno nuevo si tienes permisos.</p>
         </div>
@@ -353,7 +353,7 @@ export default function AnnouncementsPage() {
               disabled={isProcessing}
               className={buttonVariants({ variant: "destructive" })}
             >
-              {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+              {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" fill="currentColor" />}
               Sí, eliminar
             </AlertDialogAction>
           </AlertDialogFooter>

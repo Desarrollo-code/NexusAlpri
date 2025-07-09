@@ -80,26 +80,27 @@ function mapApiResourceToAppResource(apiResource: ApiResource): AppResourceType 
 // --- Helper Functions ---
 const getIconForType = (type: AppResourceType['type']) => {
     switch (type) {
-      case 'FOLDER': return <Folder className="h-5 w-5 text-yellow-500" />;
-      case 'DOCUMENT': return <FileText className="h-5 w-5 text-blue-500" />;
-      case 'GUIDE': return <Info className="h-5 w-5 text-green-500" />;
-      case 'MANUAL': return <Notebook className="h-5 w-5 text-indigo-500" />;
-      case 'POLICY': return <Shield className="h-5 w-5 text-red-500" />;
-      case 'VIDEO': return <Video className="h-5 w-5 text-purple-500" />;
-      default: return <FileQuestion className="h-5 w-5 text-gray-500" />;
+      case 'FOLDER': return <Folder className="h-5 w-5 text-yellow-500" fill="currentColor"/>;
+      case 'DOCUMENT': return <FileText className="h-5 w-5 text-blue-500" fill="currentColor"/>;
+      case 'GUIDE': return <Info className="h-5 w-5 text-green-500" fill="currentColor"/>;
+      case 'MANUAL': return <Notebook className="h-5 w-5 text-indigo-500" fill="currentColor"/>;
+      case 'POLICY': return <Shield className="h-5 w-5 text-red-500" fill="currentColor"/>;
+      case 'VIDEO': return <Video className="h-5 w-5 text-purple-500" fill="currentColor"/>;
+      default: return <FileQuestion className="h-5 w-5 text-gray-500" fill="currentColor"/>;
     }
 };
 
 const getPreviewIconForType = (type: AppResourceType['type']) => {
     const className = "h-16 w-16 text-muted-foreground";
+    const fill = "currentColor";
     switch (type) {
-        case 'FOLDER': return <Folder className={cn(className, "text-yellow-500/80")} />;
-        case 'DOCUMENT': return <FileText className={cn(className, "text-blue-500/80")} />;
-        case 'GUIDE': return <Info className={cn(className, "text-green-500/80")} />;
-        case 'MANUAL': return <Notebook className={cn(className, "text-indigo-500/80")} />;
-        case 'POLICY': return <Shield className={cn(className, "text-red-500/80")} />;
-        case 'VIDEO': return <Video className={cn(className, "text-purple-500/80")} />;
-        default: return <FileQuestion className={cn(className, "text-primary")} />;
+        case 'FOLDER': return <Folder className={cn(className, "text-yellow-500/80")} fill={fill} />;
+        case 'DOCUMENT': return <FileText className={cn(className, "text-blue-500/80")} fill={fill} />;
+        case 'GUIDE': return <Info className={cn(className, "text-green-500/80")} fill={fill} />;
+        case 'MANUAL': return <Notebook className={cn(className, "text-indigo-500/80")} fill={fill} />;
+        case 'POLICY': return <Shield className={cn(className, "text-red-500/80")} fill={fill} />;
+        case 'VIDEO': return <Video className={cn(className, "text-purple-500/80")} fill={fill} />;
+        default: return <FileQuestion className={cn(className, "text-primary")} fill={fill} />;
     }
 };
 
@@ -144,13 +145,13 @@ const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
                 ) : youtubeId ? (
                     <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail"/>
                 ) : isPdf ? (
-                    <FileText className="h-16 w-16 text-red-500/80" />
+                    <FileText className="h-16 w-16 text-red-500/80" fill="currentColor" />
                 ) : (
                     getPreviewIconForType(resource.type)
                 )}
                 {resource.hasPin && (
                     <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
-                        <Lock className="h-3 w-3 text-amber-400" />
+                        <Lock className="h-3 w-3 text-amber-400" fill="currentColor" />
                     </div>
                 )}
             </>
@@ -178,8 +179,8 @@ const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                         <DropdownMenuItem onClick={onPreview}><Eye className="mr-2 h-4 w-4 text-sky-500" /> {isFolder ? 'Abrir' : 'Ver'}</DropdownMenuItem>
-                        {!isFolder && (<DropdownMenuItem onClick={onDownload} disabled={!resource.url}><Download className="mr-2 h-4 w-4 text-green-500" /> Descargar</DropdownMenuItem>)}
-                        {canModify && (<><Separator /><DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4 text-blue-500" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem></>)}
+                        {!isFolder && (<DropdownMenuItem onClick={onDownload} disabled={!resource.url}><Download className="mr-2 h-4 w-4 text-green-500" fill="currentColor" /> Descargar</DropdownMenuItem>)}
+                        {canModify && (<><Separator /><DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4 text-blue-500" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" fill="currentColor" /> Eliminar</DropdownMenuItem></>)}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -200,7 +201,7 @@ const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
                     <div className="flex-grow overflow-hidden">
                         <div className="flex items-center gap-1.5">
                             <span className="font-medium truncate">{resource.title}</span>
-                            {resource.hasPin && <Lock className="h-4 w-4 text-amber-400 shrink-0" />}
+                            {resource.hasPin && <Lock className="h-4 w-4 text-amber-400 shrink-0" fill="currentColor" />}
                         </div>
                         {resource.description && (
                             <p className="text-xs text-muted-foreground truncate">{resource.description}</p>
@@ -225,7 +226,7 @@ const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                             <DropdownMenuItem onClick={onPreview}><Eye className="mr-2 h-4 w-4 text-sky-500" /> {isFolder ? 'Abrir' : 'Ver'}</DropdownMenuItem>
-                            {canModify && (<><Separator /><DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4 text-blue-500" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem></>)}
+                            {canModify && (<><Separator /><DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4 text-blue-500" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" fill="currentColor" /> Eliminar</DropdownMenuItem></>)}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -695,7 +696,7 @@ export default function ResourcesPage() {
         <div className="flex items-center gap-2">
             {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
                 <Dialog open={showCreateFolderModal} onOpenChange={setShowCreateFolderModal}>
-                    <DialogTrigger asChild><Button><Folder className="mr-2 h-4 w-4" /> Crear Carpeta</Button></DialogTrigger>
+                    <DialogTrigger asChild><Button><Folder className="mr-2 h-4 w-4" fill="currentColor" /> Crear Carpeta</Button></DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                         <DialogHeader><DialogTitle>Crear Nueva Carpeta</DialogTitle><DialogDescription>Ingresa un nombre para la nueva carpeta en la ubicación actual.</DialogDescription></DialogHeader>
                         <form onSubmit={handleCreateFolder} className="space-y-4">
@@ -748,7 +749,7 @@ export default function ResourcesPage() {
        <Card className="p-4 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center text-sm text-muted-foreground overflow-x-auto whitespace-nowrap pb-2 md:pb-0">
-            <button onClick={() => handleBreadcrumbClick(null, 0)} className="hover:text-primary flex items-center gap-1 shrink-0"><Home className="h-4 w-4 text-primary"/> Biblioteca</button>
+            <button onClick={() => handleBreadcrumbClick(null, 0)} className="hover:text-primary flex items-center gap-1 shrink-0"><Home className="h-4 w-4 text-primary" fill="currentColor"/> Biblioteca</button>
             {breadcrumbs.map((crumb, index) => (
               <React.Fragment key={crumb.id || 'root'}>
                 <ChevronRight className="h-4 w-4 mx-1 shrink-0" />
@@ -809,9 +810,9 @@ export default function ResourcesPage() {
       {isLoading ? (
         <div className="flex justify-center items-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2">Cargando recursos...</p></div>
       ) : error ? (
-        <div className="flex flex-col items-center justify-center py-12 text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p><Button onClick={() => fetchResources(currentFolderId)} variant="outline" className="mt-4">Reintentar</Button></div>
+        <div className="flex flex-col items-center justify-center py-12 text-destructive"><AlertTriangle className="h-8 w-8 mb-2" fill="currentColor" /><p className="font-semibold">{error}</p><Button onClick={() => fetchResources(currentFolderId)} variant="outline" className="mt-4">Reintentar</Button></div>
       ) : (folders.length === 0 && files.length === 0) ? (
-        <div className="text-center py-12"><ArchiveX className="mx-auto h-12 w-12 text-primary mb-4" /><h3 className="text-xl font-semibold">{searchTerm ? 'No hay coincidencias' : 'Carpeta Vacía'}</h3><p className="text-muted-foreground">{searchTerm ? 'Prueba con otro término de búsqueda.' : 'Sube un archivo o crea una carpeta para empezar.'}</p></div>
+        <div className="text-center py-12"><ArchiveX className="mx-auto h-12 w-12 text-primary mb-4" fill="currentColor"/><h3 className="text-xl font-semibold">{searchTerm ? 'No hay coincidencias' : 'Carpeta Vacía'}</h3><p className="text-muted-foreground">{searchTerm ? 'Prueba con otro término de búsqueda.' : 'Sube un archivo o crea una carpeta para empezar.'}</p></div>
       ) : (
         <div className="space-y-6">
             {folders.length > 0 && (
@@ -870,16 +871,16 @@ export default function ResourcesPage() {
               <div className="space-y-1"><Label htmlFor="edit-resource-category">Categoría</Label><Select name="edit-resource-category" value={editResourceCategory} onValueChange={setEditResourceCategory} required disabled={isSavingEdit || isSavingPin}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{settings?.resourceCategories.sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
               <div className="space-y-1"><Label htmlFor="edit-resource-tags">Etiquetas</Label><Input id="edit-resource-tags" value={editResourceTags} onChange={(e) => setEditResourceTags(e.target.value)} disabled={isSavingEdit || isSavingPin} /></div>
             </>)}
-            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowEditModal(false)} disabled={isSavingEdit || isSavingPin}>Cancelar</Button><Button type="submit" disabled={isSavingEdit || isSavingPin}>{isSavingEdit ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Guardar</Button></DialogFooter>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowEditModal(false)} disabled={isSavingEdit || isSavingPin}>Cancelar</Button><Button type="submit" disabled={isSavingEdit || isSavingPin}>{isSavingEdit ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" fill="currentColor" />}Guardar</Button></DialogFooter>
           </form>
-          {user?.role === 'ADMINISTRATOR' && resourceToEdit?.type !== 'FOLDER' && (<><Separator /><div className="space-y-3 pt-4"><h4 className="font-medium flex items-center gap-2"><Lock className="h-4 w-4 text-amber-500" />PIN de Seguridad</h4><p className="text-sm text-muted-foreground">Protege este recurso con un PIN.</p><div className="flex items-center gap-2"><Input id="edit-resource-pin" type="password" placeholder="Ingresa un PIN (mín. 4 caracteres)" value={editResourcePin} onChange={(e) => setEditResourcePin(e.target.value.replace(/\D/g, ''))} maxLength={16} disabled={isSavingPin || isSavingEdit} /><Button onClick={handleSavePin} disabled={isSavingPin || isSavingEdit || !editResourcePin}>{isSavingPin && !resourceToEdit?.hasPin ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pin className="h-4 w-4" />}</Button></div>{resourceToEdit?.hasPin && (<Button variant="destructive" className="w-full" onClick={handleRemovePin} disabled={isSavingPin || isSavingEdit}>{isSavingPin ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PinOff className="mr-2 h-4 w-4" />}Quitar PIN</Button>)}</div></>)}
+          {user?.role === 'ADMINISTRATOR' && resourceToEdit?.type !== 'FOLDER' && (<><Separator /><div className="space-y-3 pt-4"><h4 className="font-medium flex items-center gap-2"><Lock className="h-4 w-4 text-amber-500" fill="currentColor" />PIN de Seguridad</h4><p className="text-sm text-muted-foreground">Protege este recurso con un PIN.</p><div className="flex items-center gap-2"><Input id="edit-resource-pin" type="password" placeholder="Ingresa un PIN (mín. 4 caracteres)" value={editResourcePin} onChange={(e) => setEditResourcePin(e.target.value.replace(/\D/g, ''))} maxLength={16} disabled={isSavingPin || isSavingEdit} /><Button onClick={handleSavePin} disabled={isSavingPin || isSavingEdit || !editResourcePin}>{isSavingPin && !resourceToEdit?.hasPin ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pin className="h-4 w-4" />}</Button></div>{resourceToEdit?.hasPin && (<Button variant="destructive" className="w-full" onClick={handleRemovePin} disabled={isSavingPin || isSavingEdit}>{isSavingPin ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PinOff className="mr-2 h-4 w-4" />}Quitar PIN</Button>)}</div></>)}
         </DialogContent>
       </Dialog>
 
       <AlertDialog open={showDeleteConfirmDialog} onOpenChange={setShowDeleteConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader><AlertDialogTitle>¿Estás seguro?</AlertDialogTitle><AlertDialogDescription>El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. {resourceToDelete?.type === 'FOLDER' && 'Todos los archivos y subcarpetas dentro de esta carpeta también serán eliminados.'}</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogCancel onClick={() => setResourceToDelete(null)} disabled={isDeletingResource}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteResource} disabled={isDeletingResource} className={buttonVariants({ variant: "destructive" })}>{isDeletingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
+          <AlertDialogFooter><AlertDialogCancel onClick={() => setResourceToDelete(null)} disabled={isDeletingResource}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteResource} disabled={isDeletingResource} className={buttonVariants({ variant: "destructive" })}>{isDeletingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" fill="currentColor" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
@@ -897,7 +898,7 @@ export default function ResourcesPage() {
                 }
 
                 if (conversionError) {
-                    return <div className="flex flex-col items-center justify-center h-full gap-2 text-destructive"><AlertTriangle className="h-8 w-8" /><p>Error en la previsualización</p><p className="text-xs">{conversionError}</p></div>;
+                    return <div className="flex flex-col items-center justify-center h-full gap-2 text-destructive"><AlertTriangle className="h-8 w-8" fill="currentColor" /><p>Error en la previsualización</p><p className="text-xs">{conversionError}</p></div>;
                 }
 
                 const url = previewResource.url;
@@ -922,7 +923,7 @@ export default function ResourcesPage() {
                         <p className="text-muted-foreground max-w-sm">Este tipo de archivo se debe descargar para poder visualizarlo.</p>
                         <Button asChild>
                             <Link href={url || '#'} target="_blank" rel="noopener noreferrer" download>
-                                <Download className="mr-2 h-4 w-4" /> Descargar para ver
+                                <Download className="mr-2 h-4 w-4" fill="currentColor" /> Descargar para ver
                             </Link>
                         </Button>
                     </div>
@@ -935,7 +936,7 @@ export default function ResourcesPage() {
       <Dialog open={!!resourceToUnlock} onOpenChange={(isOpen) => { if(!isOpen) { setResourceToUnlock(null); setPinInput(''); setPinError(null); } }}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle className="flex items-center gap-2"><Lock className="h-5 w-5 text-amber-500" />Se requiere PIN de acceso</DialogTitle>
+                <DialogTitle className="flex items-center gap-2"><Lock className="h-5 w-5 text-amber-500" fill="currentColor" />Se requiere PIN de acceso</DialogTitle>
                 <DialogDescription>Ingresa el PIN para acceder a "<strong>{resourceToUnlock?.resource.title}</strong>".</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleVerifyPin}><div className="space-y-2 py-4"><Label htmlFor="pin-input" className="sr-only">PIN</Label><Input id="pin-input" type="password" placeholder="Ingresa el PIN" value={pinInput} onChange={e => { setPinInput(e.target.value.replace(/\D/g, '')); setPinError(null); }} autoFocus />{pinError && <p className="text-sm text-destructive">{pinError}</p>}</div><DialogFooter><Button type="button" variant="outline" onClick={() => setResourceToUnlock(null)}>Cancelar</Button><Button type="submit" disabled={isVerifyingPin || pinInput.length < 4}>{isVerifyingPin && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Verificar</Button></DialogFooter></form>

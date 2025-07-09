@@ -161,7 +161,7 @@ export function TopBar() {
         }}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative h-9 w-9">
-              <Bell className="h-5 w-5" />
+              <Bell className="h-5 w-5" fill="currentColor" />
               {unreadCount > 0 && !isLoadingNotifications && !notificationError && (
                 <span className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
                   {unreadCount > 9 ? '9+' : unreadCount}
@@ -187,7 +187,7 @@ export function TopBar() {
                 </DropdownMenuItem>
               ) : notificationError ? (
                 <DropdownMenuItem disabled className="flex-col items-center justify-center py-4 text-destructive">
-                  <AlertTriangle className="h-5 w-5 mb-1" />
+                  <AlertTriangle className="h-5 w-5 mb-1" fill="currentColor" />
                   <p className="text-sm font-medium">Error al cargar</p>
                   <p className="text-xs">{notificationError.substring(0,50)}</p>
                   <Button variant="link" size="sm" onClick={fetchNotifications} className="mt-1">Reintentar</Button>
@@ -209,7 +209,7 @@ export function TopBar() {
                             className={`flex items-start gap-2.5 p-3 whitespace-normal cursor-pointer ${!notification.read ? 'font-medium bg-muted/50' : 'text-muted-foreground'}`}
                         >
                             <ItemWrapper {...itemProps} className="flex w-full items-start gap-2.5">
-                                {!notification.read ? <Bell className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" /> : <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-500 flex-shrink-0"/>}
+                                {!notification.read ? <Bell className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" fill="currentColor" /> : <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-500 flex-shrink-0" fill="currentColor" />}
                                 <div className="flex-grow">
                                 <p className="text-sm leading-tight font-semibold">{notification.title}</p>
                                 {notification.description && <p className="text-xs leading-snug mt-0.5">{notification.description}</p>}

@@ -231,7 +231,7 @@ export default function ManageCoursesPage() {
   if (user && user.role !== 'ADMINISTRATOR' && user.role !== 'INSTRUCTOR' && !isLoading && courses.length === 0) {
     return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-            <ShieldAlert className="h-12 w-12 text-destructive mb-4" />
+            <ShieldAlert className="h-12 w-12 text-destructive mb-4" fill="currentColor" />
             <h2 className="text-2xl font-semibold mb-2">Acceso Denegado</h2>
             <p className="text-muted-foreground max-w-md">
                 Esta sección es para la gestión de cursos y está restringida a administradores e instructores.
@@ -247,7 +247,7 @@ export default function ManageCoursesPage() {
     if (courseList.length === 0) {
       return (
         <div className="text-center py-12">
-          <ListPlus className="mx-auto h-12 w-12 text-primary mb-4" />
+          <ListPlus className="mx-auto h-12 w-12 text-primary mb-4" fill="currentColor" />
           <h3 className="text-xl font-semibold mb-2">No hay cursos en esta sección</h3>
           <p className="text-muted-foreground">No se encontraron cursos que coincidan con este estado.</p>
         </div>
@@ -298,7 +298,7 @@ export default function ManageCoursesPage() {
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href={`/enrollments?courseId=${course.id}`}>
-                      <Users className="mr-2 h-4 w-4 text-green-500" /> Ver Inscritos
+                      <Users className="mr-2 h-4 w-4 text-green-500" fill="currentColor" /> Ver Inscritos
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -313,7 +313,7 @@ export default function ManageCoursesPage() {
                         ) : course.status === 'PUBLISHED' ? (
                           <CircleOff className="mr-2 h-4 w-4 text-gray-500" />
                         ) : (
-                          <Zap className="mr-2 h-4 w-4 text-yellow-500" />
+                          <Zap className="mr-2 h-4 w-4 text-yellow-500" fill="currentColor" />
                         )}
                         <span>{course.status === 'PUBLISHED' ? 'Pasar a Borrador' : 'Publicar'}</span>
                       </DropdownMenuItem>
@@ -322,7 +322,7 @@ export default function ManageCoursesPage() {
                         disabled={isChangingStatus === course.id}
                         className="text-amber-600 focus:bg-amber-100 focus:text-amber-800 dark:text-amber-400 dark:focus:bg-amber-900/40 dark:focus:text-amber-300"
                       >
-                         {isChangingStatus === course.id && (course.status !== 'ARCHIVED') ? null : <Archive className="mr-2 h-4 w-4" />}
+                         {isChangingStatus === course.id && (course.status !== 'ARCHIVED') ? null : <Archive className="mr-2 h-4 w-4" fill="currentColor" />}
                          Archivar
                       </DropdownMenuItem>
                     </>
@@ -346,7 +346,7 @@ export default function ManageCoursesPage() {
                       disabled={isChangingStatus === course.id}
                       className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground"
                   >
-                      <Trash2 className="mr-2 h-4 w-4" />
+                      <Trash2 className="mr-2 h-4 w-4" fill="currentColor" />
                       <span>Eliminar</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -370,7 +370,7 @@ export default function ManageCoursesPage() {
          <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
             <DialogTrigger asChild>
                 <Button>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Crear Nuevo Curso
+                    <PlusCircle className="mr-2 h-4 w-4" fill="currentColor" /> Crear Nuevo Curso
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[625px]">
@@ -393,7 +393,7 @@ export default function ManageCoursesPage() {
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-12 text-destructive text-center">
-              <AlertTriangle className="h-8 w-8 mb-2" />
+              <AlertTriangle className="h-8 w-8 mb-2" fill="currentColor" />
               <p className="font-semibold">Error al Cargar Cursos</p>
               <p className="text-sm">{error}</p>
               <Button onClick={fetchCourses} variant="outline" className="mt-4">Reintentar</Button>
@@ -441,7 +441,7 @@ export default function ManageCoursesPage() {
                     disabled={isDeleting}
                     className={buttonVariants({ variant: "destructive" })}
                 >
-                    {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                    {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" fill="currentColor" />}
                     Sí, eliminar curso
                 </AlertDialogAction>
             </AlertDialogFooter>
