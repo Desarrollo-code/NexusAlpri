@@ -2,10 +2,9 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import { updateLessonCompletionStatus } from '@/lib/progress';
-import prisma from '@/lib/prisma';
+import { recordLessonInteraction } from '@/lib/progress';
 
-// Submit quiz result and update progress
+// Records a 'quiz' interaction with its score
 export async function POST(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
     const session = await getSession(req);
     const { userId, courseId } = params;
@@ -21,7 +20,7 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
             return NextResponse.json({ message: 'lessonId y score son requeridos.' }, { status: 400 });
         }
         
-        const updatedProgress = await updateLessonCompletionStatus({
+        await recordLessonInteraction({
             userId,
             courseId,
             lessonId,
@@ -29,12 +28,8 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
             score,
         });
 
-        const passed = score >= 80;
-        const message = passed
-            ? 'Quiz aprobado y progreso actualizado.'
-            : 'Quiz enviado. Tu progreso ha sido actualizado.';
-
-        return NextResponse.json({ message, passed, progress: updatedProgress });
+        const message = score >= 80 ? 'Quiz aprobado.' : 'Quiz enviado.';
+        return NextResponse.json({ message });
 
     } catch (error) {
         console.error('[QUIZ_SUBMIT_ERROR]', error);

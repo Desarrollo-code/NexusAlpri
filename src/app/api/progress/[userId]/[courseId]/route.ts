@@ -21,6 +21,7 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
         });
         
         if (!progress) {
+            // Return a default structure if no progress record exists yet
             return NextResponse.json({
                 userId,
                 courseId,
@@ -28,30 +29,16 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
                 progressPercentage: 0,
             });
         }
-
+        
+        // Safely handle the completedLessonIds which is of type JsonValue
         let completedLessonIds: LessonCompletionRecord[] = [];
-        if (progress.completedLessonIds) {
-            // Handle both array (from direct JSON) and string (from DB) representations
-            if (Array.isArray(progress.completedLessonIds)) {
-                completedLessonIds = progress.completedLessonIds as LessonCompletionRecord[];
-            } else if (typeof progress.completedLessonIds === 'string') {
-                 try {
-                    const parsed = JSON.parse(progress.completedLessonIds);
-                    if (Array.isArray(parsed)) {
-                        completedLessonIds = parsed;
-                    }
-                 } catch (e) {
-                    console.error("Failed to parse completedLessonIds JSON in GET route:", progress.completedLessonIds, e);
-                 }
-            } else if (typeof progress.completedLessonIds === 'object') {
-                // It might already be a JSON object if Prisma handles it automatically in some cases
-                completedLessonIds = progress.completedLessonIds as unknown as LessonCompletionRecord[];
-            }
+        if (progress.completedLessonIds && Array.isArray(progress.completedLessonIds)) {
+            completedLessonIds = progress.completedLessonIds as unknown as LessonCompletionRecord[];
         }
 
         return NextResponse.json({
             ...progress,
-            completedLessonIds, // Send the parsed array to the client
+            completedLessonIds, // Ensure it's always an array
         });
 
     } catch (error) {

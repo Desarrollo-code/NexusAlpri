@@ -2,9 +2,9 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import { updateLessonCompletionStatus } from '@/lib/progress';
+import { recordLessonInteraction } from '@/lib/progress';
 
-// Update lesson completion status manually
+// Records a 'view' interaction for a lesson
 export async function POST(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
     const session = await getSession(req);
     const { userId, courseId } = params;
@@ -14,23 +14,22 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
     }
 
     try {
-        const { lessonId, type } = await req.json();
-
-        if (type !== 'view' || !lessonId) {
-            return NextResponse.json({ message: 'lessonId y el tipo "view" son requeridos.' }, { status: 400 });
+        const { lessonId } = await req.json();
+        if (!lessonId) {
+            return NextResponse.json({ message: 'lessonId es requerido.' }, { status: 400 });
         }
         
-        const updatedProgress = await updateLessonCompletionStatus({
+        await recordLessonInteraction({
             userId,
             courseId,
             lessonId,
             type: 'view',
         });
         
-        return NextResponse.json(updatedProgress);
+        return NextResponse.json({ message: "Interaction recorded" });
 
     } catch (error) {
         console.error('[PROGRESS_LESSON_ERROR]', error);
-        return NextResponse.json({ message: 'Error al actualizar el progreso' }, { status: 500 });
+        return NextResponse.json({ message: 'Error al registrar la interacción' }, { status: 500 });
     }
 }
