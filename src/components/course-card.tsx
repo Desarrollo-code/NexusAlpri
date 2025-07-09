@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import type { Course as AppCourse, EnrolledCourse, UserRole } from '@/types';
-import { Layers, ArrowRight, Check, Plus, Loader2 } from 'lucide-react';
+import { Layers, ArrowRight, Check, Plus, Loader2, X } from 'lucide-react';
 
 interface CourseCardProps {
   course: AppCourse | EnrolledCourse;
@@ -29,7 +29,7 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
 
   const progress = (course as EnrolledCourse).progressPercentage;
 
-  const handleEnrollment = async (e: React.MouseEvent) => {
+  const handleEnrollment = async (e: React.MouseEvent, enroll: boolean) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -39,13 +39,12 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
     }
 
     setIsProcessingEnrollment(true);
-    const newEnrollmentStatus = !isEnrolled;
 
     try {
       const response = await fetch('/api/enrollments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courseId: course.id, enroll: newEnrollmentStatus }),
+        body: JSON.stringify({ courseId: course.id, enroll: enroll }),
       });
 
       if (!response.ok) {
@@ -53,14 +52,14 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
         throw new Error(errorData.message || 'Error al procesar la inscripción');
       }
       
-      setIsEnrolled(newEnrollmentStatus);
+      setIsEnrolled(enroll);
       if (onEnrollmentChange) {
-        onEnrollmentChange(course.id, newEnrollmentStatus);
+        onEnrollmentChange(course.id, enroll);
       }
       
       toast({
-        title: newEnrollmentStatus ? '¡Inscripción Exitosa!' : 'Inscripción Cancelada',
-        description: newEnrollmentStatus
+        title: enroll ? '¡Inscripción Exitosa!' : 'Inscripción Cancelada',
+        description: enroll
           ? `Ahora estás inscrito en "${course.title}".`
           : `Has cancelado tu inscripción a "${course.title}".`,
       });
@@ -77,28 +76,35 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
   };
 
   const EnrollmentButton = () => {
-    if (!user || userRole === 'ADMINISTRATOR' || userRole === 'INSTRUCTOR') {
+    // Show "View Course" for instructors/admins, as they don't "enroll" in the same way
+    if (user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === course.instructorId))) {
       return (
         <Button asChild className="w-full" size="sm">
           <Link href={`/courses/${course.id}`}>
-            Ver Curso <ArrowRight className="ml-2" />
+            Ver Detalles <ArrowRight className="ml-2" />
           </Link>
         </Button>
       );
     }
-
+    
+    // Logic for students, and instructors/admins viewing other courses
     if (isEnrolled) {
       return (
-        <Button asChild variant="secondary" className="w-full" size="sm">
-          <Link href={`/courses/${course.id}`}>
-            Continuar <ArrowRight className="ml-2" />
-          </Link>
-        </Button>
+        <div className="grid grid-cols-2 gap-2 w-full">
+            <Button asChild variant="secondary" size="sm">
+                <Link href={`/courses/${course.id}`}>
+                    Continuar <ArrowRight className="ml-2" />
+                </Link>
+            </Button>
+             <Button variant="outline" size="sm" onClick={(e) => handleEnrollment(e, false)} disabled={isProcessingEnrollment}>
+                 {isProcessingEnrollment ? ( <Loader2 className="animate-spin" /> ) : <X className="h-4 w-4" />}
+            </Button>
+        </div>
       );
     }
 
     return (
-      <Button onClick={handleEnrollment} disabled={isProcessingEnrollment} className="w-full" size="sm">
+      <Button onClick={(e) => handleEnrollment(e, true)} disabled={isProcessingEnrollment} className="w-full" size="sm">
         {isProcessingEnrollment ? (
           <Loader2 className="mr-2 animate-spin" />
         ) : (

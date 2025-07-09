@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { CourseCard } from '@/components/course-card';
 import { Input } from '@/components/ui/input';
-import type { Course as AppCourseType, CourseStatus, UserRole } from '@/types'; 
+import type { Course as AppCourseType, EnrolledCourse, CourseStatus, UserRole } from '@/types'; 
 import { Search, PackageX, Loader2, AlertTriangle } from 'lucide-react'; 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
@@ -39,25 +39,40 @@ function mapApiCourseToAppCourse(apiCourse: ApiCourse): AppCourseType {
 export default function CoursesPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  
   const [allApiCourses, setAllApiCourses] = useState<ApiCourse[]>([]);
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
+  
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const [searchTerm, setSearchTerm] = useState('');
   
   const [enrollmentUpdatedSignal, setEnrollmentUpdatedSignal] = useState(0);
 
-  const fetchCourses = useCallback(async () => {
+  const fetchCoursesAndEnrollments = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/courses', { cache: 'no-store' }); 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to fetch courses: ${response.statusText}`);
+      const coursePromise = fetch('/api/courses', { cache: 'no-store' });
+      
+      const enrollmentPromise = user?.id 
+        ? fetch(`/api/enrollment/${user.id}`, { cache: 'no-store' })
+        : Promise.resolve(null);
+        
+      const [courseResponse, enrollmentResponse] = await Promise.all([coursePromise, enrollmentPromise]);
+
+      if (!courseResponse.ok) {
+        const errorData = await courseResponse.json();
+        throw new Error(errorData.message || 'Failed to fetch courses');
       }
-      const data: ApiCourse[] = await response.json();
-      setAllApiCourses(data);
+      const courseData: ApiCourse[] = await courseResponse.json();
+      setAllApiCourses(courseData);
+
+      if (enrollmentResponse && enrollmentResponse.ok) {
+        const enrollmentData: EnrolledCourse[] = await enrollmentResponse.json();
+        setEnrolledCourseIds(enrollmentData.map(c => c.id));
+      }
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar cursos');
       setAllApiCourses([]);
@@ -65,11 +80,12 @@ export default function CoursesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [user, toast]);
+  
 
   useEffect(() => {
-    fetchCourses();
-  }, [fetchCourses, enrollmentUpdatedSignal]); 
+    fetchCoursesAndEnrollments();
+  }, [fetchCoursesAndEnrollments, enrollmentUpdatedSignal]); 
 
   const allCoursesForDisplay = useMemo(() => allApiCourses.map(mapApiCourseToAppCourse), [allApiCourses]);
   
@@ -77,11 +93,13 @@ export default function CoursesPage() {
     return allCoursesForDisplay.filter(course => {
       const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             (course.description && course.description.toLowerCase().includes(searchTerm.toLowerCase()));
-      const isNotOwnCourse = !user || course.instructorId !== user.id;
+      
+      const isPublished = course.status === 'PUBLISHED';
+      const isNotEnrolled = !enrolledCourseIds.includes(course.id);
 
-      return matchesSearch && isNotOwnCourse && course.status === 'PUBLISHED';
+      return matchesSearch && isPublished && isNotEnrolled;
     });
-  }, [allCoursesForDisplay, searchTerm, user]);
+  }, [allCoursesForDisplay, searchTerm, enrolledCourseIds]);
 
   const groupedCourses = useMemo(() => {
     return filteredCourses.reduce((acc, course) => {
@@ -95,7 +113,12 @@ export default function CoursesPage() {
   }, [filteredCourses]);
 
   const handleEnrollmentChange = (courseId: string, newStatus: boolean) => {
-    setEnrollmentUpdatedSignal(prev => prev + 1); 
+    // Optimistically update the UI by removing the course from the catalog view
+    if (newStatus) {
+        setEnrolledCourseIds(prev => [...prev, courseId]);
+    }
+    // A full refresh signal can also be sent if needed
+    // setEnrollmentUpdatedSignal(prev => prev + 1); 
   };
 
 
@@ -118,7 +141,7 @@ export default function CoursesPage() {
           />
         </div>
         <div className="text-sm text-muted-foreground pt-2 border-t">
-          Mostrando {filteredCourses.length} de {allCoursesForDisplay.filter(c => (!user || c.instructorId !== user.id) && c.status === 'PUBLISHED').length} cursos publicados disponibles.
+          Mostrando {filteredCourses.length} de {allCoursesForDisplay.filter(c => c.status === 'PUBLISHED' && !enrolledCourseIds.includes(c.id)).length} cursos disponibles para inscribirse.
         </div>
       </Card>
 
@@ -132,7 +155,7 @@ export default function CoursesPage() {
           <AlertTriangle className="h-8 w-8 mb-2" />
           <p className="font-semibold">Error al cargar el catálogo</p>
           <p className="text-sm">{error}</p>
-          <Button onClick={fetchCourses} variant="outline" className="mt-4">Reintentar</Button>
+          <Button onClick={fetchCoursesAndEnrollments} variant="outline" className="mt-4">Reintentar</Button>
         </div>
       ) : Object.keys(groupedCourses).length > 0 ? (
           <div className="space-y-8">
@@ -155,11 +178,11 @@ export default function CoursesPage() {
       ) : (
         <div className="text-center py-12">
           <PackageX className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-xl font-semibold mb-2">Ningún curso encontrado</h3>
+          <h3 className="text-xl font-semibold mb-2">Ningún curso disponible</h3>
           <p className="text-muted-foreground">
             {searchTerm 
-              ? 'Prueba a cambiar el término de búsqueda.' 
-              : 'Actualmente no hay cursos publicados disponibles.'
+              ? 'No hay cursos que coincidan con tu búsqueda.' 
+              : 'Ya estás inscrito en todos los cursos o no hay cursos publicados.'
             }
           </p>
         </div>

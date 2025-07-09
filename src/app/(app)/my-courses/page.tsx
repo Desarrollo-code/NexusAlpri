@@ -67,8 +67,11 @@ export default function MyCoursesPage() {
   }, [isAuthLoading, fetchMyEnrollments, enrollmentUpdatedSignal]);
 
 
-  const handleEnrollmentChangeOnPage = () => {
-    setEnrollmentUpdatedSignal(prev => prev + 1);
+  const handleEnrollmentChangeOnPage = (courseId: string, newStatus: boolean) => {
+    // If a user un-enrolls, remove the course from the view optimistically.
+    if (!newStatus) {
+        setMyEnrolledCourses(prev => prev.filter(c => c.id !== courseId));
+    }
   };
 
   if (isAuthLoading || (isFetchingPageData && user)) {
@@ -80,8 +83,8 @@ export default function MyCoursesPage() {
     );
   }
 
-  let pageTitle = "Mis Cursos Inscritos";
-  let pageDescription = "Continúa tu aprendizaje y revisa tu progreso en los cursos a los que te has unido.";
+  const pageTitle = "Mis Cursos Inscritos";
+  const pageDescription = "Continúa tu aprendizaje y revisa tu progreso en los cursos a los que te has unido.";
 
 
   return (
