@@ -51,7 +51,7 @@ const getEventColorClass = (color?: string): string => {
     case 'cyan': return 'bg-event-cyan';
     case 'orange': return 'bg-event-orange';
     case 'default':
-    default: return 'bg-event-default';
+    default: return 'bg-event-purple';
   }
 };
 
@@ -302,7 +302,7 @@ export default function CalendarPage() {
                   <div className="space-y-3">
                     {selectedDayEvents.map(event => (
                       <div key={event.id} onClick={() => handleOpenEventModal(event)} className="p-3 rounded-lg border border-border flex items-start gap-3 cursor-pointer hover:bg-muted transition-colors">
-                        <div className={cn('mt-1 h-2.5 w-2.5 rounded-full flex-shrink-0', getEventColorClass(event.color))}></div>
+                        <div className={cn('mt-1 h-2.5 w-2.5 rounded-full flex-shrink-0', getEventColorClass(event.color || 'purple'))}></div>
                         <div className="flex-grow">
                           <p className="font-semibold text-sm text-foreground">{event.title}</p>
                           <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
