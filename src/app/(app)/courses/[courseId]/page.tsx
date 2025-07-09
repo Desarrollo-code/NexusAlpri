@@ -114,10 +114,6 @@ export default function CourseDetailPage() {
   
   const [lessonCompletion, setLessonCompletion] = useState<Record<string, boolean>>({});
   const [activeAccordionItem, setActiveAccordionItem] = useState<string | undefined>(undefined);
-  
-  const hasQuizzes = useMemo(() => {
-    return course?.modules.some(m => m.lessons.some(l => l.type === 'QUIZ')) ?? false;
-  }, [course]);
 
   const modulesForDisplay = useMemo(() => {
      return course?.modules.sort((a,b) => (a.order ?? 0) - (b.order ?? 0)).map(m => ({
@@ -219,42 +215,43 @@ export default function CourseDetailPage() {
       }
   }, [isLoading, isEnrolled, fetchProgress]);
 
+  const handleModuleExpansion = async (module: AppModule) => {
+    if (!isEnrolled || !user?.id) return;
 
-  const handleToggleComplete = async (lessonId: string, currentState: boolean) => {
-    if (!user || !user.id || !courseId || !isEnrolled) {
-      toast({ title: "Acción no permitida", description: "Debes estar inscrito en el curso para marcar el progreso.", variant: "destructive" });
-      return;
-    }
-
-    const newCompletedStatus = !currentState;
-
+    const lessonsToComplete = module.lessons.filter(
+      lesson => lesson.type !== 'QUIZ' && !lessonCompletion[lesson.id]
+    );
+    
+    if (lessonsToComplete.length === 0) return;
+    
+    const oldCompletionState = { ...lessonCompletion };
+    
     // Optimistic UI update
-    const oldCompletionState = {...lessonCompletion};
-    setLessonCompletion(prev => ({ ...prev, [lessonId]: newCompletedStatus }));
-    setIsSavingProgress(true);
+    setLessonCompletion(prev => {
+      const newState = { ...prev };
+      lessonsToComplete.forEach(lesson => {
+        newState[lesson.id] = true;
+      });
+      return newState;
+    });
 
     try {
-      const response = await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lessonId, completed: newCompletedStatus }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update progress');
+      // We can make this more efficient by batching, but for now this is fine
+      for (const lesson of lessonsToComplete) {
+        await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lessonId: lesson.id, completed: true }),
+        });
       }
-      
-      // Re-fetch progress to get the updated percentage and state
-      await fetchProgress();
-
-      toast({ title: newCompletedStatus ? "Lección Completada" : "Progreso Actualizado", description: `Has ${newCompletedStatus ? 'completado' : 'desmarcado'} la lección.` });
+      await fetchProgress(); // Re-sync with server's calculated progress
     } catch (err) {
-      // Rollback on error
-      setLessonCompletion(oldCompletionState); 
-      toast({ title: "Error al guardar progreso", description: err instanceof Error ? err.message : 'No se pudo guardar el progreso.', variant: "destructive" });
-    } finally {
-      setIsSavingProgress(false);
+      setLessonCompletion(oldCompletionState); // Rollback on failure
+      toast({
+        title: "Error al Guardar Progreso",
+        description: "No se pudo actualizar tu progreso. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
     }
   };
   
@@ -389,13 +386,6 @@ export default function CourseDetailPage() {
   if (!course) {
      return ( <div className="flex flex-col items-center justify-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-primary mb-2" /><p className="text-lg">Cargando...</p></div> );
   }
-  
-  const handleAccordionInteraction = (lessonId: string) => {
-    // Implicit completion for content-only courses on interaction
-    if (!hasQuizzes && isEnrolled && lessonId && !lessonCompletion[lessonId]) {
-      handleToggleComplete(lessonId, false);
-    }
-  };
 
   return (
     <div className="space-y-8">
@@ -441,7 +431,7 @@ export default function CourseDetailPage() {
                   <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b border-border last:border-b-0">
                     <AccordionTrigger 
                         className="text-md font-semibold hover:no-underline py-4 px-2 hover:bg-muted/50 rounded-md data-[state=open]:bg-muted/80"
-                        onClick={() => handleAccordionInteraction(moduleItem.lessons[0]?.id)}
+                        onClick={() => handleModuleExpansion(moduleItem)}
                     >
                       {moduleItem.title}
                     </AccordionTrigger>
@@ -460,31 +450,11 @@ export default function CourseDetailPage() {
                                         </div>
                                         {renderLessonContent(lesson)}
                                     </div>
-                                    
-                                    {isEnrolled && hasQuizzes && lesson.type !== 'QUIZ' && (
-                                        <Button
-                                            variant={isCompletedByUser ? 'secondary' : 'outline'}
-                                            size="sm"
-                                            onClick={() => handleToggleComplete(lesson.id, !!isCompletedByUser)}
-                                            disabled={isSavingProgress}
-                                            className="shrink-0"
-                                            aria-label={isCompletedByUser ? 'Marcar como no completada' : 'Marcar como completada'}
-                                        >
-                                            {isSavingProgress ? (
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                            ) : isCompletedByUser ? (
-                                                <CheckCircle className="h-4 w-4 text-green-500" />
-                                            ) : (
-                                                <Circle className="h-4 w-4 text-muted-foreground" />
-                                            )}
-                                            <span className="ml-2 hidden sm:inline">{isCompletedByUser ? 'Completada' : 'Completar'}</span>
-                                        </Button>
-                                    )}
 
-                                    {isEnrolled && lesson.type === 'QUIZ' && isCompletedByUser && (
+                                    {isEnrolled && isCompletedByUser && (
                                         <div className="flex flex-col items-center gap-1 text-green-600">
                                             <CheckCircle className="h-5 w-5" />
-                                            <span className="text-xs font-medium hidden sm:inline">Aprobado</span>
+                                            <span className="text-xs font-medium hidden sm:inline">Visto</span>
                                         </div>
                                     )}
                                 </div>
@@ -545,3 +515,4 @@ export default function CourseDetailPage() {
     </div>
   );
 }
+
