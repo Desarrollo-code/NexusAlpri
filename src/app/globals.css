@@ -4,47 +4,47 @@
 
 @layer base {
   :root {
-    --background: 0 0% 19%;
+    --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 24%;
+    --card: 0 0% 9%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 19%;
+    --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 221 83% 53%;
+    --primary: 262 59% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 28%;
+    --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 28%;
-    --muted-foreground: 0 0% 65%;
-    --accent: 221 83% 53%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 63%;
+    --accent: 262 52% 51%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 30%;
-    --input: 0 0% 30%;
-    --ring: 221 83% 53%;
-    --chart-1: 198 93% 60%; /* Bright Cyan */
-    --chart-2: 350 91% 60%; /* Vibrant Pink */
-    --chart-3: 145 83% 55%; /* Lively Green */
-    --chart-4: 45 93% 55%; /* Sunny Yellow */
-    --chart-5: 280 89% 65%; /* Electric Violet */
-    --sidebar-background: 0 0% 14%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 262 59% 50%;
+    --chart-1: 198 93% 60%;
+    --chart-2: 350 91% 60%;
+    --chart-3: 145 83% 55%;
+    --chart-4: 45 93% 55%;
+    --chart-5: 280 89% 65%;
+    --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 80%;
-    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary: 262 59% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 20%;
+    --sidebar-accent: 0 0% 12%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-border: 0 0% 12%;
+    --sidebar-ring: 262 59% 50%;
     
     /* Event Colors */
-    --event-red: 0 84% 60%;
-    --event-green: 145 63% 49%;
-    --event-blue: 217 91% 60%;
-    --event-yellow: 37 92% 51%;
-    --event-purple: 258 90% 67%;
-    --event-cyan: 191 95% 44%;
-    --event-default: 221 83% 53%;
+    --event-red: 0 100% 65%;
+    --event-green: 124 39% 59%;
+    --event-blue: 212 90% 61%;
+    --event-yellow: 51 100% 50%;
+    --event-purple: 291 64% 42%;
+    --event-cyan: 187 100% 42%;
+    --event-default: 262 59% 50%;
   }
 
   .light {
@@ -54,19 +54,19 @@
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 221 83% 53%;
+    --primary: 262 59% 50%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 221 83% 53%;
+    --accent: 262 52% 51%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 221 83% 53%;
+    --ring: 262 59% 50%;
     --chart-1: 198 93% 60%; /* Bright Cyan */
     --chart-2: 350 91% 60%; /* Vibrant Pink */
     --chart-3: 145 83% 55%; /* Lively Green */
@@ -74,7 +74,7 @@
     --chart-5: 280 89% 65%; /* Electric Violet */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary: 262 59% 50%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
