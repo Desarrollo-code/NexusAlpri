@@ -33,13 +33,14 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
 
-const NavMenuItem = ({ item, pathname }: { item: NavItem, pathname: string }) => {
+const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: string, index: number }) => {
   const { state: sidebarState } = useSidebar();
   const { user } = useAuth();
   
   if (!user) return null;
 
   const filteredSubItems = item.subItems?.filter(sub => sub.roles.includes(user.role)) ?? [];
+  const iconColorClass = `text-chart-${(index % 5) + 1}`;
 
   if (filteredSubItems.length > 0) {
     // Collapsed state: Render as Dropdown
@@ -48,16 +49,16 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem, pathname: string }) =>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton tooltip={item.label}>
-              <item.icon fill="currentColor" />
+              <item.icon className={cn(iconColorClass)} fill="currentColor" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="right" align="start" sideOffset={10} className="bg-sidebar text-sidebar-foreground border-sidebar-border">
             <DropdownMenuLabel>{item.label}</DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-sidebar-border"/>
-            {filteredSubItems.map((subItem) => (
+            {filteredSubItems.map((subItem, subIndex) => (
               <DropdownMenuItem key={subItem.href} asChild className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground">
                 <Link href={subItem.href}>
-                  <subItem.icon className="text-primary" fill="currentColor" />
+                  <subItem.icon className={cn(`text-chart-${(subIndex % 5) + 1}`)} fill="currentColor" />
                   <span>{subItem.label}</span>
                 </Link>
               </DropdownMenuItem>
@@ -74,17 +75,17 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem, pathname: string }) =>
             "w-full justify-between h-auto p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           )}>
             <div className="flex items-center gap-2">
-              <item.icon className="text-primary" fill="currentColor" />
+              <item.icon className={cn(iconColorClass)} fill="currentColor" />
               <span>{item.label}</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="p-0 pl-5">
             <SidebarMenu className="border-l border-sidebar-border ml-1 pl-3">
-              {filteredSubItems.map((subItem) => (
+              {filteredSubItems.map((subItem, subIndex) => (
                 <SidebarMenuItem key={subItem.href}>
                   <SidebarMenuButton asChild isActive={pathname.startsWith(subItem.href)} size="sm">
                     <Link href={subItem.href}>
-                      <subItem.icon className="text-primary" fill="currentColor"/>
+                      <subItem.icon className={cn(`text-chart-${(subIndex % 5) + 1}`)} fill="currentColor"/>
                       <span>{subItem.label}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -101,7 +102,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem, pathname: string }) =>
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={item.href ? pathname.startsWith(item.href) : false} tooltip={item.label} disabled={item.disabled}>
         <Link href={item.href || '#'}>
-          <item.icon className="text-primary" fill="currentColor" />
+          <item.icon className={cn(iconColorClass)} fill="currentColor" />
           <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
         </Link>
       </SidebarMenuButton>
@@ -183,8 +184,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               className="w-full"
             >
               <SidebarMenu>
-                {navItems.map((item) => (
-                   <NavMenuItem key={item.href || item.label} item={item} pathname={pathname} />
+                {navItems.map((item, index) => (
+                   <NavMenuItem key={item.href || item.label} item={item} pathname={pathname} index={index} />
                 ))}
               </SidebarMenu>
             </Accordion>

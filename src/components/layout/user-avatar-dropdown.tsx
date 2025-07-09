@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { LogOut, UserCircle, Settings } from 'lucide-react';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 export function UserAvatarDropdown() {
   const { user, logout } = useAuth();
@@ -60,14 +61,14 @@ export function UserAvatarDropdown() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/profile" className="cursor-pointer">
-            <UserCircle className="mr-2 h-4 w-4 text-primary" fill="currentColor" />
+            <UserCircle className={cn('mr-2 h-4 w-4', 'text-chart-1')} fill="currentColor" />
             <span>Perfil</span>
           </Link>
         </DropdownMenuItem>
         {userAppRole === 'ADMINISTRATOR' && (
             <DropdownMenuItem asChild>
                  <Link href="/settings" className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4 text-muted-foreground" fill="currentColor" />
+                    <Settings className={cn('mr-2 h-4 w-4', 'text-chart-2')} fill="currentColor" />
                     <span>Configuración</span>
                  </Link>
             </DropdownMenuItem>
