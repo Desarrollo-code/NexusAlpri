@@ -350,22 +350,22 @@ export default function DashboardPage() {
   
   const quickLinks = {
     ADMINISTRATOR: [
-      { href: '/users', label: 'Gestionar Usuarios', icon: Users, description: 'Administra cuentas y roles.' },
-      { href: '/manage-courses', label: 'Gestionar Cursos', icon: BookMarked, description: 'Crea y edita cursos.' },
-      { href: '/resources', label: 'Biblioteca', icon: Folder, description: 'Administra recursos globales.' },
-      { href: '/settings', label: 'Configuración', icon: Settings, description: 'Ajusta la plataforma.' },
+      { href: '/users', label: 'Gestionar Usuarios', icon: Users, description: 'Administra cuentas y roles.', color: 'text-chart-1' },
+      { href: '/manage-courses', label: 'Gestionar Cursos', icon: BookMarked, description: 'Crea y edita cursos.', color: 'text-chart-2' },
+      { href: '/resources', label: 'Biblioteca', icon: Folder, description: 'Administra recursos globales.', color: 'text-chart-3' },
+      { href: '/settings', label: 'Configuración', icon: Settings, description: 'Ajusta la plataforma.', color: 'text-chart-4' },
     ],
     INSTRUCTOR: [
-      { href: '/manage-courses', label: 'Mis Cursos', icon: BookMarked, description: 'Diseña y actualiza tus cursos.' },
-      { href: '/enrollments', label: 'Progreso Estudiantes', icon: TrendingUp, description: 'Supervisa el avance.' },
-       { href: '/courses', label: 'Explorar Cursos', icon: BookOpen, description: 'Descubre nuevo contenido.' },
-      { href: '/announcements', label: 'Anuncios', icon: Megaphone, description: 'Mantente al día.' },
+      { href: '/manage-courses', label: 'Mis Cursos', icon: BookMarked, description: 'Diseña y actualiza tus cursos.', color: 'text-chart-1' },
+      { href: '/enrollments', label: 'Progreso Estudiantes', icon: TrendingUp, description: 'Supervisa el avance.', color: 'text-chart-2' },
+       { href: '/courses', label: 'Explorar Cursos', icon: BookOpen, description: 'Descubre nuevo contenido.', color: 'text-chart-3' },
+      { href: '/announcements', label: 'Anuncios', icon: Megaphone, description: 'Mantente al día.', color: 'text-chart-4' },
     ],
     STUDENT: [
-      { href: '/my-courses', label: 'Mis Cursos', icon: GraduationCap, description: 'Continúa tu aprendizaje.' },
-      { href: '/courses', label: 'Explorar Cursos', icon: BookOpen, description: 'Descubre nuevas oportunidades.' },
-      { href: '/resources', label: 'Biblioteca', icon: Folder, description: 'Accede a guías y materiales.' },
-      { href: '/announcements', label: 'Anuncios', icon: Megaphone, description: 'Revisa las últimas noticias.' },
+      { href: '/my-courses', label: 'Mis Cursos', icon: GraduationCap, description: 'Continúa tu aprendizaje.', color: 'text-chart-1' },
+      { href: '/courses', label: 'Explorar Cursos', icon: BookOpen, description: 'Descubre nuevas oportunidades.', color: 'text-chart-2' },
+      { href: '/resources', label: 'Biblioteca', icon: Folder, description: 'Accede a guías y materiales.', color: 'text-chart-3' },
+      { href: '/announcements', label: 'Anuncios', icon: Megaphone, description: 'Revisa las últimas noticias.', color: 'text-chart-4' },
     ],
   };
   const linksToShow = quickLinks[user.role] || [];
@@ -653,7 +653,9 @@ export default function DashboardPage() {
              <CardContent className="space-y-3">
                {linksToShow.map((link) => (
                  <Link key={link.href} href={link.href} className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors">
-                   <div className="bg-muted p-2 rounded-md"><link.icon className="h-5 w-5 text-primary" fill="currentColor"/></div>
+                   <div className={`bg-muted p-2 rounded-md ${link.color}`}>
+                     <link.icon className="h-5 w-5" fill="currentColor"/>
+                   </div>
                    <div>
                       <p className="font-semibold">{link.label}</p>
                       <p className="text-xs text-muted-foreground">{link.description}</p>

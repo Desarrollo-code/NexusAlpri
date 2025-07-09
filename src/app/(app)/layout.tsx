@@ -57,7 +57,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem, pathname: string }) =>
             {filteredSubItems.map((subItem) => (
               <DropdownMenuItem key={subItem.href} asChild className="focus:bg-sidebar-accent focus:text-sidebar-accent-foreground">
                 <Link href={subItem.href}>
-                  <subItem.icon className="mr-2 h-4 w-4" fill="currentColor" />
+                  <subItem.icon className="text-primary" fill="currentColor" />
                   <span>{subItem.label}</span>
                 </Link>
               </DropdownMenuItem>
@@ -74,7 +74,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem, pathname: string }) =>
             "w-full justify-between h-auto p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           )}>
             <div className="flex items-center gap-2">
-              <item.icon fill="currentColor" />
+              <item.icon className="text-primary" fill="currentColor" />
               <span>{item.label}</span>
             </div>
           </AccordionTrigger>
@@ -84,7 +84,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem, pathname: string }) =>
                 <SidebarMenuItem key={subItem.href}>
                   <SidebarMenuButton asChild isActive={pathname.startsWith(subItem.href)} size="sm">
                     <Link href={subItem.href}>
-                      <subItem.icon fill="currentColor"/>
+                      <subItem.icon className="text-primary" fill="currentColor"/>
                       <span>{subItem.label}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -101,7 +101,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem, pathname: string }) =>
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={item.href ? pathname.startsWith(item.href) : false} tooltip={item.label} disabled={item.disabled}>
         <Link href={item.href || '#'}>
-          <item.icon fill="currentColor" />
+          <item.icon className="text-primary" fill="currentColor" />
           <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
         </Link>
       </SidebarMenuButton>
