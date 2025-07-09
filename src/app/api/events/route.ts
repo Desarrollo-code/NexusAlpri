@@ -53,12 +53,23 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { attendeeIds, ...restOfBody } = body;
+    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color, creatorId } = body;
     
+    if (!title || !start || !end || !creatorId) {
+        return NextResponse.json({ message: 'Faltan campos requeridos (título, inicio, fin, creador).' }, { status: 400 });
+    }
+
     // Prepare data for event creation
     const dataToCreate: any = {
-      ...restOfBody,
-      creatorId: session.id, // Assign creator from session
+      title,
+      description,
+      location,
+      start: new Date(start),
+      end: new Date(end),
+      allDay,
+      audienceType,
+      color,
+      creatorId,
     };
 
     // If attendee IDs are provided, connect them to the event
@@ -77,117 +88,5 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('[EVENT_POST_ERROR]', error);
     return NextResponse.json({ message: 'Error al crear el evento' }, { status: 500 });
-  }
-}
-
-// PUT (update) an existing event by ID
-// Corrected signature to avoid the 'params should be awaited' warning
-export async function PUT(
-  req: NextRequest, 
-  { params }: { params: { id: string } } // Directly destructure params here
-) {
-  const session = await getSession(req);
-  // Only ADMINISTRATOR or INSTRUCTOR roles can update events
-  if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
-    return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
-  }
-
-  const { id } = params; // Now this line will not trigger the warning
-
-  try {
-    const body = await req.json();
-    const { attendeeIds, ...restOfBody } = body;
-
-    // Check if the event exists and the user is authorized to modify it (creator or admin)
-    const existingEvent = await prisma.calendarEvent.findUnique({
-      where: { id },
-      select: { creatorId: true },
-    });
-
-    if (!existingEvent) {
-      return NextResponse.json({ message: 'Evento no encontrado' }, { status: 404 });
-    }
-
-    // Ensure only the creator or an admin can update the event
-    if (existingEvent.creatorId !== session.id && session.role !== 'ADMINISTRATOR') {
-      return NextResponse.json({ message: 'No autorizado para actualizar este evento' }, { status: 403 });
-    }
-    
-    // Prepare data for event update
-    const dataToUpdate: any = {
-      ...restOfBody,
-    };
-
-    // Handle attendees connection/disconnection
-    if (attendeeIds) {
-      // First, disconnect all existing attendees to handle removals
-      await prisma.calendarEvent.update({
-        where: { id },
-        data: {
-          attendees: {
-            set: [], // Disconnect all
-          },
-        },
-      });
-      // Then, connect the new set of attendees
-      dataToUpdate.attendees = {
-        connect: attendeeIds.map((attendeeId: string) => ({ id: attendeeId })),
-      };
-    } else {
-        // If attendeeIds is explicitly null or undefined, ensure attendees are cleared
-        dataToUpdate.attendees = { set: [] };
-    }
-    
-    // Update the calendar event in the database
-    const updatedEvent = await prisma.calendarEvent.update({
-      where: { id },
-      data: dataToUpdate,
-    });
-    
-    return NextResponse.json(updatedEvent);
-  } catch (error) {
-    console.error('[EVENT_PUT_ERROR]', error);
-    return NextResponse.json({ message: 'Error al actualizar el evento' }, { status: 500 });
-  }
-}
-
-// DELETE an event by ID
-export async function DELETE(
-  req: NextRequest, 
-  { params }: { params: { id: string } } // Directly destructure params here
-) {
-  const session = await getSession(req);
-  // Only ADMINISTRATOR or INSTRUCTOR roles can delete events
-  if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
-    return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
-  }
-
-  const { id } = params; // Now this line will not trigger the warning
-
-  try {
-    // Check if the event exists and the user is authorized to delete it (creator or admin)
-    const existingEvent = await prisma.calendarEvent.findUnique({
-      where: { id },
-      select: { creatorId: true },
-    });
-
-    if (!existingEvent) {
-      return NextResponse.json({ message: 'Evento no encontrado' }, { status: 404 });
-    }
-
-    // Ensure only the creator or an admin can delete the event
-    if (existingEvent.creatorId !== session.id && session.role !== 'ADMINISTRATOR') {
-      return NextResponse.json({ message: 'No autorizado para eliminar este evento' }, { status: 403 });
-    }
-
-    // Delete the calendar event from the database
-    await prisma.calendarEvent.delete({
-      where: { id },
-    });
-    
-    return NextResponse.json({ message: 'Evento eliminado exitosamente' }, { status: 200 });
-  } catch (error) {
-    console.error('[EVENT_DELETE_ERROR]', error);
-    return NextResponse.json({ message: 'Error al eliminar el evento' }, { status: 500 });
   }
 }
