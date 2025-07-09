@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 interface QuizViewerProps {
   quiz: AppQuiz | undefined | null;
   lessonId: string;
-  courseId: string;
+  courseId?: string;
   isEnrolled?: boolean | null;
   isInstructorPreview?: boolean;
   onQuizCompleted?: (lessonId: string, score: number) => void;
@@ -59,7 +59,6 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
 
     setIsSubmitting(true);
     
-    // --- This part calculates the score for immediate UI feedback ---
     let correctCount = 0;
     const questionResults: Result['questionResults'] = {};
     
@@ -83,7 +82,6 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
 
     const score = quiz?.questions.length ? (correctCount / quiz.questions.length) * 100 : 0;
     
-    // --- Submit to backend and handle progress update ---
     if (user && courseId && !isInstructorPreview) {
        try {
             const response = await fetch(`/api/progress/${user.id}/${courseId}/quiz`, {
@@ -95,20 +93,19 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
             if (!response.ok) throw new Error(data.message || 'Error al guardar el resultado');
 
             toast({
-                title: data.passed ? "¡Quiz Aprobado!" : "Quiz Enviado",
-                description: data.message, // Use the message directly from the API
+                title: score >= 80 ? "¡Quiz Aprobado!" : "Quiz Enviado",
+                description: `Has obtenido una puntuación de ${Math.round(score)}%. Tu progreso se ha actualizado.`,
             });
 
        } catch (err) {
             toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudo guardar el resultado del quiz.", variant: "destructive"});
        } finally {
             if (onQuizCompleted) {
-                onQuizCompleted(lessonId, score); // Trigger a progress re-fetch in the parent component
+                onQuizCompleted(lessonId, score); 
             }
        }
     }
     
-    // Show results UI immediately
     setResult({
         score: Math.round(score),
         correctAnswers: correctCount,
@@ -144,7 +141,6 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
       )
   }
 
-  // Viewing results
   if (result) {
     return (
       <Card className="mt-4 border-primary/20">
@@ -204,7 +200,6 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
     );
   }
 
-  // Taking the quiz
   return (
     <Card className="my-4 shadow-lg">
       <CardHeader>

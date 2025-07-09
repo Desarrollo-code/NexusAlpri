@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
@@ -13,13 +14,12 @@ export async function POST(req: NextRequest, context: { params: { userId: string
     }
 
     try {
-        const { lessonId, completed } = await req.json();
+        const { lessonId, type } = await req.json();
 
-        if (typeof completed !== 'boolean' || !lessonId) {
-            return NextResponse.json({ message: 'lessonId y el estado "completed" son requeridos.' }, { status: 400 });
+        if (type !== 'view' || !lessonId) {
+            return NextResponse.json({ message: 'lessonId y el tipo "view" son requeridos.' }, { status: 400 });
         }
         
-        // This endpoint now only handles 'view' type completions
         const updatedProgress = await updateLessonCompletionStatus({
             userId,
             courseId,

@@ -1,3 +1,4 @@
+
 import prisma from '@/lib/prisma';
 import type { LessonCompletionRecord } from '@/types';
 
@@ -14,7 +15,7 @@ interface UpdateParams {
  * Calculates the weighted progress percentage for a course.
  * Quizzes contribute to the score based on their result, other lessons contribute fully.
  * @param completedRecords The records of completed lessons.
- * @param totalLessons The total number of lessons in the course.
+ * @param courseId The ID of the course to calculate progress for.
  * @returns The final weighted progress percentage.
  */
 async function calculateWeightedProgress(completedRecords: LessonCompletionRecord[], courseId: string): Promise<number> {
@@ -66,30 +67,35 @@ export async function updateLessonCompletionStatus({ userId, courseId, lessonId,
         currentRecords = progress.completedLessonIds as LessonCompletionRecord[];
     }
     
-    // Remove any existing record for this lesson to ensure no duplicates
-    const filteredRecords = currentRecords.filter(r => r.lessonId !== lessonId);
+    // Check if a record for this lesson already exists
+    const existingRecordIndex = currentRecords.findIndex(r => r.lessonId === lessonId);
 
-    // Add the new or updated completion record
-    const newRecord: LessonCompletionRecord = { lessonId, type };
-    if (type === 'quiz' && typeof score === 'number') {
-        newRecord.score = score;
+    if (existingRecordIndex !== -1) {
+        // If it exists, update it. This is especially important for quiz re-takes.
+        currentRecords[existingRecordIndex] = { lessonId, type, score: score ?? currentRecords[existingRecordIndex].score };
+    } else {
+        // If it doesn't exist, add it.
+        const newRecord: LessonCompletionRecord = { lessonId, type };
+        if (type === 'quiz' && typeof score === 'number') {
+            newRecord.score = score;
+        }
+        currentRecords.push(newRecord);
     }
-    const newRecords = [...filteredRecords, newRecord];
     
     // Recalculate weighted progress
-    const progressPercentage = await calculateWeightedProgress(newRecords, courseId);
+    const progressPercentage = await calculateWeightedProgress(currentRecords, courseId);
     
     // Update or create the progress record in the database
     const updatedProgress = await prisma.courseProgress.upsert({
         where: { userId_courseId: { userId, courseId } },
         update: {
-            completedLessonIds: newRecords,
+            completedLessonIds: currentRecords,
             progressPercentage: progressPercentage,
         },
         create: {
             userId,
             courseId,
-            completedLessonIds: newRecords,
+            completedLessonIds: currentRecords,
             progressPercentage: progressPercentage,
         },
     });

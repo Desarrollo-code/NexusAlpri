@@ -104,12 +104,44 @@ export default function CourseDetailPage() {
 
   const [course, setCourse] = useState<AppCourse | null>(null);
   const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(null);
+  const [provisionalProgress, setProvisionalProgress] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null);
-  const [isUpdatingProgress, setIsUpdatingProgress] = useState<string | null>(null); // holds lessonId being updated
+  const [isConsolidating, setIsConsolidating] = useState(false);
   
   const [activeAccordionItem, setActiveAccordionItem] = useState<string | undefined>(undefined);
+  const contentRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
+  const totalLessonsCount = allLessons.length;
+
+  const handleInteraction = useCallback((lessonId: string, type: 'view' | 'quiz') => {
+    setProvisionalProgress(prev => ({...prev, [lessonId]: true }));
+    if(user && courseId && isEnrolled) {
+        fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lessonId, type: 'view' }),
+        }).catch(e => console.error("Failed to log interaction:", e));
+    }
+  }, [user, courseId, isEnrolled]);
+
+  const onScroll = (lessonId: string) => {
+    const element = contentRefs.current[lessonId];
+    if (element) {
+        const isScrolledToEnd = element.scrollHeight - element.scrollTop <= element.clientHeight + 1;
+        if (isScrolledToEnd) {
+            handleInteraction(lessonId, 'view');
+        }
+    }
+  };
+
+  const isCourseProvisionallyComplete = useMemo(() => {
+    if (totalLessonsCount === 0) return false;
+    return allLessons.every(lesson => provisionalProgress[lesson.id]);
+  }, [provisionalProgress, allLessons, totalLessonsCount]);
+
 
   const modulesForDisplay = useMemo(() => {
      return course?.modules.sort((a,b) => (a.order ?? 0) - (b.order ?? 0)).map(m => ({
@@ -128,11 +160,17 @@ export default function CourseDetailPage() {
       if (!user || !user.id || !courseId || !isEnrolled) return;
       try {
         const progressResponse = await fetch(`/api/progress/${user.id}/${courseId}`, { cache: 'no-store' });
-        if (!progressResponse.ok) {
-            setCourseProgress(null);
-        } else {
+        if (progressResponse.ok) {
           const progressData: CourseProgress = await progressResponse.json();
           setCourseProgress(progressData);
+          // Pre-fill provisional progress based on what's already completed in the backend
+          const initialProvisional: Record<string, boolean> = {};
+          progressData.completedLessonIds.forEach(record => {
+              initialProvisional[record.lessonId] = true;
+          });
+          setProvisionalProgress(initialProvisional);
+        } else {
+            setCourseProgress(null);
         }
       } catch (err) {
           console.error("Failed to fetch progress", err);
@@ -180,26 +218,23 @@ export default function CourseDetailPage() {
       }
   }, [isLoading, isEnrolled, fetchProgress]);
   
-  const handleMarkLessonViewed = async (lessonId: string) => {
-    if (!user?.id || !courseId) return;
-    setIsUpdatingProgress(lessonId);
-
-    try {
-        const response = await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lessonId, completed: true }),
-        });
-        if (!response.ok) throw new Error((await response.json()).message || 'Error al actualizar progreso');
-        
-        await fetchProgress(); // Re-sync with server
-        toast({ title: "Progreso Actualizado", description: "Lección marcada como vista." });
-    } catch (err) {
-        toast({ title: "Error", description: err instanceof Error ? err.message : 'No se pudo guardar tu progreso.', variant: "destructive" });
-    } finally {
-        setIsUpdatingProgress(null);
-    }
+  const handleQuizSubmitted = (lessonId: string) => {
+    handleInteraction(lessonId, 'quiz');
   };
+
+  const handleConsolidateProgress = async () => {
+      if (!user || !courseId) return;
+      setIsConsolidating(true);
+      try {
+          await fetchProgress(); // Re-fetch the final, calculated progress
+          toast({ title: "Progreso Consolidado", description: "Tu progreso final ha sido calculado y guardado." });
+      } catch (error) {
+          toast({ title: "Error", description: "No se pudo consolidar tu progreso.", variant: "destructive"});
+      } finally {
+          setIsConsolidating(false);
+      }
+  };
+
 
   const getLessonIcon = (type: LessonType | undefined) => {
     switch(type) {
@@ -211,11 +246,6 @@ export default function CourseDetailPage() {
     }
   };
   
-  const handleQuizCompleted = async () => {
-    // This callback is now primarily for re-fetching the progress state from the server
-    await fetchProgress();
-  };
-
   const renderLessonContent = (lesson: AppLesson) => {
     if (lesson.type === 'QUIZ') {
         return (
@@ -224,7 +254,7 @@ export default function CourseDetailPage() {
                 lessonId={lesson.id}
                 courseId={courseId}
                 isEnrolled={isEnrolled}
-                onQuizCompleted={handleQuizCompleted}
+                onQuizCompleted={handleQuizSubmitted}
             />
         );
     }
@@ -242,11 +272,12 @@ export default function CourseDetailPage() {
         <div className="aspect-video w-full max-w-2xl mx-auto my-4 rounded-lg overflow-hidden shadow-md">
           <iframe 
              className="w-full h-full"
-             src={`https://www.youtube.com/embed/${videoId}`}
+             src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1`}
              title={`YouTube video: ${lesson.title}`}
              frameBorder="0" 
              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
              allowFullScreen
+             onLoad={() => handleInteraction(lesson.id, 'view')} // Basic view tracking
            ></iframe>
         </div>
       );
@@ -254,11 +285,12 @@ export default function CourseDetailPage() {
     
     if (isPdf) {
       return (
-        <div className="my-4 p-2 bg-muted/30 rounded-md">
+        <div className="my-4 p-2 bg-muted/30 rounded-md" onScroll={() => onScroll(lesson.id)} ref={el => contentRefs.current[lesson.id] = el} style={{ maxHeight: '500px', overflowY: 'auto' }}>
           <iframe 
             src={lesson.content} 
             className="w-full h-[500px] border rounded-md" 
             title={`PDF Preview: ${lesson.title}`}
+            onLoad={() => onScroll(lesson.id)}
           />
         </div>
       );
@@ -266,7 +298,7 @@ export default function CourseDetailPage() {
 
     if (isImage) {
       return (
-        <div className="my-4 p-2 bg-muted/30 rounded-md flex justify-center">
+        <div className="my-4 p-2 bg-muted/30 rounded-md flex justify-center" onLoad={() => handleInteraction(lesson.id, 'view')}>
           <Image 
             src={lesson.content} 
             alt={`Preview: ${lesson.title}`} 
@@ -282,7 +314,7 @@ export default function CourseDetailPage() {
     
     if (lesson.type === 'FILE') { 
       return (
-        <div className="my-4 p-4 bg-muted/50 rounded-md text-center">
+        <div className="my-4 p-4 bg-muted/50 rounded-md text-center" onLoad={() => handleInteraction(lesson.id, 'view')}>
           <p className="text-sm text-muted-foreground mb-2">Este recurso es un archivo descargable:</p>
           <Button asChild size="sm">
             <Link href={lesson.content} target="_blank" rel="noopener noreferrer" download>
@@ -297,7 +329,7 @@ export default function CourseDetailPage() {
        const isExternalLink = lesson.content.startsWith('http://') || lesson.content.startsWith('https://');
        if (isExternalLink) {
          return (
-            <div className="my-4 p-4 bg-muted/50 rounded-md">
+            <div className="my-4 p-4 bg-muted/50 rounded-md" onLoad={() => handleInteraction(lesson.id, 'view')}>
              <p className="text-sm text-muted-foreground mb-2">Esta lección es un enlace externo:</p>
              <Button variant="link" asChild className="p-0 h-auto">
                 <Link href={lesson.content} target="_blank" rel="noopener noreferrer">
@@ -308,7 +340,9 @@ export default function CourseDetailPage() {
          );
        }
        return (
-        <div className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card whitespace-pre-wrap">{lesson.content}</div>
+        <div className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card whitespace-pre-wrap" onScroll={() => onScroll(lesson.id)} ref={el => contentRefs.current[lesson.id] = el} style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            {lesson.content}
+        </div>
        );
     }
 
@@ -326,8 +360,6 @@ export default function CourseDetailPage() {
     return ( <div className="flex flex-col items-center justify-center min-h-screen"><AlertTriangle className="h-10 w-10 text-muted-foreground mb-2" /><p className="text-lg text-muted-foreground">Curso no encontrado.</p><Button onClick={() => router.back()} variant="outline" className="mt-4">Volver</Button></div> );
   }
   
-  const totalLessonsCount = modulesForDisplay.reduce((acc, mod) => acc + mod.lessons.length, 0);
-
   return (
     <div className="space-y-8">
         {isCreatorViewingCourse ? (
@@ -370,44 +402,28 @@ export default function CourseDetailPage() {
               <Accordion type="single" collapsible className="w-full" value={activeAccordionItem} onValueChange={setActiveAccordionItem}>
                 {modulesForDisplay.map((moduleItem) => (
                   <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b border-border last:border-b-0">
-                    <AccordionTrigger className="text-md font-semibold hover:no-underline py-4 px-2 hover:bg-muted/50 rounded-md data-[state=open]:bg-muted/80">
+                    <AccordionTrigger 
+                        className="text-md font-semibold hover:no-underline py-4 px-2 hover:bg-muted/50 rounded-md data-[state=open]:bg-muted/80"
+                        onClick={() => moduleItem.lessons.forEach(lesson => { if(lesson.type !== 'QUIZ') handleInteraction(lesson.id, 'view')})}
+                    >
                       {moduleItem.title}
                     </AccordionTrigger>
                     <AccordionContent className="pt-1 pb-3 px-2">
                       {moduleItem.lessons.length > 0 ? (
                         <ul className="space-y-3">
                           {moduleItem.lessons.map(lesson => {
-                            const isCompleted = !!courseProgress?.completedLessonIds.find(l => l.lessonId === lesson.id);
+                            const isProvisionallyCompleted = provisionalProgress[lesson.id];
                             return (
-                            <li key={lesson.id} className={`p-3 rounded-md border ${isCompleted ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700' : 'bg-card'}`}>
+                            <li key={lesson.id} className={`p-3 rounded-md border ${isProvisionallyCompleted ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700' : 'bg-card'}`}>
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-grow">
                                         <div className="flex items-center gap-2 mb-2">
                                             {getLessonIcon(lesson.type)}
-                                            <span className={`font-medium ${isCompleted ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{lesson.title}</span>
+                                            <span className={`font-medium ${isProvisionallyCompleted ? 'text-muted-foreground' : 'text-foreground'}`}>{lesson.title}</span>
+                                            {isProvisionallyCompleted && <CheckCircle className="h-4 w-4 text-green-600"/>}
                                         </div>
                                         {renderLessonContent(lesson)}
                                     </div>
-
-                                    {isEnrolled && lesson.type !== 'QUIZ' && (
-                                        <Button 
-                                            size="sm" 
-                                            variant={isCompleted ? "secondary" : "default"}
-                                            onClick={() => handleMarkLessonViewed(lesson.id)}
-                                            disabled={isUpdatingProgress === lesson.id}
-                                            className="mt-2"
-                                        >
-                                            {isUpdatingProgress === lesson.id ? (
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                            ) : isCompleted ? (
-                                                <>
-                                                <CheckCircle className="mr-2 h-4 w-4" /> Visto
-                                                </>
-                                            ) : (
-                                                'Marcar como Visto'
-                                            )}
-                                        </Button>
-                                    )}
                                 </div>
                             </li>
                           )})}
@@ -424,33 +440,35 @@ export default function CourseDetailPage() {
           </Card>
         </div>
 
-        {!isCreatorViewingCourse && (
+        {!isCreatorViewingCourse && isEnrolled && (
             <div className="w-full max-w-md mx-auto pt-8">
             <Card className="shadow-lg">
                 <CardHeader>
                 <CardTitle className="text-xl font-headline">Tu Progreso</CardTitle>
                 {!user && <CardDescription className="text-xs">Inicia sesión para ver tu progreso.</CardDescription>}
-                {user && !isEnrolled && <CardDescription className="text-xs">Inscríbete para hacer seguimiento de tu progreso.</CardDescription>}
                 </CardHeader>
                 <CardContent className="space-y-3">
-                {user && isEnrolled ? ( 
-                    courseProgress && courseProgress.progressPercentage >= 100 ? (
+                {courseProgress?.progressPercentage ? (
+                    courseProgress.progressPercentage >= 100 ? (
                     <div className="text-center p-4 bg-green-100 dark:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-700 space-y-3">
                         <Award className="mx-auto h-12 w-12 text-green-600 dark:text-green-400" />
                         <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">¡Felicidades, has completado el curso!</h3>
+                        <p className="text-4xl font-bold">{Math.round(courseProgress.progressPercentage)}%</p>
                     </div>
-                    ) : courseProgress ? (
+                    ) : (
                     <>
                         <Progress value={courseProgress.progressPercentage} className="w-full h-3" />
-                        <p className="text-sm text-center text-muted-foreground">{Math.round(courseProgress.progressPercentage || 0)}% completado ({courseProgress.completedLessonIds.length}/{totalLessonsCount})</p>
+                        <p className="text-sm text-center text-muted-foreground">Tu puntuación final: {Math.round(courseProgress.progressPercentage || 0)}%</p>
                     </>
-                    ) : (
-                       <p className="text-sm text-muted-foreground text-center">Aún no has iniciado este curso.</p>
                     )
                 ) : (
-                    <p className="text-sm text-muted-foreground text-center">
-                    {user ? "Inscríbete en el curso para ver tu progreso." : "Inicia sesión para ver tu progreso."}
-                    </p>
+                    <div className="text-center p-4 space-y-3">
+                        <p className="text-muted-foreground">Completa todas las lecciones para ver tu progreso final.</p>
+                         <Button onClick={handleConsolidateProgress} disabled={!isCourseProvisionallyComplete || isConsolidating} className="w-full">
+                            {isConsolidating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                            {isConsolidating ? 'Calculando...' : 'Revisar Mi Progreso'}
+                        </Button>
+                    </div>
                 )}
                 </CardContent>
             </Card>
@@ -459,3 +477,4 @@ export default function CourseDetailPage() {
     </div>
   );
 }
+
