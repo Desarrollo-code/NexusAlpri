@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -41,7 +42,7 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
     const newEnrollmentStatus = !isEnrolled;
 
     try {
-      const response = await fetch('/api/enrollments/course', {
+      const response = await fetch('/api/enrollments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ courseId: course.id, enroll: newEnrollmentStatus }),
@@ -112,7 +113,7 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
     <Card className="flex flex-col h-full overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1">
       <Link href={`/courses/${course.id}`} className="block">
         <CardHeader className="p-0 relative">
-          <div className="aspect-video w-full">
+          <div className="aspect-video w-full relative">
             <Image
               src={course.imageUrl || `https://placehold.co/600x400.png`}
               alt={course.title}
