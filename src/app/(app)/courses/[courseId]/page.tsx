@@ -117,23 +117,31 @@ export default function CourseDetailPage() {
   const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
   const totalLessonsCount = allLessons.length;
 
-  const handleInteraction = useCallback((lessonId: string, type: 'view' | 'quiz') => {
+  const handleViewInteraction = useCallback((lessonId: string) => {
+    // Prevent duplicate API calls for the same interaction
+    if (provisionalProgress[lessonId]) {
+      return;
+    }
+    
     setProvisionalProgress(prev => ({...prev, [lessonId]: true }));
+    
     if(user && courseId && isEnrolled) {
+        // This is a "fire-and-forget" call to log the view
         fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ lessonId, type: 'view' }),
-        }).catch(e => console.error("Failed to log interaction:", e));
+        }).catch(e => console.error("Failed to log view interaction:", e));
     }
-  }, [user, courseId, isEnrolled]);
+  }, [user, courseId, isEnrolled, provisionalProgress]);
 
   const onScroll = (lessonId: string) => {
     const element = contentRefs.current[lessonId];
     if (element) {
-        const isScrolledToEnd = element.scrollHeight - element.scrollTop <= element.clientHeight + 1;
+        // Add a 1.5px buffer to ensure it triggers on most screens
+        const isScrolledToEnd = element.scrollHeight - element.scrollTop <= element.clientHeight + 1.5;
         if (isScrolledToEnd) {
-            handleInteraction(lessonId, 'view');
+            handleViewInteraction(lessonId);
         }
     }
   };
@@ -219,8 +227,10 @@ export default function CourseDetailPage() {
       }
   }, [isLoading, isEnrolled, fetchProgress]);
   
-  const handleQuizSubmitted = (lessonId: string) => {
-    handleInteraction(lessonId, 'quiz');
+  const handleQuizSubmitted = (lessonId: string, score: number) => {
+    // The QuizViewer component already handles the API call.
+    // This handler's job is just to update the local UI state to reflect completion.
+    setProvisionalProgress(prev => ({...prev, [lessonId]: true }));
   };
 
   const handleConsolidateProgress = async () => {
@@ -269,6 +279,7 @@ export default function CourseDetailPage() {
     const isImage = lesson.type === 'FILE' && lesson.content?.toLowerCase().match(/\.(jpeg|jpg|gif|png|webp)$/);
     
     if (videoId) {
+      // For YouTube, accurate tracking is complex. Mark as viewed on load as a compromise.
       return (
         <div className="aspect-video w-full max-w-2xl mx-auto my-4 rounded-lg overflow-hidden shadow-md">
           <iframe 
@@ -278,7 +289,7 @@ export default function CourseDetailPage() {
              frameBorder="0" 
              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
              allowFullScreen
-             onLoad={() => handleInteraction(lesson.id, 'view')} // Basic view tracking
+             onLoad={() => handleViewInteraction(lesson.id)}
            ></iframe>
         </div>
       );
@@ -299,7 +310,7 @@ export default function CourseDetailPage() {
 
     if (isImage) {
       return (
-        <div className="my-4 p-2 bg-muted/30 rounded-md flex justify-center" onLoad={() => handleInteraction(lesson.id, 'view')}>
+        <div className="my-4 p-2 bg-muted/30 rounded-md flex justify-center" onLoad={() => handleViewInteraction(lesson.id)}>
           <Image 
             src={lesson.content} 
             alt={`Preview: ${lesson.title}`} 
@@ -315,7 +326,7 @@ export default function CourseDetailPage() {
     
     if (lesson.type === 'FILE') { 
       return (
-        <div className="my-4 p-4 bg-muted/50 rounded-md text-center" onLoad={() => handleInteraction(lesson.id, 'view')}>
+        <div className="my-4 p-4 bg-muted/50 rounded-md text-center" onLoad={() => handleViewInteraction(lesson.id)}>
           <p className="text-sm text-muted-foreground mb-2">Este recurso es un archivo descargable:</p>
           <Button asChild size="sm">
             <Link href={lesson.content} target="_blank" rel="noopener noreferrer" download>
@@ -330,7 +341,7 @@ export default function CourseDetailPage() {
        const isExternalLink = lesson.content.startsWith('http://') || lesson.content.startsWith('https://');
        if (isExternalLink) {
          return (
-            <div className="my-4 p-4 bg-muted/50 rounded-md" onLoad={() => handleInteraction(lesson.id, 'view')}>
+            <div className="my-4 p-4 bg-muted/50 rounded-md" onLoad={() => handleViewInteraction(lesson.id)}>
              <p className="text-sm text-muted-foreground mb-2">Esta lección es un enlace externo:</p>
              <Button variant="link" asChild className="p-0 h-auto">
                 <Link href={lesson.content} target="_blank" rel="noopener noreferrer">
@@ -405,7 +416,7 @@ export default function CourseDetailPage() {
                   <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b border-border last:border-b-0">
                     <AccordionTrigger 
                         className="text-md font-semibold hover:no-underline py-4 px-2 hover:bg-muted/50 rounded-md data-[state=open]:bg-muted/80"
-                        onClick={() => moduleItem.lessons.forEach(lesson => { if(lesson.type !== 'QUIZ') handleInteraction(lesson.id, 'view')})}
+                        onClick={() => moduleItem.lessons.forEach(lesson => { if(lesson.type !== 'QUIZ') handleViewInteraction(lesson.id)})}
                     >
                       {moduleItem.title}
                     </AccordionTrigger>
@@ -454,7 +465,7 @@ export default function CourseDetailPage() {
                     <div className="text-center p-4 space-y-3">
                         <Award className="mx-auto h-16 w-16 text-green-500" />
                         <h3 className="text-xl font-semibold text-green-700 dark:text-green-300">¡Felicidades, has completado el curso!</h3>
-                        <p className="text-2xl font-bold text-muted-foreground">Puntuación Final: 100%</p>
+                        <p className="text-2xl font-bold text-muted-foreground">Puntuación Final: {Math.round(courseProgress.progressPercentage)}%</p>
                     </div>
                     ) : (
                     <>

@@ -68,16 +68,19 @@ export async function updateLessonCompletionStatus({ userId, courseId, lessonId,
         // Correctly parse the JSON field which might be a string or already an array.
         if (Array.isArray(progress.completedLessonIds)) {
             currentRecords = progress.completedLessonIds as LessonCompletionRecord[];
-        } else {
+        } else if (typeof progress.completedLessonIds === 'string') {
             try {
                 // It might be a JSON string.
-                const parsed = JSON.parse(progress.completedLessonIds as string);
+                const parsed = JSON.parse(progress.completedLessonIds);
                 if(Array.isArray(parsed)) {
                     currentRecords = parsed;
                 }
             } catch (e) {
                 console.error("Failed to parse completedLessonIds JSON:", progress.completedLessonIds, e);
             }
+        } else if (typeof progress.completedLessonIds === 'object' && progress.completedLessonIds !== null) {
+            // It might already be a JSON object if Prisma handles it automatically in some cases
+             currentRecords = progress.completedLessonIds as unknown as LessonCompletionRecord[];
         }
     }
     

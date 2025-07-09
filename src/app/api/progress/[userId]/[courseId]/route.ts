@@ -34,15 +34,18 @@ export async function GET(req: NextRequest, context: { params: { userId: string,
             // Handle both array (from direct JSON) and string (from DB) representations
             if (Array.isArray(progress.completedLessonIds)) {
                 completedLessonIds = progress.completedLessonIds as LessonCompletionRecord[];
-            } else {
+            } else if (typeof progress.completedLessonIds === 'string') {
                  try {
-                    const parsed = JSON.parse(progress.completedLessonIds as string);
+                    const parsed = JSON.parse(progress.completedLessonIds);
                     if (Array.isArray(parsed)) {
                         completedLessonIds = parsed;
                     }
                  } catch (e) {
                     console.error("Failed to parse completedLessonIds JSON in GET route:", progress.completedLessonIds, e);
                  }
+            } else if (typeof progress.completedLessonIds === 'object') {
+                // It might already be a JSON object if Prisma handles it automatically in some cases
+                completedLessonIds = progress.completedLessonIds as unknown as LessonCompletionRecord[];
             }
         }
 
