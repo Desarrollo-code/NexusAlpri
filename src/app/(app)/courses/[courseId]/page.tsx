@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -391,7 +392,7 @@ export default function CourseDetailPage() {
   
   const handleAccordionInteraction = (lessonId: string) => {
     // Implicit completion for content-only courses on interaction
-    if (!hasQuizzes && isEnrolled && !lessonCompletion[lessonId]) {
+    if (!hasQuizzes && isEnrolled && lessonId && !lessonCompletion[lessonId]) {
       handleToggleComplete(lessonId, false);
     }
   };
