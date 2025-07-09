@@ -268,9 +268,8 @@ export default function CourseDetailPage() {
   };
   
   const handleQuizCompleted = async (lessonId: string, score: number) => {
-    // A quiz is considered "completed" if it's passed.
-    // The main progress calculation is now handled on the backend.
-    // We just need to trigger a re-fetch of the progress.
+    // This callback is now primarily for re-fetching the progress state from the server
+    // after the QuizViewer has submitted the score to the backend.
     await fetchProgress();
   };
 
@@ -280,6 +279,7 @@ export default function CourseDetailPage() {
             <QuizViewer 
                 quiz={lesson.quiz}
                 lessonId={lesson.id}
+                courseId={courseId}
                 isEnrolled={isEnrolled}
                 onQuizCompleted={handleQuizCompleted}
             />

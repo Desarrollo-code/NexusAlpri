@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, Award, MessageCircleQuestion } from 'lucide-react';
+import { CheckCircle, XCircle, Award, MessageCircleQuestion, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 interface QuizViewerProps {
   quiz: AppQuiz | undefined | null;
   lessonId: string;
+  courseId: string;
   isEnrolled?: boolean | null;
   isInstructorPreview?: boolean;
   onQuizCompleted?: (lessonId: string, score: number) => void;
@@ -34,7 +35,7 @@ interface Result {
   }>;
 }
 
-export function QuizViewer({ quiz, lessonId, isEnrolled, isInstructorPreview = false, onQuizCompleted }: QuizViewerProps) {
+export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorPreview = false, onQuizCompleted }: QuizViewerProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -57,6 +58,8 @@ export function QuizViewer({ quiz, lessonId, isEnrolled, isInstructorPreview = f
     }
 
     setIsSubmitting(true);
+    
+    // --- This part calculates the score for immediate UI feedback ---
     let correctCount = 0;
     const questionResults: Result['questionResults'] = {};
     
@@ -69,25 +72,49 @@ export function QuizViewer({ quiz, lessonId, isEnrolled, isInstructorPreview = f
             correctCount++;
         }
         
-        questionResults[q.id] = {
-            selectedOptionId: selectedOptionId,
-            correctOptionId: correctOption?.id || '',
-            isCorrect,
-        };
+        if (correctOption) {
+            questionResults[q.id] = {
+                selectedOptionId: selectedOptionId,
+                correctOptionId: correctOption.id,
+                isCorrect,
+            };
+        }
     });
 
     const score = quiz?.questions.length ? (correctCount / quiz.questions.length) * 100 : 0;
     
+    // --- Submit to backend and handle progress update ---
+    if (user && courseId && !isInstructorPreview) {
+       try {
+            const response = await fetch(`/api/progress/${user.id}/${courseId}/quiz`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lessonId, score }),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Error al guardar el resultado');
+
+            if (data.passed) {
+                toast({ title: "¡Quiz Aprobado!", description: "Tu progreso ha sido actualizado." });
+            } else {
+                toast({ title: "Quiz Enviado", description: "No alcanzaste la puntuación para aprobar." });
+            }
+       } catch (err) {
+            toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudo guardar el resultado del quiz.", variant: "destructive"});
+       } finally {
+            if (onQuizCompleted) {
+                onQuizCompleted(lessonId, score); // Trigger a progress re-fetch in the parent component
+            }
+       }
+    }
+    
+    // Show results UI immediately
     setResult({
         score: Math.round(score),
         correctAnswers: correctCount,
         totalQuestions: quiz?.questions.length || 0,
         questionResults,
     });
-    
-    if (onQuizCompleted) {
-        onQuizCompleted(lessonId, score); 
-    }
     
     setIsSubmitting(false);
   };
@@ -135,6 +162,7 @@ export function QuizViewer({ quiz, lessonId, isEnrolled, isInstructorPreview = f
             <div className="w-full space-y-4">
                 {quiz.questions.map(question => {
                     const qResult = result.questionResults[question.id];
+                    if (!qResult) return null;
                     return (
                         <div key={question.id} className="p-4 border rounded-md bg-muted/30">
                             <p className="font-semibold mb-2">{question.text}</p>
@@ -214,6 +242,7 @@ export function QuizViewer({ quiz, lessonId, isEnrolled, isInstructorPreview = f
             className="w-full"
             onClick={handleSubmit} 
             disabled={isSubmitting || isInstructorPreview}>
+            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2"/> : null}
             {isInstructorPreview ? 'Vista Previa (Deshabilitado)' : 'Enviar Respuestas'}
         </Button>
       </CardFooter>
