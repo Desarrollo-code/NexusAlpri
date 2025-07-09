@@ -75,6 +75,5 @@ export async function getSession(request?: NextRequest) {
 }
 
 export async function deleteSession() {
-  const cookieStore = cookies();
-  cookieStore.set('session', '', { expires: new Date(0), path: '/' });
+  cookies().delete('session');
 }

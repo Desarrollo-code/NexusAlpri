@@ -6,9 +6,9 @@ import { updateLessonCompletionStatus } from '@/lib/progress';
 import prisma from '@/lib/prisma';
 
 // Submit quiz result and update progress
-export async function POST(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
     const session = await getSession(req);
-    const { userId, courseId } = context.params;
+    const { userId, courseId } = params;
 
     if (!session || session.id !== userId) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
