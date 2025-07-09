@@ -318,7 +318,7 @@ export default function DashboardPage() {
                 <X className="h-4 w-4" />
                 <span className="sr-only">Cerrar</span>
             </Button>
-            <Rocket className="h-4 w-4 text-primary" fill="currentColor" />
+            <Rocket className="h-4 w-4 text-primary" />
             <AlertTitle className="font-headline text-lg text-primary">{title}</AlertTitle>
             <AlertDescription className="text-foreground/80 mt-2">
                 {description}
@@ -382,7 +382,7 @@ export default function DashboardPage() {
 
       {shouldSetup2fa && (
         <Alert variant="destructive" className="mb-8">
-            <ShieldAlert className="h-4 w-4" fill="currentColor" />
+            <ShieldAlert className="h-4 w-4" />
             <AlertTitle>Acción de Seguridad Requerida</AlertTitle>
             <AlertDescription>
                 La política de la plataforma requiere que todos los administradores usen autenticación de dos factores. 
@@ -403,7 +403,7 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Inscritos</CardTitle>
-                  <BookOpen className="h-5 w-5 text-chart-1" fill="currentColor" />
+                  <BookOpen className="h-5 w-5 text-chart-1" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{studentStats.enrolled}</div>
@@ -412,7 +412,7 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Completados</CardTitle>
-                  <CheckCircle className="h-5 w-5 text-chart-3" fill="currentColor" />
+                  <CheckCircle className="h-5 w-5 text-chart-3" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{studentStats.completed}</div>
@@ -435,7 +435,7 @@ export default function DashboardPage() {
                <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Impartidos</CardTitle>
-                  <BookMarked className="h-5 w-5 text-chart-1" fill="currentColor" />
+                  <BookMarked className="h-5 w-5 text-chart-1" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{instructorStats.taught}</div>
@@ -444,7 +444,7 @@ export default function DashboardPage() {
                <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Estudiantes</CardTitle>
-                  <Users className="h-5 w-5 text-chart-3" fill="currentColor" />
+                  <Users className="h-5 w-5 text-chart-3" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">N/A</div>
@@ -462,13 +462,13 @@ export default function DashboardPage() {
           {isLoadingStats ? (
             <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando estadísticas...</div>
             ) : statsError ? (
-            <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" fill="currentColor" />Error al cargar estadísticas: {statsError}</div>
+            <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar estadísticas: {statsError}</div>
             ) : adminStats ? (
             <>
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total de Usuarios</CardTitle><Users className="h-5 w-5 text-chart-1" fill="currentColor" />
+                    <CardTitle className="text-sm font-medium">Total de Usuarios</CardTitle><Users className="h-5 w-5 text-chart-1" />
                   </CardHeader>
                   <CardContent className="flex justify-between items-end">
                     <div className="text-2xl font-bold">{adminStats.totalUsers}</div>
@@ -477,7 +477,7 @@ export default function DashboardPage() {
                 </Card>
                  <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total de Cursos</CardTitle><BookOpenCheck className="h-5 w-5 text-chart-2" fill="currentColor" />
+                    <CardTitle className="text-sm font-medium">Total de Cursos</CardTitle><BookOpenCheck className="h-5 w-5 text-chart-2" />
                   </CardHeader>
                   <CardContent className="flex justify-between items-end">
                     <div className="text-2xl font-bold">{adminStats.totalCourses}</div>
@@ -495,7 +495,7 @@ export default function DashboardPage() {
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Inscripciones</CardTitle><UsersRound className="h-5 w-5 text-chart-5" fill="currentColor" />
+                    <CardTitle className="text-sm font-medium">Total Inscripciones</CardTitle><UsersRound className="h-5 w-5 text-chart-5" />
                   </CardHeader>
                   <CardContent className="flex justify-between items-end">
                     <div className="text-2xl font-bold">{adminStats.totalEnrollments}</div>
@@ -507,7 +507,7 @@ export default function DashboardPage() {
               <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base"><BarChart3 className="h-5 w-5 text-primary" fill="currentColor"/>Distribución de Cursos</CardTitle>
+                    <CardTitle className="flex items-center gap-2 text-base"><BarChart3 className="h-5 w-5 text-primary"/>Distribución de Cursos</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {courseStatusChartData.length > 0 ? (
@@ -544,7 +544,7 @@ export default function DashboardPage() {
                 </Card>
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base"><BarChart3 className="h-5 w-5 text-primary" fill="currentColor"/>Distribución de Usuarios</CardTitle>
+                    <CardTitle className="flex items-center gap-2 text-base"><BarChart3 className="h-5 w-5 text-primary"/>Distribución de Usuarios</CardTitle>
                   </CardHeader>
                   <CardContent>
                      {userRolesChartData.length > 0 ? (
@@ -591,7 +591,7 @@ export default function DashboardPage() {
               <section>
                 <h2 className="text-2xl font-semibold font-headline mb-4">Mis Cursos Impartidos Recientemente</h2>
                 {isLoadingTaughtCourses && <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando mis cursos...</div>}
-                {taughtCoursesError && <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" fill="currentColor" />Error al cargar cursos: {taughtCoursesError}</div>}
+                {taughtCoursesError && <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar cursos: {taughtCoursesError}</div>}
                 {!isLoadingTaughtCourses && !taughtCoursesError && taughtCourses.length > 0 && (
                   <div className="grid gap-6 sm:grid-cols-2">
                     {taughtCourses.map(course => (
@@ -613,7 +613,7 @@ export default function DashboardPage() {
               <section>
                 <h2 className="text-2xl font-semibold font-headline mb-4">Continuar Aprendiendo</h2>
                 {isLoadingMyCourses && <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando...</div>}
-                {myCoursesError && <div className="text-destructive"><AlertTriangle className="inline mr-2" fill="currentColor" />Error: {myCoursesError}</div>}
+                {myCoursesError && <div className="text-destructive"><AlertTriangle className="inline mr-2" />Error: {myCoursesError}</div>}
                 {!isLoadingMyCourses && !myCoursesError && myDashboardCourses.length > 0 && (
                   <div className="grid gap-6 sm:grid-cols-2">
                     {myDashboardCourses.map(course => (
@@ -634,7 +634,7 @@ export default function DashboardPage() {
             <section>
               <h2 className="text-2xl font-semibold font-headline mb-4">Anuncios Recientes</h2>
               {isLoadingAnnouncements && <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando anuncios...</div>}
-              {announcementsError && <div className="text-destructive"><AlertTriangle className="inline mr-2" fill="currentColor" />Error: {announcementsError}</div>}
+              {announcementsError && <div className="text-destructive"><AlertTriangle className="inline mr-2" />Error: {announcementsError}</div>}
               {!isLoadingAnnouncements && !announcementsError && filteredAnnouncements.length > 0 && (
                 <div className="space-y-4">
                   {filteredAnnouncements.map(announcement => (
@@ -654,7 +654,7 @@ export default function DashboardPage() {
                {linksToShow.map((link) => (
                  <Link key={link.href} href={link.href} className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors">
                    <div className={`bg-muted p-2 rounded-md ${link.color}`}>
-                     <link.icon className="h-5 w-5" fill="currentColor"/>
+                     <link.icon className="h-5 w-5"/>
                    </div>
                    <div>
                       <p className="font-semibold">{link.label}</p>

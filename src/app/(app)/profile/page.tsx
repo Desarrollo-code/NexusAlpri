@@ -276,7 +276,7 @@ export default function ProfilePage() {
                       disabled={isSaving || isUploadingAvatar}
                       aria-label="Cambiar foto de perfil"
                   >
-                      <Camera className="h-4 w-4 text-primary" fill="currentColor" />
+                      <Camera className="h-4 w-4 text-primary" />
                   </Button>
                   <input 
                       type="file" 
@@ -298,7 +298,7 @@ export default function ProfilePage() {
                 </Badge>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><Mail className="h-4 w-4 text-primary" fill="currentColor"/> {user.email}</p>
+                <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><Mail className="h-4 w-4 text-primary"/> {user.email}</p>
               </CardContent>
             </Card>
           </div>
@@ -306,7 +306,7 @@ export default function ProfilePage() {
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><UserIcon className="h-5 w-5 text-primary" fill="currentColor"/>Información Personal</CardTitle>
+                <CardTitle className="flex items-center gap-2"><UserIcon className="h-5 w-5 text-primary"/>Información Personal</CardTitle>
                 <CardDescription>Estos datos son visibles en tu perfil público (si aplica).</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -326,7 +326,7 @@ export default function ProfilePage() {
                 </div>
                  <div className="pt-2">
                     <Button onClick={handleSaveChanges} disabled={isSaving || isUploadingAvatar} className="w-full">
-                        {isSaving || isUploadingAvatar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" fill="currentColor" />}
+                        {isSaving || isUploadingAvatar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         {isSaving ? 'Guardando...' : (isUploadingAvatar ? 'Subiendo...' : 'Guardar Información')}
                     </Button>
                 </div>
@@ -335,7 +335,7 @@ export default function ProfilePage() {
             
             <Card>
               <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary" fill="currentColor"/>Seguridad de la Cuenta</CardTitle>
+                  <CardTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/>Seguridad de la Cuenta</CardTitle>
                   <CardDescription>Gestiona la seguridad de tu acceso a NexusAlpri.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -486,7 +486,7 @@ export default function ProfilePage() {
                 <DialogFooter>
                     <Button variant="outline" type="button" onClick={() => setShowChangePasswordDialog(false)} disabled={isChangingPassword}>Cancelar</Button>
                     <Button type="submit" disabled={isChangingPassword}>
-                        {isChangingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" fill="currentColor" />}
+                        {isChangingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Guardar Contraseña
                     </Button>
                 </DialogFooter>

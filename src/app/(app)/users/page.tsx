@@ -291,7 +291,7 @@ export default function UsersPage() {
         }}>
             <DialogTrigger asChild>
                 <Button onClick={handleOpenAddModal}>
-                    <PlusCircle className="mr-2 h-4 w-4" fill="currentColor" /> Añadir Nuevo Usuario
+                    <PlusCircle className="mr-2 h-4 w-4" /> Añadir Nuevo Usuario
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
@@ -370,7 +370,7 @@ export default function UsersPage() {
             </div>
           ) : error && !usersList.length ? ( 
             <div className="flex flex-col items-center justify-center py-12 text-destructive">
-              <AlertTriangle className="h-8 w-8 mb-2" fill="currentColor" />
+              <AlertTriangle className="h-8 w-8 mb-2" />
               <p className="font-semibold">Error al cargar usuarios</p>
               <p className="text-sm">{error}</p>
               <Button onClick={fetchUsers} variant="outline" className="mt-4">Reintentar</Button>
@@ -418,7 +418,7 @@ export default function UsersPage() {
                                 <Edit3 className="mr-2 h-4 w-4 text-blue-500"/>Editar
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleOpenChangeRoleDialog(u)} disabled={u.id === currentUser?.id}>
-                                <UserCog className="mr-2 h-4 w-4 text-amber-600" fill="currentColor"/>Cambiar Rol
+                                <UserCog className="mr-2 h-4 w-4 text-amber-600"/>Cambiar Rol
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
@@ -429,7 +429,7 @@ export default function UsersPage() {
                                 }}
                                 disabled={u.id === currentUser?.id} 
                             >
-                                <Trash2 className="mr-2 h-4 w-4" fill="currentColor"/>Eliminar
+                                <Trash2 className="mr-2 h-4 w-4"/>Eliminar
                             </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
