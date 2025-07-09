@@ -1,9 +1,7 @@
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import type { EventAudienceType } from '@/types';
 
 // PUT (update) an event
 export async function PUT(

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import type { UserRole } from '@/types';
+import type { UserRole, EventAudienceType } from '@/types';
 
 // GET all events relevant to the user
 export async function GET(req: NextRequest) {
@@ -30,6 +30,9 @@ export async function GET(req: NextRequest) {
         attendees: {
           select: { id: true, name: true, email: true },
         },
+        creator: {
+          select: { id: true, name: true }
+        }
       },
       orderBy: {
         start: 'asc',
@@ -59,7 +62,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: 'Faltan campos requeridos (título, inicio, fin, creador).' }, { status: 400 });
     }
 
-    // Prepare data for event creation
     const dataToCreate: any = {
       title,
       description,
@@ -67,24 +69,24 @@ export async function POST(req: NextRequest) {
       start: new Date(start),
       end: new Date(end),
       allDay,
-      audienceType,
+      audienceType: audienceType as EventAudienceType,
       color,
-      creatorId,
+      creator: {
+        connect: { id: creatorId },
+      },
     };
 
-    // If attendee IDs are provided, connect them to the event
-    if (attendeeIds && Array.isArray(attendeeIds) && attendeeIds.length > 0) {
+    if (audienceType === 'SPECIFIC' && attendeeIds && Array.isArray(attendeeIds) && attendeeIds.length > 0) {
       dataToCreate.attendees = {
         connect: attendeeIds.map((attendeeId: string) => ({ id: attendeeId })),
       };
     }
     
-    // Create the new calendar event in the database
     const newEvent = await prisma.calendarEvent.create({
       data: dataToCreate,
     });
     
-    return NextResponse.json(newEvent, { status: 201 }); // Return created event with 201 status
+    return NextResponse.json(newEvent, { status: 201 });
   } catch (error) {
     console.error('[EVENT_POST_ERROR]', error);
     return NextResponse.json({ message: 'Error al crear el evento' }, { status: 500 });

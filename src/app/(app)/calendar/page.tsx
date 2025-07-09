@@ -179,7 +179,10 @@ export default function CalendarPage() {
 
   const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canEdit) return;
+    if (!canEdit || !user?.id) {
+        toast({ title: 'Error', description: 'No tienes permisos o no has iniciado sesión.', variant: 'destructive' });
+        return;
+    };
     setIsSaving(true);
 
     const payload = {
@@ -192,6 +195,7 @@ export default function CalendarPage() {
       audienceType: formAudienceMode,
       attendeeIds: formAudienceMode === 'SPECIFIC' ? formAttendees : [],
       color: formColor,
+      creatorId: user.id
     };
 
     const endpoint = eventToEdit ? `/api/events/${eventToEdit.id}` : '/api/events';
