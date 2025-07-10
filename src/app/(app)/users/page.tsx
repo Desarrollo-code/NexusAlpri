@@ -294,7 +294,7 @@ export default function UsersPage() {
                     <PlusCircle className="mr-2 h-4 w-4" /> Añadir Nuevo Usuario
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="w-[95vw] max-w-md rounded-lg">
                 <DialogHeader>
                   <DialogTitle>{userToEdit ? "Editar Usuario" : "Añadir Nuevo Usuario"}</DialogTitle>
                   <DialogDescription>
@@ -471,7 +471,7 @@ export default function UsersPage() {
           setShowChangeRoleDialog(isOpen);
           if (!isOpen) setUserToChangeRole(null);
       }}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="w-[95vw] max-w-md rounded-lg">
               <DialogHeader>
                 <DialogTitle>Cambiar Rol de Usuario</DialogTitle>
                 <DialogDescription>

@@ -238,7 +238,7 @@ export default function AnnouncementsPage() {
                 <PlusCircle className="mr-2 h-4 w-4" /> Crear Anuncio
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[525px]">
+            <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{announcementToEdit ? 'Editar Anuncio' : 'Crear Nuevo Anuncio'}</DialogTitle>
                 <DialogDescription>

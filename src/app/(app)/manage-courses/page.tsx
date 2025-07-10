@@ -373,7 +373,7 @@ export default function ManageCoursesPage() {
                     <PlusCircle className="mr-2 h-4 w-4" /> Crear Nuevo Curso
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[625px]">
+            <DialogContent className="w-[95vw] max-w-xl rounded-lg max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                 <DialogTitle>Crear Nuevo Curso</DialogTitle>
                 <DialogDescription>

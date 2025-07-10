@@ -696,7 +696,7 @@ export default function ResourcesPage() {
             {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
                 <Dialog open={showCreateFolderModal} onOpenChange={setShowCreateFolderModal}>
                     <DialogTrigger asChild><Button><Folder className="mr-2 h-4 w-4" /> Crear Carpeta</Button></DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
+                    <DialogContent className="w-[95vw] max-w-md rounded-lg">
                         <DialogHeader><DialogTitle>Crear Nueva Carpeta</DialogTitle><DialogDescription>Ingresa un nombre para la nueva carpeta en la ubicación actual.</DialogDescription></DialogHeader>
                         <form onSubmit={handleCreateFolder} className="space-y-4">
                             <div><Label htmlFor="folder-name" className="sr-only">Nombre de la carpeta</Label><Input id="folder-name" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} placeholder="Nombre de la carpeta" required disabled={isSubmittingResource} /></div>
@@ -710,7 +710,7 @@ export default function ResourcesPage() {
                 <DialogTrigger asChild>
                   <Button disabled={isSubmittingResource || isUploadingFile}><UploadCloud className="mr-2 h-4 w-4" /> Subir Recurso</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[525px]">
+                <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
                   <DialogHeader><DialogTitle>Subir Nuevo Recurso</DialogTitle><DialogDescription>Completa los detalles para añadir un nuevo recurso a la biblioteca.</DialogDescription></DialogHeader>
                   <form onSubmit={handleCreateFile} className="grid gap-4 py-4">
                      <div className="space-y-1"><Label htmlFor="resource-title">Título <span className="text-destructive">*</span></Label><Input id="resource-title" value={newResourceTitle} onChange={(e) => setNewResourceTitle(e.target.value)} required disabled={isSubmittingResource} /></div>
@@ -858,7 +858,7 @@ export default function ResourcesPage() {
       )}
 
       <Dialog open={showEditModal} onOpenChange={(isOpen) => { if (!isOpen) setResourceToEdit(null); setShowEditModal(isOpen); }}>
-        <DialogContent className="sm:max-w-[525px]">
+        <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar {resourceToEdit?.type === 'FOLDER' ? 'Carpeta' : 'Recurso'}</DialogTitle>
             <DialogDescription>Modifica los detalles. El archivo adjunto no se puede cambiar.</DialogDescription>
@@ -884,7 +884,7 @@ export default function ResourcesPage() {
       </AlertDialog>
 
       <Dialog open={!!previewResource} onOpenChange={(isOpen) => { if (!isOpen) setPreviewResource(null); }}>
-        <DialogContent className="max-w-4xl w-[90vw] h-auto max-h-[90vh] flex flex-col p-4 sm:p-6">
+        <DialogContent className="w-[95vw] max-w-4xl rounded-lg h-auto max-h-[90vh] flex flex-col p-4 sm:p-6">
           <DialogHeader className="pr-10"><DialogTitle className="truncate">{previewResource?.title}</DialogTitle><DialogDescription>Categoría: {previewResource?.category}</DialogDescription></DialogHeader>
           <ScrollArea className="flex-grow rounded-lg bg-muted/20 p-2">
             {(() => {
@@ -933,7 +933,7 @@ export default function ResourcesPage() {
       </Dialog>
       
       <Dialog open={!!resourceToUnlock} onOpenChange={(isOpen) => { if(!isOpen) { setResourceToUnlock(null); setPinInput(''); setPinError(null); } }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[95vw] max-w-md rounded-lg">
             <DialogHeader>
                 <DialogTitle className="flex items-center gap-2"><Lock className="h-5 w-5 text-amber-500" />Se requiere PIN de acceso</DialogTitle>
                 <DialogDescription>Ingresa el PIN para acceder a "<strong>{resourceToUnlock?.resource.title}</strong>".</DialogDescription>

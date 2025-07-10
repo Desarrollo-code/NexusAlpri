@@ -370,7 +370,7 @@ export default function ProfilePage() {
       </div>
       
       <Dialog open={show2faSetup} onOpenChange={setShow2faSetup}>
-        <DialogContent>
+        <DialogContent className="w-[95vw] max-w-md rounded-lg">
             <DialogHeader>
                 <DialogTitle>Configurar Autenticación de Dos Factores</DialogTitle>
                 <DialogDescription>
@@ -442,7 +442,7 @@ export default function ProfilePage() {
       </AlertDialog>
 
       <Dialog open={showChangePasswordDialog} onOpenChange={setShowChangePasswordDialog}>
-        <DialogContent>
+        <DialogContent className="w-[95vw] max-w-md rounded-lg">
             <DialogHeader>
                 <DialogTitle>Cambiar Contraseña</DialogTitle>
                 <DialogDescription>
