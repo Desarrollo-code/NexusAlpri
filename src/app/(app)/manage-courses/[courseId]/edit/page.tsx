@@ -1,4 +1,5 @@
 
+
 // En /home/user/studio/src/app/(app)/manage-courses/[courseId]/edit/page.tsx
 
 'use client';
@@ -129,8 +130,8 @@ function OptionsEditor({ moduleIndex, lessonIndex, questionIndex }: { moduleInde
         keyName: 'dndId'
     });
 
-    const questionOptions = watch(optionsPath);
-    const correctOptionId = useMemo(() => questionOptions?.find(opt => opt.isCorrect)?.id, [questionOptions]);
+    const watchedOptions = watch(optionsPath);
+    const correctOptionId = useMemo(() => watchedOptions?.find(opt => opt.isCorrect)?.id, [watchedOptions]);
 
     const handleCorrectOptionChange = (selectedOptionId: string) => {
         const currentOptions = getValues(optionsPath) || [];
@@ -272,7 +273,10 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, onClose, setPreviewQuizDet
                 </div>
                 <CardFooter className="border-t pt-4 flex justify-between w-full">
                     <div className="flex gap-2">
-                        <Button type="button" variant="outline" onClick={() => appendQuestion({ id: `temp-q-${Date.now()}`, text: '', type: 'MULTIPLE_CHOICE', order: questionFields.length, options: [{ id: `temp-o-${Date.now()}`, text: '', feedback: undefined, isCorrect: true }] })}>
+                        <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => appendQuestion({ id: `temp-q-${Date.now()}`, text: '', type: 'MULTIPLE_CHOICE', order: questionFields.length, options: [{ id: `temp-o-${Date.now()}`, text: '', feedback: '', isCorrect: true }] })}>
                             <PlusCircle className="mr-2 h-4 w-4" /> Añadir Pregunta
                         </Button>
                         <Button
