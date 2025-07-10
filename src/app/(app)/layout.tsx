@@ -44,12 +44,10 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
   if (filteredSubItems.length > 0) {
     return (
         <AccordionItem value={item.label} className="border-none">
-          <SidebarMenuButton asChild variant="ghost" className="w-full justify-between h-auto p-0" tooltip={item.label}>
+          <SidebarMenuButton asChild variant="ghost" className="w-full h-auto p-0" tooltip={item.label}>
             <AccordionTrigger 
-              showChevron={false}
               className={cn(
-                "w-full justify-between h-auto p-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md text-sm hover:no-underline group-data-[state=collapsed]:justify-center",
-                "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[state=collapsed]:px-2 group-data-[state=collapsed]:py-3",
+                "w-full h-auto p-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md text-sm hover:no-underline",
                 isParentActive && "bg-sidebar-accent text-sidebar-accent-foreground"
               )}
             >
