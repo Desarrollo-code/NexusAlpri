@@ -539,7 +539,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
     appendBlock: (moduleIndex: number, lessonIndex: number, newBlock: EditableContentBlock) => void;
 }) => {
-    const { getValues, register } = useFormContext<EditableCourse>();
+    const { getValues, register, watch } = useFormContext<EditableCourse>();
     const [quizEditorDetails, setQuizEditorDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
     const [previewQuizDetails, setPreviewQuizDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
     const openQuizEditor = useCallback((mIndex: number, lIndex: number, bIndex: number) => setQuizEditorDetails({ moduleIndex: mIndex, lessonIndex: lIndex, blockIndex: bIndex }), []);
