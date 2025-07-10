@@ -14,7 +14,7 @@ import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState, ChangeEvent, useCallback, useMemo } from 'react';
-import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, LessonType as AppLessonType, CourseStatus, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption } from '@/types';
+import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, LessonType as AppLessonType, CourseStatus, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption, ContentBlock } from '@/types';
 import Image from 'next/image';
 import { useToast } from "@/hooks/use-toast";
 import type { Course as PrismaCourse, Module as PrismaModule, Lesson as PrismaLesson, Question as PrismaQuestion, AnswerOption as PrismaAnswerOption } from '@prisma/client';
@@ -75,9 +75,13 @@ interface PrismaQuizWithQuestions extends AppQuiz {
     })[];
 }
 
-interface EditableLesson extends Omit<AppLesson, 'type' | 'quiz' | 'order'> {
-    type: AppLessonType;
-    quiz?: AppQuiz | null;
+interface EditableContentBlock extends Omit<ContentBlock, 'quiz' | 'order'> {
+  quiz?: AppQuiz | null;
+  _toBeDeleted?: boolean;
+  order: number | null;
+}
+interface EditableLesson extends Omit<AppLesson, 'contentBlocks' | 'order'> {
+    contentBlocks: EditableContentBlock[];
     _toBeDeleted?: boolean;
     order: number | null;
 }
@@ -98,11 +102,12 @@ interface EditableCourse extends Omit<AppCourse, 'modules' | 'instructor' | 'sta
 }
 
 type ItemToDeleteDetails = {
-    type: 'module' | 'lesson';
+    type: 'module' | 'lesson' | 'block';
     id: string;
     name: string;
     moduleIndex: number;
-    lessonIndex?: number;
+    lessonIndex: number;
+    blockIndex?: number;
 } | null;
 
 const reorder = <T,>(list: T[], startIndex: number, endIndex: number): T[] => {
@@ -114,16 +119,17 @@ const reorder = <T,>(list: T[], startIndex: number, endIndex: number): T[] => {
 
 type FormModulesPath = `modules.${number}`;
 type FormLessonsPath = `${FormModulesPath}.lessons.${number}`;
-type FormQuizPath = `${FormLessonsPath}.quiz`;
+type FormBlocksPath = `${FormLessonsPath}.contentBlocks.${number}`;
+type FormQuizPath = `${FormBlocksPath}.quiz`;
 type FormQuestionsPath = `${FormQuizPath}.questions.${number}`;
 type FormOptionsPath = `${FormQuestionsPath}.options.${number}`;
 
 // === COMPONENTES AUXILIARES ===
 
-function OptionsEditor({ moduleIndex, lessonIndex, questionIndex }: { moduleIndex: number; lessonIndex: number; questionIndex: number }) {
+function OptionsEditor({ moduleIndex, lessonIndex, blockIndex, questionIndex }: { moduleIndex: number; lessonIndex: number; blockIndex: number; questionIndex: number }) {
     const { control, register, watch, setValue, getValues } = useFormContext<EditableCourse>();
 
-    const optionsPath = `modules.${moduleIndex}.lessons.${lessonIndex}.quiz.questions.${questionIndex}.options` as const;
+    const optionsPath = `modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.quiz.questions.${questionIndex}.options` as const;
     const { fields: optionFields, append: appendOption, remove: removeOption } = useFieldArray({
         control,
         name: optionsPath,
@@ -186,17 +192,18 @@ function OptionsEditor({ moduleIndex, lessonIndex, questionIndex }: { moduleInde
 }
 OptionsEditor.displayName = 'OptionsEditor';
 
-function QuizEditorDialog({ moduleIndex, lessonIndex, onClose, setPreviewQuizDetails }: {
+function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPreviewQuizDetails }: {
     moduleIndex: number;
     lessonIndex: number;
+    blockIndex: number;
     onClose: () => void;
-    setPreviewQuizDetails: (details: { moduleIndex: number; lessonIndex: number }) => void;
+    setPreviewQuizDetails: (details: { moduleIndex: number; lessonIndex: number, blockIndex: number }) => void;
 }) {
     const { control, register, watch, setValue, getValues } = useFormContext<EditableCourse>();
     const { toast } = useToast();
 
     const lessonTitle = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.title` as `${FormLessonsPath}.title`);
-    const quizPath = `modules.${moduleIndex}.lessons.${lessonIndex}.quiz`;
+    const quizPath = `modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.quiz`;
 
     const { fields: questionFields, append: appendQuestion, remove: removeQuestion, move: moveQuestion } = useFieldArray({
         control,
@@ -256,7 +263,7 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, onClose, setPreviewQuizDet
                                                             <CardContent className="p-4 pt-0">
                                                                 <Label htmlFor={`question-text-${question.dndId}`}>Texto de la Pregunta</Label>
                                                                 <Textarea id={`question-text-${question.dndId}`} {...register(`${quizPath}.questions.${qIndex}.text` as `${FormQuestionsPath}.text`)} placeholder="Escribe aquí el enunciado de la pregunta..." />
-                                                                <OptionsEditor moduleIndex={moduleIndex} lessonIndex={lessonIndex} questionIndex={qIndex} />
+                                                                <OptionsEditor moduleIndex={moduleIndex} lessonIndex={lessonIndex} blockIndex={blockIndex} questionIndex={qIndex} />
                                                             </CardContent>
                                                         </Card>
                                                     </div>
@@ -282,7 +289,7 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, onClose, setPreviewQuizDet
                         <Button
                             type="button"
                             variant="secondary"
-                            onClick={() => setPreviewQuizDetails({ moduleIndex, lessonIndex })}
+                            onClick={() => setPreviewQuizDetails({ moduleIndex, lessonIndex, blockIndex })}
                             disabled={!currentQuizData?.questions || currentQuizData.questions.length === 0}
                         >
                             Previsualizar Quiz
@@ -296,85 +303,90 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, onClose, setPreviewQuizDet
 }
 QuizEditorDialog.displayName = 'QuizEditorDialog';
 
-const LessonList = React.memo(({ moduleIndex, setItemToDeleteDetails, isSaving, openQuizEditor, openQuizPreview, appendLesson }: {
+const ContentBlockList = React.memo(({ moduleIndex, lessonIndex, setItemToDeleteDetails, isSaving, openQuizEditor, openQuizPreview, appendBlock }: {
     moduleIndex: number;
+    lessonIndex: number;
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
     isSaving: boolean;
-    openQuizEditor: (moduleIndex: number, lessonIndex: number) => void;
-    openQuizPreview: (moduleIndex: number, lessonIndex: number) => void;
-    appendLesson: (moduleIndex: number, newLesson: EditableLesson) => void;
+    openQuizEditor: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void;
+    openQuizPreview: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void;
+    appendBlock: (moduleIndex: number, lessonIndex: number, newBlock: EditableContentBlock) => void;
 }) => {
-    const { control, watch, getValues } = useFormContext<EditableCourse>();
-    const { fields } = useFieldArray({
+    const { control, getValues, watch } = useFormContext<EditableCourse>();
+    const { fields, move } = useFieldArray({
         control,
-        name: `modules.${moduleIndex}.lessons` as const,
+        name: `modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks` as const,
         keyName: 'dndId'
     });
 
-    const watchedLessons = watch(`modules.${moduleIndex}.lessons` as const);
-
+    const onBlockDragEnd = (result: DropResult) => {
+        if (!result.destination) return;
+        move(result.source.index, result.destination.index);
+    }
+    
     return (
-        <Droppable droppableId={`lessons-${moduleIndex}`} type={`LESSONS-${moduleIndex}`}>
-            {(provided: DroppableProvided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                    {fields.map((lessonItem, lessonIndex) => {
-                        const lesson = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}` as const);
-
-                        if (!lesson || lesson._toBeDeleted) {
-                            return null;
-                        }
-                        return (
-                            <LessonItem
-                                key={lessonItem.dndId}
-                                moduleIndex={moduleIndex}
-                                lessonIndex={lessonIndex}
-                                dndId={lessonItem.dndId}
-                                isSaving={isSaving}
-                                setItemToDeleteDetails={setItemToDeleteDetails}
-                                openQuizEditor={openQuizEditor}
-                                openQuizPreview={openQuizPreview}
-                            />
-                        )
-                    })}
-                    {provided.placeholder}
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                            appendLesson(moduleIndex, {
-                                id: `new-lesson-${Date.now()}`,
-                                title: '',
-                                content: '',
-                                type: 'TEXT',
-                                order: (fields || []).length,
-                            });
-                        }}
-                        disabled={isSaving}
-                    >
-                        <PlusCircle className="mr-2 h-4 w-4" /> Añadir Lección
-                    </Button>
-                </div>
-            )}
-        </Droppable>
-    )
+        <div className="space-y-4 pt-4 border-t mt-4">
+            <h5 className="font-semibold text-xs text-muted-foreground">Bloques de Contenido</h5>
+            <DragDropContext onDragEnd={onBlockDragEnd}>
+                <Droppable droppableId={`blocks-${moduleIndex}-${lessonIndex}`} type={`BLOCKS-${moduleIndex}-${lessonIndex}`}>
+                    {(provided: DroppableProvided) => (
+                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                            {fields.map((blockItem, blockIndex) => {
+                                const block = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}` as const);
+                                if (!block || block._toBeDeleted) return null;
+                                return (
+                                    <ContentBlockItem
+                                        key={blockItem.dndId}
+                                        moduleIndex={moduleIndex}
+                                        lessonIndex={lessonIndex}
+                                        blockIndex={blockIndex}
+                                        dndId={blockItem.dndId}
+                                        isSaving={isSaving}
+                                        setItemToDeleteDetails={setItemToDeleteDetails}
+                                        openQuizEditor={openQuizEditor}
+                                        openQuizPreview={openQuizPreview}
+                                    />
+                                );
+                            })}
+                            {provided.placeholder}
+                        </div>
+                    )}
+                </Droppable>
+            </DragDropContext>
+            <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => appendBlock(moduleIndex, lessonIndex, {
+                    id: `new-block-${Date.now()}`,
+                    type: 'TEXT',
+                    content: '',
+                    order: (fields || []).length,
+                })}
+                disabled={isSaving}
+            >
+                <PlusCircle className="mr-2 h-4 w-4" /> Añadir Bloque
+            </Button>
+        </div>
+    );
 });
-LessonList.displayName = 'LessonList';
+ContentBlockList.displayName = 'ContentBlockList';
 
-const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setItemToDeleteDetails, openQuizEditor, openQuizPreview }: {
+const ContentBlockItem = React.memo(({ moduleIndex, lessonIndex, blockIndex, dndId, isSaving, setItemToDeleteDetails, openQuizEditor, openQuizPreview }: {
     moduleIndex: number;
     lessonIndex: number;
+    blockIndex: number;
     dndId: string;
     isSaving: boolean;
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
-    openQuizEditor: (moduleIndex: number, lessonIndex: number) => void;
-    openQuizPreview: (moduleIndex: number, lessonIndex: number) => void;
+    openQuizEditor: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void;
+    openQuizPreview: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void;
 }) => {
     const { control, getValues, register, watch } = useFormContext<EditableCourse>();
-    const lesson = watch(`modules.${moduleIndex}.lessons.${lessonIndex}` as const);
+    const block = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}` as const);
 
     return (
-        <Draggable key={dndId} draggableId={dndId} index={lessonIndex}>
+        <Draggable key={dndId} draggableId={dndId} index={blockIndex}>
             {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
                 <div
                     ref={provided.innerRef}
@@ -383,15 +395,11 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                 >
                     <div {...provided.dragHandleProps} className="cursor-grab pt-1"><GripVertical className="h-4 w-4 text-muted-foreground" /></div>
                     <div className="flex-grow space-y-2">
-                        <div className="flex justify-between items-center">
-                            <div className="flex-grow mr-2">
-                                <Label htmlFor={`lesson-title-${dndId}`}>Título de la Lección</Label>
-                                <Input id={`lesson-title-${dndId}`} {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.title` as const)} className="text-sm font-medium h-9" placeholder="Título de la lección" disabled={isSaving} />
-                            </div>
+                        <div className="flex justify-end items-center">
                             <div className="flex items-center gap-1">
                                 <Controller
                                     control={control}
-                                    name={`modules.${moduleIndex}.lessons.${lessonIndex}.type` as const}
+                                    name={`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.type` as const}
                                     render={({ field }) => (
                                         <Select onValueChange={field.onChange} value={field.value} disabled={isSaving}>
                                             <SelectTrigger className="w-[120px] h-9 text-xs"><SelectValue placeholder="Tipo" /></SelectTrigger>
@@ -404,10 +412,10 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                                         </Select>
                                     )}
                                 />
-                                {lesson?.type === 'QUIZ' && lesson.quiz && (
+                                {block?.type === 'QUIZ' && block.quiz && (
                                     <Tooltip delayDuration={200}>
                                         <TooltipTrigger asChild>
-                                            <Button variant="ghost" size="icon" type="button" className="h-8 w-8 text-primary" onClick={() => openQuizPreview(moduleIndex, lessonIndex)} disabled={isSaving}>
+                                            <Button variant="ghost" size="icon" type="button" className="h-8 w-8 text-primary" onClick={() => openQuizPreview(moduleIndex, lessonIndex, blockIndex)} disabled={isSaving}>
                                                 <ChevronRight className="h-4 w-4" />
                                             </Button>
                                         </TooltipTrigger>
@@ -418,23 +426,23 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                                 )}
 
                                 <Button variant="ghost" size="icon" type="button" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => {
-                                    const lessonValues = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
-                                    if (lessonValues) {
-                                        setItemToDeleteDetails({ type: 'lesson', id: lessonValues.id, name: lessonValues.title, moduleIndex, lessonIndex });
+                                    const blockValues = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}`);
+                                    if (blockValues) {
+                                        setItemToDeleteDetails({ type: 'block', id: blockValues.id, name: `bloque de tipo ${blockValues.type}`, moduleIndex, lessonIndex, blockIndex });
                                     }
                                 }} disabled={isSaving}><Trash2 className="h-3 w-3" /></Button>
                             </div>
                         </div>
-                        <LessonSpecificInput moduleIndex={moduleIndex} lessonIndex={lessonIndex} openQuizEditor={() => openQuizEditor(moduleIndex, lessonIndex)} />
+                        <BlockSpecificInput moduleIndex={moduleIndex} lessonIndex={lessonIndex} blockIndex={blockIndex} openQuizEditor={() => openQuizEditor(moduleIndex, lessonIndex, blockIndex)} />
                     </div>
                 </div>
             )}
         </Draggable>
     );
 });
-LessonItem.displayName = 'LessonItem';
+ContentBlockItem.displayName = 'ContentBlockItem';
 
-const LessonSpecificInput = React.memo(({ moduleIndex, lessonIndex, openQuizEditor }: { moduleIndex: number, lessonIndex: number, openQuizEditor: () => void; }) => {
+const BlockSpecificInput = React.memo(({ moduleIndex, lessonIndex, blockIndex, openQuizEditor }: { moduleIndex: number, lessonIndex: number, blockIndex: number, openQuizEditor: () => void; }) => {
     const { control, setValue, watch, register, getValues } = useFormContext<EditableCourse>();
     const { toast } = useToast();
 
@@ -442,26 +450,20 @@ const LessonSpecificInput = React.memo(({ moduleIndex, lessonIndex, openQuizEdit
     const [progress, setProgress] = useState(0);
     const [error, setError] = useState<string | null>(null);
 
-    const lessonType = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.type` as const);
-    const lesson = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}` as const);
-    const lessonContent = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.content`) as string | undefined;
+    const blockType = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.type` as const);
+    const blockContent = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`) as string | undefined;
 
-
-    const handleLessonFileSelected = async (e: ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelected = async (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-
             setIsUploading(true);
             setProgress(0);
             setError(null);
-
             const formData = new FormData();
             formData.append('file', file);
-
             try {
                 const result: { url: string } = await uploadWithProgress('/api/upload/lesson-file', formData, setProgress);
-
-                setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.content`, result.url, { shouldValidate: true, shouldDirty: true });
+                setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`, result.url, { shouldValidate: true, shouldDirty: true });
                 toast({ title: "Archivo Subido", description: `${file.name} se ha subido correctamente.` });
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : "No se pudo subir el archivo.";
@@ -475,28 +477,26 @@ const LessonSpecificInput = React.memo(({ moduleIndex, lessonIndex, openQuizEdit
     };
 
     const removeFile = () => {
-        setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.content`, '', { shouldDirty: true });
+        setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`, '', { shouldDirty: true });
         setError(null);
     };
 
     const isSaving = false;
 
-    switch (lessonType) {
-        case 'VIDEO': return (<><div className="mt-2 space-y-1"><Label htmlFor={`lesson-content-${lesson?.id}`} className="text-xs">URL del Video (YouTube)</Label><Input id={`lesson-content-${lesson?.id}`} {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.content` as const)} placeholder="https://youtube.com/watch?v=..." className="h-8 text-xs" disabled={isSaving || isUploading} /></div></>);
-        case 'TEXT': return (<><div className="mt-2 space-y-1"><Label htmlFor={`lesson-content-${lesson?.id}`} className="text-xs">Contenido de Texto o Enlace Externo</Label><Textarea id={`lesson-content-${lesson?.id}`} {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.content` as const)} placeholder="Escribe aquí el contenido o pega un enlace https://..." className="min-h-[80px] text-xs" disabled={isSaving || isUploading} /></div></>);
+    switch (blockType) {
+        case 'VIDEO': return (<><div className="mt-2 space-y-1"><Label className="text-xs">URL del Video (YouTube)</Label><Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content` as const)} placeholder="https://youtube.com/watch?v=..." className="h-8 text-xs" disabled={isSaving || isUploading} /></div></>);
+        case 'TEXT': return (<><div className="mt-2 space-y-1"><Label className="text-xs">Contenido de Texto o Enlace Externo</Label><Textarea {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content` as const)} placeholder="Escribe aquí el contenido o pega un enlace https://..." className="min-h-[80px] text-xs" disabled={isSaving || isUploading} /></div></>);
         case 'QUIZ': {
             return (<div className="mt-2 space-y-2">
-                <p className="text-xs text-muted-foreground">Define las preguntas y respuestas para esta evaluación.</p>
                 <Button type="button" variant="secondary" className="w-full" onClick={openQuizEditor}>
                     <Pencil className="mr-2 h-4 w-4" />
                     Configurar Quiz
                 </Button>
-                <Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.content`)} type="hidden" value="" />
+                <Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`)} type="hidden" value="" />
             </div>);
         }
         case 'FILE': {
-            const hasExistingFile = typeof lessonContent === 'string' && !!lessonContent;
-
+            const hasExistingFile = typeof blockContent === 'string' && !!blockContent;
             return (<>
                 <div className="mt-2 space-y-2">
                     <Label className="text-xs">Archivo Adjunto</Label>
@@ -512,14 +512,13 @@ const LessonSpecificInput = React.memo(({ moduleIndex, lessonIndex, openQuizEdit
                         </div>
                     ) : hasExistingFile ? (
                         <div className="p-2 border rounded-md bg-muted/50 text-xs space-y-2">
-                            <p className="flex items-center gap-1"><Paperclip className="h-3 w-3" /> Archivo actual: <a href={lessonContent} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[200px]">{lessonContent.split('/').pop()}</a></p>
+                            <p className="flex items-center gap-1"><Paperclip className="h-3 w-3" /> Archivo actual: <a href={blockContent} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[200px]">{blockContent.split('/').pop()}</a></p>
                             <Button variant="outline" size="sm" className="h-7 text-xs w-full" type="button" onClick={removeFile} disabled={isSaving}><Replace className="mr-1 h-3 w-3" />Reemplazar archivo</Button>
                         </div>
                     ) : (
                         <Input
-                            id={`lesson-file-input-${lesson?.id}`}
                             type="file"
-                            onChange={handleLessonFileSelected}
+                            onChange={handleFileSelected}
                             className="h-8 text-xs file:text-xs"
                             disabled={isSaving || isUploading}
                         />
@@ -530,7 +529,85 @@ const LessonSpecificInput = React.memo(({ moduleIndex, lessonIndex, openQuizEdit
         default: return null;
     }
 });
-LessonSpecificInput.displayName = 'LessonSpecificInput';
+BlockSpecificInput.displayName = 'BlockSpecificInput';
+
+const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setItemToDeleteDetails, appendBlock }: {
+    moduleIndex: number;
+    lessonIndex: number;
+    dndId: string;
+    isSaving: boolean;
+    setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
+    appendBlock: (moduleIndex: number, lessonIndex: number, newBlock: EditableContentBlock) => void;
+}) => {
+    const { getValues, register } = useFormContext<EditableCourse>();
+    const [quizEditorDetails, setQuizEditorDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
+    const [previewQuizDetails, setPreviewQuizDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
+    const openQuizEditor = useCallback((mIndex: number, lIndex: number, bIndex: number) => setQuizEditorDetails({ moduleIndex: mIndex, lessonIndex: lIndex, blockIndex: bIndex }), []);
+    const openQuizPreview = useCallback((mIndex: number, lIndex: number, bIndex: number) => setPreviewQuizDetails({ moduleIndex: mIndex, lessonIndex: lIndex, blockIndex: bIndex }), []);
+
+    return (
+        <Draggable key={dndId} draggableId={dndId} index={lessonIndex}>
+            {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value={dndId} ref={provided.innerRef} {...provided.draggableProps}
+                        className={`p-3 rounded-md border flex-col gap-3 items-start ${snapshot.isDragging ? 'shadow-md bg-muted' : 'bg-card'}`}>
+                        <div className="flex w-full items-start gap-3">
+                            <div {...provided.dragHandleProps} className="cursor-grab pt-1"><GripVertical className="h-4 w-4 text-muted-foreground" /></div>
+                            <div className="flex-grow space-y-2">
+                                <AccordionTrigger className="p-0 hover:no-underline w-full">
+                                    <div className="flex-grow mr-2 w-full">
+                                        <Label htmlFor={`lesson-title-${dndId}`}>Título de la Lección</Label>
+                                        <Input id={`lesson-title-${dndId}`} {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.title` as const)} className="text-sm font-medium h-9 w-full" placeholder="Título de la lección" disabled={isSaving} />
+                                    </div>
+                                </AccordionTrigger>
+                            </div>
+                            <Button variant="ghost" size="icon" type="button" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={(e) => {
+                                e.stopPropagation();
+                                const lessonValues = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
+                                if (lessonValues) {
+                                    setItemToDeleteDetails({ type: 'lesson', id: lessonValues.id, name: lessonValues.title, moduleIndex, lessonIndex });
+                                }
+                            }} disabled={isSaving}><Trash2 className="h-3 w-3" /></Button>
+                        </div>
+                        <AccordionContent className="p-0">
+                            <ContentBlockList
+                                moduleIndex={moduleIndex}
+                                lessonIndex={lessonIndex}
+                                setItemToDeleteDetails={setItemToDeleteDetails}
+                                isSaving={isSaving}
+                                openQuizEditor={openQuizEditor}
+                                openQuizPreview={openQuizPreview}
+                                appendBlock={appendBlock}
+                            />
+                            {quizEditorDetails?.lessonIndex === lessonIndex && (
+                                <QuizEditorDialog
+                                    {...quizEditorDetails}
+                                    onClose={() => setQuizEditorDetails(null)}
+                                    setPreviewQuizDetails={setPreviewQuizDetails}
+                                />
+                            )}
+                            {previewQuizDetails?.lessonIndex === lessonIndex && (
+                                <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setPreviewQuizDetails(null)}>
+                                    <DialogContent className="max-w-3xl">
+                                        <DialogHeader>
+                                            <DialogTitle>Vista Previa del Quiz</DialogTitle>
+                                        </DialogHeader>
+                                        <QuizViewer
+                                            quiz={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.contentBlocks.${previewQuizDetails.blockIndex}.quiz`)}
+                                            lessonId={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}
+                                            isInstructorPreview={true}
+                                        />
+                                    </DialogContent>
+                                </Dialog>
+                            )}
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            )}
+        </Draggable>
+    );
+});
+LessonItem.displayName = 'LessonItem';
 
 
 // === COMPONENTE PRINCIPAL DE LA PÁGINA (EditCoursePage) ===
@@ -549,8 +626,6 @@ export default function EditCoursePage() {
     const [itemToDeleteDetails, setItemToDeleteDetails] = useState<ItemToDeleteDetails | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const [previewQuizDetails, setPreviewQuizDetails] = useState<{ moduleIndex: number; lessonIndex: number } | null>(null);
-    const [quizEditorDetails, setQuizEditorDetails] = useState<{ moduleIndex: number; lessonIndex: number } | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [imageToCrop, setImageToCrop] = useState<string | null>(null);
@@ -571,7 +646,7 @@ export default function EditCoursePage() {
         mode: 'onChange'
     });
 
-    const { control, handleSubmit, reset, watch, formState: { errors, dirtyFields, isDirty } } = methods;
+    const { control, handleSubmit, reset, watch, formState: { errors, dirtyFields, isDirty }, setValue } = methods;
 
     const {
         fields: moduleFields,
@@ -591,6 +666,14 @@ export default function EditCoursePage() {
             methods.setValue(`modules.${moduleIndex}.lessons` as const, updatedLessons, { shouldDirty: true });
         }
     }, [methods]);
+    
+    const appendBlockToLesson = useCallback((moduleIndex: number, lessonIndex: number, newBlock: EditableContentBlock) => {
+        const currentLessons = methods.getValues(`modules.${moduleIndex}.lessons`);
+        if (currentLessons[lessonIndex]) {
+            const updatedBlocks = [...(currentLessons[lessonIndex].contentBlocks || []), newBlock];
+            setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`, updatedBlocks, { shouldDirty: true });
+        }
+    }, [methods, setValue]);
 
 
     const watchedCourseStatus = watch('status');
@@ -634,7 +717,11 @@ export default function EditCoursePage() {
                     lessons: module.lessons?.map(lesson => ({
                         ...lesson,
                         order: lesson.order !== undefined ? lesson.order : null,
-                        quiz: lesson.quiz || null
+                        contentBlocks: lesson.contentBlocks?.map(block => ({
+                          ...block,
+                          order: block.order !== undefined ? block.order : null,
+                          quiz: block.quiz || null,
+                        })) || [],
                     })) || [],
                     order: module.order !== undefined ? module.order : null
                 })),
@@ -669,14 +756,19 @@ export default function EditCoursePage() {
                     .filter(mod => !mod._toBeDeleted)
                     .map((mod, moduleIndex) => ({
                         ...mod,
-                        order: moduleIndex, // Ensure order is set correctly
+                        order: moduleIndex,
                         lessons: (mod.lessons || [])
                             .filter(lesson => !lesson._toBeDeleted)
                             .map((lesson, lessonIndex) => ({
                                 ...lesson,
-                                order: lessonIndex, // Ensure order is set correctly
-                                content: lesson.type !== 'QUIZ' ? lesson.content : undefined,
-                                quiz: lesson.type === 'QUIZ' ? lesson.quiz : undefined,
+                                order: lessonIndex,
+                                contentBlocks: (lesson.contentBlocks || [])
+                                  .filter(block => !block._toBeDeleted)
+                                  .map((block, blockIndex) => ({
+                                      ...block,
+                                      order: blockIndex,
+                                      quiz: block.type === 'QUIZ' ? block.quiz : undefined,
+                                  }))
                             }))
                     }))
             };
@@ -690,15 +782,6 @@ export default function EditCoursePage() {
                 });
                 if (!res.ok) throw new Error((await res.json()).message || 'Error al crear el curso.');
                 const newCourse = await res.json();
-                
-                // Now, update the newly created course with modules/lessons
-                payload.id = newCourse.id; // Set ID for subsequent update
-                const updateRes = await fetch(`/api/courses/${newCourse.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!updateRes.ok) throw new Error((await updateRes.json()).message || 'Error al guardar contenido del curso.');
                 
                 toast({ title: "Curso Creado", description: "La información del curso se ha guardado correctamente." });
                 router.push(`/manage-courses/${newCourse.id}/edit`);
@@ -861,33 +944,24 @@ export default function EditCoursePage() {
 
     const confirmDeleteItemAction = useCallback(() => {
         if (!itemToDeleteDetails) return;
+        const { type, moduleIndex, lessonIndex, blockIndex } = itemToDeleteDetails;
 
-        if (itemToDeleteDetails.type === 'module') {
-            methods.setValue(`modules.${itemToDeleteDetails.moduleIndex}._toBeDeleted`, true, { shouldDirty: true });
-            toast({
-                title: "Módulo marcado para eliminación",
-                description: `El módulo "${itemToDeleteDetails.name}" se eliminará al guardar.`,
-                variant: "default",
-            });
-        } else if (itemToDeleteDetails.type === 'lesson' && itemToDeleteDetails.lessonIndex !== undefined) {
-            methods.setValue(`modules.${itemToDeleteDetails.moduleIndex}.lessons.${itemToDeleteDetails.lessonIndex}._toBeDeleted`, true, { shouldDirty: true });
-            toast({
-                title: "Lección marcada para eliminación",
-                description: `La lección "${itemToDeleteDetails.name}" se eliminará al guardar.`,
-                variant: "default",
-            });
+        if (type === 'module') {
+            setValue(`modules.${moduleIndex}._toBeDeleted`, true, { shouldDirty: true });
+        } else if (type === 'lesson' && lessonIndex !== undefined) {
+            setValue(`modules.${moduleIndex}.lessons.${lessonIndex}._toBeDeleted`, true, { shouldDirty: true });
+        } else if (type === 'block' && lessonIndex !== undefined && blockIndex !== undefined) {
+            setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}._toBeDeleted`, true, { shouldDirty: true });
         }
+
+        toast({
+            title: `${type.charAt(0).toUpperCase() + type.slice(1)} marcado para eliminación`,
+            description: `Se eliminará al guardar los cambios.`,
+            variant: "default",
+        });
+
         setItemToDeleteDetails(null);
-    }, [itemToDeleteDetails, methods, toast]);
-
-
-    const openQuizEditor = useCallback((moduleIndex: number, lessonIndex: number) => {
-        setQuizEditorDetails({ moduleIndex, lessonIndex });
-    }, []);
-
-    const openQuizPreview = useCallback((moduleIndex: number, lessonIndex: number) => {
-        setPreviewQuizDetails({ moduleIndex, lessonIndex });
-    }, []);
+    }, [itemToDeleteDetails, setValue, toast]);
 
 
     // === Renderizado ===
@@ -980,41 +1054,52 @@ export default function EditCoursePage() {
                                                     return (
                                                         <Draggable key={moduleItem.dndId} draggableId={moduleItem.dndId} index={moduleIndex}>
                                                             {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
-                                                                <div ref={provided.innerRef} {...provided.draggableProps}>
-                                                                    <Accordion type="single" collapsible className="w-full">
-                                                                        <AccordionItem value={moduleItem.dndId} className={`rounded-md border bg-card text-card-foreground shadow-sm ${snapshot.isDragging ? 'shadow-lg bg-muted' : ''}`}>
-                                                                            <AccordionTrigger className="flex items-center justify-between p-4 font-semibold">
-                                                                                <div className="flex items-center gap-3 w-full">
-                                                                                    <div {...provided.dragHandleProps} className="cursor-grab p-1"><GripVertical className="h-5 w-5 text-muted-foreground" /></div>
+                                                                <Accordion type="single" collapsible className="w-full">
+                                                                     <AccordionItem value={moduleItem.dndId} ref={provided.innerRef} {...provided.draggableProps}
+                                                                        className={`rounded-md border bg-card text-card-foreground shadow-sm ${snapshot.isDragging ? 'shadow-lg bg-muted' : ''}`}>
+                                                                            <div className="flex items-center p-4 font-semibold">
+                                                                                <div {...provided.dragHandleProps} className="cursor-grab p-1"><GripVertical className="h-5 w-5 text-muted-foreground" /></div>
+                                                                                 <AccordionTrigger className="flex items-center justify-between w-full p-0 hover:no-underline">
                                                                                     <div className="flex-grow">
                                                                                         <Input {...methods.register(`modules.${moduleIndex}.title` as FormModulesPath)} placeholder="Título del Módulo" className="text-base font-semibold border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-auto p-0" disabled={isSaving} onClick={(e) => e.stopPropagation()} />
                                                                                     </div>
-                                                                                    <div
-                                                                                        role="button"
-                                                                                        aria-label="Eliminar módulo"
-                                                                                        onClick={(e) => {
-                                                                                            e.stopPropagation();
-                                                                                            if (isSaving) return;
-                                                                                            setItemToDeleteDetails({ type: 'module', id: module.id, name: module.title, moduleIndex });
-                                                                                        }}
-                                                                                        className={cn(
-                                                                                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-destructive transition-colors hover:bg-destructive/10",
-                                                                                            isSaving ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-                                                                                        )}
-                                                                                    >
-                                                                                        <Trash2 className="h-4 w-4" />
-                                                                                    </div>
+                                                                                </AccordionTrigger>
+                                                                                <div
+                                                                                    role="button"
+                                                                                    aria-label="Eliminar módulo"
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        if (isSaving) return;
+                                                                                        setItemToDeleteDetails({ type: 'module', id: module.id, name: module.title, moduleIndex, lessonIndex: -1 });
+                                                                                    }}
+                                                                                    className={cn(
+                                                                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-destructive transition-colors hover:bg-destructive/10",
+                                                                                        isSaving ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                                                                                    )}
+                                                                                >
+                                                                                    <Trash2 className="h-4 w-4" />
                                                                                 </div>
-                                                                            </AccordionTrigger>
-                                                                            <AccordionContent className="p-4 border-t bg-muted/20">
-                                                                                <div className="space-y-4">
-                                                                                    <h4 className="font-semibold text-sm">Lecciones:</h4>
-                                                                                    <LessonList moduleIndex={moduleIndex} setItemToDeleteDetails={setItemToDeleteDetails} isSaving={isSaving} openQuizEditor={openQuizEditor} openQuizPreview={openQuizPreview} appendLesson={appendLessonToModule} />
-                                                                                </div>
-                                                                            </AccordionContent>
-                                                                        </AccordionItem>
-                                                                    </Accordion>
-                                                                </div>
+                                                                            </div>
+                                                                        <AccordionContent className="p-4 border-t bg-muted/20">
+                                                                            <div className="space-y-4">
+                                                                                <h4 className="font-semibold text-sm">Lecciones:</h4>
+                                                                                <Droppable droppableId={`lessons-${moduleIndex}`} type={`LESSONS-${moduleIndex}`}>
+                                                                                    {(provided: DroppableProvided) => (
+                                                                                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                                                                                             {watch(`modules.${moduleIndex}.lessons`)?.filter(l => !l._toBeDeleted).map((lesson, lessonIndex) => (
+                                                                                                <LessonItem key={lesson.id} moduleIndex={moduleIndex} lessonIndex={lessonIndex} dndId={lesson.id} isSaving={isSaving} setItemToDeleteDetails={setItemToDeleteDetails} appendBlock={appendBlockToLesson} />
+                                                                                             ))}
+                                                                                            {provided.placeholder}
+                                                                                            <Button type="button" variant="outline" size="sm" onClick={() => appendLessonToModule(moduleIndex, { id: `new-lesson-${Date.now()}`, title: '', contentBlocks: [], order: methods.getValues(`modules.${moduleIndex}.lessons`)?.length || 0, })} disabled={isSaving}>
+                                                                                                <PlusCircle className="mr-2 h-4 w-4" /> Añadir Lección
+                                                                                            </Button>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </Droppable>
+                                                                            </div>
+                                                                        </AccordionContent>
+                                                                    </AccordionItem>
+                                                                </Accordion>
                                                             )}
                                                         </Draggable>
                                                     );
@@ -1139,7 +1224,7 @@ export default function EditCoursePage() {
                         {!isNewCourse && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" disabled={isSaving}>
+                                    <Button variant="outline" type="button" disabled={isSaving}>
                                         Más Acciones
                                         <MoreVertical className="ml-2 h-4 w-4" />
                                     </Button>
@@ -1177,15 +1262,8 @@ export default function EditCoursePage() {
 
                         <Button type="submit" disabled={isSaving || !isDirty}>
                             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {isNewCourse || watchedCourseStatus === 'DRAFT' ? (
-                                <>
-                                    <Zap className="mr-2 h-4 w-4" /> Guardar y Publicar
-                                </>
-                            ) : (
-                                <>
-                                    <Save className="mr-2 h-4 w-4" /> Guardar Cambios
-                                </>
-                            )}
+                             <Save className="mr-2 h-4 w-4" />
+                             { isNewCourse ? "Crear Curso" : "Guardar Cambios"}
                         </Button>
                     </div>
                 </div>
@@ -1194,7 +1272,7 @@ export default function EditCoursePage() {
                 {/* Dialogs and Modals */}
                 <AlertDialog open={itemToDeleteDetails !== null} onOpenChange={setItemToDeleteDetails as any}>
                     <AlertDialogContent>
-                        <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro de que quieres eliminar {itemToDeleteDetails?.type === 'module' ? 'el módulo' : 'la lección'} "<strong>{itemToDeleteDetails?.name}</strong>"? Se eliminará al guardar los cambios del curso.</AlertDialogDescription></AlertDialogHeader>
+                        <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro de que quieres eliminar {itemToDeleteDetails?.type} "<strong>{itemToDeleteDetails?.name}</strong>"? Se eliminará al guardar los cambios del curso.</AlertDialogDescription></AlertDialogHeader>
                         <AlertDialogFooter className="gap-2 sm:space-x-0"><AlertDialogCancel onClick={() => setItemToDeleteDetails(null)}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={confirmDeleteItemAction} className={buttonVariants({ variant: "destructive" })}><Trash2 className="mr-2 h-4 w-4" /> Sí, eliminar</AlertDialogAction></AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
@@ -1207,29 +1285,7 @@ export default function EditCoursePage() {
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
-                {quizEditorDetails && (
-                    <QuizEditorDialog
-                        moduleIndex={quizEditorDetails.moduleIndex}
-                        lessonIndex={quizEditorDetails.lessonIndex}
-                        onClose={() => setQuizEditorDetails(null)}
-                        setPreviewQuizDetails={setPreviewQuizDetails}
-                    />
-                )}
-                {previewQuizDetails && (
-                    <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setPreviewQuizDetails(null)}>
-                        <DialogContent className="max-w-3xl">
-                            <DialogHeader>
-                                <DialogTitle>Vista Previa del Quiz</DialogTitle>
-                                <DialogDescription>Así es como los estudiantes verán este quiz.</DialogDescription>
-                            </DialogHeader>
-                            <QuizViewer
-                                quiz={methods.watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.quiz`)}
-                                lessonId={methods.watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}
-                                isInstructorPreview={true}
-                            />
-                        </DialogContent>
-                    </Dialog>
-                )}
+                
                 <ImageCropper
                     imageSrc={imageToCrop}
                     onCropComplete={handleCropComplete}
