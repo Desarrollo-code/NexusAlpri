@@ -4,7 +4,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -19,6 +19,7 @@ import { CircularProgress } from '@/components/ui/circular-progress';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 // Helper types and functions
 interface PrismaLessonWithQuiz extends PrismaLesson {
@@ -376,17 +377,52 @@ export default function CourseDetailPage() {
                     {course.title}
                 </h1>
             </div>
-            {isCreatorViewingCourse ? (
-                <Button asChild variant="outline" size="sm" className="shrink-0">
-                    <Link href={`/manage-courses/${course.id}/edit`}>
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Volver a Gestión
-                    </Link>
-                </Button>
-            ) : (
-                <Button variant="outline" size="sm" onClick={() => router.back()} className="shrink-0">
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Volver
-                </Button>
-            )}
+            <div className="flex items-center gap-2">
+                { !isCreatorViewingCourse && isEnrolled && (
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                                <LineChart className="mr-2 h-4 w-4" /> Ver Mi Progreso
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                                <DialogTitle>Tu Progreso</DialogTitle>
+                                <DialogDescription>
+                                    {isFinalProgressVisible ? "Este es tu resultado final para el curso." : "Completa todas las lecciones para calcular tu puntuación."}
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="flex flex-col items-center justify-center space-y-4 py-6">
+                                {isFinalProgressVisible && courseProgress ? (
+                                    <div className="text-center p-4 space-y-3">
+                                        <CircularProgress value={courseProgress.progressPercentage || 0} size={150} strokeWidth={12} />
+                                        <h3 className="text-xl font-semibold text-foreground pt-4">Puntuación Final</h3>
+                                    </div>
+                                ) : (
+                                    <div className="text-center p-4 space-y-3">
+                                        <p className="text-muted-foreground max-w-xs">Completa todas las lecciones y presiona el botón para calcular tu puntuación final.</p>
+                                        <Button onClick={handleConsolidateProgress} disabled={!isCourseProvisionallyComplete || isConsolidating} className="w-full">
+                                            {isConsolidating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                                            {isConsolidating ? 'Calculando...' : 'Calcular Mi Puntuación Final'}
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                )}
+                {isCreatorViewingCourse ? (
+                    <Button asChild variant="outline" size="sm" className="shrink-0">
+                        <Link href={`/manage-courses/${course.id}/edit`}>
+                            <ArrowLeft className="mr-2 h-4 w-4" /> Volver a Gestión
+                        </Link>
+                    </Button>
+                ) : (
+                    <Button variant="outline" size="sm" onClick={() => router.back()} className="shrink-0">
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Volver
+                    </Button>
+                )}
+            </div>
         </div>
       <div className="flex-1 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6 min-h-0">
         
@@ -472,32 +508,6 @@ export default function CourseDetailPage() {
                         <p className="text-muted-foreground">Elige una lección de la barra lateral para comenzar a aprender.</p>
                     </div>
                 )}
-
-                { !isCreatorViewingCourse && isEnrolled && (
-                    <div className="w-full max-w-md mx-auto pt-12">
-                      <Card className="shadow-lg">
-                          <CardHeader>
-                            <CardTitle className="text-xl font-headline">Tu Progreso</CardTitle>
-                          </CardHeader>
-                          <CardContent className="flex flex-col items-center justify-center space-y-4 py-6">
-                            {isFinalProgressVisible && courseProgress ? (
-                              <div className="text-center p-4 space-y-3">
-                                  <CircularProgress value={courseProgress.progressPercentage || 0} size={150} strokeWidth={12} />
-                                  <h3 className="text-xl font-semibold text-foreground pt-4">Puntuación Final</h3>
-                              </div>
-                            ) : (
-                              <div className="text-center p-4 space-y-3">
-                                  <p className="text-muted-foreground max-w-xs">Completa todas las lecciones y presiona el botón para calcular tu puntuación final.</p>
-                                  <Button onClick={handleConsolidateProgress} disabled={!isCourseProvisionallyComplete || isConsolidating} className="w-full">
-                                      {isConsolidating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                                      {isConsolidating ? 'Calculando...' : 'Calcular Mi Puntuación Final'}
-                                  </Button>
-                              </div>
-                            )}
-                          </CardContent>
-                      </Card>
-                    </div>
-                )}
                 </div>
             </ScrollArea>
         </main>
@@ -505,4 +515,3 @@ export default function CourseDetailPage() {
     </div>
   );
 }
-
