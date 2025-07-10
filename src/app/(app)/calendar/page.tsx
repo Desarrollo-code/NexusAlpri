@@ -336,7 +336,7 @@ export default function CalendarPage() {
       </div>
 
       <Dialog open={showEventModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowEventModal(isOpen); }}>
-        <DialogContent className="sm:max-w-2xl overflow-y-auto max-h-[90vh] bg-card">
+        <DialogContent className="w-[95vw] max-w-2xl overflow-y-auto max-h-[90vh] bg-card">
           <DialogHeader>
             <DialogTitle className="text-foreground">{modalTitle}</DialogTitle>
             <DialogDescription className="text-muted-foreground">{modalDescription}</DialogDescription>
@@ -475,7 +475,7 @@ export default function CalendarPage() {
       </Dialog>
 
       <AlertDialog open={!!eventToDelete && canEdit} onOpenChange={(isOpen) => !isOpen && setEventToDelete(null)}>
-        <AlertDialogContent className="bg-card text-foreground border-border">
+        <AlertDialogContent className="bg-card text-foreground border-border w-[95vw] max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-foreground">¿Confirmar eliminación?</AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">

@@ -410,7 +410,7 @@ export default function ProfilePage() {
       </Dialog>
       
        <AlertDialog open={showDisable2faDialog} onOpenChange={setShowDisable2faDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[95vw] max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle>¿Desactivar Autenticación de Dos Factores?</AlertDialogTitle>
             <AlertDialogDescription>

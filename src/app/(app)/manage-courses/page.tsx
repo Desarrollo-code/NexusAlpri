@@ -374,7 +374,7 @@ export default function ManageCoursesPage() {
                         <PlusCircle className="mr-2 h-4 w-4" /> Crear Nuevo Curso
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="w-[95vw] max-w-xl rounded-lg max-h-[90vh] overflow-y-auto">
+                <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                     <DialogTitle>Crear Nuevo Curso</DialogTitle>
                     <DialogDescription>
@@ -428,7 +428,7 @@ export default function ManageCoursesPage() {
       )}
 
       <AlertDialog open={!!courseToDelete} onOpenChange={(open) => !open && setCourseToDelete(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[95vw] max-w-md">
             <AlertDialogHeader>
                 <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -436,7 +436,7 @@ export default function ManageCoursesPage() {
                     y todos sus datos asociados, incluyendo módulos, lecciones, inscripciones y progreso de los estudiantes.
                 </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter className="gap-2 sm:space-x-0">
+            <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:space-x-0">
                 <AlertDialogCancel onClick={() => setCourseToDelete(null)} disabled={isDeleting}>Cancelar</AlertDialogCancel>
                 <AlertDialogAction
                     onClick={handleDeleteCourse}
