@@ -25,7 +25,10 @@ export async function PATCH(req: NextRequest, context: { params: { id: string } 
             return NextResponse.json({ message: 'Curso no encontrado' }, { status: 404 });
         }
 
-        if (session.role !== 'ADMINISTRATOR' && courseToUpdate.instructorId !== session.id) {
+        if (session.role !== 'INSTRUCTOR' && session.role !== 'ADMINISTRATOR') {
+             return NextResponse.json({ message: 'No tienes permiso para modificar este curso' }, { status: 403 });
+        }
+        if (session.role === 'INSTRUCTOR' && courseToUpdate.instructorId !== session.id) {
             return NextResponse.json({ message: 'No tienes permiso para modificar este curso' }, { status: 403 });
         }
         
@@ -33,6 +36,22 @@ export async function PATCH(req: NextRequest, context: { params: { id: string } 
             where: { id },
             data: { status: status as CourseStatus },
         });
+        
+        // --- NOTIFICATION LOGIC ---
+        // If the course is being published and it wasn't published before
+        if (status === 'PUBLISHED' && courseToUpdate.status !== 'PUBLISHED') {
+            const allUsers = await prisma.user.findMany({ select: { id: true } });
+            
+            await prisma.notification.createMany({
+                data: allUsers.map(user => ({
+                    userId: user.id,
+                    title: `Nuevo Curso Disponible: ${updatedCourse.title}`,
+                    description: 'Explora el nuevo contenido que hemos preparado para ti.',
+                    link: `/courses/${updatedCourse.id}`,
+                })),
+            });
+        }
+        // --- END NOTIFICATION LOGIC ---
 
         return NextResponse.json(updatedCourse);
 
