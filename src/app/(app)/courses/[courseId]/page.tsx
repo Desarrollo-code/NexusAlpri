@@ -56,17 +56,12 @@ function mapApiDetailedCourseToAppCourse(apiCourse: ApiDetailedCourse): AppCours
             id: less.quiz.id,
             title: less.quiz.title,
             description: less.quiz.description,
-            questions: less.quiz.questions.map(q => ({
+            questions: (less.quiz.questions || []).map(q => ({
                 id: q.id,
                 text: q.text,
                 type: q.type,
                 order: q.order,
-                options: q.options.map(o => ({
-                    id: o.id,
-                    text: o.text,
-                    isCorrect: o.isCorrect,
-                    feedback: o.feedback,
-                })).sort((a,b) => a.id.localeCompare(b.id)),
+                options: (q.options || []).sort((a,b) => a.id.localeCompare(b.id)), // Ensure consistent order
             })).sort((a,b) => a.order - b.order),
         } : undefined,
       })).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
