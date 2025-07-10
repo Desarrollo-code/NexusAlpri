@@ -35,19 +35,26 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
   
   if (!user) return null;
 
-  const filteredSubItems = item.subItems?.filter(sub => sub.roles.includes(user.role)) ?? [];
+  const isActive = item.href ? pathname.startsWith(item.href) : false;
+  const isParentActive = item.subItems?.some(sub => sub.href && pathname.startsWith(sub.href));
   const iconColorClass = `text-chart-${(index % 5) + 1}`;
+
+  const filteredSubItems = item.subItems?.filter(sub => sub.roles.includes(user.role)) ?? [];
 
   if (filteredSubItems.length > 0) {
     return (
         <AccordionItem value={item.label} className="border-none">
           <SidebarMenuButton asChild variant="ghost" className="w-full justify-between h-auto p-0" tooltip={item.label}>
-            <AccordionTrigger className={cn(
-              "w-full justify-between h-auto p-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md text-sm hover:no-underline",
-              "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[state=collapsed]:px-2 group-data-[state=collapsed]:py-3"
-            )}>
+            <AccordionTrigger 
+              showChevron={false}
+              className={cn(
+                "w-full justify-between h-auto p-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md text-sm hover:no-underline group-data-[state=collapsed]:justify-center",
+                "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[state=collapsed]:px-2 group-data-[state=collapsed]:py-3",
+                isParentActive && "bg-sidebar-accent text-sidebar-accent-foreground"
+              )}
+            >
               <div className="flex items-center gap-3">
-                <item.icon className={cn(iconColorClass, "h-5 w-5")} />
+                <item.icon className={cn(isParentActive ? "text-primary" : iconColorClass, "h-5 w-5")} />
                 <span className="font-semibold">{item.label}</span>
               </div>
             </AccordionTrigger>
@@ -58,7 +65,7 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
                 <SidebarMenuItem key={subItem.href}>
                   <SidebarMenuButton asChild isActive={pathname.startsWith(subItem.href)} size="sm" className="justify-start" tooltip={subItem.label}>
                     <Link href={subItem.href}>
-                      <subItem.icon className={cn(`text-chart-${(subIndex % 5) + 1}`)}/>
+                      <subItem.icon className={cn(pathname.startsWith(subItem.href) ? "text-primary" : `text-chart-${(subIndex % 5) + 1}`)}/>
                       <span>{subItem.label}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -72,9 +79,9 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={item.href ? pathname.startsWith(item.href) : false} disabled={item.disabled} className="justify-start gap-3" tooltip={item.label}>
+      <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={item.label}>
         <Link href={item.href || '#'}>
-          <item.icon className={cn(iconColorClass, "h-5 w-5")} />
+          <item.icon className={cn(isActive ? "text-primary" : iconColorClass, "h-5 w-5")} />
           <span className="font-semibold">{item.label}</span>
         </Link>
       </SidebarMenuButton>
