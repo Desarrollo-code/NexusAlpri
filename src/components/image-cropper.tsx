@@ -81,7 +81,7 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
 
   return (
     <Dialog open={!!imageSrc} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
+      <DialogContent className="w-[95vw] max-w-4xl h-[90vh] flex flex-col p-0">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle>Recortar Imagen</DialogTitle>
           <DialogDescription>Ajusta el zoom, la rotación y el área de recorte. Puedes alejar la imagen para seleccionarla completa.</DialogDescription>

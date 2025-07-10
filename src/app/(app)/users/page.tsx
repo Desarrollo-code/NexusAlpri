@@ -302,18 +302,18 @@ export default function UsersPage() {
                   </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleAddEditUser} className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="name" className="text-right">Nombre</Label>
-                        <Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nombre completo" className="col-span-3" required disabled={isProcessing} />
+                    <div className="space-y-2">
+                        <Label htmlFor="name">Nombre</Label>
+                        <Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nombre completo" required disabled={isProcessing} />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="email" className="text-right">Email</Label>
-                        <Input id="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="usuario@ejemplo.com" className="col-span-3" required disabled={isProcessing}/>
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="usuario@ejemplo.com" required disabled={isProcessing}/>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="role" className="text-right">Rol</Label>
+                    <div className="space-y-2">
+                        <Label htmlFor="role">Rol</Label>
                         <Select name="role" value={editRole} onValueChange={(value) => setEditRole(value as UserRole)} required disabled={isProcessing}>
-                            <SelectTrigger className="col-span-3">
+                            <SelectTrigger>
                                 <SelectValue placeholder="Seleccionar rol" />
                             </SelectTrigger>
                             <SelectContent>
@@ -324,9 +324,9 @@ export default function UsersPage() {
                         </Select>
                     </div>
                     {!userToEdit && (
-                       <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="password" className="text-right">Contraseña</Label>
-                          <Input id="password" type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Mínimo 8 caracteres" className="col-span-3" required disabled={isProcessing}/>
+                       <div className="space-y-2">
+                          <Label htmlFor="password">Contraseña</Label>
+                          <Input id="password" type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Mínimo 8 caracteres" required disabled={isProcessing}/>
                         </div>
                     )}
                     <DialogFooter>
@@ -471,22 +471,22 @@ export default function UsersPage() {
           setShowChangeRoleDialog(isOpen);
           if (!isOpen) setUserToChangeRole(null);
       }}>
-          <DialogContent className="w-[95vw] max-w-md rounded-lg">
+          <DialogContent className="w-[95vw] max-w-sm rounded-lg">
               <DialogHeader>
                 <DialogTitle>Cambiar Rol de Usuario</DialogTitle>
                 <DialogDescription>
                   Selecciona el nuevo rol para <strong>{userToChangeRole?.name}</strong>.
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleChangeUserRoleSubmit} className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="user-name-role" className="text-right">Usuario</Label>
-                      <Input id="user-name-role" value={userToChangeRole?.name || ''} className="col-span-3" disabled />
+              <form onSubmit={handleChangeUserRoleSubmit} className="space-y-4 py-4">
+                  <div className="space-y-2">
+                      <Label htmlFor="user-name-role">Usuario</Label>
+                      <Input id="user-name-role" value={userToChangeRole?.name || ''} disabled />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="new-role" className="text-right">Nuevo Rol</Label>
+                  <div className="space-y-2">
+                      <Label htmlFor="new-role">Nuevo Rol</Label>
                       <Select name="new-role" value={selectedNewRole} onValueChange={(value) => setSelectedNewRole(value as UserRole)} required disabled={isProcessing}>
-                          <SelectTrigger className="col-span-3">
+                          <SelectTrigger>
                               <SelectValue placeholder="Seleccionar nuevo rol" />
                           </SelectTrigger>
                           <SelectContent>
