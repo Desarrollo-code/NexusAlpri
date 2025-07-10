@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -66,11 +67,7 @@ export default {
           blue: 'hsl(var(--event-blue))',
           green: 'hsl(var(--event-green))',
           red: 'hsl(var(--event-red))',
-          yellow: 'hsl(var(--event-yellow))',
-          purple: 'hsl(var(--event-purple))',
-          cyan: 'hsl(var(--event-cyan))',
           orange: 'hsl(var(--event-orange))',
-          default: 'hsl(var(--event-default))',
         },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',

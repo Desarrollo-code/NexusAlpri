@@ -215,6 +215,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             height={120} 
             className="opacity-40 w-[70px] h-auto"
             priority 
+            data-ai-hint="company logo"
           />
         </div>
       </SidebarInset>
