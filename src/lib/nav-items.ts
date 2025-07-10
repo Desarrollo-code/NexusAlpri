@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   TrendingUp,
   CalendarDays,
+  ShieldAlert,
 } from 'lucide-react';
 
 
@@ -61,6 +62,7 @@ const navItems: NavItem[] = [
             { href: '/manage-courses', label: 'Gestionar Cursos', icon: BookMarked, roles: ['ADMINISTRATOR', 'INSTRUCTOR'] },
             { href: '/enrollments', label: 'Inscritos y Progreso', icon: TrendingUp, roles: ['ADMINISTRATOR', 'INSTRUCTOR'] },
             { href: '/users', label: 'Gestión de Usuarios', icon: Users, roles: ['ADMINISTRATOR'] },
+            { href: '/security-audit', label: 'Auditoría de Seguridad', icon: ShieldAlert, roles: ['ADMINISTRATOR'] },
             { href: '/settings', label: 'Configuración', icon: Settings, roles: ['ADMINISTRATOR'] },
         ]
     }

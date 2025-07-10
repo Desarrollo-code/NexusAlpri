@@ -26,10 +26,20 @@ function checkRateLimit(ip: string): boolean {
     return record.count < RATE_LIMIT_COUNT;
 }
 
-function recordFailedAttempt(ip: string) {
+function recordFailedAttempt(ip: string, email: string) {
+    // Record in-memory for rate limiting
     const record = loginAttempts.get(ip) || { count: 0, expiry: Date.now() + RATE_LIMIT_WINDOW_MS };
     record.count++;
     loginAttempts.set(ip, record);
+    
+    // Record in database for auditing
+    prisma.securityLog.create({
+        data: {
+            event: 'FAILED_LOGIN_ATTEMPT',
+            ipAddress: ip,
+            emailAttempt: email,
+        },
+    }).catch(console.error); // Log DB errors without blocking the response
 }
 
 // --- Login Route ---
@@ -52,14 +62,14 @@ export async function POST(req: NextRequest) {
     });
 
     if (!user || !user.password) {
-      recordFailedAttempt(ip);
+      recordFailedAttempt(ip, email);
       return NextResponse.json({ message: 'Credenciales inválidas' }, { status: 401 });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      recordFailedAttempt(ip);
+      recordFailedAttempt(ip, email);
       return NextResponse.json({ message: 'Credenciales inválidas' }, { status: 401 });
     }
 

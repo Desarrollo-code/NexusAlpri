@@ -38,6 +38,7 @@ export interface NavItem {
     roles: UserRole[];
     disabled?: boolean;
     subItems?: NavSubItem[];
+    tooltip?: any;
 }
 
 export interface NavSubItem extends Omit<NavItem, 'subItems'> {}
@@ -180,4 +181,16 @@ export interface CalendarEvent {
     audienceType?: EventAudienceType;
     attendees?: { id: string, name: string | null, email: string }[];
     color?: string;
+}
+
+// --- SECURITY ---
+export type SecurityLogEvent = 'FAILED_LOGIN_ATTEMPT' | 'PASSWORD_RESET_REQUEST' | 'PASSWORD_RESET_SUCCESS';
+
+export interface SecurityLog {
+    id: string;
+    event: SecurityLogEvent;
+    ipAddress: string;
+    emailAttempt?: string;
+    userId?: string;
+    createdAt: string;
 }
