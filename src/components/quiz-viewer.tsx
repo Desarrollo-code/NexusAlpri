@@ -20,7 +20,7 @@ interface QuizViewerProps {
   lessonId: string;
   courseId?: string;
   isEnrolled?: boolean | null;
-  isInstructorPreview?: boolean;
+  isCreatorPreview?: boolean;
   onQuizCompleted?: (lessonId: string, score: number) => void;
 }
 
@@ -35,7 +35,7 @@ interface Result {
   }>;
 }
 
-export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorPreview = false, onQuizCompleted }: QuizViewerProps) {
+export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPreview = false, onQuizCompleted }: QuizViewerProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -83,7 +83,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
 
     const score = quiz?.questions.length ? (correctCount / quiz.questions.length) * 100 : 0;
     
-    if (user && courseId && !isInstructorPreview) {
+    if (user && courseId && !isCreatorPreview) {
        try {
             const response = await fetch(`/api/progress/${user.id}/${courseId}/quiz`, {
                 method: 'POST',
@@ -132,7 +132,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
     );
   }
   
-  const canAttemptQuiz = isEnrolled || isInstructorPreview;
+  const canAttemptQuiz = isEnrolled || isCreatorPreview;
 
   if (!canAttemptQuiz) {
       return (
@@ -217,7 +217,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
             <CardFooter>
                 <Button className="w-full" onClick={() => setQuizStarted(true)}>
                     <PlayCircle className="mr-2 h-4 w-4"/>
-                    {isInstructorPreview ? 'Comenzar (Vista Previa)' : 'Comenzar Quiz'}
+                    {isCreatorPreview ? 'Comenzar (Vista Previa)' : 'Comenzar Quiz'}
                 </Button>
             </CardFooter>
         </Card>
@@ -262,7 +262,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
             onClick={handleSubmit} 
             disabled={isSubmitting}>
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2"/> : null}
-            {isInstructorPreview ? 'Enviar (Vista Previa)' : 'Enviar Respuestas'}
+            {isCreatorPreview ? 'Enviar (Vista Previa)' : 'Enviar Respuestas'}
         </Button>
       </CardFooter>
     </Card>

@@ -545,6 +545,10 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
     const openQuizEditor = useCallback((mIndex: number, lIndex: number, bIndex: number) => setQuizEditorDetails({ moduleIndex: mIndex, lessonIndex: lIndex, blockIndex: bIndex }), []);
     const openQuizPreview = useCallback((mIndex: number, lIndex: number, bIndex: number) => setPreviewQuizDetails({ moduleIndex: mIndex, lessonIndex: lIndex, blockIndex: bIndex }), []);
 
+    const { user } = useAuth();
+    const course = watch();
+    const isCreatorPreview = user?.role === 'ADMINISTRATOR' || user?.id === course.instructorId;
+
     return (
         <Draggable key={dndId} draggableId={dndId} index={lessonIndex}>
             {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
@@ -595,7 +599,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                                         <QuizViewer
                                             quiz={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.contentBlocks.${previewQuizDetails.blockIndex}.quiz`)}
                                             lessonId={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}
-                                            isInstructorPreview={true}
+                                            isCreatorPreview={isCreatorPreview}
                                         />
                                     </DialogContent>
                                 </Dialog>
@@ -959,7 +963,7 @@ export default function EditCoursePage() {
         );
     }
 
-    if (!isNewCourse && !isAuthLoading && user?.id !== methods.getValues('instructorId')) {
+    if (!isNewCourse && !isAuthLoading && user?.role !== 'ADMINISTRATOR' && user?.id !== methods.getValues('instructorId')) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] text-center p-4">
                 <ShieldAlert className="h-20 w-20 text-red-500 mb-4" />
@@ -1277,4 +1281,3 @@ export default function EditCoursePage() {
         </FormProvider>
     );
 }
-
