@@ -13,21 +13,18 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  useSidebar,
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { getNavItemsForRole } from '@/lib/nav-items';
 import type { UserRole, NavItem } from '@/types'; 
 import Link from 'next/link';
-import { LogOut, Search, ChevronDown } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import Image from 'next/image';
-import { Input } from '@/components/ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from '@/lib/utils';
 import { useIdleTimeout } from '@/hooks/useIdleTimeout';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
 
 
 const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: string, index: number }) => {
@@ -127,7 +124,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <div className="flex min-h-screen w-full">
+        <div className="flex min-h-screen w-full bg-muted/30">
             <Sidebar>
                 <SidebarHeader>
                     <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground p-2">
@@ -171,10 +168,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
 
-            <div className="flex-1 flex flex-col md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out">
+            <div className="flex flex-1 flex-col md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out">
                 <TopBar />
-                <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-muted/30">
-                {children}
+                <main className="flex-1 p-4 md:p-6 lg:p-8">
+                  {children}
                 </main>
             </div>
             
