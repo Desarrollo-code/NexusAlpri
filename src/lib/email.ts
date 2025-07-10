@@ -2,7 +2,7 @@
 import { Resend } from 'resend';
 import { type ReactElement } from 'react';
 
-const resend = new Resend('re_gcrnufps_8CxhvNio8hUfTxi2oxvapPjG');
+const resend = new Resend(process.env.RESEND_API_KEY || 're_gcrnufps_8CxhvNio8hUfTxi2oxvapPjG');
 
 const fromEmail = 'NexusAlpri <onboarding@resend.dev>';
 
@@ -15,6 +15,17 @@ export const sendEmail = async ({
   subject: string;
   react: ReactElement;
 }) => {
+  // Simulate email sending in development environment for easier testing
+  if (process.env.NODE_ENV === 'development') {
+    console.log('--- EMAIL SIMULATION ---');
+    console.log('To:', to);
+    console.log('Subject:', subject);
+    console.log('React Component Props:', react.props);
+    console.log('------------------------');
+    // In dev, we can resolve immediately without sending a real email.
+    return;
+  }
+  
   try {
     const { data, error } = await resend.emails.send({
       from: fromEmail,
@@ -24,10 +35,7 @@ export const sendEmail = async ({
     });
 
     if (error) {
-      // Log the error but don't let it crash the main operation (e.g., creating an announcement)
       console.error('Error sending email:', error);
-      // We can re-throw if the calling function should handle it
-      // For now, we'll log and continue
       return;
     }
 
