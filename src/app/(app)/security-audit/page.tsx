@@ -7,17 +7,23 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, AlertTriangle, ShieldAlert, ShieldX } from 'lucide-react';
-import type { SecurityLog } from '@/types';
+import { Loader2, AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, KeyRound, UserRound, Server } from 'lucide-react';
+import type { SecurityLog as AppSecurityLog, SecurityLogEvent, User as AppUser } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Link from 'next/link';
+
+interface SecurityLogWithUser extends AppSecurityLog {
+  user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
+}
 
 export default function SecurityAuditPage() {
-    const { user } = useAuth();
+    const { user: currentUser } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
 
-    const [logs, setLogs] = useState<SecurityLog[]>([]);
+    const [logs, setLogs] = useState<SecurityLogWithUser[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -30,7 +36,7 @@ export default function SecurityAuditPage() {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Failed to fetch security logs');
             }
-            const data = await response.json();
+            const data: { logs: SecurityLogWithUser[] } = await response.json();
             setLogs(data.logs || []);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unknown error fetching logs');
@@ -41,32 +47,52 @@ export default function SecurityAuditPage() {
     }, [toast]);
 
     useEffect(() => {
-        if (user?.role !== 'ADMINISTRATOR') {
+        if (currentUser?.role !== 'ADMINISTRATOR') {
             router.push('/dashboard');
             return;
         }
         fetchLogs();
-    }, [user, router, fetchLogs]);
+    }, [currentUser, router, fetchLogs]);
 
-    const getEventDetails = (event: SecurityLog['event']) => {
+    const getEventDetails = (event: SecurityLogEvent) => {
         switch (event) {
+            case 'SUCCESSFUL_LOGIN':
+                 return {
+                    label: 'Inicio de Sesión Exitoso',
+                    icon: <ShieldCheck className="h-4 w-4 text-green-500" />,
+                    variant: 'secondary',
+                };
             case 'FAILED_LOGIN_ATTEMPT':
                 return {
-                    label: 'Intento de Inicio de Sesión Fallido',
+                    label: 'Intento de Inicio Fallido',
                     icon: <ShieldX className="h-4 w-4 text-destructive" />,
                     variant: 'destructive',
                 };
-            // Add other event types here in the future
+            case 'PASSWORD_CHANGE_SUCCESS':
+                 return {
+                    label: 'Cambio de Contraseña',
+                    icon: <KeyRound className="h-4 w-4 text-blue-500" />,
+                    variant: 'default',
+                };
             default:
                 return {
                     label: event.replace(/_/g, ' ').toLowerCase(),
                     icon: <ShieldAlert className="h-4 w-4 text-muted-foreground" />,
-                    variant: 'secondary',
+                    variant: 'outline',
                 };
         }
     };
+    
+    const getInitials = (name?: string | null) => {
+        if (!name) return '??';
+        const names = name.split(' ');
+        if (names.length > 1 && names[0] && names[names.length - 1]) return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+        if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
+        return name.substring(0, 2).toUpperCase();
+    };
 
-    if (user?.role !== 'ADMINISTRATOR') {
+
+    if (currentUser?.role !== 'ADMINISTRATOR') {
         return (
             <div className="flex h-full items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin" />
@@ -106,7 +132,7 @@ export default function SecurityAuditPage() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Evento</TableHead>
-                                        <TableHead>Email (Intento)</TableHead>
+                                        <TableHead>Usuario Afectado</TableHead>
                                         <TableHead>Dirección IP</TableHead>
                                         <TableHead>Fecha y Hora</TableHead>
                                     </TableRow>
@@ -120,14 +146,34 @@ export default function SecurityAuditPage() {
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
                                                             {eventDetails.icon}
-                                                            <Badge variant={eventDetails.variant} className="capitalize">
+                                                            <Badge variant={eventDetails.variant} className="capitalize whitespace-nowrap">
                                                                 {eventDetails.label}
                                                             </Badge>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="font-mono text-xs">{log.emailAttempt || 'N/A'}</TableCell>
-                                                    <TableCell className="font-mono text-xs">{log.ipAddress}</TableCell>
-                                                    <TableCell>{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota' })}</TableCell>
+                                                     <TableCell>
+                                                        {log.user ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <Avatar className="h-8 w-8">
+                                                                    <AvatarImage src={log.user.avatar || undefined} alt={log.user.name || 'User'} />
+                                                                    <AvatarFallback>{getInitials(log.user.name)}</AvatarFallback>
+                                                                </Avatar>
+                                                                <Link href={`/users/${log.user.id}`} className="font-medium hover:underline">{log.user.name}</Link>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                               <div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserRound className="h-4 w-4"/></div>
+                                                                <span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span>
+                                                            </div>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-2 font-mono text-xs">
+                                                            <Server className="h-4 w-4 text-muted-foreground"/>
+                                                            {log.ipAddress}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
                                                 </TableRow>
                                             );
                                         })

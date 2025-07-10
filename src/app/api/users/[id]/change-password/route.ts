@@ -55,6 +55,16 @@ export async function POST(req: NextRequest, context: { params: { id: string } }
             data: { password: hashedNewPassword },
         });
 
+        // Log the security event
+        const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+        await prisma.securityLog.create({
+            data: {
+                event: 'PASSWORD_CHANGE_SUCCESS',
+                ipAddress: ip,
+                userId: user.id
+            }
+        });
+
         return NextResponse.json({ message: 'Contraseña actualizada exitosamente' });
 
     } catch (error) {

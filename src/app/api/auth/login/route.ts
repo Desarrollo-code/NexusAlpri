@@ -26,7 +26,7 @@ function checkRateLimit(ip: string): boolean {
     return record.count < RATE_LIMIT_COUNT;
 }
 
-function recordFailedAttempt(ip: string, email: string) {
+function recordFailedAttempt(ip: string, email: string, userId?: string) {
     // Record in-memory for rate limiting
     const record = loginAttempts.get(ip) || { count: 0, expiry: Date.now() + RATE_LIMIT_WINDOW_MS };
     record.count++;
@@ -38,8 +38,19 @@ function recordFailedAttempt(ip: string, email: string) {
             event: 'FAILED_LOGIN_ATTEMPT',
             ipAddress: ip,
             emailAttempt: email,
+            userId: userId,
         },
     }).catch(console.error); // Log DB errors without blocking the response
+}
+
+function recordSuccessfulLogin(ip: string, userId: string) {
+    prisma.securityLog.create({
+        data: {
+            event: 'SUCCESSFUL_LOGIN',
+            ipAddress: ip,
+            userId: userId,
+        }
+    }).catch(console.error);
 }
 
 // --- Login Route ---
@@ -69,12 +80,13 @@ export async function POST(req: NextRequest) {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      recordFailedAttempt(ip, email);
+      recordFailedAttempt(ip, email, user.id);
       return NextResponse.json({ message: 'Credenciales inválidas' }, { status: 401 });
     }
 
     // Clear rate limit attempts on successful login
     loginAttempts.delete(ip);
+    recordSuccessfulLogin(ip, user.id);
 
     // Don't include password in the returned user object
     const { password: _, twoFactorSecret, ...userToReturn } = user;

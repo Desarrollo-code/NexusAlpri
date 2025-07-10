@@ -16,6 +16,15 @@ export async function GET(req: NextRequest) {
                 createdAt: 'desc',
             },
             take: 100, // Limit to the last 100 events for performance
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        avatar: true,
+                    }
+                }
+            }
         });
         return NextResponse.json({ logs });
     } catch (error) {

@@ -184,7 +184,10 @@ export interface CalendarEvent {
 }
 
 // --- SECURITY ---
-export type SecurityLogEvent = 'FAILED_LOGIN_ATTEMPT' | 'PASSWORD_RESET_REQUEST' | 'PASSWORD_RESET_SUCCESS';
+export type SecurityLogEvent = 
+    | 'SUCCESSFUL_LOGIN'
+    | 'FAILED_LOGIN_ATTEMPT' 
+    | 'PASSWORD_CHANGE_SUCCESS';
 
 export interface SecurityLog {
     id: string;
