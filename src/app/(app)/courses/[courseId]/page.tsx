@@ -4,7 +4,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -16,6 +16,9 @@ import { useToast } from '@/hooks/use-toast';
 import type { Course as PrismaCourse, Module as PrismaModule, Lesson as PrismaLesson, User as PrismaUser } from '@prisma/client';
 import { QuizViewer } from '@/components/quiz-viewer';
 import { CircularProgress } from '@/components/ui/circular-progress';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Helper types and functions
 interface PrismaLessonWithQuiz extends PrismaLesson {
@@ -104,8 +107,10 @@ export default function CourseDetailPage() {
   const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null);
   const [isConsolidating, setIsConsolidating] = useState(false);
   const [isFinalProgressVisible, setIsFinalProgressVisible] = useState(false);
+  
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+  const [sidebarSearch, setSidebarSearch] = useState('');
 
-  const [activeAccordionItems, setActiveAccordionItems] = useState<string[]>([]);
   const contentRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
@@ -124,7 +129,6 @@ export default function CourseDetailPage() {
         payload.score = score;
     }
     
-    // Fire-and-forget API call, no need to await
     fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -159,8 +163,10 @@ export default function CourseDetailPage() {
       const apiCourseData: ApiDetailedCourse = await courseResponse.json();
       const appCourseData = mapApiDetailedCourseToAppCourse(apiCourseData);
       setCourse(appCourseData);
-      if (appCourseData.modules?.[0]?.id) {
-        setActiveAccordionItems([appCourseData.modules[0].id]);
+      
+      const firstLessonId = appCourseData.modules?.[0]?.lessons?.[0]?.id;
+      if (firstLessonId) {
+        setSelectedLessonId(firstLessonId);
       }
 
       const enrollmentData = enrollmentStatusResponse?.ok ? await enrollmentStatusResponse.json() : { isEnrolled: false };
@@ -222,33 +228,46 @@ export default function CourseDetailPage() {
       }
   };
   
-  const modulesForDisplay = useMemo(() => {
-     return course?.modules.sort((a,b) => (a.order ?? 0) - (b.order ?? 0)).map(m => ({
-        ...m,
-        lessons: m.lessons.sort((la, lb) => (la.order ?? 0) - (lb.order ?? 0))
-     })) || [];
-  }, [course]);
+  const selectedLesson = useMemo(() => {
+    if (!selectedLessonId || !course) return null;
+    return course.modules.flatMap(m => m.lessons).find(l => l.id === selectedLessonId);
+  }, [selectedLessonId, course]);
+
+  const filteredModules = useMemo(() => {
+    if (!course) return [];
+    if (!sidebarSearch.trim()) return course.modules;
+    
+    const searchTerm = sidebarSearch.toLowerCase();
+    return course.modules.map(module => {
+        const filteredLessons = module.lessons.filter(lesson =>
+            lesson.title.toLowerCase().includes(searchTerm)
+        );
+        return { ...module, lessons: filteredLessons };
+    }).filter(module => 
+        module.title.toLowerCase().includes(searchTerm) || module.lessons.length > 0
+    );
+  }, [course, sidebarSearch]);
+
 
   const isCreatorViewingCourse = useMemo(() => {
     if (!user || !course) return false;
     return user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === course.instructorId);
   }, [user, course]);
   
-  const handleAccordionTriggerClick = (lessonsInModule: AppLesson[]) => {
-      lessonsInModule.forEach(lesson => {
-          if (lesson.type !== 'QUIZ' && !provisionalProgress[lesson.id]) {
-              recordInteraction(lesson.id, 'view');
-          }
-      });
+  const handleLessonSelect = (lesson: AppLesson) => {
+      setSelectedLessonId(lesson.id);
+      if (lesson.type !== 'QUIZ' && !provisionalProgress[lesson.id]) {
+        recordInteraction(lesson.id, 'view');
+      }
   };
 
   const getLessonIcon = (type: LessonType | undefined) => {
     switch(type) {
-      case 'VIDEO': return <Tv2 className="h-5 w-5 text-primary flex-shrink-0" />;
-      case 'TEXT': return <BookOpenText className="h-5 w-5 text-primary flex-shrink-0" />;
-      case 'QUIZ': return <Lightbulb className="h-5 w-5 text-primary flex-shrink-0" />;
-      case 'FILE': return <FileGenericIcon className="h-5 w-5 text-primary flex-shrink-0" />;
-      default: return <FileTextIcon className="h-5 w-5 text-primary flex-shrink-0" />;
+      case 'VIDEO': return <Tv2 className="h-4 w-4 text-primary flex-shrink-0" />;
+      case 'TEXT': return <BookOpenText className="h-4 w-4 text-primary flex-shrink-0" />;
+      case 'QUIZ': return <Lightbulb className="h-4 w-4 text-primary flex-shrink-0" />;
+      case 'FILE': return <FileGenericIcon className="h-4 w-4 text-primary flex-shrink-0" />;
+      default: return <FileTextIcon className="h-4 w-4 text-primary flex-shrink-0" />;
     }
   };
   
@@ -275,7 +294,7 @@ export default function CourseDetailPage() {
     
     if (videoId) {
       return (
-        <div className="aspect-video w-full max-w-2xl mx-auto my-4 rounded-lg overflow-hidden shadow-md">
+        <div className="aspect-video w-full max-w-4xl mx-auto my-4 rounded-lg overflow-hidden shadow-md">
           <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${videoId}`} title={`YouTube video: ${lesson.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
         </div>
       );
@@ -283,8 +302,8 @@ export default function CourseDetailPage() {
     
     if (isPdf) {
       return (
-        <div className="my-4 p-2 bg-muted/30 rounded-md" onScroll={() => onScroll(lesson.id)} ref={el => contentRefs.current[lesson.id] = el} style={{ maxHeight: '500px', overflowY: 'auto' }}>
-          <iframe src={lesson.content} className="w-full h-[500px] border rounded-md" title={`PDF Preview: ${lesson.title}`}/>
+        <div className="my-4 p-2 bg-muted/30 rounded-md" onScroll={() => onScroll(lesson.id)} ref={el => contentRefs.current[lesson.id] = el} style={{ maxHeight: '600px', overflowY: 'auto' }}>
+          <iframe src={lesson.content} className="w-full h-[600px] border rounded-md" title={`PDF Preview: ${lesson.title}`}/>
         </div>
       );
     }
@@ -292,7 +311,7 @@ export default function CourseDetailPage() {
     if (isImage) {
       return (
         <div className="my-4 p-2 bg-muted/30 rounded-md flex justify-center">
-          <Image src={lesson.content} alt={`Preview: ${lesson.title}`} width={600} height={400} className="rounded-md object-contain max-h-[500px]" onError={(e) => { e.currentTarget.src="https://placehold.co/600x400.png"; }} data-ai-hint="lesson file" />
+          <Image src={lesson.content} alt={`Preview: ${lesson.title}`} width={800} height={600} className="rounded-md object-contain max-h-[600px]" onError={(e) => { e.currentTarget.src="https://placehold.co/800x600.png"; }} data-ai-hint="lesson file" />
         </div>
       );
     }
@@ -325,7 +344,7 @@ export default function CourseDetailPage() {
          );
        }
        return (
-        <div className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card whitespace-pre-wrap" onScroll={() => onScroll(lesson.id)} ref={el => contentRefs.current[lesson.id] = el} style={{ maxHeight: '400px', overflowY: 'auto' }}>
+        <div className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card whitespace-pre-wrap" onScroll={() => onScroll(lesson.id)} ref={el => contentRefs.current[lesson.id] = el} style={{ maxHeight: '500px', overflowY: 'auto' }}>
             {lesson.content}
         </div>
        );
@@ -333,33 +352,6 @@ export default function CourseDetailPage() {
 
     return <p className="text-sm text-muted-foreground my-4">Contenido de la lección no disponible.</p>;
   };
-
-  const ProgressCard = () => (
-    <div className="w-full max-w-md mx-auto pt-8">
-      <Card className="shadow-lg">
-          <CardHeader>
-          <CardTitle className="text-xl font-headline">Tu Progreso</CardTitle>
-          {!user && <CardDescription className="text-xs">Inicia sesión para ver tu progreso.</CardDescription>}
-          </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center space-y-4 py-6">
-            {isFinalProgressVisible && courseProgress ? (
-              <div className="text-center p-4 space-y-3">
-                  <CircularProgress value={courseProgress.progressPercentage || 0} size={150} strokeWidth={12} />
-                  <h3 className="text-xl font-semibold text-foreground pt-4">Puntuación Final</h3>
-              </div>
-            ) : (
-              <div className="text-center p-4 space-y-3">
-                  <p className="text-muted-foreground max-w-xs">Completa todas las lecciones y presiona el botón para calcular tu puntuación final.</p>
-                  <Button onClick={handleConsolidateProgress} disabled={!isCourseProvisionallyComplete || isConsolidating} className="w-full">
-                      {isConsolidating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                      {isConsolidating ? 'Calculando...' : 'Calcular Mi Puntuación Final'}
-                  </Button>
-              </div>
-            )}
-          </CardContent>
-      </Card>
-    </div>
-  );
 
 
   if (isLoading || isEnrolled === null) { 
@@ -373,78 +365,130 @@ export default function CourseDetailPage() {
   }
   
   return (
-    <div className="space-y-8">
-        {isCreatorViewingCourse ? (
-            <Button asChild variant="outline" className="mb-6 print:hidden">
-                <Link href={`/manage-courses/${course.id}/edit`}>
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Volver a Gestión
-                </Link>
-            </Button>
-        ) : (
-            <Button variant="outline" onClick={() => router.back()} className="mb-6 print:hidden">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Volver
-            </Button>
-        )}
-
-        <div className="space-y-6">
-          <Card className="overflow-hidden shadow-xl">
-            <CardHeader className="p-0 relative h-[300px] md:h-[400px] bg-card text-primary-foreground">
-              <Image src={course.imageUrl || "https://placehold.co/1200x400.png"} alt={course.title || "Course image"} fill className="object-cover" data-ai-hint="online learning education" priority/>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-6 space-y-2">
-                <h1 className="text-4xl font-bold font-headline drop-shadow-lg">{course.title}</h1>
-                <CardDescription className="text-lg text-primary-foreground/90 drop-shadow-md line-clamp-2">{course.description}</CardDescription>
-                <div className="flex items-center gap-x-6 gap-y-2 pt-2 text-sm flex-wrap">
-                    <div className="flex items-center gap-2"><UserIcon className="h-4 w-4" />{course.instructor}</div>
-                    <div className="flex items-center gap-2"><Layers className="h-4 w-4" /> {course.modulesCount} Módulos</div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              <h2 className="text-xl font-semibold font-headline mb-4">Contenido del Curso</h2>
-              {isLoading && modulesForDisplay.length === 0 && <div className="flex items-center text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin mr-2" />Cargando contenido...</div>}
-
-              <Accordion type="multiple" className="w-full" value={activeAccordionItems} onValueChange={setActiveAccordionItems}>
-                {modulesForDisplay.map((moduleItem) => (
-                  <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b border-border last:border-b-0">
-                    <AccordionTrigger className="text-md font-semibold hover:no-underline py-4 px-2 hover:bg-muted/50 rounded-md data-[state=open]:bg-muted/80" onClick={() => handleAccordionTriggerClick(moduleItem.lessons)}>
-                      {moduleItem.title}
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-1 pb-3 px-2">
-                      {moduleItem.lessons.length > 0 ? (
-                        <ul className="space-y-3">
-                          {moduleItem.lessons.map(lesson => {
-                            const isProvisionallyCompleted = provisionalProgress[lesson.id];
-                            return (
-                            <li key={lesson.id} className={`p-3 rounded-md border ${isProvisionallyCompleted ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700' : 'bg-card'}`}>
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="flex-grow">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            {getLessonIcon(lesson.type)}
-                                            <span className={`font-medium ${isProvisionallyCompleted ? 'text-green-800 dark:text-green-300' : 'text-foreground'}`}>{lesson.title}</span>
-                                            {isProvisionallyCompleted && <CheckCircle className="h-4 w-4 text-green-600"/>}
-                                        </div>
-                                        {renderLessonContent(lesson)}
-                                    </div>
-                                </div>
-                            </li>
-                          )})}
-                        </ul>
-                       ) : (
-                        <p className="text-muted-foreground text-sm text-center py-2">Este módulo aún no tiene lecciones.</p>
-                       )}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-               {modulesForDisplay.length === 0 && !isLoading && <p className="text-muted-foreground text-center py-4">El contenido de este curso aún no está disponible.</p>}
-            </CardContent>
-          </Card>
+    <div className="flex flex-col h-[calc(100vh_-_var(--header-height,80px))]">
+       <div className="flex items-center justify-between gap-4 mb-4">
+            <h1 className="text-xl font-semibold font-headline truncate" title={course.title}>
+                {course.title}
+            </h1>
+            {isCreatorViewingCourse ? (
+                <Button asChild variant="outline" size="sm" className="shrink-0">
+                    <Link href={`/manage-courses/${course.id}/edit`}>
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Volver a Gestión
+                    </Link>
+                </Button>
+            ) : (
+                <Button variant="outline" size="sm" onClick={() => router.back()} className="shrink-0">
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Volver
+                </Button>
+            )}
         </div>
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6 min-h-0">
+        
+        {/* Sidebar */}
+        <aside className="md:col-span-1 lg:col-span-1 bg-card rounded-lg border flex flex-col">
+            <div className="p-4 border-b">
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                        placeholder="Buscar lección..." 
+                        className="pl-9 h-9" 
+                        value={sidebarSearch}
+                        onChange={(e) => setSidebarSearch(e.target.value)}
+                    />
+                </div>
+            </div>
+            <ScrollArea className="flex-1">
+                 <Accordion type="multiple" defaultValue={course.modules.map(m => m.id)} className="w-full p-2">
+                    {filteredModules.map((moduleItem) => (
+                      <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b-0 mb-1">
+                        <AccordionTrigger className="text-sm font-semibold hover:no-underline py-2 px-2 hover:bg-muted/50 rounded-md">
+                          <span className="truncate">{moduleItem.title}</span>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-1 pb-1 pr-0 pl-2">
+                          {moduleItem.lessons.length > 0 ? (
+                            <ul className="space-y-1 border-l-2 border-primary/20 ml-2 pl-4">
+                              {moduleItem.lessons.map(lesson => {
+                                const isCompleted = provisionalProgress[lesson.id];
+                                return (
+                                <li key={lesson.id} className="py-0.5">
+                                    <button 
+                                        onClick={() => handleLessonSelect(lesson)}
+                                        className={cn(
+                                            "w-full text-left text-sm flex items-center gap-2 p-2 rounded-md transition-colors",
+                                            selectedLessonId === lesson.id 
+                                                ? "bg-primary/10 text-primary font-medium" 
+                                                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                                        )}
+                                    >
+                                        {getLessonIcon(lesson.type)}
+                                        <span className="flex-grow truncate">{lesson.title}</span>
+                                        {isCompleted && <CheckCircle className="h-4 w-4 text-green-500 shrink-0"/>}
+                                    </button>
+                                </li>
+                              )})}
+                            </ul>
+                           ) : (
+                            <p className="text-muted-foreground text-xs text-center py-2 italic">No hay lecciones en este módulo.</p>
+                           )}
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                 </Accordion>
+                 {filteredModules.length === 0 && (
+                     <p className="text-muted-foreground text-xs text-center py-4 px-2">No se encontraron lecciones que coincidan con la búsqueda.</p>
+                 )}
+            </ScrollArea>
+        </aside>
 
-        {!isCreatorViewingCourse && isEnrolled && (
-            <ProgressCard />
-        )}
+        {/* Main Content */}
+        <main className="md:col-span-3 lg:col-span-4 bg-card rounded-lg border flex flex-col">
+            <ScrollArea className="flex-1">
+                <div className="p-4 md:p-6 lg:p-8">
+                {selectedLesson ? (
+                    <div>
+                        <div className="flex items-center gap-2 text-lg font-semibold mb-4">
+                            {getLessonIcon(selectedLesson.type)}
+                            <h2>{selectedLesson.title}</h2>
+                        </div>
+                        {renderLessonContent(selectedLesson)}
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-center">
+                        <BookOpenText className="h-12 w-12 text-muted-foreground mb-4" />
+                        <h3 className="text-xl font-semibold">Selecciona una lección</h3>
+                        <p className="text-muted-foreground">Elige una lección de la barra lateral para comenzar a aprender.</p>
+                    </div>
+                )}
+
+                { !isCreatorViewingCourse && isEnrolled && (
+                    <div className="w-full max-w-md mx-auto pt-12">
+                      <Card className="shadow-lg">
+                          <CardHeader>
+                            <CardTitle className="text-xl font-headline">Tu Progreso</CardTitle>
+                          </CardHeader>
+                          <CardContent className="flex flex-col items-center justify-center space-y-4 py-6">
+                            {isFinalProgressVisible && courseProgress ? (
+                              <div className="text-center p-4 space-y-3">
+                                  <CircularProgress value={courseProgress.progressPercentage || 0} size={150} strokeWidth={12} />
+                                  <h3 className="text-xl font-semibold text-foreground pt-4">Puntuación Final</h3>
+                              </div>
+                            ) : (
+                              <div className="text-center p-4 space-y-3">
+                                  <p className="text-muted-foreground max-w-xs">Completa todas las lecciones y presiona el botón para calcular tu puntuación final.</p>
+                                  <Button onClick={handleConsolidateProgress} disabled={!isCourseProvisionallyComplete || isConsolidating} className="w-full">
+                                      {isConsolidating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                                      {isConsolidating ? 'Calculando...' : 'Calcular Mi Puntuación Final'}
+                                  </Button>
+                              </div>
+                            )}
+                          </CardContent>
+                      </Card>
+                    </div>
+                )}
+                </div>
+            </ScrollArea>
+        </main>
+      </div>
     </div>
   );
 }
