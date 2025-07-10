@@ -96,15 +96,13 @@ export default function CoursesPage() {
       
       const isPublished = course.status === 'PUBLISHED';
 
-      // Students only see courses they are not enrolled in.
-      // Admins and Instructors see all published courses to have a complete overview.
-      const isVisibleForRole = user?.role === 'STUDENT'
-          ? !enrolledCourseIds.includes(course.id)
-          : true;
+      // ALL roles only see courses they are not enrolled in.
+      // This allows admins and instructors to enroll in courses too.
+      const isVisible = !enrolledCourseIds.includes(course.id);
 
-      return matchesSearch && isPublished && isVisibleForRole;
+      return matchesSearch && isPublished && isVisible;
     });
-  }, [allCoursesForDisplay, searchTerm, enrolledCourseIds, user?.role]);
+  }, [allCoursesForDisplay, searchTerm, enrolledCourseIds]);
 
   const groupedCourses = useMemo(() => {
     return filteredCourses.reduce((acc, course) => {
