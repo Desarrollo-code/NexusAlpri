@@ -4,7 +4,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -19,6 +19,7 @@ import { CircularProgress } from '@/components/ui/circular-progress';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useSidebar } from '@/components/ui/sidebar';
 
 // Helper types and functions
 interface PrismaLessonWithQuiz extends PrismaLesson {
@@ -97,6 +98,8 @@ export default function CourseDetailPage() {
   const courseId = params.courseId as string;
   const { toast } = useToast();
   const { user } = useAuth();
+  const { toggleSidebar, state: sidebarState } = useSidebar();
+
 
   const [course, setCourse] = useState<AppCourse | null>(null);
   const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(null);
@@ -365,11 +368,16 @@ export default function CourseDetailPage() {
   }
   
   return (
-    <div className="flex flex-col h-[calc(100vh_-_var(--header-height,80px))]">
+    <div className="flex flex-col h-[calc(100vh_-_var(--header-height,64px))]">
        <div className="flex items-center justify-between gap-4 mb-4">
-            <h1 className="text-xl font-semibold font-headline truncate" title={course.title}>
-                {course.title}
-            </h1>
+            <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" onClick={toggleSidebar} className="md:hidden">
+                    <PanelLeft />
+                </Button>
+                <h1 className="text-xl font-semibold font-headline truncate" title={course.title}>
+                    {course.title}
+                </h1>
+            </div>
             {isCreatorViewingCourse ? (
                 <Button asChild variant="outline" size="sm" className="shrink-0">
                     <Link href={`/manage-courses/${course.id}/edit`}>
@@ -385,7 +393,11 @@ export default function CourseDetailPage() {
       <div className="flex-1 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6 min-h-0">
         
         {/* Sidebar */}
-        <aside className="md:col-span-1 lg:col-span-1 bg-card rounded-lg border flex flex-col">
+        <aside className={cn(
+            "fixed inset-y-0 left-0 z-20 w-72 bg-card border-r flex flex-col transition-transform duration-300 md:relative md:w-auto md:translate-x-0",
+            "md:col-span-1 lg:col-span-1",
+            sidebarState === 'collapsed' ? "-translate-x-full" : "translate-x-0"
+        )}>
             <div className="p-4 border-b">
                 <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
