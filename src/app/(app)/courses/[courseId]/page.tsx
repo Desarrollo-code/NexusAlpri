@@ -447,12 +447,14 @@ export default function CourseDetailPage() {
                                 <LineChart className="mr-2 h-4 w-4" /> Ver Mi Progreso
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-sm text-center p-8">
-                            <h2 className="text-lg font-semibold">Tu Progreso</h2>
-                            <p className="text-sm text-muted-foreground">
-                                {isFinalProgressVisible ? "Este es tu resultado final para el curso." : "Completa todas las lecciones para calcular tu puntuación."}
-                            </p>
-                            <div className="flex flex-col items-center justify-center space-y-4 py-6">
+                        <DialogContent className="sm:max-w-sm text-center p-6">
+                            <DialogHeader className="text-center">
+                                <DialogTitle className="text-lg font-semibold">Tu Progreso</DialogTitle>
+                                <DialogDescription>
+                                    {isFinalProgressVisible ? "Este es tu resultado final para el curso." : "Completa todas las lecciones para calcular tu puntuación."}
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="flex flex-col items-center justify-center space-y-4 py-4">
                                 {isFinalProgressVisible && courseProgress ? (
                                     <div className="text-center space-y-3">
                                         <CircularProgress value={courseProgress.progressPercentage || 0} size={150} strokeWidth={12} />
@@ -541,5 +543,6 @@ export default function CourseDetailPage() {
     </div>
   );
 }
+
 
 
