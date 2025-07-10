@@ -567,6 +567,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                             </div>
                             <Button variant="ghost" size="icon" type="button" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={(e) => {
                                 e.stopPropagation();
+                                if (isSaving) return;
                                 const lessonValues = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
                                 if (lessonValues) {
                                     setItemToDeleteDetails({ type: 'lesson', id: lessonValues.id, name: lessonValues.title, moduleIndex, lessonIndex });
@@ -1024,12 +1025,12 @@ export default function EditCoursePage() {
                         </Card>
 
                         <Card>
-                            <CardHeader className="flex flex-row items-center justify-between">
+                            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                                 <div>
                                     <CardTitle>Contenido del Curso</CardTitle>
                                     <CardDescription>Arrastra los módulos y lecciones para reordenarlos.</CardDescription>
                                 </div>
-                                <Button type="button" onClick={handleAddModule} disabled={isSaving}>
+                                <Button type="button" onClick={handleAddModule} disabled={isSaving} className="w-full sm:w-auto">
                                     <PlusCircle className="mr-2 h-4 w-4" /> Añadir Módulo
                                 </Button>
                             </CardHeader>
@@ -1205,11 +1206,11 @@ export default function EditCoursePage() {
                 </div>
 
                 <div className="fixed bottom-0 left-0 md:left-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)] right-0 bg-background/95 backdrop-blur-sm border-t p-4 z-20">
-                    <div className="max-w-screen-2xl mx-auto flex justify-end gap-2">
+                    <div className="max-w-screen-2xl mx-auto flex flex-col sm:flex-row justify-end gap-2">
                         {!isNewCourse && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" type="button" disabled={isSaving}>
+                                    <Button variant="outline" type="button" disabled={isSaving} className="w-full sm:w-auto">
                                         Más Acciones
                                         <MoreVertical className="ml-2 h-4 w-4" />
                                     </Button>
@@ -1245,7 +1246,7 @@ export default function EditCoursePage() {
                             </DropdownMenu>
                         )}
 
-                        <Button type="submit" disabled={isSaving || !isDirty}>
+                        <Button type="submit" disabled={isSaving || !isDirty} className="w-full sm:w-auto">
                             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                              <Save className="mr-2 h-4 w-4" />
                              { isNewCourse ? "Crear Curso" : "Guardar Cambios"}

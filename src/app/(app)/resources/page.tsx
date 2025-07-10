@@ -692,10 +692,10 @@ export default function ResourcesPage() {
             <h1 className="text-3xl font-bold font-headline mb-2">Biblioteca de Recursos</h1>
             <p className="text-muted-foreground">Encuentra documentos, guías, manuales y más.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
                 <Dialog open={showCreateFolderModal} onOpenChange={setShowCreateFolderModal}>
-                    <DialogTrigger asChild><Button><Folder className="mr-2 h-4 w-4" /> Crear Carpeta</Button></DialogTrigger>
+                    <DialogTrigger asChild><Button className="w-full sm:w-auto"><Folder className="mr-2 h-4 w-4" /> Crear Carpeta</Button></DialogTrigger>
                     <DialogContent className="w-[95vw] max-w-md rounded-lg">
                         <DialogHeader><DialogTitle>Crear Nueva Carpeta</DialogTitle><DialogDescription>Ingresa un nombre para la nueva carpeta en la ubicación actual.</DialogDescription></DialogHeader>
                         <form onSubmit={handleCreateFolder} className="space-y-4">
@@ -708,7 +708,7 @@ export default function ResourcesPage() {
             {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
               <Dialog open={showCreateFileModal} onOpenChange={(isOpen) => { if (!isOpen) resetCreateForm(); setShowCreateFileModal(isOpen); }}>
                 <DialogTrigger asChild>
-                  <Button disabled={isSubmittingResource || isUploadingFile}><UploadCloud className="mr-2 h-4 w-4" /> Subir Recurso</Button>
+                  <Button disabled={isSubmittingResource || isUploadingFile} className="w-full sm:w-auto"><UploadCloud className="mr-2 h-4 w-4" /> Subir Recurso</Button>
                 </DialogTrigger>
                 <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
                   <DialogHeader><DialogTitle>Subir Nuevo Recurso</DialogTitle><DialogDescription>Completa los detalles para añadir un nuevo recurso a la biblioteca.</DialogDescription></DialogHeader>
@@ -772,11 +772,11 @@ export default function ResourcesPage() {
         {!currentFolderId && (
           <>
             <Separator />
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-x-6 gap-y-4">
               <div className="flex items-center gap-2">
                 <Label htmlFor="category-filter" className="text-sm shrink-0">Categoría:</Label>
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger id="category-filter" className="w-[180px]">
+                  <SelectTrigger id="category-filter" className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Categoría" />
                   </SelectTrigger>
                   <SelectContent>
@@ -790,7 +790,7 @@ export default function ResourcesPage() {
               <div className="flex items-center gap-2">
                 <Label htmlFor="format-filter" className="text-sm shrink-0">Formato:</Label>
                 <Select value={selectedFormat} onValueChange={setSelectedFormat}>
-                  <SelectTrigger id="format-filter" className="w-[140px]">
+                  <SelectTrigger id="format-filter" className="w-full sm:w-[140px]">
                     <SelectValue placeholder="Formato" />
                   </SelectTrigger>
                   <SelectContent>

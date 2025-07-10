@@ -49,11 +49,15 @@ import {
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
+
 
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const [usersList, setUsersList] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -275,6 +279,110 @@ export default function UsersPage() {
     return <div className="flex h-full items-center justify-center"><p>Acceso denegado. Serás redirigido.</p></div>;
   }
   
+  const DesktopUsersTable = () => (
+    <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Nombre</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Rol</TableHead>
+              <TableHead>Registrado</TableHead>
+              <TableHead><span className="sr-only">Acciones</span></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredUsers.map((u) => (
+              <TableRow key={u.id}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9">
+                          <AvatarImage src={u.avatar || undefined} alt={u.name} data-ai-hint="user avatar" />
+                          <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
+                      </Avatar>
+                      <div className="font-medium">{u.name}</div>
+                  </div>
+                </TableCell>
+                <TableCell>{u.email}</TableCell>
+                <TableCell>
+                  <Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{u.role.toLowerCase()}</Badge>
+                </TableCell>
+                <TableCell>{u.registeredDate ? new Date(u.registeredDate).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'short', timeStyle: 'medium' }) : 'N/A'}</TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                      <Button aria-haspopup="true" size="icon" variant="ghost">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Toggle menu</span>
+                      </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => handleOpenEditModal(u)}>
+                          <Edit3 className="mr-2 h-4 w-4 text-blue-500"/>Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleOpenChangeRoleDialog(u)} disabled={u.id === currentUser?.id}>
+                          <UserCog className="mr-2 h-4 w-4 text-amber-600"/>Cambiar Rol
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                          className="text-destructive focus:text-destructive-foreground focus:bg-destructive"
+                          onClick={() => {
+                              setUserToDelete(u);
+                              setShowDeleteConfirmDialog(true);
+                          }}
+                          disabled={u.id === currentUser?.id} 
+                      >
+                          <Trash2 className="mr-2 h-4 w-4"/>Eliminar
+                      </DropdownMenuItem>
+                      </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+    </div>
+  );
+
+  const MobileUsersList = () => (
+    <div className="space-y-4">
+      {filteredUsers.map((u) => (
+        <Card key={u.id} className="p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={u.avatar || undefined} alt={u.name} />
+                <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-semibold">{u.name}</p>
+                <p className="text-sm text-muted-foreground">{u.email}</p>
+              </div>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleOpenEditModal(u)}>Editar</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleOpenChangeRoleDialog(u)} disabled={u.id === currentUser?.id}>Cambiar Rol</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => { setUserToDelete(u); setShowDeleteConfirmDialog(true); }} disabled={u.id === currentUser?.id} className="text-destructive">Eliminar</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="mt-4 pt-4 border-t flex justify-between items-center text-sm">
+            <Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{u.role.toLowerCase()}</Badge>
+            <p className="text-muted-foreground">{u.registeredDate ? new Date(u.registeredDate).toLocaleDateString() : 'N/A'}</p>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+  
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -376,76 +484,13 @@ export default function UsersPage() {
               <Button onClick={fetchUsers} variant="outline" className="mt-4">Reintentar</Button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead className="hidden md:table-cell">Email</TableHead>
-                    <TableHead>Rol</TableHead>
-                    <TableHead className="hidden md:table-cell">Registrado</TableHead>
-                    <TableHead><span className="sr-only">Acciones</span></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers.map((u) => (
-                    <TableRow key={u.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                            <Avatar className="h-9 w-9">
-                                <AvatarImage src={u.avatar || undefined} alt={u.name} data-ai-hint="user avatar" />
-                                <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
-                            </Avatar>
-                            <div className="font-medium">{u.name}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">{u.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{u.role.toLowerCase()}</Badge>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">{u.registeredDate ? new Date(u.registeredDate).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'short', timeStyle: 'medium' }) : 'N/A'}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                            </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleOpenEditModal(u)}>
-                                <Edit3 className="mr-2 h-4 w-4 text-blue-500"/>Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleOpenChangeRoleDialog(u)} disabled={u.id === currentUser?.id}>
-                                <UserCog className="mr-2 h-4 w-4 text-amber-600"/>Cambiar Rol
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                                className="text-destructive focus:text-destructive-foreground focus:bg-destructive"
-                                onClick={() => {
-                                    setUserToDelete(u);
-                                    setShowDeleteConfirmDialog(true);
-                                }}
-                                disabled={u.id === currentUser?.id} 
-                            >
-                                <Trash2 className="mr-2 h-4 w-4"/>Eliminar
-                            </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              </div>
-              )}
-               {filteredUsers.length === 0 && !isLoading && !error && (
-                <p className="text-center text-muted-foreground py-8">No se encontraron usuarios que coincidan con la búsqueda.</p>
-              )}
-               {usersList.length === 0 && !isLoading && !error && (
-                <p className="text-center text-muted-foreground py-8">No hay usuarios registrados. Añade el primero para empezar.</p>
-              )}
+             <>
+                {isMobile ? <MobileUsersList /> : <DesktopUsersTable />}
+                {filteredUsers.length === 0 && !isLoading && !error && (
+                    <p className="text-center text-muted-foreground py-8">No se encontraron usuarios que coincidan con la búsqueda.</p>
+                )}
+             </>
+          )}
         </CardContent>
       </Card>
 
