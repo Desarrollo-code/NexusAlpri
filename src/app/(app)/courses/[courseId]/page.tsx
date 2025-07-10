@@ -20,6 +20,9 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useIsMobile } from '@/hooks/use-mobile';
+
 
 // Helper types and functions
 interface PrismaLessonWithQuiz extends PrismaLesson {
@@ -93,6 +96,7 @@ export default function CourseDetailPage() {
   const courseId = params.courseId as string;
   const { toast } = useToast();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   
   const [course, setCourse] = useState<AppCourse | null>(null);
   const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(null);
@@ -106,14 +110,15 @@ export default function CourseDetailPage() {
   
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [sidebarSearch, setSidebarSearch] = useState('');
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true); // New state for sidebar visibility
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
+
 
   const contentRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
   const totalLessonsCount = allLessons.length;
   
-  // --- New Interaction Logic ---
   const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz', score?: number) => {
     if (!user || !courseId || !isEnrolled || provisionalProgress[lessonId]) return;
     
@@ -145,7 +150,6 @@ export default function CourseDetailPage() {
   }, [provisionalProgress, recordInteraction]);
 
 
-  // --- Data Fetching & State Management ---
   const fetchCourseAndProgress = useCallback(async () => {
     if (!courseId) return;
     setIsLoading(true);
@@ -253,6 +257,9 @@ export default function CourseDetailPage() {
   
   const handleLessonSelect = (lesson: AppLesson) => {
       setSelectedLessonId(lesson.id);
+      if (isMobile) {
+        setIsMobileSheetOpen(false);
+      }
       if (lesson.type !== 'QUIZ' && !provisionalProgress[lesson.id]) {
         recordInteraction(lesson.id, 'view');
       }
@@ -349,6 +356,63 @@ export default function CourseDetailPage() {
 
     return <p className="text-sm text-muted-foreground my-4">Contenido de la lección no disponible.</p>;
   };
+  
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full bg-card">
+        <div className="p-4 border-b">
+            <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    placeholder="Buscar lección..." 
+                    className="pl-9 h-9" 
+                    value={sidebarSearch}
+                    onChange={(e) => setSidebarSearch(e.target.value)}
+                />
+            </div>
+        </div>
+        <ScrollArea className="flex-1">
+             <Accordion type="multiple" defaultValue={course.modules.map(m => m.id)} className="w-full p-2">
+                {filteredModules.map((moduleItem) => (
+                  <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b-0 mb-1">
+                    <AccordionTrigger className="text-sm font-semibold hover:no-underline py-2 px-2 hover:bg-muted/50 rounded-md">
+                      <span className="truncate">{moduleItem.title}</span>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-1 pb-1 pr-0 pl-2">
+                      {moduleItem.lessons.length > 0 ? (
+                        <ul className="space-y-1 border-l-2 border-primary/20 ml-2 pl-4">
+                          {moduleItem.lessons.map(lesson => {
+                            const isCompleted = provisionalProgress[lesson.id];
+                            return (
+                            <li key={lesson.id} className="py-0.5">
+                                <button 
+                                    onClick={() => handleLessonSelect(lesson)}
+                                    className={cn(
+                                        "w-full text-left text-sm flex items-center gap-2 p-2 rounded-md transition-colors",
+                                        selectedLessonId === lesson.id 
+                                            ? "bg-primary/10 text-primary font-medium" 
+                                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                                    )}
+                                >
+                                    {getLessonIcon(lesson.type)}
+                                    <span className="flex-grow truncate">{lesson.title}</span>
+                                    {isCompleted && <CheckCircle className="h-4 w-4 text-green-500 shrink-0"/>}
+                                </button>
+                            </li>
+                          )})}
+                        </ul>
+                       ) : (
+                        <p className="text-muted-foreground text-xs text-center py-2 italic">No hay lecciones en este módulo.</p>
+                       )}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+             </Accordion>
+             {filteredModules.length === 0 && (
+                 <p className="text-muted-foreground text-xs text-center py-4 px-2">No se encontraron lecciones que coincidan con la búsqueda.</p>
+             )}
+        </ScrollArea>
+    </div>
+  );
 
 
   if (isLoading || isEnrolled === null) { 
@@ -365,9 +429,11 @@ export default function CourseDetailPage() {
     <div className="flex flex-col h-[calc(100vh_-_var(--header-height,64px))]">
        <div className="flex items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={() => setIsSidebarVisible(!isSidebarVisible)}>
-                    <PanelLeft />
-                </Button>
+                {!isMobile && (
+                    <Button variant="ghost" size="icon" onClick={() => setIsSidebarVisible(!isSidebarVisible)}>
+                        <PanelLeft />
+                    </Button>
+                )}
                 <h1 className="text-xl font-semibold font-headline truncate" title={course.title}>
                     {course.title}
                 </h1>
@@ -421,70 +487,22 @@ export default function CourseDetailPage() {
         </div>
       <div className="flex-1 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6 min-h-0">
         
-        {/* Sidebar */}
-        <aside className={cn(
-            "bg-card border rounded-lg flex-col transition-all duration-300",
-            "md:col-span-1 lg:col-span-1",
-            isSidebarVisible ? "flex" : "hidden"
-        )}>
-            <div className="p-4 border-b">
-                <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                        placeholder="Buscar lección..." 
-                        className="pl-9 h-9" 
-                        value={sidebarSearch}
-                        onChange={(e) => setSidebarSearch(e.target.value)}
-                    />
-                </div>
-            </div>
-            <ScrollArea className="flex-1">
-                 <Accordion type="multiple" defaultValue={course.modules.map(m => m.id)} className="w-full p-2">
-                    {filteredModules.map((moduleItem) => (
-                      <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b-0 mb-1">
-                        <AccordionTrigger className="text-sm font-semibold hover:no-underline py-2 px-2 hover:bg-muted/50 rounded-md">
-                          <span className="truncate">{moduleItem.title}</span>
-                        </AccordionTrigger>
-                        <AccordionContent className="pt-1 pb-1 pr-0 pl-2">
-                          {moduleItem.lessons.length > 0 ? (
-                            <ul className="space-y-1 border-l-2 border-primary/20 ml-2 pl-4">
-                              {moduleItem.lessons.map(lesson => {
-                                const isCompleted = provisionalProgress[lesson.id];
-                                return (
-                                <li key={lesson.id} className="py-0.5">
-                                    <button 
-                                        onClick={() => handleLessonSelect(lesson)}
-                                        className={cn(
-                                            "w-full text-left text-sm flex items-center gap-2 p-2 rounded-md transition-colors",
-                                            selectedLessonId === lesson.id 
-                                                ? "bg-primary/10 text-primary font-medium" 
-                                                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                                        )}
-                                    >
-                                        {getLessonIcon(lesson.type)}
-                                        <span className="flex-grow truncate">{lesson.title}</span>
-                                        {isCompleted && <CheckCircle className="h-4 w-4 text-green-500 shrink-0"/>}
-                                    </button>
-                                </li>
-                              )})}
-                            </ul>
-                           ) : (
-                            <p className="text-muted-foreground text-xs text-center py-2 italic">No hay lecciones en este módulo.</p>
-                           )}
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                 </Accordion>
-                 {filteredModules.length === 0 && (
-                     <p className="text-muted-foreground text-xs text-center py-4 px-2">No se encontraron lecciones que coincidan con la búsqueda.</p>
-                 )}
-            </ScrollArea>
-        </aside>
+        {/* Sidebar for Desktop */}
+        {!isMobile && (
+            <aside className={cn(
+                "bg-card border rounded-lg flex-col transition-all duration-300",
+                "md:col-span-1 lg:col-span-1",
+                isSidebarVisible ? "flex" : "hidden"
+            )}>
+                <SidebarContent />
+            </aside>
+        )}
 
         {/* Main Content */}
         <main className={cn(
             "bg-card rounded-lg border flex flex-col transition-all duration-300",
-            isSidebarVisible ? "md:col-span-3 lg:col-span-4" : "col-span-full"
+            !isMobile && (isSidebarVisible ? "md:col-span-3 lg:col-span-4" : "col-span-full"),
+            isMobile && "col-span-full"
         )}>
             <ScrollArea className="flex-1">
                 <div className="p-4 md:p-6 lg:p-8">
@@ -507,6 +525,21 @@ export default function CourseDetailPage() {
             </ScrollArea>
         </main>
       </div>
+      
+      {/* Sidebar for Mobile (Sheet) */}
+      {isMobile && (
+        <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+          <SheetTrigger asChild>
+            <Button className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full shadow-lg">
+              <PanelLeft className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-80">
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
+
