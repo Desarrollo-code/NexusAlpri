@@ -27,7 +27,7 @@ Si un administrador crea tu cuenta, recibirás tus credenciales para iniciar ses
 La interfaz se divide en tres áreas principales:
 
 *   **Menú Lateral (Izquierda):** Tu principal herramienta de navegación. Contiene enlaces a todas las secciones importantes como el Panel Principal, Cursos, Recursos, etc.
-*   **Barra Superior:** Muestra el título de la página actual, una barra de búsqueda y el menú de tu perfil.
+*   **Barra Superior:** Muestra el título de la página actual y el menú de tu perfil con notificaciones.
 *   **Contenido Principal:** El área central donde interactúas con las diferentes secciones.
 
 ## 4. Funcionalidades Clave
@@ -49,8 +49,7 @@ Es tu página de inicio. Aquí verás:
 
 Para asegurar un seguimiento real de tu aprendizaje, el sistema registra tu progreso de forma automática. **No hay botones para "marcar como completado"**. Así es como funciona:
 
-*   **Lecciones de Texto/PDF:** Se consideran completadas automáticamente cuando llegas al final del contenido (`scroll`).
-*   **Lecciones de Video/Archivos:** Se marcan como completadas al expandir el módulo que las contiene.
+*   **Lecciones de Texto/Video/Archivo:** Se marcan como completadas automáticamente cuando las visitas por primera vez.
 *   **Quices:** Aportan una puntuación variable. Tu nota se guarda al enviar el quiz.
 *   **Cálculo Final:** Una vez que has interactuado con **todas** las lecciones, se activará el botón **"Calcular Mi Puntuación Final"**. Al presionarlo, el sistema calculará tu nota final ponderada y la mostrará en el indicador circular de progreso.
 

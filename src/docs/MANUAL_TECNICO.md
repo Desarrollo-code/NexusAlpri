@@ -43,8 +43,8 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 El seguimiento del progreso es un sistema automático y robusto diseñado para reflejar la interacción real del usuario.
 
 1.  **Interacciones en el Frontend:** La página de detalle del curso (`/courses/[courseId]`) detecta diferentes tipos de interacción sin necesidad de que el usuario haga clic en un botón:
-    *   **Lecciones de Texto/PDF:** Un `IntersectionObserver` o un evento de `scroll` detecta cuándo el usuario ha llegado al final del contenido visible.
-    *   **Lecciones de Video/Archivo:** La interacción se registra cuando el usuario expande el módulo de la lección por primera vez.
+    *   **Lecciones de Texto/PDF:** Se registra una interacción de "vista" cuando el usuario accede a la lección.
+    *   **Lecciones de Video/Archivo:** Se registra una interacción de "vista" al seleccionar la lección.
     *   **Quices:** El componente `QuizViewer` gestiona el envío del quiz y su puntuación.
 
 2.  **Registro de Interacciones (API):** Cada una de estas interacciones desencadena una llamada a la API (`POST /api/progress/[userId]/[courseId]/...`) de forma asíncrona. Esta API no calcula el progreso final, simplemente almacena la interacción en la base de datos.
@@ -86,7 +86,7 @@ npm run prisma:migrate -- --name "un_nombre_descriptivo_para_la_migracion"
 ```
 **Ejemplo:**
 ```bash
-npm run prisma:migrate -- --name "add_progress_tracking_to_courses"
+npm run prisma:migrate -- --name "add_notifications_and_security_logs"
 ```
 
 **¿Qué hace este comando?**
@@ -119,6 +119,7 @@ La autenticación se realiza a través de un token JWT en una cookie de sesión.
     ```env
     DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE_NAME"
     JWT_SECRET="genera-una-cadena-aleatoria-muy-segura-aqui"
+    RESEND_API_KEY="tu_api_key_de_resend"
     ```
 4.  **Aplicar Migraciones:**
     ```bash
