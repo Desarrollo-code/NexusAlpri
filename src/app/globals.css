@@ -27,6 +27,8 @@
     --border: 0 0% 15%;
     --input: 0 0% 15%;
 
+    --radius: 1rem;
+
     /* New Diverse Chart Colors */
     --chart-1: 210 90% 60%;  /* Bright Blue */
     --chart-2: 145 83% 55%;  /* Lively Green */
@@ -74,6 +76,8 @@
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
+    
+    --radius: 1rem;
     
     /* Chart and Event colors can remain vibrant for light mode */
     --chart-1: 210 85% 55%;
