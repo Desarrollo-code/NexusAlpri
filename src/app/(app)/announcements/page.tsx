@@ -293,7 +293,7 @@ export default function AnnouncementsPage() {
                    <p className="text-xs text-muted-foreground text-center pt-2">
                       Los campos marcados con <span className="text-destructive">*</span> son obligatorios.
                   </p>
-                  <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+                  <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2">
                     <Button type="button" variant="outline" onClick={() => { setShowCreateEditModal(false); resetFormAndState();}} disabled={isProcessing}>Cancelar</Button>
                     <Button type="submit" disabled={isProcessing}>
                       {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (announcementToEdit ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />) }
@@ -346,7 +346,7 @@ export default function AnnouncementsPage() {
               Esta acción no se puede deshacer. El anuncio "<strong>{announcementToDelete?.title}</strong>" será eliminado permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2">
             <AlertDialogCancel disabled={isProcessing}>
               Cancelar
             </AlertDialogCancel>

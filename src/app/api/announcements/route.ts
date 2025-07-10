@@ -47,20 +47,28 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // --- NEW EMAIL LOGIC ---
     const settings = await prisma.platformSettings.findFirst();
-    if (settings?.enableEmailNotifications) {
-        let targetUsers: { email: string }[] = [];
+    let targetUsersQuery: any = {};
+    if (audience === 'ALL') {
+        // No filter, all users
+    } else if (Array.isArray(audience)) {
+        targetUsersQuery = { where: { role: { in: audience as UserRole[] } } };
+    }
+    const targetUsers = await prisma.user.findMany(targetUsersQuery);
 
-        if (audience === 'ALL') {
-            targetUsers = await prisma.user.findMany({ select: { email: true } });
-        } else if (Array.isArray(audience)) {
-            targetUsers = await prisma.user.findMany({
-                where: { role: { in: audience as UserRole[] } },
-                select: { email: true }
-            });
-        }
-        
+    // Create in-app notifications
+    await prisma.notification.createMany({
+      data: targetUsers.map(user => ({
+        userId: user.id,
+        title: `Nuevo Anuncio: ${title}`,
+        description: content.substring(0, 100) + (content.length > 100 ? '...' : ''),
+        link: '/announcements'
+      }))
+    });
+
+
+    // --- EMAIL LOGIC ---
+    if (settings?.enableEmailNotifications) {
         const recipientEmails = targetUsers.map(u => u.email).filter(Boolean);
 
         if (recipientEmails.length > 0) {
@@ -76,7 +84,7 @@ export async function POST(req: NextRequest) {
             });
         }
     }
-    // --- END NEW EMAIL LOGIC ---
+    // --- END EMAIL LOGIC ---
 
     return NextResponse.json(newAnnouncement, { status: 201 });
   } catch (error) {
