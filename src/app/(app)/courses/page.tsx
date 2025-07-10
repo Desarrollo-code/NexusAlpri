@@ -97,8 +97,8 @@ export default function CoursesPage() {
       const isPublished = course.status === 'PUBLISHED';
       const isNotEnrolled = !enrolledCourseIds.includes(course.id);
       
-      // An instructor should not see their own courses in the public catalog
-      const isNotOwnCourse = !(user?.role === 'INSTRUCTOR' && course.instructorId === user.id);
+      // An instructor or admin should not see their own courses in the public catalog
+      const isNotOwnCourse = !( (user?.role === 'INSTRUCTOR' || user?.role === 'ADMINISTRATOR') && course.instructorId === user.id );
 
       return matchesSearch && isPublished && isNotEnrolled && isNotOwnCourse;
     });
