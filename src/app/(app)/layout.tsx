@@ -138,10 +138,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarHeader>
 
                 <SidebarContent>
-                    <div className="relative p-2">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Buscar..." className="pl-9 group-data-[state=collapsed]:hidden" />
-                    </div>
                      <Accordion
                         type="multiple"
                         value={openAccordionValue}
