@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
-import { Search, UploadCloud, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, Pin, PinOff, MoreVertical, Folder, FileText, Video, Info, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Notebook, Shield, Filter, ArrowUp, ArrowDown, Lock } from 'lucide-react';
+import { Search, UploadCloud, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, Pin, PinOff, MoreVertical, Folder, FileText, Video, Info, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Notebook, Shield, Filter, ArrowUp, ArrowDown, Lock, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -916,7 +916,20 @@ export default function ResourcesPage() {
                 if (isImage) return <div className="flex justify-center items-center h-full"><Image src={url} alt={previewResource.title} width={800} height={600} className="object-contain max-h-[70vh] rounded-md" data-ai-hint="resource preview" /></div>;
                 if (isVideoFile) return <video controls src={url} className="w-full rounded-md max-h-[70vh]">Tu navegador no soporta el tag de video.</video>;
                 if (isPdf) return <iframe src={url} className="w-full h-[75vh] border-none rounded-md" title={previewResource.title}></iframe>;
-                if (isExternalLink) return <iframe src={url} className="w-full h-[75vh] border-none rounded-md" title={previewResource.title}></iframe>;
+                if (isExternalLink) {
+                    return (
+                        <div className="text-center py-8 flex flex-col items-center justify-center gap-4 h-full">
+                            <ExternalLink className="h-16 w-16 text-primary" />
+                            <h3 className="text-lg font-semibold">Redireccionando a contenido externo</h3>
+                            <p className="text-muted-foreground max-w-sm">Este recurso es un enlace a un sitio web externo y no se puede mostrar directamente aquí.</p>
+                            <Button asChild>
+                                <a href={url} target="_blank" rel="noopener noreferrer">
+                                    <ExternalLink className="mr-2 h-4 w-4" /> Abrir en Nueva Pestaña
+                                </a>
+                            </Button>
+                        </div>
+                    );
+                }
 
                 return (
                     <div className="text-center py-8 flex flex-col items-center justify-center gap-4 h-full">
@@ -924,9 +937,9 @@ export default function ResourcesPage() {
                         <h3 className="text-lg font-semibold">Previsualización no disponible</h3>
                         <p className="text-muted-foreground max-w-sm">Este tipo de archivo se debe descargar para poder visualizarlo.</p>
                         <Button asChild>
-                            <Link href={url || '#'} target="_blank" rel="noopener noreferrer" download>
+                            <a href={url || '#'} target="_blank" rel="noopener noreferrer" download>
                                 <Download className="mr-2 h-4 w-4" /> Descargar para ver
-                            </Link>
+                            </a>
                         </Button>
                     </div>
                 );
