@@ -6,7 +6,7 @@ import type { NextRequest } from 'next/server';
 
 // GET a specific course by ID
 export async function GET(req: NextRequest, context: { params: { id: string } }) {
-  const { id } = context.params;
+  const id = context.params.id;
   try {
     const course = await prisma.course.findUnique({
       where: { id },
@@ -60,7 +60,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id } = context.params;
+  const id = context.params.id;
 
   try {
     const courseData = await req.json();
@@ -288,7 +288,7 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const { id } = context.params;
+    const id = context.params.id;
 
     try {
         const course = await prisma.course.findUnique({ where: { id } });
