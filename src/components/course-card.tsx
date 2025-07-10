@@ -96,7 +96,7 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1 rounded-xl">
       <Link href={`/courses/${course.id}`} className="block group">
-        <div className="aspect-video w-full relative overflow-hidden">
+        <div className="aspect-video w-full relative overflow-hidden rounded-t-xl">
             <Image
               src={course.imageUrl || `https://placehold.co/600x400.png`}
               alt={course.title}
