@@ -19,7 +19,6 @@ import { CircularProgress } from '@/components/ui/circular-progress';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useSidebar } from '@/components/ui/sidebar';
 
 // Helper types and functions
 interface PrismaLessonWithQuiz extends PrismaLesson {
@@ -98,9 +97,7 @@ export default function CourseDetailPage() {
   const courseId = params.courseId as string;
   const { toast } = useToast();
   const { user } = useAuth();
-  const { toggleSidebar, state: sidebarState } = useSidebar();
-
-
+  
   const [course, setCourse] = useState<AppCourse | null>(null);
   const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(null);
   const [provisionalProgress, setProvisionalProgress] = useState<Record<string, boolean>>({});
@@ -113,6 +110,7 @@ export default function CourseDetailPage() {
   
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [sidebarSearch, setSidebarSearch] = useState('');
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true); // New state for sidebar visibility
 
   const contentRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -371,7 +369,7 @@ export default function CourseDetailPage() {
     <div className="flex flex-col h-[calc(100vh_-_var(--header-height,64px))]">
        <div className="flex items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={toggleSidebar} className="md:hidden">
+                <Button variant="ghost" size="icon" onClick={() => setIsSidebarVisible(!isSidebarVisible)}>
                     <PanelLeft />
                 </Button>
                 <h1 className="text-xl font-semibold font-headline truncate" title={course.title}>
@@ -394,9 +392,9 @@ export default function CourseDetailPage() {
         
         {/* Sidebar */}
         <aside className={cn(
-            "fixed inset-y-0 left-0 z-20 w-72 bg-card border-r flex flex-col transition-transform duration-300 md:relative md:w-auto md:translate-x-0",
+            "bg-card border rounded-lg flex-col transition-all duration-300",
             "md:col-span-1 lg:col-span-1",
-            sidebarState === 'collapsed' ? "-translate-x-full" : "translate-x-0"
+            isSidebarVisible ? "flex" : "hidden"
         )}>
             <div className="p-4 border-b">
                 <div className="relative">
@@ -453,7 +451,10 @@ export default function CourseDetailPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="md:col-span-3 lg:col-span-4 bg-card rounded-lg border flex flex-col">
+        <main className={cn(
+            "bg-card rounded-lg border flex flex-col transition-all duration-300",
+            isSidebarVisible ? "md:col-span-3 lg:col-span-4" : "col-span-full"
+        )}>
             <ScrollArea className="flex-1">
                 <div className="p-4 md:p-6 lg:p-8">
                 {selectedLesson ? (
@@ -504,3 +505,4 @@ export default function CourseDetailPage() {
     </div>
   );
 }
+
