@@ -7,7 +7,8 @@ import type { NextRequest } from 'next/server';
 // Check if a user is enrolled in a specific course
 export async function GET(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
     const session = await getSession(req);
-    const { userId, courseId } = context.params;
+    const userId = context.params.userId;
+    const courseId = context.params.courseId;
 
     if (!session || session.id !== userId) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });

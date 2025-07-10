@@ -8,7 +8,8 @@ import type { LessonCompletionRecord } from '@/types';
 // Get progress for a specific user in a course
 export async function GET(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
     const session = await getSession(req);
-    const { userId, courseId } = context.params;
+    const userId = context.params.userId;
+    const courseId = context.params.courseId;
 
     // A user can only see their own progress. Admins/instructors might have different authorization logic.
     if (!session || (session.id !== userId && session.role === 'STUDENT')) {
