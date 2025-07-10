@@ -920,8 +920,8 @@ export default function ResourcesPage() {
                     return (
                         <div className="text-center py-8 flex flex-col items-center justify-center gap-4 h-full">
                             <ExternalLink className="h-16 w-16 text-primary" />
-                            <h3 className="text-lg font-semibold">Redireccionando a contenido externo</h3>
-                            <p className="text-muted-foreground max-w-sm">Este recurso es un enlace a un sitio web externo y no se puede mostrar directamente aquí.</p>
+                            <h3 className="text-lg font-semibold">Enlace a Sitio Web Externo</h3>
+                            <p className="text-muted-foreground max-w-sm">Este recurso es un enlace a otra página web. Por seguridad, no se puede mostrar aquí.</p>
                             <Button asChild>
                                 <a href={url} target="_blank" rel="noopener noreferrer">
                                     <ExternalLink className="mr-2 h-4 w-4" /> Abrir en Nueva Pestaña
