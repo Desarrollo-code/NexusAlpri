@@ -254,7 +254,7 @@ export default function ManageCoursesPage() {
       );
     }
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
         {courseList.map(course => (
           <Card key={course.id} className="flex flex-col overflow-hidden shadow-md">
             <CourseListItemImage
@@ -400,7 +400,7 @@ export default function ManageCoursesPage() {
             </div>
           ) : (
             <Tabs defaultValue="all" className="w-full">
-              <TabsList>
+              <TabsList className="h-auto flex-wrap md:flex-nowrap md:h-10">
                 <TabsTrigger value="all">Todos ({courses.length})</TabsTrigger>
                 <TabsTrigger value="PUBLISHED">Publicados ({courses.filter(c => c.status === 'PUBLISHED').length})</TabsTrigger>
                 <TabsTrigger value="DRAFT">Borradores ({courses.filter(c => c.status === 'DRAFT').length})</TabsTrigger>
