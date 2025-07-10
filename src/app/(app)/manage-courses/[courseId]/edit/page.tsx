@@ -879,23 +879,9 @@ export default function EditCoursePage() {
         if (e.target) e.target.value = '';
     };
 
-    const handleCropComplete = async (croppedFile: File) => {
-        setIsUploading(true);
-        setUploadProgress(0);
-        
-        const formData = new FormData();
-        formData.append('file', croppedFile, 'course-image.jpeg');
-
-        try {
-            const result: { url: string } = await uploadWithProgress('/api/upload/course-image', formData, setUploadProgress);
-            methods.setValue('imageUrl', result.url, { shouldDirty: true });
-            toast({ title: "Imagen actualizada", description: "La nueva imagen del curso ha sido guardada." });
-        } catch (error: any) {
-            toast({ title: "Error de Subida", description: error.message || "No se pudo subir la imagen recortada.", variant: "destructive" });
-        } finally {
-            setIsUploading(false);
-            setImageToCrop(null);
-        }
+    const handleCropComplete = (croppedFileUrl: string) => {
+        methods.setValue('imageUrl', croppedFileUrl, { shouldDirty: true });
+        setImageToCrop(null);
     };
 
     const removeCourseImage = () => {
@@ -1177,12 +1163,7 @@ export default function EditCoursePage() {
                                 <CardDescription>Sube una imagen representativa.</CardDescription>
                             </CardHeader>
                             <CardContent className="grid gap-4">
-                                {isUploading ? (
-                                    <div className="space-y-2 text-center">
-                                        <Progress value={uploadProgress} className="w-full h-2" />
-                                        <p className="text-xs text-muted-foreground">Subiendo... {uploadProgress}%</p>
-                                    </div>
-                                ) : methods.watch('imageUrl') ? (
+                                {methods.watch('imageUrl') ? (
                                     <div className="relative aspect-video rounded-md overflow-hidden border w-full">
                                         <Image src={methods.watch('imageUrl') || '/placeholder-image.jpg'} alt="Imagen del Curso" fill className="object-cover" onError={() => methods.setValue('imageUrl', null)} data-ai-hint="online course" />
                                         <div className="absolute top-2 right-2 z-10 flex gap-1">
@@ -1191,9 +1172,9 @@ export default function EditCoursePage() {
                                                 variant="secondary" 
                                                 size="icon" 
                                                 className="rounded-full h-8 w-8" 
-                                                onClick={() => setImageToCrop(methods.watch('imageUrl')!)}
+                                                onClick={() => document.getElementById('image-upload')?.click()}
                                                 disabled={isSaving || isUploading}>
-                                                <Crop className="h-4 w-4" />
+                                                <Replace className="h-4 w-4" />
                                             </Button>
                                             <Button 
                                                 type="button" 
@@ -1290,8 +1271,10 @@ export default function EditCoursePage() {
                     imageSrc={imageToCrop}
                     onCropComplete={handleCropComplete}
                     onClose={() => setImageToCrop(null)}
+                    uploadUrl="/api/upload/course-image"
                 />
             </form>
         </FormProvider>
     );
 }
+

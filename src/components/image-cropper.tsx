@@ -7,31 +7,36 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import getCroppedImg from '@/lib/crop-image';
-import { Crop, RotateCw, ZoomIn, ZoomOut } from 'lucide-react';
+import { Crop, RotateCw, ZoomIn, ZoomOut, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Progress } from '@/components/ui/progress';
 
 interface ImageCropperProps {
   imageSrc: string | null;
-  onCropComplete: (croppedFile: File) => void;
+  onCropComplete: (croppedFileUrl: string) => void;
   onClose: () => void;
+  uploadUrl: string;
 }
 
-export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComplete, onClose }) => {
+export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComplete, onClose, uploadUrl }) => {
   const { toast } = useToast();
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const onCropCompleteCallback = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
-  const handleCrop = async () => {
+  const handleCropAndUpload = async () => {
     if (!imageSrc || !croppedAreaPixels) {
       return;
     }
-    // Prevent cropping if the cropped area is too small
     if (croppedAreaPixels.width < 10 || croppedAreaPixels.height < 10) {
         toast({
             title: "Área de Recorte Pequeña",
@@ -40,18 +45,33 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
         });
         return;
     }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
     try {
-      const result = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
-      if(result) {
-        onCropComplete(result.file);
+      const croppedImageResult = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
+      if (!croppedImageResult) {
+          throw new Error("No se pudo generar la imagen recortada.");
       }
+      
+      const formData = new FormData();
+      formData.append('file', croppedImageResult.file, 'cropped-image.jpeg');
+      
+      const result: { url: string } = await uploadWithProgress(uploadUrl, formData, setUploadProgress);
+      
+      toast({ title: "Imagen Subida", description: "La imagen se ha subido y guardado." });
+      onCropComplete(result.url);
+
     } catch (e) {
       console.error(e);
       toast({
-        title: 'Error al Recortar',
-        description: 'No se pudo procesar la imagen. Inténtalo de nuevo.',
+        title: 'Error al Subir',
+        description: (e instanceof Error ? e.message : 'No se pudo procesar y subir la imagen.'),
         variant: 'destructive',
       });
+    } finally {
+        setIsUploading(false);
     }
   };
 
@@ -72,43 +92,52 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
             crop={crop}
             zoom={zoom}
             rotation={rotation}
-            aspect={undefined} // Allow free aspect ratio
+            aspect={undefined} 
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onRotationChange={setRotation}
             onCropComplete={onCropCompleteCallback}
           />
         </div>
-        <div className="p-6 space-y-4">
-          <div className="flex items-center gap-4">
-            <ZoomOut className="h-5 w-5" />
-            <Slider
-              value={[zoom]}
-              min={0.1} // Allow zooming out
-              max={3}
-              step={0.01}
-              onValueChange={(value) => setZoom(value[0])}
-              aria-label="Zoom"
-            />
-            <ZoomIn className="h-5 w-5" />
-          </div>
-          <div className="flex items-center gap-4">
-            <RotateCw className="h-5 w-5" />
-            <Slider
-              value={[rotation]}
-              min={0}
-              max={360}
-              step={1}
-              onValueChange={(value) => setRotation(value[0])}
-              aria-label="Rotation"
-            />
-          </div>
-        </div>
+        
+        {isUploading ? (
+            <div className="p-6 space-y-2">
+                <p className="text-sm text-center text-muted-foreground">Subiendo imagen recortada...</p>
+                <Progress value={uploadProgress} />
+            </div>
+        ) : (
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-4">
+                <ZoomOut className="h-5 w-5" />
+                <Slider
+                  value={[zoom]}
+                  min={0.1}
+                  max={3}
+                  step={0.01}
+                  onValueChange={(value) => setZoom(value[0])}
+                  aria-label="Zoom"
+                />
+                <ZoomIn className="h-5 w-5" />
+              </div>
+              <div className="flex items-center gap-4">
+                <RotateCw className="h-5 w-5" />
+                <Slider
+                  value={[rotation]}
+                  min={0}
+                  max={360}
+                  step={1}
+                  onValueChange={(value) => setRotation(value[0])}
+                  aria-label="Rotation"
+                />
+              </div>
+            </div>
+        )}
+
         <DialogFooter className="p-6 border-t bg-background">
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleCrop}>
-            <Crop className="mr-2 h-4 w-4" />
-            Aplicar Recorte
+          <Button variant="outline" onClick={onClose} disabled={isUploading}>Cancelar</Button>
+          <Button onClick={handleCropAndUpload} disabled={isUploading}>
+            {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Crop className="mr-2 h-4 w-4" />}
+            {isUploading ? 'Subiendo...' : 'Aplicar y Subir'}
           </Button>
         </DialogFooter>
       </DialogContent>
