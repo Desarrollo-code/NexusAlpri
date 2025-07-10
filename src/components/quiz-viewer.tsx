@@ -132,9 +132,9 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
     );
   }
   
-  const canAttemptQuiz = isEnrolled && !isInstructorPreview;
+  const canAttemptQuiz = isEnrolled || isInstructorPreview;
 
-  if (!canAttemptQuiz && !isInstructorPreview) {
+  if (!canAttemptQuiz) {
       return (
           <Alert>
               <AlertTitle>Inscripción Requerida</AlertTitle>
@@ -194,7 +194,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
                     );
                 })}
             </div>
-            <Button onClick={resetQuiz} disabled={isInstructorPreview}>
+            <Button onClick={resetQuiz}>
                 Volver a intentar
             </Button>
         </CardFooter>
@@ -215,7 +215,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
                 <p className="text-sm text-muted-foreground">Este quiz contiene {quiz.questions.length} pregunta{quiz.questions.length !== 1 ? 's' : ''}.</p>
             </CardContent>
             <CardFooter>
-                <Button className="w-full" onClick={() => setQuizStarted(true)} disabled={isInstructorPreview}>
+                <Button className="w-full" onClick={() => setQuizStarted(true)}>
                     <PlayCircle className="mr-2 h-4 w-4"/>
                     {isInstructorPreview ? 'Comenzar (Vista Previa)' : 'Comenzar Quiz'}
                 </Button>
@@ -243,7 +243,6 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
             <RadioGroup
               value={selectedAnswers[question.id]}
               onValueChange={(value) => handleOptionChange(question.id, value)}
-              disabled={isInstructorPreview}
             >
               {question.options.map(option => (
                 <div key={option.id} className="flex items-center space-x-2 p-2 hover:bg-muted/40 rounded-md">
@@ -261,9 +260,9 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
          <Button 
             className="w-full"
             onClick={handleSubmit} 
-            disabled={isSubmitting || isInstructorPreview}>
+            disabled={isSubmitting}>
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2"/> : null}
-            {isInstructorPreview ? 'Vista Previa (Deshabilitado)' : 'Enviar Respuestas'}
+            {isInstructorPreview ? 'Enviar (Vista Previa)' : 'Enviar Respuestas'}
         </Button>
       </CardFooter>
     </Card>
