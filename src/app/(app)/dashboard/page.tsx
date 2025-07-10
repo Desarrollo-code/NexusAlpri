@@ -593,7 +593,7 @@ export default function DashboardPage() {
                 {isLoadingTaughtCourses && <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando mis cursos...</div>}
                 {taughtCoursesError && <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar cursos: {taughtCoursesError}</div>}
                 {!isLoadingTaughtCourses && !taughtCoursesError && taughtCourses.length > 0 && (
-                  <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                     {taughtCourses.map(course => (
                       <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
                          {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
@@ -615,7 +615,7 @@ export default function DashboardPage() {
                 {isLoadingMyCourses && <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando...</div>}
                 {myCoursesError && <div className="text-destructive"><AlertTriangle className="inline mr-2" />Error: {myCoursesError}</div>}
                 {!isLoadingMyCourses && !myCoursesError && myDashboardCourses.length > 0 && (
-                  <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                     {myDashboardCourses.map(course => (
                       <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
                         {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="education student" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
