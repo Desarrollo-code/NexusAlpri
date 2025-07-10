@@ -1,4 +1,5 @@
 
+
 // @ts-nocheck
 'use client';
 
@@ -446,21 +447,19 @@ export default function CourseDetailPage() {
                                 <LineChart className="mr-2 h-4 w-4" /> Ver Mi Progreso
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-md">
-                            <DialogHeader>
-                                <DialogTitle>Tu Progreso</DialogTitle>
-                                <DialogDescription>
-                                    {isFinalProgressVisible ? "Este es tu resultado final para el curso." : "Completa todas las lecciones para calcular tu puntuación."}
-                                </DialogDescription>
-                            </DialogHeader>
+                        <DialogContent className="sm:max-w-sm text-center p-8">
+                            <h2 className="text-lg font-semibold">Tu Progreso</h2>
+                            <p className="text-sm text-muted-foreground">
+                                {isFinalProgressVisible ? "Este es tu resultado final para el curso." : "Completa todas las lecciones para calcular tu puntuación."}
+                            </p>
                             <div className="flex flex-col items-center justify-center space-y-4 py-6">
                                 {isFinalProgressVisible && courseProgress ? (
-                                    <div className="text-center p-4 space-y-3">
+                                    <div className="text-center space-y-3">
                                         <CircularProgress value={courseProgress.progressPercentage || 0} size={150} strokeWidth={12} />
                                         <h3 className="text-xl font-semibold text-foreground pt-4">Puntuación Final</h3>
                                     </div>
                                 ) : (
-                                    <div className="text-center p-4 space-y-3">
+                                    <div className="text-center space-y-3">
                                         <p className="text-muted-foreground max-w-xs">Completa todas las lecciones y presiona el botón para calcular tu puntuación final.</p>
                                         <Button onClick={handleConsolidateProgress} disabled={!isCourseProvisionallyComplete || isConsolidating} className="w-full">
                                             {isConsolidating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
@@ -542,4 +541,5 @@ export default function CourseDetailPage() {
     </div>
   );
 }
+
 
