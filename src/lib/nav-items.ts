@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
         href: '/my-courses',
         label: 'Mis Cursos',
         icon: GraduationCap,
-        roles: ['STUDENT', 'INSTRUCTOR'],
+        roles: ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'],
       },
       {
         href: '/resources',
