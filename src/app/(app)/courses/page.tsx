@@ -95,14 +95,15 @@ export default function CoursesPage() {
                             (course.description && course.description.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const isPublished = course.status === 'PUBLISHED';
+      const isNotEnrolled = !enrolledCourseIds.includes(course.id);
+      
+      // An instructor should not see their own courses in the public catalog
+      const isNotOwnCourse = !(user?.role === 'INSTRUCTOR' && course.instructorId === user.id);
 
-      // ALL roles only see courses they are not enrolled in.
-      // This allows admins and instructors to enroll in courses too.
-      const isVisible = !enrolledCourseIds.includes(course.id);
-
-      return matchesSearch && isPublished && isVisible;
+      return matchesSearch && isPublished && isNotEnrolled && isNotOwnCourse;
     });
-  }, [allCoursesForDisplay, searchTerm, enrolledCourseIds]);
+  }, [allCoursesForDisplay, searchTerm, enrolledCourseIds, user]);
+
 
   const groupedCourses = useMemo(() => {
     return filteredCourses.reduce((acc, course) => {
