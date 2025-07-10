@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, Award, MessageCircleQuestion, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, Award, MessageCircleQuestion, Loader2, PlayCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
@@ -42,6 +42,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<Result | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [quizStarted, setQuizStarted] = useState(false); // New state
 
   const handleOptionChange = (questionId: string, optionId: string) => {
     setSelectedAnswers(prev => ({ ...prev, [questionId]: optionId }));
@@ -119,6 +120,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
   const resetQuiz = () => {
     setSelectedAnswers({});
     setResult(null);
+    setQuizStarted(false); // Reset to show intro screen
   }
 
   if (!quiz) {
@@ -200,11 +202,34 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isInstructorP
     );
   }
 
+  // New intro screen
+  if (!quizStarted) {
+    return (
+        <Card className="my-4 shadow-lg text-center">
+            <CardHeader>
+                <MessageCircleQuestion className="mx-auto h-12 w-12 text-primary"/>
+                <CardTitle className="text-2xl font-headline mt-2">{quiz.title}</CardTitle>
+                <CardDescription className="max-w-prose mx-auto">{quiz.description || "Prepárate para probar tus conocimientos."}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground">Este quiz contiene {quiz.questions.length} pregunta{quiz.questions.length !== 1 ? 's' : ''}.</p>
+            </CardContent>
+            <CardFooter>
+                <Button className="w-full" onClick={() => setQuizStarted(true)} disabled={isInstructorPreview}>
+                    <PlayCircle className="mr-2 h-4 w-4"/>
+                    {isInstructorPreview ? 'Comenzar (Vista Previa)' : 'Comenzar Quiz'}
+                </Button>
+            </CardFooter>
+        </Card>
+    )
+  }
+
+  // Quiz questions view (previously the main view)
   return (
     <Card className="my-4 shadow-lg">
       <CardHeader>
         <div className="flex items-center gap-3">
-            <MessageCircleQuestion className="h-8 w-8 text-primary" fill="currentColor"/>
+            <MessageCircleQuestion className="h-8 w-8 text-primary" />
             <div>
                 <CardTitle>{quiz.title}</CardTitle>
                 <CardDescription>{quiz.description || "Responde las siguientes preguntas."}</CardDescription>
