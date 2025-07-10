@@ -109,6 +109,9 @@ export async function POST(req: NextRequest) {
                 instructorId: session.id,
                 status: 'DRAFT',
             },
+            include: {
+                instructor: true, // Include instructor details in the response
+            }
         });
 
         return NextResponse.json(newCourse, { status: 201 });
