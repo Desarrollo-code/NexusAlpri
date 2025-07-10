@@ -1,16 +1,15 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import type { Course as AppCourse, EnrolledCourse, UserRole } from '@/types';
-import { Layers, ArrowRight, Check, Plus, Loader2, X } from 'lucide-react';
+import { Layers, ArrowRight, Check, Plus, Loader2, X, User } from 'lucide-react';
 import { CircularProgress } from '@/components/ui/circular-progress';
 
 interface CourseCardProps {
@@ -23,9 +22,8 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
   const { user } = useAuth();
   const { toast } = useToast();
   
-  const isEnrolledInitially = (course as EnrolledCourse).isEnrolled ?? false;
-  const [isEnrolled, setIsEnrolled] = useState(isEnrolledInitially);
-  const [isProcessingEnrollment, setIsProcessingEnrollment] = useState(false);
+  const isEnrolled = (course as EnrolledCourse).isEnrolled ?? false;
+  const [isProcessingEnrollment, setIsProcessingEnrollment] = React.useState(false);
 
   const progress = (course as EnrolledCourse).progressPercentage;
 
@@ -44,7 +42,7 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
       const response = await fetch('/api/enrollments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courseId: course.id, enroll: enroll }),
+        body: JSON.stringify({ courseId: course.id, enroll }),
       });
 
       if (!response.ok) {
@@ -52,22 +50,14 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
         throw new Error(errorData.message || 'Error al procesar la inscripción');
       }
       
-      setIsEnrolled(enroll);
       if (onEnrollmentChange) {
         onEnrollmentChange(course.id, enroll);
       }
       
-      if (enroll) {
-        toast({
-          title: '¡Inscripción Exitosa!',
-          description: `El curso "${course.title}" ha sido añadido. Lo encontrarás en la sección 'Mis Cursos'.`,
-        });
-      } else {
-        toast({
-            title: 'Inscripción Cancelada',
-            description: `Has cancelado tu inscripción a "${course.title}".`,
-        });
-      }
+      toast({
+        title: enroll ? '¡Inscripción Exitosa!' : 'Inscripción Cancelada',
+        description: `Has ${enroll ? 'añadido' : 'quitado'} el curso "${course.title}" de tu lista.`,
+      });
 
     } catch (error) {
       toast({
@@ -81,30 +71,13 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
   };
 
   const EnrollmentButton = () => {
-    // Show "View Course" for instructors/admins, as they don't "enroll" in the same way
-    if (user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === course.instructorId))) {
+    if (isEnrolled) {
       return (
         <Button asChild className="w-full" size="sm">
           <Link href={`/courses/${course.id}`}>
-            Ver Detalles <ArrowRight className="ml-2" />
+            Continuar Curso <ArrowRight className="ml-2" />
           </Link>
         </Button>
-      );
-    }
-    
-    // Logic for students, and instructors/admins viewing other courses
-    if (isEnrolled) {
-      return (
-        <div className="grid grid-cols-2 gap-2 w-full">
-            <Button asChild variant="secondary" size="sm">
-                <Link href={`/courses/${course.id}`}>
-                    Continuar <ArrowRight className="ml-2" />
-                </Link>
-            </Button>
-             <Button variant="outline" size="sm" onClick={(e) => handleEnrollment(e, false)} disabled={isProcessingEnrollment}>
-                 {isProcessingEnrollment ? ( <Loader2 className="animate-spin" /> ) : <X className="h-4 w-4" />}
-            </Button>
-        </div>
       );
     }
 
@@ -121,42 +94,37 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
   };
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1">
-      <Link href={`/courses/${course.id}`} className="block">
-        <CardHeader className="p-0 relative">
-          <div className="aspect-video w-full relative">
+    <Card className="flex flex-col h-full overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1 rounded-xl">
+      <Link href={`/courses/${course.id}`} className="block group">
+        <div className="aspect-video w-full relative overflow-hidden">
             <Image
               src={course.imageUrl || `https://placehold.co/600x400.png`}
               alt={course.title}
               fill
-              className="object-cover"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               data-ai-hint="online course abstract"
             />
-             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          </div>
-          <div className="absolute bottom-0 p-4">
-              <CardTitle className="text-white text-lg font-headline drop-shadow-md">{course.title}</CardTitle>
-          </div>
-        </CardHeader>
-      </Link>
-      <CardContent className="p-4 flex-grow">
-        <div className="flex justify-between items-start">
-            <div className="flex-grow pr-4">
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                    Por {course.instructor}
-                </p>
-                <div className="text-xs text-muted-foreground mt-2 flex items-center">
-                    <Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount} Módulos
-                </div>
-            </div>
-            {typeof progress === 'number' && (
-                <div className="shrink-0">
+             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+             {typeof progress === 'number' && (
+                <div className="absolute top-2 right-2">
                     <CircularProgress value={progress} size={40} strokeWidth={4} valueTextClass="text-xs font-semibold" />
                 </div>
             )}
         </div>
-      </CardContent>
+      </Link>
+      <CardHeader className="p-4 flex-grow">
+        <CardTitle className="text-lg font-headline leading-tight mb-2 line-clamp-2">{course.title}</CardTitle>
+        <CardDescription className="text-sm text-muted-foreground line-clamp-3 flex-grow">{course.description}</CardDescription>
+        <div className="text-xs text-muted-foreground pt-3 flex flex-col gap-2">
+          <div className="flex items-center">
+            <User className="mr-1.5 h-3 w-3" /> Por {course.instructor}
+          </div>
+          <div className="flex items-center">
+            <Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount} Módulos
+          </div>
+        </div>
+      </CardHeader>
       <CardFooter className="p-4 border-t pt-4">
         <EnrollmentButton />
       </CardFooter>
