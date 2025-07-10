@@ -312,7 +312,7 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = "SidebarMenuItem"
 
 const sidebarMenuButtonVariants = cva(
-  "flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:px-0 group-data-[state=collapsed]:py-3 [&>span]:group-data-[state=collapsed]:hidden",
+  "flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:px-0 group-data-[state=collapsed]:py-3 [&_span]:whitespace-nowrap [&_span]:group-data-[state=collapsed]:hidden",
   {
     variants: {
       variant: {
@@ -352,6 +352,7 @@ const SidebarMenuButton = React.forwardRef<
       isActive,
       tooltip,
       className,
+      children,
       ...props
     },
     ref
@@ -365,18 +366,24 @@ const SidebarMenuButton = React.forwardRef<
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size, isActive }), className)}
         {...props}
-      />
+      >
+        {children}
+      </Comp>
     )
 
     if (!tooltip) {
       return button
     }
-
+    
+    let tooltipContent: React.ReactNode;
     if (typeof tooltip === "string") {
-      tooltip = {
-        children: tooltip,
-      }
+      tooltipContent = <p>{tooltip}</p>;
+    } else {
+      tooltipContent = tooltip.children;
     }
+
+    const tooltipProps = typeof tooltip === 'object' ? tooltip : {};
+
 
     return (
       <Tooltip>
@@ -385,9 +392,9 @@ const SidebarMenuButton = React.forwardRef<
           side="right"
           align="center"
           hidden={state !== "collapsed" || isMobile}
-          {...tooltip}
+          {...tooltipProps}
         >
-          {props.children}
+          {tooltipContent}
         </TooltipContent>
       </Tooltip>
     )
