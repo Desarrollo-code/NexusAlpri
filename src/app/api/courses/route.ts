@@ -41,6 +41,12 @@ export async function GET(req: NextRequest) {
     // In manage view, we also want lesson counts for instructors/admins
     if (manageView) {
         const courseIds = courses.map(c => c.id);
+
+        // If there are no courses, return early to avoid an empty `in` clause error.
+        if (courseIds.length === 0) {
+            return NextResponse.json([]);
+        }
+
         const lessonsCount = await prisma.lesson.groupBy({
             by: ['moduleId'],
             where: {
