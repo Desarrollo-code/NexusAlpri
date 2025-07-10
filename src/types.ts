@@ -187,7 +187,9 @@ export interface CalendarEvent {
 export type SecurityLogEvent = 
     | 'SUCCESSFUL_LOGIN'
     | 'FAILED_LOGIN_ATTEMPT' 
-    | 'PASSWORD_CHANGE_SUCCESS';
+    | 'PASSWORD_CHANGE_SUCCESS'
+    | 'TWO_FACTOR_ENABLED'
+    | 'TWO_FACTOR_DISABLED';
 
 export interface SecurityLog {
     id: string;

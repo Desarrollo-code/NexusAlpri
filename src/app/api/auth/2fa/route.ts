@@ -28,7 +28,7 @@ async function handleGenerate(userId: string) {
     return NextResponse.json({ dataUrl });
 }
 
-async function handleVerify(userId: string, token: string) {
+async function handleVerify(userId: string, token: string, ipAddress: string) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.twoFactorSecret) {
         return NextResponse.json({ message: 'El secreto 2FA no está configurado para este usuario' }, { status: 400 });
@@ -43,13 +43,21 @@ async function handleVerify(userId: string, token: string) {
         where: { id: userId },
         data: { isTwoFactorEnabled: true },
     });
+
+    await prisma.securityLog.create({
+        data: {
+            event: 'TWO_FACTOR_ENABLED',
+            ipAddress,
+            userId,
+        }
+    });
     
     const { password: _, ...userToReturn } = updatedUser;
     return NextResponse.json({ message: '2FA activado exitosamente', user: userToReturn });
 }
 
 
-async function handleDisable(userId: string, pass: string) {
+async function handleDisable(userId: string, pass: string, ipAddress: string) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.password) {
         return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
@@ -67,6 +75,14 @@ async function handleDisable(userId: string, pass: string) {
             twoFactorSecret: null,
         },
     });
+
+    await prisma.securityLog.create({
+        data: {
+            event: 'TWO_FACTOR_DISABLED',
+            ipAddress,
+            userId,
+        }
+    });
     
     const { password: _, ...userToReturn } = updatedUser;
     return NextResponse.json({ message: '2FA desactivado exitosamente', user: userToReturn });
@@ -77,6 +93,8 @@ export async function POST(req: NextRequest) {
     if (!session) {
       return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
+    
+    const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
   
     try {
       const { searchParams } = new URL(req.url);
@@ -93,10 +111,10 @@ export async function POST(req: NextRequest) {
           return await handleGenerate(userId);
         case 'verify':
           if (!token) return NextResponse.json({ message: 'Token es requerido para la verificación' }, { status: 400 });
-          return await handleVerify(userId, token);
+          return await handleVerify(userId, token, ip);
         case 'disable':
           if (!password) return NextResponse.json({ message: 'Contraseña es requerida para desactivar' }, { status: 400 });
-          return await handleDisable(userId, password);
+          return await handleDisable(userId, password, ip);
         default:
           return NextResponse.json({ message: 'Acción inválida proporcionada' }, { status: 400 });
       }
