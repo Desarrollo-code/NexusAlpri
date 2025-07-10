@@ -9,10 +9,10 @@ import {
   Users,
   Settings,
   BookMarked,
-  ShieldCheck,
+  ShieldAlert,
   TrendingUp,
   CalendarDays,
-  ShieldAlert,
+  Shield,
 } from 'lucide-react';
 
 
@@ -56,7 +56,7 @@ const navItems: NavItem[] = [
       {
         label: 'Administración',
         href: '#', // Required for key, not used for navigation
-        icon: ShieldCheck,
+        icon: Shield,
         roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
         subItems: [
             { href: '/manage-courses', label: 'Gestionar Cursos', icon: BookMarked, roles: ['ADMINISTRATOR', 'INSTRUCTOR'] },
