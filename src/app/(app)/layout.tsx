@@ -44,16 +44,16 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
   if (filteredSubItems.length > 0) {
     return (
         <AccordionItem value={item.label} className="border-none">
-          <SidebarMenuButton asChild variant="ghost" className="w-full h-auto p-0" tooltip={item.label}>
+          <SidebarMenuButton asChild variant="ghost" className="w-full h-auto p-0" tooltip={{...item.tooltip, children: item.label}}>
             <AccordionTrigger 
               className={cn(
-                "w-full h-auto p-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md text-sm hover:no-underline",
+                "w-full h-auto p-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md text-sm hover:no-underline justify-start",
                 isParentActive && "bg-sidebar-accent text-sidebar-accent-foreground"
               )}
             >
               <div className="flex items-center gap-3">
                 <item.icon className={cn(isParentActive ? "text-primary" : iconColorClass, "h-5 w-5")} />
-                <span className="font-semibold">{item.label}</span>
+                <span className="font-semibold group-data-[state=collapsed]:hidden">{item.label}</span>
               </div>
             </AccordionTrigger>
           </SidebarMenuButton>
@@ -61,7 +61,7 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
             <SidebarMenu className="border-l border-sidebar-border ml-2 pl-4">
               {filteredSubItems.map((subItem, subIndex) => (
                 <SidebarMenuItem key={subItem.href}>
-                  <SidebarMenuButton asChild isActive={pathname.startsWith(subItem.href)} size="sm" className="justify-start" tooltip={subItem.label}>
+                  <SidebarMenuButton asChild isActive={pathname.startsWith(subItem.href)} size="sm" className="justify-start" tooltip={{...subItem.tooltip, children: subItem.label}}>
                     <Link href={subItem.href}>
                       <subItem.icon className={cn(pathname.startsWith(subItem.href) ? "text-primary" : `text-chart-${(subIndex % 5) + 1}`)}/>
                       <span>{subItem.label}</span>
@@ -77,10 +77,10 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={item.label}>
+      <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{...item.tooltip, children: item.label}}>
         <Link href={item.href || '#'}>
           <item.icon className={cn(isActive ? "text-primary" : iconColorClass, "h-5 w-5")} />
-          <span className="font-semibold">{item.label}</span>
+          <span className="font-semibold group-data-[state=collapsed]:hidden">{item.label}</span>
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -162,7 +162,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 <SidebarFooter>
                      <SidebarMenu>
                         <SidebarMenuItem>
-                            <SidebarMenuButton onClick={logout} variant="ghost" className="justify-start gap-3 w-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive" tooltip="Cerrar Sesión">
+                            <SidebarMenuButton onClick={logout} variant="ghost" className="justify-start gap-3 w-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive" tooltip={{children: "Cerrar Sesión"}}>
                                 <LogOut className="text-destructive h-5 w-5"/>
                                 <span className="font-semibold group-data-[state=collapsed]:hidden">Cerrar Sesión</span>
                             </SidebarMenuButton>

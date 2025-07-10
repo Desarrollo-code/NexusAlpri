@@ -158,7 +158,7 @@ export function TopBar() {
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md md:px-6">
       <div className="flex items-center gap-2">
         <SidebarTrigger className="md:hidden" />
-        <h1 className="text-xl font-semibold font-headline">{getPageTitle()}</h1>
+        <h1 className="hidden sm:block text-xl font-semibold font-headline truncate">{getPageTitle()}</h1>
       </div>
       <div className="flex items-center gap-3">
         <DropdownMenu onOpenChange={setIsDropdownOpen}>
