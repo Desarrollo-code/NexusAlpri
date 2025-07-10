@@ -700,7 +700,7 @@ export default function ResourcesPage() {
                         <DialogHeader><DialogTitle>Crear Nueva Carpeta</DialogTitle><DialogDescription>Ingresa un nombre para la nueva carpeta en la ubicación actual.</DialogDescription></DialogHeader>
                         <form onSubmit={handleCreateFolder} className="space-y-4">
                             <div><Label htmlFor="folder-name" className="sr-only">Nombre de la carpeta</Label><Input id="folder-name" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} placeholder="Nombre de la carpeta" required disabled={isSubmittingResource} /></div>
-                            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowCreateFolderModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Crear</Button></DialogFooter>
+                            <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><Button type="button" variant="outline" onClick={() => setShowCreateFolderModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Crear</Button></DialogFooter>
                         </form>
                     </DialogContent>
                 </Dialog>
@@ -737,7 +737,7 @@ export default function ResourcesPage() {
                           </div>
                         </>
                      )}
-                     <DialogFooter className="pt-4"><Button type="button" variant="outline" onClick={() => setShowCreateFileModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Guardar</Button></DialogFooter>
+                     <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4"><Button type="button" variant="outline" onClick={() => setShowCreateFileModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Guardar</Button></DialogFooter>
                   </form>
                 </DialogContent>
               </Dialog>
@@ -870,7 +870,7 @@ export default function ResourcesPage() {
               <div className="space-y-1"><Label htmlFor="edit-resource-category">Categoría</Label><Select name="edit-resource-category" value={editResourceCategory} onValueChange={setEditResourceCategory} required disabled={isSavingEdit || isSavingPin}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{settings?.resourceCategories.sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
               <div className="space-y-1"><Label htmlFor="edit-resource-tags">Etiquetas</Label><Input id="edit-resource-tags" value={editResourceTags} onChange={(e) => setEditResourceTags(e.target.value)} disabled={isSavingEdit || isSavingPin} /></div>
             </>)}
-            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowEditModal(false)} disabled={isSavingEdit || isSavingPin}>Cancelar</Button><Button type="submit" disabled={isSavingEdit || isSavingPin}>{isSavingEdit ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Guardar</Button></DialogFooter>
+            <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><Button type="button" variant="outline" onClick={() => setShowEditModal(false)} disabled={isSavingEdit || isSavingPin}>Cancelar</Button><Button type="submit" disabled={isSavingEdit || isSavingPin}>{isSavingEdit ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Guardar</Button></DialogFooter>
           </form>
           {user?.role === 'ADMINISTRATOR' && resourceToEdit?.type !== 'FOLDER' && (<><Separator /><div className="space-y-3 pt-4"><h4 className="font-medium flex items-center gap-2"><Lock className="h-4 w-4 text-amber-500" />PIN de Seguridad</h4><p className="text-sm text-muted-foreground">Protege este recurso con un PIN.</p><div className="flex items-center gap-2"><Input id="edit-resource-pin" type="password" placeholder="Ingresa un PIN (mín. 4 caracteres)" value={editResourcePin} onChange={(e) => setEditResourcePin(e.target.value.replace(/\D/g, ''))} maxLength={16} disabled={isSavingPin || isSavingEdit} /><Button onClick={handleSavePin} disabled={isSavingPin || isSavingEdit || !editResourcePin}>{isSavingPin && !resourceToEdit?.hasPin ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pin className="h-4 w-4" />}</Button></div>{resourceToEdit?.hasPin && (<Button variant="destructive" className="w-full" onClick={handleRemovePin} disabled={isSavingPin || isSavingEdit}>{isSavingPin ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PinOff className="mr-2 h-4 w-4" />}Quitar PIN</Button>)}</div></>)}
         </DialogContent>
@@ -879,7 +879,7 @@ export default function ResourcesPage() {
       <AlertDialog open={showDeleteConfirmDialog} onOpenChange={setShowDeleteConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader><AlertDialogTitle>¿Estás seguro?</AlertDialogTitle><AlertDialogDescription>El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. {resourceToDelete?.type === 'FOLDER' && 'Todos los archivos y subcarpetas dentro de esta carpeta también serán eliminados.'}</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogCancel onClick={() => setResourceToDelete(null)} disabled={isDeletingResource}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteResource} disabled={isDeletingResource} className={buttonVariants({ variant: "destructive" })}>{isDeletingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel onClick={() => setResourceToDelete(null)} disabled={isDeletingResource}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteResource} disabled={isDeletingResource} className={buttonVariants({ variant: "destructive" })}>{isDeletingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
@@ -938,7 +938,7 @@ export default function ResourcesPage() {
                 <DialogTitle className="flex items-center gap-2"><Lock className="h-5 w-5 text-amber-500" />Se requiere PIN de acceso</DialogTitle>
                 <DialogDescription>Ingresa el PIN para acceder a "<strong>{resourceToUnlock?.resource.title}</strong>".</DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleVerifyPin}><div className="space-y-2 py-4"><Label htmlFor="pin-input" className="sr-only">PIN</Label><Input id="pin-input" type="password" placeholder="Ingresa el PIN" value={pinInput} onChange={e => { setPinInput(e.target.value.replace(/\D/g, '')); setPinError(null); }} autoFocus />{pinError && <p className="text-sm text-destructive">{pinError}</p>}</div><DialogFooter><Button type="button" variant="outline" onClick={() => setResourceToUnlock(null)}>Cancelar</Button><Button type="submit" disabled={isVerifyingPin || pinInput.length < 4}>{isVerifyingPin && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Verificar</Button></DialogFooter></form>
+            <form onSubmit={handleVerifyPin}><div className="space-y-2 py-4"><Label htmlFor="pin-input" className="sr-only">PIN</Label><Input id="pin-input" type="password" placeholder="Ingresa el PIN" value={pinInput} onChange={e => { setPinInput(e.target.value.replace(/\D/g, '')); setPinError(null); }} autoFocus />{pinError && <p className="text-sm text-destructive">{pinError}</p>}</div><DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><Button type="button" variant="outline" onClick={() => setResourceToUnlock(null)}>Cancelar</Button><Button type="submit" disabled={isVerifyingPin || pinInput.length < 4}>{isVerifyingPin && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Verificar</Button></DialogFooter></form>
         </DialogContent>
       </Dialog>
     </div>

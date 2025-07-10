@@ -1259,13 +1259,13 @@ export default function EditCoursePage() {
                 <AlertDialog open={itemToDeleteDetails !== null} onOpenChange={setItemToDeleteDetails as any}>
                     <AlertDialogContent>
                         <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro de que quieres eliminar {itemToDeleteDetails?.type} "<strong>{itemToDeleteDetails?.name}</strong>"? Se eliminará al guardar los cambios del curso.</AlertDialogDescription></AlertDialogHeader>
-                        <AlertDialogFooter className="gap-2 sm:space-x-0"><AlertDialogCancel onClick={() => setItemToDeleteDetails(null)}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={confirmDeleteItemAction} className={buttonVariants({ variant: "destructive" })}><Trash2 className="mr-2 h-4 w-4" /> Sí, eliminar</AlertDialogAction></AlertDialogFooter>
+                        <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel onClick={() => setItemToDeleteDetails(null)}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={confirmDeleteItemAction} className={buttonVariants({ variant: "destructive" })}><Trash2 className="mr-2 h-4 w-4" /> Sí, eliminar</AlertDialogAction></AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
                 <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                     <AlertDialogContent>
                         <AlertDialogHeader><AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle><AlertDialogDescription>Esta acción no se puede deshacer. Se eliminará permanentemente el curso "<strong>{methods.getValues('title' as 'title')}</strong>" y todos sus datos (módulos, lecciones, inscripciones, progreso).</AlertDialogDescription></AlertDialogHeader>
-                        <AlertDialogFooter className="gap-2 sm:space-x-0">
+                        <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
                             <AlertDialogCancel onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>Cancelar</AlertDialogCancel>
                             <AlertDialogAction onClick={handleDeleteCourse} disabled={isDeleting} className={buttonVariants({ variant: "destructive" })}>{isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar permanentemente</AlertDialogAction>
                         </AlertDialogFooter>

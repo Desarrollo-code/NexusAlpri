@@ -399,7 +399,7 @@ export default function ProfilePage() {
                     </InputOTP>
                 </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
                 <Button variant="outline" onClick={() => setShow2faSetup(false)} disabled={is2faProcessing}>Cancelar</Button>
                 <Button onClick={handleVerify2fa} disabled={!twoFactorToken || twoFactorToken.length < 6 || is2faProcessing}>
                     {is2faProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
@@ -427,7 +427,7 @@ export default function ProfilePage() {
                 placeholder="Ingresa tu contraseña"
               />
           </div>
-          <AlertDialogFooter>
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
             <AlertDialogCancel onClick={() => setDisablePassword('')}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDisable2fa}
@@ -483,7 +483,7 @@ export default function ProfilePage() {
                         disabled={isChangingPassword}
                     />
                 </div>
-                <DialogFooter>
+                <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
                     <Button variant="outline" type="button" onClick={() => setShowChangePasswordDialog(false)} disabled={isChangingPassword}>Cancelar</Button>
                     <Button type="submit" disabled={isChangingPassword}>
                         {isChangingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}

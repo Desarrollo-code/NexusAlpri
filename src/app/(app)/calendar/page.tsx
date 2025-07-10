@@ -1,3 +1,4 @@
+
 // src/app/(app)/calendar/page.tsx
 
 'use client';
@@ -481,7 +482,7 @@ export default function CalendarPage() {
               Esta acción no se puede deshacer. Se eliminará el evento "<strong>{eventToDelete?.title}</strong>".
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
             <AlertDialogCancel disabled={isSaving}>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteEvent} disabled={isSaving} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
               {isSaving && <Loader2 className="mr-2 animate-spin" />}

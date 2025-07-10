@@ -437,7 +437,7 @@ export default function UsersPage() {
                           <Input id="password" type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Mínimo 8 caracteres" required disabled={isProcessing}/>
                         </div>
                     )}
-                    <DialogFooter>
+                    <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
                         <Button type="button" variant="outline" onClick={() => {
                             setShowAddEditModal(false);
                             setUserToEdit(null);
@@ -503,7 +503,7 @@ export default function UsersPage() {
                <strong> {userToDelete?.name}</strong> de la plataforma.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
             <AlertDialogCancel disabled={isProcessing} onClick={() => setShowDeleteConfirmDialog(false)}>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteUser} disabled={isProcessing} className={buttonVariants({ variant: "destructive" })}>
               {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : "Sí, eliminar usuario"}
@@ -541,7 +541,7 @@ export default function UsersPage() {
                           </SelectContent>
                       </Select>
                   </div>
-                  <DialogFooter>
+                  <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
                       <Button type="button" variant="outline" onClick={() => {
                           setShowChangeRoleDialog(false);
                           setUserToChangeRole(null);
