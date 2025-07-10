@@ -106,8 +106,12 @@ export async function POST(req: NextRequest) {
                 title,
                 description,
                 category: category || 'General',
-                instructorId: session.id,
                 status: 'DRAFT',
+                instructor: {
+                    connect: {
+                        id: session.id,
+                    },
+                },
             },
             include: {
                 instructor: true, // Include instructor details in the response
