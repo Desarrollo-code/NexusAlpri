@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useCallback } from 'react';
@@ -30,6 +31,15 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
     if (!imageSrc || !croppedAreaPixels) {
       return;
     }
+    // Prevent cropping if the cropped area is too small
+    if (croppedAreaPixels.width < 10 || croppedAreaPixels.height < 10) {
+        toast({
+            title: "Área de Recorte Pequeña",
+            description: "Por favor, selecciona un área más grande para recortar.",
+            variant: "destructive"
+        });
+        return;
+    }
     try {
       const result = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
       if(result) {
@@ -51,10 +61,10 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
 
   return (
     <Dialog open={!!imageSrc} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="max-w-3xl h-[80vh] flex flex-col p-0">
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle>Recortar Imagen</DialogTitle>
-          <DialogDescription>Ajusta el zoom y la rotación para obtener el recorte perfecto.</DialogDescription>
+          <DialogDescription>Ajusta el zoom, la rotación y el área de recorte. Puedes alejar la imagen para seleccionarla completa.</DialogDescription>
         </DialogHeader>
         <div className="relative flex-grow">
           <Cropper
@@ -62,7 +72,7 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
             crop={crop}
             zoom={zoom}
             rotation={rotation}
-            aspect={16 / 9}
+            aspect={undefined} // Allow free aspect ratio
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onRotationChange={setRotation}
@@ -74,9 +84,9 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
             <ZoomOut className="h-5 w-5" />
             <Slider
               value={[zoom]}
-              min={1}
+              min={0.1} // Allow zooming out
               max={3}
-              step={0.1}
+              step={0.01}
               onValueChange={(value) => setZoom(value[0])}
               aria-label="Zoom"
             />
