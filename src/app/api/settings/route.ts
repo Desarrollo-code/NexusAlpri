@@ -71,6 +71,27 @@ export async function POST(req: NextRequest) {
     delete (dataToSave as any).updatedAt;
     
     const currentSettings = await prisma.platformSettings.findFirst();
+    
+    // --- START: CATEGORY DELETION CHECK ---
+    if (currentSettings && currentSettings.resourceCategories && Array.isArray(currentSettings.resourceCategories)) {
+        const oldCategories = currentSettings.resourceCategories as string[];
+        const newCategories = dataToSave.resourceCategories;
+        const deletedCategories = oldCategories.filter(cat => !newCategories.includes(cat));
+
+        if (deletedCategories.length > 0) {
+            for (const category of deletedCategories) {
+                const courseCount = await prisma.course.count({ where: { category } });
+                const resourceCount = await prisma.resource.count({ where: { category } });
+                const totalUsage = courseCount + resourceCount;
+                if (totalUsage > 0) {
+                    return NextResponse.json({
+                        message: `No se puede eliminar la categoría "${category}" porque está siendo utilizada por ${totalUsage} curso(s) o recurso(s).`,
+                    }, { status: 409 }); // 409 Conflict
+                }
+            }
+        }
+    }
+    // --- END: CATEGORY DELETION CHECK ---
 
     const updatedDbSettings = await prisma.platformSettings.upsert({
       where: { id: currentSettings?.id || 'non-existent-id-for-upsert' },
