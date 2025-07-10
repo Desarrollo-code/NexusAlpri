@@ -189,7 +189,8 @@ export type SecurityLogEvent =
     | 'FAILED_LOGIN_ATTEMPT' 
     | 'PASSWORD_CHANGE_SUCCESS'
     | 'TWO_FACTOR_ENABLED'
-    | 'TWO_FACTOR_DISABLED';
+    | 'TWO_FACTOR_DISABLED'
+    | 'USER_ROLE_CHANGED';
 
 export interface SecurityLog {
     id: string;
@@ -198,4 +199,5 @@ export interface SecurityLog {
     emailAttempt?: string;
     userId?: string;
     createdAt: string;
+    details?: string;
 }

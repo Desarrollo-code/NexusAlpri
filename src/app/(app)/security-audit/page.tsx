@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, KeyRound, UserRound, Server } from 'lucide-react';
+import { Loader2, AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, KeyRound, UserRound, Server, UserCog } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityLogEvent, User as AppUser } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -54,44 +54,58 @@ export default function SecurityAuditPage() {
         fetchLogs();
     }, [currentUser, router, fetchLogs]);
 
-    const getEventDetails = (event: SecurityLogEvent) => {
+    const getEventDetails = (event: SecurityLogEvent, details?: string | null) => {
         switch (event) {
             case 'SUCCESSFUL_LOGIN':
                  return {
                     label: 'Inicio de Sesión Exitoso',
                     icon: <ShieldCheck className="h-4 w-4 text-green-500" />,
                     variant: 'secondary',
+                    details: 'Acceso concedido a la cuenta.'
                 };
             case 'FAILED_LOGIN_ATTEMPT':
                 return {
                     label: 'Intento de Inicio Fallido',
                     icon: <ShieldX className="h-4 w-4 text-destructive" />,
                     variant: 'destructive',
+                    details: 'Credenciales incorrectas o usuario no encontrado.'
                 };
             case 'PASSWORD_CHANGE_SUCCESS':
                  return {
                     label: 'Cambio de Contraseña',
                     icon: <KeyRound className="h-4 w-4 text-blue-500" />,
                     variant: 'default',
+                    details: 'La contraseña del usuario fue actualizada.'
                 };
             case 'TWO_FACTOR_ENABLED':
                 return {
                     label: '2FA Activado',
                     icon: <ShieldCheck className="h-4 w-4 text-green-500" />,
                     variant: 'default',
+                    details: 'El usuario activó la autenticación de dos factores.'
                 };
             case 'TWO_FACTOR_DISABLED':
                 return {
                     label: '2FA Desactivado',
                     icon: <ShieldAlert className="h-4 w-4 text-amber-500" />,
                     variant: 'destructive',
-                    variant_opts: { className: 'bg-amber-500 hover:bg-amber-600 border-amber-500' }
+                    variant_opts: { className: 'bg-amber-500 hover:bg-amber-600 border-amber-500' },
+                    details: 'El usuario desactivó la autenticación de dos factores.'
+                };
+             case 'USER_ROLE_CHANGED':
+                return {
+                    label: 'Cambio de Rol de Usuario',
+                    icon: <UserCog className="h-4 w-4 text-purple-500" />,
+                    variant: 'default',
+                    variant_opts: { className: 'bg-purple-600 hover:bg-purple-700 border-purple-600' },
+                    details: details || 'El rol del usuario ha sido modificado.'
                 };
             default:
                 return {
                     label: event.replace(/_/g, ' ').toLowerCase(),
                     icon: <ShieldAlert className="h-4 w-4 text-muted-foreground" />,
                     variant: 'outline',
+                    details: details || 'Evento de seguridad general.'
                 };
         }
     };
@@ -144,16 +158,17 @@ export default function SecurityAuditPage() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Evento</TableHead>
+                                        <TableHead className="w-[200px]">Evento</TableHead>
+                                        <TableHead>Detalles</TableHead>
                                         <TableHead>Usuario Afectado</TableHead>
                                         <TableHead>Dirección IP</TableHead>
-                                        <TableHead>Fecha y Hora</TableHead>
+                                        <TableHead className="text-right">Fecha y Hora</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {logs.length > 0 ? (
                                         logs.map((log) => {
-                                            const eventDetails = getEventDetails(log.event);
+                                            const eventDetails = getEventDetails(log.event, log.details);
                                             return (
                                                 <TableRow key={log.id}>
                                                     <TableCell>
@@ -164,6 +179,7 @@ export default function SecurityAuditPage() {
                                                             </Badge>
                                                         </div>
                                                     </TableCell>
+                                                    <TableCell className="text-xs text-muted-foreground">{eventDetails.details}</TableCell>
                                                      <TableCell>
                                                         {log.user ? (
                                                             <div className="flex items-center gap-2">
@@ -186,13 +202,13 @@ export default function SecurityAuditPage() {
                                                             {log.ipAddress}
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell>{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
+                                                    <TableCell className="text-right">{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
                                                 </TableRow>
                                             );
                                         })
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="h-24 text-center">
+                                            <TableCell colSpan={5} className="h-24 text-center">
                                                 No hay registros de seguridad.
                                             </TableCell>
                                         </TableRow>
