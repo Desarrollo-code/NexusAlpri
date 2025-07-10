@@ -167,7 +167,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               alt="NexusAlpri Logo" 
               width={120} 
               height={97.5}
-              className="group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-auto group-data-[collapsible=icon]:mx-auto w-8 h-auto"
+              className="group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-auto group-data-[collapsible=icon]:mx-auto w-auto h-8"
               priority
               data-ai-hint="logo education"
             />
