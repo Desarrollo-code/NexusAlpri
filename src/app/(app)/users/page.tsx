@@ -543,7 +543,7 @@ export default function UsersPage() {
                           </SelectContent>
                       </Select>
                   </div>
-                  <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+                  <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4">
                       <Button type="button" variant="outline" onClick={() => {
                           setShowChangeRoleDialog(false);
                           setUserToChangeRole(null);
