@@ -390,67 +390,69 @@ export default function UsersPage() {
             <h1 className="text-3xl font-bold font-headline mb-2">Gestión de Usuarios</h1>
             <p className="text-muted-foreground">Administra los usuarios de la plataforma NexusAlpri.</p>
         </div>
-        <Dialog open={showAddEditModal} onOpenChange={(isOpen) => {
-            setShowAddEditModal(isOpen);
-            if (!isOpen) {
-                setUserToEdit(null); 
-                resetFormFields();
-            }
-        }}>
-            <DialogTrigger asChild>
-                <Button onClick={handleOpenAddModal}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Añadir Nuevo Usuario
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="w-[95vw] max-w-md rounded-lg">
-                <DialogHeader>
-                  <DialogTitle>{userToEdit ? "Editar Usuario" : "Añadir Nuevo Usuario"}</DialogTitle>
-                  <DialogDescription>
-                    {userToEdit ? "Modifica los datos del usuario." : "Completa los campos para registrar un nuevo usuario."}
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleAddEditUser} className="grid gap-4 py-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="name">Nombre</Label>
-                        <Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nombre completo" required disabled={isProcessing} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="usuario@ejemplo.com" required disabled={isProcessing}/>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="role">Rol</Label>
-                        <Select name="role" value={editRole} onValueChange={(value) => setEditRole(value as UserRole)} required disabled={isProcessing}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Seleccionar rol" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="STUDENT">Estudiante</SelectItem>
-                                <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                                <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    {!userToEdit && (
-                       <div className="space-y-2">
-                          <Label htmlFor="password">Contraseña</Label>
-                          <Input id="password" type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Mínimo 8 caracteres" required disabled={isProcessing}/>
+        <div className="flex flex-row flex-wrap items-center gap-2">
+            <Dialog open={showAddEditModal} onOpenChange={(isOpen) => {
+                setShowAddEditModal(isOpen);
+                if (!isOpen) {
+                    setUserToEdit(null); 
+                    resetFormFields();
+                }
+            }}>
+                <DialogTrigger asChild>
+                    <Button onClick={handleOpenAddModal}>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Añadir Nuevo Usuario
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="w-[95vw] max-w-md rounded-lg">
+                    <DialogHeader>
+                      <DialogTitle>{userToEdit ? "Editar Usuario" : "Añadir Nuevo Usuario"}</DialogTitle>
+                      <DialogDescription>
+                        {userToEdit ? "Modifica los datos del usuario." : "Completa los campos para registrar un nuevo usuario."}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleAddEditUser} className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="name">Nombre</Label>
+                            <Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nombre completo" required disabled={isProcessing} />
                         </div>
-                    )}
-                    <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-                        <Button type="button" variant="outline" onClick={() => {
-                            setShowAddEditModal(false);
-                            setUserToEdit(null);
-                            resetFormFields();
-                        }} disabled={isProcessing}>Cancelar</Button>
-                        <Button type="submit" disabled={isProcessing}>
-                            {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                            {userToEdit ? "Guardar Cambios" : "Crear Usuario"}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input id="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="usuario@ejemplo.com" required disabled={isProcessing}/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="role">Rol</Label>
+                            <Select name="role" value={editRole} onValueChange={(value) => setEditRole(value as UserRole)} required disabled={isProcessing}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Seleccionar rol" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="STUDENT">Estudiante</SelectItem>
+                                    <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
+                                    <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        {!userToEdit && (
+                           <div className="space-y-2">
+                              <Label htmlFor="password">Contraseña</Label>
+                              <Input id="password" type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Mínimo 8 caracteres" required disabled={isProcessing}/>
+                            </div>
+                        )}
+                        <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+                            <Button type="button" variant="outline" onClick={() => {
+                                setShowAddEditModal(false);
+                                setUserToEdit(null);
+                                resetFormFields();
+                            }} disabled={isProcessing}>Cancelar</Button>
+                            <Button type="submit" disabled={isProcessing}>
+                                {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                {userToEdit ? "Guardar Cambios" : "Crear Usuario"}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+        </div>
       </div>
 
       <Card>

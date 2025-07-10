@@ -229,79 +229,81 @@ export default function AnnouncementsPage() {
             <p className="text-muted-foreground">Mantente informado sobre las últimas novedades de NexusAlpri.</p>
         </div>
         {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-          <Dialog open={showCreateEditModal} onOpenChange={(isOpen) => {
-              setShowCreateEditModal(isOpen);
-              if (!isOpen) resetFormAndState();
-          }}>
-            <DialogTrigger asChild>
-              <Button onClick={handleOpenCreateModal}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Crear Anuncio
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>{announcementToEdit ? 'Editar Anuncio' : 'Crear Nuevo Anuncio'}</DialogTitle>
-                <DialogDescription>
-                  {announcementToEdit ? 'Modifica los detalles del anuncio.' : 'Redacta y publica un nuevo comunicado para los usuarios.'}
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleSaveAnnouncement} className="grid gap-4 py-4">
-                <div className="space-y-1">
-                  <Label htmlFor="title">Título <span className="text-destructive">*</span></Label>
-                  <Input 
-                    id="title" 
-                    value={formTitle}
-                    onChange={(e) => setFormTitle(e.target.value)}
-                    placeholder="Título del anuncio" 
-                    required
-                    disabled={isProcessing}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="content">Contenido <span className="text-destructive">*</span></Label>
-                  <Textarea 
-                    id="content" 
-                    value={formContent}
-                    onChange={(e) => setFormContent(e.target.value)}
-                    placeholder="Escribe aquí el contenido del anuncio..." 
-                    className="col-span-3 min-h-[100px]" 
-                    required
-                    disabled={isProcessing}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="audience">Dirigido a <span className="text-destructive">*</span></Label>
-                   <Select 
-                      name="audience" 
-                      value={formAudience}
-                      onValueChange={(value) => setFormAudience(value as UserRole | 'ALL')}
+          <div className="flex flex-row flex-wrap items-center gap-2">
+            <Dialog open={showCreateEditModal} onOpenChange={(isOpen) => {
+                setShowCreateEditModal(isOpen);
+                if (!isOpen) resetFormAndState();
+            }}>
+              <DialogTrigger asChild>
+                <Button onClick={handleOpenCreateModal}>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Crear Anuncio
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>{announcementToEdit ? 'Editar Anuncio' : 'Crear Nuevo Anuncio'}</DialogTitle>
+                  <DialogDescription>
+                    {announcementToEdit ? 'Modifica los detalles del anuncio.' : 'Redacta y publica un nuevo comunicado para los usuarios.'}
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSaveAnnouncement} className="grid gap-4 py-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="title">Título <span className="text-destructive">*</span></Label>
+                    <Input 
+                      id="title" 
+                      value={formTitle}
+                      onChange={(e) => setFormTitle(e.target.value)}
+                      placeholder="Título del anuncio" 
                       required
                       disabled={isProcessing}
-                    >
-                      <SelectTrigger id="audience" className="col-span-3">
-                         <SelectValue placeholder="Seleccionar audiencia" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ALL">Todos</SelectItem>
-                        <SelectItem value="STUDENT">Estudiantes</SelectItem>
-                        <SelectItem value="INSTRUCTOR">Instructores</SelectItem>
-                        <SelectItem value="ADMINISTRATOR">Administradores</SelectItem>
-                      </SelectContent>
-                    </Select>
-                </div>
-                 <p className="text-xs text-muted-foreground text-center pt-2">
-                    Los campos marcados con <span className="text-destructive">*</span> son obligatorios.
-                </p>
-                <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-                  <Button type="button" variant="outline" onClick={() => { setShowCreateEditModal(false); resetFormAndState();}} disabled={isProcessing}>Cancelar</Button>
-                  <Button type="submit" disabled={isProcessing}>
-                    {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (announcementToEdit ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />) }
-                    {announcementToEdit ? 'Guardar Cambios' : 'Publicar Anuncio'}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="content">Contenido <span className="text-destructive">*</span></Label>
+                    <Textarea 
+                      id="content" 
+                      value={formContent}
+                      onChange={(e) => setFormContent(e.target.value)}
+                      placeholder="Escribe aquí el contenido del anuncio..." 
+                      className="col-span-3 min-h-[100px]" 
+                      required
+                      disabled={isProcessing}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="audience">Dirigido a <span className="text-destructive">*</span></Label>
+                     <Select 
+                        name="audience" 
+                        value={formAudience}
+                        onValueChange={(value) => setFormAudience(value as UserRole | 'ALL')}
+                        required
+                        disabled={isProcessing}
+                      >
+                        <SelectTrigger id="audience" className="col-span-3">
+                           <SelectValue placeholder="Seleccionar audiencia" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">Todos</SelectItem>
+                          <SelectItem value="STUDENT">Estudiantes</SelectItem>
+                          <SelectItem value="INSTRUCTOR">Instructores</SelectItem>
+                          <SelectItem value="ADMINISTRATOR">Administradores</SelectItem>
+                        </SelectContent>
+                      </Select>
+                  </div>
+                   <p className="text-xs text-muted-foreground text-center pt-2">
+                      Los campos marcados con <span className="text-destructive">*</span> son obligatorios.
+                  </p>
+                  <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+                    <Button type="button" variant="outline" onClick={() => { setShowCreateEditModal(false); resetFormAndState();}} disabled={isProcessing}>Cancelar</Button>
+                    <Button type="submit" disabled={isProcessing}>
+                      {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (announcementToEdit ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />) }
+                      {announcementToEdit ? 'Guardar Cambios' : 'Publicar Anuncio'}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         )}
       </div>
 

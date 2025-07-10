@@ -367,22 +367,24 @@ export default function ManageCoursesPage() {
             <p className="text-muted-foreground">Administradores e Instructores: Creen, editen y organicen los cursos.</p>
         </div>
         {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-         <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-            <DialogTrigger asChild>
-                <Button>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Crear Nuevo Curso
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="w-[95vw] max-w-xl rounded-lg max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                <DialogTitle>Crear Nuevo Curso</DialogTitle>
-                <DialogDescription>
-                  Sigue los pasos para crear la base de tu nuevo curso. Serás redirigido para añadir contenido al finalizar.
-                </DialogDescription>
-                </DialogHeader>
-                <CourseCreationForm onSuccess={handleCreationSuccess} />
-            </DialogContent>
-        </Dialog>
+         <div className="flex flex-row flex-wrap items-center gap-2">
+            <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+                <DialogTrigger asChild>
+                    <Button>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Crear Nuevo Curso
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="w-[95vw] max-w-xl rounded-lg max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                    <DialogTitle>Crear Nuevo Curso</DialogTitle>
+                    <DialogDescription>
+                      Sigue los pasos para crear la base de tu nuevo curso. Serás redirigido para añadir contenido al finalizar.
+                    </DialogDescription>
+                    </DialogHeader>
+                    <CourseCreationForm onSuccess={handleCreationSuccess} />
+                </DialogContent>
+            </Dialog>
+         </div>
         )}
       </div>
 
