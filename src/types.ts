@@ -1,4 +1,5 @@
 
+
 import type { JsonValue } from "@prisma/client/runtime/library";
 
 // --- USER & AUTH ---
@@ -69,13 +70,19 @@ export interface Quiz {
     questions: Question[];
 }
 
-export interface Lesson {
+export interface ContentBlock {
   id: string;
-  title: string;
   type: LessonType;
   content?: string;
   order: number;
   quiz?: Quiz;
+}
+
+export interface Lesson {
+  id: string;
+  title: string;
+  order: number;
+  contentBlocks: ContentBlock[];
 }
 
 export interface Module {

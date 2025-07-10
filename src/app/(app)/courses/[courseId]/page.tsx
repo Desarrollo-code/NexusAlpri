@@ -9,7 +9,7 @@ import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCir
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, LessonType, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption, CourseProgress, LessonCompletionRecord } from '@/types';
+import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, ContentBlock, LessonType, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption, CourseProgress, LessonCompletionRecord } from '@/types';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useAuth } from '@/contexts/auth-context';
@@ -26,11 +26,11 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 
 // Helper types and functions
-interface PrismaLessonWithQuiz extends PrismaLesson {
-  quiz?: (AppQuiz & { questions: (AppQuestion & { options: AppAnswerOption[] })[] }) | null;
+interface PrismaLessonWithContentBlocks extends PrismaLesson {
+  contentBlocks: (ContentBlock & { quiz?: (AppQuiz & { questions: (AppQuestion & { options: AppAnswerOption[] })[] }) | null })[];
 }
 interface PrismaModuleWithLessons extends Omit<PrismaModule, 'lessons'> {
-  lessons: PrismaLessonWithQuiz[];
+  lessons: PrismaLessonWithContentBlocks[];
 }
 interface ApiDetailedCourse extends Omit<PrismaCourse, 'instructor' | 'modules'> {
   instructor: { id: string; name: string } | null;
@@ -53,21 +53,25 @@ function mapApiDetailedCourseToAppCourse(apiCourse: ApiDetailedCourse): AppCours
       lessons: (mod.lessons || []).map(less => ({
         id: less.id,
         title: less.title || '',
-        type: less.type as AppLesson['type'],
-        content: less.content || '',
         order: less.order ?? 0,
-        quiz: less.quiz ? {
-            id: less.quiz.id,
-            title: less.quiz.title,
-            description: less.quiz.description,
-            questions: (less.quiz.questions || []).map(q => ({
-                id: q.id,
-                text: q.text,
-                type: q.type,
-                order: q.order,
-                options: (q.options || []).sort((a,b) => a.id.localeCompare(b.id)), // Ensure consistent order
-            })).sort((a,b) => a.order - b.order),
-        } : undefined,
+        contentBlocks: (less.contentBlocks || []).map(block => ({
+            id: block.id,
+            type: block.type as LessonType,
+            content: block.content || '',
+            order: block.order ?? 0,
+            quiz: block.quiz ? {
+                id: block.quiz.id,
+                title: block.quiz.title,
+                description: block.quiz.description,
+                questions: (block.quiz.questions || []).map(q => ({
+                    id: q.id,
+                    text: q.text,
+                    type: q.type,
+                    order: q.order,
+                    options: (q.options || []).sort((a,b) => a.id.localeCompare(b.id)), // Ensure consistent order
+                })).sort((a,b) => a.order - b.order),
+            } : undefined,
+        })).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
       })).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
     })).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
   };
@@ -157,8 +161,8 @@ export default function CourseDetailPage() {
     setError(null);
     try {
       const [courseResponse, enrollmentStatusResponse] = await Promise.all([
-        fetch(`/api/courses/${courseId}`, { cache: 'no-store' }),
-        user ? fetch(`/api/enrollment/status/${user.id}/${courseId}`, { cache: 'no-store' }) : Promise.resolve(null)
+        fetch(`/api/courses/${courseId}`),
+        user ? fetch(`/api/enrollment/status/${user.id}/${courseId}`) : Promise.resolve(null)
       ]);
 
       if (!courseResponse.ok) throw new Error(courseResponse.status === 404 ? 'Curso no encontrado' : 'Failed to fetch course details');
@@ -175,7 +179,7 @@ export default function CourseDetailPage() {
       setIsEnrolled(enrollmentData.isEnrolled);
       
       if (user && enrollmentData.isEnrolled) {
-        const progressResponse = await fetch(`/api/progress/${user.id}/${courseId}`, { cache: 'no-store' });
+        const progressResponse = await fetch(`/api/progress/${user.id}/${courseId}`);
         if (progressResponse.ok) {
           const progressData: CourseProgress = await progressResponse.json();
           setCourseProgress(progressData);
@@ -261,7 +265,7 @@ export default function CourseDetailPage() {
       if (isMobile) {
         setIsMobileSheetOpen(false);
       }
-      if (lesson.type !== 'QUIZ' && !provisionalProgress[lesson.id]) {
+      if (!provisionalProgress[lesson.id]) {
         recordInteraction(lesson.id, 'view');
       }
   };
@@ -276,12 +280,13 @@ export default function CourseDetailPage() {
     }
   };
   
-  const renderLessonContent = (lesson: AppLesson) => {
-    if (lesson.type === 'QUIZ') {
+  const renderContentBlock = (block: ContentBlock) => {
+    if (block.type === 'QUIZ') {
         return (
             <QuizViewer 
-                quiz={lesson.quiz}
-                lessonId={lesson.id}
+                key={block.id}
+                quiz={block.quiz}
+                lessonId={selectedLessonId!} // The lesson ID is needed for quiz submission logic
                 courseId={courseId}
                 isEnrolled={isEnrolled}
                 onQuizCompleted={handleQuizSubmitted}
@@ -289,73 +294,73 @@ export default function CourseDetailPage() {
         );
     }
       
-    if (!lesson.content) {
-      return <p className="text-sm text-muted-foreground my-4">Contenido de la lección no disponible.</p>;
+    if (!block.content) {
+      return <p key={block.id} className="text-sm text-muted-foreground my-4">Contenido no disponible.</p>;
     }
 
-    const videoId = lesson.type === 'VIDEO' ? getYouTubeVideoId(lesson.content) : null;
-    const isPdf = lesson.type === 'FILE' && lesson.content?.toLowerCase().endsWith('.pdf');
-    const isImage = lesson.type === 'FILE' && lesson.content?.toLowerCase().match(/\.(jpeg|jpg|gif|png|webp)$/);
+    const videoId = block.type === 'VIDEO' ? getYouTubeVideoId(block.content) : null;
+    const isPdf = block.type === 'FILE' && block.content?.toLowerCase().endsWith('.pdf');
+    const isImage = block.type === 'FILE' && block.content?.toLowerCase().match(/\.(jpeg|jpg|gif|png|webp)$/);
     
     if (videoId) {
       return (
-        <div className="aspect-video w-full max-w-4xl mx-auto my-4 rounded-lg overflow-hidden shadow-md">
-          <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${videoId}`} title={`YouTube video: ${lesson.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+        <div key={block.id} className="aspect-video w-full max-w-4xl mx-auto my-4 rounded-lg overflow-hidden shadow-md">
+          <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${videoId}`} title={`YouTube video: ${selectedLesson?.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
         </div>
       );
     }
     
     if (isPdf) {
       return (
-        <div className="my-4 p-2 bg-muted/30 rounded-md" onScroll={() => onScroll(lesson.id)} ref={el => contentRefs.current[lesson.id] = el} style={{ maxHeight: '600px', overflowY: 'auto' }}>
-          <iframe src={lesson.content} className="w-full h-[600px] border rounded-md" title={`PDF Preview: ${lesson.title}`}/>
+        <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" onScroll={() => onScroll(selectedLessonId!)} ref={el => contentRefs.current[selectedLessonId!] = el} style={{ maxHeight: '600px', overflowY: 'auto' }}>
+          <iframe src={block.content} className="w-full h-[600px] border rounded-md" title={`PDF Preview: ${selectedLesson?.title}`}/>
         </div>
       );
     }
 
     if (isImage) {
       return (
-        <div className="my-4 p-2 bg-muted/30 rounded-md flex justify-center">
-          <Image src={lesson.content} alt={`Preview: ${lesson.title}`} width={800} height={600} className="rounded-md object-contain max-h-[600px]" onError={(e) => { e.currentTarget.src="https://placehold.co/800x600.png"; }} data-ai-hint="lesson file" />
+        <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center">
+          <Image src={block.content} alt={`Preview: ${selectedLesson?.title}`} width={800} height={600} className="rounded-md object-contain max-h-[600px]" onError={(e) => { e.currentTarget.src="https://placehold.co/800x600.png"; }} data-ai-hint="lesson file" />
         </div>
       );
     }
     
-    if (lesson.type === 'FILE') { 
+    if (block.type === 'FILE') { 
       return (
-        <div className="my-4 p-4 bg-muted/50 rounded-md text-center">
+        <div key={block.id} className="my-4 p-4 bg-muted/50 rounded-md text-center">
           <p className="text-sm text-muted-foreground mb-2">Este recurso es un archivo descargable:</p>
           <Button asChild size="sm">
-            <Link href={lesson.content} target="_blank" rel="noopener noreferrer" download>
-              <Download className="mr-2 h-4 w-4" /> Descargar {lesson.title}
+            <Link href={block.content} target="_blank" rel="noopener noreferrer" download>
+              <Download className="mr-2 h-4 w-4" /> Descargar Archivo
             </Link>
           </Button>
         </div>
       );
     }
 
-    if (lesson.type === 'TEXT') {
-       const isExternalLink = lesson.content.startsWith('http://') || lesson.content.startsWith('https://');
+    if (block.type === 'TEXT') {
+       const isExternalLink = block.content.startsWith('http://') || block.content.startsWith('https://');
        if (isExternalLink) {
          return (
-            <div className="my-4 p-4 bg-muted/50 rounded-md">
+            <div key={block.id} className="my-4 p-4 bg-muted/50 rounded-md">
              <p className="text-sm text-muted-foreground mb-2">Esta lección es un enlace externo:</p>
              <Button variant="link" asChild className="p-0 h-auto">
-                <Link href={lesson.content} target="_blank" rel="noopener noreferrer">
-                    {lesson.title} <ExternalLink className="ml-1 h-3 w-3" />
+                <Link href={block.content} target="_blank" rel="noopener noreferrer">
+                    {selectedLesson?.title} <ExternalLink className="ml-1 h-3 w-3" />
                 </Link>
              </Button>
            </div>
          );
        }
        return (
-        <div className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card whitespace-pre-wrap" onScroll={() => onScroll(lesson.id)} ref={el => contentRefs.current[lesson.id] = el} style={{ maxHeight: '500px', overflowY: 'auto' }}>
-            {lesson.content}
+        <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card whitespace-pre-wrap" onScroll={() => onScroll(selectedLessonId!)} ref={el => contentRefs.current[selectedLessonId!] = el} style={{ maxHeight: '500px', overflowY: 'auto' }}>
+            {block.content}
         </div>
        );
     }
 
-    return <p className="text-sm text-muted-foreground my-4">Contenido de la lección no disponible.</p>;
+    return <p key={block.id} className="text-sm text-muted-foreground my-4">Contenido no disponible.</p>;
   };
   
   const SidebarContent = () => (
@@ -372,7 +377,7 @@ export default function CourseDetailPage() {
             </div>
         </div>
         <ScrollArea className="flex-1">
-             <Accordion type="multiple" defaultValue={course.modules.map(m => m.id)} className="w-full p-2">
+             <Accordion type="multiple" defaultValue={course?.modules.map(m => m.id)} className="w-full p-2">
                 {filteredModules.map((moduleItem) => (
                   <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b-0 mb-1">
                     <AccordionTrigger className="text-sm font-semibold hover:no-underline py-2 px-2 hover:bg-muted/50 rounded-md">
@@ -394,7 +399,7 @@ export default function CourseDetailPage() {
                                             : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                                     )}
                                 >
-                                    {getLessonIcon(lesson.type)}
+                                    <BookOpenText className="h-4 w-4 text-primary flex-shrink-0" />
                                     <span className="flex-grow truncate">{lesson.title}</span>
                                     {isCompleted && <CheckCircle className="h-4 w-4 text-green-500 shrink-0"/>}
                                 </button>
@@ -448,8 +453,8 @@ export default function CourseDetailPage() {
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-sm text-center p-6">
-                            <DialogHeader className="text-center">
-                                <DialogTitle className="text-lg font-semibold">Tu Progreso</DialogTitle>
+                            <DialogHeader>
+                                <DialogTitle>Tu Progreso</DialogTitle>
                                 <DialogDescription>
                                     {isFinalProgressVisible ? "Este es tu resultado final para el curso." : "Completa todas las lecciones para calcular tu puntuación."}
                                 </DialogDescription>
@@ -510,10 +515,10 @@ export default function CourseDetailPage() {
                 {selectedLesson ? (
                     <div>
                         <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-                            {getLessonIcon(selectedLesson.type)}
+                            <BookOpenText className="h-5 w-5 text-primary" />
                             <h2>{selectedLesson.title}</h2>
                         </div>
-                        {renderLessonContent(selectedLesson)}
+                        {(selectedLesson.contentBlocks || []).map(block => renderContentBlock(block))}
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center">
@@ -543,6 +548,7 @@ export default function CourseDetailPage() {
     </div>
   );
 }
+
 
 
 

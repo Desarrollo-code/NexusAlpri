@@ -1,12 +1,13 @@
 
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
 // GET a specific course by ID
-export async function GET(req: NextRequest, context: { params: { id: string } }) {
-  const { id } = context.params;
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
   try {
     const course = await prisma.course.findUnique({
       where: { id },
@@ -18,18 +19,23 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
             lessons: {
               orderBy: { order: 'asc' },
               include: {
-                quiz: {
+                contentBlocks: {
+                  orderBy: { order: 'asc' },
                   include: {
-                    questions: {
-                      orderBy: { order: 'asc' },
+                    quiz: {
                       include: {
-                        options: {
-                           orderBy: { id: 'asc' }, // Consistent ordering
-                        }
+                        questions: {
+                          orderBy: { order: 'asc' },
+                          include: {
+                            options: {
+                               orderBy: { id: 'asc' }, // Consistent ordering
+                            }
+                          },
+                        },
                       },
                     },
-                  },
-                },
+                  }
+                }
               },
             },
           },
@@ -49,13 +55,13 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
 
 
 // PUT (update) a course
-export async function PUT(req: NextRequest, context: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession(req);
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id } = context.params;
+  const { id } = params;
 
   try {
     const courseData = await req.json();
@@ -94,7 +100,6 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
       if (modules) {
         const incomingModuleIds = modules.filter((m: any) => !m._toBeDeleted && m.id && !m.id.startsWith('new-')).map((m: any) => m.id);
         
-        // Delete modules that are not in the incoming list
         await tx.module.deleteMany({
           where: {
             courseId: id,
@@ -142,8 +147,6 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
                   
                   const lessonPayload: any = {
                       title: lessonData.title,
-                      content: lessonData.type !== 'QUIZ' ? lessonData.content : null,
-                      type: lessonData.type,
                       order: lessonIndex,
                       moduleId: savedModule.id,
                   };
@@ -151,67 +154,87 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
                   const savedLesson = await tx.lesson.upsert({
                       where: { id: lessonData.id.startsWith('new-') ? '---' : lessonData.id },
                       create: lessonPayload,
-                      update: lessonPayload,
+                      update: { title: lessonData.title, order: lessonIndex },
                   });
 
-                  // Handle Quiz
-                  if (lessonData.type === 'QUIZ' && lessonData.quiz) {
-                      const quizData = lessonData.quiz;
-                      const quizPayload = {
-                          title: quizData.title,
-                          description: quizData.description,
-                          lessonId: savedLesson.id,
-                      };
-                      
-                      const savedQuiz = await tx.quiz.upsert({
-                          where: { lessonId: savedLesson.id },
-                          create: quizPayload,
-                          update: quizPayload,
-                      });
+                  // Handle Content Blocks
+                  if (lessonData.contentBlocks) {
+                    const incomingBlockIds = lessonData.contentBlocks.map((b:any) => b.id).filter((id:string) => !id.startsWith('new-'));
+                    await tx.contentBlock.deleteMany({
+                        where: { lessonId: savedLesson.id, NOT: { id: { in: incomingBlockIds } } }
+                    });
 
-                      // Handle Questions and Options
-                      if (quizData.questions) {
-                        const incomingQuestionIds = quizData.questions.map((q: any) => q.id).filter((id: string) => !id.startsWith('temp-q'));
-                        await tx.question.deleteMany({
-                            where: { quizId: savedQuiz.id, NOT: { id: { in: incomingQuestionIds } } },
+                    for (const [blockIndex, blockData] of lessonData.contentBlocks.entries()) {
+                        const blockPayload = {
+                            type: blockData.type,
+                            content: blockData.content,
+                            order: blockIndex,
+                            lessonId: savedLesson.id,
+                        };
+
+                        const savedBlock = await tx.contentBlock.upsert({
+                            where: { id: blockData.id.startsWith('new-') ? '---' : blockData.id },
+                            create: blockPayload,
+                            update: blockPayload,
                         });
 
-                        for (const [qIndex, qData] of quizData.questions.entries()) {
-                             const questionPayload = {
-                                 text: qData.text,
-                                 type: 'MULTIPLE_CHOICE',
-                                 order: qIndex,
-                                 quizId: savedQuiz.id,
-                             };
-                             const savedQuestion = await tx.question.upsert({
-                                where: { id: qData.id.startsWith('temp-q') ? '---' : qData.id },
-                                create: questionPayload,
-                                update: { text: qData.text, order: qIndex },
-                             });
-                             
-                             // Options
-                            if (qData.options) {
-                                const incomingOptionIds = qData.options.map((o: any) => o.id).filter((id: string) => !id.startsWith('temp-o'));
-                                await tx.answerOption.deleteMany({
-                                where: { questionId: savedQuestion.id, NOT: { id: { in: incomingOptionIds } } },
+                        // Handle Quiz within a block
+                        if (blockData.type === 'QUIZ' && blockData.quiz) {
+                            const quizData = blockData.quiz;
+                            const quizPayload = {
+                                title: quizData.title,
+                                description: quizData.description,
+                                contentBlockId: savedBlock.id,
+                            };
+                            const savedQuiz = await tx.quiz.upsert({
+                                where: { contentBlockId: savedBlock.id },
+                                create: quizPayload,
+                                update: quizPayload,
+                            });
+                            // Handle Questions & Options
+                            if (quizData.questions) {
+                                const incomingQuestionIds = quizData.questions.map((q: any) => q.id).filter((id: string) => !id.startsWith('temp-q'));
+                                await tx.question.deleteMany({
+                                    where: { quizId: savedQuiz.id, NOT: { id: { in: incomingQuestionIds } } },
                                 });
-                                
-                                for (const oData of qData.options) {
-                                    const optionPayload = {
-                                        text: oData.text,
-                                        isCorrect: oData.isCorrect,
-                                        feedback: oData.feedback,
-                                        questionId: savedQuestion.id,
+                                for (const [qIndex, qData] of quizData.questions.entries()) {
+                                    const questionPayload = {
+                                        text: qData.text,
+                                        type: 'MULTIPLE_CHOICE',
+                                        order: qIndex,
+                                        quizId: savedQuiz.id,
                                     };
-                                    await tx.answerOption.upsert({
-                                    where: { id: oData.id.startsWith('temp-o') ? '---' : oData.id },
-                                    create: optionPayload,
-                                    update: optionPayload,
+                                    const savedQuestion = await tx.question.upsert({
+                                        where: { id: qData.id.startsWith('temp-q') ? '---' : qData.id },
+                                        create: questionPayload,
+                                        update: { text: qData.text, order: qIndex },
                                     });
+                                    if (qData.options) {
+                                        const incomingOptionIds = qData.options.map((o: any) => o.id).filter((id: string) => !id.startsWith('temp-o'));
+                                        await tx.answerOption.deleteMany({
+                                            where: { questionId: savedQuestion.id, NOT: { id: { in: incomingOptionIds } } },
+                                        });
+                                        for (const oData of qData.options) {
+                                            const optionPayload = {
+                                                text: oData.text,
+                                                isCorrect: oData.isCorrect,
+                                                feedback: oData.feedback,
+                                                questionId: savedQuestion.id,
+                                            };
+                                            await tx.answerOption.upsert({
+                                                where: { id: oData.id.startsWith('temp-o') ? '---' : oData.id },
+                                                create: optionPayload,
+                                                update: optionPayload,
+                                            });
+                                        }
+                                    }
                                 }
                             }
+                        } else {
+                            // If block is not a quiz, ensure no quiz is associated
+                            await tx.quiz.deleteMany({ where: { contentBlockId: savedBlock.id }});
                         }
-                      }
+                    }
                   }
               }
           }
@@ -230,14 +253,19 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
                 lessons: {
                   orderBy: { order: 'asc' },
                   include: {
-                    quiz: {
-                      include: {
-                        questions: {
-                          orderBy: { order: 'asc' },
-                          include: { options: { orderBy: { id: 'asc' } } },
-                        },
-                      },
-                    },
+                    contentBlocks: {
+                        orderBy: { order: 'asc' },
+                        include: {
+                            quiz: {
+                                include: {
+                                    questions: {
+                                        orderBy: { order: 'asc' },
+                                        include: { options: { orderBy: { id: 'asc' } } },
+                                    },
+                                },
+                            },
+                        }
+                    }
                   },
                 },
               },
@@ -254,13 +282,13 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 }
 
 // DELETE a course
-export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getSession(req);
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const { id } = context.params;
+    const { id } = params;
 
     try {
         const course = await prisma.course.findUnique({ where: { id } });
