@@ -144,16 +144,19 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                       continue;
                    }
                   
-                  const lessonPayload: any = {
-                      title: lessonData.title,
-                      order: lessonIndex,
-                      moduleId: savedModule.id,
-                  };
-                  
                   const savedLesson = await tx.lesson.upsert({
                       where: { id: lessonData.id.startsWith('new-') ? '---' : lessonData.id },
-                      create: lessonPayload,
-                      update: { title: lessonData.title, order: lessonIndex },
+                      create: {
+                        title: lessonData.title,
+                        order: lessonIndex,
+                        moduleId: savedModule.id,
+                        type: lessonData.type
+                      },
+                      update: { 
+                        title: lessonData.title, 
+                        order: lessonIndex,
+                        type: lessonData.type
+                      },
                   });
 
                   // Handle Content Blocks
