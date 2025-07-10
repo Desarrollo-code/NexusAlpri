@@ -465,7 +465,7 @@ export default function DashboardPage() {
             <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar estadísticas: {statsError}</div>
             ) : adminStats ? (
             <>
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total de Usuarios</CardTitle><Users className="h-5 w-5 text-chart-1" />
@@ -636,7 +636,7 @@ export default function DashboardPage() {
               {isLoadingAnnouncements && <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando anuncios...</div>}
               {announcementsError && <div className="text-destructive"><AlertTriangle className="inline mr-2" />Error: {announcementsError}</div>}
               {!isLoadingAnnouncements && !announcementsError && filteredAnnouncements.length > 0 && (
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {filteredAnnouncements.map(announcement => (
                     <AnnouncementCard key={announcement.id} announcement={announcement} />
                   ))}

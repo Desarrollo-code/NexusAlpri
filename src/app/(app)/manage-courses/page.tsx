@@ -230,7 +230,7 @@ export default function ManageCoursesPage() {
 
   if (user && user.role !== 'ADMINISTRATOR' && user.role !== 'INSTRUCTOR' && !isLoading && courses.length === 0) {
     return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
             <ShieldAlert className="h-12 w-12 text-destructive mb-4" />
             <h2 className="text-2xl font-semibold mb-2">Acceso Denegado</h2>
             <p className="text-muted-foreground max-w-md">
@@ -263,17 +263,17 @@ export default function ManageCoursesPage() {
               defaultSrc="https://placehold.co/600x300.png"
             />
             <CardHeader>
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-start gap-2">
                   <CardTitle className="line-clamp-2 flex-grow pr-2">{course.title}</CardTitle>
                   <Badge variant={getStatusBadgeVariant(course.status)} className="ml-2 shrink-0 capitalize">
                       {getStatusBadgeText(course.status)}
                   </Badge>
               </div>
-              <CardDescription>Instructor: {course.instructor} (ID: {course.instructorId || 'N/A'})</CardDescription>
+              <CardDescription>Instructor: {course.instructor}</CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
               <p className="text-sm text-muted-foreground line-clamp-3">{course.description}</p>
-               <div className="text-xs text-muted-foreground mt-2">Módulos: {course.modulesCount} | ID Curso: {course.id}</div>
+               <div className="text-xs text-muted-foreground mt-2">Módulos: {course.modulesCount}</div>
             </CardContent>
             <CardFooter className="border-t pt-4 flex justify-end">
               <DropdownMenu>
@@ -400,7 +400,7 @@ export default function ManageCoursesPage() {
             </div>
           ) : (
             <Tabs defaultValue="all" className="w-full">
-              <TabsList className="h-auto flex-wrap md:flex-nowrap md:h-10">
+              <TabsList className="h-auto flex-wrap justify-start md:h-10 md:flex-nowrap">
                 <TabsTrigger value="all">Todos ({courses.length})</TabsTrigger>
                 <TabsTrigger value="PUBLISHED">Publicados ({courses.filter(c => c.status === 'PUBLISHED').length})</TabsTrigger>
                 <TabsTrigger value="DRAFT">Borradores ({courses.filter(c => c.status === 'DRAFT').length})</TabsTrigger>
