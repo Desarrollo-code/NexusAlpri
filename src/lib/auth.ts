@@ -47,7 +47,7 @@ export async function createSession(user: Partial<User>) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   const session = await encrypt({ user: userPayload, expires: expires.toISOString() });
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   cookieStore.set('session', session, { expires, httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/' });
 }
 

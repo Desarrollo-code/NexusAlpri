@@ -150,12 +150,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                         title: lessonData.title,
                         order: lessonIndex,
                         moduleId: savedModule.id,
-                        type: lessonData.type
                       },
                       update: { 
                         title: lessonData.title, 
                         order: lessonIndex,
-                        type: lessonData.type
                       },
                   });
 
