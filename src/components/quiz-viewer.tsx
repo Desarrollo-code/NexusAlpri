@@ -42,7 +42,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<Result | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [quizStarted, setQuizStarted] = useState(false); // New state
+  const [quizStarted, setQuizStarted] = useState(false);
 
   const handleOptionChange = (questionId: string, optionId: string) => {
     setSelectedAnswers(prev => ({ ...prev, [questionId]: optionId }));
@@ -83,6 +83,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
 
     const score = quiz?.questions.length ? (correctCount / quiz.questions.length) * 100 : 0;
     
+    // Only save progress if it's a real attempt, not a creator preview
     if (user && courseId && !isCreatorPreview) {
        try {
             const response = await fetch(`/api/progress/${user.id}/${courseId}/quiz`, {
@@ -98,12 +99,12 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
                 description: `Has obtenido una puntuación de ${Math.round(score)}%. Tu progreso se ha actualizado.`,
             });
 
-       } catch (err) {
-            toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudo guardar el resultado del quiz.", variant: "destructive"});
-       } finally {
             if (onQuizCompleted) {
                 onQuizCompleted(lessonId, score); 
             }
+
+       } catch (err) {
+            toast({ title: "Error", description: err instanceof Error ? err.message : "No se pudo guardar el resultado del quiz.", variant: "destructive"});
        }
     }
     
@@ -120,7 +121,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
   const resetQuiz = () => {
     setSelectedAnswers({});
     setResult(null);
-    setQuizStarted(false); // Reset to show intro screen
+    setQuizStarted(false);
   }
 
   if (!quiz) {
@@ -134,7 +135,8 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
   
   const canAttemptQuiz = isEnrolled || isCreatorPreview;
 
-  if (!canAttemptQuiz) {
+  // This check is now only relevant for students, not for creator previews.
+  if (!isCreatorPreview && !isEnrolled) {
       return (
           <Alert>
               <AlertTitle>Inscripción Requerida</AlertTitle>

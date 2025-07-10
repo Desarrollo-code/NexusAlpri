@@ -600,7 +600,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                                         <QuizViewer
                                             quiz={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.contentBlocks.${previewQuizDetails.blockIndex}.quiz`)}
                                             lessonId={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}
-                                            isCreatorPreview={isCreatorPreview}
+                                            isCreatorPreview={true}
                                         />
                                     </DialogContent>
                                 </Dialog>
