@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import type { Course as AppCourse, User, UserRole } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, AlertTriangle, UsersRound, ChevronDown, ChevronRight, Filter } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -16,6 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import type { Course as PrismaCourse } from '@prisma/client';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Separator } from '@/components/ui/separator';
 
 interface ApiCourseForEnrollments extends Omit<PrismaCourse, 'instructor' | 'modules' | 'enrollments' | 'progress' | 'createdAt' | 'updatedAt' | '_count'> {
   instructor: { id: string; name: string | null; } | null;
@@ -42,6 +44,7 @@ interface StudentProgress {
 export default function EnrollmentsPage() {
   const { user: currentUser, isLoading: isAuthLoading } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const [courses, setCourses] = useState<ApiCourseForEnrollments[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<ApiCourseForEnrollments | null>(null);
@@ -179,7 +182,7 @@ export default function EnrollmentsPage() {
   const getInitials = (name?: string | null) => {
     if (!name) return '??';
     const names = name.split(' ');
-    if (names.length > 1 && names[0] && names[names.length -1]) return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    if (names.length > 1 && names[0] && names[names.length - 1]) return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
     if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
     return name.substring(0, 2).toUpperCase();
   };
@@ -200,54 +203,141 @@ export default function EnrollmentsPage() {
     return <div className="text-center py-10">Acceso denegado a esta sección.</div>;
   }
   
-  const pageTitle = currentUser.role === 'ADMINISTRATOR' ? "Gestión Global de Inscritos y Progreso" : "Inscritos y Progreso de Mis Cursos";
+  const pageTitle = currentUser.role === 'ADMINISTRATOR' ? "Gestión Global de Inscritos" : "Progreso de Mis Cursos";
   const pageDescription = currentUser.role === 'ADMINISTRATOR' 
     ? "Selecciona un curso para ver los estudiantes inscritos y su progreso."
-    : "Selecciona uno de tus cursos para ver los estudiantes inscritos y su progreso.";
+    : "Selecciona uno de tus cursos para ver el progreso de tus estudiantes.";
+
+  const DesktopTable = () => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Estudiante</TableHead>
+          <TableHead className="hidden sm:table-cell">Email</TableHead>
+          <TableHead>Progreso</TableHead>
+          <TableHead className="text-right hidden md:table-cell">Inscrito el</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {filteredEnrollments.map(enrollment => {
+          const studentProg = progressData[`${enrollment.user.id}-${selectedCourse!.id}`];
+          return (
+            <TableRow key={enrollment.user.id}>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={enrollment.user.avatar || undefined} alt={enrollment.user.name || 'User'} />
+                    <AvatarFallback>{getInitials(enrollment.user.name)}</AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium">{enrollment.user.name || 'N/A'}</span>
+                </div>
+              </TableCell>
+              <TableCell className="hidden sm:table-cell">{enrollment.user.email}</TableCell>
+              <TableCell>
+                {studentProg ? (
+                  <div className="flex items-center gap-2">
+                    <Progress value={studentProg.progressPercentage} className="w-24 h-2.5" />
+                    <span className="text-xs text-muted-foreground">
+                      {Math.round(studentProg.progressPercentage)}% 
+                      ({studentProg.completedLessons}/{studentProg.totalLessons})
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-xs text-muted-foreground">Cargando...</span>
+                )}
+              </TableCell>
+              <TableCell className="text-right hidden md:table-cell text-xs text-muted-foreground">
+                  {new Date(enrollment.enrolledAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
+  
+  const MobileCardList = () => (
+    <div className="space-y-4">
+      {filteredEnrollments.map(enrollment => {
+        const studentProg = progressData[`${enrollment.user.id}-${selectedCourse!.id}`];
+        return (
+          <Card key={enrollment.user.id}>
+            <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
+               <Avatar className="h-10 w-10">
+                  <AvatarImage src={enrollment.user.avatar || undefined} alt={enrollment.user.name || 'User'} />
+                  <AvatarFallback>{getInitials(enrollment.user.name)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-grow overflow-hidden">
+                    <p className="font-semibold truncate">{enrollment.user.name || 'N/A'}</p>
+                    <p className="text-sm text-muted-foreground truncate">{enrollment.user.email}</p>
+                </div>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 space-y-2">
+               <Separator/>
+               <div className="pt-2">
+                 <Label className="text-xs text-muted-foreground">Progreso</Label>
+                 {studentProg ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <Progress value={studentProg.progressPercentage} className="flex-grow h-2.5" />
+                    <span className="text-sm font-medium">
+                      {Math.round(studentProg.progressPercentage)}%
+                    </span>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground mt-1">Cargando...</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })}
+    </div>
+  );
 
 
   return (
     <div className="space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-headline flex items-center gap-2"><UsersRound /> {pageTitle}</CardTitle>
-          <CardDescription>{pageDescription}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {error && <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800" role="alert"><AlertTriangle className="inline h-4 w-4 mr-2" />{error}</div>}
-          
-          <div className="mb-6">
-            <Label htmlFor="course-selector" className="text-lg font-semibold">Seleccionar Curso:</Label>
-            {isLoadingCourses ? <Loader2 className="animate-spin my-2"/> : courses.length > 0 ? (
-              <Select onValueChange={handleCourseSelection} value={selectedCourse?.id || ""}>
-                <SelectTrigger id="course-selector" className="mt-1">
-                  <SelectValue placeholder="Elige un curso para ver detalles" />
-                </SelectTrigger>
-                <SelectContent>
-                  {courses.map(course => (
-                    <SelectItem key={course.id} value={course.id}>
-                      {course.title} (Instructor: {course.instructor?.name || 'N/A'}, Lecciones: {course.lessonsCount ?? 'N/A'})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <p className="text-muted-foreground mt-1">
-                {currentUser.role === 'INSTRUCTOR' ? 'No tienes cursos asignados.' : 'No hay cursos disponibles en la plataforma.'}
-              </p>
-            )}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-grow">
+              <CardTitle className="text-2xl font-headline flex items-center gap-2"><UsersRound /> {pageTitle}</CardTitle>
+              <CardDescription>{pageDescription}</CardDescription>
+            </div>
+            <div className="w-full sm:w-auto">
+              {isLoadingCourses ? <Loader2 className="animate-spin my-2"/> : courses.length > 0 ? (
+                <Select onValueChange={handleCourseSelection} value={selectedCourse?.id || ""}>
+                  <SelectTrigger id="course-selector" className="w-full sm:w-[300px]">
+                    <SelectValue placeholder="Elige un curso para ver detalles" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {courses.map(course => (
+                      <SelectItem key={course.id} value={course.id}>
+                        {course.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-muted-foreground mt-1 text-sm">
+                  {currentUser.role === 'INSTRUCTOR' ? 'No tienes cursos asignados.' : 'No hay cursos en la plataforma.'}
+                </p>
+              )}
+            </div>
           </div>
+        </CardHeader>
 
-          {selectedCourse && (
+        {selectedCourse && (
+          <CardContent>
             <Card className="mt-6 bg-muted/30">
               <CardHeader>
                 <CardTitle className="text-xl">Estudiantes Inscritos en: {selectedCourse.title}</CardTitle>
-                 <div className="flex justify-between items-center pt-2">
+                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center pt-2 gap-4">
                     <CardDescription>Total de lecciones en el curso: {selectedCourse.lessonsCount ?? 'Calculando...'}</CardDescription>
-                    <div className="relative w-full max-w-xs">
+                    <div className="relative w-full sm:max-w-xs">
                         <Input 
                             type="search"
-                            placeholder="Buscar estudiante por nombre o email..."
+                            placeholder="Buscar estudiante..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-8"
@@ -260,51 +350,7 @@ export default function EnrollmentsPage() {
                 {isLoadingEnrollments || isLoadingProgress ? (
                   <div className="flex items-center justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /> <p className="ml-2">Cargando estudiantes y su progreso...</p></div>
                 ) : filteredEnrollments.length > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Estudiante</TableHead>
-                        <TableHead className="hidden sm:table-cell">Email</TableHead>
-                        <TableHead>Progreso</TableHead>
-                        <TableHead className="text-right hidden md:table-cell">Inscrito el</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredEnrollments.map(enrollment => {
-                        const studentProg = progressData[`${enrollment.user.id}-${selectedCourse.id}`];
-                        return (
-                          <TableRow key={enrollment.user.id}>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage src={enrollment.user.avatar || undefined} alt={enrollment.user.name || 'User'} />
-                                  <AvatarFallback>{getInitials(enrollment.user.name)}</AvatarFallback>
-                                </Avatar>
-                                <span className="font-medium">{enrollment.user.name || 'N/A'}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="hidden sm:table-cell">{enrollment.user.email}</TableCell>
-                            <TableCell>
-                              {studentProg ? (
-                                <div className="flex items-center gap-2">
-                                  <Progress value={studentProg.progressPercentage} className="w-24 h-2.5" />
-                                  <span className="text-xs text-muted-foreground">
-                                    {Math.round(studentProg.progressPercentage)}% 
-                                    ({studentProg.completedLessons}/{studentProg.totalLessons})
-                                  </span>
-                                </div>
-                              ) : (
-                                <span className="text-xs text-muted-foreground">Cargando progreso...</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right hidden md:table-cell text-xs text-muted-foreground">
-                                {new Date(enrollment.enrolledAt).toLocaleDateString('es-ES', { timeZone: 'America/Bogota' })}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+                  isMobile ? <MobileCardList /> : <DesktopTable />
                 ) : (
                   <p className="text-center text-muted-foreground py-6">
                     {searchTerm ? "Ningún estudiante coincide con tu búsqueda." : "No hay estudiantes inscritos en este curso aún."}
@@ -312,16 +358,8 @@ export default function EnrollmentsPage() {
                 )}
               </CardContent>
             </Card>
-          )}
-           {currentUser.role === 'ADMINISTRATOR' && !selectedCourse && enrollments.length > 0 && (
-                <Card className="mt-6">
-                    <CardHeader><CardTitle>Todas las Inscripciones (Vista Admin)</CardTitle></CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground">Selecciona un curso para ver detalles o implementa una vista general aquí.</p>
-                    </CardContent>
-                </Card>
-            )}
-        </CardContent>
+          </CardContent>
+        )}
       </Card>
     </div>
   );
