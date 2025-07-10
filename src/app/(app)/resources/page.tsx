@@ -700,7 +700,7 @@ export default function ResourcesPage() {
                         <DialogHeader><DialogTitle>Crear Nueva Carpeta</DialogTitle><DialogDescription>Ingresa un nombre para la nueva carpeta en la ubicación actual.</DialogDescription></DialogHeader>
                         <form onSubmit={handleCreateFolder} className="space-y-4">
                             <div><Label htmlFor="folder-name" className="sr-only">Nombre de la carpeta</Label><Input id="folder-name" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} placeholder="Nombre de la carpeta" required disabled={isSubmittingResource} /></div>
-                            <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><Button type="button" variant="outline" onClick={() => setShowCreateFolderModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Crear</Button></DialogFooter>
+                            <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2"><Button type="button" variant="outline" onClick={() => setShowCreateFolderModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Crear</Button></DialogFooter>
                         </form>
                     </DialogContent>
                 </Dialog>
@@ -906,6 +906,8 @@ export default function ResourcesPage() {
                 const isVideoFile = !youtubeId && url.toLowerCase().match(/\.(mp4|webm|ogv)$/);
                 const isPdf = url.toLowerCase().endsWith('.pdf');
                 const isOfficeDoc = url.toLowerCase().endsWith('.docx') || url.toLowerCase().endsWith('.xlsx');
+                const isExternalLink = !isImage && !isVideoFile && !isPdf && !isOfficeDoc && !youtubeId;
+
 
                 if (isOfficeDoc && previewHtml) {
                     return <div className="prose dark:prose-invert max-w-none p-4 bg-background rounded-md" dangerouslySetInnerHTML={{ __html: previewHtml }} />;
@@ -914,6 +916,7 @@ export default function ResourcesPage() {
                 if (isImage) return <div className="flex justify-center items-center h-full"><Image src={url} alt={previewResource.title} width={800} height={600} className="object-contain max-h-[70vh] rounded-md" data-ai-hint="resource preview" /></div>;
                 if (isVideoFile) return <video controls src={url} className="w-full rounded-md max-h-[70vh]">Tu navegador no soporta el tag de video.</video>;
                 if (isPdf) return <iframe src={url} className="w-full h-[75vh] border-none rounded-md" title={previewResource.title}></iframe>;
+                if (isExternalLink) return <iframe src={url} className="w-full h-[75vh] border-none rounded-md" title={previewResource.title}></iframe>;
 
                 return (
                     <div className="text-center py-8 flex flex-col items-center justify-center gap-4 h-full">
@@ -938,7 +941,7 @@ export default function ResourcesPage() {
                 <DialogTitle className="flex items-center gap-2"><Lock className="h-5 w-5 text-amber-500" />Se requiere PIN de acceso</DialogTitle>
                 <DialogDescription>Ingresa el PIN para acceder a "<strong>{resourceToUnlock?.resource.title}</strong>".</DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleVerifyPin}><div className="space-y-2 py-4"><Label htmlFor="pin-input" className="sr-only">PIN</Label><Input id="pin-input" type="password" placeholder="Ingresa el PIN" value={pinInput} onChange={e => { setPinInput(e.target.value.replace(/\D/g, '')); setPinError(null); }} autoFocus />{pinError && <p className="text-sm text-destructive">{pinError}</p>}</div><DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><Button type="button" variant="outline" onClick={() => setResourceToUnlock(null)}>Cancelar</Button><Button type="submit" disabled={isVerifyingPin || pinInput.length < 4}>{isVerifyingPin && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Verificar</Button></DialogFooter></form>
+            <form onSubmit={handleVerifyPin}><div className="space-y-2 py-4"><Label htmlFor="pin-input" className="sr-only">PIN</Label><Input id="pin-input" type="password" placeholder="Ingresa el PIN" value={pinInput} onChange={e => { setPinInput(e.target.value.replace(/\D/g, '')); setPinError(null); }} autoFocus />{pinError && <p className="text-sm text-destructive">{pinError}</p>}</div><DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2"><Button type="button" variant="outline" onClick={() => setResourceToUnlock(null)}>Cancelar</Button><Button type="submit" disabled={isVerifyingPin || pinInput.length < 4}>{isVerifyingPin && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Verificar</Button></DialogFooter></form>
         </DialogContent>
       </Dialog>
     </div>
