@@ -403,14 +403,14 @@ export default function UsersPage() {
                         <PlusCircle className="mr-2 h-4 w-4" /> Añadir Nuevo Usuario
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="w-[95vw] max-w-md rounded-lg">
+                <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>{userToEdit ? "Editar Usuario" : "Añadir Nuevo Usuario"}</DialogTitle>
                       <DialogDescription>
                         {userToEdit ? "Modifica los datos del usuario." : "Completa los campos para registrar un nuevo usuario."}
                       </DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={handleAddEditUser} className="grid gap-6 py-4">
+                    <form onSubmit={handleAddEditUser} className="grid gap-4 py-4">
                         <div className="space-y-2">
                             <Label htmlFor="name">Nombre</Label>
                             <Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nombre completo" required disabled={isProcessing} />
@@ -438,7 +438,7 @@ export default function UsersPage() {
                               <Input id="password" type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Mínimo 8 caracteres" required disabled={isProcessing}/>
                             </div>
                         )}
-                        <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4">
+                        <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4">
                             <Button type="button" variant="outline" onClick={() => {
                                 setShowAddEditModal(false);
                                 setUserToEdit(null);
