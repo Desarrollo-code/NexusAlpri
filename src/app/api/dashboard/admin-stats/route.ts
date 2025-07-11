@@ -12,7 +12,9 @@ export interface AdminDashboardStats {
     totalCourses: number;
     courseTrend: number;
     totalPublishedCourses: number;
+    publishedCoursesTrend: number;
     totalEnrollments: number;
+    enrollmentTrend: number;
     usersByRole: { role: UserRole; count: number }[];
     coursesByStatus: { status: CourseStatus; count: number }[];
 }
@@ -44,18 +46,30 @@ export async function GET(req: NextRequest) {
             newCoursesLast7Days,
             newCoursesPrevious7Days,
             totalPublishedCourses,
+            newlyPublishedLast7Days,
+            newlyPublishedPrevious7Days,
             totalEnrollments,
+            newEnrollmentsLast7Days,
+            newEnrollmentsPrevious7Days,
             usersByRole,
             coursesByStatus,
         ] = await prisma.$transaction([
             prisma.user.count(),
             prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo } } }),
             prisma.user.count({ where: { registeredDate: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } }),
+            
             prisma.course.count(),
             prisma.course.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
             prisma.course.count({ where: { createdAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } }),
+            
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
+            prisma.course.count({ where: { status: 'PUBLISHED', publicationDate: { gte: sevenDaysAgo } } }),
+            prisma.course.count({ where: { status: 'PUBLISHED', publicationDate: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } }),
+
             prisma.enrollment.count(),
+            prisma.enrollment.count({ where: { enrolledAt: { gte: sevenDaysAgo } } }),
+            prisma.enrollment.count({ where: { enrolledAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } }),
+            
             prisma.user.groupBy({ by: ['role'], _count: { role: true } }),
             prisma.course.groupBy({ by: ['status'], _count: { status: true } }),
         ]);
@@ -66,7 +80,9 @@ export async function GET(req: NextRequest) {
             totalCourses,
             courseTrend: calculateTrend(newCoursesLast7Days, newCoursesPrevious7Days),
             totalPublishedCourses,
+            publishedCoursesTrend: calculateTrend(newlyPublishedLast7Days, newlyPublishedPrevious7Days),
             totalEnrollments,
+            enrollmentTrend: calculateTrend(newEnrollmentsLast7Days, newEnrollmentsPrevious7Days),
             usersByRole: usersByRole.map(item => ({
                 role: item.role as UserRole,
                 count: item._count.role,
