@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import type { AdminDashboardStats } from '@/pages/api/dashboard/admin-stats';
+import type { AdminDashboardStats } from '@/app/api/dashboard/admin-stats/route';
 import type { Announcement as AnnouncementType, UserRole, Course as AppCourseType, EnrolledCourse } from '@/types';
 import { AnnouncementCard } from '@/components/announcement-card';
 import type { Announcement as PrismaAnnouncement, Course as PrismaCourse, CourseStatus as PrismaCourseStatus, UserRole as PrismaUserRole } from '@prisma/client';
@@ -86,8 +86,9 @@ interface DashboardData {
     myDashboardCourses: EnrolledCourse[];
 }
 
-const StatCard = ({ title, value, icon: Icon, trend, href, children }: { title: string; value: number; icon: React.ElementType; trend: number; href: string, children?: React.ReactNode }) => {
-    const isPositive = trend >= 0;
+const StatCard = ({ title, value, icon: Icon, trend, href, children }: { title: string; value: number; icon: React.ElementType; trend?: number; href: string, children?: React.ReactNode }) => {
+    const hasTrend = typeof trend === 'number';
+    const isPositive = hasTrend && trend >= 0;
     const TrendIcon = isPositive ? TrendingUp : TrendingDown;
   
     return (
@@ -99,10 +100,12 @@ const StatCard = ({ title, value, icon: Icon, trend, href, children }: { title: 
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{value.toLocaleString('es-CO')}</div>
-                     <p className={cn("text-xs flex items-center", isPositive ? "text-green-500" : "text-red-500")}>
-                        <TrendIcon className="h-3 w-3 mr-1" />
-                        {isPositive ? '+' : ''}{trend.toFixed(1)}% respecto a los últimos 7 días
-                    </p>
+                    {hasTrend && (
+                        <p className={cn("text-xs flex items-center", isPositive ? "text-green-500" : "text-red-500")}>
+                            <TrendIcon className="h-3 w-3 mr-1" />
+                            {isPositive ? '+' : ''}{trend.toFixed(1)}% respecto a los últimos 7 días
+                        </p>
+                    )}
                 </CardContent>
                 {children && <CardFooter>{children}</CardFooter>}
             </Card>

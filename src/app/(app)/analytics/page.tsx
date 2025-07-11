@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, AlertTriangle, BarChart3, Users, BookOpenCheck, Download, FileText, FileSpreadsheet } from 'lucide-react';
+import { Loader2, AlertTriangle, BarChart3, Users, BookOpenCheck, Download, FileText, Activity, UsersRound, TrendingUp, TrendingDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,12 +16,9 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, ResponsiveContainer } from "recharts";
+import type { AnalyticsSummary } from '@/app/api/analytics/summary/route';
+import { cn } from '@/lib/utils';
 
-// --- Types ---
-interface AnalyticsSummary {
-  usersByRole: { role: 'STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR'; count: number }[];
-  coursesByStatus: { status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'; count: number }[];
-}
 
 // --- Chart Configurations ---
 const userRolesChartConfig = {
@@ -37,6 +34,34 @@ const courseStatusChartConfig = {
   DRAFT: { label: "Borrador", color: "hsl(var(--chart-2))" },
   ARCHIVED: { label: "Archivados", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
+
+// --- Stat Card Component ---
+const StatCard = ({ title, value, icon: Icon, trend, href, children }: { title: string; value: number; icon: React.ElementType; trend?: number; href?: string, children?: React.ReactNode }) => {
+    const hasTrend = typeof trend === 'number';
+    const isPositive = hasTrend && trend >= 0;
+    const TrendIcon = isPositive ? TrendingUp : TrendingDown;
+    const Wrapper = href ? Link : 'div';
+  
+    return (
+        <Wrapper href={href || '#'}>
+            <Card className={cn(href && "hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md")}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{value.toLocaleString('es-CO')}</div>
+                    {hasTrend && (
+                        <p className={cn("text-xs flex items-center", isPositive ? "text-green-500" : "text-red-500")}>
+                            <TrendIcon className="h-3 w-3 mr-1" />
+                            {isPositive ? '+' : ''}{trend.toFixed(1)}% últimos 7 días
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
+        </Wrapper>
+    );
+};
 
 
 export default function AnalyticsPage() {
@@ -112,8 +137,15 @@ export default function AnalyticsPage() {
                 <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2">Cargando analíticas...</p></div>
             ) : error ? (
                 <div className="flex flex-col items-center justify-center py-12 text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p><Button onClick={fetchSummary} variant="outline" className="mt-4">Reintentar</Button></div>
-            ) : (
+            ) : summary ? (
                 <>
+                    <section className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                        <StatCard title="Total de Usuarios" value={summary.totalUsers} icon={Users} trend={summary.userTrend} href="/users" />
+                        <StatCard title="Total de Cursos" value={summary.totalCourses} icon={BookOpenCheck} trend={summary.courseTrend} href="/manage-courses" />
+                        <StatCard title="Cursos Publicados" value={summary.totalPublishedCourses} icon={Activity} />
+                        <StatCard title="Total Inscripciones" value={summary.totalEnrollments} icon={UsersRound} />
+                    </section>
+
                     <section className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                         <Card>
                             <CardHeader>
@@ -201,8 +233,7 @@ export default function AnalyticsPage() {
                         </CardContent>
                     </Card>
                 </>
-            )}
+            ) : null}
         </div>
     );
 }
-

@@ -182,6 +182,7 @@ export interface CalendarEvent {
     audienceType?: EventAudienceType;
     attendees?: { id: string, name: string | null, email: string }[];
     color?: string;
+    creatorId?: string;
 }
 
 // --- SECURITY ---

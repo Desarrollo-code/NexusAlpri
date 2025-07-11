@@ -22,8 +22,6 @@ export interface AdminDashboardStats {
 
 const calculateTrend = (currentPeriodCount: number, previousPeriodCount: number): number => {
     if (previousPeriodCount === 0) {
-        // If there were 0 in the previous period, any new item is a "100%" increase conceptually.
-        // If current is also 0, then it's 0% change.
         return currentPeriodCount > 0 ? 100 : 0;
     }
     return ((currentPeriodCount - previousPeriodCount) / previousPeriodCount) * 100;
@@ -41,36 +39,32 @@ export async function GET(req: NextRequest) {
         const sevenDaysAgo = startOfDay(subDays(today, 7));
         const fourteenDaysAgo = startOfDay(subDays(today, 14));
 
-        // Total Users
-        const totalUsers = await prisma.user.count();
-        const newUsersLast7Days = await prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo } } });
-        const newUsersPrevious7Days = await prisma.user.count({ where: { registeredDate: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } });
-
-        // Total Courses
-        const totalCourses = await prisma.course.count();
-        const newCoursesLast7Days = await prisma.course.count({ where: { createdAt: { gte: sevenDaysAgo } } });
-        const newCoursesPrevious7Days = await prisma.course.count({ where: { createdAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } });
-
-        // Published Courses
-        const totalPublishedCourses = await prisma.course.count({ where: { status: 'PUBLISHED' } });
-        const newPublishedCoursesLast7Days = await prisma.course.count({ where: { status: 'PUBLISHED', publicationDate: { gte: sevenDaysAgo } } });
-        const newPublishedCoursesPrevious7Days = await prisma.course.count({ where: { status: 'PUBLISHED', publicationDate: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } });
-
-        // Total Enrollments
-        const totalEnrollments = await prisma.enrollment.count();
-        const newEnrollmentsLast7Days = await prisma.enrollment.count({ where: { enrolledAt: { gte: sevenDaysAgo } } });
-        const newEnrollmentsPrevious7Days = await prisma.enrollment.count({ where: { enrolledAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } });
-
-        // Grouped data
-        const usersByRole = await prisma.user.groupBy({
-            by: ['role'],
-            _count: { role: true },
-        });
-
-        const coursesByStatus = await prisma.course.groupBy({
-            by: ['status'],
-            _count: { status: true },
-        });
+        const [
+            totalUsers, newUsersLast7Days, newUsersPrevious7Days,
+            totalCourses, newCoursesLast7Days, newCoursesPrevious7Days,
+            totalPublishedCourses, newPublishedCoursesLast7Days, newPublishedCoursesPrevious7Days,
+            totalEnrollments, newEnrollmentsLast7Days, newEnrollmentsPrevious7Days,
+            usersByRole, coursesByStatus
+        ] = await prisma.$transaction([
+            prisma.user.count(),
+            prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo } } }),
+            prisma.user.count({ where: { registeredDate: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } }),
+            
+            prisma.course.count(),
+            prisma.course.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
+            prisma.course.count({ where: { createdAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } }),
+            
+            prisma.course.count({ where: { status: 'PUBLISHED' } }),
+            prisma.course.count({ where: { status: 'PUBLISHED', publicationDate: { gte: sevenDaysAgo } } }),
+            prisma.course.count({ where: { status: 'PUBLISHED', publicationDate: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } }),
+            
+            prisma.enrollment.count(),
+            prisma.enrollment.count({ where: { enrolledAt: { gte: sevenDaysAgo } } }),
+            prisma.enrollment.count({ where: { enrolledAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } }),
+            
+            prisma.user.groupBy({ by: ['role'], _count: { role: true } }),
+            prisma.course.groupBy({ by: ['status'], _count: { status: true } })
+        ]);
 
         const stats: AdminDashboardStats = {
             totalUsers,
