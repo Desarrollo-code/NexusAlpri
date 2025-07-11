@@ -129,12 +129,13 @@ export default function MyCoursesPage() {
       {!isFetchingPageData && !error && user && (
         myEnrolledCourses.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {myEnrolledCourses.map((course) => (
+            {myEnrolledCourses.map((course, index) => (
               <CourseCard 
                 key={course.id} 
                 course={course} 
                 userRole={user.role} 
                 onEnrollmentChange={handleEnrollmentChangeOnPage}
+                priority={index < 4}
               />
             ))}
           </div>

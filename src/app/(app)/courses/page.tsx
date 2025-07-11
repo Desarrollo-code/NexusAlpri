@@ -199,12 +199,13 @@ export default function CoursesPage() {
                 <section key={category}>
                     <h2 className="text-2xl font-semibold font-headline mb-4">{category}</h2>
                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {courses.map((course: AppCourseType) => (
+                        {courses.map((course: AppCourseType, index: number) => (
                             <CourseCard 
                                 key={course.id} 
                                 course={{...course, isEnrolled: enrolledCourseIds.includes(course.id)}}
                                 userRole={user?.role || null}
                                 onEnrollmentChange={handleEnrollmentChange}
+                                priority={index < 4}
                             />
                         ))}
                     </div>

@@ -49,8 +49,9 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { CourseCard } from '@/components/course-card';
 
-
+// --- TYPE DEFINITIONS & MAPPERS ---
 interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
   author: { id: string; name: string; email?: string } | null;
   audience: UserRole[] | 'ALL' | string;
@@ -74,6 +75,15 @@ function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
     status: apiCourse.status,
     modules: [],
   };
+}
+
+interface DashboardData {
+    adminStats: AdminDashboardStats | null;
+    studentStats: { enrolled: number; completed: number } | null;
+    instructorStats: { taught: number } | null;
+    recentAnnouncements: DisplayAnnouncement[];
+    taughtCourses: AppCourseType[];
+    myDashboardCourses: EnrolledCourse[];
 }
 
 const StatCard = ({ title, value, icon: Icon, trend, href, children }: { title: string; value: number; icon: React.ElementType; trend: number; href: string, children?: React.ReactNode }) => {
@@ -102,26 +112,11 @@ const StatCard = ({ title, value, icon: Icon, trend, href, children }: { title: 
 
 
 export default function DashboardPage() {
-  // --- HOOKS ---
   const { user, settings } = useAuth();
   
-  const [adminStats, setAdminStats] = useState<AdminDashboardStats | null>(null);
-  const [studentStats, setStudentStats] = useState<{ enrolled: number; completed: number } | null>(null);
-  const [instructorStats, setInstructorStats] = useState<{ taught: number } | null>(null);
-
-  const [recentAnnouncements, setRecentAnnouncements] = useState<DisplayAnnouncement[]>([]);
-  const [taughtCourses, setTaughtCourses] = useState<AppCourseType[]>([]);
-  const [myDashboardCourses, setMyDashboardCourses] = useState<EnrolledCourse[]>([]);
-
-  const [isLoadingStats, setIsLoadingStats] = useState(true);
-  const [isLoadingAnnouncements, setIsLoadingAnnouncements] = useState(true);
-  const [isLoadingTaughtCourses, setIsLoadingTaughtCourses] = useState(true);
-  const [isLoadingMyCourses, setIsLoadingMyCourses] = useState(true);
-  
-  const [statsError, setStatsError] = useState<string | null>(null);
-  const [announcementsError, setAnnouncementsError] = useState<string | null>(null);
-  const [taughtCoursesError, setTaughtCoursesError] = useState<string | null>(null);
-  const [myCoursesError, setMyCoursesError] = useState<string | null>(null);
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -129,110 +124,82 @@ export default function DashboardPage() {
     if (!settings || !user) return false;
     return settings.require2faForAdmins && user.role === 'ADMINISTRATOR' && !user.isTwoFactorEnabled;
   }, [settings, user]);
-
-  const fetchAdminStats = useCallback(async () => {
-    if (user?.role !== 'ADMINISTRATOR') {
-        setIsLoadingStats(false);
-        return;
-    }
-    setIsLoadingStats(true);
-    setStatsError(null);
-    try {
-      const response = await fetch('/api/dashboard/admin-stats');
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch admin stats');
-      }
-      const data: AdminDashboardStats = await response.json();
-      setAdminStats(data);
-    } catch (err) {
-      setStatsError(err instanceof Error ? err.message : 'Unknown error fetching stats');
-    } finally {
-      setIsLoadingStats(false);
-    }
-  }, [user?.role]);
-
-  const fetchAnnouncements = useCallback(async () => {
-    setIsLoadingAnnouncements(true);
-    setAnnouncementsError(null);
-    try {
-      const response = await fetch('/api/announcements');
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch announcements');
-      }
-      const data: PrismaAnnouncement[] = await response.json(); 
-      const displayData: DisplayAnnouncement[] = data.map(ann => {
-        let parsedAudience: UserRole[] | 'ALL' = 'ALL';
-        if (typeof ann.audience === 'string') {
-          if (ann.audience === 'ALL') parsedAudience = 'ALL';
-          else try { const arr = JSON.parse(ann.audience); if (Array.isArray(arr)) parsedAudience = arr as UserRole[]; } catch (e) { /* ignore */ }
-        } else if (Array.isArray(ann.audience)) parsedAudience = ann.audience as UserRole[];
-        return { ...ann, author: ann.author ? { id: (ann.author as any).id, name: (ann.author as any).name } : null, audience: parsedAudience };
-      });
-      setRecentAnnouncements(displayData);
-    } catch (err) {
-      setAnnouncementsError(err instanceof Error ? err.message : 'Unknown error fetching announcements');
-    } finally {
-      setIsLoadingAnnouncements(false);
-    }
-  }, []);
-
-  const fetchTaughtCourses = useCallback(async () => {
-    if (!user || user.role !== 'INSTRUCTOR') {
-        setIsLoadingTaughtCourses(false);
-        return;
-    };
-    setIsLoadingTaughtCourses(true);
-    setTaughtCoursesError(null);
-    try {
-      const queryParams = new URLSearchParams({ manageView: 'true', userId: user.id, userRole: user.role });
-      const response = await fetch(`/api/courses?${queryParams.toString()}`);
-      if (!response.ok) throw new Error('Failed to fetch taught courses');
-      const data: ApiCourseForManage[] = await response.json();
-      setInstructorStats({ taught: data.length });
-      setTaughtCourses(data.map(mapApiCourseToAppCourse).slice(0, 3)); 
-    } catch (err) {
-      setTaughtCoursesError(err instanceof Error ? err.message : 'Unknown error fetching taught courses');
-    } finally {
-      setIsLoadingTaughtCourses(false);
-    }
-  }, [user]);
-
-  const fetchMyDashboardCourses = useCallback(async () => {
-    if (!user || user.role !== 'STUDENT') {
-        setIsLoadingMyCourses(false);
-        return;
-    }
-    setIsLoadingMyCourses(true);
-    setMyCoursesError(null);
-    try {
-      const response = await fetch(`/api/enrollment/${user.id}`);
-      if (!response.ok) throw new Error('Failed to fetch enrolled courses');
-      const data: any[] = await response.json();
-      const mappedCourses: EnrolledCourse[] = data.map(item => ({
-        id: item.id, title: item.title, description: item.description, instructor: item.instructorName || 'N/A',
-        imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, enrolledAt: item.enrolledAt, isEnrolled: true, instructorId: item.instructorId, status: 'PUBLISHED', modules: [],
-        progressPercentage: item.progressPercentage || 0,
-      }));
-      const completedCount = mappedCourses.filter(c => c.progressPercentage === 100).length;
-      setStudentStats({ enrolled: mappedCourses.length, completed: completedCount });
-      setMyDashboardCourses(mappedCourses.slice(0, 3)); 
-    } catch (err) {
-      setMyCoursesError(err instanceof Error ? err.message : 'Unknown error fetching enrolled courses');
-    } finally {
-      setIsLoadingMyCourses(false);
-    }
-  }, [user]);
   
+  const fetchDashboardData = useCallback(async () => {
+    if (!user) return;
+    setIsLoading(true);
+    setError(null);
+
+    try {
+        const promises: Promise<any>[] = [fetch('/api/announcements')];
+        
+        if (user.role === 'ADMINISTRATOR') {
+            promises.push(fetch('/api/dashboard/admin-stats'));
+        }
+        if (user.role === 'INSTRUCTOR') {
+            const queryParams = new URLSearchParams({ manageView: 'true', userId: user.id, userRole: user.role });
+            promises.push(fetch(`/api/courses?${queryParams.toString()}`));
+        }
+        if (user.role === 'STUDENT') {
+            promises.push(fetch(`/api/enrollment/${user.id}`));
+        }
+
+        const responses = await Promise.all(promises);
+        
+        for (const res of responses) {
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ message: `Error en la petición: ${res.statusText}` }));
+                throw new Error(errorData.message || 'Una de las peticiones de datos falló');
+            }
+        }
+        
+        const [announcementsRes, ...roleSpecificRes] = responses;
+        const announcementsData: PrismaAnnouncement[] = await announcementsRes.json();
+        
+        const dashboardPayload: DashboardData = {
+            adminStats: null,
+            studentStats: null,
+            instructorStats: null,
+            recentAnnouncements: announcementsData.map(ann => ({
+                ...ann,
+                audience: ann.audience as any,
+                author: ann.author ? { id: (ann.author as any).id, name: (ann.author as any).name } : null,
+            })),
+            taughtCourses: [],
+            myDashboardCourses: [],
+        };
+
+        if (user.role === 'ADMINISTRATOR') {
+            dashboardPayload.adminStats = await roleSpecificRes[0].json();
+        } else if (user.role === 'INSTRUCTOR') {
+            const taughtCoursesData: ApiCourseForManage[] = await roleSpecificRes[0].json();
+            dashboardPayload.instructorStats = { taught: taughtCoursesData.length };
+            dashboardPayload.taughtCourses = taughtCoursesData.map(mapApiCourseToAppCourse).slice(0, 3);
+        } else if (user.role === 'STUDENT') {
+            const enrolledData: any[] = await roleSpecificRes[0].json();
+            const mappedCourses: EnrolledCourse[] = enrolledData.map(item => ({
+              id: item.id, title: item.title, description: item.description, instructor: item.instructorName || 'N/A',
+              imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, enrolledAt: item.enrolledAt, isEnrolled: true, instructorId: item.instructorId, status: 'PUBLISHED', modules: [],
+              progressPercentage: item.progressPercentage || 0,
+            }));
+            const completedCount = mappedCourses.filter(c => c.progressPercentage === 100).length;
+            dashboardPayload.studentStats = { enrolled: mappedCourses.length, completed: completedCount };
+            dashboardPayload.myDashboardCourses = mappedCourses.slice(0, 3);
+        }
+        
+        setData(dashboardPayload);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error fetching dashboard data');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (user) {
-      fetchAnnouncements();
-      if (user.role === 'ADMINISTRATOR') fetchAdminStats();
-      if (user.role === 'INSTRUCTOR') fetchTaughtCourses();
-      if (user.role === 'STUDENT') fetchMyDashboardCourses();
+      fetchDashboardData();
     }
-  }, [user, fetchAdminStats, fetchAnnouncements, fetchTaughtCourses, fetchMyDashboardCourses]);
+  }, [user, fetchDashboardData]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && user?.id) {
@@ -242,10 +209,10 @@ export default function DashboardPage() {
         }
     }
   }, [user?.id]);
-
+  
   const filteredAnnouncements = useMemo(() => {
-    if (!user) return [];
-    return recentAnnouncements
+    if (!user || !data?.recentAnnouncements) return [];
+    return data.recentAnnouncements
       .filter(ann => {
         if (ann.audience === 'ALL') return true;
         if (Array.isArray(ann.audience) && ann.audience.includes(user.role)) return true;
@@ -254,10 +221,10 @@ export default function DashboardPage() {
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 3); 
-  }, [recentAnnouncements, user]);
+  }, [data?.recentAnnouncements, user]);
 
   const courseStatusChartData = useMemo(() => {
-    if (!adminStats?.coursesByStatus) return [];
+    if (!data?.adminStats?.coursesByStatus) return [];
     const courseStatusChartConfig = {
       count: { label: "Cursos" },
       PUBLISHED: { label: "Publicados", color: "hsl(var(--chart-1))" },
@@ -267,13 +234,13 @@ export default function DashboardPage() {
     const order: PrismaCourseStatus[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED'];
     return order.map(status => ({
         status: courseStatusChartConfig[status]?.label || status,
-        count: adminStats.coursesByStatus.find(item => item.status === status)?.count || 0,
+        count: data.adminStats.coursesByStatus.find(item => item.status === status)?.count || 0,
         fill: `var(--color-${status})`
     }));
-  }, [adminStats?.coursesByStatus]);
+  }, [data?.adminStats?.coursesByStatus]);
 
   const userRolesChartData = useMemo(() => {
-    if (!adminStats?.usersByRole) return [];
+    if (!data?.adminStats?.usersByRole) return [];
     const userRolesChartConfig = {
       count: { label: "Usuarios" },
       STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
@@ -283,9 +250,9 @@ export default function DashboardPage() {
     const order: PrismaUserRole[] = ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'];
     return order.map(role => ({
         role: userRolesChartConfig[role]?.label || role,
-        count: adminStats.usersByRole.find(item => item.role === role)?.count || 0,
+        count: data.adminStats.usersByRole.find(item => item.role === role)?.count || 0,
     }));
-  }, [adminStats?.usersByRole]);
+  }, [data?.adminStats?.usersByRole]);
 
   if (!user) {
     return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /> Cargando...</div>;
@@ -379,6 +346,34 @@ export default function DashboardPage() {
     ],
   };
   const linksToShow = quickLinks[user.role] || [];
+  
+  if (isLoading) {
+      return (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-6">
+                    <Skeleton className="h-80" />
+                    <Skeleton className="h-64" />
+                </div>
+                <div className="lg:col-span-1"><Skeleton className="h-[400px]" /></div>
+            </div>
+        </div>
+      )
+  }
+
+  if (error) {
+    return (
+        <div className="flex flex-col items-center justify-center py-12 text-destructive">
+            <AlertTriangle className="h-8 w-8 mb-2" />
+            <p className="font-semibold">Error al Cargar Dashboard</p>
+            <p className="text-sm">{error}</p>
+            <Button onClick={fetchDashboardData} variant="outline" className="mt-4">Reintentar</Button>
+        </div>
+    )
+  }
 
   return (
     <div className="space-y-8">
@@ -396,14 +391,8 @@ export default function DashboardPage() {
         </Alert>
       )}
 
-      {user.role === 'STUDENT' && (
+      {user.role === 'STUDENT' && data?.studentStats && (
         <section>
-          {isLoadingMyCourses ? (
-             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-                <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><Skeleton className="h-5 w-32" /></CardHeader><CardContent><Skeleton className="h-8 w-12" /></CardContent></Card>
-                <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><Skeleton className="h-5 w-36" /></CardHeader><CardContent><Skeleton className="h-8 w-12" /></CardContent></Card>
-             </div>
-          ) : studentStats ? (
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -411,7 +400,7 @@ export default function DashboardPage() {
                   <BookOpen className="h-5 w-5 text-chart-1" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{studentStats.enrolled}</div>
+                  <div className="text-2xl font-bold">{data.studentStats.enrolled}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -420,22 +409,15 @@ export default function DashboardPage() {
                   <CheckCircle className="h-5 w-5 text-chart-3" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{studentStats.completed}</div>
+                  <div className="text-2xl font-bold">{data.studentStats.completed}</div>
                 </CardContent>
               </Card>
             </div>
-          ) : null}
         </section>
       )}
 
-      {user.role === 'INSTRUCTOR' && (
+      {user.role === 'INSTRUCTOR' && data?.instructorStats && (
          <section>
-          {isLoadingTaughtCourses ? (
-             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-                <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><Skeleton className="h-5 w-32" /></CardHeader><CardContent><Skeleton className="h-8 w-12" /></CardContent></Card>
-                <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><Skeleton className="h-5 w-36" /></CardHeader><CardContent><Skeleton className="h-8 w-12" /><p className="text-xs text-muted-foreground mt-1">Próximamente</p></CardContent></Card>
-             </div>
-          ) : instructorStats ? (
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -443,7 +425,7 @@ export default function DashboardPage() {
                   <BookMarked className="h-5 w-5 text-chart-1" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{instructorStats.taught}</div>
+                  <div className="text-2xl font-bold">{data.instructorStats.taught}</div>
                 </CardContent>
               </Card>
                <Card>
@@ -457,35 +439,18 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </div>
-          ) : null}
         </section>
       )}
 
-      {user.role === 'ADMINISTRATOR' && (
+      {user.role === 'ADMINISTRATOR' && data?.adminStats && (
         <section className="space-y-6">
           <h2 className="text-2xl font-semibold font-headline">Estadísticas de la Plataforma</h2>
-          {isLoadingStats ? (
-            <>
+          <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Skeleton className="h-32" />
-                    <Skeleton className="h-32" />
-                    <Skeleton className="h-32" />
-                    <Skeleton className="h-32" />
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Skeleton className="h-80" />
-                    <Skeleton className="h-80" />
-                </div>
-            </>
-            ) : statsError ? (
-            <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar estadísticas: {statsError}</div>
-            ) : adminStats ? (
-            <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard title="Total de Usuarios" value={adminStats.totalUsers} icon={Users} trend={adminStats.userTrend} href="/users" />
-                    <StatCard title="Total de Cursos" value={adminStats.totalCourses} icon={BookOpenCheck} trend={adminStats.courseTrend} href="/manage-courses" />
-                    <StatCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={Activity} trend={adminStats.publishedTrend} href="/manage-courses" />
-                    <StatCard title="Total Inscripciones" value={adminStats.totalEnrollments} icon={UsersRound} trend={adminStats.enrollmentTrend} href="/enrollments" />
+                    <StatCard title="Total de Usuarios" value={data.adminStats.totalUsers} icon={Users} trend={data.adminStats.userTrend} href="/users" />
+                    <StatCard title="Total de Cursos" value={data.adminStats.totalCourses} icon={BookOpenCheck} trend={data.adminStats.courseTrend} href="/manage-courses" />
+                    <StatCard title="Cursos Publicados" value={data.adminStats.totalPublishedCourses} icon={Activity} trend={data.adminStats.publishedTrend} href="/manage-courses" />
+                    <StatCard title="Total Inscripciones" value={data.adminStats.totalEnrollments} icon={UsersRound} trend={data.adminStats.enrollmentTrend} href="/enrollments" />
                 </div>
               
               <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
@@ -565,7 +530,6 @@ export default function DashboardPage() {
                 </Card>
               </div>
             </>
-          ) : null}
         </section>
       )}
 
@@ -574,16 +538,9 @@ export default function DashboardPage() {
            {user.role === 'INSTRUCTOR' && (
               <section>
                 <h2 className="text-2xl font-semibold font-headline mb-4">Mis Cursos Impartidos Recientemente</h2>
-                {isLoadingTaughtCourses ? (
-                     <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                        <Skeleton className="h-72" />
-                        <Skeleton className="h-72" />
-                     </div>
-                ) : taughtCoursesError ? (
-                     <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar cursos: {taughtCoursesError}</div>
-                ) : taughtCourses.length > 0 ? (
+                 {data?.taughtCourses && data.taughtCourses.length > 0 ? (
                   <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                    {taughtCourses.map(course => (
+                    {data.taughtCourses.map(course => (
                       <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
                          {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
                         <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
@@ -600,21 +557,10 @@ export default function DashboardPage() {
            {user.role === 'STUDENT' && (
               <section>
                 <h2 className="text-2xl font-semibold font-headline mb-4">Continuar Aprendiendo</h2>
-                 {isLoadingMyCourses ? (
-                     <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                        <Skeleton className="h-72" />
-                        <Skeleton className="h-72" />
-                     </div>
-                ) : myCoursesError ? (
-                    <div className="text-destructive"><AlertTriangle className="inline mr-2" />Error: {myCoursesError}</div>
-                ) : myDashboardCourses.length > 0 ? (
+                 {data?.myDashboardCourses && data.myDashboardCourses.length > 0 ? (
                   <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                    {myDashboardCourses.map(course => (
-                      <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
-                        {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="education student" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
-                        <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">Por: {course.instructor}</CardDescription></CardHeader>
-                        <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/courses/${course.id}`}><Eye className="mr-2"/> Ver Curso</Link></Button></CardFooter>
-                      </Card>
+                    {data.myDashboardCourses.map((course, index) => (
+                      <CourseCard key={course.id} course={course} userRole={user.role} priority={index < 2}/>
                     ))}
                   </div>
                 ) : (
@@ -625,14 +571,7 @@ export default function DashboardPage() {
            
             <section>
               <h2 className="text-2xl font-semibold font-headline mb-4">Anuncios Recientes</h2>
-              {isLoadingAnnouncements ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Skeleton className="h-56" />
-                    <Skeleton className="h-56" />
-                  </div>
-              ) : announcementsError ? (
-                 <div className="text-destructive"><AlertTriangle className="inline mr-2" />Error: {announcementsError}</div>
-              ): filteredAnnouncements.length > 0 ? (
+              {filteredAnnouncements.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {filteredAnnouncements.map(announcement => (
                     <AnnouncementCard key={announcement.id} announcement={announcement} />

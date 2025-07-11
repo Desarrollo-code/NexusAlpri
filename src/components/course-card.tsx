@@ -16,9 +16,10 @@ interface CourseCardProps {
   course: AppCourse | EnrolledCourse;
   userRole: UserRole | null;
   onEnrollmentChange?: (courseId: string, newStatus: boolean) => void;
+  priority?: boolean;
 }
 
-export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardProps) {
+export function CourseCard({ course, userRole, onEnrollmentChange, priority = false }: CourseCardProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -104,6 +105,7 @@ export function CourseCard({ course, userRole, onEnrollmentChange }: CourseCardP
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               data-ai-hint="online course abstract"
+              priority={priority}
             />
              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
              {typeof progress === 'number' && (
