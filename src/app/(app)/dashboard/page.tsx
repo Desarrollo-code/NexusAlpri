@@ -112,7 +112,7 @@ const StatCard = ({ title, value, icon: Icon, href, trend }: { title: string; va
                     {hasTrend && (
                         <p className={cn("text-xs flex items-center", isPositive ? "text-green-500" : "text-red-500")}>
                             <TrendIcon className="h-3 w-3 mr-1" />
-                            {isPositive ? '+' : ''}{trend.toFixed(1)}% últimos 7 días
+                            {isPositive ? '+' : ''}{trend.toFixed(1)}% respecto a los últimos 7 días
                         </p>
                     )}
                 </CardContent>
