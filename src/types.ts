@@ -215,3 +215,10 @@ export interface UserAnalyticsData {
     activeUsersLast7Days: number;
     newUsersLast30Days: { date: string; count: number }[];
 }
+
+export interface CourseAnalyticsData {
+    averageCompletionRate: number;
+    averageQuizScore: number;
+    mostEnrolledCourses: { id: string, title: string, enrollments: number }[];
+    coursesByCategory: { category: string, count: number }[];
+}

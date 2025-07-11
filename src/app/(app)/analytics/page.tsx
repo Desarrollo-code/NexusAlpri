@@ -9,18 +9,19 @@ import { Loader2, Users, BookOpenCheck, Activity, TrendingUp, ShieldCheck, UserC
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { UserAnalyticsData, UsersByRole } from '@/types';
+import type { UserAnalyticsData, UsersByRole, CourseAnalyticsData } from '@/types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { cn } from '@/lib/utils';
 
 
-const MetricItem = ({ title, value, icon: Icon }: { title:string, value: string | number, icon: React.ElementType }) => (
+const MetricItem = ({ title, value, icon: Icon, unit = '' }: { title:string, value: string | number, icon: React.ElementType, unit?: string }) => (
     <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{title}</CardTitle>
             <Icon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-            <div className="text-2xl font-bold">{value}</div>
+            <div className="text-2xl font-bold">{value}<span className="text-lg font-normal text-muted-foreground">{unit}</span></div>
         </CardContent>
     </Card>
 );
@@ -116,6 +117,96 @@ const UserAnalyticsSection = () => {
     );
 };
 
+const CourseAnalyticsSection = () => {
+    const [data, setData] = useState<CourseAnalyticsData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchCourseAnalytics = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/analytics/courses');
+            if (!response.ok) throw new Error('Failed to fetch course analytics');
+            const result: CourseAnalyticsData = await response.json();
+            setData(result);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unknown error');
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchCourseAnalytics();
+    }, [fetchCourseAnalytics]);
+
+    if (isLoading) {
+        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+    }
+
+    if (error || !data) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8 text-destructive">
+                <AlertTriangle className="h-6 w-6 mb-2" />
+                <p>Error al cargar datos de cursos.</p>
+                <Button onClick={fetchCourseAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
+            </div>
+        );
+    }
+
+    const categoryColors = [
+        'hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 
+        'hsl(var(--chart-4))', 'hsl(var(--chart-5))', 'hsl(var(--chart-1))' // repeat colors if more than 5
+    ];
+    const categoryPieData = data.coursesByCategory.map((cat, index) => ({
+        name: cat.category,
+        value: cat.count,
+        fill: categoryColors[index % categoryColors.length]
+    }));
+
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-6">
+                 <div className="grid grid-cols-2 gap-4">
+                    <MetricItem title="Tasa de Finalización" value={data.averageCompletionRate.toFixed(1)} icon={Percent} unit="%"/>
+                    <MetricItem title="Puntaje Promedio (Quizzes)" value={data.averageQuizScore.toFixed(1)} icon={Award} unit="%"/>
+                </div>
+                <Card>
+                    <CardHeader><CardTitle className="text-base">Top 5 Cursos Más Populares</CardTitle></CardHeader>
+                    <CardContent>
+                        <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={data.mostEnrolledCourses} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis type="number" allowDecimals={false}/>
+                                <YAxis type="category" dataKey="title" width={120} tick={{ fontSize: 11 }} className="truncate" />
+                                <Tooltip />
+                                <Bar dataKey="enrollments" fill="hsl(var(--primary))" name="Inscripciones" barSize={20} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="space-y-6">
+                <Card>
+                    <CardHeader><CardTitle className="text-base">Distribución por Categoría</CardTitle></CardHeader>
+                    <CardContent>
+                        <ResponsiveContainer width="100%" height={345}>
+                            <PieChart>
+                                <Pie data={categoryPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={2} label>
+                                    {categoryPieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                </Pie>
+                                <Tooltip />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    );
+};
+
 
 export default function AnalyticsPage() {
     const { user: currentUser } = useAuth();
@@ -153,12 +244,7 @@ export default function AnalyticsPage() {
                 <AccordionItem value="item-2">
                     <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><BookOpenCheck className="mr-3 h-5 w-5 text-primary" /> Analíticas de Cursos y Contenido</AccordionTrigger>
                     <AccordionContent className="pt-4">
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <MetricItem title="Popularidad de Cursos" value="N/A" icon={TrendingUp}/>
-                            <MetricItem title="Tasas de Finalización" value="N/A" icon={Percent}/>
-                            <MetricItem title="Rendimiento en Evaluaciones" value="N/A" icon={Award}/>
-                            <MetricItem title="Contenido No Consumido" value="N/A" icon={FileWarning}/>
-                        </div>
+                         <CourseAnalyticsSection />
                     </AccordionContent>
                 </AccordionItem>
                 
