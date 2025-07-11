@@ -72,9 +72,10 @@ El esquema se define en `prisma/schema.prisma`. Los modelos principales son:
 *   `Quiz`, `Question`, `AnswerOption`: Componentes para las evaluaciones.
 *   `Enrollment`: Relaciona a un `User` con un `Course`.
 *   **`CourseProgress`**: Guarda el progreso de un usuario en un curso. El campo `completedLessonIds` es de tipo `Json` y almacena un array de objetos detallando cada interacción (tipo y nota si aplica). El campo `progressPercentage` guarda la nota final consolidada.
-*   `Resource`: Para la biblioteca de recursos (archivos y carpetas).
+*   `Resource`: Para la biblioteca de recursos (archivos y carpetas). Su campo `pin` almacena el hash del PIN de seguridad.
 *   `Announcement`, `CalendarEvent`, `Notification`: Para comunicación y eventos.
 *   `PlatformSettings`: Almacena la configuración global de la plataforma.
+*   **`SecurityLog`**: Registra eventos importantes de seguridad, como inicios de sesión (exitosos y fallidos), cambios de contraseña y cambios de rol.
 
 ### 3.2. Migraciones
 
