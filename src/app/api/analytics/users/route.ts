@@ -29,8 +29,8 @@ export async function GET(req: NextRequest) {
         }));
 
         // 2. Get active users in the last 7 days
-        // Correction: Ensure we only count logs from users that still exist.
-        const activeUsersLast7Days = await prisma.securityLog.count({
+        // Correction: Use findMany with distinct to count unique users
+        const distinctUserLogins = await prisma.securityLog.findMany({
             where: {
                 event: 'SUCCESSFUL_LOGIN',
                 createdAt: { gte: sevenDaysAgo },
@@ -38,8 +38,13 @@ export async function GET(req: NextRequest) {
                   isNot: null // This ensures the related user exists
                 }
             },
+            select: {
+                userId: true,
+            },
             distinct: ['userId'],
         });
+        const activeUsersLast7Days = distinctUserLogins.length;
+
 
         // 3. Get new user registrations for the last 30 days
         const newUsersData = await prisma.user.groupBy({
