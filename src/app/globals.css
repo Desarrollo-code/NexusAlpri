@@ -11,16 +11,16 @@
     --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
     
-    /* New Primary Color: Professional Deep Purple */
-    --primary: 259 66% 56%; /* #673AB7 */
+    /* New Primary Color: Professional Deep Blue */
+    --primary: 221 83% 53%; /* #2563EB */
     --primary-foreground: 210 40% 98%;
     
-    /* New Accent Color: Electric Indigo */
-    --accent: 263 52% 51%; /* #6F42C1 */
+    /* New Accent Color: Lighter Blue */
+    --accent: 221 83% 60%; /* Lighter shade for hover */
     --accent-foreground: 210 40% 98%;
 
     /* New Ring color for focus states */
-    --ring: 263 52% 51%;
+    --ring: 221 83% 53%;
     
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
@@ -44,12 +44,12 @@
     /* Sidebar colors updated to match new primary */
     --sidebar-background: 224 43% 9%;
     --sidebar-foreground: 215 20% 65%;
-    --sidebar-primary: 259 66% 56%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 217 33% 17%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 263 52% 51%;
+    --sidebar-ring: 221 83% 53%;
     
     /* Event Colors using the new chart palette */
     --event-red: 350 91% 60%;
@@ -66,9 +66,9 @@
     --card-foreground: 210 40% 98%;
     --popover: 222 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 259 66% 56%;
+    --primary: 221 83% 53%;
     --primary-foreground: 210 40% 98%;
-    --accent: 263 52% 51%;
+    --accent: 221 83% 60%;
     --accent-foreground: 210 40% 98%;
     --secondary: 217 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -78,7 +78,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 263 52% 51%;
+    --ring: 221 83% 53%;
     --radius: 0.75rem;
 
     --chart-1: 210 90% 60%;
