@@ -24,7 +24,9 @@ import {
   Rocket,
   X,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  Activity,
+  UsersRound
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
@@ -526,3 +528,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
