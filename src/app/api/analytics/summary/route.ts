@@ -2,7 +2,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
-import type { CourseStatus, UserRole } from '@/types';
 import type { NextRequest } from 'next/server';
 import { subDays, startOfDay } from 'date-fns';
 
@@ -13,8 +12,6 @@ export interface AnalyticsSummary {
     courseTrend: number;
     totalPublishedCourses: number;
     totalEnrollments: number;
-    usersByRole: { role: UserRole; count: number }[];
-    coursesByStatus: { status: CourseStatus; count: number }[];
 }
 
 const calculateTrend = (currentPeriodCount: number, previousPeriodCount: number): number => {
@@ -35,30 +32,26 @@ export async function GET(req: NextRequest) {
         const sevenDaysAgo = startOfDay(subDays(today, 7));
         const fourteenDaysAgo = startOfDay(subDays(today, 14));
 
-        // Total Users
-        const totalUsers = await prisma.user.count();
-        const newUsersLast7Days = await prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo } } });
-        const newUsersPrevious7Days = await prisma.user.count({ where: { registeredDate: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } });
-
-        // Total Courses
-        const totalCourses = await prisma.course.count();
-        const newCoursesLast7Days = await prisma.course.count({ where: { createdAt: { gte: sevenDaysAgo } } });
-        const newCoursesPrevious7Days = await prisma.course.count({ where: { createdAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } });
-
-        // Other stats
-        const totalPublishedCourses = await prisma.course.count({ where: { status: 'PUBLISHED' } });
-        const totalEnrollments = await prisma.enrollment.count();
+        const [
+            totalUsers,
+            newUsersLast7Days,
+            newUsersPrevious7Days,
+            totalCourses,
+            newCoursesLast7Days,
+            newCoursesPrevious7Days,
+            totalPublishedCourses,
+            totalEnrollments,
+        ] = await prisma.$transaction([
+            prisma.user.count(),
+            prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo } } }),
+            prisma.user.count({ where: { registeredDate: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } }),
+            prisma.course.count(),
+            prisma.course.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
+            prisma.course.count({ where: { createdAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } }),
+            prisma.course.count({ where: { status: 'PUBLISHED' } }),
+            prisma.enrollment.count(),
+        ]);
         
-        const usersByRole = await prisma.user.groupBy({
-            by: ['role'],
-            _count: { role: true },
-        });
-
-        const coursesByStatus = await prisma.course.groupBy({
-            by: ['status'],
-            _count: { status: true },
-        });
-
         const summary: AnalyticsSummary = {
             totalUsers,
             userTrend: calculateTrend(newUsersLast7Days, newUsersPrevious7Days),
@@ -66,14 +59,6 @@ export async function GET(req: NextRequest) {
             courseTrend: calculateTrend(newCoursesLast7Days, newCoursesPrevious7Days),
             totalPublishedCourses,
             totalEnrollments,
-            usersByRole: usersByRole.map(item => ({
-                role: item.role as UserRole,
-                count: item._count.role,
-            })),
-            coursesByStatus: coursesByStatus.map(item => ({
-                status: item.status as CourseStatus,
-                count: item._count.status,
-            })),
         };
 
         return NextResponse.json(summary);

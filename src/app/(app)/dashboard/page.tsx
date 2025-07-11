@@ -43,7 +43,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, Cell, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Cell, ResponsiveContainer, CartesianGrid } from "recharts";
 import { cn } from '@/lib/utils';
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -88,6 +88,13 @@ const userRolesChartConfig = {
   ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
+const courseStatusChartConfig = {
+  count: { label: "Cursos" },
+  PUBLISHED: { label: "Publicados", color: "hsl(var(--chart-1))" },
+  DRAFT: { label: "Borrador", color: "hsl(var(--chart-2))" },
+  ARCHIVED: { label: "Archivados", color: "hsl(var(--chart-3))" },
+} satisfies ChartConfig;
+
 const StatCard = ({ title, value, icon: Icon, href, trend }: { title: string; value: number; icon: React.ElementType; href: string; trend?: number; }) => {
     const hasTrend = typeof trend === 'number';
     const isPositive = hasTrend && trend >= 0;
@@ -122,10 +129,19 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
             count: stats.usersByRole.find(item => item.role === role)?.count || 0,
         }));
     }, [stats.usersByRole]);
+    
+    const courseStatusChartData = React.useMemo(() => {
+        if (!stats?.coursesByStatus) return [];
+        const order: ('DRAFT' | 'PUBLISHED' | 'ARCHIVED')[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED'];
+        return order.map(status => ({
+            status: courseStatusChartConfig[status]?.label || status,
+            count: stats.coursesByStatus.find(item => item.status === status)?.count || 0,
+        }));
+    }, [stats?.coursesByStatus]);
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-semibold font-headline">Resumen de la Plataforma</h2>
+            <h2 className="text-2xl font-semibold font-headline">Estadísticas de la Plataforma</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                 <StatCard title="Total Usuarios" value={stats.totalUsers} icon={Users} href="/users" trend={stats.userTrend}/>
                 <StatCard title="Total Cursos" value={stats.totalCourses} icon={BookOpenCheck} href="/manage-courses" trend={stats.courseTrend}/>
@@ -135,7 +151,7 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
             <section className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg"><Users /> Distribución de Usuarios por Rol</CardTitle>
+                        <CardTitle className="flex items-center gap-2 text-lg"><Users /> Distribución de Usuarios</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {userRolesChartData.length > 0 ? (
@@ -158,10 +174,26 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
                 </Card>
                  <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg"><BookOpenCheck /> Estado de Cursos</CardTitle>
+                        <CardTitle className="flex items-center gap-2 text-lg"><BookOpenCheck /> Distribución de Cursos</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground text-center py-4">Gráfico de estado de cursos próximamente.</p>
+                        {courseStatusChartData.length > 0 ? (
+                            <ChartContainer config={courseStatusChartConfig} className="h-[250px] w-full">
+                                <ResponsiveContainer>
+                                     <BarChart data={courseStatusChartData} margin={{ top: 20, right: 20, left: -5, bottom: 5 }} barGap={4}>
+                                        <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
+                                        <XAxis dataKey="status" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
+                                        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} allowDecimals={false} />
+                                        <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent />} />
+                                        <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                                            {courseStatusChartData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${index + 1}))`} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </ChartContainer>
+                        ) : (<p className="text-muted-foreground text-center py-4">No hay datos de cursos.</p>)}
                     </CardContent>
                 </Card>
             </section>
@@ -528,5 +560,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
