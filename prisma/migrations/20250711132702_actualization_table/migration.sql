@@ -1,19 +1,16 @@
 -- CreateTable
 CREATE TABLE `User` (
     `id` VARCHAR(191) NOT NULL,
-    `name` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
-    `role` ENUM('ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT') NOT NULL DEFAULT 'STUDENT',
     `avatar` VARCHAR(191) NULL,
+    `role` ENUM('ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT') NOT NULL DEFAULT 'STUDENT',
     `isTwoFactorEnabled` BOOLEAN NOT NULL DEFAULT false,
     `twoFactorSecret` VARCHAR(191) NULL,
-    `registeredDate` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
+    `registeredDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `User_email_key`(`email`),
-    INDEX `User_email_idx`(`email`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -23,14 +20,13 @@ CREATE TABLE `Course` (
     `title` VARCHAR(191) NOT NULL,
     `description` TEXT NOT NULL,
     `imageUrl` VARCHAR(191) NULL,
-    `category` VARCHAR(191) NULL,
+    `category` VARCHAR(191) NOT NULL DEFAULT 'General',
     `status` ENUM('DRAFT', 'PUBLISHED', 'ARCHIVED', 'SCHEDULED') NOT NULL DEFAULT 'DRAFT',
     `publicationDate` DATETIME(3) NULL,
+    `instructorId` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
-    `instructorId` VARCHAR(191) NOT NULL,
 
-    INDEX `Course_instructorId_idx`(`instructorId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -39,11 +35,8 @@ CREATE TABLE `Module` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `order` INTEGER NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
     `courseId` VARCHAR(191) NOT NULL,
 
-    INDEX `Module_courseId_idx`(`courseId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -52,11 +45,9 @@ CREATE TABLE `Lesson` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `order` INTEGER NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
     `moduleId` VARCHAR(191) NOT NULL,
+    `type` VARCHAR(191) NULL,
 
-    INDEX `Lesson_moduleId_idx`(`moduleId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -68,7 +59,6 @@ CREATE TABLE `ContentBlock` (
     `order` INTEGER NOT NULL,
     `lessonId` VARCHAR(191) NOT NULL,
 
-    INDEX `ContentBlock_lessonId_idx`(`lessonId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -76,7 +66,7 @@ CREATE TABLE `ContentBlock` (
 CREATE TABLE `Quiz` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
-    `description` TEXT NULL,
+    `description` VARCHAR(191) NULL,
     `contentBlockId` VARCHAR(191) NOT NULL,
 
     UNIQUE INDEX `Quiz_contentBlockId_key`(`contentBlockId`),
@@ -86,24 +76,22 @@ CREATE TABLE `Quiz` (
 -- CreateTable
 CREATE TABLE `Question` (
     `id` VARCHAR(191) NOT NULL,
-    `text` TEXT NOT NULL,
-    `type` ENUM('MULTIPLE_CHOICE', 'SINGLE_CHOICE', 'TRUE_FALSE') NOT NULL DEFAULT 'SINGLE_CHOICE',
+    `text` VARCHAR(191) NOT NULL,
+    `type` ENUM('MULTIPLE_CHOICE', 'SINGLE_CHOICE', 'TRUE_FALSE') NOT NULL,
     `order` INTEGER NOT NULL,
     `quizId` VARCHAR(191) NOT NULL,
 
-    INDEX `Question_quizId_idx`(`quizId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `AnswerOption` (
     `id` VARCHAR(191) NOT NULL,
-    `text` TEXT NOT NULL,
+    `text` VARCHAR(191) NOT NULL,
     `isCorrect` BOOLEAN NOT NULL,
-    `feedback` TEXT NULL,
+    `feedback` VARCHAR(191) NULL,
     `questionId` VARCHAR(191) NOT NULL,
 
-    INDEX `AnswerOption_questionId_idx`(`questionId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -113,8 +101,6 @@ CREATE TABLE `Enrollment` (
     `courseId` VARCHAR(191) NOT NULL,
     `enrolledAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
-    INDEX `Enrollment_userId_idx`(`userId`),
-    INDEX `Enrollment_courseId_idx`(`courseId`),
     PRIMARY KEY (`userId`, `courseId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -124,12 +110,7 @@ CREATE TABLE `CourseProgress` (
     `courseId` VARCHAR(191) NOT NULL,
     `completedLessonIds` JSON NOT NULL,
     `progressPercentage` DOUBLE NOT NULL DEFAULT 0,
-    `startedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `completedAt` DATETIME(3) NULL,
-    `updatedAt` DATETIME(3) NOT NULL,
 
-    INDEX `CourseProgress_userId_idx`(`userId`),
-    INDEX `CourseProgress_courseId_idx`(`courseId`),
     PRIMARY KEY (`userId`, `courseId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -147,8 +128,6 @@ CREATE TABLE `Resource` (
     `uploaderId` VARCHAR(191) NOT NULL,
     `parentId` VARCHAR(191) NULL,
 
-    INDEX `Resource_uploaderId_idx`(`uploaderId`),
-    INDEX `Resource_parentId_idx`(`parentId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -157,12 +136,11 @@ CREATE TABLE `Announcement` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `content` TEXT NOT NULL,
-    `date` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `priority` VARCHAR(191) NULL,
-    `audience` JSON NOT NULL,
+    `date` DATETIME(3) NOT NULL,
     `authorId` VARCHAR(191) NOT NULL,
+    `audience` JSON NOT NULL,
+    `priority` VARCHAR(191) NULL DEFAULT 'Normal',
 
-    INDEX `Announcement_authorId_idx`(`authorId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -176,7 +154,6 @@ CREATE TABLE `Notification` (
     `read` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
-    INDEX `Notification_userId_idx`(`userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -184,17 +161,15 @@ CREATE TABLE `Notification` (
 CREATE TABLE `CalendarEvent` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
-    `description` TEXT NULL,
-    `location` VARCHAR(191) NULL,
     `start` DATETIME(3) NOT NULL,
     `end` DATETIME(3) NOT NULL,
     `allDay` BOOLEAN NOT NULL DEFAULT false,
-    `audienceType` ENUM('ALL', 'ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT', 'SPECIFIC') NOT NULL DEFAULT 'ALL',
-    `color` VARCHAR(191) NULL DEFAULT 'blue',
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `description` VARCHAR(191) NULL,
+    `location` VARCHAR(191) NULL,
+    `audienceType` ENUM('ALL', 'ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT', 'SPECIFIC') NOT NULL,
     `creatorId` VARCHAR(191) NOT NULL,
+    `color` VARCHAR(191) NULL,
 
-    INDEX `CalendarEvent_creatorId_idx`(`creatorId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -204,20 +179,20 @@ CREATE TABLE `SecurityLog` (
     `event` ENUM('SUCCESSFUL_LOGIN', 'FAILED_LOGIN_ATTEMPT', 'PASSWORD_CHANGE_SUCCESS', 'TWO_FACTOR_ENABLED', 'TWO_FACTOR_DISABLED', 'USER_ROLE_CHANGED') NOT NULL,
     `ipAddress` VARCHAR(191) NOT NULL,
     `emailAttempt` VARCHAR(191) NULL,
-    `details` TEXT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `userId` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `details` VARCHAR(191) NULL,
 
-    INDEX `SecurityLog_userId_idx`(`userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `PlatformSettings` (
-    `id` VARCHAR(191) NOT NULL,
+    `id` INTEGER NOT NULL DEFAULT 1,
     `platformName` VARCHAR(191) NOT NULL DEFAULT 'NexusAlpri',
     `allowPublicRegistration` BOOLEAN NOT NULL DEFAULT true,
     `enableEmailNotifications` BOOLEAN NOT NULL DEFAULT true,
+    `emailWhitelist` TEXT NULL,
     `resourceCategories` JSON NOT NULL,
     `passwordMinLength` INTEGER NOT NULL DEFAULT 8,
     `passwordRequireUppercase` BOOLEAN NOT NULL DEFAULT true,
