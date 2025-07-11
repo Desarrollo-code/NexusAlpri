@@ -108,7 +108,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 
         for (const [moduleIndex, moduleData] of modules.entries()) {
           if (moduleData._toBeDeleted) {
-              if (!moduleData.id.startsWith('new-')) {
+              if (moduleData.id && !moduleData.id.startsWith('new-')) {
                   await tx.module.delete({ where: { id: moduleData.id } }).catch(() => {});
               }
               continue;
@@ -121,8 +121,8 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
           };
 
           const savedModule = await tx.module.upsert({
-              where: { id: moduleData.id.startsWith('new-') ? '---' : moduleData.id },
-              create: modulePayload,
+              where: { id: moduleData.id && !moduleData.id.startsWith('new-') ? moduleData.id : '---' }, // Dummy where for creation
+              create: { ...modulePayload, id: moduleData.id && moduleData.id.startsWith('new-') ? undefined : moduleData.id },
               update: modulePayload,
           });
 
@@ -138,15 +138,16 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 
               for (const [lessonIndex, lessonData] of moduleData.lessons.entries()) {
                    if (lessonData._toBeDeleted) {
-                      if (!lessonData.id.startsWith('new-')) {
+                      if (lessonData.id && !lessonData.id.startsWith('new-')) {
                          await tx.lesson.delete({ where: { id: lessonData.id } }).catch(() => {});
                       }
                       continue;
                    }
                   
                   const savedLesson = await tx.lesson.upsert({
-                      where: { id: lessonData.id.startsWith('new-') ? '---' : lessonData.id },
+                      where: { id: lessonData.id && !lessonData.id.startsWith('new-') ? lessonData.id : '---' },
                       create: {
+                        id: lessonData.id && lessonData.id.startsWith('new-') ? undefined : lessonData.id,
                         title: lessonData.title,
                         order: lessonIndex,
                         moduleId: savedModule.id,
@@ -159,12 +160,18 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 
                   // Handle Content Blocks
                   if (lessonData.contentBlocks) {
-                    const incomingBlockIds = lessonData.contentBlocks.map((b:any) => b.id).filter((id:string) => !id.startsWith('new-'));
+                    const incomingBlockIds = lessonData.contentBlocks.filter((b: any) => !b._toBeDeleted && b.id && !b.id.startsWith('new-')).map((b: any) => b.id);
                     await tx.contentBlock.deleteMany({
                         where: { lessonId: savedLesson.id, NOT: { id: { in: incomingBlockIds } } }
                     });
 
                     for (const [blockIndex, blockData] of lessonData.contentBlocks.entries()) {
+                        if (blockData._toBeDeleted) {
+                           if (blockData.id && !blockData.id.startsWith('new-')) {
+                               await tx.contentBlock.delete({ where: { id: blockData.id } }).catch(() => {});
+                           }
+                           continue;
+                        }
                         const blockPayload = {
                             type: blockData.type,
                             content: blockData.content,
@@ -173,8 +180,8 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
                         };
 
                         const savedBlock = await tx.contentBlock.upsert({
-                            where: { id: blockData.id.startsWith('new-') ? '---' : blockData.id },
-                            create: blockPayload,
+                            where: { id: blockData.id && !blockData.id.startsWith('new-') ? blockData.id : '---' },
+                            create: { ...blockPayload, id: blockData.id && blockData.id.startsWith('new-') ? undefined : blockData.id },
                             update: blockPayload,
                         });
 
@@ -206,7 +213,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
                                     };
                                     const savedQuestion = await tx.question.upsert({
                                         where: { id: qData.id.startsWith('temp-q') ? '---' : qData.id },
-                                        create: questionPayload,
+                                        create: { ...questionPayload, id: qData.id.startsWith('temp-q') ? undefined : qData.id },
                                         update: { text: qData.text, order: qIndex },
                                     });
                                     if (qData.options) {
@@ -223,7 +230,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
                                             };
                                             await tx.answerOption.upsert({
                                                 where: { id: oData.id.startsWith('temp-o') ? '---' : oData.id },
-                                                create: optionPayload,
+                                                create: { ...optionPayload, id: oData.id.startsWith('temp-o') ? undefined : oData.id },
                                                 update: optionPayload,
                                             });
                                         }

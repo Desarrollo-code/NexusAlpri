@@ -25,9 +25,7 @@ export async function PATCH(req: NextRequest, context: { params: { id: string } 
             return NextResponse.json({ message: 'Curso no encontrado' }, { status: 404 });
         }
 
-        if (session.role !== 'INSTRUCTOR' && session.role !== 'ADMINISTRATOR') {
-             return NextResponse.json({ message: 'No tienes permiso para modificar este curso' }, { status: 403 });
-        }
+        // Authorization check
         if (session.role === 'INSTRUCTOR' && courseToUpdate.instructorId !== session.id) {
             return NextResponse.json({ message: 'No tienes permiso para modificar este curso' }, { status: 403 });
         }
