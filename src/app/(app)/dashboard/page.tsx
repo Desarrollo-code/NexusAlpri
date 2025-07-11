@@ -35,7 +35,7 @@ import type { Announcement as AnnouncementType, UserRole, Course as AppCourseTyp
 import { AnnouncementCard } from '@/components/announcement-card';
 import type { Announcement as PrismaAnnouncement, Course as PrismaCourse } from '@prisma/client';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CourseCard } from '@/components/course-card';
 import {
   ChartContainer,
@@ -569,8 +569,8 @@ export default function DashboardPage() {
              <CardContent className="space-y-3">
                {linksToShow.map((link) => (
                  <Link key={link.href} href={link.href} className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors">
-                   <div className={`bg-muted p-2 rounded-md ${link.color}`}>
-                     <link.icon className="h-5 w-5"/>
+                   <div className={`bg-muted p-2 rounded-md`}>
+                     <link.icon className={cn("h-5 w-5", link.color)}/>
                    </div>
                    <div>
                       <p className="font-semibold">{link.label}</p>
@@ -585,7 +585,5 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
 
     
