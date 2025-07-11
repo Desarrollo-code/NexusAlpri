@@ -35,7 +35,7 @@ import type { Announcement as AnnouncementType, UserRole, Course as AppCourseTyp
 import { AnnouncementCard } from '@/components/announcement-card';
 import type { Announcement as PrismaAnnouncement, Course as PrismaCourse } from '@prisma/client';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from "@/components/ui/skeleton';
 import { CourseCard } from '@/components/course-card';
 import {
   ChartContainer,
@@ -398,8 +398,8 @@ export default function DashboardPage() {
   const quickLinks = {
     ADMINISTRATOR: [
       { href: '/users', label: 'Gestionar Usuarios', icon: Users, description: 'Administra cuentas y roles.', color: 'text-chart-1' },
-      { href: '/manage-courses', label: 'Gestionar Cursos', icon: BookMarked, description: 'Crea y edita cursos.', color: 'text-chart-2' },
-       { href: '/analytics', label: 'Ver Analíticas', icon: BarChart3, description: 'Analiza el rendimiento.', color: 'text-chart-3' },
+      { href: '/manage-courses', label: 'Gestionar Cursos', icon: BookMarked, description: 'Crea y edita cursos.', color: 'text-chart-3' },
+       { href: '/analytics', label: 'Ver Analíticas', icon: BarChart3, description: 'Analiza el rendimiento.', color: 'text-chart-2' },
       { href: '/settings', label: 'Configuración', icon: Settings, description: 'Ajusta la plataforma.', color: 'text-chart-4' },
     ],
     INSTRUCTOR: [
@@ -585,5 +585,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
 
     
