@@ -20,8 +20,19 @@ export async function GET(req: NextRequest) {
             : 0;
             
         // 2. Average Quiz Score
+        // Correction: Ensure we only get scores from lessons that belong to existing courses.
         const quizScores = await prisma.lessonCompletionRecord.findMany({
-            where: { type: 'quiz', score: { not: null } },
+            where: {
+                type: 'quiz',
+                score: { not: null },
+                lesson: {
+                    module: {
+                        course: {
+                            isNot: null,
+                        }
+                    }
+                }
+            },
             select: { score: true }
         });
         const averageQuizScore = quizScores.length > 0

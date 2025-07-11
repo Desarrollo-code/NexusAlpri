@@ -29,10 +29,14 @@ export async function GET(req: NextRequest) {
         }));
 
         // 2. Get active users in the last 7 days
+        // Correction: Ensure we only count logs from users that still exist.
         const activeUsersLast7Days = await prisma.securityLog.count({
             where: {
                 event: 'SUCCESSFUL_LOGIN',
-                createdAt: { gte: sevenDaysAgo }
+                createdAt: { gte: sevenDaysAgo },
+                user: {
+                  isNot: null // This ensures the related user exists
+                }
             },
             distinct: ['userId'],
         });
