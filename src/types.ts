@@ -177,8 +177,8 @@ export interface CalendarEvent {
     start: string;
     end: string;
     allDay: boolean;
-    description?: string;
-    location?: string;
+    description?: string | null;
+    location?: string | null;
     audienceType?: EventAudienceType;
     attendees?: { id: string, name: string | null, email: string }[];
     color?: string;
