@@ -12,16 +12,7 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        // 1. Certificates Issued (completed courses)
-        const certificatesIssued = await prisma.courseProgress.count({
-            where: {
-                progressPercentage: {
-                    gte: 95, // Assuming 95% or more is a completion
-                },
-            },
-        });
-        
-        // 2. Students with courses in progress
+        // 1. Students with courses in progress
         const activeStudentsInCoursesRecords = await prisma.courseProgress.findMany({
             where: {
                 progressPercentage: {
@@ -34,7 +25,7 @@ export async function GET(req: NextRequest) {
         });
         const activeStudentsInCourses = activeStudentsInCoursesRecords.length;
         
-        // 3. Average time to completion
+        // 2. Average time to completion
         const completedProgressRecords = await prisma.courseProgress.findMany({
             where: { 
                 progressPercentage: { gte: 95 },
@@ -60,7 +51,7 @@ export async function GET(req: NextRequest) {
         
         const averageCompletionTimeDays = validCompletions > 0 ? Math.round(totalCompletionDays / validCompletions) : 0;
         
-        // 4. Dropout rate (estimated)
+        // 3. Dropout rate (estimated)
         const coursesStarted = await prisma.courseProgress.count({
             where: { progressPercentage: { gt: 0 } },
         });
@@ -72,7 +63,6 @@ export async function GET(req: NextRequest) {
         const dropoutRate = coursesStarted > 0 ? (coursesNotCompleted / coursesStarted) * 100 : 0;
 
         const analyticsData: ProgressAnalyticsData = {
-            certificatesIssued,
             activeStudentsInCourses,
             averageCompletionTimeDays,
             dropoutRate,

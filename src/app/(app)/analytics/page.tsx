@@ -324,8 +324,7 @@ const ProgressAnalyticsSection = () => {
                     <GaugeChart value={data.dropoutRate} />
                 </CardContent>
             </Card>
-            <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <MetricItem title="Certificados Emitidos" value={data.certificatesIssued} icon={Award}/>
+            <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <MetricItem title="Estudiantes en Progreso" value={data.activeStudentsInCourses} icon={UserCheck}/>
                 <MetricItem title="Tiempo Promedio Finalización" value={data.averageCompletionTimeDays} icon={Clock} unit=" días"/>
             </div>

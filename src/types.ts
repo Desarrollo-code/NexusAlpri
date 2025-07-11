@@ -224,7 +224,6 @@ export interface CourseAnalyticsData {
 }
 
 export interface ProgressAnalyticsData {
-    certificatesIssued: number;
     activeStudentsInCourses: number;
     averageCompletionTimeDays: number;
     dropoutRate: number;
