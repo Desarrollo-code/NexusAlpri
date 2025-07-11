@@ -33,8 +33,14 @@ export async function GET(req: NextRequest) {
         });
         
         // 3. Average time to completion
-        const completedEnrollments = await prisma.courseProgress.findMany({
-            where: { progressPercentage: { gte: 95 } },
+        const completedProgressRecords = await prisma.courseProgress.findMany({
+            where: { 
+                progressPercentage: { gte: 95 },
+                // Ensure the associated enrollment exists to prevent errors
+                enrollment: {
+                    isNot: null,
+                }
+            },
             include: {
                 enrollment: {
                     select: { enrolledAt: true }
@@ -44,7 +50,8 @@ export async function GET(req: NextRequest) {
 
         let totalCompletionDays = 0;
         let validCompletions = 0;
-        completedEnrollments.forEach(p => {
+        completedProgressRecords.forEach(p => {
+            // This check is now safer due to the query above
             if (p.enrollment && p.updatedAt) {
                 totalCompletionDays += differenceInDays(p.updatedAt, p.enrollment.enrolledAt);
                 validCompletions++;
@@ -53,8 +60,12 @@ export async function GET(req: NextRequest) {
         
         const averageCompletionTimeDays = validCompletions > 0 ? Math.round(totalCompletionDays / validCompletions) : 0;
         
-        // 4. Dropout rate (Placeholder logic)
-        const dropoutRate = 12.5; // Placeholder value
+        // 4. Dropout rate (estimated)
+        const totalEnrollments = await prisma.enrollment.count();
+        const coursesStarted = await prisma.courseProgress.count({ where: { progressPercentage: { gt: 0 } } });
+        const coursesNotCompleted = await prisma.courseProgress.count({ where: { progressPercentage: { gt: 0, lt: 95 } } });
+        
+        const dropoutRate = coursesStarted > 0 ? (coursesNotCompleted / coursesStarted) * 100 : 0;
 
         const analyticsData: ProgressAnalyticsData = {
             certificatesIssued,
