@@ -511,15 +511,16 @@ export default function UsersPage() {
               <p className="text-sm">{error}</p>
               <Button onClick={fetchUsers} variant="outline" className="mt-4">Reintentar</Button>
             </div>
-          ) : (
-             <>
-                {isMobile ? <MobileUsersList /> : <DesktopUsersTable />}
-                {!isLoading && filteredUsers.length === 0 && (
-                    <p className="text-center text-muted-foreground py-8">
-                        {searchTerm ? "No se encontraron usuarios que coincidan." : "No hay usuarios registrados."}
-                    </p>
-                )}
-             </>
+          )}
+          {!error && (
+            <>
+              {isMobile ? <MobileUsersList /> : <DesktopUsersTable />}
+              {!isLoading && filteredUsers.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">
+                      {searchTerm ? "No se encontraron usuarios que coincidan." : "No hay usuarios registrados."}
+                  </p>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
