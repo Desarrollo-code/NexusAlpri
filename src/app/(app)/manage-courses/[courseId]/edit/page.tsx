@@ -1,3 +1,4 @@
+
 // En /home/user/studio/src/app/(app)/manage-courses/[courseId]/edit/page.tsx
 
 'use client';
@@ -580,7 +581,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                                 isSaving={isSaving}
                                 openQuizEditor={openQuizEditor}
                                 openQuizPreview={openQuizPreview}
-                                appendBlock={appendBlock}
+                                appendBlock={appendBlockToLesson}
                             />
                             {quizEditorDetails?.lessonIndex === lessonIndex && (
                                 <QuizEditorDialog
