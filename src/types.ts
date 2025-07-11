@@ -222,3 +222,10 @@ export interface CourseAnalyticsData {
     mostEnrolledCourses: { id: string, title: string, enrollments: number }[];
     coursesByCategory: { category: string, count: number }[];
 }
+
+export interface ProgressAnalyticsData {
+    certificatesIssued: number;
+    activeStudentsInCourses: number;
+    averageCompletionTimeDays: number;
+    dropoutRate: number;
+}

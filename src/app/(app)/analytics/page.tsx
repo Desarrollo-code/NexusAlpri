@@ -5,11 +5,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Users, BookOpenCheck, Activity, TrendingUp, ShieldCheck, UserCheck, Group, Award, FileWarning, Clock, Percent } from 'lucide-react';
+import { Loader2, Users, BookOpenCheck, Activity, TrendingUp, ShieldCheck, UserCheck, Group, Award, FileWarning, Clock, Percent, UserMinus } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { UserAnalyticsData, UsersByRole, CourseAnalyticsData } from '@/types';
+import type { UserAnalyticsData, UsersByRole, CourseAnalyticsData, ProgressAnalyticsData } from '@/types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { cn } from '@/lib/utils';
 
@@ -207,6 +207,54 @@ const CourseAnalyticsSection = () => {
     );
 };
 
+const ProgressAnalyticsSection = () => {
+    const [data, setData] = useState<ProgressAnalyticsData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchProgressAnalytics = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/analytics/progress');
+            if (!response.ok) throw new Error('Failed to fetch progress analytics');
+            const result: ProgressAnalyticsData = await response.json();
+            setData(result);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unknown error');
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchProgressAnalytics();
+    }, [fetchProgressAnalytics]);
+
+    if (isLoading) {
+        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+    }
+
+    if (error || !data) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8 text-destructive">
+                <AlertTriangle className="h-6 w-6 mb-2" />
+                <p>Error al cargar datos de progreso.</p>
+                <Button onClick={fetchProgressAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
+            </div>
+        );
+    }
+    
+    return (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricItem title="Certificados Emitidos" value={data.certificatesIssued} icon={Award}/>
+            <MetricItem title="Estudiantes en Progreso" value={data.activeStudentsInCourses} icon={UserCheck}/>
+            <MetricItem title="Tasa de Abandono (Est.)" value={data.dropoutRate.toFixed(1)} icon={UserMinus} unit="%"/>
+            <MetricItem title="Tiempo Promedio Finalización" value={data.averageCompletionTimeDays} icon={Clock} unit=" días"/>
+        </div>
+    );
+};
+
 
 export default function AnalyticsPage() {
     const { user: currentUser } = useAuth();
@@ -251,12 +299,7 @@ export default function AnalyticsPage() {
                  <AccordionItem value="item-3">
                     <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><TrendingUp className="mr-3 h-5 w-5 text-primary" /> Analíticas de Progreso de Estudiantes</AccordionTrigger>
                     <AccordionContent className="pt-4">
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <MetricItem title="Progreso Individual" value="N/A" icon={UserCheck}/>
-                            <MetricItem title="Progreso Grupal" value="N/A" icon={Group}/>
-                            <MetricItem title="Certificados Emitidos" value="N/A" icon={Award}/>
-                             <MetricItem title="Tiempo Promedio Finalización" value="N/A" icon={Clock}/>
-                        </div>
+                        <ProgressAnalyticsSection />
                     </AccordionContent>
                 </AccordionItem>
 
