@@ -38,10 +38,6 @@ export async function GET(req: NextRequest) {
         const completedProgressRecords = await prisma.courseProgress.findMany({
             where: { 
                 progressPercentage: { gte: 95 },
-                // Correctly check that an associated enrollment exists
-                enrollment: {
-                    isNot: null,
-                }
             },
             include: {
                 enrollment: {
@@ -53,6 +49,7 @@ export async function GET(req: NextRequest) {
         let totalCompletionDays = 0;
         let validCompletions = 0;
         completedProgressRecords.forEach(p => {
+            // Correctly filter out records where the enrollment might not exist (e.g., if deleted)
             if (p.enrollment && p.updatedAt) {
                 totalCompletionDays += differenceInDays(p.updatedAt, p.enrollment.enrolledAt);
                 validCompletions++;
@@ -62,7 +59,6 @@ export async function GET(req: NextRequest) {
         const averageCompletionTimeDays = validCompletions > 0 ? Math.round(totalCompletionDays / validCompletions) : 0;
         
         // 4. Dropout rate (estimated)
-        // Corrected: use distinct on findMany, then .length
         const coursesStartedRecords = await prisma.courseProgress.findMany({ 
             where: { progressPercentage: { gt: 0 } },
             distinct: ['userId', 'courseId'] 
