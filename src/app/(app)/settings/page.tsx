@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { PlatformSettings as AppPlatformSettings } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const DEFAULT_CATEGORIES_PAGE_LEVEL = ["Recursos Humanos", "TI y Seguridad", "Marketing", "Ventas", "Legal", "Operaciones", "Finanzas", "Formación Interna", "Documentación de Producto", "General"];
 
@@ -40,7 +41,24 @@ export default function SettingsPage() {
   }
   
   if (isLoading || !formState) {
-    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/> Cargando configuración...</div>;
+    return (
+        <div className="space-y-8">
+            <div>
+                <Skeleton className="h-8 w-1/2 mb-2" />
+                <Skeleton className="h-4 w-3/4" />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                    <Card><CardHeader><Skeleton className="h-6 w-48 mb-2" /><Skeleton className="h-4 w-64" /></CardHeader><CardContent><Skeleton className="h-24 w-full" /></CardContent></Card>
+                    <Card><CardHeader><Skeleton className="h-6 w-48 mb-2" /><Skeleton className="h-4 w-64" /></CardHeader><CardContent><Skeleton className="h-48 w-full" /></CardContent></Card>
+                </div>
+                <div className="lg:col-span-1 space-y-6">
+                    <Card><CardContent className="pt-6"><Skeleton className="h-24 w-full" /></CardContent></Card>
+                    <Card><CardHeader><Skeleton className="h-6 w-48" /></CardHeader><CardContent><Skeleton className="h-32 w-full" /></CardContent></Card>
+                </div>
+            </div>
+        </div>
+    );
   }
 
   const handleInputChange = (field: keyof AppPlatformSettings, value: any) => {
@@ -224,10 +242,12 @@ export default function SettingsPage() {
                 </div>
             </CardContent>
           </Card>
+          {/* This spacer div is crucial to prevent the sticky panel from overlapping the footer or last element */}
+          <div className="min-h-[200px] lg:hidden"></div>
         </div>
 
-        <div className="lg:col-span-1 space-y-6">
-            <Card className="sticky top-24">
+        <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+            <Card>
                 <CardHeader>
                     <CardTitle>Guardar Cambios</CardTitle>
                 </CardHeader>
