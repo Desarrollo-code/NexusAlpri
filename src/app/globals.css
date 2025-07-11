@@ -58,60 +58,6 @@
     --event-red: 0 84% 60%;
     --event-orange: 25 95% 53%;
   }
- 
-  .dark {
-    /* Keeping dark mode consistent with the new light theme for now */
-    --background: 240 10% 97%;
-    --foreground: 240 10% 10%;
-    
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 10%;
-   
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 10%;
-   
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
-   
-    --secondary: 240 5% 94%;
-    --secondary-foreground: 240 5% 10%;
-   
-    --muted: 240 5% 94%;
-    --muted-foreground: 240 5% 45%;
-   
-    --accent: 240 5% 90%;
-    --accent-foreground: 240 5% 10%;
-   
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-   
-    --border: 240 5% 88%;
-    --input: 240 5% 92%;
-    --ring: 221 83% 53%;
-
-    /* Chart Colors */
-    --chart-1: 221 83% 53%;
-    --chart-2: 210 40% 96.1%;
-    --chart-3: 160 70% 45%;
-    --chart-4: 262 82% 57%;
-    --chart-5: 340 82% 62%;
-
-    /* Sidebar colors */
-    --sidebar-background: 240 10% 97%;
-    --sidebar-foreground: 240 10% 25%;
-    --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 221 83% 53%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 240 5% 88%;
-    --sidebar-ring: 221 83% 53%;
-
-    /* Event Colors for Calendar */
-    --event-blue: 220 80% 65%;
-    --event-green: 160 70% 45%;
-    --event-red: 0 84% 60%;
-    --event-orange: 25 95% 53%;
-  }
 }
 
 @layer base {
@@ -146,5 +92,3 @@
 .font-code {
   font-family: var(--font-code);
 }
-
-    
