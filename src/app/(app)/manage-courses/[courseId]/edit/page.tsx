@@ -592,17 +592,15 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                             )}
                             {previewQuizDetails?.lessonIndex === lessonIndex && (
                                 <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setPreviewQuizDetails(null)}>
-                                    <DialogContent className="max-w-3xl">
-                                        <DialogHeader>
-                                            <DialogTitle>Vista Previa del Quiz</DialogTitle>
-                                        </DialogHeader>
-                                        <QuizViewer
-                                            quiz={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.contentBlocks.${previewQuizDetails.blockIndex}.quiz`)}
-                                            lessonId={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}
-                                            isCreatorPreview={true}
-                                        />
-                                    </DialogContent>
-                                </Dialog>
+                                    <DialogHeader>
+                                        <DialogTitle>Vista Previa del Quiz</DialogTitle>
+                                    </DialogHeader>
+                                    <QuizViewer
+                                        quiz={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.contentBlocks.${previewQuizDetails.blockIndex}.quiz`)}
+                                        lessonId={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}
+                                        isCreatorPreview={true}
+                                    />
+                                </DialogContent>
                             )}
                         </AccordionContent>
                     </AccordionItem>
