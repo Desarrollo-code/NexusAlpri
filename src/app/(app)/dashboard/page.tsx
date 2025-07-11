@@ -148,7 +148,7 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
                 <StatCard title="Total Usuarios" value={stats.totalUsers} icon={Users} href="/users" trend={stats.userTrend}/>
                 <StatCard title="Total Cursos" value={stats.totalCourses} icon={BookOpenCheck} href="/manage-courses" trend={stats.courseTrend}/>
                 <StatCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={Activity} href="/manage-courses" />
-                <StatCard title="Total Inscripciones" value={stats.totalEnrollments} icon="/enrollments" />
+                <StatCard title="Total Inscripciones" value={stats.totalEnrollments} icon={UsersRound} href="/enrollments" />
             </div>
             <section className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                 <Card>
