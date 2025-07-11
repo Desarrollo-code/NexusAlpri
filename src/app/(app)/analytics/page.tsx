@@ -143,7 +143,13 @@ const UserAnalyticsSection = () => {
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="date" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                                <XAxis 
+                                    dataKey="date" 
+                                    tick={{ fontSize: 12 }} 
+                                    axisLine={false} 
+                                    tickLine={false}
+                                    tickFormatter={(value, index) => (index % 5 === 0 ? value : "")}
+                                />
                                 <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
                                 <Tooltip
                                   content={({ active, payload }) => {
