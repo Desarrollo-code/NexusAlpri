@@ -35,7 +35,7 @@ import type { Announcement as AnnouncementType, UserRole, Course as AppCourseTyp
 import { AnnouncementCard } from '@/components/announcement-card';
 import type { Announcement as PrismaAnnouncement, Course as PrismaCourse } from '@prisma/client';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import {
   ChartContainer,
@@ -585,3 +585,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
