@@ -104,6 +104,12 @@
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: 215 27.9% 16.9%;
     --sidebar-ring: 221 83% 53%;
+
+    /* Event Colors for Calendar */
+    --event-blue: 220 80% 65%;
+    --event-green: 160 70% 45%;
+    --event-red: 0 84% 60%;
+    --event-orange: 25 95% 53%;
   }
 }
 
