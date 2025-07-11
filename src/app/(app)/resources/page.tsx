@@ -1,4 +1,4 @@
-
+// src/app/(app)/resources/page.tsx
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -33,7 +33,6 @@ import type { Resource as PrismaResource, ResourceType as PrismaResourceType } f
 import { Progress } from '@/components/ui/progress';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import Image from 'next/image';
-import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
 import {
@@ -41,10 +40,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import mammoth from 'mammoth';
 import * as XLSX from 'xlsx';
@@ -67,7 +66,7 @@ function mapApiResourceToAppResource(apiResource: ApiResource): AppResourceType 
     description: apiResource.description || undefined,
     type: apiResource.type as AppResourceType['type'],
     category: apiResource.category || 'General',
-    tags: apiResource.tags,
+    tags: apiResource.tags || [],
     url: apiResource.url || undefined,
     uploadDate: apiResource.uploadDate,
     uploaderId: apiResource.uploaderId || undefined,
@@ -548,7 +547,7 @@ export default function ResourcesPage() {
     setEditResourceTitle(resource.title);
     setEditResourceCategory(resource.category);
     setEditResourceDescription(resource.description || '');
-    setEditResourceTags(resource.tags.join(', '));
+    setEditResourceTags((resource.tags || []).join(', '));
     setEditResourcePin('');
     setShowEditModal(true);
   };
@@ -610,12 +609,8 @@ export default function ResourcesPage() {
 
   const handleAccessResource = (resource: AppResourceType, action: 'preview' | 'download') => {
     if (resource.type === 'FOLDER') {
-        const currentFolder = allApiResources.find(f => f.id === currentFolderId);
-        const newBreadcrumbs = [...breadcrumbs];
-        if (currentFolder) {
-            newBreadcrumbs.push({ id: currentFolderId, title: currentFolder?.title || '...' });
-        }
-        setBreadcrumbs(prev => [...prev, {id: resource.id, title: resource.title}]);
+        const newBreadcrumbs = [...breadcrumbs, {id: resource.id, title: resource.title}];
+        setBreadcrumbs(newBreadcrumbs);
         setCurrentFolderId(resource.id);
         return;
     }
@@ -629,7 +624,7 @@ export default function ResourcesPage() {
   
   const handleBreadcrumbClick = (folderId: string | null, index: number) => {
     setCurrentFolderId(folderId);
-    setBreadcrumbs(prev => prev.slice(0, index));
+    setBreadcrumbs(prev => prev.slice(0, index + 1));
   };
 
 
@@ -716,7 +711,7 @@ export default function ResourcesPage() {
                      <div className="space-y-1"><Label htmlFor="resource-title">Título <span className="text-destructive">*</span></Label><Input id="resource-title" value={newResourceTitle} onChange={(e) => setNewResourceTitle(e.target.value)} required disabled={isSubmittingResource} /></div>
                      <div className="space-y-1"><Label htmlFor="resource-description">Descripción (Opcional)</Label><Textarea id="resource-description" value={newResourceDescription} onChange={(e) => setNewResourceDescription(e.target.value)} disabled={isSubmittingResource} rows={3} /></div>
                      <div className="space-y-1"><Label htmlFor="resource-type">Tipo <span className="text-destructive">*</span></Label><Select name="resource-type" value={newResourceType} onValueChange={(v) => setNewResourceType(v as AppResourceType['type'])} required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent>{resourceTypeOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></div>
-                     <div className="space-y-1"><Label htmlFor="resource-category">Categoría <span className="text-destructive">*</span></Label><Select name="resource-category" value={newResourceCategory} onValueChange={setNewResourceCategory} required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{settings?.resourceCategories.sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                     <div className="space-y-1"><Label htmlFor="resource-category">Categoría <span className="text-destructive">*</span></Label><Select name="resource-category" value={newResourceCategory} onValueChange={setNewResourceCategory} required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
                      <Separator />
                      {newResourceType === 'VIDEO' ? (
                         <div className="space-y-1">
@@ -748,11 +743,11 @@ export default function ResourcesPage() {
        <Card className="p-4 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center text-sm text-muted-foreground overflow-x-auto whitespace-nowrap pb-2 md:pb-0">
-            <button onClick={() => handleBreadcrumbClick(null, 0)} className="hover:text-primary flex items-center gap-1 shrink-0"><Home className="h-4 w-4 text-primary"/> Biblioteca</button>
+            <button onClick={() => { setCurrentFolderId(null); setBreadcrumbs([]); }} className="hover:text-primary flex items-center gap-1 shrink-0"><Home className="h-4 w-4 text-primary"/> Biblioteca</button>
             {breadcrumbs.map((crumb, index) => (
               <React.Fragment key={crumb.id || 'root'}>
                 <ChevronRight className="h-4 w-4 mx-1 shrink-0" />
-                <button onClick={() => handleBreadcrumbClick(crumb.id, index + 1)} className="hover:text-primary shrink-0 truncate">{crumb.title}</button>
+                <button onClick={() => handleBreadcrumbClick(crumb.id, index)} className="hover:text-primary shrink-0 truncate">{crumb.title}</button>
               </React.Fragment>
             ))}
           </div>
@@ -781,7 +776,7 @@ export default function ResourcesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas</SelectItem>
-                    {settings?.resourceCategories.sort().map(category => (
+                    {(settings?.resourceCategories || []).sort().map(category => (
                       <SelectItem key={category} value={category}>{category}</SelectItem>
                     ))}
                   </SelectContent>
@@ -867,7 +862,7 @@ export default function ResourcesPage() {
             <div className="space-y-1"><Label htmlFor="edit-resource-title">Título</Label><Input id="edit-resource-title" value={editResourceTitle} onChange={(e) => setEditResourceTitle(e.target.value)} required disabled={isSavingEdit || isSavingPin} /></div>
             {resourceToEdit?.type !== 'FOLDER' && (<>
               <div className="space-y-1"><Label htmlFor="edit-resource-description">Descripción (Opcional)</Label><Textarea id="edit-resource-description" value={editResourceDescription} onChange={(e) => setEditResourceDescription(e.target.value)} disabled={isSavingEdit || isSavingPin} rows={3}/></div>
-              <div className="space-y-1"><Label htmlFor="edit-resource-category">Categoría</Label><Select name="edit-resource-category" value={editResourceCategory} onValueChange={setEditResourceCategory} required disabled={isSavingEdit || isSavingPin}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{settings?.resourceCategories.sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+              <div className="space-y-1"><Label htmlFor="edit-resource-category">Categoría</Label><Select name="edit-resource-category" value={editResourceCategory} onValueChange={setEditResourceCategory} required disabled={isSavingEdit || isSavingPin}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
               <div className="space-y-1"><Label htmlFor="edit-resource-tags">Etiquetas</Label><Input id="edit-resource-tags" value={editResourceTags} onChange={(e) => setEditResourceTags(e.target.value)} disabled={isSavingEdit || isSavingPin} /></div>
             </>)}
             <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><Button type="button" variant="outline" onClick={() => setShowEditModal(false)} disabled={isSavingEdit || isSavingPin}>Cancelar</Button><Button type="submit" disabled={isSavingEdit || isSavingPin}>{isSavingEdit ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Guardar</Button></DialogFooter>
