@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { Loader2, ShieldCheck } from 'lucide-react';
+import { Loader2, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import {
   InputOTP,
   InputOTPGroup,
@@ -30,6 +30,7 @@ export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [show2fa, setShow2fa] = useState(false);
   const [userIdFor2fa, setUserIdFor2fa] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -144,16 +145,22 @@ export default function SignInPage() {
                           disabled={isLoading}
                         />
                       </div>
-                      <div className="grid gap-2">
+                      <div className="grid gap-2 relative">
                         <Label htmlFor="password">Contraseña</Label>
                         <Input
                           id="password"
-                          type="password"
+                          type={showPassword ? "text" : "password"}
                           required
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           disabled={isLoading}
+                          className="pr-10"
                         />
+                         <div className="absolute inset-y-0 right-0 top-6 flex items-center pr-3">
+                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-muted-foreground hover:text-foreground">
+                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
+                        </div>
                       </div>
                       <Button type="submit" className="w-full" disabled={isLoading}>
                         {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

@@ -7,7 +7,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Edit3, Mail, Shield, UserCircle as UserIcon, Camera, KeyRound, Save, Loader2, Check } from 'lucide-react';
+import { Edit3, Mail, Shield, UserCircle as UserIcon, Camera, KeyRound, Save, Loader2, Check, Eye, EyeOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -60,6 +60,9 @@ export default function ProfilePage() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   
   const avatarInputRef = useRef<HTMLInputElement>(null);
   
@@ -450,40 +453,58 @@ export default function ProfilePage() {
                 </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleChangePassword} className="space-y-4 py-4">
-                <div className="space-y-2">
+                <div className="space-y-2 relative">
                     <Label htmlFor="current-password">Contraseña Actual</Label>
                     <Input 
                         id="current-password"
-                        type="password"
+                        type={showCurrentPassword ? "text" : "password"}
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         required
                         disabled={isChangingPassword}
+                        className="pr-10"
                     />
+                    <div className="absolute inset-y-0 right-0 top-6 flex items-center pr-3">
+                        <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="text-muted-foreground hover:text-foreground">
+                            {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
+                    </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 relative">
                     <Label htmlFor="new-password">Nueva Contraseña</Label>
                     <Input 
                         id="new-password"
-                        type="password"
+                        type={showNewPassword ? "text" : "password"}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         required
                         disabled={isChangingPassword}
+                        className="pr-10"
                     />
+                    <div className="absolute inset-y-0 right-0 top-6 flex items-center pr-3">
+                        <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="text-muted-foreground hover:text-foreground">
+                            {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
+                    </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 relative">
                     <Label htmlFor="confirm-password">Confirmar Nueva Contraseña</Label>
                     <Input 
                         id="confirm-password"
-                        type="password"
+                        type={showConfirmNewPassword ? "text" : "password"}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                         disabled={isChangingPassword}
+                        className="pr-10"
                     />
+                     <div className="absolute inset-y-0 right-0 top-6 flex items-center pr-3">
+                        <button type="button" onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)} className="text-muted-foreground hover:text-foreground">
+                            {showConfirmNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
+                    </div>
                 </div>
-                <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+                <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4">
                     <Button variant="outline" type="button" onClick={() => setShowChangePasswordDialog(false)} disabled={isChangingPassword}>Cancelar</Button>
                     <Button type="submit" disabled={isChangingPassword}>
                         {isChangingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}

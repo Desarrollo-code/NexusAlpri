@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import {
@@ -79,6 +79,7 @@ export default function UsersPage() {
   const [editEmail, setEditEmail] = useState('');
   const [editRole, setEditRole] = useState<UserRole>('STUDENT');
   const [editPassword, setEditPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [selectedNewRole, setSelectedNewRole] = useState<UserRole>('STUDENT');
 
 
@@ -132,6 +133,7 @@ export default function UsersPage() {
     setEditEmail('');
     setEditRole('STUDENT');
     setEditPassword('');
+    setShowPassword(false);
   }
 
   const handleOpenAddModal = () => {
@@ -146,6 +148,7 @@ export default function UsersPage() {
     setEditEmail(selectedUser.email);
     setEditRole(selectedUser.role);
     setEditPassword('');
+    setShowPassword(false);
     setShowAddEditModal(true);
   };
   
@@ -464,9 +467,23 @@ export default function UsersPage() {
                             </Select>
                         </div>
                         {!userToEdit && (
-                           <div className="space-y-2">
+                           <div className="space-y-2 relative">
                               <Label htmlFor="password">Contraseña</Label>
-                              <Input id="password" type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Mínimo 8 caracteres" required disabled={isProcessing}/>
+                              <Input 
+                                id="password" 
+                                type={showPassword ? "text" : "password"}
+                                value={editPassword} 
+                                onChange={(e) => setEditPassword(e.target.value)} 
+                                placeholder="Mínimo 8 caracteres" 
+                                required 
+                                disabled={isProcessing}
+                                className="pr-10"
+                              />
+                               <div className="absolute inset-y-0 right-0 top-6 flex items-center pr-3">
+                                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-muted-foreground hover:text-foreground">
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
                             </div>
                         )}
                         <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4">
