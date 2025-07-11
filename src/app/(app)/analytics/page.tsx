@@ -5,40 +5,116 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Users, BookOpenCheck, Activity, BarChart3, ShieldCheck, TrendingUp, UserCheck, Percent, Clock, FileWarning, Group, Award, MessageSquare, Download, Calendar, KeyRound } from 'lucide-react';
+import { Loader2, Users, BookOpenCheck, Activity, TrendingUp, ShieldCheck, UserCheck, Group, Award, FileWarning, Clock, Percent } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Badge } from '@/components/ui/badge';
+import { AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import type { UserAnalyticsData, UsersByRole } from '@/types';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 
-const AnalyticsCategoryCard = ({ title, description, icon: Icon, children }: { title: string; description: string; icon: React.ElementType; children: React.ReactNode }) => (
-    <Card className="w-full">
-        <CardHeader>
-            <div className="flex items-start gap-4">
-                <div className="p-3 bg-primary/10 rounded-lg">
-                   <Icon className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                    <CardTitle>{title}</CardTitle>
-                    <CardDescription>{description}</CardDescription>
-                </div>
-            </div>
+const MetricItem = ({ title, value, icon: Icon }: { title:string, value: string | number, icon: React.ElementType }) => (
+    <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{title}</CardTitle>
+            <Icon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-            <div className="space-y-4">
-                {children}
-            </div>
+            <div className="text-2xl font-bold">{value}</div>
         </CardContent>
     </Card>
 );
 
-const MetricItem = ({ title, children }: { title: string; children: React.ReactNode; }) => (
-    <div className="p-3 border rounded-md bg-muted/30">
-        <h4 className="font-semibold text-sm">{title}</h4>
-        <div className="text-sm text-muted-foreground mt-1 space-y-1">
-            {children}
+const UserAnalyticsSection = () => {
+    const [data, setData] = useState<UserAnalyticsData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchUserAnalytics = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/analytics/users');
+            if (!response.ok) throw new Error('Failed to fetch user analytics');
+            const result: UserAnalyticsData = await response.json();
+            setData(result);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unknown error');
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchUserAnalytics();
+    }, [fetchUserAnalytics]);
+
+    if (isLoading) {
+        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+    }
+
+    if (error || !data) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8 text-destructive">
+                <AlertTriangle className="h-6 w-6 mb-2" />
+                <p>Error al cargar datos de usuarios.</p>
+                <Button onClick={fetchUserAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
+            </div>
+        );
+    }
+    
+    const roleColors: { [key in UsersByRole['role']]: string } = {
+        ADMINISTRATOR: 'hsl(var(--chart-3))',
+        INSTRUCTOR: 'hsl(var(--chart-2))',
+        STUDENT: 'hsl(var(--chart-1))',
+    };
+    const pieChartData = data.usersByRole.map(roleData => ({
+        name: roleData.role.charAt(0) + roleData.role.slice(1).toLowerCase(),
+        value: roleData.count,
+        fill: roleColors[roleData.role] || '#ccc'
+    }));
+    
+    const totalUsers = data.usersByRole.reduce((acc, curr) => acc + curr.count, 0);
+
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-4">
+                <MetricItem title="Total de Usuarios" value={totalUsers} icon={Users} />
+                <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={UserCheck} />
+                <Card>
+                    <CardHeader><CardTitle className="text-base">Distribución por Rol</CardTitle></CardHeader>
+                    <CardContent>
+                         <ResponsiveContainer width="100%" height={200}>
+                            <PieChart>
+                                <Pie data={pieChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                                    {pieChartData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                </Pie>
+                                <Tooltip />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="lg:col-span-2">
+                 <Card>
+                    <CardHeader><CardTitle className="text-base">Nuevos Registros (Últimos 30 días)</CardTitle></CardHeader>
+                    <CardContent>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={data.newUsersLast30Days}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                                <YAxis allowDecimals={false} />
+                                <Tooltip />
+                                <Bar dataKey="count" fill="hsl(var(--primary))" name="Nuevos Usuarios"/>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 
 export default function AnalyticsPage() {
@@ -70,22 +146,7 @@ export default function AnalyticsPage() {
                 <AccordionItem value="item-1">
                     <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><Users className="mr-3 h-5 w-5 text-primary" /> Analíticas de Usuarios</AccordionTrigger>
                     <AccordionContent className="pt-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           <MetricItem title="Usuarios Activos vs. Inactivos">
-                                <p>• Actividad basada en inicio de sesión en los últimos 7/30 días.</p>
-                                <p>• Gráfico de tendencia de actividad a lo largo del tiempo.</p>
-                           </MetricItem>
-                           <MetricItem title="Nuevos Registros">
-                                <p>• Visualización de nuevos usuarios por día, semana o mes.</p>
-                                <p>• Identificación de picos y valles en los registros.</p>
-                           </MetricItem>
-                            <MetricItem title="Distribución de Roles">
-                                <p>• Gráfico circular o de barras mostrando la proporción de Estudiantes, Instructores y Administradores.</p>
-                           </MetricItem>
-                           <MetricItem title="Tiempo Promedio en Plataforma">
-                                <p>• Medición del tiempo promedio por sesión para evaluar el engagement.</p>
-                           </MetricItem>
-                        </div>
+                        <UserAnalyticsSection />
                     </AccordionContent>
                 </AccordionItem>
 
@@ -93,21 +154,10 @@ export default function AnalyticsPage() {
                     <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><BookOpenCheck className="mr-3 h-5 w-5 text-primary" /> Analíticas de Cursos y Contenido</AccordionTrigger>
                     <AccordionContent className="pt-4">
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <MetricItem title="Popularidad de Cursos">
-                                <p>• Top 5 cursos con más inscripciones.</p>
-                                <p>• Top 5 cursos con la tasa más alta de finalización.</p>
-                            </MetricItem>
-                             <MetricItem title="Tasas de Finalización">
-                                <p>• Comparativa de tasas de finalización entre diferentes cursos.</p>
-                                <p>• Tiempo promedio que toma completar un curso.</p>
-                            </MetricItem>
-                             <MetricItem title="Rendimiento en Evaluaciones">
-                                <p>• Puntuaciones promedio por curso y por lección.</p>
-                                <p>• Identificación de las preguntas más falladas para mejorar contenido.</p>
-                            </MetricItem>
-                             <MetricItem title="Contenido No Consumido">
-                                <p>• Listado de cursos o lecciones con pocas o ninguna visualización.</p>
-                            </MetricItem>
+                            <MetricItem title="Popularidad de Cursos" value="N/A" icon={TrendingUp}/>
+                            <MetricItem title="Tasas de Finalización" value="N/A" icon={Percent}/>
+                            <MetricItem title="Rendimiento en Evaluaciones" value="N/A" icon={Award}/>
+                            <MetricItem title="Contenido No Consumido" value="N/A" icon={FileWarning}/>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
@@ -116,18 +166,10 @@ export default function AnalyticsPage() {
                     <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><TrendingUp className="mr-3 h-5 w-5 text-primary" /> Analíticas de Progreso de Estudiantes</AccordionTrigger>
                     <AccordionContent className="pt-4">
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <MetricItem title="Progreso Individual">
-                                <p>• Ficha de estudiante con cursos en progreso, pendientes y finalizados.</p>
-                                <p>• Puntuaciones promedio en todas sus evaluaciones.</p>
-                                <p>• Opción para descargar reporte en PDF.</p>
-                            </MetricItem>
-                             <MetricItem title="Progreso Grupal">
-                                <p>• (Futuro) Progreso consolidado por departamento o grupo.</p>
-                                <p>• (Futuro) Comparativas de avance entre diferentes equipos.</p>
-                            </MetricItem>
-                              <MetricItem title="Certificados Emitidos">
-                                <p>• Número total de certificados otorgados por la finalización de cursos.</p>
-                            </MetricItem>
+                            <MetricItem title="Progreso Individual" value="N/A" icon={UserCheck}/>
+                            <MetricItem title="Progreso Grupal" value="N/A" icon={Group}/>
+                            <MetricItem title="Certificados Emitidos" value="N/A" icon={Award}/>
+                             <MetricItem title="Tiempo Promedio Finalización" value="N/A" icon={Clock}/>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
@@ -136,12 +178,8 @@ export default function AnalyticsPage() {
                     <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><Activity className="mr-3 h-5 w-5 text-primary" /> Analíticas de Interacción y Compromiso</AccordionTrigger>
                     <AccordionContent className="pt-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           <MetricItem title="Descargas de Recursos">
-                                <p>• Ranking de los archivos más descargados de la biblioteca.</p>
-                           </MetricItem>
-                           <MetricItem title="Uso de Funcionalidades">
-                                <p>• Frecuencia de uso del calendario, anuncios, etc.</p>
-                           </MetricItem>
+                           <MetricItem title="Descargas de Recursos" value="N/A" icon={TrendingUp}/>
+                           <MetricItem title="Uso de Funcionalidades" value="N/A" icon={Activity}/>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
@@ -150,13 +188,8 @@ export default function AnalyticsPage() {
                     <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><ShieldCheck className="mr-3 h-5 w-5 text-primary" /> Analíticas de Seguridad</AccordionTrigger>
                     <AccordionContent className="pt-4">
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           <MetricItem title="Intentos de Inicio de Sesión Fallidos">
-                                <p>• Gráfico de tendencia para identificar picos de intentos fallidos.</p>
-                                <p>• Distribución por usuario y por dirección IP.</p>
-                           </MetricItem>
-                           <MetricItem title="Registro de Cambios de Permisos">
-                                <p>• Auditoría de quién cambió qué rol y cuándo.</p>
-                           </MetricItem>
+                           <MetricItem title="Intentos de Inicio de Sesión Fallidos" value="N/A" icon={TrendingUp}/>
+                           <MetricItem title="Registro de Cambios de Permisos" value="N/A" icon={Activity}/>
                        </div>
                     </AccordionContent>
                 </AccordionItem>

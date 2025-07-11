@@ -203,3 +203,15 @@ export interface SecurityLog {
     createdAt: string;
     details?: string;
 }
+
+// --- ANALYTICS ---
+export interface UsersByRole {
+    role: UserRole;
+    count: number;
+}
+
+export interface UserAnalyticsData {
+    usersByRole: UsersByRole[];
+    activeUsersLast7Days: number;
+    newUsersLast30Days: { date: string; count: number }[];
+}
