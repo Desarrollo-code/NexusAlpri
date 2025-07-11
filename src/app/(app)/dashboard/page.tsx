@@ -23,7 +23,8 @@ import {
   BarChart3, 
   Rocket,
   X,
-  TrendingUp
+  TrendingUp,
+  TrendingDown
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
@@ -34,6 +35,14 @@ import type { Announcement as PrismaAnnouncement, Course as PrismaCourse } from 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from '@/components/ui/skeleton';
 import { CourseCard } from '@/components/course-card';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, Cell, ResponsiveContainer } from "recharts";
+import { cn } from '@/lib/utils';
 
 // --- TYPE DEFINITIONS & MAPPERS ---
 interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
@@ -70,7 +79,18 @@ interface DashboardData {
     myDashboardCourses: EnrolledCourse[];
 }
 
-const StatCard = ({ title, value, icon: Icon, href }: { title: string; value: number; icon: React.ElementType; href: string }) => {
+const userRolesChartConfig = {
+  count: { label: "Usuarios" },
+  STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
+  INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
+  ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-3))" },
+} satisfies ChartConfig;
+
+const StatCard = ({ title, value, icon: Icon, href, trend }: { title: string; value: number; icon: React.ElementType; href: string; trend?: number; }) => {
+    const hasTrend = typeof trend === 'number';
+    const isPositive = hasTrend && trend >= 0;
+    const TrendIcon = isPositive ? TrendingUp : TrendingDown;
+
     return (
         <Link href={href}>
             <Card className="hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
@@ -80,12 +100,72 @@ const StatCard = ({ title, value, icon: Icon, href }: { title: string; value: nu
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{value.toLocaleString('es-CO')}</div>
+                    {hasTrend && (
+                        <p className={cn("text-xs flex items-center", isPositive ? "text-green-500" : "text-red-500")}>
+                            <TrendIcon className="h-3 w-3 mr-1" />
+                            {isPositive ? '+' : ''}{trend.toFixed(1)}% últimos 7 días
+                        </p>
+                    )}
                 </CardContent>
             </Card>
         </Link>
     );
 };
 
+function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
+    const userRolesChartData = React.useMemo(() => {
+        const order: ('STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR')[] = ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'];
+        return order.map(role => ({
+            role: userRolesChartConfig[role]?.label || role,
+            count: stats.usersByRole.find(item => item.role === role)?.count || 0,
+        }));
+    }, [stats.usersByRole]);
+
+    return (
+        <div className="space-y-6">
+            <h2 className="text-2xl font-semibold font-headline">Resumen de la Plataforma</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                <StatCard title="Total Usuarios" value={stats.totalUsers} icon={Users} href="/users" trend={stats.userTrend}/>
+                <StatCard title="Total Cursos" value={stats.totalCourses} icon={BookOpenCheck} href="/manage-courses" trend={stats.courseTrend}/>
+                <StatCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={Activity} href="/manage-courses" />
+                <StatCard title="Total Inscripciones" value={stats.totalEnrollments} icon={UsersRound} href="/enrollments" />
+            </div>
+            <section className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg"><Users /> Distribución de Usuarios por Rol</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {userRolesChartData.length > 0 ? (
+                            <ChartContainer config={userRolesChartConfig} className="h-[250px] w-full">
+                                <ResponsiveContainer>
+                                    <BarChart data={userRolesChartData} layout="vertical" margin={{ left: 20 }}>
+                                        <YAxis dataKey="role" type="category" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} width={80}/>
+                                        <XAxis type="number" hide />
+                                        <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
+                                        <Bar dataKey="count" layout="vertical" radius={4}>
+                                            {userRolesChartData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${index + 1}))`} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </ChartContainer>
+                        ) : (<p className="text-muted-foreground text-center py-4">No hay datos de usuarios.</p>)}
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg"><BookOpenCheck /> Estado de Cursos</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground text-center py-4">Gráfico de estado de cursos próximamente.</p>
+                    </CardContent>
+                </Card>
+            </section>
+        </div>
+    );
+}
 
 export default function DashboardPage() {
   const { user, settings } = useAuth();
@@ -372,18 +452,8 @@ export default function DashboardPage() {
             </div>
         </section>
       )}
-
-      {user.role === 'ADMINISTRATOR' && data?.adminStats && (
-        <section>
-            <h2 className="text-2xl font-semibold font-headline">Resumen de la Plataforma</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-                <StatCard title="Total Usuarios" value={data.adminStats.totalUsers} icon={Users} href="/users" />
-                <StatCard title="Total Cursos" value={data.adminStats.totalCourses} icon={BookOpenCheck} href="/manage-courses" />
-                <StatCard title="Analíticas Detalladas" value={data.adminStats.totalEnrollments} icon={BarChart3} href="/analytics" />
-                <StatCard title="Configuración" value={0} icon={Settings} href="/settings" />
-            </div>
-        </section>
-      )}
+      
+      {user.role === 'ADMINISTRATOR' && data?.adminStats && <AdminDashboard stats={data.adminStats} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
