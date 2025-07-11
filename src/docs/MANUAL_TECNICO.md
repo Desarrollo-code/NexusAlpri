@@ -60,7 +60,7 @@ El seguimiento del progreso es un sistema automático y robusto diseñado para r
         *   Lee todos los registros de interacción del campo `Json`.
         *   Calcula una **puntuación final ponderada**. Las lecciones de 'view' aportan un valor fijo (ej. 100 puntos), mientras que las de 'quiz' aportan un valor basado en la nota (`score`).
         *   Guarda este porcentaje final en el campo `progressPercentage` del modelo `CourseProgress`.
-    *   La UI recibe este porcentaje final y lo muestra en el indicador circular.
+    *   La UI recibe este porcentaje final y lo muestra en el indicador circular de progreso.
 
 ## 3. Base de Datos
 
@@ -71,7 +71,7 @@ El esquema se define en `prisma/schema.prisma`. Los modelos principales son:
 *   `Course`, `Module`, `Lesson`: Estructura jerárquica de los cursos.
 *   `Quiz`, `Question`, `AnswerOption`: Componentes para las evaluaciones.
 *   `Enrollment`: Relaciona a un `User` con un `Course`.
-*   **`CourseProgress`**: Guarda el progreso de un usuario en un curso. El campo `completedLessonIds` es de tipo `Json` y almacena un array de objetos detallando cada interacción (tipo y nota si aplica). El campo `progressPercentage` guarda la nota final consolidada.
+*   **`CourseProgress`**: Guarda el progreso de un usuario en un curso. El campo `completedLessonIds` es de tipo `Json` y almacena un array de objetos detallando cada interacción (tipo y nota si aplica). El campo `progressPercentage` guarda la nota final consolidada. Este modelo tiene una relación directa con `Enrollment`.
 *   `Resource`: Para la biblioteca de recursos (archivos y carpetas). Su campo `pin` almacena el hash del PIN de seguridad.
 *   `Announcement`, `CalendarEvent`, `Notification`: Para comunicación y eventos.
 *   `PlatformSettings`: Almacena la configuración global de la plataforma.
