@@ -19,6 +19,7 @@ export interface PlatformSettings {
     platformName: string;
     allowPublicRegistration: boolean;
     enableEmailNotifications: boolean;
+    emailWhitelist?: string; // Comma-separated list of emails
     require2faForAdmins: boolean;
     idleTimeoutMinutes: number;
     enableIdleTimeout: boolean;

@@ -10,6 +10,7 @@ const DEFAULT_DB_SETTINGS = {
   platformName: "NexusAlpri",
   allowPublicRegistration: true,
   enableEmailNotifications: true,
+  emailWhitelist: "",
   resourceCategories: ["Recursos Humanos", "TI y Seguridad", "Marketing", "Ventas", "Legal", "Operaciones", "Finanzas", "Formación Interna", "Documentación de Producto", "General"],
   passwordMinLength: 8,
   passwordRequireUppercase: true,
@@ -38,6 +39,7 @@ export async function GET(req: NextRequest) {
         ...dbSettings,
         // The type from prisma is JsonValue, we cast it to what the client expects
         resourceCategories: (dbSettings.resourceCategories as string[]) ?? [],
+        emailWhitelist: dbSettings.emailWhitelist || '',
     };
     
     return NextResponse.json(settingsToReturn);
@@ -102,6 +104,7 @@ export async function POST(req: NextRequest) {
     const settingsToReturn: PlatformSettings = {
         ...updatedDbSettings,
         resourceCategories: (updatedDbSettings.resourceCategories as string[]) ?? [],
+        emailWhitelist: updatedDbSettings.emailWhitelist || '',
     };
 
     return NextResponse.json(settingsToReturn);
