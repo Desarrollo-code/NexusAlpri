@@ -5,14 +5,21 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Users, BookOpenCheck, Activity, TrendingUp, ShieldCheck, UserCheck, Group, Award, FileWarning, Clock, Percent, UserMinus } from 'lucide-react';
+import { Loader2, Users, BookOpenCheck, Activity, TrendingUp, ShieldCheck, UserCheck, Group, Award, FileWarning, Clock, Percent, UserMinus, AlertTriangle, Download, Server, UserCog, KeyRound, ShieldX } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { UserAnalyticsData, UsersByRole, CourseAnalyticsData, ProgressAnalyticsData } from '@/types';
+import type { UserAnalyticsData, UsersByRole, CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog, User as AppUser, EnterpriseResource } from '@/types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { cn } from '@/lib/utils';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
+
+interface SecurityLogWithUser extends AppSecurityLog {
+  user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
+}
 
 const MetricItem = ({ title, value, icon: Icon, unit = '' }: { title:string, value: string | number, icon: React.ElementType, unit?: string }) => (
     <Card>
@@ -255,6 +262,155 @@ const ProgressAnalyticsSection = () => {
     );
 };
 
+const InteractionAnalyticsSection = () => {
+    const [data, setData] = useState<{ totalDownloads: number } | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchInteractionAnalytics = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/resources'); 
+            if (!response.ok) throw new Error('Failed to fetch resource data');
+            const resources: EnterpriseResource[] = await response.json();
+            const totalDownloads = 0; // Placeholder, as we don't track downloads yet
+            setData({ totalDownloads });
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unknown error');
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchInteractionAnalytics();
+    }, [fetchInteractionAnalytics]);
+
+    if (isLoading) {
+        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+    }
+     if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8 text-destructive">
+                <AlertTriangle className="h-6 w-6 mb-2" />
+                <p>Error al cargar datos de interacción.</p>
+                <Button onClick={fetchInteractionAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           <MetricItem title="Descargas de Recursos" value={data?.totalDownloads ?? "N/A"} icon={Download}/>
+           <MetricItem title="Uso de Funcionalidades" value="N/A" icon={Activity}/>
+        </div>
+    );
+};
+
+const SecurityAnalyticsSection = () => {
+    const [logs, setLogs] = useState<SecurityLogWithUser[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchLogs = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/security/logs');
+            if (!response.ok) throw new Error('Failed to fetch security logs');
+            const result: { logs: SecurityLogWithUser[] } = await response.json();
+            setLogs(result.logs || []);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unknown error');
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+    
+    const getEventDetails = (event: AppSecurityLog['event'], details?: string | null) => {
+        switch (event) {
+            case 'SUCCESSFUL_LOGIN': return { label: 'Inicio Sesión Exitoso', icon: <ShieldCheck className="h-4 w-4 text-green-500" />, variant: 'secondary' as const };
+            case 'FAILED_LOGIN_ATTEMPT': return { label: 'Intento Fallido', icon: <ShieldX className="h-4 w-4 text-destructive" />, variant: 'destructive' as const };
+            case 'PASSWORD_CHANGE_SUCCESS': return { label: 'Cambio de Contraseña', icon: <KeyRound className="h-4 w-4 text-blue-500" />, variant: 'default' as const };
+            case 'TWO_FACTOR_ENABLED': return { label: '2FA Activado', icon: <ShieldCheck className="h-4 w-4 text-green-500" />, variant: 'default' as const };
+            case 'TWO_FACTOR_DISABLED': return { label: '2FA Desactivado', icon: <ShieldAlert className="h-4 w-4 text-amber-500" />, variant: 'destructive' as const, variant_opts: { className: 'bg-amber-500' } };
+            case 'USER_ROLE_CHANGED': return { label: 'Cambio de Rol', icon: <UserCog className="h-4 w-4 text-purple-500" />, variant: 'default' as const, variant_opts: { className: 'bg-purple-600' } };
+            default: return { label: 'Evento Desconocido', icon: <ShieldAlert className="h-4 w-4" />, variant: 'outline' as const };
+        }
+    };
+
+    const getInitials = (name?: string | null) => name?.split(' ').map(n => n[0]).join('') || '??';
+
+    useEffect(() => {
+        fetchLogs();
+    }, [fetchLogs]);
+
+    if (isLoading) {
+        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8 text-destructive">
+                <AlertTriangle className="h-6 w-6 mb-2" />
+                <p>Error al cargar registros de seguridad.</p>
+                <Button onClick={fetchLogs} variant="outline" size="sm" className="mt-2">Reintentar</Button>
+            </div>
+        );
+    }
+    
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Últimos Eventos de Seguridad</CardTitle>
+          <CardDescription>
+            Mostrando los últimos 20 eventos. Para un historial completo, visita la página de{' '}
+            <Link href="/security-audit" className="text-primary hover:underline">Auditoría de Seguridad</Link>.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Evento</TableHead>
+                <TableHead>Usuario</TableHead>
+                <TableHead className="hidden md:table-cell">IP</TableHead>
+                <TableHead className="text-right">Fecha</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {logs.slice(0, 20).map(log => {
+                const eventInfo = getEventDetails(log.event);
+                return (
+                  <TableRow key={log.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {eventInfo.icon}
+                        <Badge variant={eventInfo.variant} {...(eventInfo as any).variant_opts}>{eventInfo.label}</Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {log.user ? (
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-7 w-7"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback>{getInitials(log.user.name)}</AvatarFallback></Avatar>
+                          <span className="text-xs">{log.user.name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">{log.emailAttempt || 'N/A'}</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-xs font-mono">{log.ipAddress}</TableCell>
+                    <TableCell className="text-right text-xs">{new Date(log.createdAt).toLocaleString()}</TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    );
+};
 
 export default function AnalyticsPage() {
     const { user: currentUser } = useAuth();
@@ -306,20 +462,14 @@ export default function AnalyticsPage() {
                 <AccordionItem value="item-4">
                     <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><Activity className="mr-3 h-5 w-5 text-primary" /> Analíticas de Interacción y Compromiso</AccordionTrigger>
                     <AccordionContent className="pt-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           <MetricItem title="Descargas de Recursos" value="N/A" icon={TrendingUp}/>
-                           <MetricItem title="Uso de Funcionalidades" value="N/A" icon={Activity}/>
-                        </div>
+                        <InteractionAnalyticsSection />
                     </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="item-5">
                     <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><ShieldCheck className="mr-3 h-5 w-5 text-primary" /> Analíticas de Seguridad</AccordionTrigger>
                     <AccordionContent className="pt-4">
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           <MetricItem title="Intentos de Inicio de Sesión Fallidos" value="N/A" icon={TrendingUp}/>
-                           <MetricItem title="Registro de Cambios de Permisos" value="N/A" icon={Activity}/>
-                       </div>
+                       <SecurityAnalyticsSection />
                     </AccordionContent>
                 </AccordionItem>
             </Accordion>

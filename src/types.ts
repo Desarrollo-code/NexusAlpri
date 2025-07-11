@@ -198,10 +198,10 @@ export interface SecurityLog {
     id: string;
     event: SecurityLogEvent;
     ipAddress: string;
-    emailAttempt?: string;
-    userId?: string;
-    createdAt: string;
-    details?: string;
+    emailAttempt?: string | null;
+    userId?: string | null;
+    createdAt: string; // This will be an ISO string
+    details?: string | null;
 }
 
 // --- ANALYTICS ---
