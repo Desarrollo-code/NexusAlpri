@@ -7,12 +7,22 @@ import type { NextRequest } from 'next/server';
 
 export interface AdminDashboardStats {
     totalUsers: number;
+    userTrend: number;
     totalCourses: number;
+    courseTrend: number;
     totalPublishedCourses: number;
+    publishedTrend: number;
     totalEnrollments: number;
+    enrollmentTrend: number;
     usersByRole: { role: UserRole; count: number }[];
     coursesByStatus: { status: CourseStatus; count: number }[];
 }
+
+// Helper to simulate a trend percentage. In a real app, this would query historical data.
+const simulateTrend = (): number => {
+    return (Math.random() * 10 - 4); // Random number between -4.0 and +6.0
+};
+
 
 export async function GET(req: NextRequest) {
     const session = await getSession(req);
@@ -42,9 +52,13 @@ export async function GET(req: NextRequest) {
 
         const stats: AdminDashboardStats = {
             totalUsers,
+            userTrend: simulateTrend(),
             totalCourses,
+            courseTrend: simulateTrend(),
             totalPublishedCourses,
+            publishedTrend: simulateTrend(),
             totalEnrollments,
+            enrollmentTrend: simulateTrend(),
             usersByRole: usersByRole.map(item => ({
                 role: item.role as UserRole,
                 count: item._count.role,

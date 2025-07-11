@@ -30,6 +30,7 @@ import {
   Rocket,
   X,
   TrendingUp,
+  TrendingDown,
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
@@ -47,6 +48,7 @@ import type { ChartConfig } from "@/components/ui/chart"
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 
 interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
@@ -74,21 +76,29 @@ function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
   };
 }
 
-const MiniTrendChart = ({ data, color }: { data: { value: number }[], color: string }) => (
-    <div className="h-14 w-28">
-        <ResponsiveContainer>
-            <LineChart data={data} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-                <Line
-                    type="monotone"
-                    dataKey="value"
-                    stroke={color}
-                    strokeWidth={2}
-                    dot={false}
-                />
-            </LineChart>
-        </ResponsiveContainer>
-    </div>
-);
+const StatCard = ({ title, value, icon: Icon, trend, href, children }: { title: string; value: number; icon: React.ElementType; trend: number; href: string, children?: React.ReactNode }) => {
+    const isPositive = trend >= 0;
+    const TrendIcon = isPositive ? TrendingUp : TrendingDown;
+  
+    return (
+        <Link href={href}>
+            <Card className="hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{value.toLocaleString('es-CO')}</div>
+                     <p className={cn("text-xs flex items-center", isPositive ? "text-green-500" : "text-red-500")}>
+                        <TrendIcon className="h-3 w-3 mr-1" />
+                        {isPositive ? '+' : ''}{trend.toFixed(1)}% respecto a los últimos 7 días
+                    </p>
+                </CardContent>
+                {children && <CardFooter>{children}</CardFooter>}
+            </Card>
+        </Link>
+    );
+};
 
 
 export default function DashboardPage() {
@@ -369,11 +379,6 @@ export default function DashboardPage() {
     ],
   };
   const linksToShow = quickLinks[user.role] || [];
-  
-  const trendData1 = [{value: 10}, {value: 20}, {value: 15}, {value: 30}, {value: 25}, {value: 40}];
-  const trendData2 = [{value: 40}, {value: 30}, {value: 35}, {value: 20}, {value: 25}, {value: 10}];
-  const trendData3 = [{value: 5}, {value: 8}, {value: 6}, {value: 12}, {value: 10}, {value: 15}];
-  const trendData4 = [{value: 15}, {value: 12}, {value: 18}, {value: 15}, {value: 22}, {value: 20}];
 
   return (
     <div className="space-y-8">
@@ -462,10 +467,10 @@ export default function DashboardPage() {
           {isLoadingStats ? (
             <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
+                    <Skeleton className="h-32" />
+                    <Skeleton className="h-32" />
+                    <Skeleton className="h-32" />
+                    <Skeleton className="h-32" />
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Skeleton className="h-80" />
@@ -476,44 +481,12 @@ export default function DashboardPage() {
             <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar estadísticas: {statsError}</div>
             ) : adminStats ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total de Usuarios</CardTitle><Users className="h-5 w-5 text-chart-1" />
-                  </CardHeader>
-                  <CardContent className="flex justify-between items-end">
-                    <div className="text-2xl font-bold">{adminStats.totalUsers}</div>
-                    <MiniTrendChart data={trendData1} color="hsl(var(--chart-1))" />
-                  </CardContent>
-                </Card>
-                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total de Cursos</CardTitle><BookOpenCheck className="h-5 w-5 text-chart-2" />
-                  </CardHeader>
-                  <CardContent className="flex justify-between items-end">
-                    <div className="text-2xl font-bold">{adminStats.totalCourses}</div>
-                    <MiniTrendChart data={trendData2} color="hsl(var(--chart-2))" />
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Cursos Publicados</CardTitle><Activity className="h-5 w-5 text-chart-4" />
-                  </CardHeader>
-                  <CardContent className="flex justify-between items-end">
-                    <div className="text-2xl font-bold">{adminStats.totalPublishedCourses}</div>
-                    <MiniTrendChart data={trendData3} color="hsl(var(--chart-4))" />
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Inscripciones</CardTitle><UsersRound className="h-5 w-5 text-chart-5" />
-                  </CardHeader>
-                  <CardContent className="flex justify-between items-end">
-                    <div className="text-2xl font-bold">{adminStats.totalEnrollments}</div>
-                    <MiniTrendChart data={trendData4} color="hsl(var(--chart-5))" />
-                  </CardContent>
-                </Card>
-              </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard title="Total de Usuarios" value={adminStats.totalUsers} icon={Users} trend={adminStats.userTrend} href="/users" />
+                    <StatCard title="Total de Cursos" value={adminStats.totalCourses} icon={BookOpenCheck} trend={adminStats.courseTrend} href="/manage-courses" />
+                    <StatCard title="Cursos Publicados" value={adminStats.totalPublishedCourses} icon={Activity} trend={adminStats.publishedTrend} href="/manage-courses" />
+                    <StatCard title="Total Inscripciones" value={adminStats.totalEnrollments} icon={UsersRound} trend={adminStats.enrollmentTrend} href="/enrollments" />
+                </div>
               
               <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                 <Card>
