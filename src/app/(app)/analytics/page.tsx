@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { GaugeChart } from '@/components/ui/gauge';
 
 
 interface SecurityLogWithUser extends AppSecurityLog {
@@ -311,11 +312,23 @@ const ProgressAnalyticsSection = () => {
     }
     
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricItem title="Certificados Emitidos" value={data.certificatesIssued} icon={Award}/>
-            <MetricItem title="Estudiantes en Progreso" value={data.activeStudentsInCourses} icon={UserCheck}/>
-            <MetricItem title="Tasa de Abandono (Est.)" value={data.dropoutRate.toFixed(1)} icon={UserMinus} unit="%"/>
-            <MetricItem title="Tiempo Promedio Finalización" value={data.averageCompletionTimeDays} icon={Clock} unit=" días"/>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+            <Card className="lg:col-span-1 flex flex-col justify-center">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Tasa de Abandono (Est.)</CardTitle>
+                    <CardDescription>
+                        Porcentaje de usuarios que inician pero no completan los cursos.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <GaugeChart value={data.dropoutRate} />
+                </CardContent>
+            </Card>
+            <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <MetricItem title="Certificados Emitidos" value={data.certificatesIssued} icon={Award}/>
+                <MetricItem title="Estudiantes en Progreso" value={data.activeStudentsInCourses} icon={UserCheck}/>
+                <MetricItem title="Tiempo Promedio Finalización" value={data.averageCompletionTimeDays} icon={Clock} unit=" días"/>
+            </div>
         </div>
     );
 };
