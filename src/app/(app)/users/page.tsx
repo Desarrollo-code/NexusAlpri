@@ -282,77 +282,77 @@ export default function UsersPage() {
   
   const DesktopUsersTable = () => (
     <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Rol</TableHead>
-              <TableHead>Registrado</TableHead>
-              <TableHead><span className="sr-only">Acciones</span></TableHead>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Nombre</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Rol</TableHead>
+            <TableHead>Registrado</TableHead>
+            <TableHead><span className="sr-only">Acciones</span></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {isLoading ? (
+              [...Array(5)].map((_, i) => (
+                  <TableRow key={i}>
+                      <TableCell><div className="flex items-center gap-3"><Skeleton className="h-9 w-9 rounded-full" /><Skeleton className="h-5 w-32" /></div></TableCell>
+                      <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                      <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
+                  </TableRow>
+              ))
+          ) : filteredUsers.map((u) => (
+            <TableRow key={u.id}>
+              <TableCell>
+                <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9">
+                        <AvatarImage src={u.avatar || undefined} alt={u.name} data-ai-hint="user avatar" />
+                        <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="font-medium">{u.name}</div>
+                </div>
+              </TableCell>
+              <TableCell>{u.email}</TableCell>
+              <TableCell>
+                <Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{u.role.toLowerCase()}</Badge>
+              </TableCell>
+              <TableCell>{u.registeredDate ? new Date(u.registeredDate).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'short', timeStyle: 'medium' }) : 'N/A'}</TableCell>
+              <TableCell>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Toggle menu</span>
+                    </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => handleOpenEditModal(u)}>
+                        <Edit3 className="mr-2 h-4 w-4 text-blue-500"/>Editar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleOpenChangeRoleDialog(u)} disabled={u.id === currentUser?.id}>
+                        <UserCog className="mr-2 h-4 w-4 text-amber-600"/>Cambiar Rol
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                        className="text-destructive focus:text-destructive-foreground focus:bg-destructive"
+                        onClick={() => {
+                            setUserToDelete(u);
+                            setShowDeleteConfirmDialog(true);
+                        }}
+                        disabled={u.id === currentUser?.id} 
+                    >
+                        <Trash2 className="mr-2 h-4 w-4"/>Eliminar
+                    </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-                [...Array(5)].map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell><div className="flex items-center gap-3"><Skeleton className="h-9 w-9 rounded-full" /><Skeleton className="h-5 w-32" /></div></TableCell>
-                        <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                        <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-40" /></TableCell>
-                        <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
-                    </TableRow>
-                ))
-            ) : filteredUsers.map((u) => (
-              <TableRow key={u.id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9">
-                          <AvatarImage src={u.avatar || undefined} alt={u.name} data-ai-hint="user avatar" />
-                          <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
-                      </Avatar>
-                      <div className="font-medium">{u.name}</div>
-                  </div>
-                </TableCell>
-                <TableCell>{u.email}</TableCell>
-                <TableCell>
-                  <Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{u.role.toLowerCase()}</Badge>
-                </TableCell>
-                <TableCell>{u.registeredDate ? new Date(u.registeredDate).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'short', timeStyle: 'medium' }) : 'N/A'}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                      <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
-                      </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => handleOpenEditModal(u)}>
-                          <Edit3 className="mr-2 h-4 w-4 text-blue-500"/>Editar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleOpenChangeRoleDialog(u)} disabled={u.id === currentUser?.id}>
-                          <UserCog className="mr-2 h-4 w-4 text-amber-600"/>Cambiar Rol
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                          className="text-destructive focus:text-destructive-foreground focus:bg-destructive"
-                          onClick={() => {
-                              setUserToDelete(u);
-                              setShowDeleteConfirmDialog(true);
-                          }}
-                          disabled={u.id === currentUser?.id} 
-                      >
-                          <Trash2 className="mr-2 h-4 w-4"/>Eliminar
-                      </DropdownMenuItem>
-                      </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 
