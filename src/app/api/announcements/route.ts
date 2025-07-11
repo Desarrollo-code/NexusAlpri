@@ -34,11 +34,14 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: 'Título, contenido y audiencia son requeridos' }, { status: 400 });
     }
 
+    // Convert audience array to JSON string if it's an array
+    const audienceForDb = Array.isArray(audience) ? JSON.stringify(audience) : audience;
+
     const newAnnouncement = await prisma.announcement.create({
       data: {
         title,
         content,
-        audience,
+        audience: audienceForDb,
         authorId: session.id,
         date: new Date(),
       },
@@ -57,14 +60,16 @@ export async function POST(req: NextRequest) {
     const targetUsers = await prisma.user.findMany(targetUsersQuery);
 
     // Create in-app notifications
-    await prisma.notification.createMany({
-      data: targetUsers.map(user => ({
-        userId: user.id,
-        title: `Nuevo Anuncio: ${title}`,
-        description: content.substring(0, 100) + (content.length > 100 ? '...' : ''),
-        link: '/announcements'
-      }))
-    });
+    if (targetUsers.length > 0) {
+      await prisma.notification.createMany({
+        data: targetUsers.map(user => ({
+          userId: user.id,
+          title: `Nuevo Anuncio: ${title}`,
+          description: content.substring(0, 100) + (content.length > 100 ? '...' : ''),
+          link: '/announcements'
+        }))
+      });
+    }
 
 
     // --- EMAIL LOGIC ---
