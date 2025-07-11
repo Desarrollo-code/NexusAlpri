@@ -1,5 +1,3 @@
-
-
 // En /home/user/studio/src/app/(app)/manage-courses/[courseId]/edit/page.tsx
 
 'use client';
@@ -183,7 +181,7 @@ function OptionsEditor({ moduleIndex, lessonIndex, blockIndex, questionIndex }: 
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => appendOption({ id: `temp-o-${Date.now()}`, text: '', feedback: undefined, isCorrect: optionFields.length === 0 })}>
+                onClick={() => appendOption({ id: `temp-o-${Date.now()}`, text: '', feedback: '', isCorrect: optionFields.length === 0 })}>
                 <PlusCircle className="mr-2 h-4 w-4" /> Añadir Opción
             </Button>
             <p className="text-xs text-muted-foreground">La primera opción que añadas será marcada como correcta por defecto. Puedes cambiarla en cualquier momento.</p>
