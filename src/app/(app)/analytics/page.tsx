@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Users, BookOpenCheck, Activity, TrendingUp, ShieldCheck, UserCheck, Group, Award, FileWarning, Clock, Percent, UserMinus, AlertTriangle, Download, Server, UserCog, KeyRound, ShieldX } from 'lucide-react';
+import { Loader2, Users, BookOpenCheck, Activity, TrendingUp, ShieldCheck, UserCheck, Group, Award, FileWarning, Clock, Percent, UserMinus, AlertTriangle, Download, Server, UserCog, KeyRound, ShieldAlert } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from '@/components/ui/button';
 import type { UserAnalyticsData, UsersByRole, CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog, User as AppUser, EnterpriseResource } from '@/types';
@@ -271,10 +271,12 @@ const InteractionAnalyticsSection = () => {
         setIsLoading(true);
         setError(null);
         try {
+            // This is a placeholder as download count is not tracked per resource.
+            // A more complex system would be needed for actual tracking.
             const response = await fetch('/api/resources'); 
-            if (!response.ok) throw new Error('Failed to fetch resource data');
+            if (!response.ok) throw new Error('Failed to fetch resource list');
             const resources: EnterpriseResource[] = await response.json();
-            const totalDownloads = 0; // Placeholder, as we don't track downloads yet
+            const totalDownloads = 0; // Placeholder value
             setData({ totalDownloads });
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unknown error');

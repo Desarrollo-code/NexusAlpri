@@ -49,27 +49,25 @@ export async function GET(req: NextRequest) {
         let totalCompletionDays = 0;
         let validCompletions = 0;
         completedProgressRecords.forEach(p => {
-            // Correctly filter out records where the enrollment might not exist (e.g., if deleted)
             if (p.enrollment && p.updatedAt) {
-                totalCompletionDays += differenceInDays(p.updatedAt, p.enrollment.enrolledAt);
-                validCompletions++;
+                const diff = differenceInDays(p.updatedAt, p.enrollment.enrolledAt);
+                if (diff >= 0) { // Only count valid positive day differences
+                    totalCompletionDays += diff;
+                    validCompletions++;
+                }
             }
         });
         
         const averageCompletionTimeDays = validCompletions > 0 ? Math.round(totalCompletionDays / validCompletions) : 0;
         
         // 4. Dropout rate (estimated)
-        const coursesStartedRecords = await prisma.courseProgress.findMany({ 
+        const coursesStarted = await prisma.courseProgress.count({
             where: { progressPercentage: { gt: 0 } },
-            distinct: ['userId', 'courseId'] 
         });
-        const coursesStarted = coursesStartedRecords.length;
 
-        const coursesNotCompletedRecords = await prisma.courseProgress.findMany({ 
+        const coursesNotCompleted = await prisma.courseProgress.count({
             where: { progressPercentage: { gt: 0, lt: 95 } },
-            distinct: ['userId', 'courseId']
         });
-        const coursesNotCompleted = coursesNotCompletedRecords.length;
         
         const dropoutRate = coursesStarted > 0 ? (coursesNotCompleted / coursesStarted) * 100 : 0;
 
