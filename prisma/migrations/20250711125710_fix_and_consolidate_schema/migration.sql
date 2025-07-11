@@ -1,135 +1,19 @@
-/*
-  Warnings:
-
-  - You are about to drop the `announcements` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `answer_options` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `calendar_events` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `content_blocks` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `course_progress` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `courses` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `enrollments` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `lessons` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `modules` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `notifications` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `platform_settings` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `questions` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `quizzes` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `resources` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `users` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE `_eventattendees` DROP FOREIGN KEY `_EventAttendees_A_fkey`;
-
--- DropForeignKey
-ALTER TABLE `_eventattendees` DROP FOREIGN KEY `_EventAttendees_B_fkey`;
-
--- DropForeignKey
-ALTER TABLE `announcements` DROP FOREIGN KEY `announcements_authorId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `answer_options` DROP FOREIGN KEY `answer_options_questionId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `calendar_events` DROP FOREIGN KEY `calendar_events_creatorId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `content_blocks` DROP FOREIGN KEY `content_blocks_lessonId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `course_progress` DROP FOREIGN KEY `course_progress_courseId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `course_progress` DROP FOREIGN KEY `course_progress_userId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `courses` DROP FOREIGN KEY `courses_instructorId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `enrollments` DROP FOREIGN KEY `enrollments_courseId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `enrollments` DROP FOREIGN KEY `enrollments_userId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `lessons` DROP FOREIGN KEY `lessons_moduleId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `modules` DROP FOREIGN KEY `modules_courseId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `notifications` DROP FOREIGN KEY `notifications_userId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `questions` DROP FOREIGN KEY `questions_quizId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `quizzes` DROP FOREIGN KEY `quizzes_contentBlockId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `resources` DROP FOREIGN KEY `resources_parentId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `resources` DROP FOREIGN KEY `resources_uploaderId_fkey`;
-
--- DropTable
-DROP TABLE `announcements`;
-
--- DropTable
-DROP TABLE `answer_options`;
-
--- DropTable
-DROP TABLE `calendar_events`;
-
--- DropTable
-DROP TABLE `content_blocks`;
-
--- DropTable
-DROP TABLE `course_progress`;
-
--- DropTable
-DROP TABLE `courses`;
-
--- DropTable
-DROP TABLE `enrollments`;
-
--- DropTable
-DROP TABLE `lessons`;
-
--- DropTable
-DROP TABLE `modules`;
-
--- DropTable
-DROP TABLE `notifications`;
-
--- DropTable
-DROP TABLE `platform_settings`;
-
--- DropTable
-DROP TABLE `questions`;
-
--- DropTable
-DROP TABLE `quizzes`;
-
--- DropTable
-DROP TABLE `resources`;
-
--- DropTable
-DROP TABLE `users`;
-
 -- CreateTable
 CREATE TABLE `User` (
     `id` VARCHAR(191) NOT NULL,
-    `email` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
+    `email` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
-    `avatar` TEXT NULL,
     `role` ENUM('ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT') NOT NULL DEFAULT 'STUDENT',
-    `registeredDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `avatar` VARCHAR(191) NULL,
     `isTwoFactorEnabled` BOOLEAN NOT NULL DEFAULT false,
-    `twoFactorSecret` TEXT NULL,
+    `twoFactorSecret` VARCHAR(191) NULL,
+    `registeredDate` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `User_email_key`(`email`),
+    INDEX `User_email_idx`(`email`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -138,7 +22,7 @@ CREATE TABLE `Course` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `description` TEXT NOT NULL,
-    `imageUrl` TEXT NULL,
+    `imageUrl` VARCHAR(191) NULL,
     `category` VARCHAR(191) NULL,
     `status` ENUM('DRAFT', 'PUBLISHED', 'ARCHIVED', 'SCHEDULED') NOT NULL DEFAULT 'DRAFT',
     `publicationDate` DATETIME(3) NULL,
@@ -146,6 +30,7 @@ CREATE TABLE `Course` (
     `updatedAt` DATETIME(3) NOT NULL,
     `instructorId` VARCHAR(191) NOT NULL,
 
+    INDEX `Course_instructorId_idx`(`instructorId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -158,6 +43,7 @@ CREATE TABLE `Module` (
     `updatedAt` DATETIME(3) NOT NULL,
     `courseId` VARCHAR(191) NOT NULL,
 
+    INDEX `Module_courseId_idx`(`courseId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -169,8 +55,8 @@ CREATE TABLE `Lesson` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `moduleId` VARCHAR(191) NOT NULL,
-    `type` VARCHAR(191) NULL,
 
+    INDEX `Lesson_moduleId_idx`(`moduleId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -180,10 +66,9 @@ CREATE TABLE `ContentBlock` (
     `type` ENUM('TEXT', 'VIDEO', 'QUIZ', 'FILE') NOT NULL,
     `content` TEXT NULL,
     `order` INTEGER NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
     `lessonId` VARCHAR(191) NOT NULL,
 
+    INDEX `ContentBlock_lessonId_idx`(`lessonId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -201,22 +86,24 @@ CREATE TABLE `Quiz` (
 -- CreateTable
 CREATE TABLE `Question` (
     `id` VARCHAR(191) NOT NULL,
-    `text` VARCHAR(191) NOT NULL,
-    `type` ENUM('MULTIPLE_CHOICE', 'SINGLE_CHOICE', 'TRUE_FALSE') NOT NULL DEFAULT 'MULTIPLE_CHOICE',
+    `text` TEXT NOT NULL,
+    `type` ENUM('MULTIPLE_CHOICE', 'SINGLE_CHOICE', 'TRUE_FALSE') NOT NULL DEFAULT 'SINGLE_CHOICE',
     `order` INTEGER NOT NULL,
     `quizId` VARCHAR(191) NOT NULL,
 
+    INDEX `Question_quizId_idx`(`quizId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `AnswerOption` (
     `id` VARCHAR(191) NOT NULL,
-    `text` VARCHAR(191) NOT NULL,
-    `isCorrect` BOOLEAN NOT NULL DEFAULT false,
+    `text` TEXT NOT NULL,
+    `isCorrect` BOOLEAN NOT NULL,
     `feedback` TEXT NULL,
     `questionId` VARCHAR(191) NOT NULL,
 
+    INDEX `AnswerOption_questionId_idx`(`questionId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -226,6 +113,8 @@ CREATE TABLE `Enrollment` (
     `courseId` VARCHAR(191) NOT NULL,
     `enrolledAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
+    INDEX `Enrollment_userId_idx`(`userId`),
+    INDEX `Enrollment_courseId_idx`(`courseId`),
     PRIMARY KEY (`userId`, `courseId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -235,29 +124,13 @@ CREATE TABLE `CourseProgress` (
     `courseId` VARCHAR(191) NOT NULL,
     `completedLessonIds` JSON NOT NULL,
     `progressPercentage` DOUBLE NOT NULL DEFAULT 0,
+    `startedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `completedAt` DATETIME(3) NULL,
-
-    PRIMARY KEY (`userId`, `courseId`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `PlatformSettings` (
-    `id` INTEGER NOT NULL DEFAULT 1,
-    `platformName` VARCHAR(191) NOT NULL,
-    `allowPublicRegistration` BOOLEAN NOT NULL DEFAULT true,
-    `enableEmailNotifications` BOOLEAN NOT NULL DEFAULT true,
-    `require2faForAdmins` BOOLEAN NOT NULL DEFAULT false,
-    `idleTimeoutMinutes` INTEGER NOT NULL DEFAULT 20,
-    `enableIdleTimeout` BOOLEAN NOT NULL DEFAULT true,
-    `passwordMinLength` INTEGER NOT NULL DEFAULT 8,
-    `passwordRequireUppercase` BOOLEAN NOT NULL DEFAULT true,
-    `passwordRequireLowercase` BOOLEAN NOT NULL DEFAULT true,
-    `passwordRequireNumber` BOOLEAN NOT NULL DEFAULT true,
-    `passwordRequireSpecialChar` BOOLEAN NOT NULL DEFAULT true,
-    `resourceCategories` JSON NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
-    PRIMARY KEY (`id`)
+    INDEX `CourseProgress_userId_idx`(`userId`),
+    INDEX `CourseProgress_courseId_idx`(`courseId`),
+    PRIMARY KEY (`userId`, `courseId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -266,14 +139,16 @@ CREATE TABLE `Resource` (
     `title` VARCHAR(191) NOT NULL,
     `description` TEXT NULL,
     `type` ENUM('FOLDER', 'DOCUMENT', 'GUIDE', 'MANUAL', 'POLICY', 'VIDEO', 'OTHER') NOT NULL,
-    `url` TEXT NULL,
-    `category` VARCHAR(191) NOT NULL,
+    `category` VARCHAR(191) NOT NULL DEFAULT 'General',
     `tags` JSON NOT NULL,
-    `pin` TEXT NULL,
+    `url` VARCHAR(191) NULL,
+    `pin` VARCHAR(191) NULL,
     `uploadDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `uploaderId` VARCHAR(191) NOT NULL,
     `parentId` VARCHAR(191) NULL,
 
+    INDEX `Resource_uploaderId_idx`(`uploaderId`),
+    INDEX `Resource_parentId_idx`(`parentId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -283,23 +158,25 @@ CREATE TABLE `Announcement` (
     `title` VARCHAR(191) NOT NULL,
     `content` TEXT NOT NULL,
     `date` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `audience` JSON NOT NULL,
     `priority` VARCHAR(191) NULL,
+    `audience` JSON NOT NULL,
     `authorId` VARCHAR(191) NOT NULL,
 
+    INDEX `Announcement_authorId_idx`(`authorId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `Notification` (
     `id` VARCHAR(191) NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NULL,
     `link` VARCHAR(191) NULL,
     `read` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `userId` VARCHAR(191) NOT NULL,
 
+    INDEX `Notification_userId_idx`(`userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -308,27 +185,60 @@ CREATE TABLE `CalendarEvent` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `description` TEXT NULL,
+    `location` VARCHAR(191) NULL,
     `start` DATETIME(3) NOT NULL,
     `end` DATETIME(3) NOT NULL,
     `allDay` BOOLEAN NOT NULL DEFAULT false,
-    `location` VARCHAR(191) NULL,
-    `audienceType` VARCHAR(191) NULL,
-    `color` VARCHAR(191) NULL,
+    `audienceType` ENUM('ALL', 'ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT', 'SPECIFIC') NOT NULL DEFAULT 'ALL',
+    `color` VARCHAR(191) NULL DEFAULT 'blue',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `creatorId` VARCHAR(191) NOT NULL,
 
+    INDEX `CalendarEvent_creatorId_idx`(`creatorId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `SecurityLog` (
     `id` VARCHAR(191) NOT NULL,
-    `event` ENUM('FAILED_LOGIN_ATTEMPT', 'PASSWORD_RESET_REQUEST', 'PASSWORD_RESET_SUCCESS') NOT NULL,
+    `event` ENUM('SUCCESSFUL_LOGIN', 'FAILED_LOGIN_ATTEMPT', 'PASSWORD_CHANGE_SUCCESS', 'TWO_FACTOR_ENABLED', 'TWO_FACTOR_DISABLED', 'USER_ROLE_CHANGED') NOT NULL,
     `ipAddress` VARCHAR(191) NOT NULL,
     `emailAttempt` VARCHAR(191) NULL,
+    `details` TEXT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `userId` VARCHAR(191) NULL,
 
+    INDEX `SecurityLog_userId_idx`(`userId`),
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `PlatformSettings` (
+    `id` VARCHAR(191) NOT NULL,
+    `platformName` VARCHAR(191) NOT NULL DEFAULT 'NexusAlpri',
+    `allowPublicRegistration` BOOLEAN NOT NULL DEFAULT true,
+    `enableEmailNotifications` BOOLEAN NOT NULL DEFAULT true,
+    `resourceCategories` JSON NOT NULL,
+    `passwordMinLength` INTEGER NOT NULL DEFAULT 8,
+    `passwordRequireUppercase` BOOLEAN NOT NULL DEFAULT true,
+    `passwordRequireLowercase` BOOLEAN NOT NULL DEFAULT true,
+    `passwordRequireNumber` BOOLEAN NOT NULL DEFAULT true,
+    `passwordRequireSpecialChar` BOOLEAN NOT NULL DEFAULT true,
+    `enableIdleTimeout` BOOLEAN NOT NULL DEFAULT true,
+    `idleTimeoutMinutes` INTEGER NOT NULL DEFAULT 20,
+    `require2faForAdmins` BOOLEAN NOT NULL DEFAULT false,
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `_EventAttendees` (
+    `A` VARCHAR(191) NOT NULL,
+    `B` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `_EventAttendees_AB_unique`(`A`, `B`),
+    INDEX `_EventAttendees_B_index`(`B`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
@@ -380,7 +290,7 @@ ALTER TABLE `Notification` ADD CONSTRAINT `Notification_userId_fkey` FOREIGN KEY
 ALTER TABLE `CalendarEvent` ADD CONSTRAINT `CalendarEvent_creatorId_fkey` FOREIGN KEY (`creatorId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `SecurityLog` ADD CONSTRAINT `SecurityLog_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `SecurityLog` ADD CONSTRAINT `SecurityLog_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `_EventAttendees` ADD CONSTRAINT `_EventAttendees_A_fkey` FOREIGN KEY (`A`) REFERENCES `CalendarEvent`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
