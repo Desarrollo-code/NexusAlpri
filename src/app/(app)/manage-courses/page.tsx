@@ -40,6 +40,7 @@ import type { Course as PrismaCourse } from '@prisma/client';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CourseCreationForm } from '@/components/course-creation-form';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
   instructor: { id: string; name: string } | null;
@@ -244,6 +245,29 @@ export default function ManageCoursesPage() {
   }
 
   const CourseList = ({ courseList }: { courseList: AppCourseType[] }) => {
+    if (isLoading) {
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="flex flex-col overflow-hidden">
+              <Skeleton className="aspect-video w-full" />
+              <CardHeader>
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6 mt-2" />
+              </CardContent>
+              <CardFooter>
+                 <Skeleton className="h-9 w-24" />
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      );
+    }
+    
     if (courseList.length === 0) {
       return (
         <div className="text-center py-12">
@@ -389,9 +413,23 @@ export default function ManageCoursesPage() {
       </div>
 
        {isLoading ? (
-            <div className="flex justify-center items-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="ml-2">Cargando cursos...</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+                {[...Array(4)].map((_, i) => (
+                    <Card key={i} className="flex flex-col overflow-hidden">
+                    <Skeleton className="aspect-video w-full" />
+                    <CardHeader>
+                        <Skeleton className="h-5 w-3/4" />
+                        <Skeleton className="h-4 w-1/2" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-5/6 mt-2" />
+                    </CardContent>
+                    <CardFooter>
+                        <Skeleton className="h-9 w-full" />
+                    </CardFooter>
+                    </Card>
+                ))}
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-12 text-destructive text-center">

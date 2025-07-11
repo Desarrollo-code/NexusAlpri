@@ -10,6 +10,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 
 export default function MyCoursesPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -76,9 +78,28 @@ export default function MyCoursesPage() {
 
   if (isAuthLoading || (isFetchingPageData && user)) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-        <p className="text-lg">Cargando tus cursos inscritos...</p>
+      <div className="space-y-8">
+          <div>
+            <Skeleton className="h-8 w-1/2" />
+            <Skeleton className="h-4 w-3/4 mt-2" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+             {[...Array(4)].map((_, i) => (
+                <Card key={i} className="flex flex-col overflow-hidden">
+                    <Skeleton className="aspect-video w-full" />
+                    <CardHeader>
+                        <Skeleton className="h-5 w-3/4" />
+                        <Skeleton className="h-4 w-5/6 mt-2" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-4 w-1/2" />
+                    </CardContent>
+                    <CardFooter>
+                        <Skeleton className="h-10 w-full" />
+                    </CardFooter>
+                </Card>
+             ))}
+          </div>
       </div>
     );
   }

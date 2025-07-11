@@ -51,6 +51,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 export default function UsersPage() {
@@ -292,7 +293,17 @@ export default function UsersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers.map((u) => (
+            {isLoading ? (
+                [...Array(5)].map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell><div className="flex items-center gap-3"><Skeleton className="h-9 w-9 rounded-full" /><Skeleton className="h-5 w-32" /></div></TableCell>
+                        <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                        <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
+                        <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                        <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
+                    </TableRow>
+                ))
+            ) : filteredUsers.map((u) => (
               <TableRow key={u.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -347,7 +358,27 @@ export default function UsersPage() {
 
   const MobileUsersList = () => (
     <div className="space-y-4">
-      {filteredUsers.map((u) => (
+      {isLoading ? (
+          [...Array(3)].map((_, i) => (
+            <Card key={i} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="space-y-1.5">
+                            <Skeleton className="h-4 w-28" />
+                            <Skeleton className="h-3 w-36" />
+                        </div>
+                    </div>
+                    <Skeleton className="h-8 w-8" />
+                </div>
+                 <Skeleton className="h-px w-full" />
+                 <div className="flex justify-between items-center">
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                    <Skeleton className="h-4 w-24" />
+                 </div>
+            </Card>
+          ))
+      ) : filteredUsers.map((u) => (
         <Card key={u.id} className="p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -473,12 +504,7 @@ export default function UsersPage() {
             </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center items-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="ml-2">Cargando usuarios...</p>
-            </div>
-          ) : error && !usersList.length ? ( 
+          {error && !isLoading && ( 
             <div className="flex flex-col items-center justify-center py-12 text-destructive">
               <AlertTriangle className="h-8 w-8 mb-2" />
               <p className="font-semibold">Error al cargar usuarios</p>
@@ -488,8 +514,10 @@ export default function UsersPage() {
           ) : (
              <>
                 {isMobile ? <MobileUsersList /> : <DesktopUsersTable />}
-                {filteredUsers.length === 0 && !isLoading && !error && (
-                    <p className="text-center text-muted-foreground py-8">No se encontraron usuarios que coincidan con la búsqueda.</p>
+                {!isLoading && filteredUsers.length === 0 && (
+                    <p className="text-center text-muted-foreground py-8">
+                        {searchTerm ? "No se encontraron usuarios que coincidan." : "No hay usuarios registrados."}
+                    </p>
                 )}
              </>
           )}

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import type { Course as PrismaCourse } from '@prisma/client';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ApiCourse extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
   instructor: { id: string; name: string } | null;
@@ -127,6 +128,21 @@ export default function CoursesPage() {
     // setEnrollmentUpdatedSignal(prev => prev + 1); 
   };
 
+  const CourseCardSkeleton = () => (
+    <Card className="flex flex-col overflow-hidden">
+        <Skeleton className="aspect-video w-full" />
+        <CardHeader>
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-4 w-5/6 mt-2" />
+        </CardHeader>
+        <CardContent>
+            <Skeleton className="h-4 w-1/2" />
+        </CardContent>
+        <CardFooter>
+            <Skeleton className="h-10 w-full" />
+        </CardFooter>
+    </Card>
+  );
 
   return (
     <div className="space-y-8">
@@ -147,14 +163,28 @@ export default function CoursesPage() {
           />
         </div>
         <div className="text-sm text-muted-foreground pt-2 border-t">
-           Mostrando {filteredCourses.length} cursos disponibles.
+           {isLoading ? (
+             <Skeleton className="h-4 w-40" />
+           ) : (
+            `Mostrando ${filteredCourses.length} cursos disponibles.`
+           )}
         </div>
       </Card>
 
       {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="ml-2">Cargando catálogo de cursos...</p>
+        <div className="space-y-8">
+            <div className="space-y-4">
+                <Skeleton className="h-8 w-48" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {[...Array(4)].map((_, i) => <CourseCardSkeleton key={i} />)}
+                </div>
+            </div>
+            <div className="space-y-4">
+                <Skeleton className="h-8 w-48" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {[...Array(4)].map((_, i) => <CourseCardSkeleton key={i} />)}
+                </div>
+            </div>
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-12 text-destructive">

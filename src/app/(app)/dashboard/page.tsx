@@ -460,7 +460,18 @@ export default function DashboardPage() {
         <section className="space-y-6">
           <h2 className="text-2xl font-semibold font-headline">Estadísticas de la Plataforma</h2>
           {isLoadingStats ? (
-            <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando estadísticas...</div>
+            <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Skeleton className="h-28" />
+                    <Skeleton className="h-28" />
+                    <Skeleton className="h-28" />
+                    <Skeleton className="h-28" />
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Skeleton className="h-80" />
+                    <Skeleton className="h-80" />
+                </div>
+            </>
             ) : statsError ? (
             <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar estadísticas: {statsError}</div>
             ) : adminStats ? (
@@ -590,9 +601,14 @@ export default function DashboardPage() {
            {user.role === 'INSTRUCTOR' && (
               <section>
                 <h2 className="text-2xl font-semibold font-headline mb-4">Mis Cursos Impartidos Recientemente</h2>
-                {isLoadingTaughtCourses && <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando mis cursos...</div>}
-                {taughtCoursesError && <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar cursos: {taughtCoursesError}</div>}
-                {!isLoadingTaughtCourses && !taughtCoursesError && taughtCourses.length > 0 && (
+                {isLoadingTaughtCourses ? (
+                     <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                        <Skeleton className="h-72" />
+                        <Skeleton className="h-72" />
+                     </div>
+                ) : taughtCoursesError ? (
+                     <div className="text-destructive"><AlertTriangle className="inline mr-2 h-5 w-5" />Error al cargar cursos: {taughtCoursesError}</div>
+                ) : taughtCourses.length > 0 ? (
                   <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                     {taughtCourses.map(course => (
                       <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
@@ -602,8 +618,7 @@ export default function DashboardPage() {
                       </Card>
                     ))}
                   </div>
-                )}
-                {!isLoadingTaughtCourses && !taughtCoursesError && taughtCourses.length === 0 && (
+                ) : (
                   <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No has creado cursos aún.</p></CardContent></Card>
                 )}
               </section>
@@ -612,9 +627,14 @@ export default function DashboardPage() {
            {user.role === 'STUDENT' && (
               <section>
                 <h2 className="text-2xl font-semibold font-headline mb-4">Continuar Aprendiendo</h2>
-                {isLoadingMyCourses && <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando...</div>}
-                {myCoursesError && <div className="text-destructive"><AlertTriangle className="inline mr-2" />Error: {myCoursesError}</div>}
-                {!isLoadingMyCourses && !myCoursesError && myDashboardCourses.length > 0 && (
+                 {isLoadingMyCourses ? (
+                     <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                        <Skeleton className="h-72" />
+                        <Skeleton className="h-72" />
+                     </div>
+                ) : myCoursesError ? (
+                    <div className="text-destructive"><AlertTriangle className="inline mr-2" />Error: {myCoursesError}</div>
+                ) : myDashboardCourses.length > 0 ? (
                   <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                     {myDashboardCourses.map(course => (
                       <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
@@ -624,8 +644,7 @@ export default function DashboardPage() {
                       </Card>
                     ))}
                   </div>
-                )}
-                {!isLoadingMyCourses && !myCoursesError && myDashboardCourses.length === 0 && (
+                ) : (
                   <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No estás inscrito en ningún curso.</p></CardContent></Card>
                 )}
               </section>
@@ -633,16 +652,20 @@ export default function DashboardPage() {
            
             <section>
               <h2 className="text-2xl font-semibold font-headline mb-4">Anuncios Recientes</h2>
-              {isLoadingAnnouncements && <div className="flex items-center text-muted-foreground"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Cargando anuncios...</div>}
-              {announcementsError && <div className="text-destructive"><AlertTriangle className="inline mr-2" />Error: {announcementsError}</div>}
-              {!isLoadingAnnouncements && !announcementsError && filteredAnnouncements.length > 0 && (
+              {isLoadingAnnouncements ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Skeleton className="h-56" />
+                    <Skeleton className="h-56" />
+                  </div>
+              ) : announcementsError ? (
+                 <div className="text-destructive"><AlertTriangle className="inline mr-2" />Error: {announcementsError}</div>
+              ): filteredAnnouncements.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {filteredAnnouncements.map(announcement => (
                     <AnnouncementCard key={announcement.id} announcement={announcement} />
                   ))}
                 </div>
-              )}
-              {!isLoadingAnnouncements && !announcementsError && filteredAnnouncements.length === 0 && (
+              ) : (
                 <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
               )}
             </section>
