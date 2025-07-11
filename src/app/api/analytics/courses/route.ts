@@ -2,7 +2,8 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
-import type { CourseAnalyticsData } from '@/types';
+import type { CourseAnalyticsData, LessonCompletionRecord } from '@/types';
+import type { JsonValue } from "@prisma/client/runtime/library";
 
 export async function GET(req: NextRequest) {
     const session = await getSession(req);
@@ -20,23 +21,28 @@ export async function GET(req: NextRequest) {
             : 0;
             
         // 2. Average Quiz Score
-        // Correction: Ensure we only get scores from lessons that belong to existing courses.
-        const quizScores = await prisma.lessonCompletionRecord.findMany({
+        // Correctly fetch all progress records and then iterate through the JSON field
+        const allProgressRecords = await prisma.courseProgress.findMany({
             where: {
-                type: 'quiz',
-                score: { not: null },
-                lesson: {
-                    module: {
-                        course: {
-                            isNot: null,
-                        }
-                    }
-                }
+                completedLessonIds: { not: { equals: '[]' } } // Optimization: only fetch records with completions
             },
-            select: { score: true }
+            select: { completedLessonIds: true }
         });
+
+        const quizScores: number[] = [];
+        allProgressRecords.forEach(record => {
+            if (record.completedLessonIds && Array.isArray(record.completedLessonIds)) {
+                const completedRecords = record.completedLessonIds as unknown as LessonCompletionRecord[];
+                completedRecords.forEach(completion => {
+                    if (completion.type === 'quiz' && typeof completion.score === 'number') {
+                        quizScores.push(completion.score);
+                    }
+                });
+            }
+        });
+        
         const averageQuizScore = quizScores.length > 0
-            ? quizScores.reduce((acc, q) => acc + (q.score || 0), 0) / quizScores.length
+            ? quizScores.reduce((acc, score) => acc + score, 0) / quizScores.length
             : 0;
 
         // 3. Most Enrolled Courses (Top 5)
