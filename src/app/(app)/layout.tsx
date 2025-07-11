@@ -124,8 +124,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     return (
         <div className="flex min-h-screen w-full bg-background">
             <Sidebar>
-                <SidebarHeader className="px-4">
-                    <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground">
+                <SidebarHeader className="group-data-[state=expanded]:px-4 group-data-[state=collapsed]:px-2">
+                    <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground group-data-[state=collapsed]:justify-center">
                         <Image 
                             src="/uploads/images/logo-nexusalpri.png" 
                             alt="NexusAlpri Logo" 
@@ -201,5 +201,3 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
-
-    
