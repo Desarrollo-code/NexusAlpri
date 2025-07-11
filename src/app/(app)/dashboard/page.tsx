@@ -43,7 +43,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, PolarGrid, RadialBar, RadialBarChart, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, RadialBar, RadialBarChart, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { cn } from '@/lib/utils';
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -157,34 +157,46 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
                     </CardHeader>
                     <CardContent>
                         {userRolesChartData.length > 0 ? (
-                            <ChartContainer config={userRolesChartConfig} className="h-[250px] w-full">
-                                <ResponsiveContainer>
-                                   <PieChart>
-                                        <ChartTooltip
-                                          cursor={false}
-                                          content={<ChartTooltipContent hideLabel />}
-                                        />
-                                        <Pie
-                                          data={userRolesChartData}
-                                          dataKey="count"
-                                          nameKey="name"
-                                          innerRadius={60}
-                                          strokeWidth={5}
-                                        >
-                                          {userRolesChartData.map((entry, index) => (
-                                              <Cell key={`cell-${index}`} fill={entry.fill} />
-                                          ))}
-                                        </Pie>
-                                        <Legend/>
-                                    </PieChart>
-                                </ResponsiveContainer>
+                            <ChartContainer
+                              config={userRolesChartConfig}
+                              className="mx-auto aspect-square h-[250px] w-full"
+                            >
+                              <PieChart>
+                                <ChartTooltip
+                                  cursor={false}
+                                  content={<ChartTooltipContent hideLabel />}
+                                />
+                                <Pie
+                                  data={userRolesChartData}
+                                  dataKey="count"
+                                  nameKey="name"
+                                  innerRadius={60}
+                                  strokeWidth={5}
+                                >
+                                  {userRolesChartData.map((entry) => (
+                                    <Cell
+                                      key={entry.name}
+                                      fill={entry.fill}
+                                      className="stroke-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    />
+                                  ))}
+                                </Pie>
+                                <g>
+                                  <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central" className="fill-foreground text-3xl font-bold">
+                                    {stats.totalUsers.toLocaleString()}
+                                  </text>
+                                  <text x="50%" y="50%" dy="1.5em" textAnchor="middle" dominantBaseline="central" className="fill-muted-foreground text-sm">
+                                    Usuarios
+                                  </text>
+                                </g>
+                              </PieChart>
                             </ChartContainer>
                         ) : (<p className="text-muted-foreground text-center py-4">No hay datos de usuarios.</p>)}
                     </CardContent>
                 </Card>
                  <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg"><BookOpenCheck /> Distribución de Cursos</CardTitle>
+                        <CardTitle className="flex items-center gap-2 text-lg"><BookOpenCheck /> Estado General de Cursos</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {courseStatusChartData.length > 0 ? (
