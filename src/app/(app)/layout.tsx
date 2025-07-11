@@ -41,26 +41,24 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
   if (filteredSubItems.length > 0) {
     return (
         <AccordionItem value={item.label} className="border-none">
-          <SidebarMenuButton asChild variant="ghost" className="w-full h-auto p-0" tooltip={{...item.tooltip, children: item.label}}>
-            <AccordionTrigger 
-              className={cn(
-                "w-full h-auto p-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md text-sm hover:no-underline justify-start",
-                isParentActive && "bg-sidebar-accent text-sidebar-accent-foreground"
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <item.icon className={cn(isParentActive ? "text-primary" : iconColorClass, "h-5 w-5")} />
-                <span className="font-semibold group-data-[state=collapsed]:hidden">{item.label}</span>
-              </div>
-            </AccordionTrigger>
-          </SidebarMenuButton>
+          <AccordionTrigger 
+            className={cn(
+              "w-full h-auto p-2 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground rounded-md text-sm hover:no-underline justify-start",
+              isParentActive && "bg-sidebar-accent/80 text-sidebar-accent-foreground"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <item.icon className={cn(isParentActive ? "text-primary" : "text-muted-foreground", "h-5 w-5")} />
+              <span className="font-semibold group-data-[state=collapsed]:hidden">{item.label}</span>
+            </div>
+          </AccordionTrigger>
           <AccordionContent className="p-0 pl-6 mt-1 group-data-[state=collapsed]:hidden">
             <SidebarMenu className="border-l border-sidebar-border ml-2 pl-4">
-              {filteredSubItems.map((subItem, subIndex) => (
+              {filteredSubItems.map((subItem) => (
                 <SidebarMenuItem key={subItem.href}>
                   <SidebarMenuButton asChild isActive={pathname.startsWith(subItem.href)} size="sm" className="justify-start" tooltip={{...subItem.tooltip, children: subItem.label}}>
                     <Link href={subItem.href}>
-                      <subItem.icon className={cn(pathname.startsWith(subItem.href) ? "text-primary" : `text-chart-${(subIndex % 5) + 1}`)}/>
+                      <subItem.icon className={cn(pathname.startsWith(subItem.href) ? "text-primary" : "text-muted-foreground")}/>
                       <span>{subItem.label}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -76,7 +74,7 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{...item.tooltip, children: item.label}}>
         <Link href={item.href || '#'}>
-          <item.icon className={cn(isActive ? "text-primary" : iconColorClass, "h-5 w-5")} />
+          <item.icon className={cn(isActive ? "text-sidebar-accent-foreground" : "text-muted-foreground", "h-5 w-5")} />
           <span className="font-semibold group-data-[state=collapsed]:hidden">{item.label}</span>
         </Link>
       </SidebarMenuButton>
@@ -124,10 +122,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <div className="flex min-h-screen w-full bg-muted/30">
+        <div className="flex min-h-screen w-full bg-background">
             <Sidebar>
-                <SidebarHeader>
-                    <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground p-2">
+                <SidebarHeader className="px-4">
+                    <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground">
                         <Image 
                             src="/uploads/images/logo-nexusalpri.png" 
                             alt="NexusAlpri Logo" 
@@ -203,3 +201,5 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
+
+    

@@ -5,51 +5,51 @@
 
 @layer base {
   :root {
-    --background: 260 20% 98%;
-    --foreground: 260 10% 15%;
+    --background: 240 10% 97%; /* Light Gray */
+    --foreground: 240 10% 10%; /* Dark Gray for text */
     
-    --card: 0 0% 100%;
-    --card-foreground: 260 10% 15%;
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 240 10% 10%;
    
     --popover: 0 0% 100%;
-    --popover-foreground: 260 10% 15%;
+    --popover-foreground: 240 10% 10%;
    
-    --primary: 221 83% 53%; /* New Blue Color */
+    --primary: 221 83% 53%; /* Strong Blue */
     --primary-foreground: 0 0% 100%;
    
-    --secondary: 260 10% 96%;
-    --secondary-foreground: 260 10% 15%;
+    --secondary: 240 5% 94%;
+    --secondary-foreground: 240 5% 10%;
    
-    --muted: 260 10% 96%;
-    --muted-foreground: 260 5% 45%;
+    --muted: 240 5% 94%;
+    --muted-foreground: 240 5% 45%;
    
-    --accent: 260 10% 93%;
-    --accent-foreground: 260 10% 15%;
+    --accent: 240 5% 90%;
+    --accent-foreground: 240 5% 10%;
    
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
    
-    --border: 260 10% 90%;
-    --input: 260 10% 90%;
+    --border: 240 5% 88%;
+    --input: 240 5% 92%;
     --ring: 221 83% 53%;
    
     --radius: 0.5rem;
 
-    /* Chart Colors Updated for Blue Theme */
+    /* Chart Colors Inspired by Reference */
     --chart-1: 221 83% 53%; /* Primary Blue */
-    --chart-2: 10 89% 60%; /* Bright Orange-Red */
+    --chart-2: 210 40% 96.1%; /* Light Blue/Gray for contrast */
     --chart-3: 160 70% 45%; /* Teal/Green */
     --chart-4: 262 82% 57%;  /* Deep Purple (as an accent) */
     --chart-5: 340 82% 62%;  /* Bright Pink */
 
     /* Sidebar colors */
-    --sidebar-background: 260 25% 96%;
-    --sidebar-foreground: 260 10% 35%;
+    --sidebar-background: 240 10% 97%;
+    --sidebar-foreground: 240 10% 25%;
     --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 100%;
-    --sidebar-accent-foreground: 221 83% 53%;
-    --sidebar-border: 260 10% 90%;
+    --sidebar-accent: 221 83% 53%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 5% 88%;
     --sidebar-ring: 221 83% 53%;
 
     /* Event Colors for Calendar */
@@ -60,49 +60,50 @@
   }
  
   .dark {
-    --background: 224 71.4% 4.1%;
-    --foreground: 210 20% 98%;
+    /* Keeping dark mode consistent with the new light theme for now */
+    --background: 240 10% 97%;
+    --foreground: 240 10% 10%;
     
-    --card: 224 71.4% 4.1%;
-    --card-foreground: 210 20% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
    
-    --popover: 224 71.4% 4.1%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
    
-    --primary: 221 83% 53%; /* New Blue Color */
-    --primary-foreground: 210 20% 98%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
    
-    --secondary: 215 27.9% 16.9%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 240 5% 94%;
+    --secondary-foreground: 240 5% 10%;
    
-    --muted: 215 27.9% 16.9%;
-    --muted-foreground: 217.9 10.6% 64.9%;
+    --muted: 240 5% 94%;
+    --muted-foreground: 240 5% 45%;
    
-    --accent: 215 27.9% 16.9%;
-    --accent-foreground: 210 20% 98%;
+    --accent: 240 5% 90%;
+    --accent-foreground: 240 5% 10%;
    
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
    
-    --border: 215 27.9% 16.9%;
-    --input: 215 27.9% 16.9%;
+    --border: 240 5% 88%;
+    --input: 240 5% 92%;
     --ring: 221 83% 53%;
 
-    /* Chart Colors Updated for Blue Theme */
-    --chart-1: 221 83% 53%; /* Primary Blue */
-    --chart-2: 10 89% 60%; /* Bright Orange-Red */
-    --chart-3: 160 70% 45%; /* Teal/Green */
-    --chart-4: 262 82% 57%;  /* Deep Purple (as an accent) */
-    --chart-5: 340 82% 62%;  /* Bright Pink */
+    /* Chart Colors */
+    --chart-1: 221 83% 53%;
+    --chart-2: 210 40% 96.1%;
+    --chart-3: 160 70% 45%;
+    --chart-4: 262 82% 57%;
+    --chart-5: 340 82% 62%;
 
     /* Sidebar colors */
-    --sidebar-background: 224 71.4% 4.1%;
-    --sidebar-foreground: 210 20% 98%;
+    --sidebar-background: 240 10% 97%;
+    --sidebar-foreground: 240 10% 25%;
     --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 210 20% 98%;
-    --sidebar-accent: 215 27.9% 16.9%;
-    --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 215 27.9% 16.9%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 221 83% 53%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 5% 88%;
     --sidebar-ring: 221 83% 53%;
 
     /* Event Colors for Calendar */
@@ -145,3 +146,5 @@
 .font-code {
   font-family: var(--font-code);
 }
+
+    
