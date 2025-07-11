@@ -174,18 +174,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                   {children}
                 </main>
             </div>
-            
-            <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
-                <Image
-                    src="/uploads/images/watermark-alprigrama.png" 
-                    alt="Alprigrama S.A.S. Watermark"
-                    width={120} 
-                    height={120} 
-                    className="opacity-40 w-[70px] h-auto"
-                    priority 
-                    data-ai-hint="company logo"
-                />
-            </div>
         </div>
     );
 }

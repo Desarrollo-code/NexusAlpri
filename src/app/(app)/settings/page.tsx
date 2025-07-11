@@ -126,29 +126,6 @@ export default function SettingsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><BellDot className="h-5 w-5 text-primary"/>Notificaciones</CardTitle>
-              <CardDescription>Configura cómo se gestionan las notificaciones.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-                <div className="space-y-0.5">
-                    <Label htmlFor="emailNotifications" className="text-base">Notificaciones por Correo</Label>
-                    <p className="text-sm text-muted-foreground">
-                        Habilitar el envío de notificaciones por correo electrónico a los usuarios.
-                    </p>
-                </div>
-                <Switch 
-                    id="emailNotifications" 
-                    checked={formState.enableEmailNotifications}
-                    onCheckedChange={(checked) => handleSwitchChange('enableEmailNotifications', checked)}
-                    disabled={isSaving}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
               <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary"/>Seguridad y Acceso</CardTitle>
               <CardDescription>Gestiona las políticas de seguridad y registro.</CardDescription>
             </CardHeader>
@@ -156,7 +133,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
                     <div className="space-y-0.5">
                         <Label htmlFor="allowPublicRegistration" className="text-base">Registro Público</Label>
-                        <p className="text-sm text-muted-foreground">Controla si los usuarios pueden crear sus propias cuentas. Si está desactivado, solo los administradores pueden añadir nuevos usuarios.</p>
+                        <p className="text-sm text-muted-foreground">Controla si los usuarios pueden crear sus propias cuentas.</p>
                     </div>
                     <Switch 
                         id="allowPublicRegistration" 
@@ -172,7 +149,7 @@ export default function SettingsPage() {
                     <h4 className="font-medium mb-3">Política de Contraseñas</h4>
                     <div className="space-y-4 p-3 border rounded-lg shadow-sm">
                         <div className="flex items-center justify-between">
-                            <Label htmlFor="passwordMinLength">Longitud Mínima (caracteres)</Label>
+                            <Label htmlFor="passwordMinLength">Longitud Mínima</Label>
                             <Input 
                                 id="passwordMinLength" 
                                 type="number" 
@@ -199,9 +176,6 @@ export default function SettingsPage() {
                             <Label htmlFor="passwordRequireSpecialChar">Requerir Carácter Especial</Label>
                              <Switch id="passwordRequireSpecialChar" checked={formState.passwordRequireSpecialChar} onCheckedChange={(c) => handleSwitchChange('passwordRequireSpecialChar', c)} disabled={isSaving} />
                         </div>
-                         <p className="text-xs text-muted-foreground pt-2">
-                            Estos ajustes se aplican a las nuevas contraseñas y cambios de contraseña.
-                         </p>
                     </div>
                 </div>
 
@@ -210,25 +184,27 @@ export default function SettingsPage() {
                  <div>
                     <h4 className="font-medium mb-3">Cierre de Sesión por Inactividad</h4>
                      <div className="space-y-4 p-3 border rounded-lg shadow-sm">
-                         <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center justify-between gap-4">
                             <div className="space-y-0.5">
                                 <Label htmlFor="enableIdleTimeout" className="text-base">Habilitar Cierre por Inactividad</Label>
                                 <p className="text-sm text-muted-foreground">Cierra la sesión del usuario tras un período de inactividad.</p>
                             </div>
                             <Switch id="enableIdleTimeout" checked={formState.enableIdleTimeout} onCheckedChange={(c) => handleSwitchChange('enableIdleTimeout', c)} disabled={isSaving} />
                         </div>
-                         <div className="flex items-center justify-between">
-                            <Label htmlFor="idleTimeoutMinutes">Tiempo de Inactividad (Minutos)</Label>
-                            <Input 
-                                id="idleTimeoutMinutes" 
-                                type="number" 
-                                className="w-24" 
-                                value={formState.idleTimeoutMinutes}
-                                onChange={(e) => handleInputChange('idleTimeoutMinutes', parseInt(e.target.value, 10) || 1)}
-                                min="1"
-                                disabled={isSaving || !formState.enableIdleTimeout}
-                            />
-                        </div>
+                         {formState.enableIdleTimeout && (
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="idleTimeoutMinutes">Tiempo de Inactividad (Minutos)</Label>
+                                <Input 
+                                    id="idleTimeoutMinutes" 
+                                    type="number" 
+                                    className="w-24" 
+                                    value={formState.idleTimeoutMinutes}
+                                    onChange={(e) => handleInputChange('idleTimeoutMinutes', parseInt(e.target.value, 10) || 1)}
+                                    min="1"
+                                    disabled={isSaving}
+                                />
+                            </div>
+                         )}
                      </div>
                 </div>
 
@@ -248,53 +224,6 @@ export default function SettingsPage() {
                 </div>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary" />Gestión de Categorías de Recursos</CardTitle>
-              <CardDescription>Añade o elimina categorías para los filtros de la biblioteca de recursos.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="newCategoryName">Nueva Categoría</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="newCategoryName"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    placeholder="Ej: Marketing, Desarrollo"
-                    disabled={isSaving}
-                  />
-                  <Button onClick={handleAddCategory} disabled={isSaving || !newCategory.trim()}>Añadir</Button>
-                </div>
-              </div>
-              <Separator />
-              <div>
-                <h4 className="text-sm font-medium mb-3">Categorías Existentes:</h4>
-                {formState.resourceCategories.length > 0 ? (
-                  <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                    {formState.resourceCategories.map(category => (
-                      <div key={category} className="flex items-center justify-between p-2.5 border rounded-lg bg-card text-sm">
-                        <span className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/>{category}</span>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive-foreground" 
-                          onClick={() => handleRemoveCategory(category)}
-                          disabled={isSaving}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Eliminar {category}</span>
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center py-4">No hay categorías personalizadas definidas.</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         <div className="lg:col-span-1 space-y-6">
@@ -312,6 +241,52 @@ export default function SettingsPage() {
                     </Button>
                 </CardContent>
             </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary" />Categorías de Recursos</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="newCategoryName">Nueva Categoría</Label>
+                    <div className="flex gap-2">
+                    <Input
+                        id="newCategoryName"
+                        value={newCategory}
+                        onChange={(e) => setNewCategory(e.target.value)}
+                        placeholder="Ej: Marketing"
+                        disabled={isSaving}
+                    />
+                    <Button onClick={handleAddCategory} disabled={isSaving || !newCategory.trim()}>Añadir</Button>
+                    </div>
+                </div>
+                <Separator />
+                <div>
+                    <h4 className="text-sm font-medium mb-3">Categorías Existentes:</h4>
+                    {formState.resourceCategories.length > 0 ? (
+                    <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                        {formState.resourceCategories.map(category => (
+                        <div key={category} className="flex items-center justify-between p-2.5 border rounded-lg bg-card text-sm">
+                            <span className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/>{category}</span>
+                            <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive-foreground" 
+                            onClick={() => handleRemoveCategory(category)}
+                            disabled={isSaving}
+                            >
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Eliminar {category}</span>
+                            </Button>
+                        </div>
+                        ))}
+                    </div>
+                    ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">No hay categorías.</p>
+                    )}
+                </div>
+                </CardContent>
+          </Card>
         </div>
       </div>
     </div>

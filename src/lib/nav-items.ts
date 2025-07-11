@@ -37,7 +37,7 @@ const navItems: NavItem[] = [
       },
       {
         href: '/resources',
-        label: 'Recursos Empresa',
+        label: 'Biblioteca',
         icon: Folder,
         roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
       },
