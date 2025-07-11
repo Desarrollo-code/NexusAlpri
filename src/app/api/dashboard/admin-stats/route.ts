@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import type { CourseStatus, UserRole } from '@/types';
 import type { NextRequest } from 'next/server';
+import { subDays, startOfDay } from 'date-fns';
 
 export interface AdminDashboardStats {
     totalUsers: number;
@@ -18,9 +19,14 @@ export interface AdminDashboardStats {
     coursesByStatus: { status: CourseStatus; count: number }[];
 }
 
-// Helper to simulate a trend percentage. In a real app, this would query historical data.
-const simulateTrend = (): number => {
-    return (Math.random() * 10 - 4); // Random number between -4.0 and +6.0
+
+const calculateTrend = (currentPeriodCount: number, previousPeriodCount: number): number => {
+    if (previousPeriodCount === 0) {
+        // If there were 0 in the previous period, any new item is a "100%" increase conceptually.
+        // If current is also 0, then it's 0% change.
+        return currentPeriodCount > 0 ? 100 : 0;
+    }
+    return ((currentPeriodCount - previousPeriodCount) / previousPeriodCount) * 100;
 };
 
 
@@ -31,34 +37,50 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        const totalUsers = await prisma.user.count();
-        const totalCourses = await prisma.course.count();
-        const totalPublishedCourses = await prisma.course.count({ where: { status: 'PUBLISHED' } });
-        const totalEnrollments = await prisma.enrollment.count();
+        const today = new Date();
+        const sevenDaysAgo = startOfDay(subDays(today, 7));
+        const fourteenDaysAgo = startOfDay(subDays(today, 14));
 
+        // Total Users
+        const totalUsers = await prisma.user.count();
+        const newUsersLast7Days = await prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo } } });
+        const newUsersPrevious7Days = await prisma.user.count({ where: { registeredDate: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } });
+
+        // Total Courses
+        const totalCourses = await prisma.course.count();
+        const newCoursesLast7Days = await prisma.course.count({ where: { createdAt: { gte: sevenDaysAgo } } });
+        const newCoursesPrevious7Days = await prisma.course.count({ where: { createdAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } });
+
+        // Published Courses
+        const totalPublishedCourses = await prisma.course.count({ where: { status: 'PUBLISHED' } });
+        const newPublishedCoursesLast7Days = await prisma.course.count({ where: { status: 'PUBLISHED', publicationDate: { gte: sevenDaysAgo } } });
+        const newPublishedCoursesPrevious7Days = await prisma.course.count({ where: { status: 'PUBLISHED', publicationDate: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } });
+
+        // Total Enrollments
+        const totalEnrollments = await prisma.enrollment.count();
+        const newEnrollmentsLast7Days = await prisma.enrollment.count({ where: { enrolledAt: { gte: sevenDaysAgo } } });
+        const newEnrollmentsPrevious7Days = await prisma.enrollment.count({ where: { enrolledAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } });
+
+        // Grouped data
         const usersByRole = await prisma.user.groupBy({
             by: ['role'],
-            _count: {
-                role: true,
-            },
+            _count: { role: true },
         });
 
         const coursesByStatus = await prisma.course.groupBy({
             by: ['status'],
-            _count: {
-                status: true,
-            },
+            _count: { status: true },
         });
 
         const stats: AdminDashboardStats = {
             totalUsers,
-            userTrend: simulateTrend(),
+            userTrend: calculateTrend(newUsersLast7Days, newUsersPrevious7Days),
             totalCourses,
-            courseTrend: simulateTrend(),
+            courseTrend: calculateTrend(newCoursesLast7Days, newCoursesPrevious7Days),
             totalPublishedCourses,
-            publishedTrend: simulateTrend(),
+            publishedTrend: calculateTrend(newPublishedCoursesLast7Days, newPublishedCoursesPrevious7Days),
             totalEnrollments,
-            enrollmentTrend: simulateTrend(),
+            enrollmentTrend: calculateTrend(newEnrollmentsLast7Days, newEnrollmentsPrevious7Days),
             usersByRole: usersByRole.map(item => ({
                 role: item.role as UserRole,
                 count: item._count.role,
