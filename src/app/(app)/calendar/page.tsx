@@ -176,8 +176,7 @@ export default function CalendarPage() {
       const updatedEvent = await response.json();
       if (!response.ok) throw new Error(updatedEvent.message || 'Failed to save event');
       toast({ title: 'Éxito', description: `Evento ${eventToEdit ? 'actualizado' : 'creado'}.` });
-      if (eventToEdit) setEvents(prev => prev.map(evt => evt.id === updatedEvent.id ? updatedEvent : evt));
-      else setEvents(prev => [...prev, updatedEvent]);
+      fetchEvents(); // Refetch all events to update the calendar
       setShowEventModal(false);
     } catch (err) {
       toast({ title: 'Error', description: `No se pudo guardar: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
@@ -194,7 +193,9 @@ export default function CalendarPage() {
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to delete event');
       toast({ title: 'Éxito', description: 'Evento eliminado.' });
       setEvents(prev => prev.filter(event => event.id !== eventToDelete.id));
-      setEventToDelete(null); setShowEventModal(false); setShowDayEventsModal(false);
+      setEventToDelete(null); 
+      setShowEventModal(false); 
+      setShowDayEventsModal(false);
     } catch (err) {
       toast({ title: 'Error', description: `No se pudo eliminar: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
     } finally {
@@ -202,10 +203,12 @@ export default function CalendarPage() {
     }
   }
   
-  const handleOpenDeleteDialogFromDayView = (event: CalendarEvent) => {
-      setEventToDelete(event);
-      setShowDayEventsModal(false);
-  }
+  const handleOpenDeleteDialogFromModal = () => {
+      if (eventToEdit) {
+        setEventToDelete(eventToEdit);
+        setShowEventModal(false);
+      }
+  };
 
   const modalTitle = !canEdit && eventToEdit ? "Detalles del Evento" : (eventToEdit ? 'Editar Evento' : 'Crear Nuevo Evento');
   const modalDescription = !canEdit && eventToEdit ? "Aquí puedes ver la información del evento." : (eventToEdit ? "Modifica los detalles del evento." : "Completa los detalles para agendar un nuevo evento.");
@@ -272,8 +275,7 @@ export default function CalendarPage() {
                              {event.description && <p className="text-xs text-muted-foreground mt-2">{event.description}</p>}
                            </div>
                            <div className="flex flex-col gap-1">
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenEventModal(event)}><Eye className="h-4 w-4"/></Button>
-                              {canEdit && <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleOpenDeleteDialogFromDayView(event)}><Trash2 className="h-4 w-4"/></Button>}
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setShowDayEventsModal(false); handleOpenEventModal(event); }}><Eye className="h-4 w-4"/></Button>
                            </div>
                       </div>
                   )) : (
@@ -294,13 +296,13 @@ export default function CalendarPage() {
             <div className="sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4"><div className="flex items-center space-x-2 flex-shrink-0"><Switch id="all-day" checked={formAllDay} onCheckedChange={setFormAllDay} disabled={isSaving || !canEdit} /><Label htmlFor="all-day" className="text-foreground">Todo el día</Label></div>{!formAllDay && (<div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow w-full"><div><Label htmlFor="start-date" className="text-foreground">Inicio</Label><Input id="start-date" type="datetime-local" value={formStartDate} onChange={e => setFormStartDate(e.target.value)} required disabled={isSaving || !canEdit} className="bg-input text-foreground border-border" /></div><div><Label htmlFor="end-date" className="text-foreground">Fin</Label><Input id="end-date" type="datetime-local" value={formEndDate} onChange={e => setFormEndDate(e.target.value)} required disabled={isSaving || !canEdit} className="bg-input text-foreground border-border" /></div></div>)}</div>
             <div className="sm:col-span-2"><Label className="text-foreground">Color del Evento</Label><div className="flex flex-wrap gap-3 mt-2 justify-start">{eventColors.map(({ value, className }) => (<div key={value} className={cn("h-8 w-8 rounded-full border-2 flex items-center justify-center transition-all duration-200 ease-in-out", formColor === value ? 'border-primary scale-110' : 'border-transparent', canEdit ? "cursor-pointer" : "cursor-default", className)} onClick={() => canEdit && setFormColor(value)} title={value}>{formColor === value && (<Check className="h-4 w-4 text-white" />)}</div>))}</div></div>
             <div className="sm:col-span-2"><Label className="text-foreground">Dirigido a</Label><RadioGroup value={formAudienceMode} onValueChange={(value) => setFormAudienceMode(value as EventAudienceType)} className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2" disabled={isSaving || !canEdit}><div className="flex items-center space-x-2 text-foreground"><RadioGroupItem value="ALL" id="audience-all" /><Label htmlFor="audience-all">Todos</Label></div><div className="flex items-center space-x-2 text-foreground"><RadioGroupItem value="ADMINISTRATOR" id="audience-admin" /><Label htmlFor="audience-admin">Admins</Label></div><div className="flex items-center space-x-2 text-foreground"><RadioGroupItem value="INSTRUCTOR" id="audience-instructor" /><Label htmlFor="audience-instructor">Instructores</Label></div><div className="flex items-center space-x-2 text-foreground"><RadioGroupItem value="STUDENT" id="audience-student" /><Label htmlFor="audience-student">Estudiantes</Label></div><div className="flex items-center space-x-2 text-foreground"><RadioGroupItem value="SPECIFIC" id="audience-specific" /><Label htmlFor="audience-specific">Específicos</Label></div></RadioGroup></div>
-            {formAudienceMode === 'SPECIFIC' && (<div className="sm:col-span-2"><Label className="text-foreground">Asistentes Específicos</Label><ScrollArea className="h-40 w-full rounded-md border border-border p-2 bg-input"><div className="space-y-2">{allUsers.length > 0 ? allUsers.map((u) => (<div key={u.id} className="flex items-center space-x-2 p-1 hover:bg-accent/50 rounded-sm transition-colors"><Checkbox id={`attendee-${u.id}`} checked={formAttendees.includes(u.id)} onCheckedChange={(checked) => { return checked ? setFormAttendees([...formAttendees, u.id]) : setFormAttendees(formAttendees.filter((id) => id !== u.id)); }} disabled={isSaving || !canEdit} /><Label htmlFor={`attendee-${u.id}`} className="font-normal cursor-pointer text-foreground">{u.name} <span className="text-xs text-muted-foreground">({u.email})</span></Label></div>)) : <p className="text-sm text-muted-foreground text-center py-4">No hay otros usuarios.</p>}</div></ScrollArea></div>)}
-            <DialogFooter className="sm:col-span-2 mt-4 flex flex-col-reverse sm:flex-row sm:justify-between w-full gap-2">{canEdit ? (<>{eventToEdit && (<div><Button type="button" variant="destructive" onClick={() => { setEventToDelete(eventToEdit); setShowEventModal(false); }} disabled={isSaving} className="w-full sm:w-auto"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</Button></div>)}<div className="flex flex-col-reverse sm:flex-row gap-2"><Button type="button" variant="outline" onClick={() => setShowEventModal(false)} disabled={isSaving} className="w-full sm:w-auto">Cancelar</Button><Button type="submit" disabled={isSaving} className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto">{isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (eventToEdit ? <Save className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />)} {eventToEdit ? 'Guardar Cambios' : 'Crear Evento'}</Button></div></>) : (<div className="flex justify-end w-full"><Button type="button" variant="outline" onClick={() => setShowEventModal(false)} className="w-full sm:w-auto">Cerrar</Button></div>)}</DialogFooter>
+            {canEdit && formAudienceMode === 'SPECIFIC' && (<div className="sm:col-span-2"><Label className="text-foreground">Asistentes Específicos</Label><ScrollArea className="h-40 w-full rounded-md border border-border p-2 bg-input"><div className="space-y-2">{allUsers.length > 0 ? allUsers.map((u) => (<div key={u.id} className="flex items-center space-x-2 p-1 hover:bg-accent/50 rounded-sm transition-colors"><Checkbox id={`attendee-${u.id}`} checked={formAttendees.includes(u.id)} onCheckedChange={(checked) => { return checked ? setFormAttendees([...formAttendees, u.id]) : setFormAttendees(formAttendees.filter((id) => id !== u.id)); }} disabled={isSaving || !canEdit} /><Label htmlFor={`attendee-${u.id}`} className="font-normal cursor-pointer text-foreground">{u.name} <span className="text-xs text-muted-foreground">({u.email})</span></Label></div>)) : <p className="text-sm text-muted-foreground text-center py-4">No hay otros usuarios.</p>}</div></ScrollArea></div>)}
+            <DialogFooter className="sm:col-span-2 mt-4 flex flex-col-reverse sm:flex-row sm:justify-between w-full gap-2">{canEdit ? (<>{eventToEdit && (<div><Button type="button" variant="destructive" onClick={handleOpenDeleteDialogFromModal} disabled={isSaving} className="w-full sm:w-auto"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</Button></div>)}<div className="flex flex-col-reverse sm:flex-row gap-2"><Button type="button" variant="outline" onClick={() => setShowEventModal(false)} disabled={isSaving} className="w-full sm:w-auto">Cancelar</Button><Button type="submit" disabled={isSaving} className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto">{isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (eventToEdit ? <Save className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />)} {eventToEdit ? 'Guardar Cambios' : 'Crear Evento'}</Button></div></>) : (<div className="flex justify-end w-full"><Button type="button" variant="outline" onClick={() => setShowEventModal(false)} className="w-full sm:w-auto">Cerrar</Button></div>)}</DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
       
-      <AlertDialog open={!!eventToDelete && !showDayEventsModal} onOpenChange={(isOpen) => !isOpen && setEventToDelete(null)}>
+      <AlertDialog open={!!eventToDelete} onOpenChange={(isOpen) => !isOpen && setEventToDelete(null)}>
         <AlertDialogContent className="bg-card text-foreground border-border w-[95vw] max-w-md"><AlertDialogHeader><AlertDialogTitle className="text-foreground">¿Confirmar eliminación?</AlertDialogTitle><AlertDialogDescription className="text-muted-foreground">Se eliminará el evento "<strong>{eventToDelete?.title}</strong>".</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel disabled={isSaving}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteEvent} disabled={isSaving} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{isSaving && <Loader2 className="mr-2 animate-spin" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
     </div>

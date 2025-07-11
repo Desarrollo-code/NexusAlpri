@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
       where: {
         OR: [
           { audienceType: 'ALL' },
-          { audienceType: user.role as UserRole }, // Cast user.role to UserRole type
+          { audienceType: user.role as UserRole },
           { attendees: { some: { id: user.id } } },
         ],
       },
@@ -56,9 +56,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color, creatorId } = body;
+    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color } = body;
     
-    if (!title || !start || !end || !creatorId) {
+    if (!title || !start || !end || !session.id) {
         return NextResponse.json({ message: 'Faltan campos requeridos (título, inicio, fin, creador).' }, { status: 400 });
     }
 
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
       audienceType: audienceType as EventAudienceType,
       color,
       creator: {
-        connect: { id: creatorId },
+        connect: { id: session.id },
       },
     };
 
