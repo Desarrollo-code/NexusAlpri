@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 260 10% 15%;
    
-    --primary: 262 82% 57%; /* #673AB7 */
+    --primary: 221 83% 53%; /* New Blue Color */
     --primary-foreground: 0 0% 100%;
    
     --secondary: 260 10% 96%;
@@ -31,26 +31,26 @@
    
     --border: 260 10% 90%;
     --input: 260 10% 90%;
-    --ring: 262 82% 57%;
+    --ring: 221 83% 53%;
    
     --radius: 0.5rem;
 
-    /* Chart Colors Inspired by Reference Image */
-    --chart-1: 221 83% 53%; /* Bright Blue */
+    /* Chart Colors Updated for Blue Theme */
+    --chart-1: 221 83% 53%; /* Primary Blue */
     --chart-2: 10 89% 60%; /* Bright Orange-Red */
-    --chart-3: 262 82% 57%;  /* Deep Purple */
-    --chart-4: 160 70% 45%; /* Teal/Green */
+    --chart-3: 160 70% 45%; /* Teal/Green */
+    --chart-4: 262 82% 57%;  /* Deep Purple (as an accent) */
     --chart-5: 340 82% 62%;  /* Bright Pink */
 
     /* Sidebar colors */
     --sidebar-background: 260 25% 96%;
     --sidebar-foreground: 260 10% 35%;
-    --sidebar-primary: 262 82% 57%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 100%;
-    --sidebar-accent-foreground: 262 82% 57%;
+    --sidebar-accent-foreground: 221 83% 53%;
     --sidebar-border: 260 10% 90%;
-    --sidebar-ring: 262 82% 57%;
+    --sidebar-ring: 221 83% 53%;
 
     /* Event Colors for Calendar */
     --event-blue: 220 80% 65%;
@@ -69,7 +69,7 @@
     --popover: 224 71.4% 4.1%;
     --popover-foreground: 210 20% 98%;
    
-    --primary: 263.4 70% 50.4%; /* #673AB7 slightly brighter for dark mode */
+    --primary: 221 83% 53%; /* New Blue Color */
     --primary-foreground: 210 20% 98%;
    
     --secondary: 215 27.9% 16.9%;
@@ -86,24 +86,24 @@
    
     --border: 215 27.9% 16.9%;
     --input: 215 27.9% 16.9%;
-    --ring: 263.4 70% 50.4%;
+    --ring: 221 83% 53%;
 
-    /* Chart Colors Inspired by Reference Image */
-    --chart-1: 221 83% 53%; /* Bright Blue */
+    /* Chart Colors Updated for Blue Theme */
+    --chart-1: 221 83% 53%; /* Primary Blue */
     --chart-2: 10 89% 60%; /* Bright Orange-Red */
-    --chart-3: 263.4 70% 50.4%;  /* Deep Purple */
-    --chart-4: 160 70% 45%; /* Teal/Green */
+    --chart-3: 160 70% 45%; /* Teal/Green */
+    --chart-4: 262 82% 57%;  /* Deep Purple (as an accent) */
     --chart-5: 340 82% 62%;  /* Bright Pink */
 
     /* Sidebar colors */
     --sidebar-background: 224 71.4% 4.1%;
     --sidebar-foreground: 210 20% 98%;
-    --sidebar-primary: 263.4 70% 50.4%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 210 20% 98%;
     --sidebar-accent: 215 27.9% 16.9%;
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: 215 27.9% 16.9%;
-    --sidebar-ring: 263.4 70% 50.4%;
+    --sidebar-ring: 221 83% 53%;
   }
 }
 
