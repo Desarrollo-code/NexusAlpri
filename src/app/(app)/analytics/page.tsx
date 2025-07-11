@@ -37,7 +37,7 @@ const courseStatusChartConfig = {
 } satisfies ChartConfig;
 
 // --- Stat Card Component ---
-const StatCard = ({ title, value, icon: Icon, trend, href, children }: { title: string; value: number; icon: React.ElementType; trend?: number; href?: string, children?: React.ReactNode }) => {
+const StatCard = ({ title, value, icon: Icon, trend, href }: { title: string; value: number; icon: React.ElementType; trend?: number; href?: string }) => {
     const hasTrend = typeof trend === 'number';
     const isPositive = hasTrend && trend >= 0;
     const TrendIcon = isPositive ? TrendingUp : TrendingDown;

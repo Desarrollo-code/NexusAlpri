@@ -14,41 +14,25 @@ import {
   BookMarked, 
   Settings, 
   CheckCircle, 
-  FileText, 
-  UsersRound, 
-  Activity, 
   ShieldAlert, 
-  Archive, 
   Loader2, 
   AlertTriangle, 
   BookOpenCheck, 
-  Edit, 
-  Eye, 
+  Edit,
   GraduationCap, 
   BarChart3, 
-  LineChart as LineChartIcon,
   Rocket,
   X,
-  TrendingUp,
-  TrendingDown,
+  TrendingUp
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import type { AdminDashboardStats } from '@/app/api/dashboard/admin-stats/route';
 import type { Announcement as AnnouncementType, UserRole, Course as AppCourseType, EnrolledCourse } from '@/types';
 import { AnnouncementCard } from '@/components/announcement-card';
-import type { Announcement as PrismaAnnouncement, Course as PrismaCourse, CourseStatus as PrismaCourseStatus, UserRole as PrismaUserRole } from '@prisma/client';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from "recharts"
-import type { ChartConfig } from "@/components/ui/chart"
-import { Separator } from '@/components/ui/separator';
+import type { Announcement as PrismaAnnouncement, Course as PrismaCourse } from '@prisma/client';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 import { CourseCard } from '@/components/course-card';
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -86,11 +70,7 @@ interface DashboardData {
     myDashboardCourses: EnrolledCourse[];
 }
 
-const StatCard = ({ title, value, icon: Icon, trend, href, children }: { title: string; value: number; icon: React.ElementType; trend?: number; href: string, children?: React.ReactNode }) => {
-    const hasTrend = typeof trend === 'number';
-    const isPositive = hasTrend && trend >= 0;
-    const TrendIcon = isPositive ? TrendingUp : TrendingDown;
-  
+const StatCard = ({ title, value, icon: Icon, href }: { title: string; value: number; icon: React.ElementType; href: string }) => {
     return (
         <Link href={href}>
             <Card className="hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
@@ -100,14 +80,7 @@ const StatCard = ({ title, value, icon: Icon, trend, href, children }: { title: 
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{value.toLocaleString('es-CO')}</div>
-                    {hasTrend && (
-                        <p className={cn("text-xs flex items-center", isPositive ? "text-green-500" : "text-red-500")}>
-                            <TrendIcon className="h-3 w-3 mr-1" />
-                            {isPositive ? '+' : ''}{trend.toFixed(1)}% respecto a los últimos 7 días
-                        </p>
-                    )}
                 </CardContent>
-                {children && <CardFooter>{children}</CardFooter>}
             </Card>
         </Link>
     );
@@ -226,37 +199,6 @@ export default function DashboardPage() {
       .slice(0, 3); 
   }, [data?.recentAnnouncements, user]);
 
-  const courseStatusChartData = useMemo(() => {
-    if (!data?.adminStats?.coursesByStatus) return [];
-    const courseStatusChartConfig = {
-      count: { label: "Cursos" },
-      PUBLISHED: { label: "Publicados", color: "hsl(var(--chart-1))" },
-      DRAFT: { label: "Borrador", color: "hsl(var(--chart-2))" },
-      ARCHIVED: { label: "Archivados", color: "hsl(var(--chart-3))" },
-    };
-    const order: PrismaCourseStatus[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED'];
-    return order.map(status => ({
-        status: courseStatusChartConfig[status]?.label || status,
-        count: data.adminStats.coursesByStatus.find(item => item.status === status)?.count || 0,
-        fill: `var(--color-${status})`
-    }));
-  }, [data?.adminStats?.coursesByStatus]);
-
-  const userRolesChartData = useMemo(() => {
-    if (!data?.adminStats?.usersByRole) return [];
-    const userRolesChartConfig = {
-      count: { label: "Usuarios" },
-      STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
-      INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))"  },
-      ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-3))"  },
-    };
-    const order: PrismaUserRole[] = ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'];
-    return order.map(role => ({
-        role: userRolesChartConfig[role]?.label || role,
-        count: data.adminStats.usersByRole.find(item => item.role === role)?.count || 0,
-    }));
-  }, [data?.adminStats?.usersByRole]);
-
   if (!user) {
     return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /> Cargando...</div>;
   }
@@ -313,26 +255,12 @@ export default function DashboardPage() {
         </Alert>
     );
   };
-  
-  const courseStatusChartConfig = {
-    count: { label: "Cursos" },
-    PUBLISHED: { label: "Publicados", color: "hsl(var(--chart-1))" },
-    DRAFT: { label: "Borrador", color: "hsl(var(--chart-2))" },
-    ARCHIVED: { label: "Archivados", color: "hsl(var(--chart-3))" },
-  } satisfies ChartConfig;
-  
-  const userRolesChartConfig = {
-    count: { label: "Usuarios" },
-    STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
-    INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))"  },
-    ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-3))"  },
-  } satisfies ChartConfig;
-  
+    
   const quickLinks = {
     ADMINISTRATOR: [
       { href: '/users', label: 'Gestionar Usuarios', icon: Users, description: 'Administra cuentas y roles.', color: 'text-chart-1' },
       { href: '/manage-courses', label: 'Gestionar Cursos', icon: BookMarked, description: 'Crea y edita cursos.', color: 'text-chart-2' },
-      { href: '/resources', label: 'Biblioteca', icon: Folder, description: 'Administra recursos globales.', color: 'text-chart-3' },
+      { href: '/analytics', label: 'Ver Analíticas', icon: BarChart3, description: 'Analiza el rendimiento.', color: 'text-chart-3' },
       { href: '/settings', label: 'Configuración', icon: Settings, description: 'Ajusta la plataforma.', color: 'text-chart-4' },
     ],
     INSTRUCTOR: [
@@ -446,93 +374,14 @@ export default function DashboardPage() {
       )}
 
       {user.role === 'ADMINISTRATOR' && data?.adminStats && (
-        <section className="space-y-6">
-          <h2 className="text-2xl font-semibold font-headline">Estadísticas de la Plataforma</h2>
-          <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard title="Total de Usuarios" value={data.adminStats.totalUsers} icon={Users} trend={data.adminStats.userTrend} href="/users" />
-                    <StatCard title="Total de Cursos" value={data.adminStats.totalCourses} icon={BookOpenCheck} trend={data.adminStats.courseTrend} href="/manage-courses" />
-                    <StatCard title="Cursos Publicados" value={data.adminStats.totalPublishedCourses} icon={Activity} trend={data.adminStats.publishedTrend} href="/manage-courses" />
-                    <StatCard title="Total Inscripciones" value={data.adminStats.totalEnrollments} icon={UsersRound} trend={data.adminStats.enrollmentTrend} href="/enrollments" />
-                </div>
-              
-              <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base"><BarChart3 className="h-5 w-5 text-primary"/>Distribución de Cursos</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {courseStatusChartData.length > 0 ? (
-                       <ChartContainer config={courseStatusChartConfig} className="h-[250px] w-full">
-                        <ResponsiveContainer>
-                          <BarChart data={courseStatusChartData} margin={{ top: 20, right: 20, left: -5, bottom: 5 }} barGap={4}>
-                            <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
-                            <XAxis 
-                              dataKey="status" 
-                              tickLine={false} 
-                              axisLine={false} 
-                              tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} 
-                            />
-                            <YAxis
-                              tickLine={false}
-                              axisLine={false}
-                              tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                              allowDecimals={false}
-                            />
-                            <ChartTooltip
-                              cursor={{fill: 'hsl(var(--muted))', radius: 4}}
-                              content={<ChartTooltipContent />}
-                            />
-                            <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                                {courseStatusChartData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${index + 1}))`} />
-                                ))}
-                            </Bar>
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </ChartContainer>
-                    ) : (<p className="text-muted-foreground text-center py-4">No hay datos de cursos.</p>)}
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base"><BarChart3 className="h-5 w-5 text-primary"/>Distribución de Usuarios</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                     {userRolesChartData.length > 0 ? (
-                        <ChartContainer config={userRolesChartConfig} className="h-[250px] w-full">
-                          <ResponsiveContainer>
-                           <BarChart data={userRolesChartData} margin={{ top: 20, right: 20, left: -5, bottom: 5 }} barGap={4}>
-                              <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
-                               <XAxis 
-                                dataKey="role" 
-                                tickLine={false} 
-                                axisLine={false}
-                                tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} 
-                              />
-                              <YAxis
-                                  tickLine={false}
-                                  axisLine={false}
-                                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                                  allowDecimals={false}
-                               />
-                              <ChartTooltip
-                                  cursor={{fill: 'hsl(var(--muted))', radius: 4}}
-                                  content={<ChartTooltipContent />}
-                              />
-                               <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                                {userRolesChartData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${index + 1}))`} />
-                                ))}
-                               </Bar>
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </ChartContainer>
-                      ) : (<p className="text-muted-foreground text-center py-4">No hay datos de usuarios.</p>)}
-                  </CardContent>
-                </Card>
-              </div>
-            </>
+        <section>
+            <h2 className="text-2xl font-semibold font-headline">Resumen de la Plataforma</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                <StatCard title="Total Usuarios" value={data.adminStats.totalUsers} icon={Users} href="/users" />
+                <StatCard title="Total Cursos" value={data.adminStats.totalCourses} icon={BookOpenCheck} href="/manage-courses" />
+                <StatCard title="Analíticas Detalladas" value={data.adminStats.totalEnrollments} icon={BarChart3} href="/analytics" />
+                <StatCard title="Configuración" value={0} icon={Settings} href="/settings" />
+            </div>
         </section>
       )}
 
