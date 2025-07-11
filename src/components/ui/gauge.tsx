@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from 'recharts';
+import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer, Cell } from 'recharts';
 
 interface GaugeChartProps {
   value: number;
@@ -55,8 +55,7 @@ export function GaugeChart({ value }: GaugeChartProps) {
               d="M 0 -5 L 0 5 L 80 0 Z"
               fill="hsl(var(--foreground))"
               transform={`translate(50%, 100%) rotate(${(clampedValue / 100) * 180})`}
-              transform-origin="0 0"
-              style={{ transition: 'transform 0.5s ease-out' }}
+              style={{ transformOrigin: '0 0', transition: 'transform 0.5s ease-out' }}
             />
              <circle cx="50%" cy="100%" r="8" fill="hsl(var(--foreground))" />
           </g>

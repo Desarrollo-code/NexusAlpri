@@ -43,7 +43,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, RadialBar, RadialBarChart, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { cn } from '@/lib/utils';
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -95,7 +95,7 @@ const courseStatusChartConfig = {
   ARCHIVED: { label: "Archivados", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
-const StatCard = ({ title, value, icon: Icon, href, trend }: { title: string; value: number; icon: React.ElementType; href: string; trend?: number; }) => {
+const StatCard = ({ title, value, icon: Icon, href, trend }: { title: string; value: number; icon: React.ElementType; href: string; trend?: number }) => {
     const hasTrend = typeof trend === 'number';
     const isPositive = hasTrend && trend >= 0;
     const TrendIcon = isPositive ? TrendingUp : TrendingDown;
@@ -585,5 +585,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
