@@ -4,88 +4,98 @@
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --background: 260 20% 98%;
+    --foreground: 260 10% 15%;
     
-    /* New Primary Color: Professional Deep Blue */
-    --primary: 221 83% 53%; /* #2563EB */
-    --primary-foreground: 210 40% 98%;
-    
-    /* New Accent Color: Lighter Blue */
-    --accent: 221 83% 60%; /* Lighter shade for hover */
-    --accent-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 260 10% 15%;
+   
+    --popover: 0 0% 100%;
+    --popover-foreground: 260 10% 15%;
+   
+    --primary: 262 82% 57%; /* #673AB7 */
+    --primary-foreground: 0 0% 100%;
+   
+    --secondary: 260 10% 96%;
+    --secondary-foreground: 260 10% 15%;
+   
+    --muted: 260 10% 96%;
+    --muted-foreground: 260 5% 45%;
+   
+    --accent: 260 10% 93%;
+    --accent-foreground: 260 10% 15%;
+   
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+   
+    --border: 260 10% 90%;
+    --input: 260 10% 90%;
+    --ring: 262 82% 57%;
+   
+    --radius: 0.5rem;
 
-    /* New Ring color for focus states */
-    --ring: 221 83% 53%;
-    
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    
-    --radius: 0.75rem;
+    /* Chart Colors Inspired by Reference Image */
+    --chart-1: 262 82% 57%; /* Deep Purple */
+    --chart-2: 220 80% 65%; /* Bright Blue */
+    --chart-3: 45 93% 55%;  /* Sunny Yellow */
+    --chart-4: 160 70% 45%; /* Teal/Green */
+    --chart-5: 10 80% 60%;  /* Coral/Orange */
 
-    /* New Diverse Chart Colors, more professional and cohesive */
-    --chart-1: 210 90% 60%;  /* Bright Blue */
-    --chart-2: 145 83% 55%;  /* Lively Green */
-    --chart-3: 45 93% 55%;   /* Sunny Yellow */
-    --chart-4: 25 95% 53%;   /* Vivid Orange */
-    --chart-5: 350 91% 60%;  /* Vibrant Pink */
+    /* Sidebar colors */
+    --sidebar-background: 260 25% 96%;
+    --sidebar-foreground: 260 10% 35%;
+    --sidebar-primary: 262 82% 57%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 100%;
+    --sidebar-accent-foreground: 262 82% 57%;
+    --sidebar-border: 260 10% 90%;
+    --sidebar-ring: 262 82% 57%;
 
-    /* Sidebar colors updated to match new primary */
-    --sidebar-background: 224 43% 9%;
-    --sidebar-foreground: 215 20% 65%;
-    --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 221 83% 53%;
-    
-    /* Event Colors using the new chart palette */
-    --event-red: 350 91% 60%;
-    --event-green: 145 83% 55%;
-    --event-blue: 210 90% 60%;
+    /* Event Colors for Calendar */
+    --event-blue: 220 80% 65%;
+    --event-green: 160 70% 45%;
+    --event-red: 0 84% 60%;
     --event-orange: 25 95% 53%;
   }
-
-  /* Define the dark theme explicitly */
+ 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 210 40% 98%;
-    --card: 222 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --accent: 221 83% 60%;
-    --accent-foreground: 210 40% 98%;
-    --secondary: 217 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 221 83% 53%;
-    --radius: 0.75rem;
+    --background: 260 10% 10%;
+    --foreground: 260 5% 95%;
+    
+    --card: 260 10% 12%;
+    --card-foreground: 260 5% 95%;
+   
+    --popover: 260 10% 10%;
+    --popover-foreground: 260 5% 95%;
+   
+    --primary: 262 82% 62%; /* #673AB7 slightly brighter for dark mode */
+    --primary-foreground: 0 0% 100%;
+   
+    --secondary: 260 10% 18%;
+    --secondary-foreground: 260 5% 95%;
+   
+    --muted: 260 10% 18%;
+    --muted-foreground: 260 5% 65%;
+   
+    --accent: 260 10% 22%;
+    --accent-foreground: 260 5% 95%;
+   
+    --destructive: 0 63% 45%;
+    --destructive-foreground: 0 0% 100%;
+   
+    --border: 260 10% 20%;
+    --input: 260 10% 20%;
+    --ring: 262 82% 62%;
 
-    --chart-1: 210 90% 60%;
-    --chart-2: 145 83% 55%;
-    --chart-3: 45 93% 55%;
-    --chart-4: 25 95% 53%;
-    --chart-5: 350 91% 60%;
+    /* Sidebar colors */
+    --sidebar-background: 260 10% 10%;
+    --sidebar-foreground: 260 5% 75%;
+    --sidebar-primary: 262 82% 62%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 260 10% 22%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 260 10% 20%;
+    --sidebar-ring: 262 82% 62%;
   }
 }
 

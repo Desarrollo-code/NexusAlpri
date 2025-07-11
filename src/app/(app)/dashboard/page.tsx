@@ -43,7 +43,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, Cell, ResponsiveContainer, CartesianGrid } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, PolarGrid, RadialBar, RadialBarChart, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { cn } from '@/lib/utils';
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -125,8 +125,9 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
     const userRolesChartData = React.useMemo(() => {
         const order: ('STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR')[] = ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'];
         return order.map(role => ({
-            role: userRolesChartConfig[role]?.label || role,
+            name: userRolesChartConfig[role]?.label || role,
             count: stats.usersByRole.find(item => item.role === role)?.count || 0,
+            fill: `var(--color-${role})`
         }));
     }, [stats.usersByRole]);
     
@@ -136,6 +137,7 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
         return order.map(status => ({
             status: courseStatusChartConfig[status]?.label || status,
             count: stats.coursesByStatus.find(item => item.status === status)?.count || 0,
+            fill: `var(--color-${status})`
         }));
     }, [stats?.coursesByStatus]);
 
@@ -146,7 +148,7 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
                 <StatCard title="Total Usuarios" value={stats.totalUsers} icon={Users} href="/users" trend={stats.userTrend}/>
                 <StatCard title="Total Cursos" value={stats.totalCourses} icon={BookOpenCheck} href="/manage-courses" trend={stats.courseTrend}/>
                 <StatCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={Activity} href="/manage-courses" />
-                <StatCard title="Total Inscripciones" value={stats.totalEnrollments} icon={UsersRound} href="/enrollments" />
+                <StatCard title="Total Inscripciones" value={stats.totalEnrollments} icon="/enrollments" />
             </div>
             <section className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                 <Card>
@@ -157,16 +159,24 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
                         {userRolesChartData.length > 0 ? (
                             <ChartContainer config={userRolesChartConfig} className="h-[250px] w-full">
                                 <ResponsiveContainer>
-                                    <BarChart data={userRolesChartData} layout="vertical" margin={{ left: 20 }}>
-                                        <YAxis dataKey="role" type="category" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} width={80}/>
-                                        <XAxis type="number" hide />
-                                        <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
-                                        <Bar dataKey="count" layout="vertical" radius={4}>
-                                            {userRolesChartData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${index + 1}))`} />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
+                                   <PieChart>
+                                        <ChartTooltip
+                                          cursor={false}
+                                          content={<ChartTooltipContent hideLabel />}
+                                        />
+                                        <Pie
+                                          data={userRolesChartData}
+                                          dataKey="count"
+                                          nameKey="name"
+                                          innerRadius={60}
+                                          strokeWidth={5}
+                                        >
+                                          {userRolesChartData.map((entry, index) => (
+                                              <Cell key={`cell-${index}`} fill={entry.fill} />
+                                          ))}
+                                        </Pie>
+                                        <Legend/>
+                                    </PieChart>
                                 </ResponsiveContainer>
                             </ChartContainer>
                         ) : (<p className="text-muted-foreground text-center py-4">No hay datos de usuarios.</p>)}
@@ -178,17 +188,20 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
                     </CardHeader>
                     <CardContent>
                         {courseStatusChartData.length > 0 ? (
-                            <ChartContainer config={courseStatusChartConfig} className="h-[250px] w-full">
+                           <ChartContainer config={courseStatusChartConfig} className="h-[250px] w-full">
                                 <ResponsiveContainer>
-                                     <BarChart data={courseStatusChartData} margin={{ top: 20, right: 20, left: -5, bottom: 5 }} barGap={4}>
+                                    <BarChart data={courseStatusChartData} margin={{ top: 20, right: 20, left: -5, bottom: 5 }} barGap={4}>
                                         <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
                                         <XAxis dataKey="status" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
                                         <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} allowDecimals={false} />
                                         <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent />} />
                                         <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                                            {courseStatusChartData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${index + 1}))`} />
-                                            ))}
+                                          {courseStatusChartData.map((entry) => (
+                                            <Cell
+                                              key={entry.status}
+                                              fill={entry.fill}
+                                            />
+                                          ))}
                                         </Bar>
                                     </BarChart>
                                 </ResponsiveContainer>
@@ -374,7 +387,7 @@ export default function DashboardPage() {
     ADMINISTRATOR: [
       { href: '/users', label: 'Gestionar Usuarios', icon: Users, description: 'Administra cuentas y roles.', color: 'text-chart-1' },
       { href: '/manage-courses', label: 'Gestionar Cursos', icon: BookMarked, description: 'Crea y edita cursos.', color: 'text-chart-2' },
-      { href: '/analytics', label: 'Ver Analíticas', icon: BarChart3, description: 'Analiza el rendimiento.', color: 'text-chart-3' },
+       { href: '/analytics', label: 'Ver Analíticas', icon: BarChart3, description: 'Analiza el rendimiento.', color: 'text-chart-3' },
       { href: '/settings', label: 'Configuración', icon: Settings, description: 'Ajusta la plataforma.', color: 'text-chart-4' },
     ],
     INSTRUCTOR: [
