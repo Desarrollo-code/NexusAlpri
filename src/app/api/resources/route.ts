@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
         // Don't expose the PIN hash to the client and correctly type cast JSON fields
         const safeResources = resources.map(({ pin, tags, ...resource }) => ({
             ...resource,
-            tags: (tags as string[]) ?? [],
+            tags: (Array.isArray(tags) ? tags : []) as string[],
             hasPin: !!pin,
         }));
 
