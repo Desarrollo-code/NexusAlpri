@@ -168,7 +168,9 @@ export default function SettingsPage() {
                 </div>
                  {formState.enableEmailNotifications && (
                     <div className="space-y-3 p-3 border rounded-lg shadow-sm">
-                        <Label htmlFor="emailWhitelist">Modo de Prueba (Lista Blanca de Correos)</Label>
+                        <Label htmlFor="emailWhitelist" className="flex items-center gap-2 font-semibold">
+                          Modo de Prueba (Lista Blanca de Correos)
+                        </Label>
                         <Textarea
                             id="emailWhitelist"
                             placeholder="admin@ejemplo.com, test@ejemplo.com"
