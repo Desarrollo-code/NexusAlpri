@@ -1,4 +1,5 @@
 
+
 // En /home/user/studio/src/app/(app)/manage-courses/[courseId]/edit/page.tsx
 
 'use client';
@@ -592,6 +593,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                             )}
                             {previewQuizDetails?.lessonIndex === lessonIndex && (
                                 <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setPreviewQuizDetails(null)}>
+                                  <DialogContent className="max-w-3xl">
                                     <DialogHeader>
                                         <DialogTitle>Vista Previa del Quiz</DialogTitle>
                                     </DialogHeader>
@@ -600,7 +602,8 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                                         lessonId={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}
                                         isCreatorPreview={true}
                                     />
-                                </DialogContent>
+                                  </DialogContent>
+                                </Dialog>
                             )}
                         </AccordionContent>
                     </AccordionItem>
