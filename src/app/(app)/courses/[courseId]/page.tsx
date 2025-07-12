@@ -118,14 +118,19 @@ export default function CourseDetailPage() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
 
-
   const contentRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
   const totalLessonsCount = allLessons.length;
   
+  const isCreatorViewingCourse = useMemo(() => {
+    if (!user || !course) return false;
+    return user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === course.instructorId);
+  }, [user, course]);
+  
   const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz', score?: number) => {
-    if (!user || !courseId || !isEnrolled || provisionalProgress[lessonId]) return;
+    // Do not record progress for the course creator or if the user is not enrolled.
+    if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || provisionalProgress[lessonId]) return;
     
     setProvisionalProgress(prev => ({ ...prev, [lessonId]: true }));
     
@@ -142,7 +147,7 @@ export default function CourseDetailPage() {
       body: JSON.stringify(payload),
     }).catch(e => console.error("Failed to record interaction:", e));
 
-  }, [user, courseId, isEnrolled, provisionalProgress]);
+  }, [user, courseId, isEnrolled, provisionalProgress, isCreatorViewingCourse]);
 
   const onScroll = useCallback((lessonId: string) => {
     const element = contentRefs.current[lessonId];
@@ -254,12 +259,6 @@ export default function CourseDetailPage() {
     );
   }, [course, sidebarSearch]);
 
-
-  const isCreatorViewingCourse = useMemo(() => {
-    if (!user || !course) return false;
-    return user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === course.instructorId);
-  }, [user, course]);
-  
   const handleLessonSelect = (lesson: AppLesson) => {
       setSelectedLessonId(lesson.id);
       if (isMobile) {
@@ -286,9 +285,10 @@ export default function CourseDetailPage() {
             <QuizViewer 
                 key={block.id}
                 quiz={block.quiz}
-                lessonId={selectedLessonId!} // The lesson ID is needed for quiz submission logic
+                lessonId={selectedLessonId!}
                 courseId={courseId}
                 isEnrolled={isEnrolled}
+                isCreatorPreview={isCreatorViewingCourse}
                 onQuizCompleted={handleQuizSubmitted}
             />
         );
@@ -548,3 +548,5 @@ export default function CourseDetailPage() {
     </div>
   );
 }
+
+    
