@@ -133,10 +133,9 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
     );
   }
   
-  const canAttemptQuiz = isEnrolled || isCreatorPreview;
+  const canAttemptQuiz = isCreatorPreview || isEnrolled;
 
-  // This check is now only relevant for students, not for creator previews.
-  if (!isCreatorPreview && !isEnrolled) {
+  if (!canAttemptQuiz) {
       return (
           <Alert>
               <AlertTitle>Inscripción Requerida</AlertTitle>
