@@ -582,7 +582,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                                 isSaving={isSaving}
                                 openQuizEditor={openQuizEditor}
                                 openQuizPreview={openQuizPreview}
-                                appendBlock={appendBlockToLesson}
+                                appendBlock={appendBlock}
                             />
                             {quizEditorDetails?.lessonIndex === lessonIndex && (
                                 <QuizEditorDialog
