@@ -76,7 +76,7 @@ function mapApiDetailedCourseToAppCourse(apiCourse: ApiDetailedCourse): AppCours
     })).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
   };
 }
-function getYouTubeVideoId(url: string): string | null {
+function getYouTubeVideoId(url: string | null | undefined): string | null {
   if (!url) return null;
   let videoId = null;
   try {
@@ -280,15 +280,26 @@ export default function CourseDetailPage() {
   };
   
   const renderContentBlock = (block: ContentBlock) => {
+    const videoId = getYouTubeVideoId(block.content);
+
+    if (block.type === 'VIDEO') {
+        if (videoId) {
+            return (
+                <div key={block.id} className="aspect-video w-full max-w-4xl mx-auto my-4 rounded-lg overflow-hidden shadow-md">
+                    <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${videoId}`} title={`YouTube video: ${selectedLesson?.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+                </div>
+            );
+        }
+    }
+    
     if (block.type === 'QUIZ') {
         return (
             <QuizViewer 
                 key={block.id}
                 quiz={block.quiz}
                 lessonId={selectedLessonId!}
-                courseId={courseId}
-                isEnrolled={isEnrolled}
                 isCreatorPreview={isCreatorViewingCourse}
+                isEnrolled={isEnrolled}
                 onQuizCompleted={handleQuizSubmitted}
             />
         );
@@ -298,17 +309,8 @@ export default function CourseDetailPage() {
       return <p key={block.id} className="text-sm text-muted-foreground my-4">Contenido no disponible.</p>;
     }
 
-    const videoId = block.type === 'VIDEO' ? getYouTubeVideoId(block.content) : null;
     const isPdf = block.type === 'FILE' && block.content?.toLowerCase().endsWith('.pdf');
     const isImage = block.type === 'FILE' && block.content?.toLowerCase().match(/\.(jpeg|jpg|gif|png|webp)$/);
-    
-    if (videoId) {
-      return (
-        <div key={block.id} className="aspect-video w-full max-w-4xl mx-auto my-4 rounded-lg overflow-hidden shadow-md">
-          <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${videoId}`} title={`YouTube video: ${selectedLesson?.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
-        </div>
-      );
-    }
     
     if (isPdf) {
       return (
