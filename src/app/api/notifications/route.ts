@@ -89,19 +89,19 @@ export async function DELETE(req: NextRequest) {
 
         let whereClause: any = { userId: session.id };
 
-        if (ids === 'all') {
-            // No additional filter, deletes all for the user
-        } else if (ids === 'read') {
-            whereClause.read = true;
-        } else if (Array.isArray(ids) && ids.length > 0) {
+        if (Array.isArray(ids) && ids.length > 0) {
             whereClause.id = { in: ids };
         } else {
-            return NextResponse.json({ message: 'El campo "ids" debe ser un array de IDs, "all" o "read"' }, { status: 400 });
+            return NextResponse.json({ message: 'El campo "ids" debe ser un array de IDs válido.' }, { status: 400 });
         }
 
-        await prisma.notification.deleteMany({
+        const deleteResult = await prisma.notification.deleteMany({
             where: whereClause,
         });
+
+        if (deleteResult.count === 0) {
+            return NextResponse.json({ message: 'No se encontraron notificaciones para eliminar.' }, { status: 404 });
+        }
         
         return new NextResponse(null, { status: 204 }); // Success, no content
 

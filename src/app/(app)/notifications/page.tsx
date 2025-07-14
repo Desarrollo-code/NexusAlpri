@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Notification as AppNotification } from '@/types';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const timeSince = (dateString: string): string => {
     const date = new Date(dateString);
@@ -55,6 +56,7 @@ const timeSince = (dateString: string): string => {
 export default function NotificationsPage() {
     const { user } = useAuth();
     const { toast } = useToast();
+    const router = useRouter();
 
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -101,6 +103,7 @@ export default function NotificationsPage() {
                 body: JSON.stringify({ ids: [notification.id], read: newReadStatus }),
             });
             if (!response.ok) throw new Error('Failed to update notification status');
+            router.refresh();
         } catch (error) {
             toast({ title: 'Error', description: 'No se pudo actualizar la notificación.', variant: 'destructive' });
             setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, read: !newReadStatus } : n));
@@ -116,6 +119,7 @@ export default function NotificationsPage() {
             return;
         }
 
+        const originalNotifications = [...notifications];
         setNotifications(prev => prev.map(n => ({...n, read: true})));
 
         try {
@@ -125,20 +129,16 @@ export default function NotificationsPage() {
                 body: JSON.stringify({ ids: 'all', read: true }),
             });
             toast({ title: 'Éxito', description: 'Todas las notificaciones han sido marcadas como leídas.'});
+            router.refresh();
         } catch (error) {
              toast({ title: 'Error', description: 'No se pudieron marcar todas como leídas.', variant: 'destructive' });
-             fetchNotifications(); 
+             setNotifications(originalNotifications);
         } finally {
             setIsProcessing(false);
         }
     };
     
-    const handleDelete = async (id: string | 'read', event?: React.MouseEvent) => {
-        if(event) {
-            event.stopPropagation();
-            event.preventDefault();
-        }
-
+    const handleDelete = async (id: string | 'read') => {
         setIsProcessing(true);
         const idsToDelete = id === 'read' ? notifications.filter(n => n.read).map(n => n.id) : [id];
 
@@ -158,6 +158,7 @@ export default function NotificationsPage() {
                 body: JSON.stringify({ ids: idsToDelete }),
             });
             toast({ title: 'Notificaciones Eliminadas' });
+            router.refresh();
         } catch(error) {
             toast({ title: 'Error', description: 'No se pudieron eliminar las notificaciones.', variant: 'destructive'});
             setNotifications(originalNotifications);
@@ -177,14 +178,16 @@ export default function NotificationsPage() {
                 "flex items-start gap-4 p-4 pl-6 transition-colors",
                 notif.read ? 'hover:bg-muted/30' : 'bg-primary/5 hover:bg-primary/10'
             )}>
-                <ContentWrapper {...contentWrapperProps}>
-                    <div className="flex items-center gap-3">
-                        {!notif.read && <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />}
-                        <p className={cn("font-semibold", !notif.read && "text-primary")}>{notif.title}</p>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{notif.description}</p>
-                    <p className="text-xs text-muted-foreground mt-2">{timeSince(notif.date)}</p>
-                </ContentWrapper>
+                <div className="flex-grow">
+                    <ContentWrapper {...contentWrapperProps}>
+                        <div className="flex items-center gap-3">
+                            {!notif.read && <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />}
+                            <p className={cn("font-semibold", !notif.read && "text-primary")}>{notif.title}</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">{notif.description}</p>
+                        <p className="text-xs text-muted-foreground mt-2">{timeSince(notif.date)}</p>
+                    </ContentWrapper>
+                </div>
                 <div className="flex flex-col sm:flex-row gap-1">
                     <Button variant="ghost" size="sm" onClick={(e) => handleToggleRead(notif, e)} className="h-8">
                         {notif.read ? <MailWarning className="mr-2 h-4 w-4"/> : <Check className="mr-2 h-4 w-4" />}
@@ -276,7 +279,7 @@ export default function NotificationsPage() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isProcessing}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction
-                            onClick={(e) => handleDelete('read', e)}
+                            onClick={() => handleDelete('read')}
                             disabled={isProcessing}
                             className={cn(buttonVariants({ variant: "destructive" }))}
                         >
