@@ -66,7 +66,7 @@ export function UserAvatarDropdown() {
     }
     return name.substring(0, 2).toUpperCase();
   };
-
+  
   const getRoleInSpanish = (role: UserRole) => {
     switch (role) {
         case 'ADMINISTRATOR': return 'Administrador';
