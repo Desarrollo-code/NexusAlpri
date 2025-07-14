@@ -453,55 +453,55 @@ export default function ProfilePage() {
                 </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleChangePassword} className="space-y-4 py-4">
-                <div className="space-y-2 relative">
+                <div className="space-y-2">
                     <Label htmlFor="current-password">Contraseña Actual</Label>
-                    <Input 
-                        id="current-password"
-                        type={showCurrentPassword ? "text" : "password"}
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        required
-                        disabled={isChangingPassword}
-                        className="pr-10"
-                    />
-                    <div className="absolute inset-y-0 right-0 top-6 flex items-center pr-3">
-                        <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="text-muted-foreground hover:text-foreground">
-                            {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                        </button>
+                    <div className="relative">
+                      <Input 
+                          id="current-password"
+                          type={showCurrentPassword ? "text" : "password"}
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          required
+                          disabled={isChangingPassword}
+                          className="pr-10"
+                      />
+                      <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                          {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
                     </div>
                 </div>
-                <div className="space-y-2 relative">
+                <div className="space-y-2">
                     <Label htmlFor="new-password">Nueva Contraseña</Label>
-                    <Input 
-                        id="new-password"
-                        type={showNewPassword ? "text" : "password"}
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        required
-                        disabled={isChangingPassword}
-                        className="pr-10"
-                    />
-                    <div className="absolute inset-y-0 right-0 top-6 flex items-center pr-3">
-                        <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="text-muted-foreground hover:text-foreground">
-                            {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                        </button>
+                    <div className="relative">
+                      <Input 
+                          id="new-password"
+                          type={showNewPassword ? "text" : "password"}
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          required
+                          disabled={isChangingPassword}
+                          className="pr-10"
+                      />
+                      <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                          {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
                     </div>
                 </div>
-                <div className="space-y-2 relative">
+                <div className="space-y-2">
                     <Label htmlFor="confirm-password">Confirmar Nueva Contraseña</Label>
-                    <Input 
-                        id="confirm-password"
-                        type={showConfirmNewPassword ? "text" : "password"}
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                        disabled={isChangingPassword}
-                        className="pr-10"
-                    />
-                     <div className="absolute inset-y-0 right-0 top-6 flex items-center pr-3">
-                        <button type="button" onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)} className="text-muted-foreground hover:text-foreground">
-                            {showConfirmNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                        </button>
+                    <div className="relative">
+                      <Input 
+                          id="confirm-password"
+                          type={showConfirmNewPassword ? "text" : "password"}
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                          disabled={isChangingPassword}
+                          className="pr-10"
+                      />
+                       <button type="button" onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                          {showConfirmNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
                     </div>
                 </div>
                 <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4">

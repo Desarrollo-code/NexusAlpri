@@ -467,23 +467,23 @@ export default function UsersPage() {
                             </Select>
                         </div>
                         {!userToEdit && (
-                           <div className="space-y-2 relative">
+                           <div className="space-y-2">
                               <Label htmlFor="password">Contraseña</Label>
-                              <Input 
-                                id="password" 
-                                type={showPassword ? "text" : "password"}
-                                value={editPassword} 
-                                onChange={(e) => setEditPassword(e.target.value)} 
-                                placeholder="Mínimo 8 caracteres" 
-                                required 
-                                disabled={isProcessing}
-                                className="pr-10"
-                              />
-                               <div className="absolute inset-y-0 right-0 top-6 flex items-center pr-3">
-                                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-muted-foreground hover:text-foreground">
-                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                    </button>
-                                </div>
+                              <div className="relative">
+                                <Input 
+                                  id="password" 
+                                  type={showPassword ? "text" : "password"}
+                                  value={editPassword} 
+                                  onChange={(e) => setEditPassword(e.target.value)} 
+                                  placeholder="Mínimo 8 caracteres" 
+                                  required 
+                                  disabled={isProcessing}
+                                  className="pr-10"
+                                />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                  </button>
+                              </div>
                             </div>
                         )}
                         <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4">
