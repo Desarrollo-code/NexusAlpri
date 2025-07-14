@@ -170,7 +170,6 @@ export function TopBar() {
   const handleDeleteNotification = async () => {
     if (!notificationToDelete) return;
     setIsDeleting(true);
-    // Optimistically remove from UI
     setNotifications(prev => prev.filter(n => n.id !== notificationToDelete.id));
     
     try {
@@ -182,7 +181,7 @@ export function TopBar() {
         toast({ title: 'Notificación eliminada' });
     } catch (error) {
         toast({ title: 'Error', description: 'No se pudo eliminar la notificación.', variant: 'destructive' });
-        fetchNotifications(); // Re-fetch to sync state on error
+        fetchNotifications();
     } finally {
         setIsDeleting(false);
         setNotificationToDelete(null);
@@ -192,7 +191,7 @@ export function TopBar() {
   const handleClearAllNotifications = async () => {
     setShowClearAllDialog(false);
     setIsDeleting(true);
-    setNotifications([]); // Optimistically clear UI
+    setNotifications([]); 
 
     try {
         await fetch('/api/notifications', {
@@ -203,7 +202,7 @@ export function TopBar() {
         toast({ title: 'Todas las notificaciones han sido eliminadas' });
     } catch (error) {
         toast({ title: 'Error', description: 'No se pudieron eliminar las notificaciones.', variant: 'destructive' });
-        fetchNotifications(); // Re-fetch on error
+        fetchNotifications();
     } finally {
         setIsDeleting(false);
     }
@@ -256,36 +255,41 @@ export function TopBar() {
                       No hay notificaciones
                   </DropdownMenuItem>
                 ) : (
-                  notifications.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(notification => {
-                      const ItemWrapper = notification.link ? Link : 'div';
+                  notifications.map(notification => {
+                      const Wrapper = notification.link ? Link : 'div';
                       const itemProps = notification.link ? { href: notification.link } : {};
 
                       return (
                           <DropdownMenuItem
                               key={notification.id}
-                              asChild={!!notification.link} 
-                              onClick={() => handleNotificationClick(notification.id)}
-                              className={`group relative flex items-start gap-2.5 p-3 pr-8 whitespace-normal cursor-pointer ${!notification.read ? 'font-medium bg-muted/50' : 'text-muted-foreground'}`}
+                              asChild
+                              className="p-0"
                           >
-                              <ItemWrapper {...itemProps} className="flex w-full items-start gap-2.5">
-                                  {!notification.read ? <Bell className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" /> : <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-500 flex-shrink-0" />}
-                                  <div className="flex-grow">
-                                  <p className="text-sm leading-tight font-semibold">{notification.title}</p>
-                                  {notification.description && <p className="text-xs leading-snug mt-0.5">{notification.description}</p>}
-                                  <p className={`text-xs mt-1 ${!notification.read ? 'text-primary/80' : 'text-muted-foreground/80'}`}>{timeSince(notification.date)}</p>
-                                  </div>
-                                  <button
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      setNotificationToDelete(notification);
-                                    }}
-                                    className="absolute top-1 right-1 p-1 rounded-full text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-opacity"
-                                    aria-label="Eliminar notificación"
-                                  >
-                                    <XCircle className="h-4 w-4" />
-                                  </button>
-                              </ItemWrapper>
+                            <Wrapper {...itemProps}
+                                onClick={() => handleNotificationClick(notification.id)}
+                                className={cn(
+                                    `group relative flex items-start gap-2.5 p-3 pr-8 whitespace-normal cursor-pointer w-full`,
+                                    !notification.read ? 'font-medium bg-muted/50' : 'text-muted-foreground'
+                                )}
+                            >
+                                {!notification.read ? <Bell className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" /> : <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-500 flex-shrink-0" />}
+                                <div className="flex-grow">
+                                <p className="text-sm leading-tight font-semibold">{notification.title}</p>
+                                {notification.description && <p className="text-xs leading-snug mt-0.5">{notification.description}</p>}
+                                <p className={`text-xs mt-1 ${!notification.read ? 'text-primary/80' : 'text-muted-foreground/80'}`}>{timeSince(notification.date)}</p>
+                                </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setNotificationToDelete(notification);
+                                  }}
+                                  className="absolute top-1 right-1 p-1 rounded-full text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-opacity"
+                                  aria-label="Eliminar notificación"
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </button>
+                            </Wrapper>
                           </DropdownMenuItem>
                       );
                   })
@@ -294,7 +298,7 @@ export function TopBar() {
                {!isLoadingNotifications && !notificationError && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} asChild>
                       <Link href="/notifications" className="w-full text-center text-sm text-primary hover:underline flex items-center justify-center gap-1">
                           Ver Todas las Notificaciones <ArrowRight className="h-4 w-4"/>
                       </Link>

@@ -87,9 +87,11 @@ export default function NotificationsPage() {
         }
     }, [user, fetchNotifications]);
 
-    const handleToggleRead = async (notification: AppNotification) => {
+    const handleToggleRead = async (notification: AppNotification, event: React.MouseEvent) => {
+        event.stopPropagation();
+        event.preventDefault();
+
         const newReadStatus = !notification.read;
-        // Optimistic UI update
         setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, read: newReadStatus } : n));
         
         try {
@@ -101,7 +103,6 @@ export default function NotificationsPage() {
             if (!response.ok) throw new Error('Failed to update notification status');
         } catch (error) {
             toast({ title: 'Error', description: 'No se pudo actualizar la notificación.', variant: 'destructive' });
-            // Revert UI on error
             setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, read: !newReadStatus } : n));
         }
     };
@@ -126,13 +127,18 @@ export default function NotificationsPage() {
             toast({ title: 'Éxito', description: 'Todas las notificaciones han sido marcadas como leídas.'});
         } catch (error) {
              toast({ title: 'Error', description: 'No se pudieron marcar todas como leídas.', variant: 'destructive' });
-             fetchNotifications(); // Sync with server on error
+             fetchNotifications(); 
         } finally {
             setIsProcessing(false);
         }
     };
     
-    const handleDelete = async (id: string | 'read') => {
+    const handleDelete = async (id: string | 'read', event?: React.MouseEvent) => {
+        if(event) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
         setIsProcessing(true);
         const idsToDelete = id === 'read' ? notifications.filter(n => n.read).map(n => n.id) : [id];
 
@@ -162,6 +168,39 @@ export default function NotificationsPage() {
         }
     }
 
+    const NotificationItem = ({ notif }: { notif: AppNotification }) => {
+        const Wrapper = notif.link ? Link : 'div';
+        const wrapperProps = notif.link ? { href: notif.link } : {};
+      
+        return (
+          <li className={cn("transition-colors", notif.read ? 'hover:bg-muted/30' : 'bg-primary/5 hover:bg-primary/10')}>
+            <Wrapper {...wrapperProps} className="block p-4 pl-6">
+                 <div className="flex items-start gap-4">
+                    <div className="flex-grow">
+                        <div className="flex items-center gap-3">
+                            {!notif.read && <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />}
+                            <p className={cn("font-semibold", !notif.read && "text-primary")}>{notif.title}</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">{notif.description}</p>
+                        <p className="text-xs text-muted-foreground mt-2">{timeSince(notif.date)}</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-1">
+                         <Button variant="ghost" size="sm" onClick={(e) => handleToggleRead(notif, e)} className="h-8">
+                            {notif.read ? <MailWarning className="mr-2 h-4 w-4"/> : <Check className="mr-2 h-4 w-4" />}
+                            {notif.read ? 'Marcar no leída' : 'Marcar leída'}
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => {
+                            e.stopPropagation(); e.preventDefault();
+                            setNotificationToDelete(notif);
+                        }}>
+                            <XCircle className="h-4 w-4" />
+                        </Button>
+                    </div>
+                 </div>
+            </Wrapper>
+          </li>
+        );
+      };
 
     return (
         <div className="space-y-8">
@@ -184,7 +223,7 @@ export default function NotificationsPage() {
                 <CardHeader>
                     <CardTitle>Bandeja de Entrada</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                     {isLoading ? (
                         <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto" /></div>
                     ) : error ? (
@@ -196,30 +235,9 @@ export default function NotificationsPage() {
                             <p>No tienes notificaciones nuevas.</p>
                         </div>
                     ) : (
-                        <ul className="divide-y divide-border -mx-6">
+                        <ul className="divide-y divide-border">
                             {notifications.map(notif => (
-                                <li key={notif.id} className={cn("p-4 pl-6 flex items-start gap-4 transition-colors hover:bg-muted/50", !notif.read && "bg-primary/5")}>
-                                    <div className="flex-grow">
-                                        <div className="flex items-center gap-3">
-                                            {!notif.read && <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />}
-                                            <p className={cn("font-semibold", !notif.read && "text-primary")}>{notif.title}</p>
-                                        </div>
-                                        <p className="text-sm text-muted-foreground mt-1">{notif.description}</p>
-                                        <div className="text-xs text-muted-foreground mt-2 flex items-center justify-between">
-                                            <span>{timeSince(notif.date)}</span>
-                                            {notif.link && <Link href={notif.link} className={cn(buttonVariants({ variant: 'link', size: 'sm' }), "h-auto p-0")}>Ver detalle</Link>}
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col sm:flex-row gap-1">
-                                         <Button variant="ghost" size="sm" onClick={() => handleToggleRead(notif)} className="h-8">
-                                            {notif.read ? <MailWarning className="mr-2 h-4 w-4"/> : <Check className="mr-2 h-4 w-4" />}
-                                            {notif.read ? 'Marcar no leída' : 'Marcar leída'}
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setNotificationToDelete(notif)}>
-                                            <XCircle className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </li>
+                                <NotificationItem key={notif.id} notif={notif} />
                             ))}
                         </ul>
                     )}
@@ -259,7 +277,7 @@ export default function NotificationsPage() {
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isProcessing}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction
-                            onClick={() => handleDelete('read')}
+                            onClick={(e) => handleDelete('read', e)}
                             disabled={isProcessing}
                             className={cn(buttonVariants({ variant: "destructive" }))}
                         >
