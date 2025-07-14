@@ -34,14 +34,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: 'Título, contenido y audiencia son requeridos' }, { status: 400 });
     }
 
-    // Convert audience array to JSON string if it's an array
-    const audienceForDb = Array.isArray(audience) ? JSON.stringify(audience) : audience;
-
     const newAnnouncement = await prisma.announcement.create({
       data: {
         title,
         content,
-        audience: audienceForDb,
+        audience,
         authorId: session.id,
         date: new Date(),
       },
@@ -50,17 +47,19 @@ export async function POST(req: NextRequest) {
       }
     });
 
+    // --- NOTIFICATION & EMAIL LOGIC ---
     const settings = await prisma.platformSettings.findFirst();
     let targetUsersQuery: any = {};
-    if (audience === 'ALL') {
-        // No filter, all users
-    } else if (Array.isArray(audience)) {
-        targetUsersQuery = { where: { role: { in: audience as UserRole[] } } };
+    if (audience !== 'ALL') {
+        const roles = Array.isArray(audience) ? audience : JSON.parse(audience);
+        if (Array.isArray(roles)) {
+            targetUsersQuery = { where: { role: { in: roles as UserRole[] } } };
+        }
     }
     const targetUsers = await prisma.user.findMany(targetUsersQuery);
 
-    // Create in-app notifications
     if (targetUsers.length > 0) {
+      // Create in-app notifications
       await prisma.notification.createMany({
         data: targetUsers.map(user => ({
           userId: user.id,
@@ -69,27 +68,26 @@ export async function POST(req: NextRequest) {
           link: '/announcements'
         }))
       });
-    }
 
-
-    // --- EMAIL LOGIC ---
-    if (settings?.enableEmailNotifications) {
+      // Send emails if enabled
+      if (settings?.enableEmailNotifications) {
         const recipientEmails = targetUsers.map(u => u.email).filter(Boolean);
 
         if (recipientEmails.length > 0) {
             await sendEmail({
                 to: recipientEmails,
-                subject: `Nuevo Anuncio en ${settings.platformName}: ${title}`,
+                subject: `Nuevo Anuncio en ${settings.platformName || 'NexusAlpri'}: ${title}`,
                 react: AnnouncementEmail({
                     title,
                     content,
                     authorName: newAnnouncement.author?.name || 'Sistema',
-                    platformName: settings.platformName,
+                    platformName: settings.platformName || 'NexusAlpri',
                 }),
             });
         }
+      }
     }
-    // --- END EMAIL LOGIC ---
+    // --- END LOGIC ---
 
     return NextResponse.json(newAnnouncement, { status: 201 });
   } catch (error) {
