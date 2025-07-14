@@ -83,7 +83,7 @@ const UserAnalyticsSection = () => {
     const pieChartData = data.usersByRole.map(roleData => ({
         name: roleData.role.charAt(0) + roleData.role.slice(1).toLowerCase(),
         count: roleData.count,
-        fill: `var(--color-${roleData.role})`
+        fill: userRolesChartConfig[roleData.role as keyof typeof userRolesChartConfig]?.color || "hsl(var(--muted))"
     }));
     
     const totalUsers = data.usersByRole.reduce((acc, curr) => acc + curr.count, 0);

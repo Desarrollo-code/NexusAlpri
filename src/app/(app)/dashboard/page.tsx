@@ -35,7 +35,7 @@ import type { Announcement as AnnouncementType, UserRole, Course as AppCourseTyp
 import { AnnouncementCard } from '@/components/announcement-card';
 import type { Announcement as PrismaAnnouncement, Course as PrismaCourse } from '@prisma/client';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from '@/components/ui/skeleton';
 import { CourseCard } from '@/components/course-card';
 import {
   ChartContainer,
@@ -127,7 +127,7 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
         return order.map(role => ({
             name: userRolesChartConfig[role]?.label || role,
             count: stats.usersByRole.find(item => item.role === role)?.count || 0,
-            fill: `var(--color-${role})`
+            fill: userRolesChartConfig[role]?.color || 'hsl(var(--muted))'
         }));
     }, [stats.usersByRole]);
     
@@ -137,7 +137,7 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
         return order.map(status => ({
             status: courseStatusChartConfig[status]?.label || status,
             count: stats.coursesByStatus.find(item => item.status === status)?.count || 0,
-            fill: `var(--color-${status})`
+            fill: courseStatusChartConfig[status]?.color || 'hsl(var(--muted))'
         }));
     }, [stats?.coursesByStatus]);
 
@@ -478,7 +478,7 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Completados</CardTitle>
-                  <CheckCircle className="h-5 w-5 text-chart-3" />
+                  <CheckCircle className="h-5 w-5 text-chart-2" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{data.studentStats.completed}</div>
@@ -503,7 +503,7 @@ export default function DashboardPage() {
                <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Estudiantes</CardTitle>
-                  <Users className="h-5 w-5 text-chart-3" />
+                  <Users className="h-5 w-5 text-chart-2" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">N/A</div>
