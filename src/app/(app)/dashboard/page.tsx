@@ -83,15 +83,15 @@ interface DashboardData {
 
 const userRolesChartConfig = {
   count: { label: "Usuarios" },
-  STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
-  INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
+  STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-2))" },
+  INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-1))" },
   ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
 const courseStatusChartConfig = {
   count: { label: "Cursos" },
-  PUBLISHED: { label: "Publicados", color: "hsl(var(--chart-1))" },
-  DRAFT: { label: "Borrador", color: "hsl(var(--chart-2))" },
+  PUBLISHED: { label: "Publicados", color: "hsl(var(--chart-2))" },
+  DRAFT: { label: "Borrador", color: "hsl(var(--chart-1))" },
   ARCHIVED: { label: "Archivados", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 

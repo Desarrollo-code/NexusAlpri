@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
    
-    --primary: 221.2 83.2% 53.3%; /* Cool Blue */
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
    
     --secondary: 210 40% 96.1%;
@@ -23,8 +23,8 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
    
-    --accent: 142.1 76.2% 36.3%; /* Vibrant Green/Lime */
-    --accent-foreground: 210 40% 98%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
    
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -33,13 +33,13 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
    
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     /* Chart Colors */
-    --chart-1: 221 83% 53%; /* Blue */
-    --chart-2: 142.1 76.2% 36.3%; /* Green */
+    --chart-1: 22 96% 56%; /* Orange */
+    --chart-2: 221 83% 53%; /* Blue */
     --chart-3: 43 96% 56%; /* Yellow */
-    --chart-4: 25 95% 53%; /* Orange */
+    --chart-4: 142.1 76.2% 36.3%; /* Green */
     --chart-5: 340 82% 62%; /* Pink */
 
     /* Event Colors */
@@ -62,16 +62,16 @@
   }
  
   .dark {
-    --background: 222.2 84% 4.9%; /* Dark Slate */
+    --background: 224 71% 4%; /* Near Black */
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 6.9%;
+    --card: 224 71% 10%; /* Darker card background */
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 217.2 91.2% 59.8%; /* Brighter Cool Blue */
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -80,25 +80,31 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 142.1 70.6% 45.3%; /* Brighter Vibrant Green/Lime */
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
+    --border: 217.2 32.6% 23.5%; /* Slightly lighter border */
     --input: 217.2 32.6% 17.5%;
     --ring: 217.2 91.2% 59.8%;
     
+    /* Chart Colors */
+    --chart-1: 22 96% 56%; /* Orange */
+    --chart-2: 217.2 91.2% 59.8%; /* Blue */
+    --chart-3: 43 96% 56%; /* Yellow */
+    --chart-4: 142.1 70.6% 45.3%; /* Green */
+    --chart-5: 340 82% 62%; /* Pink */
+    
     /* Sidebar Colors - Dark Mode */
-    --sidebar-background: 222.2 84% 3.9%;
+    --sidebar-background: 224 71% 6%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-accent: 217.2 32.6% 12.5%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 217.2 32.6% 17.5%;
   }
 }
-
 
 @layer base {
   * {
@@ -119,7 +125,32 @@
   pre > code {
     @apply block p-4 overflow-x-auto;
   }
+
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-xl border-0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit; /* Use the parent's border-radius */
+    padding: 1px; /* border-width */
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--chart-1) / 0.2), transparent);
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+  }
 }
+
 
 .font-headline {
   font-family: var(--font-headline);
