@@ -66,8 +66,11 @@ export default function CoursesPage() {
         const errorData = await courseResponse.json();
         throw new Error(errorData.message || 'Failed to fetch courses');
       }
-      const courseData: ApiCourse[] = await courseResponse.json();
-      setAllApiCourses(courseData);
+      const courseData = await courseResponse.json();
+      
+      // Handle both paginated and non-paginated responses
+      const coursesArray = Array.isArray(courseData) ? courseData : courseData.courses;
+      setAllApiCourses(coursesArray || []);
 
       if (enrollmentResponse && enrollmentResponse.ok) {
         const enrollmentData: EnrolledCourse[] = await enrollmentResponse.json();

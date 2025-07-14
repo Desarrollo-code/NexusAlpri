@@ -11,8 +11,12 @@ export async function GET(req: NextRequest) {
     const userId = searchParams.get('userId');
     const userRole = searchParams.get('userRole') as UserRole;
     
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
+    const pageParam = searchParams.get('page');
+    const pageSizeParam = searchParams.get('pageSize');
+    const isPaginated = pageParam && pageSizeParam;
+    
+    const page = parseInt(pageParam || '1', 10);
+    const pageSize = parseInt(pageSizeParam || '100', 10); // Default to a high number if not paginated
     const tab = searchParams.get('tab');
     const skip = (page - 1) * pageSize;
 
@@ -43,54 +47,55 @@ export async function GET(req: NextRequest) {
             orderBy: {
                 createdAt: 'desc',
             },
-            skip: skip,
-            take: pageSize,
+            ... (isPaginated && { skip: skip, take: pageSize })
         }),
         prisma.course.count({ where: whereClause })
     ]);
     
-    // In manage view, we also want lesson counts for instructors/admins
+    let coursesToReturn: any[] = courses;
+
     if (manageView) {
         const courseIds = courses.map(c => c.id);
 
-        if (courseIds.length === 0) {
-            return NextResponse.json({ courses: [], totalCourses: 0 });
-        }
-
-        const lessonsCount = await prisma.lesson.groupBy({
-            by: ['moduleId'],
-            where: {
-                module: {
-                    courseId: {
-                        in: courseIds,
+        if (courseIds.length > 0) {
+            const lessonsCount = await prisma.lesson.groupBy({
+                by: ['moduleId'],
+                where: {
+                    module: {
+                        courseId: {
+                            in: courseIds,
+                        }
                     }
-                }
-            },
-            _count: { _all: true },
-        });
+                },
+                _count: { _all: true },
+            });
 
-        const moduleToCourseMap = await prisma.module.findMany({
-            where: { courseId: { in: courseIds } },
-            select: { id: true, courseId: true }
-        });
+            const moduleToCourseMap = await prisma.module.findMany({
+                where: { courseId: { in: courseIds } },
+                select: { id: true, courseId: true }
+            });
 
-        const courseLessonsMap = new Map<string, number>();
-        for (const module of moduleToCourseMap) {
-            const count = lessonsCount.find(lc => lc.moduleId === module.id)?._count._all || 0;
-            courseLessonsMap.set(module.courseId, (courseLessonsMap.get(module.courseId) || 0) + count);
+            const courseLessonsMap = new Map<string, number>();
+            for (const module of moduleToCourseMap) {
+                const count = lessonsCount.find(lc => lc.moduleId === module.id)?._count._all || 0;
+                courseLessonsMap.set(module.courseId, (courseLessonsMap.get(module.courseId) || 0) + count);
+            }
+
+            coursesToReturn = courses.map(course => ({
+                ...course,
+                modulesCount: course._count.modules,
+                lessonsCount: courseLessonsMap.get(course.id) || 0
+            }));
         }
-
-        const coursesWithLessonsCount = courses.map(course => ({
-            ...course,
-            modulesCount: course._count.modules,
-            lessonsCount: courseLessonsMap.get(course.id) || 0
-        }));
-        
-        return NextResponse.json({ courses: coursesWithLessonsCount, totalCourses });
+    }
+    
+    if (isPaginated) {
+        return NextResponse.json({ courses: coursesToReturn, totalCourses });
     }
 
-
-    return NextResponse.json({ courses, totalCourses });
+    // For non-paginated requests, return the array directly for backward compatibility
+    return NextResponse.json(coursesToReturn);
+    
   } catch (error) {
     console.error('[COURSES_GET_ERROR]', error);
     return NextResponse.json({ message: 'Error al obtener los cursos' }, { status: 500 });
