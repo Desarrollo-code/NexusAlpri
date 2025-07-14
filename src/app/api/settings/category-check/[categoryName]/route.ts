@@ -13,7 +13,8 @@ export async function GET(
     }
 
     try {
-        const categoryName = decodeURIComponent(context.params.categoryName);
+        const { categoryName: encodedCategoryName } = context.params;
+        const categoryName = decodeURIComponent(encodedCategoryName);
 
         const courseCount = await prisma.course.count({
             where: { category: categoryName }
