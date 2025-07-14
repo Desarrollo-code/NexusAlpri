@@ -15,10 +15,6 @@ interface ColorfulCalendarProps extends Omit<React.ComponentProps<typeof Calenda
   className?: string;
 }
 
-interface CustomDayContentProps extends DayContentProps {
-    eventsByDay: Record<string, CalendarEvent[]>;
-}
-
 const getEventColorClass = (color?: string): string => {
   switch (color) {
     case 'blue': return 'bg-event-blue';
@@ -29,30 +25,36 @@ const getEventColorClass = (color?: string): string => {
   }
 };
 
-function CustomDayContent(props: CustomDayContentProps) {
-    const { date, activeModifiers, displayMonth } = props;
-    const dayKey = format(date, 'yyyy-MM-dd');
-    const eventsForDay = props.eventsByDay[dayKey] || [];
-    const isOutside = props.date.getMonth() !== displayMonth.getMonth();
-    
-    if (eventsForDay.length > 0 && !isOutside) {
-        // For simplicity, we use the color of the first event of the day.
-        const dayColor = getEventColorClass(eventsForDay[0].color);
-        return (
-            <div className={cn(
-                "relative w-full h-full flex items-center justify-center rounded-full text-white font-bold",
-                dayColor
-            )}>
-                {format(date, 'd')}
-            </div>
-        );
-    }
-    
-    return (
-        <div className="relative w-full h-full flex items-center justify-center">
-            {format(date, 'd')}
-        </div>
-    );
+function CustomDayContent(props: DayContentProps & { eventsByDay: Record<string, CalendarEvent[]> }) {
+  const { date, displayMonth } = props;
+  const dayKey = format(date, 'yyyy-MM-dd');
+  const eventsForDay = props.eventsByDay[dayKey] || [];
+  const isOutside = props.date.getMonth() !== displayMonth.getMonth();
+
+  return (
+    <div className="relative w-full h-full flex flex-col p-1 overflow-hidden">
+      <time dateTime={format(date, 'yyyy-MM-dd')} className={cn(
+        "self-start text-xs rounded-full h-6 w-6 flex items-center justify-center",
+        isSameDay(date, new Date()) && "bg-primary text-primary-foreground font-bold",
+        isOutside && "text-muted-foreground/50"
+      )}>
+        {format(date, 'd')}
+      </time>
+      <div className="flex-grow mt-1 space-y-0.5">
+        {eventsForDay.slice(0, 2).map(event => (
+          <div key={event.id} className={cn(
+            'w-full text-left text-white text-[10px] px-1.5 py-0.5 rounded-sm truncate',
+            getEventColorClass(event.color)
+          )}>
+            {event.title}
+          </div>
+        ))}
+        {eventsForDay.length > 2 && (
+          <div className="text-muted-foreground text-[10px]">+ {eventsForDay.length - 2} más</div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function ColorfulCalendar({
@@ -77,9 +79,6 @@ export default function ColorfulCalendar({
     onDateSelect(day, eventsOnDay);
   };
   
-  // Modifiers to apply custom styles
-  const eventDays = Object.keys(eventsByDay).map(dayStr => new Date(dayStr.replace(/-/g, '/')));
-
   return (
     <Calendar
       {...props}
@@ -100,17 +99,17 @@ export default function ColorfulCalendar({
         nav_button_next: "absolute right-1",
         table: "w-full border-collapse space-y-1",
         head_row: "flex",
-        head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-center text-[0.8rem]",
-        row: "flex w-full mt-2",
-        cell: "flex-1 text-center text-sm p-0 relative focus-within:relative focus-within:z-20 aspect-square",
-        day: cn(
-          "w-full h-full p-0 font-normal aria-selected:opacity-100",
-          "hover:bg-accent rounded-full transition-colors",
+        head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-center text-[0.8rem] pb-2",
+        row: "flex w-full mt-2 gap-1",
+        cell: cn(
+          "flex-1 text-sm p-0 relative focus-within:relative focus-within:z-20 aspect-square",
+          "rounded-lg border bg-card/50 transition-colors hover:bg-accent hover:text-accent-foreground"
         ),
-        day_today: "text-primary font-bold border border-primary",
-        day_outside: "day-outside text-muted-foreground opacity-50",
+        day: "w-full h-full",
+        day_today: "border-2 border-primary",
+        day_selected: "",
+        day_outside: "day-outside text-muted-foreground opacity-50 bg-muted/20",
         day_disabled: "text-muted-foreground opacity-50",
-        day_selected: "", // We handle selection via onDayClick, so we clear default selection styles.
       }}
     />
   );

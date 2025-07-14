@@ -283,6 +283,9 @@ export default function CalendarPage() {
                   )}
               </div>
               </ScrollArea>
+              <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowDayEventsModal(false)}>Cerrar</Button>
+              </DialogFooter>
           </DialogContent>
       </Dialog>
       

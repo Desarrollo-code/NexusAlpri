@@ -21,7 +21,7 @@ function Calendar({
       className={cn("p-1", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y-4",
+        month: "space-y-4 w-full",
         caption: "flex justify-center pt-1 relative items-center",
         caption_label: "text-lg font-bold",
         nav: "space-x-1 flex items-center",
@@ -34,15 +34,15 @@ function Calendar({
         table: "w-full border-collapse",
         head_row: "flex w-full",
         head_cell:
-          "text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem]",
+          "text-muted-foreground rounded-md flex-1 font-normal text-center text-[0.8rem]",
         row: "flex w-full mt-2",
         cell: cn(
           "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 flex-1 aspect-square"
         ),
-        day: "h-full w-full p-0 font-normal rounded-full transition-colors flex items-center justify-center",
+        day: "h-full w-full p-0 font-normal rounded-lg transition-colors flex items-center justify-center",
         day_selected:
-          "bg-primary text-primary-foreground rounded-full hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
-        day_today: "bg-accent text-accent-foreground rounded-full",
+          "bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 focus:bg-primary focus:text-primary-foreground",
+        day_today: "bg-accent text-accent-foreground rounded-lg",
         day_outside: "text-muted-foreground opacity-30",
         day_disabled: "text-muted-foreground opacity-50",
         ...classNames,
