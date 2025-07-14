@@ -169,38 +169,37 @@ export default function NotificationsPage() {
     }
 
     const NotificationItem = ({ notif }: { notif: AppNotification }) => {
-        const Wrapper = notif.link ? Link : 'div';
-        const wrapperProps = notif.link ? { href: notif.link } : {};
-      
+        const ContentWrapper = notif.link ? Link : 'div';
+        const contentWrapperProps = notif.link ? { href: notif.link, className: "flex-grow" } : { className: "flex-grow" };
+
         return (
-          <li className={cn("transition-colors", notif.read ? 'hover:bg-muted/30' : 'bg-primary/5 hover:bg-primary/10')}>
-            <Wrapper {...wrapperProps} className="block p-4 pl-6">
-                 <div className="flex items-start gap-4">
-                    <div className="flex-grow">
-                        <div className="flex items-center gap-3">
-                            {!notif.read && <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />}
-                            <p className={cn("font-semibold", !notif.read && "text-primary")}>{notif.title}</p>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">{notif.description}</p>
-                        <p className="text-xs text-muted-foreground mt-2">{timeSince(notif.date)}</p>
+            <li className={cn(
+                "flex items-start gap-4 p-4 pl-6 transition-colors",
+                notif.read ? 'hover:bg-muted/30' : 'bg-primary/5 hover:bg-primary/10'
+            )}>
+                <ContentWrapper {...contentWrapperProps}>
+                    <div className="flex items-center gap-3">
+                        {!notif.read && <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />}
+                        <p className={cn("font-semibold", !notif.read && "text-primary")}>{notif.title}</p>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-1">
-                         <Button variant="ghost" size="sm" onClick={(e) => handleToggleRead(notif, e)} className="h-8">
-                            {notif.read ? <MailWarning className="mr-2 h-4 w-4"/> : <Check className="mr-2 h-4 w-4" />}
-                            {notif.read ? 'Marcar no leída' : 'Marcar leída'}
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => {
-                            e.stopPropagation(); e.preventDefault();
-                            setNotificationToDelete(notif);
-                        }}>
-                            <XCircle className="h-4 w-4" />
-                        </Button>
-                    </div>
-                 </div>
-            </Wrapper>
-          </li>
+                    <p className="text-sm text-muted-foreground mt-1">{notif.description}</p>
+                    <p className="text-xs text-muted-foreground mt-2">{timeSince(notif.date)}</p>
+                </ContentWrapper>
+                <div className="flex flex-col sm:flex-row gap-1">
+                    <Button variant="ghost" size="sm" onClick={(e) => handleToggleRead(notif, e)} className="h-8">
+                        {notif.read ? <MailWarning className="mr-2 h-4 w-4"/> : <Check className="mr-2 h-4 w-4" />}
+                        {notif.read ? 'Marcar no leída' : 'Marcar leída'}
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => {
+                        e.stopPropagation(); e.preventDefault();
+                        setNotificationToDelete(notif);
+                    }}>
+                        <XCircle className="h-4 w-4" />
+                    </Button>
+                </div>
+            </li>
         );
-      };
+    };
 
     return (
         <div className="space-y-8">

@@ -141,7 +141,10 @@ export function TopBar() {
 
   const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
 
-  const handleNotificationClick = (id: string) => {
+  const handleNotificationClick = (id: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+
     const notification = notifications.find(n => n.id === id);
     if (notification && !notification.read) {
         setNotifications(prev =>
@@ -257,26 +260,26 @@ export function TopBar() {
                 ) : (
                   notifications.map(notification => {
                       const Wrapper = notification.link ? Link : 'div';
-                      const itemProps = notification.link ? { href: notification.link } : {};
+                      const wrapperProps = notification.link ? { href: notification.link, className: "flex-grow" } : { className: "flex-grow" };
 
                       return (
                           <DropdownMenuItem
                               key={notification.id}
                               asChild
-                              className="p-0"
+                              className={cn(
+                                "group relative flex items-start gap-2.5 p-3 pr-8 whitespace-normal cursor-pointer w-full",
+                                !notification.read ? "bg-muted/50" : ""
+                              )}
+                              onSelect={(e) => {
+                                  if (!notification.link) e.preventDefault();
+                              }}
                           >
-                            <Wrapper {...itemProps}
-                                onClick={() => handleNotificationClick(notification.id)}
-                                className={cn(
-                                    `group relative flex items-start gap-2.5 p-3 pr-8 whitespace-normal cursor-pointer w-full`,
-                                    !notification.read ? 'font-medium bg-muted/50' : 'text-muted-foreground'
-                                )}
-                            >
+                            <Wrapper {...wrapperProps}>
                                 {!notification.read ? <Bell className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" /> : <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-500 flex-shrink-0" />}
                                 <div className="flex-grow">
-                                <p className="text-sm leading-tight font-semibold">{notification.title}</p>
-                                {notification.description && <p className="text-xs leading-snug mt-0.5">{notification.description}</p>}
-                                <p className={`text-xs mt-1 ${!notification.read ? 'text-primary/80' : 'text-muted-foreground/80'}`}>{timeSince(notification.date)}</p>
+                                  <p className="text-sm leading-tight font-semibold">{notification.title}</p>
+                                  {notification.description && <p className="text-xs leading-snug mt-0.5">{notification.description}</p>}
+                                  <p className={`text-xs mt-1 ${!notification.read ? 'text-primary/80' : 'text-muted-foreground/80'}`}>{timeSince(notification.date)}</p>
                                 </div>
                                 <button
                                   onClick={(e) => {
