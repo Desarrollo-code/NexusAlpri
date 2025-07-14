@@ -19,7 +19,7 @@ import { TopBar } from '@/components/layout/top-bar';
 import { getNavItemsForRole } from '@/lib/nav-items';
 import type { UserRole, NavItem } from '@/types'; 
 import Link from 'next/link';
-import { LogOut } from 'lucide-react';
+import { LogOut, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from '@/lib/utils';
@@ -48,8 +48,11 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
               isParentActive && "bg-sidebar-accent/80 text-sidebar-accent-foreground"
             )}
           >
-            <item.icon className={cn(isParentActive ? "text-primary" : iconColorClass, "h-5 w-5")} />
-            <span className="font-semibold text-base group-data-[state=collapsed]:hidden">{item.label}</span>
+            <div className="flex items-center gap-3 flex-1">
+                <item.icon className={cn(isParentActive ? "text-primary" : iconColorClass, "h-5 w-5")} />
+                <span className="font-semibold text-base group-data-[state=collapsed]:hidden">{item.label}</span>
+            </div>
+            <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=collapsed]/sidebar-wrapper:hidden" />
           </AccordionTrigger>
           <AccordionContent className="p-0 pl-7 mt-1 group-data-[state=collapsed]:hidden">
             <SidebarMenu className="border-l border-sidebar-border ml-2 pl-3">
