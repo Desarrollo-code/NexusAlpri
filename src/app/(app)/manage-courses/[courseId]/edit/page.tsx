@@ -60,7 +60,7 @@ import { ImageCropper } from '@/components/image-cropper';
 // === TIPOS E INTERFACES ===
 interface ApiTemplate extends LessonTemplate {
   templateBlocks: TemplateBlock[];
-  creator: { name: string | null };
+  creator: { name: string | null } | null;
 }
 
 interface QuizViewerProps {
@@ -1392,7 +1392,7 @@ export default function EditCoursePage() {
                                         <button key={template.id} onClick={() => handleSelectTemplate(showTemplateModal!, template.id)} className="w-full text-left p-4 border rounded-lg hover:bg-accent transition-colors">
                                             <h4 className="font-semibold">{template.name}</h4>
                                             <p className="text-sm text-muted-foreground">{template.description || 'Sin descripción'}</p>
-                                            <p className="text-xs text-muted-foreground mt-2">Creador: {template.creator.name} | Bloques: {template.templateBlocks.length}</p>
+                                            <p className="text-xs text-muted-foreground mt-2">Creador: {template.creator?.name || 'Sistema'} | Bloques: {template.templateBlocks.length}</p>
                                         </button>
                                     )) : <p className="text-center text-muted-foreground">No hay plantillas disponibles.</p>}
                                 </div>

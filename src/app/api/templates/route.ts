@@ -19,7 +19,11 @@ export async function GET(req: NextRequest) {
                 ],
             },
             include: {
-                creator: { select: { name: true } },
+                creator: { 
+                    select: { name: true },
+                    // This was added to prevent a crash if creatorId is null
+                    where: { isNot: null } 
+                },
                 templateBlocks: { orderBy: { order: 'asc' } },
             },
             orderBy: {
