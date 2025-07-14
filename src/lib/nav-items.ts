@@ -25,12 +25,6 @@ const navItems: NavItem[] = [
         icon: LayoutDashboard,
         roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
       },
-       {
-        href: '/notifications',
-        label: 'Notificaciones',
-        icon: Bell,
-        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
-      },
       {
         href: '/courses',
         label: 'Catálogo de Cursos',
