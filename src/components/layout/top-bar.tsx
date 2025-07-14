@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import { getNavItemsForRole } from '@/lib/nav-items';
 import { useAuth } from '@/contexts/auth-context';
 import type { UserRole, NavItem } from '@/types'; 
-import { BookOpenCheck, Bell, CheckCircle2, AlertTriangle, Loader2, Trash2, XCircle } from 'lucide-react';
+import { BookOpenCheck, Bell, CheckCircle2, AlertTriangle, Loader2, Trash2, XCircle, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
@@ -291,14 +291,21 @@ export function TopBar() {
                   })
                 )}
               </ScrollArea>
-               {!isLoadingNotifications && !notificationError && notifications.length > 0 && (
+               {!isLoadingNotifications && !notificationError && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="justify-center" onSelect={() => setShowClearAllDialog(true)}>
-                      <span className="text-sm text-destructive hover:underline cursor-pointer flex items-center gap-1">
-                          <Trash2 className="h-4 w-4" /> Limpiar todo
-                      </span>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                      <Link href="/notifications" className="w-full text-center text-sm text-primary hover:underline flex items-center justify-center gap-1">
+                          Ver Todas las Notificaciones <ArrowRight className="h-4 w-4"/>
+                      </Link>
                   </DropdownMenuItem>
+                  {notifications.length > 0 && (
+                    <DropdownMenuItem className="justify-center" onSelect={() => setShowClearAllDialog(true)}>
+                        <span className="text-sm text-destructive hover:underline cursor-pointer flex items-center gap-1">
+                            <Trash2 className="h-4 w-4" /> Limpiar todo
+                        </span>
+                    </DropdownMenuItem>
+                  )}
                 </>
               )}
             </DropdownMenuContent>

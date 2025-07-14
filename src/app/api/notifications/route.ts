@@ -10,11 +10,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
 
+  const { searchParams } = new URL(req.url);
+  const getAll = searchParams.get('all') === 'true';
+
   try {
     const notificationsFromDb = await prisma.notification.findMany({
       where: { userId: session.id },
       orderBy: { createdAt: 'desc' },
-      take: 50, // Limit the number of notifications to keep it performant
+      ...(!getAll && { take: 50 }), // Limit if not requesting all
     });
     
     // Map to the client-side type
@@ -51,7 +54,7 @@ export async function PATCH(req: NextRequest) {
 
         if (ids === 'all') {
             await prisma.notification.updateMany({
-                where: { userId: session.id },
+                where: { userId: session.id, read: false }, // Only update unread ones
                 data: { read },
             });
         } else if (Array.isArray(ids)) {
@@ -84,20 +87,21 @@ export async function DELETE(req: NextRequest) {
     try {
         const { ids } = await req.json();
 
+        let whereClause: any = { userId: session.id };
+
         if (ids === 'all') {
-            await prisma.notification.deleteMany({
-                where: { userId: session.id },
-            });
+            // No additional filter, deletes all for the user
+        } else if (ids === 'read') {
+            whereClause.read = true;
         } else if (Array.isArray(ids) && ids.length > 0) {
-            await prisma.notification.deleteMany({
-                where: {
-                    id: { in: ids },
-                    userId: session.id,
-                },
-            });
+            whereClause.id = { in: ids };
         } else {
-            return NextResponse.json({ message: 'El campo "ids" debe ser un array de IDs o la cadena "all"' }, { status: 400 });
+            return NextResponse.json({ message: 'El campo "ids" debe ser un array de IDs, "all" o "read"' }, { status: 400 });
         }
+
+        await prisma.notification.deleteMany({
+            where: whereClause,
+        });
         
         return new NextResponse(null, { status: 204 }); // Success, no content
 

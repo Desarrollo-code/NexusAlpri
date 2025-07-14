@@ -14,6 +14,7 @@ import {
   CalendarDays,
   Shield,
   BarChart3,
+  Bell,
 } from 'lucide-react';
 
 
@@ -22,6 +23,12 @@ const navItems: NavItem[] = [
         href: '/dashboard',
         label: 'Panel Principal',
         icon: LayoutDashboard,
+        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
+      },
+       {
+        href: '/notifications',
+        label: 'Notificaciones',
+        icon: Bell,
         roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
       },
       {
