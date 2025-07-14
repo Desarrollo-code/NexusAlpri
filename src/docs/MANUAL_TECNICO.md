@@ -70,29 +70,42 @@ El esquema se define en `prisma/schema.prisma`. Los modelos principales son:
 *   `User`: Almacena usuarios, roles y credenciales.
 *   `Course`, `Module`, `Lesson`: Estructura jerárquica de los cursos.
 *   `Quiz`, `Question`, `AnswerOption`: Componentes para las evaluaciones.
-*   `Enrollment`: Relaciona a un `User` con un `Course`.
 *   **`CourseProgress`**: Guarda el progreso de un usuario en un curso. El campo `completedLessonIds` es de tipo `Json` y almacena un array de objetos detallando cada interacción (tipo y nota si aplica). El campo `progressPercentage` guarda la nota final consolidada. Este modelo tiene una relación directa con `Enrollment`.
 *   `Resource`: Para la biblioteca de recursos (archivos y carpetas). Su campo `pin` almacena el hash del PIN de seguridad.
 *   `Announcement`, `CalendarEvent`, `Notification`: Para comunicación y eventos.
 *   `PlatformSettings`: Almacena la configuración global de la plataforma.
 *   **`SecurityLog`**: Registra eventos importantes de seguridad, como inicios de sesión (exitosos y fallidos), cambios de contraseña y cambios de rol.
+*   **`LessonTemplate`, `TemplateBlock`**: Almacenan las estructuras de las lecciones reutilizables.
 
-### 3.2. Migraciones
+### 3.2. Migraciones con Prisma
 
 Cada vez que modificas el archivo `schema.prisma`, la estructura de tu base de datos debe ser actualizada para reflejar esos cambios. Este proceso se gestiona con **Prisma Migrate**.
 
 Para crear y aplicar una nueva migración, ejecuta el siguiente comando en tu terminal:
+
 ```bash
 npm run prisma:migrate -- --name "un_nombre_descriptivo_para_la_migracion"
 ```
-**Ejemplo:**
-```bash
-npm run prisma:migrate -- --name "add_notifications_and_security_logs"
-```
+**Ejemplo Práctico:**
+
+Supongamos que quieres añadir un campo `phoneNumber` a la tabla `User`.
+
+1.  **Modifica el esquema** en `prisma/schema.prisma`:
+    ```prisma
+    model User {
+      // ... otros campos
+      phoneNumber String?
+    }
+    ```
+2.  **Ejecuta el comando** en la terminal:
+    ```bash
+    npm run prisma:migrate -- --name "add_phone_number_to_user"
+    ```
+    **Importante:** No olvides el `--` después de `prisma:migrate`. Es necesario para pasar el argumento `--name` al script subyacente de Prisma.
 
 **¿Qué hace este comando?**
 1.  **Compara:** Analiza tu `schema.prisma` y lo compara con el estado actual de la base de datos.
-2.  **Genera un Archivo SQL:** Crea un nuevo archivo de migración dentro de la carpeta `prisma/migrations/`. Este archivo contiene las instrucciones SQL necesarias para actualizar la base de datos (ej. `CREATE TABLE`, `ALTER COLUMN`, etc.). Darle un nombre descriptivo es una excelente práctica.
+2.  **Genera un Archivo SQL:** Crea un nuevo archivo de migración dentro de la carpeta `prisma/migrations/`. Este archivo contiene las instrucciones SQL necesarias para actualizar la base de datos (ej. `CREATE TABLE`, `ALTER TABLE ... ADD COLUMN ...`, etc.). Darle un nombre descriptivo es una excelente práctica.
 3.  **Aplica la Migración:** Ejecuta el archivo SQL contra la base de datos, actualizando su estructura.
 
 ## 4. Documentación de API Endpoints
@@ -140,3 +153,4 @@ La autenticación se realiza a través de un token JWT en una cookie de sesión.
 *   **Formularios:** Utilizar `react-hook-form` para la gestión de formularios complejos.
 *   **Código Asíncrono:** Utilizar `async/await` para operaciones asíncronas.
 *   **Comentarios:** Añadir comentarios JSDoc a funciones complejas y a las props de los componentes para clarificar su propósito.
+
