@@ -9,22 +9,38 @@ import type { UserRole } from '@/types';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('pageSize') || '6', 10); // Announcements are bigger, so smaller page size
-  const skip = (page - 1) * pageSize;
+  const pageParam = searchParams.get('page');
+  const pageSizeParam = searchParams.get('pageSize');
+  
+  // If no pagination params are provided, it's likely a call for a summary (e.g., dashboard)
+  const isPaginated = pageParam && pageSizeParam;
 
   try {
-    const [announcements, totalAnnouncements] = await prisma.$transaction([
-        prisma.announcement.findMany({
+    if (isPaginated) {
+        const page = parseInt(pageParam, 10);
+        const pageSize = parseInt(pageSizeParam, 10);
+        const skip = (page - 1) * pageSize;
+
+        const [announcements, totalAnnouncements] = await prisma.$transaction([
+            prisma.announcement.findMany({
+                orderBy: { date: 'desc' },
+                include: { author: { select: { id: true, name: true } } },
+                skip: skip,
+                take: pageSize,
+            }),
+            prisma.announcement.count()
+        ]);
+        
+        return NextResponse.json({ announcements, totalAnnouncements });
+    } else {
+        // Default behavior for non-paginated requests (e.g., dashboard)
+        const announcements = await prisma.announcement.findMany({
             orderBy: { date: 'desc' },
             include: { author: { select: { id: true, name: true } } },
-            skip: skip,
-            take: pageSize,
-        }),
-        prisma.announcement.count()
-    ]);
-    
-    return NextResponse.json({ announcements, totalAnnouncements });
+            take: 3, // Fetch the 3 most recent announcements
+        });
+        return NextResponse.json(announcements);
+    }
 
   } catch (error) {
     console.error('[ANNOUNCEMENTS_GET_ERROR]', error);
@@ -63,7 +79,7 @@ export async function POST(req: NextRequest) {
     const settings = await prisma.platformSettings.findFirst();
     let targetUsersQuery: any = {};
     if (audience !== 'ALL') {
-        const roles = Array.isArray(audience) ? audience : JSON.parse(audience);
+        const roles = Array.isArray(audience) ? audience : [audience]; // Standardize to array
         if (Array.isArray(roles)) {
             targetUsersQuery = { where: { role: { in: roles as UserRole[] } } };
         }

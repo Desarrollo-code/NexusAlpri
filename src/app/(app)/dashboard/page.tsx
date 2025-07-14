@@ -269,13 +269,14 @@ export default function DashboardPage() {
         }
         
         const [announcementsRes, ...roleSpecificRes] = responses;
-        const announcementsData: PrismaAnnouncement[] = await announcementsRes.json();
-        
+        const announcementsJson = await announcementsRes.json();
+        const announcementsData = Array.isArray(announcementsJson) ? announcementsJson : announcementsJson.announcements || [];
+
         const dashboardPayload: DashboardData = {
             adminStats: null,
             studentStats: null,
             instructorStats: null,
-            recentAnnouncements: announcementsData.map(ann => ({
+            recentAnnouncements: announcementsData.map((ann: any) => ({
                 ...ann,
                 audience: ann.audience as any,
                 author: ann.author ? { id: (ann.author as any).id, name: (ann.author as any).name } : null,
@@ -287,7 +288,8 @@ export default function DashboardPage() {
         if (user.role === 'ADMINISTRATOR') {
             dashboardPayload.adminStats = await roleSpecificRes[0].json();
         } else if (user.role === 'INSTRUCTOR') {
-            const taughtCoursesData: ApiCourseForManage[] = await roleSpecificRes[0].json();
+            const taughtCoursesResponse = await roleSpecificRes[0].json();
+            const taughtCoursesData = taughtCoursesResponse.courses || [];
             dashboardPayload.instructorStats = { taught: taughtCoursesData.length };
             dashboardPayload.taughtCourses = taughtCoursesData.map(mapApiCourseToAppCourse).slice(0, 3);
         } else if (user.role === 'STUDENT') {
