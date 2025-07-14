@@ -641,7 +641,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                                     isSaving={isSaving}
                                     openQuizEditor={openQuizEditor}
                                     openQuizPreview={openQuizPreview}
-                                    appendBlock={appendBlockToLesson}
+                                    appendBlock={appendBlock}
                                 />
                                 {quizEditorDetails?.lessonIndex === lessonIndex && (
                                     <QuizEditorDialog
@@ -762,7 +762,7 @@ export default function EditCoursePage() {
         }
     }, [methods]);
     
-    const appendBlockToLesson = useCallback((moduleIndex: number, lessonIndex: number, newBlock: EditableContentBlock) => {
+    const appendBlock = useCallback((moduleIndex: number, lessonIndex: number, newBlock: EditableContentBlock) => {
         const currentLessons = methods.getValues(`modules.${moduleIndex}.lessons`);
         if (currentLessons[lessonIndex]) {
             const updatedBlocks = [...(currentLessons[lessonIndex].contentBlocks || []), newBlock];
@@ -1193,7 +1193,7 @@ export default function EditCoursePage() {
                                                                                         {(provided: DroppableProvided) => (
                                                                                             <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                                                                                                 {watch(`modules.${moduleIndex}.lessons`)?.filter(l => !l._toBeDeleted).map((lesson, lessonIndex) => (
-                                                                                                    <LessonItem key={lesson.id} moduleIndex={moduleIndex} lessonIndex={lessonIndex} dndId={lesson.id} isSaving={isSaving} setItemToDeleteDetails={setItemToDeleteDetails} appendBlock={appendBlockToLesson} />
+                                                                                                    <LessonItem key={lesson.id} moduleIndex={moduleIndex} lessonIndex={lessonIndex} dndId={lesson.id} isSaving={isSaving} setItemToDeleteDetails={setItemToDeleteDetails} appendBlock={appendBlock} />
                                                                                                 ))}
                                                                                                 {provided.placeholder}
                                                                                                 <div className="flex gap-2 pt-2">
