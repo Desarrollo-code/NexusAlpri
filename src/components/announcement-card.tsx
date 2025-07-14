@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,9 +16,12 @@ interface AnnouncementCardProps {
   onDelete?: (announcementId: string) => void;
 }
 
+const TRUNCATE_LENGTH = 200;
+
 export function AnnouncementCard({ announcement, onEdit, onDelete }: AnnouncementCardProps) {
   const { user } = useAuth();
-  
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const canModify = user && (user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR');
 
   const getAudienceText = (audience: UserRole[] | 'ALL' | string): string => {
@@ -39,7 +43,6 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
   
   const formatDate = (dateString: string) => {
     try {
-      // Always format using the specified timezone to ensure consistency
       return new Date(dateString).toLocaleDateString('es-ES', {
         day: 'numeric',
         month: 'long',
@@ -47,10 +50,12 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
         timeZone: 'America/Bogota',
       });
     } catch (error) {
-      // Fallback for any unexpected invalid date format
       return 'Fecha inválida';
     }
   };
+
+  const isTruncated = announcement.content.length > TRUNCATE_LENGTH;
+  const contentToShow = isExpanded ? announcement.content : `${announcement.content.substring(0, TRUNCATE_LENGTH)}${isTruncated ? '...' : ''}`;
 
   return (
     <Card className="flex flex-col h-full shadow-sm hover:shadow-md transition-shadow duration-200">
@@ -81,7 +86,25 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
-        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{announcement.content}</p>
+        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+          {contentToShow}
+          {isTruncated && !isExpanded && (
+            <button
+              onClick={() => setIsExpanded(true)}
+              className="text-primary font-semibold hover:underline ml-1"
+            >
+              Leer más
+            </button>
+          )}
+        </p>
+         {isExpanded && (
+            <button
+              onClick={() => setIsExpanded(false)}
+              className="text-primary font-semibold hover:underline mt-2 text-sm"
+            >
+              Leer menos
+            </button>
+          )}
       </CardContent>
       {canModify && onEdit && onDelete && (
         <CardFooter className="border-t pt-3 pb-3 justify-end gap-2">
