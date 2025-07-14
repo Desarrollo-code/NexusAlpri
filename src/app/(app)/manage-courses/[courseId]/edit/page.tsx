@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Zap, CircleOff, Paperclip, ChevronRight, Calendar as CalendarIcon, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2 } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Zap, CircleOff, Paperclip, ChevronRight, Calendar as CalendarIcon, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState, ChangeEvent, useCallback, useMemo } from 'react';
@@ -641,7 +641,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                                     isSaving={isSaving}
                                     openQuizEditor={openQuizEditor}
                                     openQuizPreview={openQuizPreview}
-                                    appendBlock={appendBlock}
+                                    appendBlock={appendBlockToLesson}
                                 />
                                 {quizEditorDetails?.lessonIndex === lessonIndex && (
                                     <QuizEditorDialog
@@ -1169,57 +1169,49 @@ export default function EditCoursePage() {
                                                     return (
                                                         <Draggable key={moduleItem.dndId} draggableId={moduleItem.dndId} index={moduleIndex}>
                                                             {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
-                                                                <Accordion type="single" collapsible className="w-full">
-                                                                     <AccordionItem value={moduleItem.dndId} ref={provided.innerRef} {...provided.draggableProps}
-                                                                        className={`rounded-md border bg-card text-card-foreground shadow-sm ${snapshot.isDragging ? 'shadow-lg bg-muted' : ''}`}>
+                                                                <div ref={provided.innerRef} {...provided.draggableProps}>
+                                                                    <Accordion type="single" collapsible className="w-full">
+                                                                        <AccordionItem value={moduleItem.id} className={`rounded-md border bg-card text-card-foreground shadow-sm ${snapshot.isDragging ? 'shadow-lg bg-muted' : ''}`}>
                                                                             <div className="flex items-center p-4 font-semibold">
-                                                                                <div {...provided.dragHandleProps} className="cursor-grab p-1"><GripVertical className="h-5 w-5 text-muted-foreground" /></div>
-                                                                                 <AccordionTrigger className="flex items-center justify-between w-full p-0 hover:no-underline">
+                                                                                <div {...provided.dragHandleProps} className="cursor-grab p-1">
+                                                                                    <GripVertical className="h-5 w-5 text-muted-foreground" />
+                                                                                </div>
+                                                                                <AccordionTrigger className="flex-1 p-0 hover:no-underline">
                                                                                     <div className="flex-grow">
                                                                                         <Input {...methods.register(`modules.${moduleIndex}.title` as FormModulesPath)} placeholder="Título del Módulo" className="text-base font-semibold border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-auto p-0" disabled={isSaving} onClick={(e) => e.stopPropagation()} />
                                                                                     </div>
                                                                                 </AccordionTrigger>
-                                                                                <div
-                                                                                    role="button"
-                                                                                    aria-label="Eliminar módulo"
-                                                                                    onClick={(e) => {
-                                                                                        e.stopPropagation();
-                                                                                        if (isSaving) return;
-                                                                                        setItemToDeleteDetails({ type: 'module', id: module.id, name: module.title, moduleIndex, lessonIndex: -1 });
-                                                                                    }}
-                                                                                    className={cn(
-                                                                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-destructive transition-colors hover:bg-destructive/10",
-                                                                                        isSaving ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-                                                                                    )}
-                                                                                >
+                                                                                <div role="button" aria-label="Eliminar módulo" onClick={(e) => { e.stopPropagation(); if (isSaving) return; setItemToDeleteDetails({ type: 'module', id: module.id, name: module.title, moduleIndex, lessonIndex: -1 }); }}
+                                                                                    className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-destructive transition-colors hover:bg-destructive/10", isSaving ? "cursor-not-allowed opacity-50" : "cursor-pointer")}>
                                                                                     <Trash2 className="h-4 w-4" />
                                                                                 </div>
                                                                             </div>
-                                                                        <AccordionContent className="p-4 border-t bg-muted/20">
-                                                                            <div className="space-y-4">
-                                                                                <h4 className="font-semibold text-sm">Lecciones:</h4>
-                                                                                <Droppable droppableId={`lessons-${moduleIndex}`} type={`LESSONS-${moduleIndex}`}>
-                                                                                    {(provided: DroppableProvided) => (
-                                                                                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                                                                                             {watch(`modules.${moduleIndex}.lessons`)?.filter(l => !l._toBeDeleted).map((lesson, lessonIndex) => (
-                                                                                                <LessonItem key={lesson.id} moduleIndex={moduleIndex} lessonIndex={lessonIndex} dndId={lesson.id} isSaving={isSaving} setItemToDeleteDetails={setItemToDeleteDetails} appendBlock={appendBlockToLesson} />
-                                                                                             ))}
-                                                                                            {provided.placeholder}
-                                                                                            <div className="flex gap-2 pt-2">
-                                                                                                <Button type="button" variant="outline" size="sm" onClick={() => appendLessonToModule(moduleIndex, { id: `new-lesson-${Date.now()}`, title: 'Nueva Lección', contentBlocks: [], order: methods.getValues(`modules.${moduleIndex}.lessons`)?.length || 0, })} disabled={isSaving}>
-                                                                                                    <PlusCircle className="mr-2 h-4 w-4" /> Lección en Blanco
-                                                                                                </Button>
-                                                                                                <Button type="button" variant="outline" size="sm" onClick={() => handleOpenTemplateModal(moduleIndex)} disabled={isSaving}>
-                                                                                                    <FilePlus2 className="mr-2 h-4 w-4" /> Usar Plantilla
-                                                                                                </Button>
+                                                                            <AccordionContent className="p-4 border-t bg-muted/20">
+                                                                                <div className="space-y-4">
+                                                                                    <h4 className="font-semibold text-sm">Lecciones:</h4>
+                                                                                    <Droppable droppableId={`lessons-${moduleIndex}`} type={`LESSONS-${moduleIndex}`}>
+                                                                                        {(provided: DroppableProvided) => (
+                                                                                            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                                                                                                {watch(`modules.${moduleIndex}.lessons`)?.filter(l => !l._toBeDeleted).map((lesson, lessonIndex) => (
+                                                                                                    <LessonItem key={lesson.id} moduleIndex={moduleIndex} lessonIndex={lessonIndex} dndId={lesson.id} isSaving={isSaving} setItemToDeleteDetails={setItemToDeleteDetails} appendBlock={appendBlockToLesson} />
+                                                                                                ))}
+                                                                                                {provided.placeholder}
+                                                                                                <div className="flex gap-2 pt-2">
+                                                                                                    <Button type="button" variant="outline" size="sm" onClick={() => appendLessonToModule(moduleIndex, { id: `new-lesson-${Date.now()}`, title: 'Nueva Lección', contentBlocks: [], order: methods.getValues(`modules.${moduleIndex}.lessons`)?.length || 0, })} disabled={isSaving}>
+                                                                                                        <PlusCircle className="mr-2 h-4 w-4" /> Lección en Blanco
+                                                                                                    </Button>
+                                                                                                    <Button type="button" variant="outline" size="sm" onClick={() => handleOpenTemplateModal(moduleIndex)} disabled={isSaving}>
+                                                                                                        <FilePlus2 className="mr-2 h-4 w-4" /> Usar Plantilla
+                                                                                                    </Button>
+                                                                                                </div>
                                                                                             </div>
-                                                                                        </div>
-                                                                                    )}
-                                                                                </Droppable>
-                                                                            </div>
-                                                                        </AccordionContent>
-                                                                    </AccordionItem>
-                                                                </Accordion>
+                                                                                        )}
+                                                                                    </Droppable>
+                                                                                </div>
+                                                                            </AccordionContent>
+                                                                        </AccordionItem>
+                                                                    </Accordion>
+                                                                </div>
                                                             )}
                                                         </Draggable>
                                                     );
