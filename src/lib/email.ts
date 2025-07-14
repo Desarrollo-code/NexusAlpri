@@ -3,7 +3,12 @@ import { Resend } from 'resend';
 import { type ReactElement } from 'react';
 import prisma from '@/lib/prisma';
 
-const resend = new Resend(process.env.RESEND_API_KEY || 're_gcrnufps_8CxhvNio8hUfTxi2oxvapPjG');
+// Ensure RESEND_API_KEY is set in environment variables
+if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is not set in environment variables.');
+}
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const fromEmail = 'NexusAlpri <onboarding@resend.dev>';
 
