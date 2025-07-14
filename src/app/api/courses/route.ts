@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
             orderBy: {
                 createdAt: 'desc',
             },
-            ... (isPaginated && { skip: skip, take: pageSize })
+            ...(isPaginated && { skip, take: pageSize })
         }),
         prisma.course.count({ where: whereClause })
     ]);
