@@ -26,7 +26,7 @@ const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3.5rem"
+const SIDEBAR_WIDTH_ICON = "3.75rem" // Increased slightly for better icon centering
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContext = {
@@ -252,7 +252,7 @@ const SidebarHeader = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex shrink-0 items-center border-b h-16", className)}
+      className={cn("flex shrink-0 items-center border-b border-sidebar-border h-16", className)}
       {...props}
     />
   )
@@ -266,7 +266,7 @@ const SidebarFooter = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex flex-col p-2 mt-auto border-t", className)}
+      className={cn("flex flex-col p-2 mt-auto border-t border-sidebar-border", className)}
       {...props}
     />
   )
@@ -311,6 +311,14 @@ const SidebarMenuItem = React.forwardRef<
 ))
 SidebarMenuItem.displayName = "SidebarMenuItem"
 
+const SidebarMenuSeparator = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("my-2 h-px bg-sidebar-border/50", className)} {...props} />
+));
+SidebarMenuSeparator.displayName = "SidebarMenuSeparator";
+
 const sidebarMenuButtonVariants = cva(
   "flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:px-0 group-data-[state=collapsed]:py-3 [&_span]:whitespace-nowrap [&_span]:group-data-[state=collapsed]:hidden",
   {
@@ -320,8 +328,8 @@ const sidebarMenuButtonVariants = cva(
         ghost: "hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground",
       },
       size: {
-        default: "h-10 text-sm",
-        sm: "h-9 text-xs",
+        default: "h-11 text-base",
+        sm: "h-9 text-sm",
         lg: "h-12 text-base",
       },
       isActive: {
@@ -410,9 +418,8 @@ export {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSeparator,
   SidebarProvider,
   SidebarTrigger,
   useSidebar,
 }
-
-    

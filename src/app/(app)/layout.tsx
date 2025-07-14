@@ -13,6 +13,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuSeparator
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { getNavItemsForRole } from '@/lib/nav-items';
@@ -43,23 +44,21 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
         <AccordionItem value={item.label} className="border-none">
           <AccordionTrigger 
             className={cn(
-              "w-full h-auto p-2 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground rounded-md text-sm hover:no-underline justify-start",
+              "w-full h-auto p-2 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground rounded-md text-sm hover:no-underline justify-start gap-3",
               isParentActive && "bg-sidebar-accent/80 text-sidebar-accent-foreground"
             )}
           >
-            <div className="flex items-center gap-3">
-              <item.icon className={cn(isParentActive ? "text-primary" : "text-muted-foreground", "h-5 w-5")} />
-              <span className="font-semibold group-data-[state=collapsed]:hidden">{item.label}</span>
-            </div>
+            <item.icon className={cn(isParentActive ? "text-primary" : iconColorClass, "h-5 w-5")} />
+            <span className="font-semibold text-base group-data-[state=collapsed]:hidden">{item.label}</span>
           </AccordionTrigger>
-          <AccordionContent className="p-0 pl-6 mt-1 group-data-[state=collapsed]:hidden">
-            <SidebarMenu className="border-l border-sidebar-border ml-2 pl-4">
+          <AccordionContent className="p-0 pl-7 mt-1 group-data-[state=collapsed]:hidden">
+            <SidebarMenu className="border-l border-sidebar-border ml-2 pl-3">
               {filteredSubItems.map((subItem) => (
                 <SidebarMenuItem key={subItem.href}>
-                  <SidebarMenuButton asChild isActive={pathname.startsWith(subItem.href)} size="sm" className="justify-start" tooltip={{...subItem.tooltip, children: subItem.label}}>
+                  <SidebarMenuButton asChild isActive={pathname.startsWith(subItem.href)} size="sm" className="justify-start gap-2" tooltip={{...subItem.tooltip, children: subItem.label}}>
                     <Link href={subItem.href}>
-                      <subItem.icon className={cn(pathname.startsWith(subItem.href) ? "text-primary" : "text-muted-foreground")}/>
-                      <span>{subItem.label}</span>
+                      <subItem.icon className={cn(pathname.startsWith(subItem.href) ? "text-primary" : "text-muted-foreground", "h-4 w-4")}/>
+                      <span className="text-sm font-normal">{subItem.label}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -74,8 +73,8 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{...item.tooltip, children: item.label}}>
         <Link href={item.href || '#'}>
-          <item.icon className={cn(isActive ? "text-sidebar-accent-foreground" : "text-muted-foreground", "h-5 w-5")} />
-          <span className="font-semibold group-data-[state=collapsed]:hidden">{item.label}</span>
+          <item.icon className={cn(isActive ? "text-primary" : iconColorClass, "h-5 w-5")} />
+          <span className="font-semibold text-base group-data-[state=collapsed]:hidden">{item.label}</span>
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -120,6 +119,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
         );
     }
+    
+    const generalItems = navItems.filter(item => !item.subItems);
+    const adminItems = navItems.find(item => item.label === 'Administración');
 
     return (
         <div className="flex min-h-screen w-full bg-background">
@@ -142,14 +144,21 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 <SidebarContent>
                      <Accordion
                         type="multiple"
-                        value={openAccordionValue}
+                        defaultValue={openAccordionValue}
                         onValueChange={setOpenAccordionValue}
                         className="w-full p-2"
                     >
                         <SidebarMenu>
-                        {navItems.map((item, index) => (
-                            <NavMenuItem key={item.href || item.label} item={item} pathname={pathname} index={index} />
-                        ))}
+                          {generalItems.map((item, index) => (
+                              <NavMenuItem key={item.href || item.label} item={item} pathname={pathname} index={index} />
+                          ))}
+
+                          {adminItems && (
+                            <>
+                              <SidebarMenuSeparator />
+                              <NavMenuItem key={adminItems.label} item={adminItems} pathname={pathname} index={generalItems.length} />
+                            </>
+                          )}
                         </SidebarMenu>
                     </Accordion>
                 </SidebarContent>
