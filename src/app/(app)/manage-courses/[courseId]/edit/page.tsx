@@ -29,7 +29,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from '@/components/ui/badge';
 import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided, DraggableStateSnapshot, DroppableProvided } from '@hello-pangea/dnd';
@@ -283,7 +283,7 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPr
                         {questionFields.length === 0 && <p className="text-center text-muted-foreground py-8">No hay preguntas. ¡Añade la primera para empezar!</p>}
                     </ScrollArea>
                 </div>
-                <CardFooter className="border-t pt-4 flex justify-between w-full">
+                <DialogFooter className="border-t pt-4 flex justify-between w-full">
                     <div className="flex gap-2">
                         <Button 
                             type="button" 
@@ -301,7 +301,7 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPr
                         </Button>
                     </div>
                     <Button onClick={onClose} type="button">Cerrar Editor</Button>
-                </CardFooter>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
