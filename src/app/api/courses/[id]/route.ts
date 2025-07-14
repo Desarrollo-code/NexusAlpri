@@ -306,7 +306,19 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
             return NextResponse.json({ message: 'No tienes permiso para eliminar este curso' }, { status: 403 });
         }
         
-        await prisma.course.delete({ where: { id } });
+        // Use a transaction to delete notifications and the course together
+        await prisma.$transaction(async (tx) => {
+            // Delete notifications related to this course
+            await tx.notification.deleteMany({
+                where: {
+                    link: `/courses/${id}`
+                }
+            });
+
+            // Delete the course itself
+            await tx.course.delete({ where: { id } });
+        });
+
 
         return new NextResponse(null, { status: 204 });
     } catch (error) {
