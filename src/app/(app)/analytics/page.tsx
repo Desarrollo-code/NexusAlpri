@@ -52,11 +52,11 @@ const UserAnalyticsSection = () => {
         setError(null);
         try {
             const response = await fetch('/api/analytics/users');
-            if (!response.ok) throw new Error('Failed to fetch user analytics');
+            if (!response.ok) throw new Error('Falló la carga de analíticas de usuario');
             const result: UserAnalyticsData = await response.json();
             setData(result);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error');
+            setError(err instanceof Error ? err.message : 'Error desconocido');
         } finally {
             setIsLoading(false);
         }
@@ -81,7 +81,7 @@ const UserAnalyticsSection = () => {
     }
     
     const pieChartData = data.usersByRole.map(roleData => ({
-        name: roleData.role.charAt(0) + roleData.role.slice(1).toLowerCase(),
+        name: userRolesChartConfig[roleData.role as keyof typeof userRolesChartConfig]?.label || roleData.role,
         count: roleData.count,
         fill: userRolesChartConfig[roleData.role as keyof typeof userRolesChartConfig]?.color || "hsl(var(--muted))"
     }));
@@ -193,11 +193,11 @@ const CourseAnalyticsSection = () => {
         setError(null);
         try {
             const response = await fetch('/api/analytics/courses');
-            if (!response.ok) throw new Error('Failed to fetch course analytics');
+            if (!response.ok) throw new Error('Falló la carga de analíticas de cursos');
             const result: CourseAnalyticsData = await response.json();
             setData(result);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error');
+            setError(err instanceof Error ? err.message : 'Error desconocido');
         } finally {
             setIsLoading(false);
         }
@@ -283,11 +283,11 @@ const ProgressAnalyticsSection = () => {
         setError(null);
         try {
             const response = await fetch('/api/analytics/progress');
-            if (!response.ok) throw new Error('Failed to fetch progress analytics');
+            if (!response.ok) throw new Error('Falló la carga de analíticas de progreso');
             const result: ProgressAnalyticsData = await response.json();
             setData(result);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error');
+            setError(err instanceof Error ? err.message : 'Error desconocido');
         } finally {
             setIsLoading(false);
         }
@@ -344,12 +344,12 @@ const InteractionAnalyticsSection = () => {
             // This is a placeholder as download count is not tracked per resource.
             // A more complex system would be needed for actual tracking.
             const response = await fetch('/api/resources'); 
-            if (!response.ok) throw new Error('Failed to fetch resource list');
+            if (!response.ok) throw new Error('Falló la carga de la lista de recursos');
             const resources: EnterpriseResource[] = await response.json();
             const totalDownloads = 0; // Placeholder value
             setData({ totalDownloads });
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error');
+            setError(err instanceof Error ? err.message : 'Error desconocido');
         } finally {
             setIsLoading(false);
         }
@@ -390,11 +390,11 @@ const SecurityAnalyticsSection = () => {
         setError(null);
         try {
             const response = await fetch('/api/security/logs');
-            if (!response.ok) throw new Error('Failed to fetch security logs');
+            if (!response.ok) throw new Error('Falló la carga de registros de seguridad');
             const result: { logs: SecurityLogWithUser[] } = await response.json();
             setLogs(result.logs || []);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error');
+            setError(err instanceof Error ? err.message : 'Error desconocido');
         } finally {
             setIsLoading(false);
         }

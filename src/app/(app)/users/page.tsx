@@ -105,7 +105,7 @@ export default function UsersPage() {
       const response = await fetch(`/api/users?${params.toString()}`, { cache: 'no-store' });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to fetch users: ${response.statusText}`);
+        throw new Error(errorData.message || `Falló la carga de usuarios: ${response.statusText}`);
       }
       const responseData: { users: User[]; totalUsers: number; } = await response.json();
       setUsersList(responseData.users || []);
@@ -135,6 +135,15 @@ export default function UsersPage() {
     if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
     return name.substring(0, 2).toUpperCase();
   };
+  
+  const getRoleInSpanish = (role: UserRole) => {
+    switch (role) {
+        case 'ADMINISTRATOR': return 'Administrador';
+        case 'INSTRUCTOR': return 'Instructor';
+        case 'STUDENT': return 'Estudiante';
+        default: return role;
+    }
+  }
 
   const getRoleBadgeVariant = (role: UserRole) => {
     switch(role) {
@@ -225,7 +234,7 @@ export default function UsersPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to save user');
+        throw new Error(errorData.message || 'Falló al guardar el usuario');
       }
       
       const savedUser = await response.json();
@@ -258,7 +267,7 @@ export default function UsersPage() {
       const response = await fetch(`/api/users/${userToDelete.id}`, { method: 'DELETE' });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete user');
+        throw new Error(errorData.message || 'Falló al eliminar el usuario');
       }
       toast({ title: "Usuario Eliminado", description: `El usuario ${userToDelete.name} ha sido eliminado.` });
       fetchUsers();
@@ -291,9 +300,9 @@ export default function UsersPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to change user role');
+        throw new Error(errorData.message || 'Falló al cambiar el rol del usuario');
       }
-      toast({ title: "Rol Actualizado", description: `El rol de ${userToChangeRole.name} ha sido cambiado a ${selectedNewRole}.` });
+      toast({ title: "Rol Actualizado", description: `El rol de ${userToChangeRole.name} ha sido cambiado a ${getRoleInSpanish(selectedNewRole)}.` });
       fetchUsers(); 
       setShowChangeRoleDialog(false);
       setUserToChangeRole(null);
@@ -350,7 +359,7 @@ export default function UsersPage() {
               </TableCell>
               <TableCell>{u.email}</TableCell>
               <TableCell>
-                <Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{u.role.toLowerCase()}</Badge>
+                <Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{getRoleInSpanish(u.role)}</Badge>
               </TableCell>
               <TableCell>{u.registeredDate ? new Date(u.registeredDate).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'short', timeStyle: 'medium' }) : 'N/A'}</TableCell>
               <TableCell>
@@ -440,7 +449,7 @@ export default function UsersPage() {
             </DropdownMenu>
           </div>
           <div className="mt-4 pt-4 border-t flex justify-between items-center text-sm">
-            <Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{u.role.toLowerCase()}</Badge>
+            <Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{getRoleInSpanish(u.role)}</Badge>
             <p className="text-muted-foreground">{u.registeredDate ? new Date(u.registeredDate).toLocaleDateString() : 'N/A'}</p>
           </div>
         </Card>

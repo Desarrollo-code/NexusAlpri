@@ -20,6 +20,7 @@ import { LogOut, UserCircle, Settings, Monitor, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
+import { UserRole } from '@/types';
 
 function ThemeToggle() {
     const { setTheme } = useTheme();
@@ -66,6 +67,15 @@ export function UserAvatarDropdown() {
     return name.substring(0, 2).toUpperCase();
   };
 
+  const getRoleInSpanish = (role: UserRole) => {
+    switch (role) {
+        case 'ADMINISTRATOR': return 'Administrador';
+        case 'INSTRUCTOR': return 'Instructor';
+        case 'STUDENT': return 'Estudiante';
+        default: return role;
+    }
+  }
+
   const userDisplayName = user.name || "Usuario";
   const userDisplayEmail = user.email || "No email";
   const userAppRole = user.role;
@@ -89,7 +99,7 @@ export function UserAvatarDropdown() {
             </p>
             {userAppRole && (
               <p className="text-xs leading-none text-muted-foreground capitalize pt-1">
-                Rol: {userAppRole.toLowerCase()}
+                Rol: {getRoleInSpanish(userAppRole)}
               </p>
             )}
           </div>
