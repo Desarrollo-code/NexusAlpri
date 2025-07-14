@@ -10,14 +10,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Zap, CircleOff, Paperclip, ChevronRight, Calendar as CalendarIcon, Replace, Pencil, Eye, MoreVertical, Archive, Crop } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Zap, CircleOff, Paperclip, ChevronRight, Calendar as CalendarIcon, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState, ChangeEvent, useCallback, useMemo } from 'react';
 import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, LessonType as AppLessonType, CourseStatus, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption, ContentBlock } from '@/types';
 import Image from 'next/image';
 import { useToast } from "@/hooks/use-toast";
-import type { Course as PrismaCourse, Module as PrismaModule, Lesson as PrismaLesson, Question as PrismaQuestion, AnswerOption as PrismaAnswerOption } from '@prisma/client';
+import type { Course as PrismaCourse, Module as PrismaModule, Lesson as PrismaLesson, Question as PrismaQuestion, AnswerOption as PrismaAnswerOption, LessonTemplate, TemplateBlock } from '@prisma/client';
 import { useAuth } from '@/contexts/auth-context';
 import {
     AlertDialog,
@@ -58,6 +58,10 @@ import { ImageCropper } from '@/components/image-cropper';
 
 
 // === TIPOS E INTERFACES ===
+interface ApiTemplate extends LessonTemplate {
+  templateBlocks: TemplateBlock[];
+  creator: { name: string | null };
+}
 
 interface QuizViewerProps {
     quizData: AppQuiz | undefined | null;
@@ -84,6 +88,7 @@ interface EditableLesson extends Omit<AppLesson, 'contentBlocks' | 'order'> {
     contentBlocks: EditableContentBlock[];
     _toBeDeleted?: boolean;
     order: number | null;
+    templateId?: string; // For applying templates
 }
 interface EditableModule extends Omit<AppModule, 'lessons' | 'order' | 'description'> {
     lessons: EditableLesson[];
@@ -542,72 +547,152 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
     const { getValues, register, watch } = useFormContext<EditableCourse>();
     const [quizEditorDetails, setQuizEditorDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
     const [previewQuizDetails, setPreviewQuizDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
+    const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
+    const [templateName, setTemplateName] = useState('');
+    const [templateDescription, setTemplateDescription] = useState('');
+    const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+    const { toast } = useToast();
+    const { user } = useAuth();
+
     const openQuizEditor = useCallback((mIndex: number, lIndex: number, bIndex: number) => setQuizEditorDetails({ moduleIndex: mIndex, lessonIndex: lIndex, blockIndex: bIndex }), []);
     const openQuizPreview = useCallback((mIndex: number, lIndex: number, bIndex: number) => setPreviewQuizDetails({ moduleIndex: mIndex, lessonIndex: lIndex, blockIndex: bIndex }), []);
 
-    const { user } = useAuth();
     const course = watch();
     const isCreatorPreview = user?.role === 'ADMINISTRATOR' || user?.id === course.instructorId;
+
+    const handleSaveAsTemplate = async () => {
+        if (!templateName.trim()) {
+            toast({ title: "Error", description: "El nombre de la plantilla es obligatorio.", variant: "destructive" });
+            return;
+        }
+        setIsSavingTemplate(true);
+        const lessonToSave = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
+        try {
+            const payload = {
+                name: templateName,
+                description: templateDescription,
+                lessonId: lessonToSave.id
+            };
+            const response = await fetch('/api/templates', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) throw new Error((await response.json()).message);
+            toast({ title: "Plantilla Guardada", description: "La lección ha sido guardada como una nueva plantilla." });
+            setShowSaveTemplateModal(false);
+        } catch (error) {
+            toast({ title: "Error al guardar plantilla", description: (error as Error).message, variant: "destructive" });
+        } finally {
+            setIsSavingTemplate(false);
+        }
+    };
 
     return (
         <Draggable key={dndId} draggableId={dndId} index={lessonIndex}>
             {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
-                <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value={dndId} ref={provided.innerRef} {...provided.draggableProps}
-                        className={`p-3 rounded-md border flex-col gap-3 items-start ${snapshot.isDragging ? 'shadow-md bg-muted' : 'bg-card'}`}>
-                        <div className="flex w-full items-start gap-3">
-                            <div {...provided.dragHandleProps} className="cursor-grab pt-1"><GripVertical className="h-4 w-4 text-muted-foreground" /></div>
-                            <div className="flex-grow space-y-2">
-                                <AccordionTrigger className="p-0 hover:no-underline w-full">
-                                    <div className="flex-grow mr-2 w-full">
-                                        <Label htmlFor={`lesson-title-${dndId}`}>Título de la Lección</Label>
-                                        <Input id={`lesson-title-${dndId}`} {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.title` as const)} className="text-sm font-medium h-9 w-full" placeholder="Título de la lección" disabled={isSaving} />
-                                    </div>
-                                </AccordionTrigger>
+                 <>
+                    <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value={dndId} ref={provided.innerRef} {...provided.draggableProps}
+                            className={`p-3 rounded-md border flex-col gap-3 items-start ${snapshot.isDragging ? 'shadow-md bg-muted' : 'bg-card'}`}>
+                            <div className="flex w-full items-start gap-3">
+                                <div {...provided.dragHandleProps} className="cursor-grab pt-1"><GripVertical className="h-4 w-4 text-muted-foreground" /></div>
+                                <div className="flex-grow space-y-2">
+                                    <AccordionTrigger className="p-0 hover:no-underline w-full">
+                                        <div className="flex-grow mr-2 w-full">
+                                            <Label htmlFor={`lesson-title-${dndId}`}>Título de la Lección</Label>
+                                            <Input id={`lesson-title-${dndId}`} {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.title` as const)} className="text-sm font-medium h-9 w-full" placeholder="Título de la lección" disabled={isSaving} />
+                                        </div>
+                                    </AccordionTrigger>
+                                </div>
+                                 <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                            <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => { setTemplateName(getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.title`)); setShowSaveTemplateModal(true); }}>
+                                            <Copy className="mr-2 h-4 w-4" /> Guardar como Plantilla
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                            className="text-destructive focus:bg-destructive/10"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (isSaving) return;
+                                                const lessonValues = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
+                                                if (lessonValues) {
+                                                    setItemToDeleteDetails({ type: 'lesson', id: lessonValues.id, name: lessonValues.title, moduleIndex, lessonIndex });
+                                                }
+                                            }}
+                                            disabled={isSaving}
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" /> Eliminar Lección
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
-                            <Button variant="ghost" size="icon" type="button" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={(e) => {
-                                e.stopPropagation();
-                                if (isSaving) return;
-                                const lessonValues = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
-                                if (lessonValues) {
-                                    setItemToDeleteDetails({ type: 'lesson', id: lessonValues.id, name: lessonValues.title, moduleIndex, lessonIndex });
-                                }
-                            }} disabled={isSaving}><Trash2 className="h-3 w-3" /></Button>
-                        </div>
-                        <AccordionContent className="p-0">
-                            <ContentBlockList
-                                moduleIndex={moduleIndex}
-                                lessonIndex={lessonIndex}
-                                setItemToDeleteDetails={setItemToDeleteDetails}
-                                isSaving={isSaving}
-                                openQuizEditor={openQuizEditor}
-                                openQuizPreview={openQuizPreview}
-                                appendBlock={appendBlock}
-                            />
-                            {quizEditorDetails?.lessonIndex === lessonIndex && (
-                                <QuizEditorDialog
-                                    {...quizEditorDetails}
-                                    onClose={() => setQuizEditorDetails(null)}
-                                    setPreviewQuizDetails={setPreviewQuizDetails}
+                            <AccordionContent className="p-0">
+                                <ContentBlockList
+                                    moduleIndex={moduleIndex}
+                                    lessonIndex={lessonIndex}
+                                    setItemToDeleteDetails={setItemToDeleteDetails}
+                                    isSaving={isSaving}
+                                    openQuizEditor={openQuizEditor}
+                                    openQuizPreview={openQuizPreview}
+                                    appendBlock={appendBlock}
                                 />
-                            )}
-                            {previewQuizDetails?.lessonIndex === lessonIndex && (
-                                <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setPreviewQuizDetails(null)}>
-                                  <DialogContent className="max-w-3xl">
-                                    <DialogHeader>
-                                        <DialogTitle>Vista Previa del Quiz</DialogTitle>
-                                    </DialogHeader>
-                                    <QuizViewer
-                                        quiz={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.contentBlocks.${previewQuizDetails.blockIndex}.quiz`)}
-                                        lessonId={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}
-                                        isCreatorPreview={true}
+                                {quizEditorDetails?.lessonIndex === lessonIndex && (
+                                    <QuizEditorDialog
+                                        {...quizEditorDetails}
+                                        onClose={() => setQuizEditorDetails(null)}
+                                        setPreviewQuizDetails={setPreviewQuizDetails}
                                     />
-                                  </DialogContent>
-                                </Dialog>
-                            )}
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
+                                )}
+                                {previewQuizDetails?.lessonIndex === lessonIndex && (
+                                    <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setPreviewQuizDetails(null)}>
+                                      <DialogContent className="max-w-3xl">
+                                        <DialogHeader>
+                                            <DialogTitle>Vista Previa del Quiz</DialogTitle>
+                                        </DialogHeader>
+                                        <QuizViewer
+                                            quiz={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.contentBlocks.${previewQuizDetails.blockIndex}.quiz`)}
+                                            lessonId={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}
+                                            isCreatorPreview={true}
+                                        />
+                                      </DialogContent>
+                                    </Dialog>
+                                )}
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                     <Dialog open={showSaveTemplateModal} onOpenChange={setShowSaveTemplateModal}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Guardar Lección como Plantilla</DialogTitle>
+                                <DialogDescription>Guarda la estructura de esta lección para reutilizarla en el futuro.</DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                                <div>
+                                    <Label htmlFor="template-name">Nombre de la Plantilla</Label>
+                                    <Input id="template-name" value={templateName} onChange={(e) => setTemplateName(e.target.value)} required disabled={isSavingTemplate} />
+                                </div>
+                                <div>
+                                    <Label htmlFor="template-description">Descripción (Opcional)</Label>
+                                    <Textarea id="template-description" value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} disabled={isSavingTemplate} />
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button variant="outline" onClick={() => setShowSaveTemplateModal(false)} disabled={isSavingTemplate}>Cancelar</Button>
+                                <Button onClick={handleSaveAsTemplate} disabled={isSavingTemplate}>
+                                    {isSavingTemplate && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Guardar Plantilla
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                 </>
             )}
         </Draggable>
     );
@@ -634,6 +719,11 @@ export default function EditCoursePage() {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+    
+    // State for templates
+    const [showTemplateModal, setShowTemplateModal] = useState<number | null>(null); // moduleIndex
+    const [templates, setTemplates] = useState<ApiTemplate[]>([]);
+    const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
 
     // React Hook Form methods
     const methods = useForm<EditableCourse>({
@@ -750,6 +840,40 @@ export default function EditCoursePage() {
             fetchCourseData();
         }
     }, [isAuthLoading, user, fetchCourseData]);
+
+    const fetchTemplates = useCallback(async () => {
+        setIsLoadingTemplates(true);
+        try {
+            const res = await fetch('/api/templates');
+            if (!res.ok) throw new Error("Failed to fetch templates");
+            const data = await res.json();
+            setTemplates(data);
+        } catch (error) {
+            toast({ title: "Error", description: (error as Error).message, variant: "destructive" });
+        } finally {
+            setIsLoadingTemplates(false);
+        }
+    }, [toast]);
+    
+    const handleOpenTemplateModal = (moduleIndex: number) => {
+        fetchTemplates();
+        setShowTemplateModal(moduleIndex);
+    };
+
+    const handleSelectTemplate = (moduleIndex: number, templateId: string) => {
+        const selectedTemplate = templates.find(t => t.id === templateId);
+        if (!selectedTemplate) return;
+
+        appendLessonToModule(moduleIndex, {
+            id: `new-lesson-${Date.now()}`,
+            title: selectedTemplate.name,
+            contentBlocks: [], // Blocks will be added via templateId
+            order: methods.getValues(`modules.${moduleIndex}.lessons`)?.length || 0,
+            templateId: selectedTemplate.id,
+        });
+        setShowTemplateModal(null);
+        toast({ title: "Plantilla Aplicada", description: "Se ha creado una nueva lección con la estructura de la plantilla." });
+    };
 
 
     const onSubmit = useCallback(async (data: EditableCourse) => {
@@ -1081,9 +1205,14 @@ export default function EditCoursePage() {
                                                                                                 <LessonItem key={lesson.id} moduleIndex={moduleIndex} lessonIndex={lessonIndex} dndId={lesson.id} isSaving={isSaving} setItemToDeleteDetails={setItemToDeleteDetails} appendBlock={appendBlockToLesson} />
                                                                                              ))}
                                                                                             {provided.placeholder}
-                                                                                            <Button type="button" variant="outline" size="sm" onClick={() => appendLessonToModule(moduleIndex, { id: `new-lesson-${Date.now()}`, title: '', contentBlocks: [], order: methods.getValues(`modules.${moduleIndex}.lessons`)?.length || 0, })} disabled={isSaving}>
-                                                                                                <PlusCircle className="mr-2 h-4 w-4" /> Añadir Lección
-                                                                                            </Button>
+                                                                                            <div className="flex gap-2 pt-2">
+                                                                                                <Button type="button" variant="outline" size="sm" onClick={() => appendLessonToModule(moduleIndex, { id: `new-lesson-${Date.now()}`, title: 'Nueva Lección', contentBlocks: [], order: methods.getValues(`modules.${moduleIndex}.lessons`)?.length || 0, })} disabled={isSaving}>
+                                                                                                    <PlusCircle className="mr-2 h-4 w-4" /> Lección en Blanco
+                                                                                                </Button>
+                                                                                                <Button type="button" variant="outline" size="sm" onClick={() => handleOpenTemplateModal(moduleIndex)} disabled={isSaving}>
+                                                                                                    <FilePlus2 className="mr-2 h-4 w-4" /> Usar Plantilla
+                                                                                                </Button>
+                                                                                            </div>
                                                                                         </div>
                                                                                     )}
                                                                                 </Droppable>
@@ -1256,6 +1385,29 @@ export default function EditCoursePage() {
 
 
                 {/* Dialogs and Modals */}
+                 <Dialog open={showTemplateModal !== null} onOpenChange={() => setShowTemplateModal(null)}>
+                    <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle>Seleccionar Plantilla de Lección</DialogTitle>
+                            <DialogDescription>Elige una plantilla para crear una nueva lección con una estructura predefinida.</DialogDescription>
+                        </DialogHeader>
+                        {isLoadingTemplates ? (
+                            <div className="flex justify-center items-center h-48"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                        ) : (
+                            <ScrollArea className="max-h-[60vh] mt-4">
+                                <div className="space-y-2 pr-4">
+                                    {templates.length > 0 ? templates.map(template => (
+                                        <button key={template.id} onClick={() => handleSelectTemplate(showTemplateModal!, template.id)} className="w-full text-left p-4 border rounded-lg hover:bg-accent transition-colors">
+                                            <h4 className="font-semibold">{template.name}</h4>
+                                            <p className="text-sm text-muted-foreground">{template.description || 'Sin descripción'}</p>
+                                            <p className="text-xs text-muted-foreground mt-2">Creador: {template.creator.name} | Bloques: {template.templateBlocks.length}</p>
+                                        </button>
+                                    )) : <p className="text-center text-muted-foreground">No hay plantillas disponibles.</p>}
+                                </div>
+                            </ScrollArea>
+                        )}
+                    </DialogContent>
+                </Dialog>
                 <AlertDialog open={itemToDeleteDetails !== null} onOpenChange={setItemToDeleteDetails as any}>
                     <AlertDialogContent>
                         <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro de que quieres eliminar {itemToDeleteDetails?.type} "<strong>{itemToDeleteDetails?.name}</strong>"? Se eliminará al guardar los cambios del curso.</AlertDialogDescription></AlertDialogHeader>

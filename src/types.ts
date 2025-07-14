@@ -1,6 +1,6 @@
 
 
-import type { JsonValue } from "@prisma/client/runtime/library";
+import type { JsonValue, LessonTemplate, TemplateBlock } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -228,3 +228,7 @@ export interface ProgressAnalyticsData {
     averageCompletionTimeDays: number;
     dropoutRate: number;
 }
+
+// --- TEMPLATES ---
+export type TemplateType = 'SYSTEM' | 'USER';
+export { type LessonTemplate, type TemplateBlock };

@@ -64,7 +64,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 
   try {
     const courseData = await req.json();
-    const { title, description, imageUrl, category, status, publicationDate, modules } = courseData;
+    const { title, description, imageUrl, category, status, publicationDate, modules, templateId } = courseData;
 
     // Basic validation
     if (!title || !description) {
@@ -157,9 +157,26 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
                         order: lessonIndex,
                       },
                   });
-
-                  // Handle Content Blocks
-                  if (lessonData.contentBlocks) {
+                
+                  // New logic: Apply template if provided
+                  if (lessonData.templateId) {
+                      const template = await tx.lessonTemplate.findUnique({
+                          where: { id: lessonData.templateId },
+                          include: { templateBlocks: { orderBy: { order: 'asc' } } }
+                      });
+                      if (template) {
+                          // Delete existing blocks and create new ones from template
+                          await tx.contentBlock.deleteMany({ where: { lessonId: savedLesson.id } });
+                          await tx.contentBlock.createMany({
+                              data: template.templateBlocks.map(tb => ({
+                                  type: tb.type,
+                                  order: tb.order,
+                                  lessonId: savedLesson.id,
+                                  content: '', // Placeholders are empty
+                              }))
+                          });
+                      }
+                  } else if (lessonData.contentBlocks) { // Existing logic for content blocks
                     const incomingBlockIds = lessonData.contentBlocks.filter((b: any) => !b._toBeDeleted && b.id && !b.id.startsWith('new-')).map((b: any) => b.id);
                     await tx.contentBlock.deleteMany({
                         where: { lessonId: savedLesson.id, NOT: { id: { in: incomingBlockIds } } }
