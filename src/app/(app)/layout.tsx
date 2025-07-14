@@ -19,13 +19,15 @@ import { TopBar } from '@/components/layout/top-bar';
 import { getNavItemsForRole } from '@/lib/nav-items';
 import type { UserRole, NavItem } from '@/types'; 
 import Link from 'next/link';
-import { LogOut, ChevronDown } from 'lucide-react';
+import { LogOut, ChevronDown, Monitor, Moon, Sun } from 'lucide-react';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from '@/lib/utils';
 import { useIdleTimeout } from '@/hooks/useIdleTimeout';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from '@/components/ui/dropdown-menu';
 
 
 const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: string, index: number }) => {
@@ -48,7 +50,7 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
               isParentActive && "bg-sidebar-accent/80 text-sidebar-accent-foreground"
             )}
           >
-            <div className="flex items-center gap-3 flex-1">
+             <div className="flex items-center gap-3 flex-1">
                 <item.icon className={cn(isParentActive ? "text-primary" : iconColorClass, "h-5 w-5")} />
                 <span className="font-semibold text-base group-data-[state=collapsed]:hidden">{item.label}</span>
             </div>
@@ -60,7 +62,7 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
                 <SidebarMenuItem key={subItem.href}>
                   <SidebarMenuButton asChild isActive={pathname.startsWith(subItem.href)} size="sm" className="justify-start gap-2" tooltip={{...subItem.tooltip, children: subItem.label}}>
                     <Link href={subItem.href}>
-                      <subItem.icon className={cn(pathname.startsWith(subItem.href) ? "text-primary" : "text-muted-foreground", "h-4 w-4")}/>
+                      <subItem.icon className={cn(pathname.startsWith(subItem.href) ? "text-primary" : `text-chart-${(index % 5) + 1}`, "h-4 w-4")}/>
                       <span className="text-sm font-normal">{subItem.label}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -83,7 +85,6 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
     </SidebarMenuItem>
   );
 };
-
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const { user, settings, logout } = useAuth();
@@ -123,8 +124,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         );
     }
     
-    const generalItems = navItems.filter(item => !item.subItems);
-    const adminItems = navItems.find(item => item.label === 'Administración');
+    const generalItems = navItems.filter(item => !item.subItems || item.subItems.length === 0);
+    const adminItems = navItems.find(item => item.label === 'Administración' && item.subItems && item.subItems.length > 0);
 
     return (
         <div className="flex min-h-screen w-full bg-background">
@@ -183,6 +184,17 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 <main className="flex-1 p-4 md:p-6 lg:p-8">
                   {children}
                 </main>
+            </div>
+            
+            <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
+              <Image
+                src="/uploads/images/watermark-alprigrama.png"
+                alt="Alprigrama S.A.S. Watermark"
+                width={70}
+                height={70}
+                className="opacity-40"
+                data-ai-hint="company logo"
+              />
             </div>
         </div>
     );
