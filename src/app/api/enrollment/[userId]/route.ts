@@ -7,7 +7,7 @@ import type { NextRequest } from 'next/server';
 // Get all courses a specific user is enrolled in
 export async function GET(req: NextRequest, context: { params: { userId: string } }) {
     const session = await getSession(req);
-    const { userId } = context.params;
+    const { userId } = await context.params;
 
     if (!session || session.id !== userId) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
