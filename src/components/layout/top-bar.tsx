@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import { getNavItemsForRole } from '@/lib/nav-items';
 import { useAuth } from '@/contexts/auth-context';
 import type { UserRole, NavItem } from '@/types'; 
-import { BookOpenCheck, Bell, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
+import { BookOpenCheck, Bell, CheckCircle2, AlertTriangle, Loader2, Trash2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
@@ -18,7 +18,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button, buttonVariants } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Notification as AppNotification } from '@/types'; 
 import { useToast } from '@/hooks/use-toast';
@@ -69,6 +79,10 @@ export function TopBar() {
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
   const [notificationError, setNotificationError] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  
+  const [notificationToDelete, setNotificationToDelete] = useState<AppNotification | null>(null);
+  const [showClearAllDialog, setShowClearAllDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const userAppRole = user?.role;
   const navItemsRaw = user ? getNavItemsForRole(userAppRole || 'STUDENT') : [];
@@ -153,91 +167,189 @@ export function TopBar() {
     }
   };
   
+  const handleDeleteNotification = async () => {
+    if (!notificationToDelete) return;
+    setIsDeleting(true);
+    // Optimistically remove from UI
+    setNotifications(prev => prev.filter(n => n.id !== notificationToDelete.id));
+    
+    try {
+        await fetch('/api/notifications', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: [notificationToDelete.id] }),
+        });
+        toast({ title: 'Notificación eliminada' });
+    } catch (error) {
+        toast({ title: 'Error', description: 'No se pudo eliminar la notificación.', variant: 'destructive' });
+        fetchNotifications(); // Re-fetch to sync state on error
+    } finally {
+        setIsDeleting(false);
+        setNotificationToDelete(null);
+    }
+  };
+
+  const handleClearAllNotifications = async () => {
+    setShowClearAllDialog(false);
+    setIsDeleting(true);
+    setNotifications([]); // Optimistically clear UI
+
+    try {
+        await fetch('/api/notifications', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: 'all' }),
+        });
+        toast({ title: 'Todas las notificaciones han sido eliminadas' });
+    } catch (error) {
+        toast({ title: 'Error', description: 'No se pudieron eliminar las notificaciones.', variant: 'destructive' });
+        fetchNotifications(); // Re-fetch on error
+    } finally {
+        setIsDeleting(false);
+    }
+  };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md md:px-6">
-      <div className="flex items-center gap-2">
-        <SidebarTrigger className="md:hidden" />
-        <h1 className="hidden sm:block text-xl font-semibold font-headline truncate">{getPageTitle()}</h1>
-      </div>
-      <div className="flex items-center gap-3">
-        <DropdownMenu onOpenChange={setIsDropdownOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative h-9 w-9">
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && !isLoadingNotifications && !notificationError && (
-                <span className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-              <span className="sr-only">Notificaciones</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80 md:w-96">
-            <DropdownMenuLabel className="flex justify-between items-center">
-              <span>Notificaciones</span>
-              {unreadCount > 0 && (
-                 <Button variant="link" size="sm" className="p-0 h-auto text-xs" onClick={handleMarkAllRead}>
-                    Marcar todas como leídas
-                </Button>
-              )}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <ScrollArea className="h-[300px]">
-              {isLoadingNotifications ? (
-                <DropdownMenuItem disabled className="justify-center py-4">
-                  <Loader2 className="h-5 w-5 animate-spin mr-2" /> Cargando...
-                </DropdownMenuItem>
-              ) : notificationError ? (
-                <DropdownMenuItem disabled className="flex-col items-center justify-center py-4 text-destructive">
-                  <AlertTriangle className="h-5 w-5 mb-1" />
-                  <p className="text-sm font-medium">Error al cargar</p>
-                  <p className="text-xs">{notificationError.substring(0,50)}</p>
-                  <Button variant="link" size="sm" onClick={fetchNotifications} className="mt-1">Reintentar</Button>
-                </DropdownMenuItem>
-              ) : notifications.length === 0 ? (
-                <DropdownMenuItem disabled className="text-center justify-center py-4 text-muted-foreground">
-                    No hay notificaciones
-                </DropdownMenuItem>
-              ) : (
-                notifications.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(notification => {
-                    const ItemWrapper = notification.link ? Link : 'div';
-                    const itemProps = notification.link ? { href: notification.link } : {};
+    <>
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md md:px-6">
+        <div className="flex items-center gap-2">
+          <SidebarTrigger className="md:hidden" />
+          <h1 className="hidden sm:block text-xl font-semibold font-headline truncate">{getPageTitle()}</h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <DropdownMenu onOpenChange={setIsDropdownOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative h-9 w-9">
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && !isLoadingNotifications && !notificationError && (
+                  <span className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+                <span className="sr-only">Notificaciones</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80 md:w-96">
+              <DropdownMenuLabel className="flex justify-between items-center">
+                <span>Notificaciones</span>
+                {unreadCount > 0 && (
+                   <Button variant="link" size="sm" className="p-0 h-auto text-xs" onClick={handleMarkAllRead}>
+                      Marcar todas como leídas
+                  </Button>
+                )}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <ScrollArea className="h-[300px]">
+                {isLoadingNotifications ? (
+                  <DropdownMenuItem disabled className="justify-center py-4">
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" /> Cargando...
+                  </DropdownMenuItem>
+                ) : notificationError ? (
+                  <DropdownMenuItem disabled className="flex-col items-center justify-center py-4 text-destructive">
+                    <AlertTriangle className="h-5 w-5 mb-1" />
+                    <p className="text-sm font-medium">Error al cargar</p>
+                    <p className="text-xs">{notificationError.substring(0,50)}</p>
+                    <Button variant="link" size="sm" onClick={fetchNotifications} className="mt-1">Reintentar</Button>
+                  </DropdownMenuItem>
+                ) : notifications.length === 0 ? (
+                  <DropdownMenuItem disabled className="text-center justify-center py-4 text-muted-foreground">
+                      No hay notificaciones
+                  </DropdownMenuItem>
+                ) : (
+                  notifications.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(notification => {
+                      const ItemWrapper = notification.link ? Link : 'div';
+                      const itemProps = notification.link ? { href: notification.link } : {};
 
-                    return (
-                        <DropdownMenuItem
-                            key={notification.id}
-                            asChild={!!notification.link} 
-                            onClick={() => handleNotificationClick(notification.id)}
-                            className={`flex items-start gap-2.5 p-3 whitespace-normal cursor-pointer ${!notification.read ? 'font-medium bg-muted/50' : 'text-muted-foreground'}`}
-                        >
-                            <ItemWrapper {...itemProps} className="flex w-full items-start gap-2.5">
-                                {!notification.read ? <Bell className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" /> : <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-500 flex-shrink-0" />}
-                                <div className="flex-grow">
-                                <p className="text-sm leading-tight font-semibold">{notification.title}</p>
-                                {notification.description && <p className="text-xs leading-snug mt-0.5">{notification.description}</p>}
-                                <p className={`text-xs mt-1 ${!notification.read ? 'text-primary/80' : 'text-muted-foreground/80'}`}>{timeSince(notification.date)}</p>
-                                </div>
-                            </ItemWrapper>
-                        </DropdownMenuItem>
-                    );
-                })
+                      return (
+                          <DropdownMenuItem
+                              key={notification.id}
+                              asChild={!!notification.link} 
+                              onClick={() => handleNotificationClick(notification.id)}
+                              className={`group relative flex items-start gap-2.5 p-3 pr-8 whitespace-normal cursor-pointer ${!notification.read ? 'font-medium bg-muted/50' : 'text-muted-foreground'}`}
+                          >
+                              <ItemWrapper {...itemProps} className="flex w-full items-start gap-2.5">
+                                  {!notification.read ? <Bell className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" /> : <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-500 flex-shrink-0" />}
+                                  <div className="flex-grow">
+                                  <p className="text-sm leading-tight font-semibold">{notification.title}</p>
+                                  {notification.description && <p className="text-xs leading-snug mt-0.5">{notification.description}</p>}
+                                  <p className={`text-xs mt-1 ${!notification.read ? 'text-primary/80' : 'text-muted-foreground/80'}`}>{timeSince(notification.date)}</p>
+                                  </div>
+                                  <button
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      setNotificationToDelete(notification);
+                                    }}
+                                    className="absolute top-1 right-1 p-1 rounded-full text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-opacity"
+                                    aria-label="Eliminar notificación"
+                                  >
+                                    <XCircle className="h-4 w-4" />
+                                  </button>
+                              </ItemWrapper>
+                          </DropdownMenuItem>
+                      );
+                  })
+                )}
+              </ScrollArea>
+               {!isLoadingNotifications && !notificationError && notifications.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="justify-center" onSelect={() => setShowClearAllDialog(true)}>
+                      <span className="text-sm text-destructive hover:underline cursor-pointer flex items-center gap-1">
+                          <Trash2 className="h-4 w-4" /> Limpiar todo
+                      </span>
+                  </DropdownMenuItem>
+                </>
               )}
-            </ScrollArea>
-             {!isLoadingNotifications && !notificationError && notifications.length > 0 && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="justify-center">
-                    <span className="text-sm text-primary hover:underline cursor-pointer" onClick={() => toast({title: "Info", description: "Página de 'Todas las notificaciones' pendiente de implementación."})}>
-                        Ver todas las notificaciones
-                    </span>
-                </DropdownMenuItem>
-              </>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <UserAvatarDropdown />
-      </div>
-    </header>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <UserAvatarDropdown />
+        </div>
+      </header>
+
+      <AlertDialog open={!!notificationToDelete} onOpenChange={(open) => !open && setNotificationToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar Notificación?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminará la notificación "<strong>{notificationToDelete?.title}</strong>". Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteNotification}
+              disabled={isDeleting}
+              className={buttonVariants({ variant: "destructive" })}
+            >
+              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showClearAllDialog} onOpenChange={setShowClearAllDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Limpiar Todas las Notificaciones?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminarán permanentemente todas tus notificaciones. Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleClearAllNotifications}
+              disabled={isDeleting}
+              className={buttonVariants({ variant: "destructive" })}
+            >
+              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Sí, limpiar todo
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

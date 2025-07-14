@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const notificationsFromDb = await prisma.notification.findMany({
       where: { userId: session.id },
       orderBy: { createdAt: 'desc' },
-      take: 20, // Limit the number of notifications to keep it performant
+      take: 50, // Limit the number of notifications to keep it performant
     });
     
     // Map to the client-side type
@@ -71,5 +71,38 @@ export async function PATCH(req: NextRequest) {
     } catch (error) {
         console.error('[NOTIFICATIONS_PATCH_ERROR]', error);
         return NextResponse.json({ message: 'Error al actualizar notificaciones' }, { status: 500 });
+    }
+}
+
+// DELETE notifications
+export async function DELETE(req: NextRequest) {
+    const session = await getSession(req);
+    if (!session) {
+        return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+    }
+
+    try {
+        const { ids } = await req.json();
+
+        if (ids === 'all') {
+            await prisma.notification.deleteMany({
+                where: { userId: session.id },
+            });
+        } else if (Array.isArray(ids) && ids.length > 0) {
+            await prisma.notification.deleteMany({
+                where: {
+                    id: { in: ids },
+                    userId: session.id,
+                },
+            });
+        } else {
+            return NextResponse.json({ message: 'El campo "ids" debe ser un array de IDs o la cadena "all"' }, { status: 400 });
+        }
+        
+        return new NextResponse(null, { status: 204 }); // Success, no content
+
+    } catch (error) {
+        console.error('[NOTIFICATIONS_DELETE_ERROR]', error);
+        return NextResponse.json({ message: 'Error al eliminar notificaciones' }, { status: 500 });
     }
 }
