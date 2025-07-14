@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -52,19 +52,27 @@ import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
+const PAGE_SIZE = 20;
 
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
   const [usersList, setUsersList] = useState<User[]>([]);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
+
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [userToChangeRole, setUserToChangeRole] = useState<User | null>(null);
@@ -87,21 +95,30 @@ export default function UsersPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/users', { cache: 'no-store' });
+      const params = new URLSearchParams();
+      params.append('page', String(currentPage));
+      params.append('pageSize', String(PAGE_SIZE));
+      if (searchTerm) {
+        params.append('search', searchTerm);
+      }
+
+      const response = await fetch(`/api/users?${params.toString()}`, { cache: 'no-store' });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `Failed to fetch users: ${response.statusText}`);
       }
-      const responseData: { message: string, users: User[] | null } = await response.json();
+      const responseData: { users: User[]; totalUsers: number; } = await response.json();
       setUsersList(responseData.users || []);
+      setTotalUsers(responseData.totalUsers || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar usuarios');
       setUsersList([]);
+      setTotalUsers(0);
        toast({ title: "Error al cargar usuarios", description: err instanceof Error ? err.message : 'No se pudieron cargar los usuarios.', variant: "destructive"});
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, currentPage, searchTerm]);
 
   useEffect(() => {
     if (currentUser?.role !== 'ADMINISTRATOR') {
@@ -156,6 +173,19 @@ export default function UsersPage() {
     setUserToChangeRole(selectedUser);
     setSelectedNewRole(selectedUser.role);
     setShowChangeRoleDialog(true);
+  };
+  
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set(name, value)
+      return params.toString()
+    },
+    [searchParams]
+  );
+  
+  const handlePageChange = (page: number) => {
+    router.push(`${pathname}?${createQueryString('page', String(page))}`);
   };
 
   const handleAddEditUser = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -273,11 +303,12 @@ export default function UsersPage() {
       setIsProcessing(false);
     }
   };
-
-  const filteredUsers = usersList.filter(u => 
-    u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handlePageChange(1); // Reset to first page on new search
+    fetchUsers();
+  };
 
   if (currentUser?.role !== 'ADMINISTRATOR' && !isLoading) {
     return <div className="flex h-full items-center justify-center"><p>Acceso denegado. Serás redirigido.</p></div>;
@@ -306,7 +337,7 @@ export default function UsersPage() {
                       <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
                   </TableRow>
               ))
-          ) : filteredUsers.map((u) => (
+          ) : usersList.map((u) => (
             <TableRow key={u.id}>
               <TableCell>
                 <div className="flex items-center gap-3">
@@ -381,7 +412,7 @@ export default function UsersPage() {
                  </div>
             </Card>
           ))
-      ) : filteredUsers.map((u) => (
+      ) : usersList.map((u) => (
         <Card key={u.id} className="p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -509,7 +540,7 @@ export default function UsersPage() {
                 <CardTitle>Lista de Usuarios</CardTitle>
                 <CardDescription>Visualiza y gestiona todos los usuarios registrados.</CardDescription>
             </div>
-            <div className="relative w-full sm:w-auto">
+            <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-auto">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input 
                     type="search" 
@@ -518,7 +549,7 @@ export default function UsersPage() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
-            </div>
+            </form>
         </CardHeader>
         <CardContent>
           {error && !isLoading && ( 
@@ -532,7 +563,7 @@ export default function UsersPage() {
           {!error && (
             <>
               {isMobile ? <MobileUsersList /> : <DesktopUsersTable />}
-              {!isLoading && filteredUsers.length === 0 && (
+              {!isLoading && usersList.length === 0 && (
                   <p className="text-center text-muted-foreground py-8">
                       {searchTerm ? "No se encontraron usuarios que coincidan." : "No hay usuarios registrados."}
                   </p>
@@ -540,6 +571,35 @@ export default function UsersPage() {
             </>
           )}
         </CardContent>
+        {totalPages > 1 && (
+            <CardFooter>
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
+                      />
+                    </PaginationItem>
+                    {[...Array(totalPages)].map((_, i) => (
+                       <PaginationItem key={i}>
+                         <PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>
+                           {i + 1}
+                         </PaginationLink>
+                       </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+            </CardFooter>
+        )}
       </Card>
 
       <AlertDialog open={showDeleteConfirmDialog} onOpenChange={setShowDeleteConfirmDialog}>

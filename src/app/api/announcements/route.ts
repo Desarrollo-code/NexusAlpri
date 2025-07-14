@@ -8,12 +8,24 @@ import { AnnouncementEmail } from '@/components/emails/announcement-email';
 import type { UserRole } from '@/types';
 
 export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const pageSize = parseInt(searchParams.get('pageSize') || '6', 10); // Announcements are bigger, so smaller page size
+  const skip = (page - 1) * pageSize;
+
   try {
-    const announcements = await prisma.announcement.findMany({
-      orderBy: { date: 'desc' },
-      include: { author: { select: { id: true, name: true } } },
-    });
-    return NextResponse.json(announcements);
+    const [announcements, totalAnnouncements] = await prisma.$transaction([
+        prisma.announcement.findMany({
+            orderBy: { date: 'desc' },
+            include: { author: { select: { id: true, name: true } } },
+            skip: skip,
+            take: pageSize,
+        }),
+        prisma.announcement.count()
+    ]);
+    
+    return NextResponse.json({ announcements, totalAnnouncements });
+
   } catch (error) {
     console.error('[ANNOUNCEMENTS_GET_ERROR]', error);
     return NextResponse.json({ message: 'Error al obtener los anuncios' }, { status: 500 });

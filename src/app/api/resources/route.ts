@@ -7,18 +7,45 @@ import { getSession } from '@/lib/auth';
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const parentId = searchParams.get('parentId') || null;
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
+    const search = searchParams.get('search');
+    const category = searchParams.get('category');
 
-    try {
-        const resources = await prisma.resource.findMany({
-            where: { parentId },
-            include: {
-                uploader: { select: { id: true, name: true } },
-            },
-            orderBy: [
-                { type: 'asc' }, // Folders first
-                { title: 'asc' },
+    const skip = (page - 1) * pageSize;
+
+    let whereClause: any = { parentId };
+    if (search) {
+        whereClause.AND = whereClause.AND || [];
+        whereClause.AND.push({
+            OR: [
+                { title: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } },
+                { tags: { has: search.toLowerCase() } },
             ],
         });
+    }
+    if (category && category !== 'all') {
+        whereClause.AND = whereClause.AND || [];
+        whereClause.AND.push({ category: category });
+    }
+
+    try {
+        const [resources, totalResources] = await prisma.$transaction([
+            prisma.resource.findMany({
+                where: whereClause,
+                include: {
+                    uploader: { select: { id: true, name: true } },
+                },
+                orderBy: [
+                    { type: 'asc' }, // Folders first
+                    { uploadDate: 'desc' },
+                ],
+                skip: skip,
+                take: pageSize,
+            }),
+            prisma.resource.count({ where: whereClause })
+        ]);
         
         // Don't expose the PIN hash to the client and correctly type cast JSON fields
         const safeResources = resources.map(({ pin, tags, ...resource }) => ({
@@ -27,7 +54,7 @@ export async function GET(req: NextRequest) {
             hasPin: !!pin,
         }));
 
-        return NextResponse.json(safeResources);
+        return NextResponse.json({ resources: safeResources, totalResources });
     } catch (error) {
         console.error('[RESOURCES_GET_ERROR]', error);
         return NextResponse.json({ message: 'Error al obtener los recursos' }, { status: 500 });

@@ -7,6 +7,7 @@ import type { Announcement as AnnouncementType, UserRole } from '@/types';
 import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -32,45 +33,57 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { Announcement as PrismaAnnouncement, User as PrismaUser } from '@prisma/client';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
   author: { id: string; name: string; email?: string } | null;
   audience: UserRole[] | 'ALL' | string;
 }
 
+const PAGE_SIZE = 6; // 2x3 grid
 
 export default function AnnouncementsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [allAnnouncements, setAllAnnouncements] = useState<DisplayAnnouncement[]>([]);
+  const [totalAnnouncements, setTotalAnnouncements] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const totalPages = Math.ceil(totalAnnouncements / PAGE_SIZE);
+
   const [showCreateEditModal, setShowCreateEditModal] = useState(false);
   const [announcementToEdit, setAnnouncementToEdit] = useState<DisplayAnnouncement | null>(null);
 
-  // Simplified state for the form's audience select
   const [formAudience, setFormAudience] = useState<UserRole | 'ALL'>('ALL');
   const [formTitle, setFormTitle] = useState('');
   const [formContent, setFormContent] = useState('');
 
   const [announcementToDelete, setAnnouncementToDelete] = useState<DisplayAnnouncement | null>(null);
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false); // For create, edit, delete operations
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const fetchAnnouncements = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/announcements', { cache: 'no-store' });
+      const params = new URLSearchParams();
+      params.append('page', String(currentPage));
+      params.append('pageSize', String(PAGE_SIZE));
+
+      const response = await fetch(`/api/announcements?${params.toString()}`, { cache: 'no-store' });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `Failed to fetch announcements: ${response.statusText}`);
       }
-      const data: PrismaAnnouncement[] = await response.json();
+      const data: { announcements: PrismaAnnouncement[], totalAnnouncements: number } = await response.json();
       
-      const displayData: DisplayAnnouncement[] = data.map(ann => {
+      const displayData: DisplayAnnouncement[] = data.announcements.map(ann => {
         let parsedAudience: UserRole[] | 'ALL' = 'ALL';
         if (ann.audience === 'ALL') {
           parsedAudience = 'ALL';
@@ -84,14 +97,16 @@ export default function AnnouncementsPage() {
         };
       });
       setAllAnnouncements(displayData);
+      setTotalAnnouncements(data.totalAnnouncements);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar los anuncios');
       setAllAnnouncements([]);
+      setTotalAnnouncements(0);
       toast({ title: "Error al cargar anuncios", description: err instanceof Error ? err.message : 'No se pudieron cargar los anuncios.', variant: "destructive"});
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, currentPage]);
 
   useEffect(() => {
     fetchAnnouncements();
@@ -105,6 +120,19 @@ export default function AnnouncementsPage() {
         return false;
       });
   }, [user, allAnnouncements]);
+  
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set(name, value)
+      return params.toString()
+    },
+    [searchParams]
+  );
+  
+  const handlePageChange = (page: number) => {
+    router.push(`${pathname}?${createQueryString('page', String(page))}`);
+  };
 
   const resetFormAndState = () => {
     setFormTitle('');
@@ -123,13 +151,12 @@ export default function AnnouncementsPage() {
     setFormTitle(announcement.title);
     setFormContent(announcement.content);
     
-    // Set form audience state based on the announcement's audience
     if (announcement.audience === 'ALL') {
         setFormAudience('ALL');
     } else if (Array.isArray(announcement.audience) && announcement.audience.length > 0) {
-        setFormAudience(announcement.audience[0]); // UI only supports single role selection
+        setFormAudience(announcement.audience[0]);
     } else {
-        setFormAudience('ALL'); // Fallback
+        setFormAudience('ALL');
     }
     
     setShowCreateEditModal(true);
@@ -336,6 +363,34 @@ export default function AnnouncementsPage() {
           <h3 className="text-xl font-semibold mb-2">No hay anuncios recientes</h3>
           <p className="text-muted-foreground">Vuelve más tarde para ver las últimas novedades o crea uno nuevo si tienes permisos.</p>
         </div>
+      )}
+
+      {totalPages > 1 && (
+        <Pagination>
+            <PaginationContent>
+                <PaginationItem>
+                <PaginationPrevious
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
+                />
+                </PaginationItem>
+                {[...Array(totalPages)].map((_, i) => (
+                    <PaginationItem key={i}>
+                    <PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>
+                        {i + 1}
+                    </PaginationLink>
+                    </PaginationItem>
+                ))}
+                <PaginationItem>
+                <PaginationNext
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}
+                />
+                </PaginationItem>
+            </PaginationContent>
+        </Pagination>
       )}
 
       <AlertDialog open={showDeleteConfirmDialog} onOpenChange={setShowDeleteConfirmDialog}>

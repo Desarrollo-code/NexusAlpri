@@ -2,7 +2,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
-import type { UserRole } from '@/types';
+import type { UserRole, CourseStatus } from '@/types';
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,6 +10,11 @@ export async function GET(req: NextRequest) {
     const manageView = searchParams.get('manageView') === 'true';
     const userId = searchParams.get('userId');
     const userRole = searchParams.get('userRole') as UserRole;
+    
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
+    const tab = searchParams.get('tab');
+    const skip = (page - 1) * pageSize;
 
     let whereClause: any = {};
     
@@ -17,34 +22,39 @@ export async function GET(req: NextRequest) {
       if (userRole === 'INSTRUCTOR' && userId) {
         whereClause.instructorId = userId;
       }
-      // Admins see all courses in manage view, so no additional filter.
+      if (tab && tab !== 'all') {
+          whereClause.status = tab as CourseStatus;
+      }
     } else {
-      // Regular catalog view only shows published courses
       whereClause.status = 'PUBLISHED';
     }
 
-    const courses = await prisma.course.findMany({
-      where: whereClause,
-      include: {
-        instructor: {
-          select: { id: true, name: true },
-        },
-        _count: {
-          select: { modules: true },
-        },
-      },
-      orderBy: {
-        title: 'asc',
-      },
-    });
+    const [courses, totalCourses] = await prisma.$transaction([
+        prisma.course.findMany({
+            where: whereClause,
+            include: {
+                instructor: {
+                select: { id: true, name: true },
+                },
+                _count: {
+                select: { modules: true },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+            skip: skip,
+            take: pageSize,
+        }),
+        prisma.course.count({ where: whereClause })
+    ]);
     
     // In manage view, we also want lesson counts for instructors/admins
     if (manageView) {
         const courseIds = courses.map(c => c.id);
 
-        // If there are no courses, return early to avoid an empty `in` clause error.
         if (courseIds.length === 0) {
-            return NextResponse.json([]);
+            return NextResponse.json({ courses: [], totalCourses: 0 });
         }
 
         const lessonsCount = await prisma.lesson.groupBy({
@@ -76,11 +86,11 @@ export async function GET(req: NextRequest) {
             lessonsCount: courseLessonsMap.get(course.id) || 0
         }));
         
-        return NextResponse.json(coursesWithLessonsCount);
+        return NextResponse.json({ courses: coursesWithLessonsCount, totalCourses });
     }
 
 
-    return NextResponse.json(courses);
+    return NextResponse.json({ courses, totalCourses });
   } catch (error) {
     console.error('[COURSES_GET_ERROR]', error);
     return NextResponse.json({ message: 'Error al obtener los cursos' }, { status: 500 });

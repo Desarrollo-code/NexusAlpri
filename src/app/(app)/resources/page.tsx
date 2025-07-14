@@ -1,3 +1,4 @@
+
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -7,6 +8,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
 import { Search, UploadCloud, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, Pin, PinOff, MoreVertical, Folder, FileText, Video, Info, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Notebook, Shield, Filter, ArrowUp, ArrowDown, Lock, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -48,6 +50,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import mammoth from 'mammoth';
 import * as XLSX from 'xlsx';
 import { Textarea } from '@/components/ui/textarea';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+
+const PAGE_SIZE = 20;
 
 // --- Types and Mappers ---
 interface ApiResource extends Omit<PrismaResource, 'uploader' | 'tags' | 'type' | 'uploadDate' | 'pin'> {
@@ -238,11 +243,19 @@ const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
 export default function ResourcesPage() {
   const { user, settings } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [allApiResources, setAllApiResources] = useState<AppResourceType[]>([]);
+  const [totalResources, setTotalResources] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const totalPages = Math.ceil(totalResources / PAGE_SIZE);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedFormat, setSelectedFormat] = useState<string>('all');
@@ -296,56 +309,46 @@ export default function ResourcesPage() {
 
 
   // --- Data Fetching and Memoization ---
-  const fetchResources = useCallback(async (folderId: string | null) => {
+  const fetchResources = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    let url = '/api/resources';
-    if (folderId) {
-      url += `?parentId=${folderId}`;
+    const params = new URLSearchParams();
+    if (currentFolderId) {
+      params.append('parentId', currentFolderId);
     }
+    params.append('page', String(currentPage));
+    params.append('pageSize', String(PAGE_SIZE));
+    if (searchTerm) params.append('search', searchTerm);
+    if (selectedCategory !== 'all') params.append('category', selectedCategory);
 
     try {
-      const response = await fetch(url, { cache: 'no-store' });
+      const response = await fetch(`/api/resources?${params.toString()}`, { cache: 'no-store' });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch resources');
-      const data: ApiResource[] = await response.json();
-      setAllApiResources(data.map(mapApiResourceToAppResource));
+      const data: { resources: AppResourceType[], totalResources: number } = await response.json();
+      setAllApiResources(data.resources || []);
+      setTotalResources(data.totalResources || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido');
       toast({ title: "Error al cargar recursos", description: err instanceof Error ? err.message : 'No se pudo cargar la biblioteca.', variant: "destructive"});
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, currentFolderId, currentPage, searchTerm, selectedCategory]);
 
   useEffect(() => {
-    fetchResources(currentFolderId);
-  }, [fetchResources, currentFolderId]);
+    fetchResources();
+  }, [fetchResources]);
 
   const { folders, files, availableFormats } = useMemo(() => {
     let formats = new Set<string>();
-
-    const filtered = allApiResources.filter(resource => {
-      // Add format to the set for the filter dropdown
+    
+    allApiResources.forEach(resource => {
       if (resource.type !== 'FOLDER' && resource.url) {
         formats.add(getFileFormat(resource.url));
       }
-
-      // Search filter logic
-      const matchesSearch = resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (resource.description && resource.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (resource.tags && resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
-
-      if (resource.type === 'FOLDER') {
-        return matchesSearch;
-      }
-      
-      const matchesCategory = selectedCategory === 'all' || resource.category === selectedCategory;
-      const matchesFormat = selectedFormat === 'all' || getFileFormat(resource.url) === selectedFormat;
-
-      return matchesCategory && matchesSearch && matchesFormat;
     });
-    
-    const sortedFiles = filtered.filter(item => item.type !== 'FOLDER')
+
+    const sortedFiles = allApiResources.filter(item => item.type !== 'FOLDER')
       .sort((a, b) => {
           let compareA: string | number | Date = '';
           let compareB: string | number | Date = '';
@@ -375,11 +378,11 @@ export default function ResourcesPage() {
       });
 
     return {
-      folders: filtered.filter(item => item.type === 'FOLDER'),
+      folders: allApiResources.filter(item => item.type === 'FOLDER'),
       files: sortedFiles,
       availableFormats: Array.from(formats).sort()
     };
-  }, [allApiResources, searchTerm, selectedCategory, selectedFormat, sortColumn, sortDirection]);
+  }, [allApiResources, sortColumn, sortDirection]);
   
     // Effect for handling file conversions for preview
   useEffect(() => {
@@ -433,6 +436,18 @@ export default function ResourcesPage() {
 
   }, [previewResource]);
 
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set(name, value)
+      return params.toString()
+    },
+    [searchParams]
+  );
+  
+  const handlePageChange = (page: number) => {
+    router.push(`${pathname}?${createQueryString('page', String(page))}`);
+  };
 
   // --- Event Handlers ---
   const resetCreateForm = () => {
@@ -490,7 +505,7 @@ export default function ResourcesPage() {
       toast({ title: "Recurso Creado", description: `El recurso "${newResourceTitle}" ha sido añadido.` });
       setShowCreateFileModal(false);
       resetCreateForm();
-      fetchResources(currentFolderId);
+      fetchResources();
     } catch (err) {
       toast({ title: "Error al crear recurso", description: (err as Error).message, variant: "destructive" });
     } finally {
@@ -509,7 +524,7 @@ export default function ResourcesPage() {
       toast({ title: "Carpeta Creada", description: `La carpeta "${newFolderName}" ha sido creada.` });
       setShowCreateFolderModal(false);
       setNewFolderName('');
-      fetchResources(currentFolderId);
+      fetchResources();
     } catch (err) {
       toast({ title: "Error al crear carpeta", description: (err as Error).message, variant: "destructive" });
     } finally {
@@ -532,7 +547,7 @@ export default function ResourcesPage() {
       const response = await fetch(`/api/resources/${resourceToDelete.id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to delete resource');
       toast({ title: 'Recurso Eliminado', description: `El recurso "${resourceToDelete.title}" ha sido eliminado.` });
-      fetchResources(currentFolderId);
+      fetchResources();
     } catch (err) {
       toast({ title: 'Error al eliminar', description: (err as Error).message, variant: 'destructive' });
     } finally {
@@ -564,7 +579,7 @@ export default function ResourcesPage() {
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to update resource');
       toast({ title: "Recurso Actualizado", description: "Los cambios han sido guardados." });
       setShowEditModal(false);
-      fetchResources(currentFolderId);
+      fetchResources();
     } catch (err) {
       toast({ title: "Error al Guardar", description: (err as Error).message, variant: "destructive" });
     } finally {
@@ -583,7 +598,7 @@ export default function ResourcesPage() {
       if (!response.ok) throw new Error((await response.json()).message || "Failed to set PIN");
       toast({ title: "PIN Guardado", description: "El recurso ahora está protegido."});
       setShowEditModal(false);
-      fetchResources(currentFolderId);
+      fetchResources();
     } catch (err) {
       toast({ title: "Error al guardar PIN", description: (err as Error).message, variant: "destructive"});
     } finally {
@@ -599,7 +614,7 @@ export default function ResourcesPage() {
       if (!response.ok) throw new Error((await response.json()).message || "Failed to remove PIN");
       toast({ title: "PIN Eliminado", description: "El recurso ya no está protegido."});
       setShowEditModal(false);
-      fetchResources(currentFolderId);
+      fetchResources();
     } catch (err) {
       toast({ title: "Error al quitar PIN", description: (err as Error).message, variant: "destructive"});
     } finally {
@@ -657,6 +672,12 @@ export default function ResourcesPage() {
       setSortColumn(column);
       setSortDirection('asc');
     }
+  };
+  
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handlePageChange(1); // Reset to first page on new search
+    fetchResources();
   };
 
   const SortableHeader = ({ column, label }: { column: 'title' | 'category' | 'uploadDate', label: string }) => (
@@ -752,7 +773,7 @@ export default function ResourcesPage() {
             ))}
           </div>
 
-          <div className="flex items-center gap-4 w-full md:w-auto shrink-0">
+          <form onSubmit={handleSearchSubmit} className="flex items-center gap-4 w-full md:w-auto shrink-0">
             <div className="relative w-full md:flex-1 md:max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input type="search" placeholder="Buscar en esta carpeta..." className="pl-10 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
@@ -761,7 +782,7 @@ export default function ResourcesPage() {
               <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('list')} aria-label="Vista de lista"><List className="h-5 w-5"/></Button>
               <Button variant={view === 'grid' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('grid')} aria-label="Vista de cuadrícula"><LayoutGrid className="h-5 w-5"/></Button>
             </div>
-          </div>
+          </form>
         </div>
 
         {!currentFolderId && (
@@ -804,8 +825,8 @@ export default function ResourcesPage() {
       {isLoading ? (
         <div className="flex justify-center items-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2">Cargando recursos...</p></div>
       ) : error ? (
-        <div className="flex flex-col items-center justify-center py-12 text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p><Button onClick={() => fetchResources(currentFolderId)} variant="outline" className="mt-4">Reintentar</Button></div>
-      ) : (folders.length === 0 && files.length === 0) ? (
+        <div className="flex flex-col items-center justify-center py-12 text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p><Button onClick={() => fetchResources()} variant="outline" className="mt-4">Reintentar</Button></div>
+      ) : (allApiResources.length === 0) ? (
         <div className="text-center py-12"><ArchiveX className="mx-auto h-12 w-12 text-primary"/><h3 className="text-xl font-semibold">{searchTerm ? 'No hay coincidencias' : 'Carpeta Vacía'}</h3><p className="text-muted-foreground">{searchTerm ? 'Prueba con otro término de búsqueda.' : 'Sube un archivo o crea una carpeta para empezar.'}</p></div>
       ) : (
         <div className="space-y-6">
@@ -849,6 +870,33 @@ export default function ResourcesPage() {
                     )}
                 </div>
             )}
+             {totalPages > 1 && (
+                <Pagination>
+                    <PaginationContent>
+                        <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
+                            className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
+                        />
+                        </PaginationItem>
+                        {[...Array(totalPages)].map((_, i) => (
+                            <PaginationItem key={i}>
+                            <PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>
+                                {i + 1}
+                            </PaginationLink>
+                            </PaginationItem>
+                        ))}
+                        <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
+                            className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}
+                        />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
+             )}
         </div>
       )}
 
