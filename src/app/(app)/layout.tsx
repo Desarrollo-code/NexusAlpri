@@ -47,7 +47,7 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
           <AccordionTrigger 
             className={cn(
               "w-full h-auto p-2 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground rounded-md text-sm hover:no-underline justify-start gap-3",
-              isParentActive && "bg-sidebar-accent/80 text-sidebar-accent-foreground"
+              isParentActive && "bg-sidebar-accent/80"
             )}
           >
              <div className="flex items-center gap-3 flex-1">

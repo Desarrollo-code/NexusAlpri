@@ -5,104 +5,99 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 220 20% 98%;
+    --foreground: 220 15% 20%;
     
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 20% 100%;
+    --card-foreground: 220 15% 20%;
    
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 20% 100%;
+    --popover-foreground: 220 15% 20%;
    
-    --primary: 262.1 83.3% 57.8%; /* Vibrant Purple */
+    --primary: 217 91% 60%; /* Corporate Blue */
     --primary-foreground: 210 20% 98%;
    
-    --secondary: 220 13% 91%;
-    --secondary-foreground: 220.9 39.3% 11%;
+    --secondary: 220 15% 94%;
+    --secondary-foreground: 220 10% 25%;
    
-    --muted: 220 13% 91%;
-    --muted-foreground: 220 8.9% 46.1%;
+    --muted: 220 15% 94%;
+    --muted-foreground: 220 10% 45%;
    
-    --accent: 30.5 92.9% 55.5%; /* Bright Orange */
+    --accent: 205 90% 55%; /* Brighter Blue for Accent */
     --accent-foreground: 210 20% 98%;
    
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
    
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 262.1 83.3% 57.8%;
+    --border: 220 15% 88%;
+    --input: 220 15% 92%;
+    --ring: 217 91% 60%;
    
     --radius: 0.75rem;
 
     /* Chart Colors */
-    --chart-1: 22 96% 56%; /* Orange */
-    --chart-2: 262 83% 58%; /* Purple */
-    --chart-3: 43 96% 56%; /* Yellow */
-    --chart-4: 142.1 76.2% 36.3%; /* Green */
-    --chart-5: 340 82% 62%; /* Pink */
+    --chart-1: 217 91% 60%; /* Blue */
+    --chart-2: 195 85% 45%; /* Teal */
+    --chart-3: 250 80% 65%; /* Indigo */
+    --chart-4: 220 15% 55%; /* Gray */
+    --chart-5: 175 75% 40%; /* Sea Green */
 
     /* Event Colors */
-    --event-blue: 220 80% 65%;
-    --event-green: 160 70% 45%;
+    --event-blue: 217 91% 60%;
+    --event-green: 150 70% 40%;
     --event-red: 0 84% 60%;
-    --event-orange: 25 95% 53%;
-
-    /* Gauge Colors */
-    --gauge-green: 140 70% 45%;
-    --gauge-yellow: 45 93% 47%;
-    --gauge-red: 0 84% 60%;
+    --event-orange: 30 95% 55%;
 
     /* Sidebar Colors - Light Mode */
-    --sidebar-background: 240 10% 99%;
+    --sidebar-background: 220 20% 99%;
     --sidebar-foreground: 224 71.4% 4.1%;
-    --sidebar-accent: 220 13% 91%;
-    --sidebar-accent-foreground: 220.9 39.3% 11%;
-    --sidebar-border: 220 13% 91%;
+    --sidebar-accent: 220 15% 92%;
+    --sidebar-accent-foreground: 220 10% 15%;
+    --sidebar-border: 220 15% 90%;
   }
  
   .dark {
-    --background: 224 71% 4%; /* Near Black */
-    --foreground: 210 40% 98%;
+    --background: 220 18% 12%; /* Deeper Slate */
+    --foreground: 210 20% 94%;
 
-    --card: 224 71% 6%; /* Darker card background */
-    --card-foreground: 210 40% 98%;
+    --card: 220 18% 15%; /* Slightly Lighter Card */
+    --card-foreground: 210 20% 94%;
 
-    --popover: 224 71% 4%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 220 18% 12%;
+    --popover-foreground: 210 20% 94%;
 
-    --primary: 262.1 83.3% 57.8%;
+    --primary: 217 91% 60%; /* Blue remains vibrant */
     --primary-foreground: 210 20% 98%;
 
-    --secondary: 220 14.3% 15.1%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 220 15% 22%;
+    --secondary-foreground: 210 20% 94%;
 
-    --muted: 220 14.3% 15.1%;
-    --muted-foreground: 220 8.9% 46.1%;
+    --muted: 220 15% 22%;
+    --muted-foreground: 220 10% 65%;
 
-    --accent: 30.5 92.9% 55.5%; /* Bright Orange */
+    --accent: 205 90% 55%; /* Bright Blue Accent */
     --accent-foreground: 210 20% 98%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 13% 18%; /* Slightly lighter border */
-    --input: 220 14.3% 15.1%;
-    --ring: 262.1 83.3% 57.8%;
+    --border: 220 15% 25%;
+    --input: 220 15% 22%;
+    --ring: 217 91% 60%;
     
     /* Chart Colors */
-    --chart-1: 22 96% 56%;
-    --chart-2: 262 83% 58%;
-    --chart-3: 43 96% 56%;
-    --chart-4: 142.1 70.6% 45.3%;
-    --chart-5: 340 82% 62%;
+    --chart-1: 217 91% 60%; /* Blue */
+    --chart-2: 195 85% 45%; /* Teal */
+    --chart-3: 250 80% 65%; /* Indigo */
+    --chart-4: 220 15% 65%; /* Light Gray */
+    --chart-5: 175 75% 40%; /* Sea Green */
     
     /* Sidebar Colors - Dark Mode */
-    --sidebar-background: 224 71% 5%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-accent: 220 14.3% 12.1%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 220 13% 18%;
+    --sidebar-background: 220 18% 13%;
+    --sidebar-foreground: 210 20% 94%;
+    --sidebar-accent: 220 15% 20%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 220 15% 25%;
   }
 }
 
@@ -129,9 +124,15 @@
   .glass-card {
     @apply bg-card/60 backdrop-blur-xl border-0;
     background-color: hsl(var(--card));
-    background-image: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 100%);
+    /* The vignette effect */
+    background-image: radial-gradient(ellipse 80% 80% at 50% -10%, hsla(0, 0%, 100%, 0.1), hsla(0, 0%, 100%, 0));
     position: relative;
     overflow: hidden;
+  }
+  
+  .dark .glass-card {
+      /* Dark vignette effect */
+      background-image: radial-gradient(ellipse 100% 100% at 50% 50%, transparent 40%, hsl(var(--background) / 0.5) 100%);
   }
 
   .glass-card::before {
@@ -140,7 +141,7 @@
     inset: 0;
     border-radius: inherit; /* Use the parent's border-radius */
     padding: 1px; /* border-width */
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--chart-1) / 0.2), transparent);
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--accent) / 0.2), transparent);
     -webkit-mask: 
       linear-gradient(#fff 0 0) content-box, 
       linear-gradient(#fff 0 0);
