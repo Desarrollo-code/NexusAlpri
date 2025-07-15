@@ -227,14 +227,14 @@ export default function CalendarPage() {
         </div>
       </div>
       
-      <Card className="flex-grow flex flex-col shadow-lg bg-card text-foreground border-border p-2 sm:p-4">
+      <Card className="max-w-2xl mx-auto w-full shadow-lg bg-card text-foreground border-border p-2 sm:p-4">
         {isLoading ? (
-          <div className="flex items-center justify-center flex-grow"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
+          <div className="flex items-center justify-center h-96"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
         ) : error ? (
-          <div className="flex flex-col items-center justify-center flex-grow text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}</div>
+          <div className="flex flex-col items-center justify-center h-96 text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}</div>
         ) : (
           <ColorfulCalendar
-            className="w-full flex-grow"
+            className="w-full"
             events={events}
             onDateSelect={handleDayClick}
             numberOfMonths={1}
@@ -243,7 +243,7 @@ export default function CalendarPage() {
         )}
       </Card>
       
-       <Card className="p-4 shadow-lg">
+       <Card className="p-4 shadow-lg max-w-2xl mx-auto w-full">
           <h3 className="text-lg font-semibold mb-3">Leyenda</h3>
           <div className="flex flex-wrap gap-x-6 gap-y-3">
             {eventColors.map(colorInfo => (
