@@ -221,8 +221,8 @@ export default function CalendarPage() {
           <p className="text-muted-foreground">Vista general de los eventos, talleres y fechas importantes.</p>
         </div>
         <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => setCurrentDate(subMonths(currentDate, isMobile ? 1 : 6))}><ChevronLeft className="h-4 w-4"/></Button>
-            <Button variant="outline" onClick={() => setCurrentDate(addMonths(currentDate, isMobile ? 1 : 6))}><ChevronRight className="h-4 w-4"/></Button>
+            <Button variant="outline" onClick={() => setCurrentDate(subMonths(currentDate, 1))}><ChevronLeft className="h-4 w-4"/></Button>
+            <Button variant="outline" onClick={() => setCurrentDate(addMonths(currentDate, 1))}><ChevronRight className="h-4 w-4"/></Button>
             {canEdit && <Button onClick={() => handleOpenCreateModal()}><PlusCircle className="mr-2 h-4 w-4" /> Crear Evento</Button>}
         </div>
       </div>
@@ -237,7 +237,7 @@ export default function CalendarPage() {
             className="w-full flex-grow"
             events={events}
             onDateSelect={handleDayClick}
-            numberOfMonths={isMobile ? 1 : 6}
+            numberOfMonths={1}
             month={currentDate}
           />
         )}
