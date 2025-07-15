@@ -255,120 +255,118 @@ export default function ProfilePage() {
   }
 
   return (
-    <>
-      <div className="space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold font-headline mb-2">Mi Perfil</h1>
-          <p className="text-muted-foreground">Visualiza y actualiza tu información personal y de cuenta.</p>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold font-headline mb-2">Mi Perfil</h1>
+        <p className="text-muted-foreground">Visualiza y actualiza tu información personal y de cuenta.</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-1 space-y-8">
+          <Card className="text-center">
+            <CardHeader>
+              <div className="relative mx-auto w-32 h-32 mb-4">
+                <Avatar className="w-32 h-32 border-4 border-primary/20 shadow-md">
+                  <AvatarImage src={avatarPreview || `https://placehold.co/128x128.png?text=${getInitials(user.name)}`} alt={user.name || ''} data-ai-hint="profile photo" />
+                  <AvatarFallback className="text-4xl">{getInitials(user.name)}</AvatarFallback>
+                </Avatar>
+                <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="absolute bottom-1 right-1 h-8 w-8 rounded-full bg-background"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={isSaving || isUploadingAvatar}
+                    aria-label="Cambiar foto de perfil"
+                >
+                    <Camera className="h-4 w-4 text-primary" />
+                </Button>
+                <input 
+                    type="file" 
+                    ref={avatarInputRef} 
+                    onChange={handleFileChange} 
+                    accept="image/png, image/jpeg, image/gif, image/webp" 
+                    className="hidden"
+                />
+              </div>
+              {isUploadingAvatar && (
+                <div className="px-4">
+                  <Progress value={uploadProgress} className="h-1.5" />
+                  <p className="text-xs mt-1 text-muted-foreground">{uploadProgress}%</p>
+                </div>
+              )}
+              <CardTitle className="text-2xl font-headline mt-2">{user.name}</CardTitle>
+              <Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'default' : 'secondary'} className="capitalize mx-auto">
+                {(user.role as string)?.toLowerCase() || 'student'}
+              </Badge>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><Mail className="h-4 w-4 text-primary"/> {user.email}</p>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1 space-y-8">
-            <Card className="text-center">
-              <CardHeader>
-                <div className="relative mx-auto w-32 h-32 mb-4">
-                  <Avatar className="w-32 h-32 border-4 border-primary/20 shadow-md">
-                    <AvatarImage src={avatarPreview || `https://placehold.co/128x128.png?text=${getInitials(user.name)}`} alt={user.name || ''} data-ai-hint="profile photo" />
-                    <AvatarFallback className="text-4xl">{getInitials(user.name)}</AvatarFallback>
-                  </Avatar>
-                  <Button 
-                      variant="outline" 
-                      size="icon" 
-                      className="absolute bottom-1 right-1 h-8 w-8 rounded-full bg-background"
-                      onClick={() => avatarInputRef.current?.click()}
-                      disabled={isSaving || isUploadingAvatar}
-                      aria-label="Cambiar foto de perfil"
-                  >
-                      <Camera className="h-4 w-4 text-primary" />
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><UserIcon className="h-5 w-5 text-primary"/>Información Personal</CardTitle>
+              <CardDescription>Estos datos son visibles en tu perfil público (si aplica).</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="fullName">Nombre Completo</Label>
+                <Input 
+                  id="fullName" 
+                  value={editableName} 
+                  onChange={(e) => setEditableName(e.target.value)}
+                  disabled={isSaving || isUploadingAvatar}
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Correo Electrónico</Label>
+                <Input id="email" type="email" value={user.email} disabled />
+                <p className="text-xs text-muted-foreground mt-1">El correo electrónico no se puede cambiar desde aquí.</p>
+              </div>
+               <div className="pt-2">
+                  <Button onClick={handleSaveChanges} disabled={isSaving || isUploadingAvatar} className="w-full">
+                      {isSaving || isUploadingAvatar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                      {isSaving ? 'Guardando...' : (isUploadingAvatar ? 'Subiendo...' : 'Guardar Información')}
                   </Button>
-                  <input 
-                      type="file" 
-                      ref={avatarInputRef} 
-                      onChange={handleFileChange} 
-                      accept="image/png, image/jpeg, image/gif, image/webp" 
-                      className="hidden"
-                  />
-                </div>
-                {isUploadingAvatar && (
-                  <div className="px-4">
-                    <Progress value={uploadProgress} className="h-1.5" />
-                    <p className="text-xs mt-1 text-muted-foreground">{uploadProgress}%</p>
-                  </div>
-                )}
-                <CardTitle className="text-2xl font-headline mt-2">{user.name}</CardTitle>
-                <Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'default' : 'secondary'} className="capitalize mx-auto">
-                  {(user.role as string)?.toLowerCase() || 'student'}
-                </Badge>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><Mail className="h-4 w-4 text-primary"/> {user.email}</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><UserIcon className="h-5 w-5 text-primary"/>Información Personal</CardTitle>
-                <CardDescription>Estos datos son visibles en tu perfil público (si aplica).</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/>Seguridad de la Cuenta</CardTitle>
+                <CardDescription>Gestiona la seguridad de tu acceso a NexusAlpri.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="fullName">Nombre Completo</Label>
-                  <Input 
-                    id="fullName" 
-                    value={editableName} 
-                    onChange={(e) => setEditableName(e.target.value)}
-                    disabled={isSaving || isUploadingAvatar}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email">Correo Electrónico</Label>
-                  <Input id="email" type="email" value={user.email} disabled />
-                  <p className="text-xs text-muted-foreground mt-1">El correo electrónico no se puede cambiar desde aquí.</p>
-                </div>
-                 <div className="pt-2">
-                    <Button onClick={handleSaveChanges} disabled={isSaving || isUploadingAvatar} className="w-full">
-                        {isSaving || isUploadingAvatar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                        {isSaving ? 'Guardando...' : (isUploadingAvatar ? 'Subiendo...' : 'Guardar Información')}
-                    </Button>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/>Seguridad de la Cuenta</CardTitle>
-                  <CardDescription>Gestiona la seguridad de tu acceso a NexusAlpri.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold mb-2">Autenticación de Dos Factores (2FA)</h4>
-                    {user.isTwoFactorEnabled ? (
-                        <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                            <p className="text-sm text-green-800 dark:text-green-200">2FA está <strong>activado</strong> en tu cuenta.</p>
-                            <Button variant="destructive" size="sm" onClick={() => setShowDisable2faDialog(true)} disabled={is2faProcessing}>Desactivar</Button>
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-muted/50 border">
-                            <p className="text-sm text-muted-foreground">Añade una capa extra de seguridad.</p>
-                            <Button onClick={handleEnable2fa} disabled={is2faProcessing}>
-                              {is2faProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                              Activar 2FA
-                            </Button>
-                        </div>
-                    )}
-                  </div>
-                  <div>
-                      <h4 className="font-semibold mb-2">Cambiar Contraseña</h4>
-                      <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-muted/50 border">
-                          <p className="text-sm text-muted-foreground">Actualiza tu contraseña regularmente.</p>
-                          <Button variant="outline" onClick={() => setShowChangePasswordDialog(true)}>Cambiar Contraseña</Button>
+                  <h4 className="font-semibold mb-2">Autenticación de Dos Factores (2FA)</h4>
+                  {user.isTwoFactorEnabled ? (
+                      <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                          <p className="text-sm text-green-800 dark:text-green-200">2FA está <strong>activado</strong> en tu cuenta.</p>
+                          <Button variant="destructive" size="sm" onClick={() => setShowDisable2faDialog(true)} disabled={is2faProcessing}>Desactivar</Button>
                       </div>
-                  </div>
-              </CardContent>
-            </Card>
-          </div>
+                  ) : (
+                      <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-muted/50 border">
+                          <p className="text-sm text-muted-foreground">Añade una capa extra de seguridad.</p>
+                          <Button onClick={handleEnable2fa} disabled={is2faProcessing}>
+                            {is2faProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                            Activar 2FA
+                          </Button>
+                      </div>
+                  )}
+                </div>
+                <div>
+                    <h4 className="font-semibold mb-2">Cambiar Contraseña</h4>
+                    <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-muted/50 border">
+                        <p className="text-sm text-muted-foreground">Actualiza tu contraseña regularmente.</p>
+                        <Button variant="outline" onClick={() => setShowChangePasswordDialog(true)}>Cambiar Contraseña</Button>
+                    </div>
+                </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
       
@@ -514,6 +512,6 @@ export default function ProfilePage() {
             </form>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

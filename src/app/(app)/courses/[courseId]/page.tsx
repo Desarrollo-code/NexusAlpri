@@ -434,8 +434,8 @@ export default function CourseDetailPage() {
   }
   
   return (
-    <div className="flex flex-col h-[calc(100vh_-_var(--header-height,64px))]">
-       <div className="flex items-center justify-between gap-4 mb-4">
+    <div className="space-y-4">
+       <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
                 {!isMobile && (
                     <Button variant="ghost" size="icon" onClick={() => setIsSidebarVisible(!isSidebarVisible)}>
@@ -493,7 +493,7 @@ export default function CourseDetailPage() {
                 )}
             </div>
         </div>
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6 min-h-0">
+      <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6">
         
         {/* Sidebar for Desktop */}
         {!isMobile && (
