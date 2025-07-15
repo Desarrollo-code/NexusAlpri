@@ -14,30 +14,30 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
    
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 262.1 83.3% 57.8%; /* Vibrant Purple */
+    --primary-foreground: 210 20% 98%;
    
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 13% 91%;
+    --secondary-foreground: 220.9 39.3% 11%;
    
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 13% 91%;
+    --muted-foreground: 220 8.9% 46.1%;
    
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 30.5 92.9% 55.5%; /* Bright Orange */
+    --accent-foreground: 210 20% 98%;
    
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
    
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 262.1 83.3% 57.8%;
    
     --radius: 0.75rem;
 
     /* Chart Colors */
     --chart-1: 22 96% 56%; /* Orange */
-    --chart-2: 221 83% 53%; /* Blue */
+    --chart-2: 262 83% 58%; /* Purple */
     --chart-3: 43 96% 56%; /* Yellow */
     --chart-4: 142.1 76.2% 36.3%; /* Green */
     --chart-5: 340 82% 62%; /* Pink */
@@ -56,53 +56,53 @@
     /* Sidebar Colors - Light Mode */
     --sidebar-background: 240 10% 99%;
     --sidebar-foreground: 224 71.4% 4.1%;
-    --sidebar-accent: 210 40% 96.1%;
-    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
-    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-accent: 220 13% 91%;
+    --sidebar-accent-foreground: 220.9 39.3% 11%;
+    --sidebar-border: 220 13% 91%;
   }
  
   .dark {
     --background: 224 71% 4%; /* Near Black */
     --foreground: 210 40% 98%;
 
-    --card: 224 71% 10%; /* Darker card background */
+    --card: 224 71% 6%; /* Darker card background */
     --card-foreground: 210 40% 98%;
 
     --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 20% 98%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 14.3% 15.1%;
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 220 14.3% 15.1%;
+    --muted-foreground: 220 8.9% 46.1%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 30.5 92.9% 55.5%; /* Bright Orange */
+    --accent-foreground: 210 20% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 23.5%; /* Slightly lighter border */
-    --input: 217.2 32.6% 17.5%;
-    --ring: 217.2 91.2% 59.8%;
+    --border: 220 13% 18%; /* Slightly lighter border */
+    --input: 220 14.3% 15.1%;
+    --ring: 262.1 83.3% 57.8%;
     
     /* Chart Colors */
-    --chart-1: 22 96% 56%; /* Orange */
-    --chart-2: 217.2 91.2% 59.8%; /* Blue */
-    --chart-3: 43 96% 56%; /* Yellow */
-    --chart-4: 142.1 70.6% 45.3%; /* Green */
-    --chart-5: 340 82% 62%; /* Pink */
+    --chart-1: 22 96% 56%;
+    --chart-2: 262 83% 58%;
+    --chart-3: 43 96% 56%;
+    --chart-4: 142.1 70.6% 45.3%;
+    --chart-5: 340 82% 62%;
     
     /* Sidebar Colors - Dark Mode */
-    --sidebar-background: 224 71% 6%;
+    --sidebar-background: 224 71% 5%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-accent: 217.2 32.6% 12.5%;
+    --sidebar-accent: 220 14.3% 12.1%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-border: 220 13% 18%;
   }
 }
 
@@ -128,6 +128,8 @@
 
   .glass-card {
     @apply bg-card/60 backdrop-blur-xl border-0;
+    background-color: hsl(var(--card));
+    background-image: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 100%);
     position: relative;
     overflow: hidden;
   }
