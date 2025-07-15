@@ -1,3 +1,4 @@
+
 // src/app/(app)/calendar/page.tsx
 'use client';
 
@@ -214,7 +215,7 @@ export default function CalendarPage() {
   const modalDescription = !canEdit && eventToEdit ? "Aquí puedes ver la información del evento." : (eventToEdit ? "Modifica los detalles del evento." : "Completa los detalles para agendar un nuevo evento.");
 
   return (
-    <div className="space-y-6 flex flex-col h-full">
+    <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold font-headline mb-2">Calendario de Eventos</h1>
