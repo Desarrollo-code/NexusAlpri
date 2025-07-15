@@ -128,7 +128,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const adminItems = navItems.find(item => item.label === 'Administración' && item.subItems && item.subItems.length > 0);
 
     return (
-        <div className="flex min-h-screen w-full bg-background">
+        <div className="bg-background">
             <Sidebar>
                 <SidebarHeader className="group-data-[state=expanded]:px-4 group-data-[state=collapsed]:px-2">
                     <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground group-data-[state=collapsed]:justify-center">
@@ -179,9 +179,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
 
-            <div className="w-full md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out">
+            <div className="min-h-screen md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out">
                 <TopBar />
-                <main className="flex-1 p-4 md:p-6 lg:p-8">
+                <main className="p-4 md:p-6 lg:p-8">
                   {children}
                 </main>
             </div>
