@@ -52,7 +52,7 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
           >
              <div className="flex items-center gap-3 flex-1">
                 <item.icon className={cn(isParentActive ? "text-primary" : iconColorClass, "h-5 w-5")} />
-                <span className="font-semibold text-base group-data-[state=collapsed]:hidden">{item.label}</span>
+                <span className="font-semibold text-base group-data-[state=expanded]:hidden">{item.label}</span>
             </div>
             <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=collapsed]/sidebar-wrapper:hidden" />
           </AccordionTrigger>
@@ -179,7 +179,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
 
-            <div className="flex flex-1 flex-col md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out">
+            <div className="w-full md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out">
                 <TopBar />
                 <main className="flex-1 p-4 md:p-6 lg:p-8">
                   {children}
