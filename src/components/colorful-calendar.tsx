@@ -1,3 +1,4 @@
+
 // src/components/colorful-calendar.tsx
 'use client';
 
@@ -34,7 +35,7 @@ function CustomDayContent(props: DayContentProps & { eventsByDay: Record<string,
   return (
     <div className="relative w-full h-full flex flex-col p-1 overflow-hidden">
       <time dateTime={format(date, 'yyyy-MM-dd')} className={cn(
-        "self-start text-xs rounded-full h-6 w-6 flex items-center justify-center",
+        "self-start text-sm rounded-full h-6 w-6 flex items-center justify-center", // Increased from text-xs
         isSameDay(date, new Date()) && "bg-primary text-primary-foreground font-bold",
         isOutside && "text-muted-foreground/50"
       )}>
@@ -43,14 +44,14 @@ function CustomDayContent(props: DayContentProps & { eventsByDay: Record<string,
       <div className="flex-grow mt-1 space-y-0.5">
         {eventsForDay.slice(0, 2).map(event => (
           <div key={event.id} className={cn(
-            'w-full text-left text-white text-[10px] px-1.5 py-0.5 rounded-sm truncate',
+            'w-full text-left text-white text-xs px-1.5 py-0.5 rounded-sm truncate', // Increased from text-[10px]
             getEventColorClass(event.color)
           )}>
             {event.title}
           </div>
         ))}
         {eventsForDay.length > 2 && (
-          <div className="text-muted-foreground text-[10px]">+ {eventsForDay.length - 2} más</div>
+          <div className="text-muted-foreground text-xs">+ {eventsForDay.length - 2} más</div> // Increased from text-[10px]
         )}
       </div>
     </div>
