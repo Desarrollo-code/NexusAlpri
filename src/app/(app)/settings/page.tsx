@@ -178,46 +178,6 @@ export default function SettingsPage() {
             
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><BellDot className="h-5 w-5 text-primary"/>Notificaciones por Correo</CardTitle>
-                <CardDescription>Controla cómo y cuándo se envían los correos electrónicos.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-                      <div className="space-y-0.5">
-                          <Label htmlFor="enableEmailNotifications" className="text-base">Habilitar Notificaciones por Correo</Label>
-                          <p className="text-sm text-muted-foreground">Permite que la plataforma envíe correos (ej. anuncios).</p>
-                      </div>
-                      <Switch 
-                          id="enableEmailNotifications" 
-                          checked={formState.enableEmailNotifications}
-                          onCheckedChange={(checked) => handleSwitchChange('enableEmailNotifications', checked)}
-                          disabled={isSaving}
-                      />
-                  </div>
-                  {formState.enableEmailNotifications && (
-                      <div className="space-y-3 p-3 border rounded-lg shadow-sm">
-                          <Label htmlFor="emailWhitelist" className="flex items-center gap-2 font-semibold">
-                            Modo de Prueba (Lista Blanca de Correos)
-                          </Label>
-                          <Textarea
-                              id="emailWhitelist"
-                              placeholder="admin@ejemplo.com, test@ejemplo.com"
-                              value={formState.emailWhitelist || ''}
-                              onChange={(e) => handleInputChange('emailWhitelist', e.target.value)}
-                              disabled={isSaving}
-                              rows={3}
-                          />
-                          <p className="text-xs text-muted-foreground">
-                              Si se especifican correos aquí (separados por coma), **SÓLO** se enviarán notificaciones a estas direcciones. 
-                              Déjalo en blanco para enviar correos a todos los usuarios destinatarios según las reglas de la plataforma.
-                          </p>
-                      </div>
-                  )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
                 <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary"/>Seguridad y Acceso</CardTitle>
                 <CardDescription>Gestiona las políticas de seguridad y registro.</CardDescription>
               </CardHeader>
