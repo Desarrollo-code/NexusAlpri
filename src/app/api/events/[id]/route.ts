@@ -7,14 +7,14 @@ import type { NextRequest } from 'next/server';
 // PUT (update) an event
 export async function PUT(
   req: NextRequest, 
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const session = await getSession(req);
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id } = params;
+  const { id } = context.params;
 
   try {
     const existingEvent = await prisma.calendarEvent.findUnique({
@@ -77,14 +77,14 @@ export async function PUT(
 // DELETE an event
 export async function DELETE(
   req: NextRequest, 
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
     const session = await getSession(req);
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const { id } = params;
+    const { id } = context.params;
 
     try {
         const existingEvent = await prisma.calendarEvent.findUnique({

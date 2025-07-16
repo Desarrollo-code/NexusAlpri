@@ -4,9 +4,9 @@ import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { getSession } from '@/lib/auth';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, context: { params: { id: string } }) {
     const session = await getSession(req);
-    if (!session || session.id !== params.id) {
+    if (!session || session.id !== context.params.id) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         }
 
 
-        const user = await prisma.user.findUnique({ where: { id: params.id } });
+        const user = await prisma.user.findUnique({ where: { id: context.params.id } });
         if (!user || !user.password) {
             return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
         }
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
         await prisma.user.update({
-            where: { id: params.id },
+            where: { id: context.params.id },
             data: { password: hashedNewPassword },
         });
 

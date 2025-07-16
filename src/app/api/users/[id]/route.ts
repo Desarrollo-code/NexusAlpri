@@ -5,9 +5,9 @@ import bcrypt from 'bcryptjs';
 import { getSession } from '@/lib/auth';
 
 // GET a specific user
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, context: { params: { id: string } }) {
     const session = await getSession(req);
-    const { id } = params;
+    const { id } = context.params;
     // Allow admins to get any user, and any user to get their own profile
     if (!session || (session.role !== 'ADMINISTRATOR' && session.id !== id)) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
@@ -28,13 +28,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PUT (update) a user
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, context: { params: { id: string } }) {
     const session = await getSession(req);
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = context.params;
     // Admin can edit anyone. A user can edit their own profile.
     if (session.role !== 'ADMINISTRATOR' && session.id !== id) {
          return NextResponse.json({ message: 'No tienes permiso para actualizar este usuario.' }, { status: 403 });
@@ -114,18 +114,18 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
 
 // DELETE a user
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
     const session = await getSession(req);
     if (!session || session.role !== 'ADMINISTRATOR') {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
     
-    if (session.id === params.id) {
+    if (session.id === context.params.id) {
         return NextResponse.json({ message: 'No puedes eliminar tu propia cuenta' }, { status: 400 });
     }
 
     try {
-        await prisma.user.delete({ where: { id: params.id } });
+        await prisma.user.delete({ where: { id: context.params.id } });
         return new NextResponse(null, { status: 204 });
     } catch (error) {
         console.error('[USER_DELETE_ERROR]', error);

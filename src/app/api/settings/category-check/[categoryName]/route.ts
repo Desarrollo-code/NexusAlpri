@@ -5,7 +5,7 @@ import { getSession } from '@/lib/auth';
 
 export async function GET(
     req: NextRequest, 
-    { params }: { params: { categoryName: string } }
+    context: { params: { categoryName: string } }
 ) {
     const session = await getSession(req);
     if (!session || session.role !== 'ADMINISTRATOR') {
@@ -13,7 +13,7 @@ export async function GET(
     }
 
     try {
-        const { categoryName: encodedCategoryName } = params;
+        const { categoryName: encodedCategoryName } = context.params;
         const categoryName = decodeURIComponent(encodedCategoryName);
 
         const courseCount = await prisma.course.count({
