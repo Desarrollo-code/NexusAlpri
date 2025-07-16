@@ -5,10 +5,10 @@ import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
 // GET a specific resource
-export async function GET(req: NextRequest, context: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     try {
         const resource = await prisma.resource.findUnique({
-            where: { id: context.params.id },
+            where: { id: params.id },
             include: {
                 uploader: { select: { id: true, name: true } },
             },
@@ -26,14 +26,14 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
 
 
 // PUT (update) a resource
-export async function PUT(req: NextRequest, context: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getSession(req);
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
     
     try {
-        const resourceToUpdate = await prisma.resource.findUnique({ where: { id: context.params.id } });
+        const resourceToUpdate = await prisma.resource.findUnique({ where: { id: params.id } });
         if (!resourceToUpdate) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
@@ -44,7 +44,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
         const { title, category, tags, description } = await req.json();
 
         const updatedResource = await prisma.resource.update({
-            where: { id: context.params.id },
+            where: { id: params.id },
             data: { 
                 title, 
                 category, 
@@ -61,14 +61,14 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 }
 
 // DELETE a resource
-export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
      const session = await getSession(req);
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
     try {
-        const resourceToDelete = await prisma.resource.findUnique({ where: { id: context.params.id } });
+        const resourceToDelete = await prisma.resource.findUnique({ where: { id: params.id } });
         if (!resourceToDelete) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
@@ -78,13 +78,13 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
         
         if (resourceToDelete.type === 'FOLDER') {
             // Recursive delete for folders might be needed here, or prevent deletion if not empty
-            const children = await prisma.resource.count({ where: { parentId: context.params.id } });
+            const children = await prisma.resource.count({ where: { parentId: params.id } });
             if (children > 0) {
                 return NextResponse.json({ message: 'No se puede eliminar una carpeta que no está vacía' }, { status: 400 });
             }
         }
 
-        await prisma.resource.delete({ where: { id: context.params.id } });
+        await prisma.resource.delete({ where: { id: params.id } });
         // Note: Actual file deletion from storage is not handled here.
 
         return new NextResponse(null, { status: 204 });

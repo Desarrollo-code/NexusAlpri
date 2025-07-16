@@ -5,14 +5,14 @@ import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
 // GET enrollments for a specific course
-export async function GET(req: NextRequest, context: { params: { courseId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { courseId: string } }) {
     const session = await getSession(req);
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
     try {
-        const courseId = context.params.courseId;
+        const courseId = params.courseId;
         const enrollments = await prisma.enrollment.findMany({
             where: { courseId },
             include: {

@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
-export async function POST(req: NextRequest, context: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getSession(req);
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest, context: { params: { id: string } }
         }
 
         const resource = await prisma.resource.findUnique({
-            where: { id: context.params.id },
+            where: { id: params.id },
             select: { pin: true, url: true }
         });
 
