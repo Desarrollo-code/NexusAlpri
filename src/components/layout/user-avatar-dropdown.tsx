@@ -16,21 +16,22 @@ import {
   DropdownMenuSubContent
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Settings, Monitor, Sun, Moon, UserCircle } from 'lucide-react';
+import { LogOut, User, Settings, Monitor, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { UserRole } from '@/types';
-import { cn } from '@/lib/utils';
 
 
 function ThemeToggle() {
     const { setTheme } = useTheme();
 
     const switchTheme = (theme: 'light' | 'dark' | 'system') => {
+        // Fallback for browsers that don't support the View Transitions API
         if (!document.startViewTransition) {
             setTheme(theme);
             return;
         }
+        // Use the View Transitions API
         document.startViewTransition(() => setTheme(theme));
     };
 
