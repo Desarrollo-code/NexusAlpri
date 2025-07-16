@@ -51,6 +51,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
              <div className="flex items-center gap-3 flex-1">
                 <item.icon className={cn("h-5 w-5", isParentActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground")} />
                 <span className="font-semibold text-base group-data-[state=expanded]:hidden">{item.label}</span>
+                 <span className="font-semibold text-base group-data-[state=collapsed]:hidden">{item.label}</span>
             </div>
             <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=collapsed]/sidebar-wrapper:hidden" />
           </AccordionTrigger>
