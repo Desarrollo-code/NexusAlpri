@@ -4,7 +4,7 @@ import { Inter, Space_Grotesk, Source_Code_Pro } from 'next/font/google';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
-import { ThemeProvider } from '@/components/theme-provider';
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -35,14 +35,14 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <body className={`${inter.variable} ${spaceGrotesk.variable} ${sourceCodePro.variable} font-body antialiased`}>
         <AuthProvider>
-          <ThemeProvider
+          <NextThemesProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
           >
             {children}
             <Toaster />
-          </ThemeProvider>
+          </NextThemesProvider>
         </AuthProvider>
       </body>
     </html>
