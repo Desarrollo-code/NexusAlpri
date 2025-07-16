@@ -7,7 +7,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Edit3, Mail, Shield, UserCircle as UserIcon, Camera, KeyRound, Save, Loader2, Check, Eye, EyeOff } from 'lucide-react';
+import { Edit3, Mail, Shield, UserCircle as UserIcon, Camera, KeyRound, Save, Loader2, Check, Eye, EyeOff, Palette } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -34,6 +34,84 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { defaultThemes, type ColorTheme } from '@/lib/themes';
+
+
+const ThemeCustomizer = () => {
+    const { theme, setTheme, customTheme, setCustomTheme } = useAuth();
+
+    const handleThemeChange = (newTheme: string) => {
+        if (!document.startViewTransition) {
+            setTheme(newTheme);
+            return;
+        }
+        document.startViewTransition(() => setTheme(newTheme));
+    };
+
+    const handleCustomColorChange = (variable: keyof ColorTheme['colors'], value: string) => {
+        const newCustomTheme = {
+            ...customTheme,
+            colors: {
+                ...customTheme.colors,
+                [variable]: value,
+            },
+        };
+        setCustomTheme(newCustomTheme);
+        if (theme === 'custom') {
+            setTheme('custom'); // Re-apply to trigger CSS variable update
+        }
+    };
+    
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary"/> Personalización de Tema</CardTitle>
+                <CardDescription>Elige un tema predefinido o crea el tuyo. Tu selección se guardará en este navegador.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <RadioGroup value={theme} onValueChange={handleThemeChange} className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {defaultThemes.map(t => (
+                        <Label key={t.name} htmlFor={`theme-${t.name}`} className="relative block cursor-pointer rounded-lg border-2 border-transparent has-[:checked]:border-primary transition-all p-2">
+                           <RadioGroupItem value={t.name} id={`theme-${t.name}`} className="sr-only" />
+                           <div className="w-full h-20 rounded-md overflow-hidden flex">
+                               <div className="w-1/3 h-full" style={{ backgroundColor: t.colors.background }}></div>
+                               <div className="w-1/3 h-full" style={{ backgroundColor: t.colors.foreground }}></div>
+                               <div className="w-1/3 h-full" style={{ backgroundColor: t.colors.primary }}></div>
+                           </div>
+                           <p className="text-center text-sm font-medium mt-2">{t.label}</p>
+                        </Label>
+                    ))}
+                </RadioGroup>
+
+                {theme === 'custom' && (
+                    <div className="mt-6 pt-4 border-t space-y-4">
+                        <h4 className="font-semibold">Colores Personalizados</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="custom-bg">Fondo</Label>
+                                <Input type="color" id="custom-bg" value={customTheme.colors.background} onChange={e => handleCustomColorChange('background', e.target.value)} className="w-12 h-8 p-1"/>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="custom-fg">Texto</Label>
+                                <Input type="color" id="custom-fg" value={customTheme.colors.foreground} onChange={e => handleCustomColorChange('foreground', e.target.value)} className="w-12 h-8 p-1"/>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="custom-primary">Primario</Label>
+                                <Input type="color" id="custom-primary" value={customTheme.colors.primary} onChange={e => handleCustomColorChange('primary', e.target.value)} className="w-12 h-8 p-1"/>
+                            </div>
+                             <div className="flex items-center justify-between">
+                                <Label htmlFor="custom-accent">Acento</Label>
+                                <Input type="color" id="custom-accent" value={customTheme.colors.accent} onChange={e => handleCustomColorChange('accent', e.target.value)} className="w-12 h-8 p-1"/>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+};
+
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
@@ -334,6 +412,8 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
+
+          <ThemeCustomizer />
           
           <Card>
             <CardHeader>

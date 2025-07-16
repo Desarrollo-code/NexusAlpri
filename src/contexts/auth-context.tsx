@@ -2,9 +2,10 @@
 'use client';
 
 import type { User, PlatformSettings } from '@/types';
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import { useCustomTheme } from '@/components/theme-provider';
 
 interface AuthContextType {
   user: User | null;
@@ -14,6 +15,11 @@ interface AuthContextType {
   isLoading: boolean;
   updateUser: (updatedData: Partial<User>) => void;
   updateSettings: (updatedData: Partial<PlatformSettings>) => void;
+  // Theme properties from useCustomTheme
+  theme: string;
+  setTheme: (theme: string) => void;
+  customTheme: any; // Simplified for context
+  setCustomTheme: (theme: any) => void;
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
@@ -38,6 +44,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  
+  // Integrate theme context
+  const themeState = useCustomTheme();
 
   const fetchSessionData = useCallback(async () => {
     setIsLoading(true);
@@ -112,6 +121,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
+  const contextValue = useMemo(() => ({
+    user,
+    settings,
+    login,
+    logout,
+    isLoading,
+    updateUser,
+    updateSettings,
+    ...themeState,
+  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, themeState]);
+
   if (isLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
@@ -121,7 +141,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, settings, login, logout, isLoading, updateUser, updateSettings }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
