@@ -44,12 +44,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
 
         let dataToUpdate: any = {};
-
-        // Theme properties can be updated by any logged-in user for themselves
+        
+        // Any user can update their theme
         if (colorTheme) dataToUpdate.colorTheme = colorTheme;
         if (customThemeColors) dataToUpdate.customThemeColors = customThemeColors;
 
-        // A user can always update their own name and avatar
+        // A user can update their own name and avatar
         if (session.id === id) {
             if (name) dataToUpdate.name = name;
             if (avatar) dataToUpdate.avatar = avatar;
@@ -104,6 +104,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         return NextResponse.json({ message: 'Error al actualizar el usuario' }, { status: 500 });
     }
 }
+
 
 // DELETE a user
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
