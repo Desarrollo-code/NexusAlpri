@@ -21,11 +21,6 @@ interface AuthContextType {
   applyTheme: (themeName: string, customColors?: any) => void;
   saveTheme: (themeName: string, customColors?: any) => Promise<void>;
   customTheme: ColorTheme;
-<<<<<<< HEAD
-=======
-  setCustomTheme: (theme: ColorTheme) => void;
-  applyTheme: (themeName: string, customColors?: any) => void;
->>>>>>> 22ed41c (.)
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
@@ -73,24 +68,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const resolvedTheme = isLight(themeToApply.colors.background) ? 'light' : 'dark';
         setNextTheme(resolvedTheme);
     }
-<<<<<<< HEAD
     setTheme(themeName);
   }, [setNextTheme, user]);
-=======
-    
-<<<<<<< HEAD
-    setTheme(themeName);
-    if (themeName === 'custom' && customColors) {
-        setCustomTheme(themeToApply);
-=======
-    _setTheme(themeName);
-    if (themeName === 'custom' && customColors) {
-        _setCustomTheme(themeToApply);
->>>>>>> 22ed41c (.)
-    }
-  }, [resolvedTheme, setNextTheme]);
->>>>>>> 769a5f18c704a0b7575ac433e99f55c8db646d10
-
 
   const saveTheme = useCallback(async (themeName: string, customColors?: any) => {
     if (!user) return;
@@ -108,61 +87,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const updatedUser = await response.json();
         if (!response.ok) throw new Error(updatedUser.message);
 
-        // Update user context locally, which will trigger theme application via useEffect
         setUser(prevUser => prevUser ? { ...prevUser, ...updatedUser } : null);
 
     } catch (error) {
         console.error("Failed to save theme settings:", error);
     }
-<<<<<<< HEAD
   }, [user, customTheme.colors]);
-=======
-  }, [user]);
-
-  const fetchSessionData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const [settingsRes, userRes] = await Promise.all([
-        fetch('/api/settings').catch(e => {
-            console.error("Network error fetching settings:", e);
-            return { ok: false, json: () => Promise.resolve({ message: "Network error" }) } as any as Response;
-        }),
-        fetch('/api/auth/me').catch(e => {
-            console.error("Network error fetching user session:", e);
-            return { ok: false, json: () => Promise.resolve({ user: null }) } as any as Response;
-        }),
-      ]);
-
-      if (settingsRes.ok) {
-        const settingsData = await settingsRes.json();
-        setSettings(settingsData);
-      } else {
-        console.warn('Could not fetch platform settings, using default values.');
-        setSettings(DEFAULT_SETTINGS);
-      }
-
-      if (userRes.ok) {
-        const { user: userData } = await userRes.json();
-        setUser(userData);
-        if (userData) {
-          applyTheme(userData.colorTheme || 'corporate-blue', userData.customThemeColors);
-        } else {
-          applyTheme('corporate-blue');
-        }
-      } else {
-        setUser(null);
-        applyTheme('corporate-blue');
-      }
-    } catch (error) {
-      console.error("An unexpected error occurred during session initialization:", error);
-      setUser(null);
-      setSettings(DEFAULT_SETTINGS);
-      applyTheme('corporate-blue');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [applyTheme]);
->>>>>>> 769a5f18c704a0b7575ac433e99f55c8db646d10
 
   useEffect(() => {
     const fetchSessionData = async () => {
@@ -190,14 +120,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fetchSessionData();
   }, []);
   
-  // Apply theme whenever user data changes
   useEffect(() => {
     if (user) {
         const themeName = user.colorTheme || 'corporate-blue';
         const customColors = user.customThemeColors as ColorTheme['colors'] | null;
         applyTheme(themeName, customColors);
     } else if (!isLoading) {
-        // Apply a default theme if user is logged out
         applyTheme('corporate-blue');
     }
   }, [user, isLoading, applyTheme]);
@@ -224,19 +152,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;
-<<<<<<< HEAD
       return { ...prevUser, ...updatedData };
-=======
-      const newUser = { ...prevUser, ...updatedData };
-<<<<<<< HEAD
-=======
-      // If theme was part of the update, re-apply it
->>>>>>> 22ed41c (.)
-      if (updatedData.colorTheme || updatedData.customThemeColors) {
-          applyTheme(newUser.colorTheme || 'corporate-blue', newUser.customThemeColors);
-      }
-      return newUser;
->>>>>>> 769a5f18c704a0b7575ac433e99f55c8db646d10
     });
   }, []);
 
@@ -259,13 +175,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     applyTheme,
     saveTheme,
     customTheme,
-<<<<<<< HEAD
   }), [user, settings, login, logout, isLoading, updateUser, updateSettings, theme, customTheme, applyTheme, saveTheme]);
-=======
-    setCustomTheme: _setCustomTheme,
-    applyTheme,
-  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, theme, customTheme, applyTheme]);
->>>>>>> 22ed41c (.)
 
   if (isLoading && !user && !settings) {
     return (
