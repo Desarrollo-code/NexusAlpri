@@ -125,7 +125,7 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
     const userRolesChartData = React.useMemo(() => {
         const order: ('STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR')[] = ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'];
         return order.map(role => ({
-            name: userRolesChartConfig[role]?.label || role,
+            role: userRolesChartConfig[role]?.label || role,
             count: stats.usersByRole.find(item => item.role === role)?.count || 0,
             fill: userRolesChartConfig[role]?.color || 'hsl(var(--muted))'
         }));
@@ -141,7 +141,6 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
         }));
     }, [stats?.coursesByStatus]);
 
-    const showPieChart = stats.totalUsers >= 5;
 
     return (
         <div className="space-y-6">
@@ -158,55 +157,25 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
                         <CardTitle className="flex items-center gap-2 text-lg"><Users className="text-primary" /> Distribución de Usuarios</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {userRolesChartData.length > 0 ? (
-                             showPieChart ? (
-                                <ChartContainer
-                                  config={userRolesChartConfig}
-                                  className="mx-auto aspect-square h-[250px] w-full"
-                                >
-                                  <PieChart>
-                                    <ChartTooltip
-                                      cursor={false}
-                                      content={<ChartTooltipContent hideLabel />}
-                                    />
-                                    <Pie
-                                      data={userRolesChartData}
-                                      dataKey="count"
-                                      nameKey="name"
-                                      innerRadius={60}
-                                      strokeWidth={5}
-                                    >
-                                      {userRolesChartData.map((entry) => (
-                                        <Cell
-                                          key={entry.name}
-                                          fill={entry.fill}
-                                          className="stroke-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                        />
-                                      ))}
-                                    </Pie>
-                                    <g>
-                                      <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central" className="fill-foreground text-3xl font-bold">
-                                        {stats.totalUsers.toLocaleString()}
-                                      </text>
-                                      <text x="50%" y="50%" dy="1.5em" textAnchor="middle" dominantBaseline="central" className="fill-muted-foreground text-sm">
-                                        Usuarios
-                                      </text>
-                                    </g>
-                                  </PieChart>
-                                </ChartContainer>
-                            ) : (
-                                <ul className="space-y-2">
-                                    {userRolesChartData.map(role => (
-                                        <li key={role.name} className="flex justify-between items-center text-sm p-2 rounded-md bg-muted/50">
-                                            <span className="flex items-center gap-2">
-                                                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: role.fill }}></span>
-                                                {role.name}
-                                            </span>
-                                            <span className="font-bold">{role.count}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )
+                       {userRolesChartData.length > 0 ? (
+                           <ChartContainer config={userRolesChartConfig} className="h-[250px] w-full">
+                                <ResponsiveContainer>
+                                    <BarChart data={userRolesChartData} margin={{ top: 20, right: 20, left: -5, bottom: 5 }} barGap={4}>
+                                        <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
+                                        <XAxis dataKey="role" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
+                                        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} allowDecimals={false} />
+                                        <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent />} />
+                                        <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                                          {userRolesChartData.map((entry) => (
+                                            <Cell
+                                              key={`cell-${entry.role}`}
+                                              fill={entry.fill}
+                                            />
+                                          ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </ChartContainer>
                         ) : (<p className="text-muted-foreground text-center py-4">No hay datos de usuarios.</p>)}
                     </CardContent>
                 </Card>
