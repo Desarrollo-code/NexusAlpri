@@ -6,7 +6,6 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback,
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import type { ThemeName } from '@/lib/themes';
-import { getTheme } from '@/lib/themes';
 
 interface AuthContextType {
   user: User | null;
@@ -16,7 +15,6 @@ interface AuthContextType {
   isLoading: boolean;
   updateUser: (updatedData: Partial<User>) => void;
   updateSettings: (updatedData: Partial<PlatformSettings>) => void;
-  applyTheme: (themeName: string, customColors?: any) => void;
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
@@ -43,7 +41,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   const fetchSessionData = useCallback(async () => {
-    // No set isLoading to true here to avoid re-showing loader on minor updates
     try {
       const [settingsRes, userRes] = await Promise.all([
         fetch('/api/settings'),
@@ -68,11 +65,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fetchSessionData();
   }, [fetchSessionData]);
   
-  const applyTheme = useCallback((themeName: string, customColors?: any) => {
-    // This function can be used to apply theme changes if needed elsewhere,
-    // but the primary logic is now in ThemeProvider
-  }, []);
-
   const login = useCallback((userData: User) => {
     setUser(userData);
     const params = new URLSearchParams(window.location.search);
@@ -113,8 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     updateUser,
     updateSettings,
-    applyTheme,
-  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, applyTheme]);
+  }), [user, settings, login, logout, isLoading, updateUser, updateSettings]);
 
   return (
     <AuthContext.Provider value={contextValue}>

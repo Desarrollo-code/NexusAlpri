@@ -40,7 +40,7 @@ import { useTheme } from 'next-themes';
 
 
 const ThemeCustomizer = () => {
-    const { user, saveTheme } = useAuth();
+    const { user, updateUser } = useAuth();
     const [isSaving, setIsSaving] = useState(false);
     const [selectedTheme, setSelectedTheme] = useState<ThemeName>(user?.colorTheme as ThemeName || 'corporate-blue');
 
@@ -55,9 +55,21 @@ const ThemeCustomizer = () => {
 
         const transitionCallback = async () => {
             setIsSaving(true);
-            setSelectedTheme(newThemeName); // Optimistically update UI
-            await saveTheme(newThemeName);
-            setIsSaving(false);
+            setSelectedTheme(newThemeName); 
+            try {
+                const response = await fetch(`/api/users/${user.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ colorTheme: newThemeName })
+                });
+                if (!response.ok) throw new Error('Failed to save theme');
+                const savedUser = await response.json();
+                updateUser(savedUser);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setIsSaving(false);
+            }
         };
 
         if (!document.startViewTransition) {
@@ -105,7 +117,7 @@ const ThemeCustomizer = () => {
 
 
 export default function ProfilePage() {
-  const { user, updateUser, saveTheme } = useAuth();
+  const { user, updateUser } = useAuth();
   const { toast } = useToast();
 
   const [editableName, setEditableName] = useState('');

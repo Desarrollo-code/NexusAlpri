@@ -27,11 +27,15 @@ function ThemeToggle() {
     const { setTheme } = useTheme();
 
     const toggleThemeWithTransition = (newTheme: 'light' | 'dark' | 'system') => {
-        if (!document.startViewTransition) {
+        const switchTheme = () => {
             setTheme(newTheme);
+        };
+
+        if (!document.startViewTransition) {
+            switchTheme();
             return;
         }
-        document.startViewTransition(() => setTheme(newTheme));
+        document.startViewTransition(switchTheme);
     };
 
     return (
