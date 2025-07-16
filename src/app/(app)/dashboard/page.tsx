@@ -226,7 +226,7 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
                                         <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                                           {courseStatusChartData.map((entry) => (
                                             <Cell
-                                              key={entry.status}
+                                              key={`cell-${entry.status}`}
                                               fill={entry.fill}
                                             />
                                           ))}
