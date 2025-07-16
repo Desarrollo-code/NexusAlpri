@@ -25,6 +25,17 @@ import { UserRole } from '@/types';
 function ThemeToggle() {
     const { setTheme } = useTheme();
 
+    const toggleThemeWithTransition = (newTheme: 'light' | 'dark' | 'system') => {
+        // Fallback for browsers that don't support View Transitions
+        if (!document.startViewTransition) {
+            setTheme(newTheme);
+            return;
+        }
+
+        document.startViewTransition(() => setTheme(newTheme));
+    };
+
+
     return (
         <DropdownMenuSub>
             <DropdownMenuSubTrigger>
@@ -34,15 +45,15 @@ function ThemeToggle() {
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={() => setTheme('light')}>
+                    <DropdownMenuItem onClick={() => toggleThemeWithTransition('light')}>
                         <Sun className="mr-2 h-4 w-4" />
                         <span>Claro</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTheme('dark')}>
+                    <DropdownMenuItem onClick={() => toggleThemeWithTransition('dark')}>
                         <Moon className="mr-2 h-4 w-4" />
                         <span>Oscuro</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTheme('system')}>
+                    <DropdownMenuItem onClick={() => toggleThemeWithTransition('system')}>
                         <Monitor className="mr-2 h-4 w-4" />
                         <span>Sistema</span>
                     </DropdownMenuItem>
