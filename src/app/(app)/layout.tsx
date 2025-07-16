@@ -173,7 +173,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                         onValueChange={setOpenAccordionValue}
                         className="w-full p-2"
                     >
-                        <SidebarMenu>
+                        <SidebarMenu className="overflow-hidden">
                           {generalItems.map((item, index) => (
                               <NavMenuItem key={item.href || item.label} item={item} pathname={pathname} />
                           ))}
