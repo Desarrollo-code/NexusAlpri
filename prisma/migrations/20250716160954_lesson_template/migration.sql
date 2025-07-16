@@ -1,11 +1,11 @@
 -- CreateTable
 CREATE TABLE `users` (
     `id` VARCHAR(191) NOT NULL,
-    `name` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NULL,
     `email` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
     `avatar` VARCHAR(191) NULL,
-    `role` ENUM('STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR') NOT NULL,
+    `role` ENUM('STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR') NOT NULL DEFAULT 'STUDENT',
     `isTwoFactorEnabled` BOOLEAN NOT NULL DEFAULT false,
     `twoFactorSecret` VARCHAR(191) NULL,
     `registeredDate` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -48,7 +48,7 @@ CREATE TABLE `lessons` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `order` INTEGER NOT NULL,
-    `type` VARCHAR(191) NULL,
+    `type` TEXT NULL,
     `content` TEXT NULL,
     `moduleId` VARCHAR(191) NOT NULL,
 
@@ -226,8 +226,7 @@ CREATE TABLE `lesson_templates` (
     `id` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NULL,
-    `type` ENUM('SYSTEM', 'USER') NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `type` ENUM('SYSTEM', 'USER') NOT NULL DEFAULT 'USER',
     `creatorId` VARCHAR(191) NULL,
 
     PRIMARY KEY (`id`)
