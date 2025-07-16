@@ -73,7 +73,7 @@ export default function SecurityAuditPage() {
             case 'PASSWORD_CHANGE_SUCCESS':
                  return {
                     label: 'Cambio de Contraseña',
-                    icon: <KeyRound className="h-4 w-4 text-blue-500" />,
+                    icon: <KeyRound className="h-4 w-4 text-primary" />,
                     variant: 'default',
                     details: 'La contraseña del usuario fue actualizada.'
                 };
@@ -89,7 +89,6 @@ export default function SecurityAuditPage() {
                     label: '2FA Desactivado',
                     icon: <ShieldAlert className="h-4 w-4 text-amber-500" />,
                     variant: 'destructive',
-                    variant_opts: { className: 'bg-amber-500 hover:bg-amber-600 border-amber-500' },
                     details: 'El usuario desactivó la autenticación de dos factores.'
                 };
              case 'USER_ROLE_CHANGED':
@@ -97,7 +96,6 @@ export default function SecurityAuditPage() {
                     label: 'Cambio de Rol de Usuario',
                     icon: <UserCog className="h-4 w-4 text-purple-500" />,
                     variant: 'default',
-                    variant_opts: { className: 'bg-purple-600 hover:bg-purple-700 border-purple-600' },
                     details: details || 'El rol del usuario ha sido modificado.'
                 };
             default:
@@ -174,7 +172,7 @@ export default function SecurityAuditPage() {
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
                                                             {eventDetails.icon}
-                                                            <Badge variant={eventDetails.variant} {...(eventDetails.variant_opts || {})}>
+                                                            <Badge variant={eventDetails.variant}>
                                                                 {eventDetails.label}
                                                             </Badge>
                                                         </div>

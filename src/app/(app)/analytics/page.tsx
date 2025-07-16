@@ -406,8 +406,8 @@ const SecurityAnalyticsSection = () => {
             case 'FAILED_LOGIN_ATTEMPT': return { label: 'Intento Fallido', icon: <ShieldX className="h-4 w-4 text-destructive" />, variant: 'destructive' as const };
             case 'PASSWORD_CHANGE_SUCCESS': return { label: 'Cambio de Contraseña', icon: <KeyRound className="h-4 w-4 text-blue-500" />, variant: 'default' as const };
             case 'TWO_FACTOR_ENABLED': return { label: '2FA Activado', icon: <ShieldCheck className="h-4 w-4 text-green-500" />, variant: 'default' as const };
-            case 'TWO_FACTOR_DISABLED': return { label: '2FA Desactivado', icon: <ShieldAlert className="h-4 w-4 text-amber-500" />, variant: 'destructive' as const, variant_opts: { className: 'bg-amber-500' } };
-            case 'USER_ROLE_CHANGED': return { label: 'Cambio de Rol', icon: <UserCog className="h-4 w-4 text-purple-500" />, variant: 'default' as const, variant_opts: { className: 'bg-purple-600' } };
+            case 'TWO_FACTOR_DISABLED': return { label: '2FA Desactivado', icon: <ShieldAlert className="h-4 w-4 text-amber-500" />, variant: 'destructive' as const };
+            case 'USER_ROLE_CHANGED': return { label: 'Cambio de Rol', icon: <UserCog className="h-4 w-4 text-purple-500" />, variant: 'default' as const };
             default: return { label: 'Evento Desconocido', icon: <ShieldAlert className="h-4 w-4" />, variant: 'outline' as const };
         }
     };
@@ -459,7 +459,7 @@ const SecurityAnalyticsSection = () => {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {eventInfo.icon}
-                        <Badge variant={eventInfo.variant} {...(eventInfo as any).variant_opts}>{eventInfo.label}</Badge>
+                        <Badge variant={eventInfo.variant}>{eventInfo.label}</Badge>
                       </div>
                     </TableCell>
                     <TableCell>

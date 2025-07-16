@@ -110,7 +110,7 @@ const StatCard = ({ title, value, icon: Icon, href, trend }: { title: string; va
                 <CardContent>
                     <div className="text-2xl font-bold">{value.toLocaleString('es-CO')}</div>
                     {hasTrend && (
-                        <p className={cn("text-xs flex items-center", isPositive ? "text-green-500" : "text-red-500")}>
+                        <p className={cn("text-xs flex items-center", isPositive ? "text-green-500" : "text-destructive")}>
                             <TrendIcon className="h-3 w-3 mr-1" />
                             {isPositive ? '+' : ''}{trend.toFixed(1)}% respecto a los últimos 7 días
                         </p>
