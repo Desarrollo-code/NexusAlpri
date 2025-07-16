@@ -53,6 +53,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { GradientIcon } from '@/components/ui/gradient-icon';
 
 const PAGE_SIZE = 20;
 
@@ -315,7 +316,7 @@ export default function UsersPage() {
   
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    handlePageChange(1); // Reset to first page on new search
+    handlePageChange(1);
     fetchUsers();
   };
 
@@ -473,8 +474,8 @@ export default function UsersPage() {
                 }
             }}>
                 <DialogTrigger asChild>
-                    <Button onClick={handleOpenAddModal}>
-                        <PlusCircle className="mr-2 h-4 w-4" /> Añadir Nuevo Usuario
+                    <Button>
+                        <GradientIcon icon={PlusCircle} className="mr-2" size="sm"/> Añadir Nuevo Usuario
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">

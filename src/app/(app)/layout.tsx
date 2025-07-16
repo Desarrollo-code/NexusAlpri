@@ -28,16 +28,16 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from '@/components/ui/dropdown-menu';
+import { GradientIcon } from '@/components/ui/gradient-icon';
 
 
-const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: string, index: number }) => {
+const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) => {
   const { user } = useAuth();
   
   if (!user) return null;
 
   const isActive = item.href ? pathname.startsWith(item.href) : false;
   const isParentActive = item.subItems?.some(sub => sub.href && pathname.startsWith(sub.href));
-  const iconColorClass = `text-chart-${(index % 5) + 1}`;
 
   const filteredSubItems = item.subItems?.filter(sub => sub.roles.includes(user.role)) ?? [];
 
@@ -51,7 +51,7 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
             )}
           >
              <div className="flex items-center gap-3 flex-1">
-                <item.icon className={cn(isParentActive ? "text-primary" : iconColorClass, "h-5 w-5")} />
+                <GradientIcon icon={item.icon} isActive={isParentActive} />
                 <span className="font-semibold text-base group-data-[state=expanded]:hidden">{item.label}</span>
             </div>
             <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=collapsed]/sidebar-wrapper:hidden" />
@@ -62,7 +62,7 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
                 <SidebarMenuItem key={subItem.href}>
                   <SidebarMenuButton asChild isActive={pathname.startsWith(subItem.href)} size="sm" className="justify-start gap-2" tooltip={{...subItem.tooltip, children: subItem.label}}>
                     <Link href={subItem.href}>
-                      <subItem.icon className={cn(pathname.startsWith(subItem.href) ? "text-primary" : `text-chart-${(index % 5) + 1}`, "h-4 w-4")}/>
+                      <GradientIcon icon={subItem.icon} size="sm" isActive={pathname.startsWith(subItem.href)}/>
                       <span className="text-sm font-normal">{subItem.label}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -78,13 +78,14 @@ const NavMenuItem = ({ item, pathname, index }: { item: NavItem, pathname: strin
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{...item.tooltip, children: item.label}}>
         <Link href={item.href || '#'}>
-          <item.icon className={cn(isActive ? "text-primary" : iconColorClass, "h-5 w-5")} />
+          <GradientIcon icon={item.icon} isActive={isActive} />
           <span className="font-semibold text-base group-data-[state=collapsed]:hidden">{item.label}</span>
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
 };
+
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const { user, settings, logout } = useAuth();
@@ -115,14 +116,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         );
         return parentItem ? [parentItem.label] : [];
     });
-
-    if (!user || !settings) {
-        return (
-          <div className="flex h-screen w-screen items-center justify-center bg-background">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          </div>
-        );
-    }
     
     const generalItems = navItems.filter(item => !item.subItems || item.subItems.length === 0);
     const adminItems = navItems.find(item => item.label === 'Administración' && item.subItems && item.subItems.length > 0);
@@ -141,7 +134,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                             priority
                             data-ai-hint="logo education"
                         />
-                        <span className="text-xl font-headline group-data-[state=collapsed]:hidden">{settings.platformName || 'NexusAlpri'}</span>
+                        <span className="text-xl font-headline group-data-[state=collapsed]:hidden">{settings?.platformName || 'NexusAlpri'}</span>
                     </Link>
                 </SidebarHeader>
 
@@ -154,13 +147,13 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                     >
                         <SidebarMenu>
                           {generalItems.map((item, index) => (
-                              <NavMenuItem key={item.href || item.label} item={item} pathname={pathname} index={index} />
+                              <NavMenuItem key={item.href || item.label} item={item} pathname={pathname} />
                           ))}
 
                           {adminItems && (
                             <>
                               <SidebarMenuSeparator />
-                              <NavMenuItem key={adminItems.label} item={adminItems} pathname={pathname} index={generalItems.length} />
+                              <NavMenuItem key={adminItems.label} item={adminItems} pathname={pathname} />
                             </>
                           )}
                         </SidebarMenu>
@@ -199,7 +192,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
     );
 }
-
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
