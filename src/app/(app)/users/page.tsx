@@ -373,10 +373,10 @@ export default function UsersPage() {
                     <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                     <DropdownMenuItem onClick={() => handleOpenEditModal(u)}>
-                        <Edit3 className="mr-2 h-4 w-4 text-blue-500"/>Editar
+                        <Edit3 className="mr-2 h-4 w-4 text-primary"/>Editar
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleOpenChangeRoleDialog(u)} disabled={u.id === currentUser?.id}>
-                        <UserCog className="mr-2 h-4 w-4 text-amber-600"/>Cambiar Rol
+                        <UserCog className="mr-2 h-4 w-4 text-primary"/>Cambiar Rol
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 

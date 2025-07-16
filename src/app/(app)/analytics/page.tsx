@@ -5,7 +5,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { IconUsers, IconBookOpenText, IconActivity, IconTrendingUp, IconShieldAlert, IconUserCheck, IconAward, IconFileWarning, IconClock, IconPercent, IconUserDelete, IconDownload, IconServer, IconUserRole, IconKey, IconShieldX, IconBookMarked, IconLoader } from '@/components/icons';
+import { IconUsers, IconBookOpenText, IconActivity, IconTrendingUp, IconShieldAlert, IconUserCheck, IconAward, IconFileWarning, IconClock, IconPercent, IconUserDelete, IconDownload, IconServer, IconKey, IconShieldX, IconLoader } from '@/components/icons';
+import { BookMarked, UserCog } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from '@/components/ui/button';
 import type { UserAnalyticsData, UsersByRole, CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog, User as AppUser, EnterpriseResource } from '@/types';
@@ -432,7 +433,7 @@ const SecurityAnalyticsSection = () => {
             case 'PASSWORD_CHANGE_SUCCESS': return { label: 'Cambio de Contraseña', icon: <IconKey className="h-4 w-4 text-primary" />, variant: 'default' as const };
             case 'TWO_FACTOR_ENABLED': return { label: '2FA Activado', icon: <IconUserCheck className="h-4 w-4 text-green-500" />, variant: 'default' as const };
             case 'TWO_FACTOR_DISABLED': return { label: '2FA Desactivado', icon: <IconShieldAlert className="h-4 w-4 text-orange-500" />, variant: 'destructive' as const };
-            case 'USER_ROLE_CHANGED': return { label: 'Cambio de Rol', icon: <IconUserRole className="h-4 w-4 text-purple-500" />, variant: 'default' as const };
+            case 'USER_ROLE_CHANGED': return { label: 'Cambio de Rol', icon: <UserCog className="h-4 w-4 text-purple-500" />, variant: 'default' as const };
             default: return { label: 'Evento Desconocido', icon: <IconShieldAlert className="h-4 w-4" />, variant: 'outline' as const };
         }
     };
@@ -543,7 +544,7 @@ export default function AnalyticsPage() {
                 </AccordionItem>
 
                 <AccordionItem value="item-2">
-                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><IconBookMarked className="mr-3 h-5 w-5 text-primary" /> Analíticas de Cursos y Contenido</AccordionTrigger>
+                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><BookMarked className="mr-3 h-5 w-5 text-primary" /> Analíticas de Cursos y Contenido</AccordionTrigger>
                     <AccordionContent className="pt-4">
                          <CourseAnalyticsSection />
                     </AccordionContent>
