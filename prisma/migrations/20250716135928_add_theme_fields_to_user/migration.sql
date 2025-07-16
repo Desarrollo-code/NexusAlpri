@@ -1,129 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the `announcement` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `answeroption` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `calendarevent` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `contentblock` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `course` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `courseprogress` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `enrollment` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `enterpriseresource` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `lesson` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `module` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `notification` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `platformsettings` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `question` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `quiz` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `securitylog` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `user` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE `_eventattendees` DROP FOREIGN KEY `_EventAttendees_A_fkey`;
-
--- DropForeignKey
-ALTER TABLE `_eventattendees` DROP FOREIGN KEY `_EventAttendees_B_fkey`;
-
--- DropForeignKey
-ALTER TABLE `announcement` DROP FOREIGN KEY `Announcement_authorId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `answeroption` DROP FOREIGN KEY `AnswerOption_questionId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `calendarevent` DROP FOREIGN KEY `CalendarEvent_creatorId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `contentblock` DROP FOREIGN KEY `ContentBlock_lessonId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `course` DROP FOREIGN KEY `Course_instructorId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `courseprogress` DROP FOREIGN KEY `CourseProgress_courseId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `courseprogress` DROP FOREIGN KEY `CourseProgress_userId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `enrollment` DROP FOREIGN KEY `Enrollment_courseId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `enrollment` DROP FOREIGN KEY `Enrollment_userId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `enterpriseresource` DROP FOREIGN KEY `EnterpriseResource_parentId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `enterpriseresource` DROP FOREIGN KEY `EnterpriseResource_uploaderId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `lesson` DROP FOREIGN KEY `Lesson_moduleId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `module` DROP FOREIGN KEY `Module_courseId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `notification` DROP FOREIGN KEY `Notification_userId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `question` DROP FOREIGN KEY `Question_quizId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `quiz` DROP FOREIGN KEY `Quiz_contentBlockId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `securitylog` DROP FOREIGN KEY `SecurityLog_userId_fkey`;
-
--- DropTable
-DROP TABLE `announcement`;
-
--- DropTable
-DROP TABLE `answeroption`;
-
--- DropTable
-DROP TABLE `calendarevent`;
-
--- DropTable
-DROP TABLE `contentblock`;
-
--- DropTable
-DROP TABLE `course`;
-
--- DropTable
-DROP TABLE `courseprogress`;
-
--- DropTable
-DROP TABLE `enrollment`;
-
--- DropTable
-DROP TABLE `enterpriseresource`;
-
--- DropTable
-DROP TABLE `lesson`;
-
--- DropTable
-DROP TABLE `module`;
-
--- DropTable
-DROP TABLE `notification`;
-
--- DropTable
-DROP TABLE `platformsettings`;
-
--- DropTable
-DROP TABLE `question`;
-
--- DropTable
-DROP TABLE `quiz`;
-
--- DropTable
-DROP TABLE `securitylog`;
-
--- DropTable
-DROP TABLE `user`;
-
 -- CreateTable
 CREATE TABLE `users` (
     `id` VARCHAR(191) NOT NULL,
@@ -135,6 +9,8 @@ CREATE TABLE `users` (
     `isTwoFactorEnabled` BOOLEAN NOT NULL DEFAULT false,
     `twoFactorSecret` VARCHAR(191) NULL,
     `registeredDate` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `colorTheme` VARCHAR(191) NULL DEFAULT 'corporate-blue',
+    `customThemeColors` JSON NULL,
 
     UNIQUE INDEX `users_email_key`(`email`),
     PRIMARY KEY (`id`)
@@ -345,6 +221,37 @@ CREATE TABLE `security_logs` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- CreateTable
+CREATE TABLE `lesson_templates` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `type` ENUM('SYSTEM', 'USER') NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `creatorId` VARCHAR(191) NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `template_blocks` (
+    `id` VARCHAR(191) NOT NULL,
+    `type` ENUM('TEXT', 'VIDEO', 'QUIZ', 'FILE') NOT NULL,
+    `order` INTEGER NOT NULL,
+    `templateId` VARCHAR(191) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `_EventAttendees` (
+    `A` VARCHAR(191) NOT NULL,
+    `B` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `_EventAttendees_AB_unique`(`A`, `B`),
+    INDEX `_EventAttendees_B_index`(`B`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- AddForeignKey
 ALTER TABLE `courses` ADD CONSTRAINT `courses_instructorId_fkey` FOREIGN KEY (`instructorId`) REFERENCES `users`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
@@ -398,6 +305,12 @@ ALTER TABLE `notifications` ADD CONSTRAINT `notifications_userId_fkey` FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE `security_logs` ADD CONSTRAINT `security_logs_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `lesson_templates` ADD CONSTRAINT `lesson_templates_creatorId_fkey` FOREIGN KEY (`creatorId`) REFERENCES `users`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `template_blocks` ADD CONSTRAINT `template_blocks_templateId_fkey` FOREIGN KEY (`templateId`) REFERENCES `lesson_templates`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `_EventAttendees` ADD CONSTRAINT `_EventAttendees_A_fkey` FOREIGN KEY (`A`) REFERENCES `calendar_events`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

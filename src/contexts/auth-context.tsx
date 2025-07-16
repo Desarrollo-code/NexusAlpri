@@ -21,6 +21,11 @@ interface AuthContextType {
   applyTheme: (themeName: string, customColors?: any) => void;
   saveTheme: (themeName: string, customColors?: any) => Promise<void>;
   customTheme: ColorTheme;
+<<<<<<< HEAD
+=======
+  setCustomTheme: (theme: ColorTheme) => void;
+  applyTheme: (themeName: string, customColors?: any) => void;
+>>>>>>> 22ed41c (.)
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
@@ -66,9 +71,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }
     
+<<<<<<< HEAD
     setTheme(themeName);
     if (themeName === 'custom' && customColors) {
         setCustomTheme(themeToApply);
+=======
+    _setTheme(themeName);
+    if (themeName === 'custom' && customColors) {
+        _setCustomTheme(themeToApply);
+>>>>>>> 22ed41c (.)
     }
   }, [resolvedTheme, setNextTheme]);
 
@@ -124,6 +135,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(userData);
         if (userData) {
           applyTheme(userData.colorTheme || 'corporate-blue', userData.customThemeColors);
+        } else {
+          applyTheme('corporate-blue');
         }
       } else {
         setUser(null);
@@ -168,6 +181,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(prevUser => {
       if (!prevUser) return null;
       const newUser = { ...prevUser, ...updatedData };
+<<<<<<< HEAD
+=======
+      // If theme was part of the update, re-apply it
+>>>>>>> 22ed41c (.)
       if (updatedData.colorTheme || updatedData.customThemeColors) {
           applyTheme(newUser.colorTheme || 'corporate-blue', newUser.customThemeColors);
       }
@@ -194,7 +211,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     applyTheme,
     saveTheme,
     customTheme,
+<<<<<<< HEAD
   }), [user, settings, login, logout, isLoading, updateUser, updateSettings, theme, customTheme, applyTheme, saveTheme]);
+=======
+    setCustomTheme: _setCustomTheme,
+    applyTheme,
+  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, theme, customTheme, applyTheme]);
+>>>>>>> 22ed41c (.)
 
   if (isLoading) {
     return (
