@@ -6,7 +6,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback,
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useTheme as useNextTheme } from 'next-themes';
-import { getTheme, type ColorTheme, isLight } from '@/lib/themes';
+import { getTheme, type ColorTheme, isLight, defaultThemes } from '@/lib/themes';
 
 interface AuthContextType {
   user: User | null;
@@ -46,12 +46,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   
-  const { setTheme: setNextTheme, resolvedTheme } = useNextTheme();
+  const { setTheme: setNextTheme } = useNextTheme();
   const [theme, setTheme] = useState('corporate-blue');
   const [customTheme, setCustomTheme] = useState<ColorTheme>(getTheme('custom'));
 
   const applyTheme = useCallback((themeName: string, customColors?: any) => {
-    const themeToApply = themeName === 'custom' && customColors ? { name: 'custom', label: 'Personalizado', colors: customColors } : getTheme(themeName);
+    let themeToApply = getTheme(themeName);
+    if (themeName === 'custom') {
+        const finalCustomColors = customColors || user?.customThemeColors || getTheme('custom').colors;
+        themeToApply = { ...getTheme('custom'), colors: finalCustomColors as ColorTheme['colors'] };
+        setCustomTheme(themeToApply);
+    }
     
     if (typeof document !== 'undefined') {
         const root = document.documentElement;
@@ -60,25 +65,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             root.style.setProperty(cssVar, value);
         });
 
-        const newResolvedTheme = isLight(themeToApply.colors.background) ? 'light' : 'dark';
-        if (resolvedTheme !== newResolvedTheme) {
-            setNextTheme(newResolvedTheme);
-        }
+        const resolvedTheme = isLight(themeToApply.colors.background) ? 'light' : 'dark';
+        setNextTheme(resolvedTheme);
     }
-    
     setTheme(themeName);
-    if (themeName === 'custom' && customColors) {
-        setCustomTheme(themeToApply);
-    }
-  }, [resolvedTheme, setNextTheme]);
+  }, [setNextTheme, user]);
 
 
   const saveTheme = useCallback(async (themeName: string, customColors?: any) => {
     if (!user) return;
     try {
         const payload: Partial<User> = { colorTheme: themeName };
-        if (themeName === 'custom' && customColors) {
-            payload.customThemeColors = customColors;
+        if (themeName === 'custom') {
+            payload.customThemeColors = customColors || customTheme.colors;
         }
 
         const response = await fetch(`/api/users/${user.id}`, {
@@ -89,69 +88,59 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const updatedUser = await response.json();
         if (!response.ok) throw new Error(updatedUser.message);
 
-        // Update user context locally, which will trigger theme application
+        // Update user context locally, which will trigger theme application via useEffect
         setUser(prevUser => prevUser ? { ...prevUser, ...updatedUser } : null);
 
     } catch (error) {
         console.error("Failed to save theme settings:", error);
     }
-  }, [user]);
-
-  const fetchSessionData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const [settingsRes, userRes] = await Promise.all([
-        fetch('/api/settings').catch(e => {
-            console.error("Network error fetching settings:", e);
-            return { ok: false, json: () => Promise.resolve({ message: "Network error" }) } as any as Response;
-        }),
-        fetch('/api/auth/me').catch(e => {
-            console.error("Network error fetching user session:", e);
-            return { ok: false, json: () => Promise.resolve({ user: null }) } as any as Response;
-        }),
-      ]);
-
-      if (settingsRes.ok) {
-        const settingsData = await settingsRes.json();
-        setSettings(settingsData);
-      } else {
-        console.warn('Could not fetch platform settings, using default values.');
-        setSettings(DEFAULT_SETTINGS);
-      }
-
-      if (userRes.ok) {
-        const { user: userData } = await userRes.json();
-        setUser(userData);
-        if (userData) {
-          applyTheme(userData.colorTheme || 'corporate-blue', userData.customThemeColors);
-        }
-      } else {
-        setUser(null);
-        applyTheme('corporate-blue');
-      }
-    } catch (error) {
-      console.error("An unexpected error occurred during session initialization:", error);
-      setUser(null);
-      setSettings(DEFAULT_SETTINGS);
-      applyTheme('corporate-blue');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [applyTheme]);
+  }, [user, customTheme.colors]);
 
   useEffect(() => {
+    const fetchSessionData = async () => {
+        setIsLoading(true);
+        try {
+          const [settingsRes, userRes] = await Promise.all([
+            fetch('/api/settings').catch(() => null),
+            fetch('/api/auth/me').catch(() => null),
+          ]);
+    
+          const settingsData = settingsRes?.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
+          setSettings(settingsData);
+          
+          const userData = userRes?.ok ? (await userRes.json()).user : null;
+          setUser(userData);
+
+        } catch (error) {
+          console.error("An unexpected error occurred during session initialization:", error);
+          setUser(null);
+          setSettings(DEFAULT_SETTINGS);
+        } finally {
+          setIsLoading(false);
+        }
+    };
     fetchSessionData();
-  }, [fetchSessionData]);
+  }, []);
+  
+  // Apply theme whenever user data changes
+  useEffect(() => {
+    if (user) {
+        const themeName = user.colorTheme || 'corporate-blue';
+        const customColors = user.customThemeColors as ColorTheme['colors'] | null;
+        applyTheme(themeName, customColors);
+    } else if (!isLoading) {
+        // Apply a default theme if user is logged out
+        applyTheme('corporate-blue');
+    }
+  }, [user, isLoading, applyTheme]);
+
 
   const login = useCallback((userData: User) => {
     setUser(userData);
-    if (userData) {
-        applyTheme(userData.colorTheme || 'corporate-blue', userData.customThemeColors);
-    }
     const params = new URLSearchParams(window.location.search);
     const redirectedFrom = params.get('redirectedFrom');
     router.replace(redirectedFrom || '/dashboard');
-  }, [router, applyTheme]);
+  }, [router]);
 
   const logout = useCallback(async () => {
     try {
@@ -167,13 +156,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;
-      const newUser = { ...prevUser, ...updatedData };
-      if (updatedData.colorTheme || updatedData.customThemeColors) {
-          applyTheme(newUser.colorTheme || 'corporate-blue', newUser.customThemeColors);
-      }
-      return newUser;
+      return { ...prevUser, ...updatedData };
     });
-  }, [applyTheme]);
+  }, []);
 
   const updateSettings = useCallback((updatedData: Partial<PlatformSettings>) => {
     setSettings(prevSettings => {
@@ -196,7 +181,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     customTheme,
   }), [user, settings, login, logout, isLoading, updateUser, updateSettings, theme, customTheme, applyTheme, saveTheme]);
 
-  if (isLoading) {
+  if (isLoading && !user && !settings) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />

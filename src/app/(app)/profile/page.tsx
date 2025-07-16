@@ -40,9 +40,8 @@ import { useTheme } from 'next-themes';
 
 
 const ThemeCustomizer = () => {
-    const { user, theme, applyTheme, saveTheme, customTheme: initialCustomTheme } = useAuth();
+    const { theme: currentThemeName, applyTheme, saveTheme, customTheme, user } = useAuth();
     const [isSavingTheme, setIsSavingTheme] = useState(false);
-    const [currentCustomTheme, setCurrentCustomTheme] = useState(initialCustomTheme);
 
     if (!user) return null;
 
@@ -61,9 +60,7 @@ const ThemeCustomizer = () => {
     };
     
     const handleCustomColorChange = (variable: keyof ColorTheme['colors'], value: string) => {
-        const newColors = { ...currentCustomTheme.colors, [variable]: value };
-        const newThemeState = { ...currentCustomTheme, colors: newColors };
-        setCurrentCustomTheme(newThemeState);
+        const newColors = { ...customTheme.colors, [variable]: value };
         
         if (!document.startViewTransition) {
              applyTheme('custom', newColors);
@@ -157,7 +154,7 @@ const ThemeCustomizer = () => {
                 <CardDescription>Elige un tema predefinido o crea el tuyo. Tu selección se guardará en tu perfil.</CardDescription>
             </CardHeader>
             <CardContent>
-                <RadioGroup value={theme} onValueChange={handleThemeChange} className="grid grid-cols-2 sm:grid-cols-3 gap-4" disabled={isSavingTheme}>
+                <RadioGroup value={currentThemeName} onValueChange={handleThemeChange} className="grid grid-cols-2 sm:grid-cols-3 gap-4" disabled={isSavingTheme}>
                     {defaultThemes.map(t => (
                         <Label key={t.name} htmlFor={`theme-${t.name}`} className={cn("relative block rounded-lg border-2 border-transparent has-[:checked]:border-primary transition-all p-2", isSavingTheme ? "cursor-not-allowed opacity-60" : "cursor-pointer")}>
                            <RadioGroupItem value={t.name} id={`theme-${t.name}`} className="sr-only" />
@@ -171,25 +168,25 @@ const ThemeCustomizer = () => {
                     ))}
                 </RadioGroup>
 
-                {theme === 'custom' && (
+                {currentThemeName === 'custom' && (
                     <div className="mt-6 pt-4 border-t space-y-4">
                         <h4 className="font-semibold">Colores Personalizados</h4>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="custom-bg">Fondo</Label>
-                                <Input type="color" id="custom-bg" value={hslToHex(currentCustomTheme.colors.background)} onChange={e => handleCustomColorChange('background', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
+                                <Input type="color" id="custom-bg" value={hslToHex(customTheme.colors.background)} onChange={e => handleCustomColorChange('background', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
                             </div>
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="custom-fg">Texto</Label>
-                                <Input type="color" id="custom-fg" value={hslToHex(currentCustomTheme.colors.foreground)} onChange={e => handleCustomColorChange('foreground', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
+                                <Input type="color" id="custom-fg" value={hslToHex(customTheme.colors.foreground)} onChange={e => handleCustomColorChange('foreground', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
                             </div>
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="custom-primary">Primario</Label>
-                                <Input type="color" id="custom-primary" value={hslToHex(currentCustomTheme.colors.primary)} onChange={e => handleCustomColorChange('primary', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
+                                <Input type="color" id="custom-primary" value={hslToHex(customTheme.colors.primary)} onChange={e => handleCustomColorChange('primary', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
                             </div>
                              <div className="flex items-center justify-between">
                                 <Label htmlFor="custom-accent">Acento</Label>
-                                <Input type="color" id="custom-accent" value={hslToHex(currentCustomTheme.colors.accent)} onChange={e => handleCustomColorChange('accent', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
+                                <Input type="color" id="custom-accent" value={hslToHex(customTheme.colors.accent)} onChange={e => handleCustomColorChange('accent', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
                             </div>
                         </div>
                     </div>
@@ -511,7 +508,7 @@ export default function ProfilePage() {
                 <div>
                   <h4 className="font-semibold mb-2">Autenticación de Dos Factores (2FA)</h4>
                   {user.isTwoFactorEnabled ? (
-                      <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                      <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
                           <p className="text-sm text-green-800 dark:text-green-200">2FA está <strong>activado</strong> en tu cuenta.</p>
                           <Button variant="destructive" size="sm" onClick={() => setShowDisable2faDialog(true)} disabled={is2faProcessing}>Desactivar</Button>
                       </div>
