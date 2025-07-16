@@ -70,26 +70,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const saveTheme = useCallback(async (themeName: ThemeName) => {
     if (!user) return;
     try {
-      const payload: Partial<User> = { colorTheme: themeName };
-      
       // Optimistically update local state for immediate UI feedback
-      updateUser(payload);
+      updateUser({ colorTheme: themeName });
 
       const response = await fetch(`/api/users/${user.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({ colorTheme: themeName }),
       });
       const updatedUser = await response.json();
       if (!response.ok) {
         throw new Error(updatedUser.message);
       }
 
-      // Sync with the final state from the server
+      // Sync with the final state from the server to ensure consistency
       updateUser(updatedUser);
     } catch (error) {
         console.error("Failed to save theme settings:", error);
-        // Revert optimistic update on failure if desired
+        // Revert optimistic update on failure
         fetchSessionData(); 
     }
   }, [user, fetchSessionData]);
@@ -138,7 +136,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     saveTheme,
   }), [user, settings, login, logout, isLoading, updateUser, updateSettings, saveTheme]);
 
-  if (isLoading) {
+  if (isLoading && typeof window !== 'undefined' && !user) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />

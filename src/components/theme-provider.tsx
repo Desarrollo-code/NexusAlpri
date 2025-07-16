@@ -2,44 +2,42 @@
 "use client"
 
 import * as React from "react"
-import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes"
+import { ThemeProvider as NextThemesProvider } from "next-themes"
 import type { ThemeProviderProps } from "next-themes/dist/types"
 import { useAuth } from "@/contexts/auth-context"
-import { defaultThemes } from "@/lib/themes"
 
-const THEME_NAMES = defaultThemes.map(t => t.name);
+// This is a client-side only component that handles applying the user's saved theme class.
+function ThemeClassApplier() {
+    const { user, isLoading } = useAuth();
+    
+    React.useEffect(() => {
+        if (isLoading || typeof window === 'undefined') return;
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return (
-      <NextThemesProvider 
-        {...props} 
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-      >
-        <ThemeApplicator>{children}</ThemeApplicator>
-      </NextThemesProvider>
-  )
+        // Get the user's preferred color theme, defaulting to 'corporate-blue'
+        const themeName = user?.colorTheme || 'corporate-blue';
+        const root = window.document.documentElement;
+        
+        // Remove any other theme classes to avoid conflicts
+        root.className.split(' ').forEach(className => {
+            if (className.startsWith('theme-')) {
+                root.classList.remove(className);
+            }
+        });
+
+        // Add the current user's theme class
+        root.classList.add(themeName);
+
+    }, [user?.colorTheme, isLoading]);
+
+    return null; // This component does not render anything
 }
 
 
-function ThemeApplicator({ children }: { children: React.ReactNode }) {
-    const { user, isLoading } = useAuth();
-    const { theme: mode } = useNextTheme(); // 'light' or 'dark'
-
-    React.useEffect(() => {
-        if (isLoading) return;
-
-        const themeName = user?.colorTheme || 'corporate-blue';
-        const root = window.document.documentElement;
-
-        // Remove old theme classes
-        root.classList.remove(...THEME_NAMES);
-
-        // Add the new theme class
-        root.classList.add(themeName);
-        
-    }, [user, mode, isLoading]);
-
-    return <>{children}</>;
+export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+  return (
+      <NextThemesProvider {...props}>
+        <ThemeClassApplier />
+        {children}
+      </NextThemesProvider>
+  )
 }

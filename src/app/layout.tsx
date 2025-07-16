@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
+import { defaultThemes } from '@/lib/themes';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -39,6 +40,7 @@ export default function RootLayout({
             attribute="class"
             defaultTheme="system"
             enableSystem
+            themes={defaultThemes.map(t => t.name)}
           >
             {children}
             <Toaster />

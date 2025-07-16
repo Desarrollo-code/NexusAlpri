@@ -42,20 +42,20 @@ import { useTheme } from 'next-themes';
 const ThemeCustomizer = () => {
     const { user, saveTheme } = useAuth();
     const [isSaving, setIsSaving] = useState(false);
-    const [selectedTheme, setSelectedTheme] = useState(user?.colorTheme || 'corporate-blue');
+    const [selectedTheme, setSelectedTheme] = useState<ThemeName>(user?.colorTheme as ThemeName || 'corporate-blue');
 
     useEffect(() => {
-        setSelectedTheme(user?.colorTheme || 'corporate-blue');
+        setSelectedTheme(user?.colorTheme as ThemeName || 'corporate-blue');
     }, [user?.colorTheme]);
 
     if (!user) return null;
     
     const handleThemeSelect = async (newThemeName: ThemeName) => {
-        if (newThemeName === selectedTheme) return;
+        if (newThemeName === selectedTheme || isSaving) return;
 
         const transitionCallback = async () => {
-            setSelectedTheme(newThemeName);
             setIsSaving(true);
+            setSelectedTheme(newThemeName); // Optimistically update UI
             await saveTheme(newThemeName);
             setIsSaving(false);
         };
