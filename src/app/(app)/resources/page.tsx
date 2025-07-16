@@ -140,25 +140,15 @@ const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
         const youtubeId = !isFolder && resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
         const isPdf = !isFolder && resource.url && /\.pdf$/i.test(resource.url);
 
-        return (
-            <>
-                {isImage ? (
-                    <Image src={resource.url!} alt={resource.title} fill className="object-cover" data-ai-hint="resource file" />
-                ) : youtubeId ? (
-                    <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail"/>
-                ) : isPdf ? (
-                    <FileText className="h-16 w-16 text-red-500/80" />
-                ) : (
-                    getPreviewIconForType(resource.type)
-                )}
-                {resource.hasPin && (
-                    <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
-                        <Lock className="h-3 w-3 text-amber-400" />
-                    </div>
-                )}
-            </>
-        );
+        if (isImage) {
+           return <Image src={resource.url!} alt={resource.title} fill className="object-cover" data-ai-hint="resource file" onError={(e) => { e.currentTarget.style.display = 'none'; (e.currentTarget.nextSibling as HTMLElement | null)?.style.setProperty('display', 'flex'); }} />;
+        }
+        if (youtubeId) {
+            return <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail"/>
+        }
+        return null;
     };
+
 
     return (
         <div 
@@ -167,6 +157,14 @@ const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
         >
             <div className="aspect-[4/3] w-full bg-muted/30 rounded-t-lg flex items-center justify-center overflow-hidden relative">
                 <Thumbnail />
+                <div style={{ display: 'flex' }} className="items-center justify-center w-full h-full">
+                    {getPreviewIconForType(resource.type)}
+                </div>
+                {resource.hasPin && (
+                    <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
+                        <Lock className="h-3 w-3 text-amber-400" />
+                    </div>
+                )}
             </div>
             <div className="p-2 border-t flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 overflow-hidden">
@@ -182,7 +180,7 @@ const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                         <DropdownMenuItem onClick={onPreview}><Eye className="mr-2 h-4 w-4 text-sky-500" /> {isFolder ? 'Abrir' : 'Ver'}</DropdownMenuItem>
                         {!isFolder && (<DropdownMenuItem onClick={onDownload} disabled={!resource.url}><Download className="mr-2 h-4 w-4 text-green-500" /> Descargar</DropdownMenuItem>)}
-                        {canModify && (<><Separator /><DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4 text-blue-500" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem></>)}
+                        {canModify && (<><DropdownMenuSeparator /><DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4 text-blue-500" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem></>)}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -228,7 +226,7 @@ const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                             <DropdownMenuItem onClick={onPreview}><Eye className="mr-2 h-4 w-4 text-sky-500" /> {isFolder ? 'Abrir' : 'Ver'}</DropdownMenuItem>
-                            {canModify && (<><Separator /><DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4 text-blue-500" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem></>)}
+                            {canModify && (<><DropdownMenuSeparator /><DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4 text-blue-500" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem></>)}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

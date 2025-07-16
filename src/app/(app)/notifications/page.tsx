@@ -232,8 +232,8 @@ export default function NotificationsPage() {
                         <div className="text-center py-8 text-destructive">{error}</div>
                     ) : notifications.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
-                            <BellRing className="h-12 w-12 mx-auto mb-4"/>
-                            <p className="font-semibold">Todo está al día</p>
+                            <BellRing className="mx-auto h-12 w-12 mb-4 text-primary"/>
+                            <p className="font-semibold text-lg">Todo está al día</p>
                             <p>No tienes notificaciones nuevas.</p>
                         </div>
                     ) : (

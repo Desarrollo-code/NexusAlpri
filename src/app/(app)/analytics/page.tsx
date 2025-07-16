@@ -98,7 +98,7 @@ const UserAnalyticsSection = () => {
                     <CardContent>
                          <ChartContainer
                           config={userRolesChartConfig}
-                          className="mx-auto aspect-square h-[200px]"
+                          className="mx-auto aspect-square"
                         >
                           <PieChart>
                             <ChartTooltip

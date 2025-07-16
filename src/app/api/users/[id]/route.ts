@@ -45,7 +45,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
         let dataToUpdate: any = {};
 
-        // Any user can update their own name, avatar, and theme settings
+        // A user can always update their own name, avatar, and theme settings
         if (session.id === id) {
             if (name) dataToUpdate.name = name;
             if (avatar) dataToUpdate.avatar = avatar;
@@ -53,18 +53,18 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             if (customThemeColors) dataToUpdate.customThemeColors = customThemeColors;
         }
 
-        // Only admins can change role, email, and other users' details
+        // Only admins can change other fields or other users' data
         if (session.role === 'ADMINISTRATOR') {
             const userToUpdate = await prisma.user.findUnique({ where: { id } });
             if (!userToUpdate) {
                  return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
             }
-            // An admin can also change these fields for any user
+            
+            // Allow admin to override these fields
             if (name) dataToUpdate.name = name;
             if (avatar) dataToUpdate.avatar = avatar;
 
-            if (email) {
-                // Check if new email is already taken by another user
+            if (email && email !== userToUpdate.email) {
                 const existingUser = await prisma.user.findFirst({ where: { email, NOT: { id } } });
                 if (existingUser) {
                     return NextResponse.json({ message: 'El correo electrónico ya está en uso' }, { status: 409 });
@@ -78,7 +78,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     data: {
                         event: 'USER_ROLE_CHANGED',
                         ipAddress: ip,
-                        userId: id, // The user being changed
+                        userId: id,
                         details: `Rol cambiado de ${userToUpdate.role} a ${role} por el administrador ${session.email}.`
                     }
                 });

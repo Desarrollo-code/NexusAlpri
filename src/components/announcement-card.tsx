@@ -55,6 +55,13 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
   };
 
   const isTruncated = announcement.content.length > TRUNCATE_LENGTH;
+  
+  const toggleExpand = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+      setIsExpanded(!isExpanded);
+  }
+
   const contentToShow = isExpanded ? announcement.content : `${announcement.content.substring(0, TRUNCATE_LENGTH)}${isTruncated ? '...' : ''}`;
 
   return (
@@ -88,22 +95,15 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
       <CardContent className="flex-grow">
         <p className="text-sm text-muted-foreground whitespace-pre-wrap">
           {contentToShow}
-          {isTruncated && !isExpanded && (
-            <button
-              onClick={() => setIsExpanded(true)}
-              className="text-primary font-semibold hover:underline ml-1"
-            >
-              Leer más
-            </button>
-          )}
         </p>
-         {isExpanded && (
-            <button
-              onClick={() => setIsExpanded(false)}
-              className="text-primary font-semibold hover:underline mt-2 text-sm"
+         {isTruncated && (
+            <Button
+              onClick={toggleExpand}
+              variant="link"
+              className="p-0 h-auto text-sm mt-1"
             >
-              Leer menos
-            </button>
+              {isExpanded ? 'Leer menos' : 'Leer más'}
+            </Button>
           )}
       </CardContent>
       {canModify && onEdit && onDelete && (

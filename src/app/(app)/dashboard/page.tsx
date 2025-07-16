@@ -141,6 +141,8 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
         }));
     }, [stats?.coursesByStatus]);
 
+    const showPieChart = stats.totalUsers >= 5;
+
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-semibold font-headline">Estadísticas de la Plataforma</h2>
@@ -157,40 +159,54 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
                     </CardHeader>
                     <CardContent>
                         {userRolesChartData.length > 0 ? (
-                            <ChartContainer
-                              config={userRolesChartConfig}
-                              className="mx-auto aspect-square h-[250px] w-full"
-                            >
-                              <PieChart>
-                                <ChartTooltip
-                                  cursor={false}
-                                  content={<ChartTooltipContent hideLabel />}
-                                />
-                                <Pie
-                                  data={userRolesChartData}
-                                  dataKey="count"
-                                  nameKey="name"
-                                  innerRadius={60}
-                                  strokeWidth={5}
+                             showPieChart ? (
+                                <ChartContainer
+                                  config={userRolesChartConfig}
+                                  className="mx-auto aspect-square h-[250px] w-full"
                                 >
-                                  {userRolesChartData.map((entry) => (
-                                    <Cell
-                                      key={entry.name}
-                                      fill={entry.fill}
-                                      className="stroke-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                  <PieChart>
+                                    <ChartTooltip
+                                      cursor={false}
+                                      content={<ChartTooltipContent hideLabel />}
                                     />
-                                  ))}
-                                </Pie>
-                                <g>
-                                  <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central" className="fill-foreground text-3xl font-bold">
-                                    {stats.totalUsers.toLocaleString()}
-                                  </text>
-                                  <text x="50%" y="50%" dy="1.5em" textAnchor="middle" dominantBaseline="central" className="fill-muted-foreground text-sm">
-                                    Usuarios
-                                  </text>
-                                </g>
-                              </PieChart>
-                            </ChartContainer>
+                                    <Pie
+                                      data={userRolesChartData}
+                                      dataKey="count"
+                                      nameKey="name"
+                                      innerRadius={60}
+                                      strokeWidth={5}
+                                    >
+                                      {userRolesChartData.map((entry) => (
+                                        <Cell
+                                          key={entry.name}
+                                          fill={entry.fill}
+                                          className="stroke-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                        />
+                                      ))}
+                                    </Pie>
+                                    <g>
+                                      <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central" className="fill-foreground text-3xl font-bold">
+                                        {stats.totalUsers.toLocaleString()}
+                                      </text>
+                                      <text x="50%" y="50%" dy="1.5em" textAnchor="middle" dominantBaseline="central" className="fill-muted-foreground text-sm">
+                                        Usuarios
+                                      </text>
+                                    </g>
+                                  </PieChart>
+                                </ChartContainer>
+                            ) : (
+                                <ul className="space-y-2">
+                                    {userRolesChartData.map(role => (
+                                        <li key={role.name} className="flex justify-between items-center text-sm p-2 rounded-md bg-muted/50">
+                                            <span className="flex items-center gap-2">
+                                                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: role.fill }}></span>
+                                                {role.name}
+                                            </span>
+                                            <span className="font-bold">{role.count}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )
                         ) : (<p className="text-muted-foreground text-center py-4">No hay datos de usuarios.</p>)}
                     </CardContent>
                 </Card>
