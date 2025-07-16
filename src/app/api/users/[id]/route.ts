@@ -7,6 +7,7 @@ import { getSession } from '@/lib/auth';
 // GET a specific user
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getSession(req);
+    // Allow admins to get any user, and any user to get their own profile
     if (!session || (session.role !== 'ADMINISTRATOR' && session.id !== params.id)) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
@@ -45,14 +46,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
         let dataToUpdate: any = {};
         
-        // Any user can update their theme
-        if (colorTheme) dataToUpdate.colorTheme = colorTheme;
-        if (customThemeColors) dataToUpdate.customThemeColors = customThemeColors;
-
-        // A user can update their own name and avatar
+        // A user can update their own name, avatar, and theme
         if (session.id === id) {
             if (name) dataToUpdate.name = name;
             if (avatar) dataToUpdate.avatar = avatar;
+            if (colorTheme) dataToUpdate.colorTheme = colorTheme;
+            if (customThemeColors) dataToUpdate.customThemeColors = customThemeColors;
         }
 
         // Only admins can change other fields or other users' data
