@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
@@ -13,7 +14,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarMenuSeparator,
-  useSidebar // Importa useSidebar para acceder al estado 'state'
+  useSidebar 
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { getNavItemsForRole } from '@/lib/nav-items';
@@ -31,7 +32,7 @@ import { useTheme } from 'next-themes';
 
 const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) => {
   const { user } = useAuth();
-  const { state: sidebarState } = useSidebar(); // Obtener el estado del sidebar
+  const { state: sidebarState } = useSidebar(); 
 
   if (!user) return null;
 
@@ -51,26 +52,23 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
           >
               <div className="flex items-center gap-3 flex-1">
                 <item.icon className={cn("h-5 w-5", isParentActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground")} />
-                {/* Condición para mostrar/ocultar el texto basado en el estado del sidebar */}
                 {sidebarState === 'expanded' && <span className="font-semibold text-base">{item.label}</span>}
             </div>
-            {/* Ocultar ChevronDown cuando el sidebar está colapsado */}
             {sidebarState === 'expanded' && <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />}
           </AccordionTrigger>
-          <AccordionContent className="p-0 pl-7 mt-1 group-data-[state=collapsed]/sidebar-wrapper:hidden"> {/* Ajustado para que el contenido se oculte también */}
+          <AccordionContent className="p-0 pl-7 mt-1 group-data-[state=collapsed]/sidebar-wrapper:hidden">
             <SidebarMenu className="border-l border-sidebar-border ml-2 pl-3">
               {filteredSubItems.map((subItem) => (
                 <SidebarMenuItem key={subItem.href}>
                   <SidebarMenuButton 
                     asChild 
-                    isActive={pathname.startsWith(subItem.href || '')} // Asegura que subItem.href sea string para startsWith
+                    isActive={pathname.startsWith(subItem.href || '')}
                     size="sm" 
                     className="justify-start gap-2" 
-                    tooltip={{ children: subItem.label }} // Pasa directamente subItem.label como children del tooltip
+                    tooltip={{ children: subItem.label }}
                   >
-                    <Link href={subItem.href || '#'}> {/* Asegura que href sea siempre un string */}
+                    <Link href={subItem.href || '#'}>
                       <subItem.icon className={cn("h-4 w-4", pathname.startsWith(subItem.href || '') ? "text-sidebar-accent-foreground" : "text-sidebar-foreground/80")}/>
-                      {/* Ocultar el texto del sub-ítem cuando el sidebar está colapsado */}
                       {sidebarState === 'expanded' && <span className="text-sm font-normal">{subItem.label}</span>}
                     </Link>
                   </SidebarMenuButton>
@@ -87,13 +85,33 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
       <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{children: item.label}}>
         <Link href={item.href || '#'}>
           <item.icon className={cn("h-5 w-5", isActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground")} />
-          {/* Ocultar el texto cuando el sidebar está colapsado */}
           {sidebarState === 'expanded' && <span className="font-semibold text-base">{item.label}</span>}
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
 };
+
+function ThemeApplier() {
+    const { theme: mode } = useTheme();
+    const { user } = useAuth();
+    
+    React.useEffect(() => {
+        const colorTheme = user?.colorTheme || 'corporate-blue';
+        const root = document.documentElement;
+
+        root.classList.forEach(className => {
+            if (className.startsWith('theme-')) {
+                root.classList.remove(className);
+            }
+        });
+        
+        root.classList.add(`theme-${colorTheme}`);
+
+    }, [user?.colorTheme, mode]);
+
+    return null;
+}
 
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
@@ -131,6 +149,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
     return (
         <div className="bg-background">
+            <ThemeApplier />
             <Sidebar>
                 <SidebarHeader className="group-data-[state=expanded]:px-4 group-data-[state=collapsed]:px-2">
                     <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground group-data-[state=collapsed]:justify-center">
