@@ -33,7 +33,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
     // Admin can edit anyone. A user can edit their own profile.
     if (session.role !== 'ADMINISTRATOR' && session.id !== params.id) {
-         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
+         return NextResponse.json({ message: 'No tienes permiso para actualizar este usuario.' }, { status: 403 });
     }
 
     try {
@@ -45,22 +45,24 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
         let dataToUpdate: any = {};
 
-        // A user can always update their own name, avatar, and theme settings
+        // Theme properties can be updated by any logged-in user for themselves
+        if (colorTheme) dataToUpdate.colorTheme = colorTheme;
+        if (customThemeColors) dataToUpdate.customThemeColors = customThemeColors;
+
+        // A user can always update their own name and avatar
         if (session.id === id) {
             if (name) dataToUpdate.name = name;
             if (avatar) dataToUpdate.avatar = avatar;
-            if (colorTheme) dataToUpdate.colorTheme = colorTheme;
-            if (customThemeColors) dataToUpdate.customThemeColors = customThemeColors;
         }
 
         // Only admins can change other fields or other users' data
         if (session.role === 'ADMINISTRATOR') {
             const userToUpdate = await prisma.user.findUnique({ where: { id } });
             if (!userToUpdate) {
-                 return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
+                 return NextResponse.json({ message: 'Usuario a actualizar no encontrado' }, { status: 404 });
             }
             
-            // Allow admin to override these fields
+            // Allow admin to override these fields for any user
             if (name) dataToUpdate.name = name;
             if (avatar) dataToUpdate.avatar = avatar;
 

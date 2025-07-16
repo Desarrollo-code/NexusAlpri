@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
     }
 
     try {
-        const courseId = params.courseId;
+        const { courseId } = params;
         const enrollments = await prisma.enrollment.findMany({
             where: { courseId },
             include: {
