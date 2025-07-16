@@ -1,5 +1,5 @@
 
-export type ThemeName = 'corporate-blue' | 'neon-dawn' | 'deep-forest' | 'parchment';
+export type ThemeName = 'corporate-blue' | 'ember-glow';
 
 export interface ColorDefinition {
     background: string;
@@ -33,53 +33,21 @@ export const defaultThemes: ColorTheme[] = [
         }
     },
     {
-        name: 'neon-dawn',
-        label: 'Amanecer Neón',
-        light: { // Same as dark for neon, as it's an inherently dark theme
-            background: '270 12% 8%',
-            foreground: '270 10% 85%',
-            primary: '310 90% 65%',
-            accent: '190 95% 60%',
-        },
-        dark: {
-            background: '270 12% 8%',
-            foreground: '270 10% 85%',
-            primary: '310 90% 65%',
-            accent: '190 95% 60%',
-        }
-    },
-    {
-        name: 'deep-forest',
-        label: 'Bosque Profundo',
-        light: { // Same as dark for forest, inherently dark
-            background: '120 25% 10%',
-            foreground: '110 15% 88%',
-            primary: '140 65% 45%',
-            accent: '90 55% 58%',
-        },
-        dark: {
-            background: '120 25% 10%',
-            foreground: '110 15% 88%',
-            primary: '140 65% 45%',
-            accent: '90 55% 58%',
-        }
-    },
-    {
-        name: 'parchment',
-        label: 'Pergamino',
+        name: 'ember-glow',
+        label: 'Ember Glow',
         light: {
-            background: '45 50% 96%',
-            foreground: '30 20% 15%',
-            primary: '25 80% 45%',
-            accent: '10 60% 50%',
+            background: '240 5% 96%',
+            foreground: '240 5% 25%',
+            primary: '22 95% 55%',
+            accent: '45 95% 55%',
         },
-        dark: { // Dark variant for parchment
-            background: '30 20% 12%',
-            foreground: '45 50% 92%',
-            primary: '25 70% 55%',
-            accent: '10 50% 60%',
+        dark: {
+            background: '220 3% 8%',
+            foreground: '220 10% 88%',
+            primary: '25 95% 60%',
+            accent: '50 98% 58%',
         }
-    },
+    }
 ];
 
 export const getTheme = (name: ThemeName): ColorTheme | undefined => {
