@@ -41,52 +41,58 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchSessionData = async () => {
-        setIsLoading(true);
-        try {
-          const [settingsRes, userRes] = await Promise.all([
-            fetch('/api/settings').catch(() => null),
-            fetch('/api/auth/me').catch(() => null),
-          ]);
-    
-          const settingsData = settingsRes?.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
-          setSettings(settingsData);
-          
-          const userData = userRes?.ok ? (await userRes.json()).user : null;
-          setUser(userData);
+  const fetchSessionData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [settingsRes, userRes] = await Promise.all([
+        fetch('/api/settings'),
+        fetch('/api/auth/me'),
+      ]);
 
-        } catch (error) {
-          console.error("An unexpected error occurred during session initialization:", error);
-          setUser(null);
-          setSettings(DEFAULT_SETTINGS);
-        } finally {
-          setIsLoading(false);
-        }
-    };
-    fetchSessionData();
+      const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
+      setSettings(settingsData);
+      
+      const userData = userRes.ok ? (await userRes.json()).user : null;
+      setUser(userData);
+    } catch (error) {
+      console.error("An unexpected error occurred during session initialization:", error);
+      setUser(null);
+      setSettings(DEFAULT_SETTINGS);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchSessionData();
+  }, [fetchSessionData]);
   
   const saveTheme = useCallback(async (themeName: ThemeName) => {
     if (!user) return;
     try {
-        const payload: Partial<User> = { colorTheme: themeName };
-        
-        const response = await fetch(`/api/users/${user.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-        const updatedUser = await response.json();
-        if (!response.ok) throw new Error(updatedUser.message);
+      const payload: Partial<User> = { colorTheme: themeName };
+      
+      // Optimistically update local state for immediate UI feedback
+      updateUser(payload);
 
-        // Update local user state to reflect saved theme
-        setUser(prevUser => prevUser ? { ...prevUser, ...updatedUser } : null);
+      const response = await fetch(`/api/users/${user.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+      });
+      const updatedUser = await response.json();
+      if (!response.ok) {
+        throw new Error(updatedUser.message);
+      }
 
+      // Sync with the final state from the server
+      updateUser(updatedUser);
     } catch (error) {
         console.error("Failed to save theme settings:", error);
+        // Revert optimistic update on failure if desired
+        fetchSessionData(); 
     }
-  }, [user]);
+  }, [user, fetchSessionData]);
 
 
   const login = useCallback((userData: User) => {

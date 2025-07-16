@@ -220,15 +220,21 @@ const CourseAnalyticsSection = () => {
             </div>
         );
     }
+    
+    const categoryChartConfig = data.coursesByCategory.reduce((acc, cat, index) => {
+        acc[cat.category] = {
+            label: cat.category,
+            color: `hsl(var(--chart-${(index % 5) + 1}))`
+        };
+        return acc;
+    }, {} as ChartConfig);
 
-    const categoryColors = [
-        'hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 
-        'hsl(var(--chart-4))', 'hsl(var(--chart-5))', 'hsl(var(--chart-1))' // repeat colors if more than 5
-    ];
+    categoryChartConfig['count'] = { label: 'Cursos' };
+    
     const categoryPieData = data.coursesByCategory.map((cat, index) => ({
         name: cat.category,
-        value: cat.count,
-        fill: categoryColors[index % categoryColors.length]
+        count: cat.count,
+        fill: `var(--color-${cat.category})`
     }));
 
     return (
@@ -246,7 +252,7 @@ const CourseAnalyticsSection = () => {
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                                 <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} />
                                 <YAxis type="category" dataKey="title" width={120} tick={{ fontSize: 11 }} className="truncate" axisLine={false} tickLine={false} />
-                                <Tooltip />
+                                <Tooltip cursor={{ fill: "hsl(var(--muted))" }}/>
                                 <Bar dataKey="enrollments" fill="hsl(var(--primary))" name="Inscripciones" barSize={20} radius={[0, 4, 4, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -257,15 +263,34 @@ const CourseAnalyticsSection = () => {
                 <Card>
                     <CardHeader><CardTitle className="text-base">Distribución por Categoría</CardTitle></CardHeader>
                     <CardContent>
-                        <ResponsiveContainer width="100%" height={345}>
+                        <ChartContainer
+                          config={categoryChartConfig}
+                          className="mx-auto aspect-square h-[345px]"
+                        >
                             <PieChart>
-                                <Pie data={categoryPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={2} label>
-                                    {categoryPieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                <ChartTooltip
+                                  cursor={false}
+                                  content={<ChartTooltipContent hideLabel />}
+                                />
+                                <Pie
+                                  data={categoryPieData}
+                                  dataKey="count"
+                                  nameKey="name"
+                                  innerRadius={60}
+                                  strokeWidth={5}
+                                  label
+                                >
+                                  {categoryPieData.map((entry) => (
+                                    <Cell
+                                      key={entry.name}
+                                      fill={entry.fill}
+                                      className="stroke-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    />
+                                  ))}
                                 </Pie>
-                                <Tooltip />
-                                <Legend />
+                                <Legend content={<ChartTooltipContent hideLabel hideIndicator nameKey="name" />} />
                             </PieChart>
-                        </ResponsiveContainer>
+                        </ChartContainer>
                     </CardContent>
                 </Card>
             </div>
@@ -404,9 +429,9 @@ const SecurityAnalyticsSection = () => {
         switch (event) {
             case 'SUCCESSFUL_LOGIN': return { label: 'Inicio Sesión Exitoso', icon: <ShieldCheck className="h-4 w-4 text-green-500" />, variant: 'secondary' as const };
             case 'FAILED_LOGIN_ATTEMPT': return { label: 'Intento Fallido', icon: <ShieldX className="h-4 w-4 text-destructive" />, variant: 'destructive' as const };
-            case 'PASSWORD_CHANGE_SUCCESS': return { label: 'Cambio de Contraseña', icon: <KeyRound className="h-4 w-4 text-blue-500" />, variant: 'default' as const };
+            case 'PASSWORD_CHANGE_SUCCESS': return { label: 'Cambio de Contraseña', icon: <KeyRound className="h-4 w-4 text-primary" />, variant: 'default' as const };
             case 'TWO_FACTOR_ENABLED': return { label: '2FA Activado', icon: <ShieldCheck className="h-4 w-4 text-green-500" />, variant: 'default' as const };
-            case 'TWO_FACTOR_DISABLED': return { label: '2FA Desactivado', icon: <ShieldAlert className="h-4 w-4 text-amber-500" />, variant: 'destructive' as const };
+            case 'TWO_FACTOR_DISABLED': return { label: '2FA Desactivado', icon: <ShieldAlert className="h-4 w-4 text-orange-500" />, variant: 'destructive' as const };
             case 'USER_ROLE_CHANGED': return { label: 'Cambio de Rol', icon: <UserCog className="h-4 w-4 text-purple-500" />, variant: 'default' as const };
             default: return { label: 'Evento Desconocido', icon: <ShieldAlert className="h-4 w-4" />, variant: 'outline' as const };
         }

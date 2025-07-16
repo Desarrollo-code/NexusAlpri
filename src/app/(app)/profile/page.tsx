@@ -41,16 +41,20 @@ import { useTheme } from 'next-themes';
 
 const ThemeCustomizer = () => {
     const { user, saveTheme } = useAuth();
-    const { theme, setTheme } = useTheme();
     const [isSaving, setIsSaving] = useState(false);
+    const [selectedTheme, setSelectedTheme] = useState(user?.colorTheme || 'corporate-blue');
+
+    useEffect(() => {
+        setSelectedTheme(user?.colorTheme || 'corporate-blue');
+    }, [user?.colorTheme]);
 
     if (!user) return null;
     
     const handleThemeSelect = async (newThemeName: ThemeName) => {
-        if (newThemeName === theme) return;
-        
+        if (newThemeName === selectedTheme) return;
+
         const transitionCallback = async () => {
-            setTheme(newThemeName);
+            setSelectedTheme(newThemeName);
             setIsSaving(true);
             await saveTheme(newThemeName);
             setIsSaving(false);
@@ -74,9 +78,9 @@ const ThemeCustomizer = () => {
                 <CardDescription>Elige una paleta de colores. Se adaptará al modo claro u oscuro que tengas activado.</CardDescription>
             </CardHeader>
             <CardContent>
-                <RadioGroup value={theme} onValueChange={(v) => handleThemeSelect(v as ThemeName)} className="grid grid-cols-2 sm:grid-cols-3 gap-4" disabled={isSaving}>
+                <RadioGroup value={selectedTheme} onValueChange={(v) => handleThemeSelect(v as ThemeName)} className="grid grid-cols-2 sm:grid-cols-3 gap-4" disabled={isSaving}>
                     {defaultThemes.map(t => (
-                        <Label key={t.name} htmlFor={`theme-${t.name}`} className={cn("relative block rounded-lg border-2 p-2 transition-all", isSaving ? "cursor-not-allowed opacity-60" : "cursor-pointer", theme === t.name ? 'border-primary' : 'border-muted')}>
+                        <Label key={t.name} htmlFor={`theme-${t.name}`} className={cn("relative block rounded-lg border-2 p-2 transition-all", isSaving ? "cursor-not-allowed opacity-60" : "cursor-pointer", selectedTheme === t.name ? 'border-primary ring-2 ring-primary' : 'border-border')}>
                            <RadioGroupItem value={t.name} id={`theme-${t.name}`} className="sr-only" />
                            <div className="w-full h-20 rounded-md overflow-hidden flex" style={{
                                 background: `linear-gradient(to right, hsl(${t.light.background}), hsl(${t.dark.background}))`
@@ -101,7 +105,7 @@ const ThemeCustomizer = () => {
 
 
 export default function ProfilePage() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, saveTheme } = useAuth();
   const { toast } = useToast();
 
   const [editableName, setEditableName] = useState('');
