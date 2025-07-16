@@ -46,17 +46,20 @@ async function calculateWeightedProgress(completedRecords: LessonCompletionRecor
 export async function recordLessonInteraction({ userId, courseId, lessonId, type, score }: RecordInteractionParams) {
     const enrollment = await prisma.enrollment.findUnique({
         where: { userId_courseId: { userId, courseId } },
-        include: { progress: true },
     });
 
     if (!enrollment) {
         throw new Error("User is not enrolled in this course.");
     }
+
+    const progress = await prisma.courseProgress.findUnique({
+        where: { enrollmentId: enrollment.id },
+    });
     
     let currentRecords: LessonCompletionRecord[] = [];
-    if (enrollment.progress?.completedLessonIds) {
-        if (Array.isArray(enrollment.progress.completedLessonIds)) {
-            currentRecords = enrollment.progress.completedLessonIds as unknown as LessonCompletionRecord[];
+    if (progress?.completedLessonIds) {
+        if (Array.isArray(progress.completedLessonIds)) {
+            currentRecords = progress.completedLessonIds as unknown as LessonCompletionRecord[];
         }
     }
     
@@ -71,14 +74,12 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
     
     // Upsert the progress record linked to the enrollment
     await prisma.courseProgress.upsert({
-        where: { enrollmentId: enrollment.userId + '_' + enrollment.courseId },
+        where: { enrollmentId: enrollment.id },
         update: {
             completedLessonIds: currentRecords as unknown as JsonValue,
         },
         create: {
-            enrollment: {
-                connect: { userId_courseId: { userId, courseId } }
-            },
+            enrollmentId: enrollment.id,
             completedLessonIds: currentRecords as unknown as JsonValue,
             progressPercentage: 0, // Initial progress is 0 until consolidated
         },
@@ -108,7 +109,7 @@ export async function consolidateCourseProgress({ userId, courseId }: { userId: 
     const finalPercentage = await calculateWeightedProgress(currentRecords, courseId);
 
     const updatedProgress = await prisma.courseProgress.update({
-        where: { enrollmentId: enrollment.userId + '_' + enrollment.courseId },
+        where: { id: enrollment.progress.id },
         data: {
             progressPercentage: finalPercentage,
         },
