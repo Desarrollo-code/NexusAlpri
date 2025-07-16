@@ -7,13 +7,14 @@ import { getSession } from '@/lib/auth';
 // GET a specific user
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getSession(req);
+    const { id } = params;
     // Allow admins to get any user, and any user to get their own profile
-    if (!session || (session.role !== 'ADMINISTRATOR' && session.id !== params.id)) {
+    if (!session || (session.role !== 'ADMINISTRATOR' && session.id !== id)) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
     try {
         const user = await prisma.user.findUnique({
-            where: { id: params.id },
+            where: { id },
         });
         if (!user) {
             return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
@@ -32,13 +33,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
+
+    const { id } = params;
     // Admin can edit anyone. A user can edit their own profile.
-    if (session.role !== 'ADMINISTRATOR' && session.id !== params.id) {
+    if (session.role !== 'ADMINISTRATOR' && session.id !== id) {
          return NextResponse.json({ message: 'No tienes permiso para actualizar este usuario.' }, { status: 403 });
     }
 
     try {
-        const { id } = params;
         const body = await req.json();
         
         const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
@@ -46,10 +48,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         let dataToUpdate: any = {};
         
         // Handle theme updates separately, as any user can do this for themselves
-        if ('colorTheme' in body || 'customThemeColors' in body) {
+        if ('colorTheme' in body) {
             if (session.id === id) { // Ensure users can only update their own theme
-                if ('colorTheme' in body) dataToUpdate.colorTheme = body.colorTheme;
-                if ('customThemeColors' in body) dataToUpdate.customThemeColors = body.customThemeColors;
+                dataToUpdate.colorTheme = body.colorTheme;
             } else if (session.role !== 'ADMINISTRATOR') {
                 return NextResponse.json({ message: 'No tienes permiso para actualizar el tema de otro usuario.' }, { status: 403 });
             }
