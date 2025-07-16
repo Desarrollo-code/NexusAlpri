@@ -87,7 +87,7 @@ export default function SecurityAuditPage() {
             case 'TWO_FACTOR_DISABLED':
                 return {
                     label: '2FA Desactivado',
-                    icon: <ShieldAlert className="h-4 w-4 text-amber-500" />,
+                    icon: <ShieldAlert className="h-4 w-4 text-orange-500" />,
                     variant: 'destructive',
                     details: 'El usuario desactivó la autenticación de dos factores.'
                 };

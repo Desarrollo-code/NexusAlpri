@@ -118,14 +118,14 @@ export function UserAvatarDropdown() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/profile" className="cursor-pointer">
-            <UserCircle className={cn('mr-2 h-4 w-4', 'text-chart-1')} />
+            <UserCircle className='mr-2 h-4 w-4 text-primary' />
             <span>Perfil</span>
           </Link>
         </DropdownMenuItem>
         {userAppRole === 'ADMINISTRATOR' && (
             <DropdownMenuItem asChild>
                  <Link href="/settings" className="cursor-pointer">
-                    <Settings className={cn('mr-2 h-4 w-4', 'text-chart-2')} />
+                    <Settings className='mr-2 h-4 w-4 text-primary' />
                     <span>Configuración</span>
                  </Link>
             </DropdownMenuItem>

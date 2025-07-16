@@ -155,7 +155,7 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
             <section className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg"><Users /> Distribución de Usuarios</CardTitle>
+                        <CardTitle className="flex items-center gap-2 text-lg"><Users className="text-primary" /> Distribución de Usuarios</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {userRolesChartData.length > 0 ? (
@@ -212,7 +212,7 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
                 </Card>
                  <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg"><BookOpenCheck /> Estado General de Cursos</CardTitle>
+                        <CardTitle className="flex items-center gap-2 text-lg"><BookOpenCheck className="text-primary" /> Estado General de Cursos</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {courseStatusChartData.length > 0 ? (
