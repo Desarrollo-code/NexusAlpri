@@ -1,5 +1,4 @@
 
-
 import type { JsonValue, LessonTemplate, TemplateBlock } from "@prisma/client";
 
 // --- USER & AUTH ---
@@ -13,6 +12,7 @@ export interface User {
   role: UserRole;
   isTwoFactorEnabled?: boolean;
   registeredDate?: string | Date;
+  colorTheme?: string | null;
 }
 
 export interface PlatformSettings {

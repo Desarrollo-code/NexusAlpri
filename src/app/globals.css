@@ -4,7 +4,7 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root, .theme-corporate-blue {
     --background: 220 20% 98%;
     --foreground: 220 15% 20%;
     --card: 220 20% 100%;
@@ -43,7 +43,7 @@
     --sidebar-ring: 262 84% 57%;
   }
 
-  .dark {
+  .dark:root, .dark .theme-corporate-blue {
     --background: 220 18% 18%; /* Dark Gray */
     --foreground: 210 20% 94%;
     --card: 220 18% 22%;
@@ -71,6 +71,18 @@
     --sidebar-border: 220 15% 25%;
     --sidebar-ring: 262 84% 67%;
   }
+
+  .theme-ember-glow { --primary: 38 92% 50%; --accent: 8 89% 55%; }
+  .dark .theme-ember-glow { --primary: 38 92% 60%; --accent: 8 89% 65%; }
+
+  .theme-ocean-mist { --primary: 175 75% 40%; --accent: 140 60% 50%; }
+  .dark .theme-ocean-mist { --primary: 175 75% 55%; --accent: 140 60% 60%; }
+
+  .theme-royal-purple { --primary: 280 65% 50%; --accent: 330 75% 55%; }
+  .dark .theme-royal-purple { --primary: 280 65% 65%; --accent: 330 75% 65%; }
+
+  .theme-slate-cool { --primary: 215 25% 45%; --accent: 215 15% 55%; }
+  .dark .theme-slate-cool { --primary: 215 25% 60%; --accent: 215 15% 70%; }
 }
 
 @layer base {
