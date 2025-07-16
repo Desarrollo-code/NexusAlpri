@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Users, BookOpenCheck, Activity, TrendingUp, ShieldCheck, UserCheck, Group, Award, FileWarning, Clock, Percent, UserMinus, AlertTriangle, Download, Server, UserCog, KeyRound, ShieldAlert, ShieldX } from 'lucide-react';
+import { IconUsers, IconBookOpenText, IconActivity, IconTrendingUp, IconShieldAlert, IconUserCheck, IconAward, IconFileWarning, IconClock, IconPercent, IconUserDelete, IconDownload, IconServer, IconUserRole, IconKey, IconShieldX, IconBookMarked, IconLoader } from '@/components/icons';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from '@/components/ui/button';
 import type { UserAnalyticsData, UsersByRole, CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog, User as AppUser, EnterpriseResource } from '@/types';
@@ -67,13 +67,13 @@ const UserAnalyticsSection = () => {
     }, [fetchUserAnalytics]);
 
     if (isLoading) {
-        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+        return <div className="flex justify-center items-center p-8"><IconLoader className="h-6 w-6 animate-spin" /></div>;
     }
 
     if (error || !data) {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-destructive">
-                <AlertTriangle className="h-6 w-6 mb-2" />
+                <IconFileWarning className="h-6 w-6 mb-2" />
                 <p>Error al cargar datos de usuarios.</p>
                 <Button onClick={fetchUserAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
             </div>
@@ -91,8 +91,8 @@ const UserAnalyticsSection = () => {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 space-y-4">
-                <MetricItem title="Total de Usuarios" value={totalUsers} icon={Users} />
-                <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={UserCheck} />
+                <MetricItem title="Total de Usuarios" value={totalUsers} icon={IconUsers} />
+                <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={IconUserCheck} />
                 <Card>
                     <CardHeader><CardTitle className="text-base">Distribución por Rol</CardTitle></CardHeader>
                     <CardContent>
@@ -208,13 +208,13 @@ const CourseAnalyticsSection = () => {
     }, [fetchCourseAnalytics]);
 
     if (isLoading) {
-        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+        return <div className="flex justify-center items-center p-8"><IconLoader className="h-6 w-6 animate-spin" /></div>;
     }
 
     if (error || !data) {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-destructive">
-                <AlertTriangle className="h-6 w-6 mb-2" />
+                <IconFileWarning className="h-6 w-6 mb-2" />
                 <p>Error al cargar datos de cursos.</p>
                 <Button onClick={fetchCourseAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
             </div>
@@ -241,8 +241,8 @@ const CourseAnalyticsSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-6">
                  <div className="grid grid-cols-2 gap-4">
-                    <MetricItem title="Tasa de Finalización" value={data.averageCompletionRate.toFixed(1)} icon={Percent} unit="%"/>
-                    <MetricItem title="Puntaje Promedio (Quizzes)" value={data.averageQuizScore.toFixed(1)} icon={Award} unit="%"/>
+                    <MetricItem title="Tasa de Finalización" value={data.averageCompletionRate.toFixed(1)} icon={IconPercent} unit="%"/>
+                    <MetricItem title="Puntaje Promedio (Quizzes)" value={data.averageQuizScore.toFixed(1)} icon={IconAward} unit="%"/>
                 </div>
                 <Card>
                     <CardHeader><CardTitle className="text-base">Top 5 Cursos Más Populares</CardTitle></CardHeader>
@@ -323,13 +323,13 @@ const ProgressAnalyticsSection = () => {
     }, [fetchProgressAnalytics]);
 
     if (isLoading) {
-        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+        return <div className="flex justify-center items-center p-8"><IconLoader className="h-6 w-6 animate-spin" /></div>;
     }
 
     if (error || !data) {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-destructive">
-                <AlertTriangle className="h-6 w-6 mb-2" />
+                <IconFileWarning className="h-6 w-6 mb-2" />
                 <p>Error al cargar datos de progreso.</p>
                 <Button onClick={fetchProgressAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
             </div>
@@ -350,8 +350,8 @@ const ProgressAnalyticsSection = () => {
                 </CardContent>
             </Card>
             <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <MetricItem title="Estudiantes en Progreso" value={data.activeStudentsInCourses} icon={UserCheck}/>
-                <MetricItem title="Tiempo Promedio Finalización" value={data.averageCompletionTimeDays} icon={Clock} unit=" días"/>
+                <MetricItem title="Estudiantes en Progreso" value={data.activeStudentsInCourses} icon={IconUserCheck}/>
+                <MetricItem title="Tiempo Promedio Finalización" value={data.averageCompletionTimeDays} icon={IconClock} unit=" días"/>
             </div>
         </div>
     );
@@ -385,12 +385,12 @@ const InteractionAnalyticsSection = () => {
     }, [fetchInteractionAnalytics]);
 
     if (isLoading) {
-        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+        return <div className="flex justify-center items-center p-8"><IconLoader className="h-6 w-6 animate-spin" /></div>;
     }
      if (error) {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-destructive">
-                <AlertTriangle className="h-6 w-6 mb-2" />
+                <IconFileWarning className="h-6 w-6 mb-2" />
                 <p>Error al cargar datos de interacción.</p>
                 <Button onClick={fetchInteractionAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
             </div>
@@ -399,8 +399,8 @@ const InteractionAnalyticsSection = () => {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-           <MetricItem title="Descargas de Recursos" value={data?.totalDownloads ?? "N/A"} icon={Download}/>
-           <MetricItem title="Uso de Funcionalidades" value="N/A" icon={Activity}/>
+           <MetricItem title="Descargas de Recursos" value={data?.totalDownloads ?? "N/A"} icon={IconDownload}/>
+           <MetricItem title="Uso de Funcionalidades" value="N/A" icon={IconActivity}/>
         </div>
     );
 };
@@ -427,13 +427,13 @@ const SecurityAnalyticsSection = () => {
     
     const getEventDetails = (event: AppSecurityLog['event'], details?: string | null) => {
         switch (event) {
-            case 'SUCCESSFUL_LOGIN': return { label: 'Inicio Sesión Exitoso', icon: <ShieldCheck className="h-4 w-4 text-green-500" />, variant: 'secondary' as const };
-            case 'FAILED_LOGIN_ATTEMPT': return { label: 'Intento Fallido', icon: <ShieldX className="h-4 w-4 text-destructive" />, variant: 'destructive' as const };
-            case 'PASSWORD_CHANGE_SUCCESS': return { label: 'Cambio de Contraseña', icon: <KeyRound className="h-4 w-4 text-primary" />, variant: 'default' as const };
-            case 'TWO_FACTOR_ENABLED': return { label: '2FA Activado', icon: <ShieldCheck className="h-4 w-4 text-green-500" />, variant: 'default' as const };
-            case 'TWO_FACTOR_DISABLED': return { label: '2FA Desactivado', icon: <ShieldAlert className="h-4 w-4 text-orange-500" />, variant: 'destructive' as const };
-            case 'USER_ROLE_CHANGED': return { label: 'Cambio de Rol', icon: <UserCog className="h-4 w-4 text-purple-500" />, variant: 'default' as const };
-            default: return { label: 'Evento Desconocido', icon: <ShieldAlert className="h-4 w-4" />, variant: 'outline' as const };
+            case 'SUCCESSFUL_LOGIN': return { label: 'Inicio Sesión Exitoso', icon: <IconUserCheck className="h-4 w-4 text-green-500" />, variant: 'secondary' as const };
+            case 'FAILED_LOGIN_ATTEMPT': return { label: 'Intento Fallido', icon: <IconShieldX className="h-4 w-4 text-destructive" />, variant: 'destructive' as const };
+            case 'PASSWORD_CHANGE_SUCCESS': return { label: 'Cambio de Contraseña', icon: <IconKey className="h-4 w-4 text-primary" />, variant: 'default' as const };
+            case 'TWO_FACTOR_ENABLED': return { label: '2FA Activado', icon: <IconUserCheck className="h-4 w-4 text-green-500" />, variant: 'default' as const };
+            case 'TWO_FACTOR_DISABLED': return { label: '2FA Desactivado', icon: <IconShieldAlert className="h-4 w-4 text-orange-500" />, variant: 'destructive' as const };
+            case 'USER_ROLE_CHANGED': return { label: 'Cambio de Rol', icon: <IconUserRole className="h-4 w-4 text-purple-500" />, variant: 'default' as const };
+            default: return { label: 'Evento Desconocido', icon: <IconShieldAlert className="h-4 w-4" />, variant: 'outline' as const };
         }
     };
 
@@ -444,13 +444,13 @@ const SecurityAnalyticsSection = () => {
     }, [fetchLogs]);
 
     if (isLoading) {
-        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+        return <div className="flex justify-center items-center p-8"><IconLoader className="h-6 w-6 animate-spin" /></div>;
     }
 
     if (error) {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-destructive">
-                <AlertTriangle className="h-6 w-6 mb-2" />
+                <IconFileWarning className="h-6 w-6 mb-2" />
                 <p>Error al cargar registros de seguridad.</p>
                 <Button onClick={fetchLogs} variant="outline" size="sm" className="mt-2">Reintentar</Button>
             </div>
@@ -522,7 +522,7 @@ export default function AnalyticsPage() {
     if (currentUser?.role !== 'ADMINISTRATOR') {
         return (
             <div className="flex h-full items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin" />
+                <IconLoader className="h-8 w-8 animate-spin" />
             </div>
         );
     }
@@ -536,35 +536,35 @@ export default function AnalyticsPage() {
             
             <Accordion type="multiple" defaultValue={['item-1']} className="w-full space-y-6">
                 <AccordionItem value="item-1">
-                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><Users className="mr-3 h-5 w-5 text-primary" /> Analíticas de Usuarios</AccordionTrigger>
+                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><IconUsers className="mr-3 h-5 w-5 text-primary" /> Analíticas de Usuarios</AccordionTrigger>
                     <AccordionContent className="pt-4">
                         <UserAnalyticsSection />
                     </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="item-2">
-                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><BookOpenCheck className="mr-3 h-5 w-5 text-primary" /> Analíticas de Cursos y Contenido</AccordionTrigger>
+                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><IconBookMarked className="mr-3 h-5 w-5 text-primary" /> Analíticas de Cursos y Contenido</AccordionTrigger>
                     <AccordionContent className="pt-4">
                          <CourseAnalyticsSection />
                     </AccordionContent>
                 </AccordionItem>
                 
                  <AccordionItem value="item-3">
-                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><TrendingUp className="mr-3 h-5 w-5 text-primary" /> Analíticas de Progreso de Estudiantes</AccordionTrigger>
+                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><IconTrendingUp className="mr-3 h-5 w-5 text-primary" /> Analíticas de Progreso de Estudiantes</AccordionTrigger>
                     <AccordionContent className="pt-4">
                         <ProgressAnalyticsSection />
                     </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="item-4">
-                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><Activity className="mr-3 h-5 w-5 text-primary" /> Analíticas de Interacción y Compromiso</AccordionTrigger>
+                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><IconActivity className="mr-3 h-5 w-5 text-primary" /> Analíticas de Interacción y Compromiso</AccordionTrigger>
                     <AccordionContent className="pt-4">
                         <InteractionAnalyticsSection />
                     </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="item-5">
-                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><ShieldCheck className="mr-3 h-5 w-5 text-primary" /> Analíticas de Seguridad</AccordionTrigger>
+                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><IconShieldAlert className="mr-3 h-5 w-5 text-primary" /> Analíticas de Seguridad</AccordionTrigger>
                     <AccordionContent className="pt-4">
                        <SecurityAnalyticsSection />
                     </AccordionContent>
