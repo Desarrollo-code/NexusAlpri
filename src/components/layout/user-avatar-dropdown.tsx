@@ -16,33 +16,23 @@ import {
   DropdownMenuSubContent
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Settings, Monitor, Sun, Moon } from 'lucide-react';
+import { LogOut, User, Settings, Monitor, Sun, Moon, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { UserRole } from '@/types';
+import { cn } from '@/lib/utils';
+
 
 function ThemeToggle() {
     const { setTheme } = useTheme();
 
-<<<<<<< HEAD
     const switchTheme = (theme: 'light' | 'dark' | 'system') => {
         if (!document.startViewTransition) {
             setTheme(theme);
             return;
         }
         document.startViewTransition(() => setTheme(theme));
-=======
-    const toggleThemeWithTransition = (newTheme: 'light' | 'dark' | 'system') => {
-        // Fallback for browsers that don't support View Transitions
-        if (!document.startViewTransition) {
-            setTheme(newTheme);
-            return;
-        }
-
-        document.startViewTransition(() => setTheme(newTheme));
->>>>>>> 1617b6ae6856d9f5dca255c3c4bb1e00b1e910ae
     };
-
 
     return (
         <DropdownMenuSub>
@@ -126,22 +116,14 @@ export function UserAvatarDropdown() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/profile" className="cursor-pointer">
-<<<<<<< HEAD
             <User className="mr-2 h-4 w-4" />
-=======
-            <UserCircle className={cn('mr-2 h-4 w-4', 'text-chart-1')} />
->>>>>>> 1617b6ae6856d9f5dca255c3c4bb1e00b1e910ae
             <span>Perfil</span>
           </Link>
         </DropdownMenuItem>
         {userAppRole === 'ADMINISTRATOR' && (
             <DropdownMenuItem asChild>
                  <Link href="/settings" className="cursor-pointer">
-<<<<<<< HEAD
                     <Settings className="mr-2 h-4 w-4" />
-=======
-                    <Settings className={cn('mr-2 h-4 w-4', 'text-chart-2')} />
->>>>>>> 1617b6ae6856d9f5dca255c3c4bb1e00b1e910ae
                     <span>Configuración</span>
                  </Link>
             </DropdownMenuItem>
