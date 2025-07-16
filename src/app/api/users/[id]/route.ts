@@ -47,8 +47,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         if (name) dataToUpdate.name = name;
         if (avatar) dataToUpdate.avatar = avatar;
         if (colorTheme) dataToUpdate.colorTheme = colorTheme;
-        if (customThemeColors) dataToUpdate.customThemeColors = customThemeColors;
-
+        // Check for customThemeColors explicitly, as it can be an empty object
+        if (customThemeColors) {
+            dataToUpdate.customThemeColors = customThemeColors;
+        }
 
         // Only admins can change role and email
         if (session.role === 'ADMINISTRATOR') {
@@ -75,6 +77,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                     }
                 });
             }
+        }
+        
+        if (Object.keys(dataToUpdate).length === 0) {
+            return NextResponse.json({ message: 'No hay datos para actualizar.' }, { status: 400 });
         }
 
         const updatedUser = await prisma.user.update({
