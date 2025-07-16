@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
@@ -13,11 +12,12 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarMenuSeparator
+  SidebarMenuSeparator,
+  useSidebar // Importa useSidebar para acceder al estado 'state'
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { getNavItemsForRole } from '@/lib/nav-items';
-import type { UserRole, NavItem } from '@/types'; 
+import type { UserRole, NavItem } from '@/types';
 import Link from 'next/link';
 import { LogOut, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
@@ -31,7 +31,8 @@ import { useTheme } from 'next-themes';
 
 const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) => {
   const { user } = useAuth();
-  
+  const { state: sidebarState } = useSidebar(); // Obtener el estado del sidebar
+
   if (!user) return null;
 
   const isActive = item.href ? pathname.startsWith(item.href) : false;
@@ -42,27 +43,35 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
   if (filteredSubItems.length > 0) {
     return (
         <AccordionItem value={item.label} className="border-none">
-          <AccordionTrigger 
+          <AccordionTrigger
             className={cn(
               "w-full h-auto p-2 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground rounded-md text-sm hover:no-underline justify-start gap-3",
               isParentActive && "bg-sidebar-accent/80"
             )}
           >
-             <div className="flex items-center gap-3 flex-1">
+              <div className="flex items-center gap-3 flex-1">
                 <item.icon className={cn("h-5 w-5", isParentActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground")} />
-                <span className="font-semibold text-base group-data-[state=expanded]:hidden">{item.label}</span>
-                 <span className="font-semibold text-base group-data-[state=collapsed]:hidden">{item.label}</span>
+                {/* Condición para mostrar/ocultar el texto basado en el estado del sidebar */}
+                {sidebarState === 'expanded' && <span className="font-semibold text-base">{item.label}</span>}
             </div>
-            <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=collapsed]/sidebar-wrapper:hidden" />
+            {/* Ocultar ChevronDown cuando el sidebar está colapsado */}
+            {sidebarState === 'expanded' && <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />}
           </AccordionTrigger>
-          <AccordionContent className="p-0 pl-7 mt-1 group-data-[state=collapsed]:hidden">
+          <AccordionContent className="p-0 pl-7 mt-1 group-data-[state=collapsed]/sidebar-wrapper:hidden"> {/* Ajustado para que el contenido se oculte también */}
             <SidebarMenu className="border-l border-sidebar-border ml-2 pl-3">
               {filteredSubItems.map((subItem) => (
                 <SidebarMenuItem key={subItem.href}>
-                  <SidebarMenuButton asChild isActive={pathname.startsWith(subItem.href)} size="sm" className="justify-start gap-2" tooltip={{...subItem.tooltip, children: subItem.label}}>
-                    <Link href={subItem.href}>
-                      <subItem.icon className={cn("h-4 w-4", pathname.startsWith(subItem.href) ? "text-sidebar-accent-foreground" : "text-sidebar-foreground/80")}/>
-                      <span className="text-sm font-normal">{subItem.label}</span>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={pathname.startsWith(subItem.href || '')} // Asegura que subItem.href sea string para startsWith
+                    size="sm" 
+                    className="justify-start gap-2" 
+                    tooltip={{ children: subItem.label }} // Pasa directamente subItem.label como children del tooltip
+                  >
+                    <Link href={subItem.href || '#'}> {/* Asegura que href sea siempre un string */}
+                      <subItem.icon className={cn("h-4 w-4", pathname.startsWith(subItem.href || '') ? "text-sidebar-accent-foreground" : "text-sidebar-foreground/80")}/>
+                      {/* Ocultar el texto del sub-ítem cuando el sidebar está colapsado */}
+                      {sidebarState === 'expanded' && <span className="text-sm font-normal">{subItem.label}</span>}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -75,10 +84,11 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{...item.tooltip, children: item.label}}>
+      <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{children: item.label}}>
         <Link href={item.href || '#'}>
           <item.icon className={cn("h-5 w-5", isActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground")} />
-          <span className="font-semibold text-base group-data-[state=collapsed]:hidden">{item.label}</span>
+          {/* Ocultar el texto cuando el sidebar está colapsado */}
+          {sidebarState === 'expanded' && <span className="font-semibold text-base">{item.label}</span>}
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -90,9 +100,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const { user, settings, logout } = useAuth();
     const pathname = usePathname();
     const { toast } = useToast();
-  
+
     const handleIdleLogout = useCallback(() => {
-        if (user) { 
+        if (user) {
             logout();
             toast({
                 title: "Sesión Expirada",
@@ -101,7 +111,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             });
         }
     }, [logout, toast, user]);
-  
+
     const idleTimeoutMinutes = settings?.idleTimeoutMinutes || 20;
     const isIdleTimeoutEnabled = settings?.enableIdleTimeout ?? true;
 
@@ -115,7 +125,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         );
         return parentItem ? [parentItem.label] : [];
     });
-    
+
     const generalItems = navItems.filter(item => !item.subItems || item.subItems.length === 0);
     const adminItems = navItems.find(item => item.label === 'Administración' && item.subItems && item.subItems.length > 0);
 
@@ -124,10 +134,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             <Sidebar>
                 <SidebarHeader className="group-data-[state=expanded]:px-4 group-data-[state=collapsed]:px-2">
                     <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground group-data-[state=collapsed]:justify-center">
-                        <Image 
-                            src="/uploads/images/logo-nexusalpri.png" 
-                            alt="NexusAlpri Logo" 
-                            width={120} 
+                        <Image
+                            src="/uploads/images/logo-nexusalpri.png"
+                            alt="NexusAlpri Logo"
+                            width={120}
                             height={97.5}
                             className="w-auto h-8"
                             priority
@@ -177,7 +187,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                   {children}
                 </main>
             </div>
-            
+
             <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
               <Image
                 src="/uploads/images/watermark-alprigrama.png"
@@ -198,10 +208,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.replace('/sign-in'); 
+      router.replace('/sign-in');
     }
   }, [isLoading, user, router]);
-  
+
   if (isLoading || !user) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">

@@ -1,5 +1,4 @@
-
-"use client"
+'use client';
 
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
@@ -382,7 +381,7 @@ const SidebarMenuButton = React.forwardRef<
     if (!tooltip) {
       return button
     }
-    
+
     let tooltipContent: React.ReactNode;
     if (typeof tooltip === "string") {
       tooltipContent = <p>{tooltip}</p>;
