@@ -20,50 +20,50 @@ export const defaultThemes: ColorTheme[] = [
         name: 'corporate-blue',
         label: 'Azul Corporativo',
         colors: {
-            background: 'hsl(220 20% 98%)',
-            foreground: 'hsl(220 15% 20%)',
-            primary: 'hsl(217 91% 60%)',
-            accent: 'hsl(205 90% 55%)',
+            background: '220 20% 98%',
+            foreground: '220 15% 20%',
+            primary: '217 91% 60%',
+            accent: '205 90% 55%',
         }
     },
     {
         name: 'neon-dawn',
         label: 'Amanecer Neón',
         colors: {
-            background: 'hsl(270 12% 8%)',
-            foreground: 'hsl(270 10% 85%)',
-            primary: 'hsl(310 90% 65%)',
-            accent: 'hsl(190 95% 60%)',
+            background: '270 12% 8%',
+            foreground: '270 10% 85%',
+            primary: '310 90% 65%',
+            accent: '190 95% 60%',
         }
     },
     {
         name: 'deep-forest',
         label: 'Bosque Profundo',
         colors: {
-            background: 'hsl(120 25% 10%)',
-            foreground: 'hsl(110 15% 88%)',
-            primary: 'hsl(140 65% 45%)',
-            accent: 'hsl(90 55% 58%)',
+            background: '120 25% 10%',
+            foreground: '110 15% 88%',
+            primary: '140 65% 45%',
+            accent: '90 55% 58%',
         }
     },
     {
         name: 'parchment',
         label: 'Pergamino',
         colors: {
-            background: 'hsl(45 50% 95%)',
-            foreground: 'hsl(30 20% 15%)',
-            primary: 'hsl(25 80% 45%)',
-            accent: 'hsl(10 60% 50%)',
+            background: '45 50% 95%',
+            foreground: '30 20% 15%',
+            primary: '25 80% 45%',
+            accent: '10 60% 50%',
         }
     },
     {
         name: 'custom',
         label: 'Personalizado',
         colors: {
-            background: '#ffffff',
-            foreground: '#000000',
-            primary: '#007bff',
-            accent: '#00c3ff',
+            background: '220 20% 98%', // Default to corporate blue
+            foreground: '220 15% 20%',
+            primary: '217 91% 60%',
+            accent: '205 90% 55%',
         }
     }
 ];
@@ -73,6 +73,7 @@ export const getTheme = (name: string): ColorTheme => {
 };
 
 
-export const isLight = (color: string) => {
-    return colord(color).toLch().l > 60;
+export const isLight = (hslColor: string) => {
+    const lValue = parseInt(hslColor.split(' ')[2].replace('%',''));
+    return lValue > 60;
 };

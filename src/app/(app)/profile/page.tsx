@@ -40,8 +40,7 @@ import { useTheme } from 'next-themes';
 
 
 const ThemeCustomizer = () => {
-    const { user, updateUser, theme, setTheme, customTheme, setCustomTheme } = useAuth();
-    const { setTheme: setNextTheme } = useTheme();
+    const { user, updateUser, theme, applyTheme, customTheme, setCustomTheme } = useAuth();
     const [isSavingTheme, setIsSavingTheme] = useState(false);
     const { toast } = useToast();
 
@@ -53,7 +52,7 @@ const ThemeCustomizer = () => {
             const payload: any = {
                 colorTheme: newThemeName,
             };
-            if (newCustomColors) {
+            if (newThemeName === 'custom' && newCustomColors) {
                 payload.customThemeColors = newCustomColors;
             }
 
@@ -65,14 +64,8 @@ const ThemeCustomizer = () => {
             const updatedUser = await response.json();
             if (!response.ok) throw new Error(updatedUser.message);
 
-            // Update user context locally
+            // Update user context locally, which will trigger theme application in provider
             updateUser(updatedUser);
-            
-            // This will trigger the useEffect in AuthProvider to apply the theme
-            setTheme(newThemeName); 
-            if (newCustomColors) {
-                setCustomTheme({ ...customTheme, colors: newCustomColors });
-            }
 
         } catch (error) {
             toast({ title: "Error", description: "No se pudo guardar la configuración del tema.", variant: "destructive" });
@@ -81,26 +74,33 @@ const ThemeCustomizer = () => {
         }
     };
 
-
-    const handleThemeChange = (newTheme: string) => {
+    const handleThemeChange = (newThemeName: string) => {
         if (!document.startViewTransition) {
-             setNextTheme(newTheme);
-             saveThemeSettings(newTheme);
+             applyTheme(newThemeName);
+             saveThemeSettings(newThemeName);
             return;
         }
         document.startViewTransition(() => {
-            setTheme(newTheme);
-            saveThemeSettings(newTheme);
+            applyTheme(newThemeName);
+            saveThemeSettings(newThemeName);
         });
     };
-
+    
     const handleCustomColorChange = (variable: keyof ColorTheme['colors'], value: string) => {
         const newColors = {
             ...customTheme.colors,
             [variable]: value,
         };
-        setCustomTheme({ ...customTheme, colors: newColors });
-        saveThemeSettings('custom', newColors);
+        
+        if (!document.startViewTransition) {
+             applyTheme('custom', newColors);
+             saveThemeSettings('custom', newColors);
+            return;
+        }
+        document.startViewTransition(() => {
+            applyTheme('custom', newColors);
+            saveThemeSettings('custom', newColors);
+        });
     };
     
     return (
@@ -119,9 +119,9 @@ const ThemeCustomizer = () => {
                         <Label key={t.name} htmlFor={`theme-${t.name}`} className={cn("relative block rounded-lg border-2 border-transparent has-[:checked]:border-primary transition-all p-2", isSavingTheme ? "cursor-not-allowed opacity-60" : "cursor-pointer")}>
                            <RadioGroupItem value={t.name} id={`theme-${t.name}`} className="sr-only" />
                            <div className="w-full h-20 rounded-md overflow-hidden flex">
-                               <div className="w-1/3 h-full" style={{ backgroundColor: t.colors.background }}></div>
-                               <div className="w-1/3 h-full" style={{ backgroundColor: t.colors.foreground }}></div>
-                               <div className="w-1/3 h-full" style={{ backgroundColor: t.colors.primary }}></div>
+                               <div className="w-1/3 h-full" style={{ backgroundColor: `hsl(${t.colors.background})` }}></div>
+                               <div className="w-1/3 h-full" style={{ backgroundColor: `hsl(${t.colors.foreground})` }}></div>
+                               <div className="w-1/3 h-full" style={{ backgroundColor: `hsl(${t.colors.primary})` }}></div>
                            </div>
                            <p className="text-center text-sm font-medium mt-2">{t.label}</p>
                         </Label>
@@ -134,19 +134,19 @@ const ThemeCustomizer = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="custom-bg">Fondo</Label>
-                                <Input type="color" id="custom-bg" value={customTheme.colors.background} onChange={e => handleCustomColorChange('background', e.target.value)} className="w-12 h-8 p-1"/>
+                                <Input type="color" id="custom-bg" value={`#${customTheme.colors.background.split(' ').join('')}`} onChange={e => handleCustomColorChange('background', e.target.value)} className="w-12 h-8 p-1"/>
                             </div>
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="custom-fg">Texto</Label>
-                                <Input type="color" id="custom-fg" value={customTheme.colors.foreground} onChange={e => handleCustomColorChange('foreground', e.target.value)} className="w-12 h-8 p-1"/>
+                                <Input type="color" id="custom-fg" value={`#${customTheme.colors.foreground.split(' ').join('')}`} onChange={e => handleCustomColorChange('foreground', e.target.value)} className="w-12 h-8 p-1"/>
                             </div>
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="custom-primary">Primario</Label>
-                                <Input type="color" id="custom-primary" value={customTheme.colors.primary} onChange={e => handleCustomColorChange('primary', e.target.value)} className="w-12 h-8 p-1"/>
+                                <Input type="color" id="custom-primary" value={`#${customTheme.colors.primary.split(' ').join('')}`} onChange={e => handleCustomColorChange('primary', e.target.value)} className="w-12 h-8 p-1"/>
                             </div>
                              <div className="flex items-center justify-between">
                                 <Label htmlFor="custom-accent">Acento</Label>
-                                <Input type="color" id="custom-accent" value={customTheme.colors.accent} onChange={e => handleCustomColorChange('accent', e.target.value)} className="w-12 h-8 p-1"/>
+                                <Input type="color" id="custom-accent" value={`#${customTheme.colors.accent.split(' ').join('')}`} onChange={e => handleCustomColorChange('accent', e.target.value)} className="w-12 h-8 p-1"/>
                             </div>
                         </div>
                     </div>

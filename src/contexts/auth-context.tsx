@@ -21,6 +21,7 @@ interface AuthContextType {
   setTheme: (theme: string) => void;
   customTheme: ColorTheme;
   setCustomTheme: (theme: ColorTheme) => void;
+  applyTheme: (themeName: string, customColors?: any) => void;
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
@@ -52,22 +53,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [customTheme, _setCustomTheme] = useState<ColorTheme>(getTheme('custom'));
 
   const applyTheme = useCallback((themeName: string, customColors?: any) => {
-      const themeToApply = themeName === 'custom' && customColors ? { name: 'custom', label: 'Personalizado', colors: customColors } : getTheme(themeName);
-      
-      const root = document.documentElement;
-      root.style.setProperty('--background', themeToApply.colors.background);
-      root.style.setProperty('--foreground', themeToApply.colors.foreground);
-      root.style.setProperty('--primary', themeToApply.colors.primary);
-      root.style.setProperty('--accent', themeToApply.colors.accent);
-      
-      const newResolvedTheme = isLight(themeToApply.colors.background) ? 'light' : 'dark';
-      if (resolvedTheme !== newResolvedTheme) {
-          setNextTheme(newResolvedTheme);
-      }
-      _setTheme(themeName);
-      if (themeName === 'custom' && customColors) {
-          _setCustomTheme(themeToApply);
-      }
+    const themeToApply = themeName === 'custom' && customColors ? { name: 'custom', label: 'Personalizado', colors: customColors } : getTheme(themeName);
+    
+    if (typeof document !== 'undefined') {
+        const root = document.documentElement;
+        Object.entries(themeToApply.colors).forEach(([key, value]) => {
+            const cssVar = `--${key}`;
+            root.style.setProperty(cssVar, value);
+        });
+
+        const newResolvedTheme = isLight(themeToApply.colors.background) ? 'light' : 'dark';
+        if (resolvedTheme !== newResolvedTheme) {
+            setNextTheme(newResolvedTheme);
+        }
+    }
+    
+    _setTheme(themeName);
+    if (themeName === 'custom' && customColors) {
+        _setCustomTheme(themeToApply);
+    }
   }, [resolvedTheme, setNextTheme]);
 
 
@@ -97,12 +101,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const { user: userData } = await userRes.json();
         setUser(userData);
         if (userData) {
-          // Apply theme from user data
           applyTheme(userData.colorTheme || 'corporate-blue', userData.customThemeColors);
+        } else {
+          applyTheme('corporate-blue');
         }
       } else {
         setUser(null);
-        applyTheme('corporate-blue'); // Apply default theme for non-logged-in users
+        applyTheme('corporate-blue');
       }
     } catch (error) {
       console.error("An unexpected error occurred during session initialization:", error);
@@ -142,9 +147,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;
-      return { ...prevUser, ...updatedData };
+      const newUser = { ...prevUser, ...updatedData };
+      // If theme was part of the update, re-apply it
+      if (updatedData.colorTheme || updatedData.customThemeColors) {
+          applyTheme(newUser.colorTheme || 'corporate-blue', newUser.customThemeColors);
+      }
+      return newUser;
     });
-  }, []);
+  }, [applyTheme]);
 
   const updateSettings = useCallback((updatedData: Partial<PlatformSettings>) => {
     setSettings(prevSettings => {
@@ -165,7 +175,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setTheme: _setTheme,
     customTheme,
     setCustomTheme: _setCustomTheme,
-  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, theme, customTheme]);
+    applyTheme,
+  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, theme, customTheme, applyTheme]);
 
   if (isLoading) {
     return (
