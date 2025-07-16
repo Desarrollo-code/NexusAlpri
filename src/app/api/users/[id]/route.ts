@@ -44,20 +44,25 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
 
         let dataToUpdate: any = {};
-        if (name) dataToUpdate.name = name;
-        if (avatar) dataToUpdate.avatar = avatar;
-        if (colorTheme) dataToUpdate.colorTheme = colorTheme;
-        // Check for customThemeColors explicitly, as it can be an empty object
-        if (customThemeColors) {
-            dataToUpdate.customThemeColors = customThemeColors;
+
+        // Any user can update their own name, avatar, and theme settings
+        if (session.id === id) {
+            if (name) dataToUpdate.name = name;
+            if (avatar) dataToUpdate.avatar = avatar;
+            if (colorTheme) dataToUpdate.colorTheme = colorTheme;
+            if (customThemeColors) dataToUpdate.customThemeColors = customThemeColors;
         }
 
-        // Only admins can change role and email
+        // Only admins can change role, email, and other users' details
         if (session.role === 'ADMINISTRATOR') {
             const userToUpdate = await prisma.user.findUnique({ where: { id } });
             if (!userToUpdate) {
                  return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
             }
+            // An admin can also change these fields for any user
+            if (name) dataToUpdate.name = name;
+            if (avatar) dataToUpdate.avatar = avatar;
+
             if (email) {
                 // Check if new email is already taken by another user
                 const existingUser = await prisma.user.findFirst({ where: { email, NOT: { id } } });
@@ -66,6 +71,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 }
                 dataToUpdate.email = email;
             }
+
             if (role && role !== userToUpdate.role) { 
                 dataToUpdate.role = role;
                 await prisma.securityLog.create({
