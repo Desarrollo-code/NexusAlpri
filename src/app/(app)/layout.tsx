@@ -19,7 +19,7 @@ import { TopBar } from '@/components/layout/top-bar';
 import { getNavItemsForRole } from '@/lib/nav-items';
 import type { UserRole, NavItem } from '@/types'; 
 import Link from 'next/link';
-import { LogOut, ChevronDown, Monitor, Moon, Sun } from 'lucide-react';
+import { LogOut, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from '@/lib/utils';
@@ -27,8 +27,6 @@ import { useIdleTimeout } from '@/hooks/useIdleTimeout';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from '@/components/ui/dropdown-menu';
-import { GradientIcon } from '@/components/ui/gradient-icon';
 
 
 const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) => {
@@ -51,7 +49,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
             )}
           >
              <div className="flex items-center gap-3 flex-1">
-                <GradientIcon icon={item.icon} isActive={isParentActive} />
+                <item.icon className={cn("h-5 w-5", isParentActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground")} />
                 <span className="font-semibold text-base group-data-[state=expanded]:hidden">{item.label}</span>
             </div>
             <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=collapsed]/sidebar-wrapper:hidden" />
@@ -62,7 +60,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
                 <SidebarMenuItem key={subItem.href}>
                   <SidebarMenuButton asChild isActive={pathname.startsWith(subItem.href)} size="sm" className="justify-start gap-2" tooltip={{...subItem.tooltip, children: subItem.label}}>
                     <Link href={subItem.href}>
-                      <GradientIcon icon={subItem.icon} size="sm" isActive={pathname.startsWith(subItem.href)}/>
+                      <subItem.icon className={cn("h-4 w-4", pathname.startsWith(subItem.href) ? "text-sidebar-accent-foreground" : "text-sidebar-foreground/80")}/>
                       <span className="text-sm font-normal">{subItem.label}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -78,7 +76,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{...item.tooltip, children: item.label}}>
         <Link href={item.href || '#'}>
-          <GradientIcon icon={item.icon} isActive={isActive} />
+          <item.icon className={cn("h-5 w-5", isActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground")} />
           <span className="font-semibold text-base group-data-[state=collapsed]:hidden">{item.label}</span>
         </Link>
       </SidebarMenuButton>

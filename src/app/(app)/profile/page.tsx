@@ -7,7 +7,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Edit3, Mail, Shield, UserCircle as UserIcon, Camera, KeyRound, Save, Loader2, Check, Eye, EyeOff, Palette } from 'lucide-react';
+import { Edit3, Mail, Shield, User, Camera, KeyRound, Save, Loader2, Check, Eye, EyeOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -34,86 +34,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { defaultThemes, type ColorTheme, type ThemeName } from '@/lib/themes';
-import { useTheme } from 'next-themes';
-
-
-const ThemeCustomizer = () => {
-    const { user, updateUser } = useAuth();
-    const [isSaving, setIsSaving] = useState(false);
-    const [selectedTheme, setSelectedTheme] = useState<ThemeName>(user?.colorTheme as ThemeName || 'corporate-blue');
-
-    useEffect(() => {
-        setSelectedTheme(user?.colorTheme as ThemeName || 'corporate-blue');
-    }, [user?.colorTheme]);
-
-    if (!user) return null;
-    
-    const handleThemeSelect = async (newThemeName: ThemeName) => {
-        if (newThemeName === selectedTheme || isSaving) return;
-
-        const transitionCallback = async () => {
-            setIsSaving(true);
-            setSelectedTheme(newThemeName); 
-            try {
-                const response = await fetch(`/api/users/${user.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ colorTheme: newThemeName })
-                });
-                if (!response.ok) throw new Error('Failed to save theme');
-                const savedUser = await response.json();
-                updateUser(savedUser);
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setIsSaving(false);
-            }
-        };
-
-        if (!document.startViewTransition) {
-            await transitionCallback();
-        } else {
-            document.startViewTransition(transitionCallback);
-        }
-    };
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Palette className="h-5 w-5 text-primary"/> 
-                    Paleta de Colores
-                    {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-                </CardTitle>
-                <CardDescription>Elige una paleta de colores. Se adaptará al modo claro u oscuro que tengas activado.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <RadioGroup value={selectedTheme} onValueChange={(v) => handleThemeSelect(v as ThemeName)} className="grid grid-cols-2 sm:grid-cols-3 gap-4" disabled={isSaving}>
-                    {defaultThemes.map(t => (
-                        <Label key={t.name} htmlFor={`theme-${t.name}`} className={cn("relative block rounded-lg border-2 p-2 transition-all", isSaving ? "cursor-not-allowed opacity-60" : "cursor-pointer", selectedTheme === t.name ? 'border-primary ring-2 ring-primary' : 'border-border')}>
-                           <RadioGroupItem value={t.name} id={`theme-${t.name}`} className="sr-only" />
-                           <div className="w-full h-20 rounded-md overflow-hidden flex" style={{
-                                background: `linear-gradient(to right, hsl(${t.light.background}), hsl(${t.dark.background}))`
-                           }}>
-                               <div className="w-1/2 h-full flex flex-col items-center justify-center p-2" style={{ backgroundColor: `hsl(${t.light.background})` }}>
-                                    <div className="h-4 w-full rounded" style={{ backgroundColor: `hsl(${t.light.primary})` }}></div>
-                                    <div className="h-4 w-full rounded mt-1" style={{ backgroundColor: `hsl(${t.light.accent})` }}></div>
-                               </div>
-                                <div className="w-1/2 h-full flex flex-col items-center justify-center p-2" style={{ backgroundColor: `hsl(${t.dark.background})` }}>
-                                     <div className="h-4 w-full rounded" style={{ backgroundColor: `hsl(${t.dark.primary})` }}></div>
-                                     <div className="h-4 w-full rounded mt-1" style={{ backgroundColor: `hsl(${t.dark.accent})` }}></div>
-                                </div>
-                           </div>
-                           <p className="text-center text-sm font-medium mt-2">{t.label}</p>
-                        </Label>
-                    ))}
-                </RadioGroup>
-            </CardContent>
-        </Card>
-    );
-};
 
 
 export default function ProfilePage() {
@@ -389,7 +309,7 @@ export default function ProfilePage() {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><UserIcon className="h-5 w-5 text-primary"/>Información Personal</CardTitle>
+              <CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-primary"/>Información Personal</CardTitle>
               <CardDescription>Estos datos son visibles en tu perfil público (si aplica).</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -415,8 +335,6 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
-
-          <ThemeCustomizer />
           
           <Card>
             <CardHeader>

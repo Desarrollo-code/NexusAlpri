@@ -13,8 +13,6 @@ export interface User {
   role: UserRole;
   isTwoFactorEnabled?: boolean;
   registeredDate?: string | Date;
-  colorTheme?: string | null;
-  customThemeColors?: JsonValue | null;
 }
 
 export interface PlatformSettings {

@@ -42,8 +42,6 @@ export async function createSession(user: Partial<User>) {
       role: user.role,
       avatar: user.avatar,
       isTwoFactorEnabled: user.isTwoFactorEnabled,
-      colorTheme: user.colorTheme,
-      customThemeColors: user.customThemeColors,
   };
   
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);

@@ -16,26 +16,20 @@ import {
   DropdownMenuSubContent
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { LogOut, UserCircle, Settings, Monitor, Sun, Moon } from 'lucide-react';
+import { LogOut, User, Settings, Monitor, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import { UserRole } from '@/types';
-import { GradientIcon } from '../ui/gradient-icon';
 
 function ThemeToggle() {
     const { setTheme } = useTheme();
 
-    const toggleThemeWithTransition = (newTheme: 'light' | 'dark' | 'system') => {
-        const switchTheme = () => {
-            setTheme(newTheme);
-        };
-
+    const switchTheme = (theme: 'light' | 'dark' | 'system') => {
         if (!document.startViewTransition) {
-            switchTheme();
+            setTheme(theme);
             return;
         }
-        document.startViewTransition(switchTheme);
+        document.startViewTransition(() => setTheme(theme));
     };
 
     return (
@@ -47,15 +41,15 @@ function ThemeToggle() {
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={() => toggleThemeWithTransition('light')}>
+                    <DropdownMenuItem onClick={() => switchTheme('light')}>
                         <Sun className="mr-2 h-4 w-4" />
                         <span>Claro</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toggleThemeWithTransition('dark')}>
+                    <DropdownMenuItem onClick={() => switchTheme('dark')}>
                         <Moon className="mr-2 h-4 w-4" />
                         <span>Oscuro</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => toggleThemeWithTransition('system')}>
+                    <DropdownMenuItem onClick={() => switchTheme('system')}>
                         <Monitor className="mr-2 h-4 w-4" />
                         <span>Sistema</span>
                     </DropdownMenuItem>
@@ -120,14 +114,14 @@ export function UserAvatarDropdown() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/profile" className="cursor-pointer">
-            <GradientIcon icon={UserCircle} size="sm" className="mr-2" />
+            <User className="mr-2 h-4 w-4" />
             <span>Perfil</span>
           </Link>
         </DropdownMenuItem>
         {userAppRole === 'ADMINISTRATOR' && (
             <DropdownMenuItem asChild>
                  <Link href="/settings" className="cursor-pointer">
-                    <GradientIcon icon={Settings} size="sm" className="mr-2" />
+                    <Settings className="mr-2 h-4 w-4" />
                     <span>Configuración</span>
                  </Link>
             </DropdownMenuItem>

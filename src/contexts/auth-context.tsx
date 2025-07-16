@@ -5,7 +5,6 @@ import type { User, PlatformSettings } from '@/types';
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import type { ThemeName } from '@/lib/themes';
 
 interface AuthContextType {
   user: User | null;

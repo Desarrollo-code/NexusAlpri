@@ -47,18 +47,9 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 
         let dataToUpdate: any = {};
         
-        // Handle theme updates separately, as any user can do this for themselves
-        if ('colorTheme' in body) {
-            if (session.id === id) { // Ensure users can only update their own theme
-                dataToUpdate.colorTheme = body.colorTheme;
-            } else if (session.role !== 'ADMINISTRATOR') {
-                return NextResponse.json({ message: 'No tienes permiso para actualizar el tema de otro usuario.' }, { status: 403 });
-            }
-        }
-        
         // General profile updates (name, avatar) that a user can do for themselves
-        if ('name' in body && session.id === id) dataToUpdate.name = body.name;
-        if ('avatar' in body && session.id === id) dataToUpdate.avatar = body.avatar;
+        if ('name' in body) dataToUpdate.name = body.name;
+        if ('avatar' in body) dataToUpdate.avatar = body.avatar;
 
         // Admin-only updates
         if (session.role === 'ADMINISTRATOR') {
@@ -66,12 +57,6 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
             if (!userToUpdate) {
                  return NextResponse.json({ message: 'Usuario a actualizar no encontrado' }, { status: 404 });
             }
-            
-            // Allow admin to update these fields
-            if ('name' in body) dataToUpdate.name = body.name;
-            if ('avatar' in body) dataToUpdate.avatar = body.avatar;
-            if ('colorTheme' in body) dataToUpdate.colorTheme = body.colorTheme;
-            if ('customThemeColors' in body) dataToUpdate.customThemeColors = body.customThemeColors;
 
             if ('email' in body && body.email !== userToUpdate.email) {
                 const existingUser = await prisma.user.findFirst({ where: { email: body.email, NOT: { id } } });
