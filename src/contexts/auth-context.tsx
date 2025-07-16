@@ -6,6 +6,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback,
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import type { ThemeName } from '@/lib/themes';
+import { getTheme } from '@/lib/themes';
 
 interface AuthContextType {
   user: User | null;
@@ -15,7 +16,7 @@ interface AuthContextType {
   isLoading: boolean;
   updateUser: (updatedData: Partial<User>) => void;
   updateSettings: (updatedData: Partial<PlatformSettings>) => void;
-  saveTheme: (themeName: ThemeName) => Promise<void>;
+  applyTheme: (themeName: string, customColors?: any) => void;
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
@@ -42,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   const fetchSessionData = useCallback(async () => {
-    setIsLoading(true);
+    // No set isLoading to true here to avoid re-showing loader on minor updates
     try {
       const [settingsRes, userRes] = await Promise.all([
         fetch('/api/settings'),
@@ -67,31 +68,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fetchSessionData();
   }, [fetchSessionData]);
   
-  const saveTheme = useCallback(async (themeName: ThemeName) => {
-    if (!user) return;
-    try {
-      // Optimistically update local state for immediate UI feedback
-      updateUser({ colorTheme: themeName });
-
-      const response = await fetch(`/api/users/${user.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ colorTheme: themeName }),
-      });
-      const updatedUser = await response.json();
-      if (!response.ok) {
-        throw new Error(updatedUser.message);
-      }
-
-      // Sync with the final state from the server to ensure consistency
-      updateUser(updatedUser);
-    } catch (error) {
-        console.error("Failed to save theme settings:", error);
-        // Revert optimistic update on failure
-        fetchSessionData(); 
-    }
-  }, [user, fetchSessionData]);
-
+  const applyTheme = useCallback((themeName: string, customColors?: any) => {
+    // This function can be used to apply theme changes if needed elsewhere,
+    // but the primary logic is now in ThemeProvider
+  }, []);
 
   const login = useCallback((userData: User) => {
     setUser(userData);
@@ -133,16 +113,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     updateUser,
     updateSettings,
-    saveTheme,
-  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, saveTheme]);
-
-  if (isLoading && typeof window !== 'undefined' && !user) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-background">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
+    applyTheme,
+  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, applyTheme]);
 
   return (
     <AuthContext.Provider value={contextValue}>
