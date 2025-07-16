@@ -52,6 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const applyTheme = useCallback((themeName: string, customColors?: any) => {
     let themeToApply = getTheme(themeName);
+
     if (themeName === 'custom') {
         const finalCustomColors = customColors || user?.customThemeColors || getTheme('custom').colors;
         themeToApply = { ...getTheme('custom'), colors: finalCustomColors as ColorTheme['colors'] };
@@ -65,6 +66,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             root.style.setProperty(cssVar, value);
         });
 
+        // This is the key change: we determine light/dark mode based on the theme's background
+        // and tell next-themes which one to use.
         const resolvedTheme = isLight(themeToApply.colors.background) ? 'light' : 'dark';
         setNextTheme(resolvedTheme);
     }
@@ -87,6 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const updatedUser = await response.json();
         if (!response.ok) throw new Error(updatedUser.message);
 
+        // Update local user state to reflect saved theme
         setUser(prevUser => prevUser ? { ...prevUser, ...updatedUser } : null);
 
     } catch (error) {
@@ -120,12 +124,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fetchSessionData();
   }, []);
   
+  // This effect ensures the theme is applied once the user data is loaded.
   useEffect(() => {
-    if (user) {
+    if (!isLoading && user) {
         const themeName = user.colorTheme || 'corporate-blue';
-        const customColors = user.customThemeColors as ColorTheme['colors'] | null;
-        applyTheme(themeName, customColors);
-    } else if (!isLoading) {
+        const userCustomColors = user.customThemeColors as ColorTheme['colors'] | null;
+        applyTheme(themeName, userCustomColors);
+    } else if (!isLoading && !user) {
+        // Apply a default theme for unauthenticated users
         applyTheme('corporate-blue');
     }
   }, [user, isLoading, applyTheme]);
@@ -177,7 +183,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     customTheme,
   }), [user, settings, login, logout, isLoading, updateUser, updateSettings, theme, customTheme, applyTheme, saveTheme]);
 
-  if (isLoading && !user && !settings) {
+  if (isLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />

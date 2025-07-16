@@ -45,7 +45,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
         let dataToUpdate: any = {};
         
-        // Check for theme updates first, as any user can do this for themselves
+        // Handle theme updates separately, as any user can do this for themselves
         if ('colorTheme' in body || 'customThemeColors' in body) {
             if (session.id === id) { // Ensure users can only update their own theme
                 if ('colorTheme' in body) dataToUpdate.colorTheme = body.colorTheme;
@@ -66,8 +66,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                  return NextResponse.json({ message: 'Usuario a actualizar no encontrado' }, { status: 404 });
             }
             
+            // Allow admin to update these fields
             if ('name' in body) dataToUpdate.name = body.name;
             if ('avatar' in body) dataToUpdate.avatar = body.avatar;
+            if ('colorTheme' in body) dataToUpdate.colorTheme = body.colorTheme;
+            if ('customThemeColors' in body) dataToUpdate.customThemeColors = body.customThemeColors;
 
             if ('email' in body && body.email !== userToUpdate.email) {
                 const existingUser = await prisma.user.findFirst({ where: { email: body.email, NOT: { id } } });

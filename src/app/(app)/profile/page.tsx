@@ -36,55 +36,56 @@ import { cn } from '@/lib/utils';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { defaultThemes, type ColorTheme, getTheme } from '@/lib/themes';
-import { useTheme } from 'next-themes';
 
 
 const ThemeCustomizer = () => {
     const { theme: currentThemeName, applyTheme, saveTheme, customTheme, user } = useAuth();
-    const [isSavingTheme, setIsSavingTheme] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     if (!user) return null;
 
-    const handleThemeChange = (newThemeName: string) => {
+    const handleThemeSelect = (newThemeName: string) => {
+        if (newThemeName === currentThemeName) return;
+        
         if (!document.startViewTransition) {
-             applyTheme(newThemeName);
-             saveTheme(newThemeName);
+            applyTheme(newThemeName);
+            saveTheme(newThemeName);
             return;
         }
+        
         document.startViewTransition(async () => {
             applyTheme(newThemeName);
-            setIsSavingTheme(true);
+            setIsSaving(true);
             await saveTheme(newThemeName);
-            setIsSavingTheme(false);
+            setIsSaving(false);
         });
     };
     
     const handleCustomColorChange = (variable: keyof ColorTheme['colors'], value: string) => {
         const newColors = { ...customTheme.colors, [variable]: value };
-        
+
         if (!document.startViewTransition) {
              applyTheme('custom', newColors);
              saveTheme('custom', newColors);
-            return;
+             return;
         }
+
         document.startViewTransition(async () => {
             applyTheme('custom', newColors);
-            setIsSavingTheme(true);
+            setIsSaving(true);
             await saveTheme('custom', newColors);
-            setIsSavingTheme(false);
+            setIsSaving(false);
         });
     };
     
-    // Function to convert HSL string to HEX for color input
     const hslToHex = (hsl: string) => {
+        if (!hsl || typeof hsl !== 'string') return '#000000';
         const [h, s, l] = hsl.split(' ').map(parseFloat);
         let r, g, b;
         const sNorm = s / 100;
         const lNorm = l / 100;
-
-        if (s === 0) {
-            r = g = b = lNorm;
-        } else {
+        if (s === 0) { r = g = b = lNorm; } 
+        else {
             const hue2rgb = (p: number, q: number, t: number) => {
                 if (t < 0) t += 1;
                 if (t > 1) t -= 1;
@@ -93,38 +94,23 @@ const ThemeCustomizer = () => {
                 if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
                 return p;
             };
-
             const q = lNorm < 0.5 ? lNorm * (1 + sNorm) : lNorm + sNorm - lNorm * sNorm;
             const p = 2 * lNorm - q;
             r = hue2rgb(p, q, h / 360 + 1/3);
             g = hue2rgb(p, q, h / 360);
             b = hue2rgb(p, q, h / 360 - 1/3);
         }
-
-        const toHex = (c: number) => {
-            const hex = Math.round(c * 255).toString(16);
-            return hex.length === 1 ? '0' + hex : hex;
-        };
-
+        const toHex = (c: number) => Math.round(c * 255).toString(16).padStart(2, '0');
         return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     };
 
-    // Function to convert HEX to HSL string
     const hexToHsl = (hex: string) => {
         let r = 0, g = 0, b = 0;
-        if (hex.length === 4) {
-            r = parseInt(hex[1] + hex[1], 16);
-            g = parseInt(hex[2] + hex[2], 16);
-            b = parseInt(hex[3] + hex[3], 16);
-        } else if (hex.length === 7) {
-            r = parseInt(hex.substring(1, 3), 16);
-            g = parseInt(hex.substring(3, 5), 16);
-            b = parseInt(hex.substring(5, 7), 16);
-        }
+        if (hex.length === 4) { r = parseInt(hex[1] + hex[1], 16); g = parseInt(hex[2] + hex[2], 16); b = parseInt(hex[3] + hex[3], 16); } 
+        else if (hex.length === 7) { r = parseInt(hex.substring(1, 3), 16); g = parseInt(hex.substring(3, 5), 16); b = parseInt(hex.substring(5, 7), 16); }
         r /= 255; g /= 255; b /= 255;
         const max = Math.max(r, g, b), min = Math.min(r, g, b);
         let h = 0, s = 0, l = (max + min) / 2;
-
         if (max !== min) {
             const d = max - min;
             s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
@@ -135,12 +121,7 @@ const ThemeCustomizer = () => {
             }
             h /= 6;
         }
-
-        h = Math.round(h * 360);
-        s = Math.round(s * 100);
-        l = Math.round(l * 100);
-
-        return `${h} ${s}% ${l}%`;
+        return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
     };
 
     return (
@@ -149,14 +130,14 @@ const ThemeCustomizer = () => {
                 <CardTitle className="flex items-center gap-2">
                     <Palette className="h-5 w-5 text-primary"/> 
                     Personalización de Tema
-                    {isSavingTheme && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
                 </CardTitle>
                 <CardDescription>Elige un tema predefinido o crea el tuyo. Tu selección se guardará en tu perfil.</CardDescription>
             </CardHeader>
             <CardContent>
-                <RadioGroup value={currentThemeName} onValueChange={handleThemeChange} className="grid grid-cols-2 sm:grid-cols-3 gap-4" disabled={isSavingTheme}>
+                <RadioGroup value={currentThemeName} onValueChange={handleThemeSelect} className="grid grid-cols-2 sm:grid-cols-3 gap-4" disabled={isSaving}>
                     {defaultThemes.map(t => (
-                        <Label key={t.name} htmlFor={`theme-${t.name}`} className={cn("relative block rounded-lg border-2 border-transparent has-[:checked]:border-primary transition-all p-2", isSavingTheme ? "cursor-not-allowed opacity-60" : "cursor-pointer")}>
+                        <Label key={t.name} htmlFor={`theme-${t.name}`} className={cn("relative block rounded-lg border-2 p-2 transition-all", isSaving ? "cursor-not-allowed opacity-60" : "cursor-pointer", currentThemeName === t.name ? 'border-primary' : 'border-muted')}>
                            <RadioGroupItem value={t.name} id={`theme-${t.name}`} className="sr-only" />
                            <div className="w-full h-20 rounded-md overflow-hidden flex">
                                <div className="w-1/3 h-full" style={{ backgroundColor: `hsl(${t.colors.background})` }}></div>
