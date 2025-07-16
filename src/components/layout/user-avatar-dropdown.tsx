@@ -21,22 +21,20 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import { UserRole } from '@/types';
-import { GradientIcon } from '../ui/gradient-icon';
 
 function ThemeToggle() {
     const { setTheme } = useTheme();
 
     const toggleThemeWithTransition = (newTheme: 'light' | 'dark' | 'system') => {
-        const switchTheme = () => {
-            setTheme(newTheme);
-        };
-
+        // Fallback for browsers that don't support View Transitions
         if (!document.startViewTransition) {
-            switchTheme();
+            setTheme(newTheme);
             return;
         }
-        document.startViewTransition(switchTheme);
+
+        document.startViewTransition(() => setTheme(newTheme));
     };
+
 
     return (
         <DropdownMenuSub>
@@ -120,14 +118,14 @@ export function UserAvatarDropdown() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/profile" className="cursor-pointer">
-            <GradientIcon icon={UserCircle} size="sm" className="mr-2" />
+            <UserCircle className={cn('mr-2 h-4 w-4', 'text-chart-1')} />
             <span>Perfil</span>
           </Link>
         </DropdownMenuItem>
         {userAppRole === 'ADMINISTRATOR' && (
             <DropdownMenuItem asChild>
                  <Link href="/settings" className="cursor-pointer">
-                    <GradientIcon icon={Settings} size="sm" className="mr-2" />
+                    <Settings className={cn('mr-2 h-4 w-4', 'text-chart-2')} />
                     <span>Configuración</span>
                  </Link>
             </DropdownMenuItem>
