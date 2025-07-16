@@ -15,7 +15,7 @@ interface RecordInteractionParams {
 async function calculateWeightedProgress(completedRecords: LessonCompletionRecord[], courseId: string): Promise<number> {
     const allLessonsInCourse = await prisma.lesson.findMany({
         where: { module: { courseId } },
-        select: { id: true, type: true }
+        select: { id: true }
     });
 
     if (allLessonsInCourse.length === 0) return 0;
@@ -44,14 +44,19 @@ async function calculateWeightedProgress(completedRecords: LessonCompletionRecor
  * This is used for incremental updates.
  */
 export async function recordLessonInteraction({ userId, courseId, lessonId, type, score }: RecordInteractionParams) {
-    const progress = await prisma.courseProgress.findUnique({
+    const enrollment = await prisma.enrollment.findUnique({
         where: { userId_courseId: { userId, courseId } },
+        include: { progress: true },
     });
 
+    if (!enrollment) {
+        throw new Error("User is not enrolled in this course.");
+    }
+    
     let currentRecords: LessonCompletionRecord[] = [];
-    if (progress?.completedLessonIds) {
-        if (Array.isArray(progress.completedLessonIds)) {
-            currentRecords = progress.completedLessonIds as unknown as LessonCompletionRecord[];
+    if (enrollment.progress?.completedLessonIds) {
+        if (Array.isArray(enrollment.progress.completedLessonIds)) {
+            currentRecords = enrollment.progress.completedLessonIds as unknown as LessonCompletionRecord[];
         }
     }
     
@@ -64,14 +69,16 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
         currentRecords.push(newRecord);
     }
     
+    // Upsert the progress record linked to the enrollment
     await prisma.courseProgress.upsert({
-        where: { userId_courseId: { userId, courseId } },
+        where: { enrollmentId: enrollment.userId + '_' + enrollment.courseId },
         update: {
             completedLessonIds: currentRecords as unknown as JsonValue,
         },
         create: {
-            userId,
-            courseId,
+            enrollment: {
+                connect: { userId_courseId: { userId, courseId } }
+            },
             completedLessonIds: currentRecords as unknown as JsonValue,
             progressPercentage: 0, // Initial progress is 0 until consolidated
         },
@@ -84,23 +91,24 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
  * This should be called only at the end of the course.
  */
 export async function consolidateCourseProgress({ userId, courseId }: { userId: string, courseId: string }) {
-    const progress = await prisma.courseProgress.findUnique({
+     const enrollment = await prisma.enrollment.findUnique({
         where: { userId_courseId: { userId, courseId } },
+        include: { progress: true },
     });
 
-    if (!progress) {
+    if (!enrollment || !enrollment.progress) {
         throw new Error("No progress found for this user and course to consolidate.");
     }
     
     let currentRecords: LessonCompletionRecord[] = [];
-    if (progress.completedLessonIds && Array.isArray(progress.completedLessonIds)) {
-        currentRecords = progress.completedLessonIds as unknown as LessonCompletionRecord[];
+    if (enrollment.progress.completedLessonIds && Array.isArray(enrollment.progress.completedLessonIds)) {
+        currentRecords = enrollment.progress.completedLessonIds as unknown as LessonCompletionRecord[];
     }
 
     const finalPercentage = await calculateWeightedProgress(currentRecords, courseId);
 
     const updatedProgress = await prisma.courseProgress.update({
-        where: { userId_courseId: { userId, courseId } },
+        where: { enrollmentId: enrollment.userId + '_' + enrollment.courseId },
         data: {
             progressPercentage: finalPercentage,
         },

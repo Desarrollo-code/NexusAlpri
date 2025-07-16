@@ -16,10 +16,27 @@ export async function GET(req: NextRequest, context: { params: { userId: string,
     }
 
     try {
-        const progress = await prisma.courseProgress.findUnique({
-            where: { userId_courseId: { userId, courseId } },
+        const enrollment = await prisma.enrollment.findUnique({
+            where: {
+                userId_courseId: { userId, courseId },
+            },
+            include: {
+                progress: true,
+            }
         });
         
+        if (!enrollment) {
+            // No enrollment means no progress.
+            return NextResponse.json({
+                userId,
+                courseId,
+                completedLessonIds: [],
+                progressPercentage: 0,
+            });
+        }
+        
+        const progress = enrollment.progress;
+
         if (!progress) {
             // Return a default structure if no progress record exists yet
             return NextResponse.json({
