@@ -5,8 +5,7 @@ import type { User, PlatformSettings } from '@/types';
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { useTheme as useNextTheme } from 'next-themes';
-import { getTheme, type ColorTheme, isLight, defaultThemes } from '@/lib/themes';
+import type { ThemeName } from '@/lib/themes';
 
 interface AuthContextType {
   user: User | null;
@@ -16,11 +15,7 @@ interface AuthContextType {
   isLoading: boolean;
   updateUser: (updatedData: Partial<User>) => void;
   updateSettings: (updatedData: Partial<PlatformSettings>) => void;
-  // Theme properties
-  theme: string;
-  applyTheme: (themeName: string, customColors?: any) => void;
-  saveTheme: (themeName: string, customColors?: any) => Promise<void>;
-  customTheme: ColorTheme;
+  saveTheme: (themeName: ThemeName) => Promise<void>;
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
@@ -45,58 +40,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  
-  const { setTheme: setNextTheme } = useNextTheme();
-  const [theme, setTheme] = useState('corporate-blue');
-  const [customTheme, setCustomTheme] = useState<ColorTheme>(getTheme('custom'));
-
-  const applyTheme = useCallback((themeName: string, customColors?: any) => {
-    let themeToApply = getTheme(themeName);
-
-    if (themeName === 'custom') {
-        const finalCustomColors = customColors || user?.customThemeColors || getTheme('custom').colors;
-        themeToApply = { ...getTheme('custom'), colors: finalCustomColors as ColorTheme['colors'] };
-        setCustomTheme(themeToApply);
-    }
-    
-    if (typeof document !== 'undefined') {
-        const root = document.documentElement;
-        Object.entries(themeToApply.colors).forEach(([key, value]) => {
-            const cssVar = `--${key}`;
-            root.style.setProperty(cssVar, value);
-        });
-
-        // This is the key change: we determine light/dark mode based on the theme's background
-        // and tell next-themes which one to use.
-        const resolvedTheme = isLight(themeToApply.colors.background) ? 'light' : 'dark';
-        setNextTheme(resolvedTheme);
-    }
-    setTheme(themeName);
-  }, [setNextTheme, user]);
-
-  const saveTheme = useCallback(async (themeName: string, customColors?: any) => {
-    if (!user) return;
-    try {
-        const payload: Partial<User> = { colorTheme: themeName };
-        if (themeName === 'custom') {
-            payload.customThemeColors = customColors || customTheme.colors;
-        }
-
-        const response = await fetch(`/api/users/${user.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-        const updatedUser = await response.json();
-        if (!response.ok) throw new Error(updatedUser.message);
-
-        // Update local user state to reflect saved theme
-        setUser(prevUser => prevUser ? { ...prevUser, ...updatedUser } : null);
-
-    } catch (error) {
-        console.error("Failed to save theme settings:", error);
-    }
-  }, [user, customTheme.colors]);
 
   useEffect(() => {
     const fetchSessionData = async () => {
@@ -124,17 +67,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fetchSessionData();
   }, []);
   
-  // This effect ensures the theme is applied once the user data is loaded.
-  useEffect(() => {
-    if (!isLoading && user) {
-        const themeName = user.colorTheme || 'corporate-blue';
-        const userCustomColors = user.customThemeColors as ColorTheme['colors'] | null;
-        applyTheme(themeName, userCustomColors);
-    } else if (!isLoading && !user) {
-        // Apply a default theme for unauthenticated users
-        applyTheme('corporate-blue');
+  const saveTheme = useCallback(async (themeName: ThemeName) => {
+    if (!user) return;
+    try {
+        const payload: Partial<User> = { colorTheme: themeName };
+        
+        const response = await fetch(`/api/users/${user.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const updatedUser = await response.json();
+        if (!response.ok) throw new Error(updatedUser.message);
+
+        // Update local user state to reflect saved theme
+        setUser(prevUser => prevUser ? { ...prevUser, ...updatedUser } : null);
+
+    } catch (error) {
+        console.error("Failed to save theme settings:", error);
     }
-  }, [user, isLoading, applyTheme]);
+  }, [user]);
 
 
   const login = useCallback((userData: User) => {
@@ -177,11 +129,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     updateUser,
     updateSettings,
-    theme,
-    applyTheme,
     saveTheme,
-    customTheme,
-  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, theme, customTheme, applyTheme, saveTheme]);
+  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, saveTheme]);
 
   if (isLoading) {
     return (

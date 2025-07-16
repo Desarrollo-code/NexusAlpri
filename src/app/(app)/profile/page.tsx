@@ -35,93 +35,32 @@ import {
 import { cn } from '@/lib/utils';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { defaultThemes, type ColorTheme, getTheme } from '@/lib/themes';
+import { defaultThemes, type ColorTheme, type ThemeName } from '@/lib/themes';
+import { useTheme } from 'next-themes';
 
 
 const ThemeCustomizer = () => {
-    const { theme: currentThemeName, applyTheme, saveTheme, customTheme, user } = useAuth();
+    const { user, saveTheme } = useAuth();
+    const { theme, setTheme } = useTheme();
     const [isSaving, setIsSaving] = useState(false);
 
     if (!user) return null;
-
-    const handleThemeSelect = (newThemeName: string) => {
-        if (newThemeName === currentThemeName) return;
+    
+    const handleThemeSelect = async (newThemeName: ThemeName) => {
+        if (newThemeName === theme) return;
         
-        if (!document.startViewTransition) {
-            applyTheme(newThemeName);
-            saveTheme(newThemeName);
-            return;
-        }
-        
-        document.startViewTransition(async () => {
-            applyTheme(newThemeName);
+        const transitionCallback = async () => {
+            setTheme(newThemeName);
             setIsSaving(true);
             await saveTheme(newThemeName);
             setIsSaving(false);
-        });
-    };
-    
-    const handleCustomColorChange = (variable: keyof ColorTheme['colors'], value: string) => {
-        const newColors = { ...customTheme.colors, [variable]: value };
+        };
 
         if (!document.startViewTransition) {
-             applyTheme('custom', newColors);
-             saveTheme('custom', newColors);
-             return;
+            await transitionCallback();
+        } else {
+            document.startViewTransition(transitionCallback);
         }
-
-        document.startViewTransition(async () => {
-            applyTheme('custom', newColors);
-            setIsSaving(true);
-            await saveTheme('custom', newColors);
-            setIsSaving(false);
-        });
-    };
-    
-    const hslToHex = (hsl: string) => {
-        if (!hsl || typeof hsl !== 'string') return '#000000';
-        const [h, s, l] = hsl.split(' ').map(parseFloat);
-        let r, g, b;
-        const sNorm = s / 100;
-        const lNorm = l / 100;
-        if (s === 0) { r = g = b = lNorm; } 
-        else {
-            const hue2rgb = (p: number, q: number, t: number) => {
-                if (t < 0) t += 1;
-                if (t > 1) t -= 1;
-                if (t < 1/6) return p + (q - p) * 6 * t;
-                if (t < 1/2) return q;
-                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                return p;
-            };
-            const q = lNorm < 0.5 ? lNorm * (1 + sNorm) : lNorm + sNorm - lNorm * sNorm;
-            const p = 2 * lNorm - q;
-            r = hue2rgb(p, q, h / 360 + 1/3);
-            g = hue2rgb(p, q, h / 360);
-            b = hue2rgb(p, q, h / 360 - 1/3);
-        }
-        const toHex = (c: number) => Math.round(c * 255).toString(16).padStart(2, '0');
-        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-    };
-
-    const hexToHsl = (hex: string) => {
-        let r = 0, g = 0, b = 0;
-        if (hex.length === 4) { r = parseInt(hex[1] + hex[1], 16); g = parseInt(hex[2] + hex[2], 16); b = parseInt(hex[3] + hex[3], 16); } 
-        else if (hex.length === 7) { r = parseInt(hex.substring(1, 3), 16); g = parseInt(hex.substring(3, 5), 16); b = parseInt(hex.substring(5, 7), 16); }
-        r /= 255; g /= 255; b /= 255;
-        const max = Math.max(r, g, b), min = Math.min(r, g, b);
-        let h = 0, s = 0, l = (max + min) / 2;
-        if (max !== min) {
-            const d = max - min;
-            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-            switch (max) {
-                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                case g: h = (b - r) / d + 2; break;
-                case b: h = (r - g) / d + 4; break;
-            }
-            h /= 6;
-        }
-        return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
     };
 
     return (
@@ -129,49 +68,32 @@ const ThemeCustomizer = () => {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Palette className="h-5 w-5 text-primary"/> 
-                    Personalización de Tema
+                    Paleta de Colores
                     {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
                 </CardTitle>
-                <CardDescription>Elige un tema predefinido o crea el tuyo. Tu selección se guardará en tu perfil.</CardDescription>
+                <CardDescription>Elige una paleta de colores. Se adaptará al modo claro u oscuro que tengas activado.</CardDescription>
             </CardHeader>
             <CardContent>
-                <RadioGroup value={currentThemeName} onValueChange={handleThemeSelect} className="grid grid-cols-2 sm:grid-cols-3 gap-4" disabled={isSaving}>
+                <RadioGroup value={theme} onValueChange={(v) => handleThemeSelect(v as ThemeName)} className="grid grid-cols-2 sm:grid-cols-3 gap-4" disabled={isSaving}>
                     {defaultThemes.map(t => (
-                        <Label key={t.name} htmlFor={`theme-${t.name}`} className={cn("relative block rounded-lg border-2 p-2 transition-all", isSaving ? "cursor-not-allowed opacity-60" : "cursor-pointer", currentThemeName === t.name ? 'border-primary' : 'border-muted')}>
+                        <Label key={t.name} htmlFor={`theme-${t.name}`} className={cn("relative block rounded-lg border-2 p-2 transition-all", isSaving ? "cursor-not-allowed opacity-60" : "cursor-pointer", theme === t.name ? 'border-primary' : 'border-muted')}>
                            <RadioGroupItem value={t.name} id={`theme-${t.name}`} className="sr-only" />
-                           <div className="w-full h-20 rounded-md overflow-hidden flex">
-                               <div className="w-1/3 h-full" style={{ backgroundColor: `hsl(${t.colors.background})` }}></div>
-                               <div className="w-1/3 h-full" style={{ backgroundColor: `hsl(${t.colors.foreground})` }}></div>
-                               <div className="w-1/3 h-full" style={{ backgroundColor: `hsl(${t.colors.primary})` }}></div>
+                           <div className="w-full h-20 rounded-md overflow-hidden flex" style={{
+                                background: `linear-gradient(to right, hsl(${t.light.background}), hsl(${t.dark.background}))`
+                           }}>
+                               <div className="w-1/2 h-full flex flex-col items-center justify-center p-2" style={{ backgroundColor: `hsl(${t.light.background})` }}>
+                                    <div className="h-4 w-full rounded" style={{ backgroundColor: `hsl(${t.light.primary})` }}></div>
+                                    <div className="h-4 w-full rounded mt-1" style={{ backgroundColor: `hsl(${t.light.accent})` }}></div>
+                               </div>
+                                <div className="w-1/2 h-full flex flex-col items-center justify-center p-2" style={{ backgroundColor: `hsl(${t.dark.background})` }}>
+                                     <div className="h-4 w-full rounded" style={{ backgroundColor: `hsl(${t.dark.primary})` }}></div>
+                                     <div className="h-4 w-full rounded mt-1" style={{ backgroundColor: `hsl(${t.dark.accent})` }}></div>
+                                </div>
                            </div>
                            <p className="text-center text-sm font-medium mt-2">{t.label}</p>
                         </Label>
                     ))}
                 </RadioGroup>
-
-                {currentThemeName === 'custom' && (
-                    <div className="mt-6 pt-4 border-t space-y-4">
-                        <h4 className="font-semibold">Colores Personalizados</h4>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="flex items-center justify-between">
-                                <Label htmlFor="custom-bg">Fondo</Label>
-                                <Input type="color" id="custom-bg" value={hslToHex(customTheme.colors.background)} onChange={e => handleCustomColorChange('background', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <Label htmlFor="custom-fg">Texto</Label>
-                                <Input type="color" id="custom-fg" value={hslToHex(customTheme.colors.foreground)} onChange={e => handleCustomColorChange('foreground', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <Label htmlFor="custom-primary">Primario</Label>
-                                <Input type="color" id="custom-primary" value={hslToHex(customTheme.colors.primary)} onChange={e => handleCustomColorChange('primary', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
-                            </div>
-                             <div className="flex items-center justify-between">
-                                <Label htmlFor="custom-accent">Acento</Label>
-                                <Input type="color" id="custom-accent" value={hslToHex(customTheme.colors.accent)} onChange={e => handleCustomColorChange('accent', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </CardContent>
         </Card>
     );
