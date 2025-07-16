@@ -2,41 +2,42 @@
 "use client"
 
 import * as React from "react"
-import { ThemeProvider as NextThemesProvider } from "next-themes"
+import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
 import type { ThemeProviderProps } from "next-themes/dist/types"
 import { useAuth } from "@/contexts/auth-context"
 
-// This is a client-side only component that handles applying the user's saved theme class.
-function ThemeClassApplier() {
-    const { user, isLoading } = useAuth();
-    
+function ThemeApplier() {
+    const { theme } = useTheme(); // from next-themes (light, dark, system)
+    const { user, isLoading } = useAuth(); // from our context
+
     React.useEffect(() => {
         if (isLoading || typeof window === 'undefined') return;
 
-        // Get the user's preferred color theme, defaulting to 'corporate-blue'
-        const themeName = user?.colorTheme || 'corporate-blue';
         const root = window.document.documentElement;
         
-        // Remove any other theme classes to avoid conflicts
+        // 1. Remove all potential theme classes first to avoid conflicts
         root.className.split(' ').forEach(className => {
             if (className.startsWith('theme-')) {
                 root.classList.remove(className);
             }
         });
 
-        // Add the current user's theme class
-        root.classList.add(themeName);
+        // 2. Add the user's specific color palette class
+        const colorTheme = user?.colorTheme || 'corporate-blue';
+        root.classList.add(colorTheme);
+        
+        // 3. The `class` from next-themes (e.g., 'dark') is handled by the provider automatically.
+        // No need to manually add `.dark` here.
 
-    }, [user?.colorTheme, isLoading]);
+    }, [user?.colorTheme, isLoading, theme]);
 
-    return null; // This component does not render anything
+    return null;
 }
-
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return (
       <NextThemesProvider {...props}>
-        <ThemeClassApplier />
+        <ThemeApplier />
         {children}
       </NextThemesProvider>
   )
