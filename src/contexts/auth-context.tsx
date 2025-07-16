@@ -3,9 +3,10 @@
 
 import type { User, PlatformSettings } from '@/types';
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { useCustomTheme } from '@/components/theme-provider';
+import { useTheme as useNextTheme } from 'next-themes';
+import { getTheme, type ColorTheme, isLight } from '@/lib/themes';
 
 interface AuthContextType {
   user: User | null;
@@ -15,11 +16,11 @@ interface AuthContextType {
   isLoading: boolean;
   updateUser: (updatedData: Partial<User>) => void;
   updateSettings: (updatedData: Partial<PlatformSettings>) => void;
-  // Theme properties from useCustomTheme
+  // Theme properties
   theme: string;
   setTheme: (theme: string) => void;
-  customTheme: any; // Simplified for context
-  setCustomTheme: (theme: any) => void;
+  customTheme: ColorTheme;
+  setCustomTheme: (theme: ColorTheme) => void;
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
@@ -45,8 +46,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   
-  // Integrate theme context
-  const themeState = useCustomTheme();
+  // Theme state now lives inside the AuthProvider
+  const { setTheme: setNextTheme, resolvedTheme } = useNextTheme();
+  const [theme, _setTheme] = useState('corporate-blue');
+  const [customTheme, _setCustomTheme] = useState<ColorTheme>(getTheme('custom'));
+
+  const applyTheme = useCallback((themeName: string, customColors?: any) => {
+      const themeToApply = themeName === 'custom' && customColors ? { name: 'custom', label: 'Personalizado', colors: customColors } : getTheme(themeName);
+      
+      const root = document.documentElement;
+      root.style.setProperty('--background', themeToApply.colors.background);
+      root.style.setProperty('--foreground', themeToApply.colors.foreground);
+      root.style.setProperty('--primary', themeToApply.colors.primary);
+      root.style.setProperty('--accent', themeToApply.colors.accent);
+      
+      const newResolvedTheme = isLight(themeToApply.colors.background) ? 'light' : 'dark';
+      if (resolvedTheme !== newResolvedTheme) {
+          setNextTheme(newResolvedTheme);
+      }
+      _setTheme(themeName);
+      if (themeName === 'custom' && customColors) {
+          _setCustomTheme(themeToApply);
+      }
+  }, [resolvedTheme, setNextTheme]);
+
 
   const fetchSessionData = useCallback(async () => {
     setIsLoading(true);
@@ -73,17 +96,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (userRes.ok) {
         const { user: userData } = await userRes.json();
         setUser(userData);
+        if (userData) {
+          // Apply theme from user data
+          applyTheme(userData.colorTheme || 'corporate-blue', userData.customThemeColors);
+        }
       } else {
         setUser(null);
+        applyTheme('corporate-blue'); // Apply default theme for non-logged-in users
       }
     } catch (error) {
       console.error("An unexpected error occurred during session initialization:", error);
       setUser(null);
       setSettings(DEFAULT_SETTINGS);
+      applyTheme('corporate-blue');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [applyTheme]);
 
   useEffect(() => {
     fetchSessionData();
@@ -91,10 +120,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = useCallback((userData: User) => {
     setUser(userData);
+    if (userData) {
+        applyTheme(userData.colorTheme || 'corporate-blue', userData.customThemeColors);
+    }
     const params = new URLSearchParams(window.location.search);
     const redirectedFrom = params.get('redirectedFrom');
     router.replace(redirectedFrom || '/dashboard');
-  }, [router]);
+  }, [router, applyTheme]);
 
   const logout = useCallback(async () => {
     try {
@@ -129,8 +161,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     updateUser,
     updateSettings,
-    ...themeState,
-  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, themeState]);
+    theme,
+    setTheme: _setTheme,
+    customTheme,
+    setCustomTheme: _setCustomTheme,
+  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, theme, customTheme]);
 
   if (isLoading) {
     return (

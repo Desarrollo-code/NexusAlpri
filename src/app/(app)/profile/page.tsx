@@ -36,43 +36,87 @@ import { cn } from '@/lib/utils';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { defaultThemes, type ColorTheme } from '@/lib/themes';
+import { useTheme } from 'next-themes';
 
 
 const ThemeCustomizer = () => {
-    const { theme, setTheme, customTheme, setCustomTheme } = useAuth();
+    const { user, updateUser, theme, setTheme, customTheme, setCustomTheme } = useAuth();
+    const { setTheme: setNextTheme } = useTheme();
+    const [isSavingTheme, setIsSavingTheme] = useState(false);
+    const { toast } = useToast();
+
+    if (!user) return null;
+
+    const saveThemeSettings = async (newThemeName: string, newCustomColors?: ColorTheme['colors']) => {
+        setIsSavingTheme(true);
+        try {
+            const payload: any = {
+                colorTheme: newThemeName,
+            };
+            if (newCustomColors) {
+                payload.customThemeColors = newCustomColors;
+            }
+
+            const response = await fetch(`/api/users/${user.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const updatedUser = await response.json();
+            if (!response.ok) throw new Error(updatedUser.message);
+
+            // Update user context locally
+            updateUser(updatedUser);
+            
+            // This will trigger the useEffect in AuthProvider to apply the theme
+            setTheme(newThemeName); 
+            if (newCustomColors) {
+                setCustomTheme({ ...customTheme, colors: newCustomColors });
+            }
+
+        } catch (error) {
+            toast({ title: "Error", description: "No se pudo guardar la configuración del tema.", variant: "destructive" });
+        } finally {
+            setIsSavingTheme(false);
+        }
+    };
+
 
     const handleThemeChange = (newTheme: string) => {
         if (!document.startViewTransition) {
-            setTheme(newTheme);
+             setNextTheme(newTheme);
+             saveThemeSettings(newTheme);
             return;
         }
-        document.startViewTransition(() => setTheme(newTheme));
+        document.startViewTransition(() => {
+            setTheme(newTheme);
+            saveThemeSettings(newTheme);
+        });
     };
 
     const handleCustomColorChange = (variable: keyof ColorTheme['colors'], value: string) => {
-        const newCustomTheme = {
-            ...customTheme,
-            colors: {
-                ...customTheme.colors,
-                [variable]: value,
-            },
+        const newColors = {
+            ...customTheme.colors,
+            [variable]: value,
         };
-        setCustomTheme(newCustomTheme);
-        if (theme === 'custom') {
-            setTheme('custom'); // Re-apply to trigger CSS variable update
-        }
+        setCustomTheme({ ...customTheme, colors: newColors });
+        saveThemeSettings('custom', newColors);
     };
     
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary"/> Personalización de Tema</CardTitle>
-                <CardDescription>Elige un tema predefinido o crea el tuyo. Tu selección se guardará en este navegador.</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                    <Palette className="h-5 w-5 text-primary"/> 
+                    Personalización de Tema
+                    {isSavingTheme && <Loader2 className="h-4 w-4 animate-spin" />}
+                </CardTitle>
+                <CardDescription>Elige un tema predefinido o crea el tuyo. Tu selección se guardará en tu perfil.</CardDescription>
             </CardHeader>
             <CardContent>
-                <RadioGroup value={theme} onValueChange={handleThemeChange} className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <RadioGroup value={theme} onValueChange={handleThemeChange} className="grid grid-cols-2 sm:grid-cols-3 gap-4" disabled={isSavingTheme}>
                     {defaultThemes.map(t => (
-                        <Label key={t.name} htmlFor={`theme-${t.name}`} className="relative block cursor-pointer rounded-lg border-2 border-transparent has-[:checked]:border-primary transition-all p-2">
+                        <Label key={t.name} htmlFor={`theme-${t.name}`} className={cn("relative block rounded-lg border-2 border-transparent has-[:checked]:border-primary transition-all p-2", isSavingTheme ? "cursor-not-allowed opacity-60" : "cursor-pointer")}>
                            <RadioGroupItem value={t.name} id={`theme-${t.name}`} className="sr-only" />
                            <div className="w-full h-20 rounded-md overflow-hidden flex">
                                <div className="w-1/3 h-full" style={{ backgroundColor: t.colors.background }}></div>

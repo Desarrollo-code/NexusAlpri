@@ -39,13 +39,16 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
     try {
         const { id } = context.params;
         const body = await req.json();
-        const { name, email, role, avatar } = body;
+        const { name, email, role, avatar, colorTheme, customThemeColors } = body;
         
         const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
 
         let dataToUpdate: any = {};
         if (name) dataToUpdate.name = name;
         if (avatar) dataToUpdate.avatar = avatar;
+        if (colorTheme) dataToUpdate.colorTheme = colorTheme;
+        if (customThemeColors) dataToUpdate.customThemeColors = customThemeColors;
+
 
         // Only admins can change role and email
         if (session.role === 'ADMINISTRATOR') {

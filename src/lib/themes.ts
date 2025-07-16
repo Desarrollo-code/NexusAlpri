@@ -69,18 +69,6 @@ export const defaultThemes: ColorTheme[] = [
 ];
 
 export const getTheme = (name: string): ColorTheme => {
-    if (name === 'custom') {
-        if (typeof window !== 'undefined') {
-            const storedCustom = localStorage.getItem('app-custom-theme');
-            if (storedCustom) {
-                try {
-                    return JSON.parse(storedCustom);
-                } catch(e) {
-                    // Fallback to default custom
-                }
-            }
-        }
-    }
     return defaultThemes.find(t => t.name === name) || defaultThemes[0];
 };
 
