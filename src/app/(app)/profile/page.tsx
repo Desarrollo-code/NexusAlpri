@@ -35,74 +35,117 @@ import {
 import { cn } from '@/lib/utils';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { defaultThemes, type ColorTheme } from '@/lib/themes';
+import { defaultThemes, type ColorTheme, getTheme } from '@/lib/themes';
 import { useTheme } from 'next-themes';
 
 
 const ThemeCustomizer = () => {
-    const { user, updateUser, theme, applyTheme, customTheme, setCustomTheme } = useAuth();
+    const { user, theme, applyTheme, saveTheme, customTheme: initialCustomTheme } = useAuth();
     const [isSavingTheme, setIsSavingTheme] = useState(false);
-    const { toast } = useToast();
+    const [currentCustomTheme, setCurrentCustomTheme] = useState(initialCustomTheme);
 
     if (!user) return null;
-
-    const saveThemeSettings = async (newThemeName: string, newCustomColors?: ColorTheme['colors']) => {
-        setIsSavingTheme(true);
-        try {
-            const payload: any = {
-                colorTheme: newThemeName,
-            };
-            if (newThemeName === 'custom' && newCustomColors) {
-                payload.customThemeColors = newCustomColors;
-            }
-
-            const response = await fetch(`/api/users/${user.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-            const updatedUser = await response.json();
-            if (!response.ok) throw new Error(updatedUser.message);
-
-            // Update user context locally, which will trigger theme application in provider
-            updateUser(updatedUser);
-
-        } catch (error) {
-            toast({ title: "Error", description: "No se pudo guardar la configuración del tema.", variant: "destructive" });
-        } finally {
-            setIsSavingTheme(false);
-        }
-    };
 
     const handleThemeChange = (newThemeName: string) => {
         if (!document.startViewTransition) {
              applyTheme(newThemeName);
-             saveThemeSettings(newThemeName);
+             saveTheme(newThemeName);
             return;
         }
-        document.startViewTransition(() => {
+        document.startViewTransition(async () => {
             applyTheme(newThemeName);
-            saveThemeSettings(newThemeName);
+            setIsSavingTheme(true);
+            await saveTheme(newThemeName);
+            setIsSavingTheme(false);
         });
     };
     
     const handleCustomColorChange = (variable: keyof ColorTheme['colors'], value: string) => {
-        const newColors = {
-            ...customTheme.colors,
-            [variable]: value,
-        };
+        const newColors = { ...currentCustomTheme.colors, [variable]: value };
+        const newThemeState = { ...currentCustomTheme, colors: newColors };
+        setCurrentCustomTheme(newThemeState);
         
         if (!document.startViewTransition) {
              applyTheme('custom', newColors);
-             saveThemeSettings('custom', newColors);
+             saveTheme('custom', newColors);
             return;
         }
-        document.startViewTransition(() => {
+        document.startViewTransition(async () => {
             applyTheme('custom', newColors);
-            saveThemeSettings('custom', newColors);
+            setIsSavingTheme(true);
+            await saveTheme('custom', newColors);
+            setIsSavingTheme(false);
         });
     };
     
+    // Function to convert HSL string to HEX for color input
+    const hslToHex = (hsl: string) => {
+        const [h, s, l] = hsl.split(' ').map(parseFloat);
+        let r, g, b;
+        const sNorm = s / 100;
+        const lNorm = l / 100;
+
+        if (s === 0) {
+            r = g = b = lNorm;
+        } else {
+            const hue2rgb = (p: number, q: number, t: number) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            };
+
+            const q = lNorm < 0.5 ? lNorm * (1 + sNorm) : lNorm + sNorm - lNorm * sNorm;
+            const p = 2 * lNorm - q;
+            r = hue2rgb(p, q, h / 360 + 1/3);
+            g = hue2rgb(p, q, h / 360);
+            b = hue2rgb(p, q, h / 360 - 1/3);
+        }
+
+        const toHex = (c: number) => {
+            const hex = Math.round(c * 255).toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
+        };
+
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    };
+
+    // Function to convert HEX to HSL string
+    const hexToHsl = (hex: string) => {
+        let r = 0, g = 0, b = 0;
+        if (hex.length === 4) {
+            r = parseInt(hex[1] + hex[1], 16);
+            g = parseInt(hex[2] + hex[2], 16);
+            b = parseInt(hex[3] + hex[3], 16);
+        } else if (hex.length === 7) {
+            r = parseInt(hex.substring(1, 3), 16);
+            g = parseInt(hex.substring(3, 5), 16);
+            b = parseInt(hex.substring(5, 7), 16);
+        }
+        r /= 255; g /= 255; b /= 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h = 0, s = 0, l = (max + min) / 2;
+
+        if (max !== min) {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+
+        h = Math.round(h * 360);
+        s = Math.round(s * 100);
+        l = Math.round(l * 100);
+
+        return `${h} ${s}% ${l}%`;
+    };
+
     return (
         <Card>
             <CardHeader>
@@ -134,19 +177,19 @@ const ThemeCustomizer = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="custom-bg">Fondo</Label>
-                                <Input type="color" id="custom-bg" value={`#${customTheme.colors.background.split(' ').join('')}`} onChange={e => handleCustomColorChange('background', e.target.value)} className="w-12 h-8 p-1"/>
+                                <Input type="color" id="custom-bg" value={hslToHex(currentCustomTheme.colors.background)} onChange={e => handleCustomColorChange('background', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
                             </div>
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="custom-fg">Texto</Label>
-                                <Input type="color" id="custom-fg" value={`#${customTheme.colors.foreground.split(' ').join('')}`} onChange={e => handleCustomColorChange('foreground', e.target.value)} className="w-12 h-8 p-1"/>
+                                <Input type="color" id="custom-fg" value={hslToHex(currentCustomTheme.colors.foreground)} onChange={e => handleCustomColorChange('foreground', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
                             </div>
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="custom-primary">Primario</Label>
-                                <Input type="color" id="custom-primary" value={`#${customTheme.colors.primary.split(' ').join('')}`} onChange={e => handleCustomColorChange('primary', e.target.value)} className="w-12 h-8 p-1"/>
+                                <Input type="color" id="custom-primary" value={hslToHex(currentCustomTheme.colors.primary)} onChange={e => handleCustomColorChange('primary', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
                             </div>
                              <div className="flex items-center justify-between">
                                 <Label htmlFor="custom-accent">Acento</Label>
-                                <Input type="color" id="custom-accent" value={`#${customTheme.colors.accent.split(' ').join('')}`} onChange={e => handleCustomColorChange('accent', e.target.value)} className="w-12 h-8 p-1"/>
+                                <Input type="color" id="custom-accent" value={hslToHex(currentCustomTheme.colors.accent)} onChange={e => handleCustomColorChange('accent', hexToHsl(e.target.value))} className="w-12 h-8 p-1"/>
                             </div>
                         </div>
                     </div>

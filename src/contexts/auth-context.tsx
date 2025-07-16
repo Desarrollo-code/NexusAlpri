@@ -18,10 +18,9 @@ interface AuthContextType {
   updateSettings: (updatedData: Partial<PlatformSettings>) => void;
   // Theme properties
   theme: string;
-  setTheme: (theme: string) => void;
-  customTheme: ColorTheme;
-  setCustomTheme: (theme: ColorTheme) => void;
   applyTheme: (themeName: string, customColors?: any) => void;
+  saveTheme: (themeName: string, customColors?: any) => Promise<void>;
+  customTheme: ColorTheme;
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
@@ -47,10 +46,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   
-  // Theme state now lives inside the AuthProvider
   const { setTheme: setNextTheme, resolvedTheme } = useNextTheme();
-  const [theme, _setTheme] = useState('corporate-blue');
-  const [customTheme, _setCustomTheme] = useState<ColorTheme>(getTheme('custom'));
+  const [theme, setTheme] = useState('corporate-blue');
+  const [customTheme, setCustomTheme] = useState<ColorTheme>(getTheme('custom'));
 
   const applyTheme = useCallback((themeName: string, customColors?: any) => {
     const themeToApply = themeName === 'custom' && customColors ? { name: 'custom', label: 'Personalizado', colors: customColors } : getTheme(themeName);
@@ -68,12 +66,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }
     
-    _setTheme(themeName);
+    setTheme(themeName);
     if (themeName === 'custom' && customColors) {
-        _setCustomTheme(themeToApply);
+        setCustomTheme(themeToApply);
     }
   }, [resolvedTheme, setNextTheme]);
 
+
+  const saveTheme = useCallback(async (themeName: string, customColors?: any) => {
+    if (!user) return;
+    try {
+        const payload: Partial<User> = { colorTheme: themeName };
+        if (themeName === 'custom' && customColors) {
+            payload.customThemeColors = customColors;
+        }
+
+        const response = await fetch(`/api/users/${user.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const updatedUser = await response.json();
+        if (!response.ok) throw new Error(updatedUser.message);
+
+        // Update user context locally, which will trigger theme application
+        setUser(prevUser => prevUser ? { ...prevUser, ...updatedUser } : null);
+
+    } catch (error) {
+        console.error("Failed to save theme settings:", error);
+    }
+  }, [user]);
 
   const fetchSessionData = useCallback(async () => {
     setIsLoading(true);
@@ -93,7 +115,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const settingsData = await settingsRes.json();
         setSettings(settingsData);
       } else {
-        console.warn('Could not fetch platform settings, using default values. This may be due to a database connection issue.');
+        console.warn('Could not fetch platform settings, using default values.');
         setSettings(DEFAULT_SETTINGS);
       }
 
@@ -102,8 +124,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(userData);
         if (userData) {
           applyTheme(userData.colorTheme || 'corporate-blue', userData.customThemeColors);
-        } else {
-          applyTheme('corporate-blue');
         }
       } else {
         setUser(null);
@@ -148,7 +168,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(prevUser => {
       if (!prevUser) return null;
       const newUser = { ...prevUser, ...updatedData };
-      // If theme was part of the update, re-apply it
       if (updatedData.colorTheme || updatedData.customThemeColors) {
           applyTheme(newUser.colorTheme || 'corporate-blue', newUser.customThemeColors);
       }
@@ -172,11 +191,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     updateUser,
     updateSettings,
     theme,
-    setTheme: _setTheme,
-    customTheme,
-    setCustomTheme: _setCustomTheme,
     applyTheme,
-  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, theme, customTheme, applyTheme]);
+    saveTheme,
+    customTheme,
+  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, theme, customTheme, applyTheme, saveTheme]);
 
   if (isLoading) {
     return (

@@ -40,47 +40,51 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     try {
         const { id } = params;
         const body = await req.json();
-        const { name, email, role, avatar, colorTheme, customThemeColors } = body;
         
         const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
 
         let dataToUpdate: any = {};
         
-        // A user can update their own name, avatar, and theme
-        if (session.id === id) {
-            if (name) dataToUpdate.name = name;
-            if (avatar) dataToUpdate.avatar = avatar;
-            if (colorTheme) dataToUpdate.colorTheme = colorTheme;
-            if (customThemeColors) dataToUpdate.customThemeColors = customThemeColors;
+        // Check for theme updates first, as any user can do this for themselves
+        if ('colorTheme' in body || 'customThemeColors' in body) {
+            if (session.id === id) { // Ensure users can only update their own theme
+                if ('colorTheme' in body) dataToUpdate.colorTheme = body.colorTheme;
+                if ('customThemeColors' in body) dataToUpdate.customThemeColors = body.customThemeColors;
+            } else if (session.role !== 'ADMINISTRATOR') {
+                return NextResponse.json({ message: 'No tienes permiso para actualizar el tema de otro usuario.' }, { status: 403 });
+            }
         }
+        
+        // General profile updates (name, avatar) that a user can do for themselves
+        if ('name' in body && session.id === id) dataToUpdate.name = body.name;
+        if ('avatar' in body && session.id === id) dataToUpdate.avatar = body.avatar;
 
-        // Only admins can change other fields or other users' data
+        // Admin-only updates
         if (session.role === 'ADMINISTRATOR') {
             const userToUpdate = await prisma.user.findUnique({ where: { id } });
             if (!userToUpdate) {
                  return NextResponse.json({ message: 'Usuario a actualizar no encontrado' }, { status: 404 });
             }
             
-            // Allow admin to override these fields for any user
-            if (name) dataToUpdate.name = name;
-            if (avatar) dataToUpdate.avatar = avatar;
+            if ('name' in body) dataToUpdate.name = body.name;
+            if ('avatar' in body) dataToUpdate.avatar = body.avatar;
 
-            if (email && email !== userToUpdate.email) {
-                const existingUser = await prisma.user.findFirst({ where: { email, NOT: { id } } });
+            if ('email' in body && body.email !== userToUpdate.email) {
+                const existingUser = await prisma.user.findFirst({ where: { email: body.email, NOT: { id } } });
                 if (existingUser) {
                     return NextResponse.json({ message: 'El correo electrónico ya está en uso' }, { status: 409 });
                 }
-                dataToUpdate.email = email;
+                dataToUpdate.email = body.email;
             }
 
-            if (role && role !== userToUpdate.role) { 
-                dataToUpdate.role = role;
+            if ('role' in body && body.role !== userToUpdate.role) { 
+                dataToUpdate.role = body.role;
                 await prisma.securityLog.create({
                     data: {
                         event: 'USER_ROLE_CHANGED',
                         ipAddress: ip,
                         userId: id,
-                        details: `Rol cambiado de ${userToUpdate.role} a ${role} por el administrador ${session.email}.`
+                        details: `Rol cambiado de ${userToUpdate.role} a ${body.role} por el administrador ${session.email}.`
                     }
                 });
             }
