@@ -6,73 +6,77 @@
 @layer base {
   :root {
     --background: 220 20% 98%;
-    --foreground: 220 15% 20%;
+    --foreground: 220 15% 25%;
     --card: 220 20% 100%;
-    --card-foreground: 220 15% 20%;
+    --card-foreground: 220 15% 25%;
     --popover: 220 20% 100%;
-    --popover-foreground: 220 15% 20%;
-    --primary: 262 82% 57%; /* Deep Purple */
+    --popover-foreground: 220 15% 25%;
+
+    /* Gold & Graphite Palette */
+    --primary: 38 92% 50%; /* Ocre/Gold for primary actions */
     --primary-foreground: 210 20% 98%;
     --secondary: 220 15% 94%;
     --secondary-foreground: 220 10% 25%;
     --muted: 220 15% 94%;
     --muted-foreground: 220 10% 45%;
-    --accent: 330 84% 60%; /* Vibrant Pink */
+    --accent: 25 84% 60%; /* Soft orange accent */
     --accent-foreground: 220 15% 15%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 220 15% 88%;
     --input: 220 15% 92%;
-    --ring: 262 82% 57%;
+    --ring: 38 92% 50%;
     --radius: 0.75rem;
 
-    /* Diverse and professional chart/event palette */
-    --chart-1: 262 82% 57%; /* Deep Purple (Primary) */
-    --chart-2: 330 84% 60%; /* Vibrant Pink (Accent) */
-    --chart-3: 150 70% 40%; /* Emerald Green */
-    --chart-4: 40 95% 55%; /* Bright Orange */
-    --chart-5: 210 90% 50%; /* Bright Blue */
+    /* Chart/Event Palette for Gold & Graphite theme */
+    --chart-1: 38 92% 50%;   /* Gold (Primary) */
+    --chart-2: 25 84% 60%;   /* Orange (Accent) */
+    --chart-3: 150 70% 35%;  /* Deep Green */
+    --chart-4: 220 15% 50%;  /* Slate Grey */
+    --chart-5: 20 50% 45%;   /* Terracotta */
 
-    --event-blue: 210 90% 50%;   /* General */
-    --event-green: 150 70% 40%;  /* Taller/Formación */
+    --event-blue: 210 90% 50%;   /* General (Kept for consistency) */
+    --event-green: 150 70% 35%;  /* Taller/Formación */
     --event-red: 0 84% 60%;      /* Urgente/Límite */
-    --event-orange: 40 95% 55%;  /* Festivo */
+    --event-orange: 25 84% 60%;  /* Festivo */
 
     --sidebar-background: 220 15% 96%;
     --sidebar-foreground: 220 15% 25%;
-    --sidebar-accent: 262 82% 57%;
+    --sidebar-accent: 38 92% 50%;
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: 220 15% 88%;
-    --sidebar-ring: 262 82% 57%;
+    --sidebar-ring: 38 92% 50%;
   }
 
   .dark {
-    --background: 265 80% 12%; /* Deep, dark purple */
+    --background: 220 15% 15%; /* Graphite Dark */
     --foreground: 210 20% 94%;
-    --card: 265 70% 15%; /* Slightly lighter dark purple */
+    --card: 220 15% 20%;
     --card-foreground: 210 20% 94%;
-    --popover: 265 80% 10%;
+    --popover: 220 15% 10%;
     --popover-foreground: 210 20% 94%;
-    --primary: 262 82% 57%;
-    --primary-foreground: 210 20% 98%;
-    --secondary: 265 70% 20%;
+
+    /* Gold & Graphite Palette */
+    --primary: 38 92% 50%;
+    --primary-foreground: 220 15% 10%;
+    --secondary: 220 15% 25%;
     --secondary-foreground: 210 20% 94%;
-    --muted: 265 70% 20%;
+    --muted: 220 15% 25%;
     --muted-foreground: 220 10% 65%;
-    --accent: 330 84% 60%; 
+    --accent: 25 84% 60%;
     --accent-foreground: 220 15% 15%;
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 265 70% 25%;
-    --input: 265 70% 22%;
-    --ring: 262 82% 57%; 
+    --border: 220 15% 30%;
+    --input: 220 15% 28%;
+    --ring: 38 92% 50%;
     
-    --sidebar-background: 265 80% 10%;
+    --sidebar-background: 220 15% 12%;
     --sidebar-foreground: 210 20% 85%;
-    --sidebar-accent: 262 82% 57%;
-    --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 265 70% 18%;
-    --sidebar-ring: 262 82% 57%;
+    --sidebar-accent: 38 92% 50%;
+    --sidebar-accent-foreground: 220 15% 10%;
+    --sidebar-border: 220 15% 22%;
+    --sidebar-ring: 38 92% 50%;
   }
 }
 
