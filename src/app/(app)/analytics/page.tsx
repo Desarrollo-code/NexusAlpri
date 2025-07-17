@@ -5,24 +5,20 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { IconUsers, IconBookOpenText, IconActivity, IconTrendingUp, IconShieldAlert, IconUserCheck, IconAward, IconFileWarning, IconClock, IconPercent, IconUserDelete, IconDownload, IconServer, IconKey, IconShieldX, IconLoader } from '@/components/icons';
-import { BookMarked, UserCog } from 'lucide-react';
+import { IconUsers, IconActivity, IconTrendingUp, IconShieldAlert, IconUserCheck, IconAward, IconFileWarning, IconClock, IconPercent, IconLoader } from '@/components/icons';
+import { BookMarked, UserCog, Download } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from '@/components/ui/button';
-import type { UserAnalyticsData, UsersByRole, CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog, User as AppUser, EnterpriseResource } from '@/types';
+import type { UserAnalyticsData, CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog, User as AppUser, EnterpriseResource } from '@/types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
-import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { GaugeChart } from '@/components/ui/gauge';
+import { getEventDetails, getInitials } from '@/lib/security-log-utils';
 
-
-interface SecurityLogWithUser extends AppSecurityLog {
-  user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
-}
 
 const MetricItem = ({ title, value, icon: Icon, unit = '' }: { title:string, value: string | number, icon: React.ElementType, unit?: string }) => (
     <Card>
@@ -367,12 +363,10 @@ const InteractionAnalyticsSection = () => {
         setIsLoading(true);
         setError(null);
         try {
-            // This is a placeholder as download count is not tracked per resource.
-            // A more complex system would be needed for actual tracking.
             const response = await fetch('/api/resources'); 
             if (!response.ok) throw new Error('Falló la carga de la lista de recursos');
-            const resources: EnterpriseResource[] = await response.json();
-            const totalDownloads = 0; // Placeholder value
+            const { resources }: { resources: EnterpriseResource[] } = await response.json();
+            const totalDownloads = 0;
             setData({ totalDownloads });
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -400,11 +394,15 @@ const InteractionAnalyticsSection = () => {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-           <MetricItem title="Descargas de Recursos" value={data?.totalDownloads ?? "N/A"} icon={IconDownload}/>
+           <MetricItem title="Descargas de Recursos" value={data?.totalDownloads ?? "N/A"} icon={Download}/>
            <MetricItem title="Uso de Funcionalidades" value="N/A" icon={IconActivity}/>
         </div>
     );
 };
+
+interface SecurityLogWithUser extends AppSecurityLog {
+  user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
+}
 
 const SecurityAnalyticsSection = () => {
     const [logs, setLogs] = useState<SecurityLogWithUser[]>([]);
@@ -426,20 +424,6 @@ const SecurityAnalyticsSection = () => {
         }
     }, []);
     
-    const getEventDetails = (event: AppSecurityLog['event'], details?: string | null) => {
-        switch (event) {
-            case 'SUCCESSFUL_LOGIN': return { label: 'Inicio Sesión Exitoso', icon: <IconUserCheck className="h-4 w-4 text-green-500" />, variant: 'secondary' as const };
-            case 'FAILED_LOGIN_ATTEMPT': return { label: 'Intento Fallido', icon: <IconShieldX className="h-4 w-4 text-destructive" />, variant: 'destructive' as const };
-            case 'PASSWORD_CHANGE_SUCCESS': return { label: 'Cambio de Contraseña', icon: <IconKey className="h-4 w-4 text-primary" />, variant: 'default' as const };
-            case 'TWO_FACTOR_ENABLED': return { label: '2FA Activado', icon: <IconUserCheck className="h-4 w-4 text-green-500" />, variant: 'default' as const };
-            case 'TWO_FACTOR_DISABLED': return { label: '2FA Desactivado', icon: <IconShieldAlert className="h-4 w-4 text-orange-500" />, variant: 'destructive' as const };
-            case 'USER_ROLE_CHANGED': return { label: 'Cambio de Rol', icon: <UserCog className="h-4 w-4 text-purple-500" />, variant: 'default' as const };
-            default: return { label: 'Evento Desconocido', icon: <IconShieldAlert className="h-4 w-4" />, variant: 'outline' as const };
-        }
-    };
-
-    const getInitials = (name?: string | null) => name?.split(' ').map(n => n[0]).join('') || '??';
-
     useEffect(() => {
         fetchLogs();
     }, [fetchLogs]);
@@ -479,7 +463,7 @@ const SecurityAnalyticsSection = () => {
             </TableHeader>
             <TableBody>
               {logs.slice(0, 20).map(log => {
-                const eventInfo = getEventDetails(log.event);
+                const eventInfo = getEventDetails(log.event, log.details);
                 return (
                   <TableRow key={log.id}>
                     <TableCell>

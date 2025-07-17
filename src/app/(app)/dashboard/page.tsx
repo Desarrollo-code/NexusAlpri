@@ -24,9 +24,8 @@ import {
   Rocket,
   X,
   TrendingUp,
-  TrendingDown,
   Activity,
-  UsersRound
+  UsersRound,
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
@@ -43,8 +42,9 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { cn } from '@/lib/utils';
+import { GradientIcon } from '@/components/ui/gradient-icon';
 
 // --- TYPE DEFINITIONS & MAPPERS ---
 interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
@@ -95,11 +95,7 @@ const courseStatusChartConfig = {
   ARCHIVED: { label: "Archivados", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
-const StatCard = ({ title, value, icon: Icon, href, trend }: { title: string; value: number; icon: React.ElementType; href: string; trend?: number }) => {
-    const hasTrend = typeof trend === 'number';
-    const isPositive = hasTrend && trend >= 0;
-    const TrendIcon = isPositive ? TrendingUp : TrendingDown;
-
+const StatCard = ({ title, value, icon: Icon, href }: { title: string; value: number; icon: React.ElementType; href: string;}) => {
     return (
         <Link href={href}>
             <Card className="hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
@@ -109,12 +105,6 @@ const StatCard = ({ title, value, icon: Icon, href, trend }: { title: string; va
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{value.toLocaleString('es-CO')}</div>
-                    {hasTrend && (
-                        <p className={cn("text-xs flex items-center", isPositive ? "text-green-500" : "text-destructive")}>
-                            <TrendIcon className="h-3 w-3 mr-1" />
-                            {isPositive ? '+' : ''}{trend.toFixed(1)}% respecto a los últimos 7 días
-                        </p>
-                    )}
                 </CardContent>
             </Card>
         </Link>
@@ -146,10 +136,10 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
         <div className="space-y-6">
             <h2 className="text-2xl font-semibold font-headline">Estadísticas de la Plataforma</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-                <StatCard title="Total Usuarios" value={stats.totalUsers} icon={Users} href="/users" trend={stats.userTrend}/>
-                <StatCard title="Total Cursos" value={stats.totalCourses} icon={BookOpenCheck} href="/manage-courses" trend={stats.courseTrend}/>
-                <StatCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={Activity} href="/manage-courses" trend={stats.publishedCoursesTrend} />
-                <StatCard title="Total Inscripciones" value={stats.totalEnrollments} icon={UsersRound} href="/enrollments" trend={stats.enrollmentTrend} />
+                <StatCard title="Total Usuarios" value={stats.totalUsers} icon={Users} href="/users" />
+                <StatCard title="Total Cursos" value={stats.totalCourses} icon={BookOpenCheck} href="/manage-courses" />
+                <StatCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={Activity} href="/manage-courses" />
+                <StatCard title="Total Inscripciones" value={stats.totalEnrollments} icon={UsersRound} href="/enrollments" />
             </div>
             <section className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                 <Card>
@@ -384,22 +374,22 @@ export default function DashboardPage() {
     
   const quickLinks = {
     ADMINISTRATOR: [
-      { href: '/users', label: 'Gestionar Usuarios', icon: Users, description: 'Administra cuentas y roles.', color: 'text-chart-1' },
-      { href: '/manage-courses', label: 'Gestionar Cursos', icon: BookMarked, description: 'Crea y edita cursos.', color: 'text-chart-3' },
-       { href: '/analytics', label: 'Ver Analíticas', icon: BarChart3, description: 'Analiza el rendimiento.', color: 'text-chart-2' },
-      { href: '/settings', label: 'Configuración', icon: Settings, description: 'Ajusta la plataforma.', color: 'text-chart-4' },
+      { href: '/users', label: 'Gestionar Usuarios', icon: Users, description: 'Administra cuentas y roles.'},
+      { href: '/manage-courses', label: 'Gestionar Cursos', icon: BookMarked, description: 'Crea y edita cursos.'},
+      { href: '/analytics', label: 'Ver Analíticas', icon: BarChart3, description: 'Analiza el rendimiento.'},
+      { href: '/settings', label: 'Configuración', icon: Settings, description: 'Ajusta la plataforma.'},
     ],
     INSTRUCTOR: [
-      { href: '/manage-courses', label: 'Mis Cursos', icon: BookMarked, description: 'Diseña y actualiza tus cursos.', color: 'text-chart-1' },
-      { href: '/enrollments', label: 'Progreso Estudiantes', icon: TrendingUp, description: 'Supervisa el avance.', color: 'text-chart-2' },
-       { href: '/courses', label: 'Explorar Cursos', icon: BookOpen, description: 'Descubre nuevo contenido.', color: 'text-chart-3' },
-      { href: '/announcements', label: 'Anuncios', icon: Megaphone, description: 'Mantente al día.', color: 'text-chart-4' },
+      { href: '/manage-courses', label: 'Mis Cursos', icon: BookMarked, description: 'Diseña y actualiza tus cursos.'},
+      { href: '/enrollments', label: 'Progreso Estudiantes', icon: TrendingUp, description: 'Supervisa el avance.'},
+      { href: '/courses', label: 'Explorar Cursos', icon: BookOpen, description: 'Descubre nuevo contenido.'},
+      { href: '/announcements', label: 'Anuncios', icon: Megaphone, description: 'Mantente al día.'},
     ],
     STUDENT: [
-      { href: '/my-courses', label: 'Mis Cursos', icon: GraduationCap, description: 'Continúa tu aprendizaje.', color: 'text-chart-1' },
-      { href: '/courses', label: 'Explorar Cursos', icon: BookOpen, description: 'Descubre nuevas oportunidades.', color: 'text-chart-2' },
-      { href: '/resources', label: 'Biblioteca', icon: Folder, description: 'Accede a guías y materiales.', color: 'text-chart-3' },
-      { href: '/announcements', label: 'Anuncios', icon: Megaphone, description: 'Revisa las últimas noticias.', color: 'text-chart-4' },
+      { href: '/my-courses', label: 'Mis Cursos', icon: GraduationCap, description: 'Continúa tu aprendizaje.'},
+      { href: '/courses', label: 'Explorar Cursos', icon: BookOpen, description: 'Descubre nuevas oportunidades.'},
+      { href: '/resources', label: 'Biblioteca', icon: Folder, description: 'Accede a guías y materiales.'},
+      { href: '/announcements', label: 'Anuncios', icon: Megaphone, description: 'Revisa las últimas noticias.'},
     ],
   };
   const linksToShow = quickLinks[user.role] || [];
@@ -556,9 +546,7 @@ export default function DashboardPage() {
              <CardContent className="space-y-3">
                {linksToShow.map((link) => (
                  <Link key={link.href} href={link.href} className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors">
-                   <div className={`bg-muted p-2 rounded-md`}>
-                     <link.icon className={cn("h-5 w-5", link.color)}/>
-                   </div>
+                   <GradientIcon icon={link.icon} size="lg"/>
                    <div>
                       <p className="font-semibold">{link.label}</p>
                       <p className="text-xs text-muted-foreground">{link.description}</p>
