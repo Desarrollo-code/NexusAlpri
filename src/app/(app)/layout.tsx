@@ -27,8 +27,6 @@ import { cn } from '@/lib/utils';
 import { useIdleTimeout } from '@/hooks/useIdleTimeout';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { useTheme } from 'next-themes';
-
 
 const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) => {
   const { user } = useAuth();
@@ -93,31 +91,18 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
 };
 
 function ThemeApplier() {
-    const { theme: mode } = useTheme();
     const { user } = useAuth();
     
-    React.useEffect(() => {
-        const colorTheme = user?.colorTheme || 'corporate-blue';
-        const root = document.documentElement;
-
-        root.classList.forEach(className => {
-            if (className.startsWith('theme-')) {
-                root.classList.remove(className);
-            }
-        });
-        
-        root.classList.add(`theme-${colorTheme}`);
-
-    }, [user?.colorTheme, mode]);
-
-    return null;
+    // This hook simply returns the theme class name based on the user's preference.
+    // The class is applied to a wrapper div in AppLayoutContent.
+    return user?.colorTheme ? `theme-${user.colorTheme}` : 'theme-corporate-blue';
 }
-
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const { user, settings, logout } = useAuth();
     const pathname = usePathname();
     const { toast } = useToast();
+    const themeClass = ThemeApplier();
 
     const handleIdleLogout = useCallback(() => {
         if (user) {
@@ -148,8 +133,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const adminItems = navItems.find(item => item.label === 'Administración' && item.subItems && item.subItems.length > 0);
 
     return (
-        <div className="bg-background">
-            <ThemeApplier />
+        <div className={cn("bg-background", themeClass)}>
             <Sidebar>
                 <SidebarHeader className="group-data-[state=expanded]:px-4 group-data-[state=collapsed]:px-2">
                     <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground group-data-[state=collapsed]:justify-center">
