@@ -155,8 +155,12 @@ export default function CalendarPage() {
   }
   
   const handleDayClick = (day: Date, eventsOnDay: CalendarEvent[]) => {
-      setSelectedDayEvents(eventsOnDay);
-      setShowDayEventsModal(true);
+      if (eventsOnDay.length > 0) {
+        setSelectedDayEvents(eventsOnDay);
+        setShowDayEventsModal(true);
+      } else {
+        handleOpenCreateModal(day);
+      }
   };
 
   const handleSaveEvent = async (e: React.FormEvent) => {
