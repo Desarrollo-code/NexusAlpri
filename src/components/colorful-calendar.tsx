@@ -8,6 +8,7 @@ import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
 import { Calendar } from '@/components/ui/calendar';
+import { isHoliday } from '@/lib/holidays';
 
 interface ColorfulCalendarProps extends Omit<React.ComponentProps<typeof Calendar>, 'onSelect'> {
   events: CalendarEvent[];
@@ -31,12 +32,14 @@ function CustomDayContent(props: DayContentProps & { eventsByDay: Record<string,
   const dayKey = format(date, 'yyyy-MM-dd');
   const eventsForDay = props.eventsByDay[dayKey] || [];
   const isOutside = props.date.getMonth() !== displayMonth.getMonth();
+  const holiday = isHoliday(date, 'CO'); // Check for Colombian holidays
 
   return (
     <div className="relative w-full h-full flex flex-col p-1 overflow-hidden">
       <time dateTime={format(date, 'yyyy-MM-dd')} className={cn(
         "self-end text-sm z-10",
-        isOutside && "text-muted-foreground/50"
+        isOutside && "text-muted-foreground/50",
+        !!holiday && "text-event-orange font-semibold"
       )}>
         {format(date, 'd')}
       </time>
