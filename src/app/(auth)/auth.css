@@ -5,11 +5,11 @@
 
 @layer utilities {
   .auth-bg {
-    @apply bg-gray-950;
-    --cyan: 198 93% 60%;
-    --blue: 217 91% 60%;
-    --orange: 25 95% 53%;
-    --purple: 280 80% 60%;
+    @apply bg-[#110e1f]; /* Deep purple background */
+    --color-1: 330 84% 60%; /* Pink */
+    --color-2: 262 82% 57%; /* Purple */
+    --color-3: 40 95% 55%;  /* Orange */
+    --color-4: 150 70% 40%; /* Green */
     position: relative;
     overflow: hidden;
   }
@@ -17,14 +17,14 @@
   .auth-bg::after {
     content: '';
     position: absolute;
-    filter: blur(80px);
+    filter: blur(100px);
     border-radius: 50%;
   }
 
   .auth-bg::before {
     width: 400px;
     height: 350px;
-    background: radial-gradient(circle, hsl(var(--cyan) / 0.3), transparent 70%);
+    background: radial-gradient(circle, hsl(var(--color-1) / 0.4), transparent 70%);
     top: -50px;
     left: -100px;
     animation: moveBlobs 20s infinite alternate;
@@ -32,7 +32,7 @@
   .auth-bg::after {
     width: 350px;
     height: 300px;
-    background: radial-gradient(circle, hsl(var(--orange) / 0.2), transparent 70%);
+    background: radial-gradient(circle, hsl(var(--color-3) / 0.3), transparent 70%);
     bottom: -100px;
     right: -50px;
     animation: moveBlobs 25s infinite alternate-reverse;

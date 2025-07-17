@@ -5,12 +5,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { IconUsers, IconActivity, IconTrendingUp, IconShieldAlert, IconUserCheck, IconAward, IconFileWarning, IconClock, IconPercent, IconLoader } from '@/components/icons';
-import { BookMarked, UserCog, Download } from 'lucide-react';
+import { Loader2, FileWarning, TrendingUp, Users, ShieldAlert, Activity, UserCheck, Award, Percent, Clock, Download, BookMarked, UserCog } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from '@/components/ui/button';
 import type { UserAnalyticsData, CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog, User as AppUser, EnterpriseResource } from '@/types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
+import { Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -64,13 +63,13 @@ const UserAnalyticsSection = () => {
     }, [fetchUserAnalytics]);
 
     if (isLoading) {
-        return <div className="flex justify-center items-center p-8"><IconLoader className="h-6 w-6 animate-spin" /></div>;
+        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
     }
 
     if (error || !data) {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-destructive">
-                <IconFileWarning className="h-6 w-6 mb-2" />
+                <FileWarning className="h-6 w-6 mb-2" />
                 <p>Error al cargar datos de usuarios.</p>
                 <Button onClick={fetchUserAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
             </div>
@@ -88,8 +87,8 @@ const UserAnalyticsSection = () => {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 space-y-4">
-                <MetricItem title="Total de Usuarios" value={totalUsers} icon={IconUsers} />
-                <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={IconUserCheck} />
+                <MetricItem title="Total de Usuarios" value={totalUsers} icon={Users} />
+                <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={UserCheck} />
                 <Card>
                     <CardHeader><CardTitle className="text-base">Distribución por Rol</CardTitle></CardHeader>
                     <CardContent>
@@ -136,8 +135,8 @@ const UserAnalyticsSection = () => {
                             <AreaChart data={data.newUsersLast30Days}>
                                 <defs>
                                     <linearGradient id="colorNewUsers" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.8}/>
+                                        <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -170,7 +169,7 @@ const UserAnalyticsSection = () => {
                                     return null;
                                   }}
                                 />
-                                <Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" fill="url(#colorNewUsers)" name="Nuevos Usuarios"/>
+                                <Area type="monotone" dataKey="count" stroke="hsl(var(--accent))" fill="url(#colorNewUsers)" name="Nuevos Usuarios"/>
                             </AreaChart>
                         </ResponsiveContainer>
                     </CardContent>
@@ -205,13 +204,13 @@ const CourseAnalyticsSection = () => {
     }, [fetchCourseAnalytics]);
 
     if (isLoading) {
-        return <div className="flex justify-center items-center p-8"><IconLoader className="h-6 w-6 animate-spin" /></div>;
+        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
     }
 
     if (error || !data) {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-destructive">
-                <IconFileWarning className="h-6 w-6 mb-2" />
+                <FileWarning className="h-6 w-6 mb-2" />
                 <p>Error al cargar datos de cursos.</p>
                 <Button onClick={fetchCourseAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
             </div>
@@ -238,8 +237,8 @@ const CourseAnalyticsSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-6">
                  <div className="grid grid-cols-2 gap-4">
-                    <MetricItem title="Tasa de Finalización" value={data.averageCompletionRate.toFixed(1)} icon={IconPercent} unit="%"/>
-                    <MetricItem title="Puntaje Promedio (Quizzes)" value={data.averageQuizScore.toFixed(1)} icon={IconAward} unit="%"/>
+                    <MetricItem title="Tasa de Finalización" value={data.averageCompletionRate.toFixed(1)} icon={Percent} unit="%"/>
+                    <MetricItem title="Puntaje Promedio (Quizzes)" value={data.averageQuizScore.toFixed(1)} icon={Award} unit="%"/>
                 </div>
                 <Card>
                     <CardHeader><CardTitle className="text-base">Top 5 Cursos Más Populares</CardTitle></CardHeader>
@@ -320,13 +319,13 @@ const ProgressAnalyticsSection = () => {
     }, [fetchProgressAnalytics]);
 
     if (isLoading) {
-        return <div className="flex justify-center items-center p-8"><IconLoader className="h-6 w-6 animate-spin" /></div>;
+        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
     }
 
     if (error || !data) {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-destructive">
-                <IconFileWarning className="h-6 w-6 mb-2" />
+                <FileWarning className="h-6 w-6 mb-2" />
                 <p>Error al cargar datos de progreso.</p>
                 <Button onClick={fetchProgressAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
             </div>
@@ -347,8 +346,8 @@ const ProgressAnalyticsSection = () => {
                 </CardContent>
             </Card>
             <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <MetricItem title="Estudiantes en Progreso" value={data.activeStudentsInCourses} icon={IconUserCheck}/>
-                <MetricItem title="Tiempo Promedio Finalización" value={data.averageCompletionTimeDays} icon={IconClock} unit=" días"/>
+                <MetricItem title="Estudiantes en Progreso" value={data.activeStudentsInCourses} icon={UserCheck}/>
+                <MetricItem title="Tiempo Promedio Finalización" value={data.averageCompletionTimeDays} icon={Clock} unit=" días"/>
             </div>
         </div>
     );
@@ -380,12 +379,12 @@ const InteractionAnalyticsSection = () => {
     }, [fetchInteractionAnalytics]);
 
     if (isLoading) {
-        return <div className="flex justify-center items-center p-8"><IconLoader className="h-6 w-6 animate-spin" /></div>;
+        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
     }
      if (error) {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-destructive">
-                <IconFileWarning className="h-6 w-6 mb-2" />
+                <FileWarning className="h-6 w-6 mb-2" />
                 <p>Error al cargar datos de interacción.</p>
                 <Button onClick={fetchInteractionAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
             </div>
@@ -395,7 +394,7 @@ const InteractionAnalyticsSection = () => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
            <MetricItem title="Descargas de Recursos" value={data?.totalDownloads ?? "N/A"} icon={Download}/>
-           <MetricItem title="Uso de Funcionalidades" value="N/A" icon={IconActivity}/>
+           <MetricItem title="Uso de Funcionalidades" value="N/A" icon={Activity}/>
         </div>
     );
 };
@@ -429,13 +428,13 @@ const SecurityAnalyticsSection = () => {
     }, [fetchLogs]);
 
     if (isLoading) {
-        return <div className="flex justify-center items-center p-8"><IconLoader className="h-6 w-6 animate-spin" /></div>;
+        return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
     }
 
     if (error) {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-destructive">
-                <IconFileWarning className="h-6 w-6 mb-2" />
+                <FileWarning className="h-6 w-6 mb-2" />
                 <p>Error al cargar registros de seguridad.</p>
                 <Button onClick={fetchLogs} variant="outline" size="sm" className="mt-2">Reintentar</Button>
             </div>
@@ -507,7 +506,7 @@ export default function AnalyticsPage() {
     if (currentUser?.role !== 'ADMINISTRATOR') {
         return (
             <div className="flex h-full items-center justify-center">
-                <IconLoader className="h-8 w-8 animate-spin" />
+                <Loader2 className="h-8 w-8 animate-spin" />
             </div>
         );
     }
@@ -521,7 +520,7 @@ export default function AnalyticsPage() {
             
             <Accordion type="multiple" defaultValue={['item-1']} className="w-full space-y-6">
                 <AccordionItem value="item-1">
-                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><IconUsers className="mr-3 h-5 w-5 text-primary" /> Analíticas de Usuarios</AccordionTrigger>
+                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><Users className="mr-3 h-5 w-5 text-primary" /> Analíticas de Usuarios</AccordionTrigger>
                     <AccordionContent className="pt-4">
                         <UserAnalyticsSection />
                     </AccordionContent>
@@ -535,21 +534,21 @@ export default function AnalyticsPage() {
                 </AccordionItem>
                 
                  <AccordionItem value="item-3">
-                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><IconTrendingUp className="mr-3 h-5 w-5 text-primary" /> Analíticas de Progreso de Estudiantes</AccordionTrigger>
+                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><TrendingUp className="mr-3 h-5 w-5 text-primary" /> Analíticas de Progreso de Estudiantes</AccordionTrigger>
                     <AccordionContent className="pt-4">
                         <ProgressAnalyticsSection />
                     </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="item-4">
-                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><IconActivity className="mr-3 h-5 w-5 text-primary" /> Analíticas de Interacción y Compromiso</AccordionTrigger>
+                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><Activity className="mr-3 h-5 w-5 text-primary" /> Analíticas de Interacción y Compromiso</AccordionTrigger>
                     <AccordionContent className="pt-4">
                         <InteractionAnalyticsSection />
                     </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="item-5">
-                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><IconShieldAlert className="mr-3 h-5 w-5 text-primary" /> Analíticas de Seguridad</AccordionTrigger>
+                    <AccordionTrigger className="text-xl font-semibold bg-muted/50 p-4 rounded-lg hover:no-underline"><ShieldAlert className="mr-3 h-5 w-5 text-primary" /> Analíticas de Seguridad</AccordionTrigger>
                     <AccordionContent className="pt-4">
                        <SecurityAnalyticsSection />
                     </AccordionContent>
