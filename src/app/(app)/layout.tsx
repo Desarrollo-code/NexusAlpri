@@ -90,17 +90,6 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
   );
 };
 
-function ThemeApplier({ children }: { children: React.ReactNode }) {
-    const { user } = useAuth();
-    const themeClass = user?.colorTheme ? `theme-${user.colorTheme}` : 'theme-corporate-blue';
-
-    return (
-        <div className={cn("bg-background", themeClass)}>
-            {children}
-        </div>
-    );
-}
-
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const { user, settings, logout } = useAuth();
     const pathname = usePathname();
@@ -133,6 +122,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
     const generalItems = navItems.filter(item => !item.subItems || item.subItems.length === 0);
     const adminItems = navItems.find(item => item.label === 'Administración' && item.subItems && item.subItems.length > 0);
+    
+    const themeClass = user?.colorTheme ? `theme-${user.colorTheme}` : 'theme-corporate-blue';
 
     return (
         <>
@@ -186,14 +177,15 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
 
-            <ThemeApplier>
-                <div className="min-h-screen md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out">
-                    <TopBar />
-                    <main className="p-4 md:p-6 lg:p-8">
-                      {children}
-                    </main>
-                </div>
-            </ThemeApplier>
+            <div className={cn(
+              "bg-background min-h-screen md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out",
+              themeClass
+            )}>
+                <TopBar />
+                <main className="p-4 md:p-6 lg:p-8">
+                  {children}
+                </main>
+            </div>
 
             <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
               <Image
