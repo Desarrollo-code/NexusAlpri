@@ -1,3 +1,4 @@
+
 import type { JsonValue, LessonTemplate, TemplateBlock } from "@prisma/client";
 
 // --- USER & AUTH ---
@@ -225,7 +226,7 @@ export interface UserAnalyticsData {
 export interface CourseAnalyticsData {
     averageCompletionRate: number;
     averageQuizScore: number;
-    mostEnrolledCourses: { id: string, title: string, enrollments: number }[];
+    mostEnrolledCourses: AppCourse[];
     coursesByCategory: { category: string, count: number }[];
 }
 

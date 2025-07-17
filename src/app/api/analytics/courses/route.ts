@@ -2,7 +2,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
-import type { CourseAnalyticsData, LessonCompletionRecord } from '@/types';
+import type { CourseAnalyticsData, LessonCompletionRecord, Course as AppCourse } from '@/types';
 import type { JsonValue } from "@prisma/client/runtime/library";
 
 export async function GET(req: NextRequest) {
@@ -21,10 +21,9 @@ export async function GET(req: NextRequest) {
             : 0;
             
         // 2. Average Quiz Score
-        // Correctly fetch all progress records and then iterate through the JSON field
         const allProgressRecords = await prisma.courseProgress.findMany({
             where: {
-                completedLessonIds: { not: { equals: '[]' } } // Optimization: only fetch records with completions
+                completedLessonIds: { not: { equals: '[]' } }
             },
             select: { completedLessonIds: true }
         });
@@ -45,23 +44,32 @@ export async function GET(req: NextRequest) {
             ? quizScores.reduce((acc, score) => acc + score, 0) / quizScores.length
             : 0;
 
-        // 3. Most Enrolled Courses (Top 5)
+        // 3. Most Enrolled Courses (Top 5) - Now fetching full course data
         const mostEnrolledCoursesData = await prisma.course.findMany({
             take: 5,
             orderBy: {
                 enrollments: { _count: 'desc' }
             },
             include: {
+                instructor: { select: { id: true, name: true } },
                 _count: {
-                    select: { enrollments: true }
+                    select: { modules: true, enrollments: true }
                 }
             }
         });
         const mostEnrolledCourses = mostEnrolledCoursesData.map(c => ({
             id: c.id,
             title: c.title,
-            enrollments: c._count.enrollments
-        }));
+            description: c.description || '',
+            instructor: c.instructor?.name || 'N/A',
+            instructorId: c.instructorId || undefined,
+            imageUrl: c.imageUrl,
+            modulesCount: c._count.modules,
+            status: c.status,
+            modules: [], // Not needed for card
+            category: c.category || undefined,
+            isEnrolled: false, // Default for analytics view
+        })) as AppCourse[];
 
         // 4. Course Distribution by Category
         const coursesByCategoryData = await prisma.course.groupBy({

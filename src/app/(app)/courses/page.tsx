@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import type { Course as PrismaCourse } from '@prisma/client';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { CourseCarousel } from '@/components/course-carousel';
 
 interface ApiCourse extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
   instructor: { id: string; name: string } | null;
@@ -40,6 +42,7 @@ function mapApiCourseToAppCourse(apiCourse: ApiCourse): AppCourseType {
 export default function CoursesPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   const [allApiCourses, setAllApiCourses] = useState<ApiCourse[]>([]);
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
@@ -68,7 +71,6 @@ export default function CoursesPage() {
       }
       const courseData = await courseResponse.json();
       
-      // Handle both paginated and non-paginated responses
       const coursesArray = Array.isArray(courseData) ? courseData : courseData.courses;
       setAllApiCourses(coursesArray || []);
 
@@ -101,7 +103,6 @@ export default function CoursesPage() {
       const isPublished = course.status === 'PUBLISHED';
       const isNotEnrolled = !enrolledCourseIds.includes(course.id);
       
-      // An instructor or admin should not see their own courses in the public catalog
       const isNotOwnCourse = !( (user?.role === 'INSTRUCTOR' || user?.role === 'ADMINISTRATOR') && course.instructorId === user?.id );
 
       return matchesSearch && isPublished && isNotEnrolled && isNotOwnCourse;
@@ -121,14 +122,11 @@ export default function CoursesPage() {
   }, [filteredCourses]);
 
   const handleEnrollmentChange = (courseId: string, newStatus: boolean) => {
-    // Optimistically update the UI by adding/removing the course from the enrolled list
     if (newStatus) {
         setEnrolledCourseIds(prev => [...prev, courseId]);
     } else {
         setEnrolledCourseIds(prev => prev.filter(id => id !== courseId));
     }
-    // A full refresh signal can also be sent if a more robust update is needed
-    // setEnrollmentUpdatedSignal(prev => prev + 1); 
   };
 
   const CourseCardSkeleton = () => (
@@ -182,12 +180,6 @@ export default function CoursesPage() {
                     {[...Array(4)].map((_, i) => <CourseCardSkeleton key={i} />)}
                 </div>
             </div>
-            <div className="space-y-4">
-                <Skeleton className="h-8 w-48" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {[...Array(4)].map((_, i) => <CourseCardSkeleton key={i} />)}
-                </div>
-            </div>
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-12 text-destructive">
@@ -201,17 +193,21 @@ export default function CoursesPage() {
             {Object.entries(groupedCourses).sort(([catA], [catB]) => catA.localeCompare(catB)).map(([category, courses]) => (
                 <section key={category}>
                     <h2 className="text-2xl font-semibold font-headline mb-4">{category}</h2>
-                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {courses.map((course: AppCourseType, index: number) => (
-                            <CourseCard 
-                                key={course.id} 
-                                course={{...course, isEnrolled: enrolledCourseIds.includes(course.id)}}
-                                userRole={user?.role || null}
-                                onEnrollmentChange={handleEnrollmentChange}
-                                priority={index < 4}
-                            />
-                        ))}
-                    </div>
+                     {isMobile ? (
+                        <CourseCarousel courses={courses} userRole={user?.role || null} onEnrollmentChange={handleEnrollmentChange} />
+                     ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {courses.map((course: AppCourseType, index: number) => (
+                                <CourseCard 
+                                    key={course.id} 
+                                    course={{...course, isEnrolled: enrolledCourseIds.includes(course.id)}}
+                                    userRole={user?.role || null}
+                                    onEnrollmentChange={handleEnrollmentChange}
+                                    priority={index < 4}
+                                />
+                            ))}
+                        </div>
+                     )}
                 </section>
             ))}
           </div>
