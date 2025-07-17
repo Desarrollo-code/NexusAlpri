@@ -105,7 +105,7 @@ export default function SignUpPage() {
   
   if (!settings.allowPublicRegistration) {
       return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+        <div className="auth-bg flex min-h-screen flex-col items-center justify-center p-4">
               <div className="mb-4">
               <Image
                 src="/uploads/images/logo-nexusalpri.png"
@@ -148,8 +148,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
-       <div className="absolute inset-0 -z-10 h-full w-full auth-bg" />
+    <div className="auth-bg flex min-h-screen flex-col items-center justify-center p-4">
       <div className="relative flex flex-col items-center justify-center p-4">
         <div className="mb-4" style={{ filter: 'drop-shadow(0 2px 4px rgba(255,255,255,0.2))' }}>
           <Image

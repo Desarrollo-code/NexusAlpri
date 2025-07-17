@@ -131,7 +131,7 @@
 /* Auth Pages Background */
 @layer utilities {
   .auth-bg {
-    @apply bg-background;
+    @apply bg-gray-950;
     --cyan: 198 93% 60%;
     --blue: 217 91% 60%;
     --orange: 25 95% 53%;
