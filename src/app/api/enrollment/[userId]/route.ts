@@ -34,11 +34,15 @@ export async function GET(req: NextRequest, context: { params: { userId: string 
         });
         
         const courseProgress = await prisma.courseProgress.findMany({
-            where: { userId },
+            where: {
+                enrollment: {
+                    userId: userId,
+                },
+            },
         });
 
         const data = enrollments.map(enrollment => {
-            const progress = courseProgress.find(p => p.courseId === enrollment.courseId);
+            const progress = courseProgress.find(p => p.enrollmentId === enrollment.id);
             return {
                 id: enrollment.course.id,
                 title: enrollment.course.title,
