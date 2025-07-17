@@ -36,8 +36,6 @@ export default function SignUpPage() {
     }
   }, [user, router]);
   
-  const inputStyles = "flex h-10 w-full rounded-md border border-white/20 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black/30 disabled:cursor-not-allowed disabled:opacity-50 backdrop-blur-sm";
-
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
@@ -183,7 +181,7 @@ export default function SignUpPage() {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             disabled={isLoading}
-                            className={inputStyles}
+                            className="auth-input"
                         />
                     </div>
                     <div className="grid gap-2">
@@ -196,7 +194,7 @@ export default function SignUpPage() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             disabled={isLoading}
-                            className={inputStyles}
+                            className="auth-input"
                         />
                     </div>
                     <div className="grid gap-2">
@@ -209,7 +207,7 @@ export default function SignUpPage() {
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
                               disabled={isLoading}
-                              className={cn(inputStyles, "pr-10")}
+                              className="auth-input pr-10"
                           />
                           <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -226,7 +224,7 @@ export default function SignUpPage() {
                               value={confirmPassword}
                               onChange={(e) => setConfirmPassword(e.target.value)}
                               disabled={isLoading}
-                              className={cn(inputStyles, "pr-10")}
+                              className="auth-input pr-10"
                           />
                            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                               {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
