@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { PlusCircle, Loader2, AlertTriangle, Trash2, MapPin, Calendar as CalendarIcon, Clock, Save, ChevronLeft, ChevronRight, Video, Paperclip, Link as LinkIcon, X, Check } from 'lucide-react';
+import { PlusCircle, Loader2, AlertTriangle, Trash2, MapPin, Calendar as CalendarIcon, Clock, Save, ChevronLeft, ChevronRight, Video, Paperclip, Link as LinkIcon, X, Check, List, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -31,7 +31,7 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { CalendarEvent, User, EventAudienceType, Attachment } from '@/types';
-import { format, addMonths, subMonths, startOfMonth } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ColorfulCalendar from '@/components/colorful-calendar';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -149,7 +149,7 @@ export default function CalendarPage() {
 
   const handleDayClick = (day: Date) => {
       setSelectedDay(day);
-      const eventsOnDay = events.filter(event => format(new Date(event.start), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'));
+      const eventsOnDay = events.filter(event => isSameDay(new Date(event.start), day));
       if (eventsOnDay.length === 0 && canEdit) {
           handleOpenCreateModal(day);
       }
@@ -219,7 +219,7 @@ export default function CalendarPage() {
   const modalDescription = !canEdit && eventToEdit ? "Aquí puedes ver la información del evento." : (eventToEdit ? "Modifica los detalles del evento." : "Completa los detalles para agendar un nuevo evento.");
 
   const eventsOnSelectedDay = useMemo(() => 
-      events.filter(event => format(new Date(event.start), 'yyyy-MM-dd') === format(selectedDay, 'yyyy-MM-dd')),
+      events.filter(event => isSameDay(new Date(event.start), selectedDay)),
       [events, selectedDay]
   );
 
@@ -227,7 +227,7 @@ export default function CalendarPage() {
     <div className="flex flex-col h-[calc(100vh-10rem)] gap-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex items-baseline gap-4">
-           <h1 className="text-2xl font-bold font-headline text-foreground">
+           <h1 className="text-2xl font-bold font-headline text-primary">
              {format(currentDate, "MMMM yyyy", { locale: es }).replace(/^\w/, (c) => c.toUpperCase())}
            </h1>
            <div className="flex items-center gap-1">
@@ -251,6 +251,7 @@ export default function CalendarPage() {
               onDateSelect={handleDayClick}
               month={currentDate}
               selected={selectedDay}
+              numberOfMonths={1}
             />
           )}
         </main>

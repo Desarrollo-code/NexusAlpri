@@ -41,7 +41,7 @@ export function EventSidebar({ selectedDate, events, onCreateEvent, onEditEvent 
       <div className="flex-shrink-0">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold font-headline">
-            Eventos del {format(selectedDate, "d 'de' MMMM", { locale: es })}
+            Eventos del <span className="text-primary">{format(selectedDate, "d 'de' MMMM", { locale: es })}</span>
           </h2>
           <Button size="sm" onClick={() => onCreateEvent(selectedDate)}>
             <PlusCircle className="mr-2 h-4 w-4" />
@@ -83,9 +83,12 @@ export function EventSidebar({ selectedDate, events, onCreateEvent, onEditEvent 
           </ul>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground pt-10">
-            <CalendarPlus className="h-10 w-10 mb-3" />
+            <CalendarPlus className="h-10 w-10 mb-3 text-primary/70" />
             <p className="font-medium">No hay eventos para este día.</p>
             <p className="text-sm">Puedes crear uno nuevo.</p>
+             <Button size="sm" variant="outline" className="mt-4" onClick={() => onCreateEvent(selectedDate)}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Crear Evento
+             </Button>
           </div>
         )}
       </ScrollArea>
