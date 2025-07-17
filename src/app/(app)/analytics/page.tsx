@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { UserAnalyticsData, CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog, User as AppUser } from '@/types';
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Cell, AreaChart, Area } from 'recharts';
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Cell, AreaChart, Area, PieChart, Pie, Legend } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -37,7 +37,7 @@ const MetricItem = ({ title, value, icon: Icon, unit = '' }: { title: string, va
   <Card className="flex flex-col p-4 bg-zinc-900 border-zinc-800 text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl"> {/* Fondo más oscuro, borde y sombra */}
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
       <CardTitle className="text-sm font-medium text-gray-300">{title}</CardTitle> {/* Color de título más suave */}
-      <Icon className="h-4 w-4 text-primary-foreground" /> {/* Icono en color de contraste */}
+      <Icon className="h-4 w-4 text-teal-400" /> {/* Icono en color de contraste */}
     </CardHeader>
     <CardContent className="p-0 pt-2">
       <div className="text-2xl font-bold text-teal-400">{value}<span className="text-lg font-normal text-teal-600">{unit}</span></div> {/* Valor en color de acento, unidad más suave */}
@@ -45,20 +45,6 @@ const MetricItem = ({ title, value, icon: Icon, unit = '' }: { title: string, va
   </Card>
 );
 
-<<<<<<< HEAD
-=======
-const userRolesChartConfig = {
-  count: { label: "Usuarios" },
-  ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-3))" }, // Asegurarse de que estos colores contrasten bien
-  INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
-  STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
-} satisfies ChartConfig
-
-const newUsersChartConfig = {
-  count: { label: "Usuarios", color: "hsl(var(--accent))" }, // Accent debería ser un color vibrante
-} satisfies ChartConfig
-
->>>>>>> 6de95f814409b4bf084da5bdfce0bbcb0ad7ab0d
 const UserAnalyticsSection = () => {
   const [data, setData] = useState<UserAnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -146,26 +132,6 @@ const UserAnalyticsSection = () => {
         </CardContent>
       </Card>
 
-<<<<<<< HEAD
-        <Card className="lg:col-span-2">
-            <CardHeader><CardTitle className="text-base">Distribución por Rol</CardTitle></CardHeader>
-            <CardContent className="h-[250px] flex items-center justify-center">
-                 <ChartContainer config={userRolesChartConfig} className="w-full h-full">
-                    <BarChart data={pieChartData} layout="horizontal">
-                    <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }}/>
-                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-                    <ChartTooltip cursor={{fill: 'hsl(var(--muted))'}} content={<ChartTooltipContent hideLabel />} />
-                    <Bar dataKey="count" name="Usuarios" radius={[4, 4, 0, 0]}>
-                        {pieChartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                    </Bar>
-                    </BarChart>
-                </ChartContainer>
-            </CardContent>
-        </Card>
-=======
       {/* Gráfico de Distribución por Rol en 2 columnas en pantallas grandes */}
       <Card className="lg:col-span-2 bg-zinc-900 border-zinc-800 text-white shadow-lg">
         <CardHeader className="pb-3"><CardTitle className="text-base text-gray-200">Distribución por Rol</CardTitle></CardHeader>
@@ -186,7 +152,6 @@ const UserAnalyticsSection = () => {
           </ChartContainer>
         </CardContent>
       </Card>
->>>>>>> 6de95f814409b4bf084da5bdfce0bbcb0ad7ab0d
     </div>
   );
 };
@@ -250,19 +215,12 @@ const CourseAnalyticsSection = () => {
               <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
               <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
               <YAxis type="category" dataKey="title" width={120} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} className="truncate" axisLine={false} tickLine={false} />
-<<<<<<< HEAD
-              <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent />} />
-              <Bar dataKey="enrollments" name="Inscripciones" barSize={15} radius={[0, 4, 4, 0]} fill="var(--color-enrollments)" />
-=======
               <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent className="bg-zinc-800 text-white border-zinc-700" />} />
               <Bar dataKey="enrollments" name="Inscripciones" barSize={15} radius={[0, 4, 4, 0]} fill="hsl(var(--primary))" /> {/* Color de barra */}
->>>>>>> 6de95f814409b4bf084da5bdfce0bbcb0ad7ab0d
             </BarChart>
           </ChartContainer>
         </CardContent>
       </Card>
-<<<<<<< HEAD
-=======
       <Card className="lg:col-span-1 bg-zinc-900 border-zinc-800 text-white shadow-lg"> {/* Ocupa la otra columna en lg */}
         <CardHeader className="pb-3"><CardTitle className="text-base text-gray-200">Distribución por Categoría</CardTitle></CardHeader>
         <CardContent className="h-[300px] pt-0">
@@ -279,7 +237,6 @@ const CourseAnalyticsSection = () => {
           </ChartContainer>
         </CardContent>
       </Card>
->>>>>>> 6de95f814409b4bf084da5bdfce0bbcb0ad7ab0d
     </div>
   );
 };
@@ -322,18 +279,6 @@ const ProgressAnalyticsSection = () => {
     );
   }
 
-  // Ejemplo de datos para un LineChart si quisieras agregarlo para el progreso
-  // const progressOverTimeData = [
-  //   { date: '2023-01-01', completion: 10 },
-  //   { date: '2023-01-15', completion: 25 },
-  //   { date: '2023-02-01', completion: 40 },
-  //   { date: '2023-02-15', completion: 60 },
-  //   { date: '2023-03-01', completion: 75 },
-  // ];
-  // const progressChartConfig = {
-  //   completion: { label: "Tasa de Finalización", color: "hsl(var(--chart-4))" },
-  // } satisfies ChartConfig
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4"> {/* Ajuste de gap */}
       <MetricItem title="Estudiantes en Progreso" value={data.activeStudentsInCourses} icon={UserCheck} />
@@ -341,45 +286,17 @@ const ProgressAnalyticsSection = () => {
       <Card className="bg-zinc-900 border-zinc-800 text-white shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-300">Tasa de Abandono (Est.)</CardTitle>
-          <TrendingUp className="h-4 w-4 text-primary-foreground" />
+          <TrendingUp className="h-4 w-4 text-teal-400" />
         </CardHeader>
         <CardContent className="flex items-center justify-center p-0">
           <GaugeChart value={data.dropoutRate} size={120} /> {/* El componente GaugeChart ya es genial */}
         </CardContent>
       </Card>
-      {/* Puedes añadir un gráfico de línea aquí para mostrar progreso a lo largo del tiempo */}
-      {/* <Card className="md:col-span-3 bg-zinc-900 border-zinc-800 text-white shadow-lg">
-        <CardHeader><CardTitle className="text-base text-gray-200">Progreso General del Estudiante</CardTitle></CardHeader>
-        <CardContent className="h-[200px] pt-0">
-          <ChartContainer config={progressChartConfig} className="w-full h-full">
-            <LineChart data={progressOverTimeData} margin={{ left: -10, right: 10, top: 10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-              <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
-              <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator className="bg-zinc-800 text-white border-zinc-700" />} />
-              <Line type="monotone" dataKey="completion" stroke="var(--color-completion)" name="Completado %" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-            </LineChart>
-          </ChartContainer>
-        </CardContent>
-      </Card> */}
     </div>
   );
 };
 
 const InteractionAnalyticsSection = () => {
-<<<<<<< HEAD
-    return (
-        <Card>
-            <CardContent className="pt-6">
-                <div className="flex flex-col items-center justify-center p-8 text-center h-full text-muted-foreground">
-                  <UserCog className="h-8 w-8 mb-3" />
-                  <p className="font-semibold">Datos de Interacción</p>
-                  <p className="text-sm">Métricas detalladas de interacción no disponibles actualmente.</p>
-                </div>
-            </CardContent>
-        </Card>
-    );
-=======
   return (
     <Card className="bg-zinc-900 border-zinc-800 text-white shadow-lg">
       <CardHeader><CardTitle className="text-base text-gray-200">Interacción y Compromiso</CardTitle></CardHeader>
@@ -392,7 +309,6 @@ const InteractionAnalyticsSection = () => {
       </CardContent>
     </Card>
   );
->>>>>>> 6de95f814409b4bf084da5bdfce0bbcb0ad7ab0d
 };
 
 interface SecurityLogWithUser extends AppSecurityLog {
@@ -442,16 +358,10 @@ const SecurityAnalyticsSection = () => {
   }
 
   return (
-<<<<<<< HEAD
-    <Card>
-      <CardHeader>
-        <CardDescription>
-=======
     <Card className="bg-zinc-900 border-zinc-800 text-white shadow-lg">
       <CardHeader className="pb-3">
         <CardTitle className="text-base text-gray-200">Últimos Eventos de Seguridad</CardTitle>
         <CardDescription className="text-gray-400"> {/* Color de descripción */}
->>>>>>> 6de95f814409b4bf084da5bdfce0bbcb0ad7ab0d
           Mostrando los últimos 20 eventos. Para un historial completo, visita la página de{' '}
           <Link href="/security-audit" className="text-teal-400 hover:underline">Auditoría de Seguridad</Link>. {/* Enlace en color de acento */}
         </CardDescription>
@@ -527,17 +437,10 @@ export default function AnalyticsPage() {
     );
   }
 
-<<<<<<< HEAD
-  const Section = ({ title, icon: Icon, children, className }: { title: string, icon: React.ElementType, children: React.ReactNode, className?: string }) => (
-    <section className={className}>
-      <h2 className="text-2xl font-semibold font-headline flex items-center gap-3 mb-4">
-        <Icon className="h-6 w-6 text-primary" />
-=======
   const Section = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
     <section className="space-y-6"> {/* Espacio entre secciones un poco más ajustado */}
       <h2 className="text-2xl font-semibold font-headline flex items-center gap-3 text-white"> {/* Título en blanco */}
         <Icon className="h-6 w-6 text-teal-400" /> {/* Icono de sección en color de acento */}
->>>>>>> 6de95f814409b4bf084da5bdfce0bbcb0ad7ab0d
         {title}
       </h2>
       {children}
@@ -545,11 +448,7 @@ export default function AnalyticsPage() {
   );
 
   return (
-<<<<<<< HEAD
-    <div className="space-y-8 p-1">
-=======
-    <div className="space-y-12 p-8 bg-zinc-950 min-h-screen text-white"> {/* Fondo oscuro principal y padding general */}
->>>>>>> 6de95f814409b4bf084da5bdfce0bbcb0ad7ab0d
+    <div className="space-y-12 p-4 md:p-8 bg-zinc-950 min-h-screen text-white"> {/* Fondo oscuro principal y padding general */}
       <div>
         <h1 className="text-4xl font-bold font-headline mb-2 text-white">Informes y Analíticas Avanzadas</h1> {/* Título más grande y blanco */}
         <p className="text-gray-400">Métricas clave para la toma de decisiones y el seguimiento del rendimiento de la plataforma.</p> {/* Descripción más suave */}
@@ -557,17 +456,6 @@ export default function AnalyticsPage() {
 
       <Separator className="bg-zinc-700" /> {/* Separador más oscuro */}
 
-<<<<<<< HEAD
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-            <Section title="Analíticas de Usuarios" icon={Users}>
-                <UserAnalyticsSection />
-            </Section>
-            
-            <Section title="Analíticas de Cursos y Contenido" icon={BookMarked}>
-                <CourseAnalyticsSection />
-            </Section>
-=======
       <Section title="Analíticas de Usuarios" icon={Users}>
         <UserAnalyticsSection />
       </Section>
@@ -594,24 +482,11 @@ export default function AnalyticsPage() {
           <div className="lg:col-span-2">
             <SecurityAnalyticsSection />
           </div>
->>>>>>> 6de95f814409b4bf084da5bdfce0bbcb0ad7ab0d
         </div>
-
-        <div className="lg:col-span-1 space-y-8">
-            <Section title="Progreso de Estudiantes" icon={TrendingUp}>
-                <ProgressAnalyticsSection />
-            </Section>
-
-            <Section title="Interacción" icon={UserCog}>
-                <InteractionAnalyticsSection />
-            </Section>
-        </div>
-      </div>
-      
-      <Section title="Últimos Eventos de Seguridad" icon={Activity}>
-        <SecurityAnalyticsSection />
       </Section>
 
     </div>
   );
 }
+
+    
