@@ -10,15 +10,10 @@
     --card: 220 20% 100%;
     --card-foreground: 220 15% 25%;
     --popover: 220 20% 100%;
-<<<<<<< HEAD
     --popover-foreground: 220 15% 25%;
 
     /* Gold & Graphite Palette */
     --primary: 38 92% 50%; /* Ocre/Gold for primary actions */
-=======
-    --popover-foreground: 220 15% 20%;
-    --primary: (181, 31%, 76%) /* Deep Purple */
->>>>>>> 210ef1c126de318c3dcd214ab2615744effc92c2
     --primary-foreground: 210 20% 98%;
     --secondary: 220 15% 94%;
     --secondary-foreground: 220 10% 25%;
