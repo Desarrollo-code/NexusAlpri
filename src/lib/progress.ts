@@ -52,8 +52,8 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
         throw new Error("User is not enrolled in this course.");
     }
 
-    const progress = await prisma.courseProgress.findUnique({
-        where: { enrollmentId: enrollment.id },
+    const progress = await prisma.courseProgress.findFirst({
+        where: { userId, courseId },
     });
     
     let currentRecords: LessonCompletionRecord[] = [];
@@ -72,7 +72,6 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
         currentRecords.push(newRecord);
     }
     
-    // Upsert the progress record linked to the enrollment
     await prisma.courseProgress.upsert({
         where: { enrollmentId: enrollment.id },
         update: {
@@ -80,8 +79,10 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
         },
         create: {
             enrollmentId: enrollment.id,
+            userId: userId,
+            courseId: courseId,
             completedLessonIds: currentRecords as unknown as JsonValue,
-            progressPercentage: 0, // Initial progress is 0 until consolidated
+            progressPercentage: 0,
         },
     });
 }
