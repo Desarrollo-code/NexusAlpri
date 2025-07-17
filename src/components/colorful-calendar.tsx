@@ -3,12 +3,13 @@
 
 import React, { useMemo } from 'react';
 import { type DayContentProps } from 'react-day-picker';
-import { format, isSameDay } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
 import { Calendar } from '@/components/ui/calendar';
 import { isHoliday } from '@/lib/holidays';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ColorfulCalendarProps extends Omit<React.ComponentProps<typeof Calendar>, 'onSelect'> {
   events: CalendarEvent[];
@@ -32,29 +33,50 @@ function CustomDayContent(props: DayContentProps & { eventsByDay: Record<string,
   const dayKey = format(date, 'yyyy-MM-dd');
   const eventsForDay = props.eventsByDay[dayKey] || [];
   const isOutside = props.date.getMonth() !== displayMonth.getMonth();
-  const holiday = isHoliday(date, 'CO'); // Check for Colombian holidays
+  const holiday = isHoliday(date, 'CO');
 
-  return (
-    <div className="relative w-full h-full flex flex-col p-1 overflow-hidden">
-      <time dateTime={format(date, 'yyyy-MM-dd')} className={cn(
-        "self-end text-sm z-10",
-        isOutside && "text-muted-foreground/50",
-        !!holiday && "text-event-orange font-semibold"
-      )}>
-        {format(date, 'd')}
-      </time>
-       {eventsForDay.length > 0 && !isOutside && (
-         <div className="absolute bottom-1.5 left-1.5 right-1.5 flex justify-center items-center gap-1">
-            {eventsForDay.slice(0, 3).map((event) => (
-                <div key={event.id} className={cn("h-1.5 w-1.5 flex-shrink-0 rounded-full", getEventColorClass(event.color))} />
-            ))}
-            {eventsForDay.length > 3 && (
-                <span className="text-xs text-muted-foreground -ml-0.5">+</span>
-            )}
-         </div>
-       )}
+  const dayNumber = (
+    <time dateTime={format(date, 'yyyy-MM-dd')} className={cn(
+      "self-end text-sm z-10",
+      isOutside && "text-muted-foreground/50",
+      !!holiday && "text-event-orange font-semibold"
+    )}>
+      {format(date, 'd')}
+    </time>
+  );
+
+  const eventIndicators = eventsForDay.length > 0 && !isOutside && (
+    <div className="absolute bottom-1.5 left-1.5 right-1.5 flex justify-center items-center gap-1">
+      {eventsForDay.slice(0, 3).map((event) => (
+        <div key={event.id} className={cn("h-1.5 w-1.5 flex-shrink-0 rounded-full", getEventColorClass(event.color))} />
+      ))}
+      {eventsForDay.length > 3 && (
+        <span className="text-xs text-muted-foreground -ml-0.5">+</span>
+      )}
     </div>
   );
+  
+  const dayContent = (
+    <div className="relative w-full h-full flex flex-col p-1 overflow-hidden">
+      {dayNumber}
+      {eventIndicators}
+    </div>
+  );
+
+  if (holiday && !isOutside) {
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                {dayContent}
+            </TooltipTrigger>
+            <TooltipContent>
+                <p>{holiday.name}</p>
+            </TooltipContent>
+        </Tooltip>
+    );
+  }
+
+  return dayContent;
 }
 
 export default function ColorfulCalendar({
@@ -80,36 +102,45 @@ export default function ColorfulCalendar({
   };
   
   return (
-    <Calendar
-      {...props}
-      onDayClick={handleDayClick}
-      selected={selected}
-      locale={es}
-      components={{
-        DayContent: (dayProps) => <CustomDayContent {...dayProps} eventsByDay={eventsByDay} />,
-      }}
-      showOutsideDays={true}
-      disableNavigation
-      className={className}
-      classNames={{
-        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y-4 w-full",
-        caption: "hidden", // Hide the default caption
-        nav: "hidden", // Hide the default nav buttons
-        table: "w-full border-collapse",
-        head_row: "flex",
-        head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-center text-sm pb-2",
-        row: "flex w-full mt-2 gap-1",
-        cell: cn(
-          "flex-1 p-0 relative focus-within:relative focus-within:z-20 aspect-[4/3]",
-          "rounded-lg border bg-card/50 transition-colors hover:bg-accent/10"
-        ),
-        day: "w-full h-full",
-        day_today: "border-2 border-primary",
-        day_selected: "bg-accent/20 border-primary",
-        day_outside: "day-outside text-muted-foreground opacity-30 bg-muted/20",
-        day_disabled: "text-muted-foreground opacity-50",
-      }}
-    />
+    <TooltipProvider delayDuration={100}>
+      <Calendar
+        {...props}
+        onDayClick={handleDayClick}
+        selected={selected}
+        locale={es}
+        components={{
+          DayContent: (dayProps) => <CustomDayContent {...dayProps} eventsByDay={eventsByDay} />,
+        }}
+        showOutsideDays={true}
+        disableNavigation
+        className={className}
+        classNames={{
+          months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+          month: "space-y-4 w-full",
+          caption: "hidden", // Hide the default caption
+          nav: "hidden", // Hide the default nav buttons
+          table: "w-full border-collapse",
+          head_row: "flex",
+          head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-center text-sm pb-2",
+          row: "flex w-full mt-2 gap-1",
+          cell: cn(
+            "flex-1 p-0 relative focus-within:relative focus-within:z-20 aspect-[4/3]",
+            "rounded-lg border bg-card/50 transition-colors hover:bg-accent/10"
+          ),
+          day: "w-full h-full",
+          day_today: "border-2 border-primary",
+          day_selected: "bg-accent/20 border-primary",
+          day_outside: "day-outside text-muted-foreground opacity-30 bg-muted/20",
+          day_disabled: "text-muted-foreground opacity-50",
+          day_holiday: "bg-event-orange/10", // Custom class for holidays
+        }}
+        modifiers={{
+            holiday: (date) => !!isHoliday(date, 'CO'),
+        }}
+        modifiersClassNames={{
+            holiday: 'day_holiday'
+        }}
+      />
+    </TooltipProvider>
   );
 }
