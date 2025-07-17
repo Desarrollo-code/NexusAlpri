@@ -145,6 +145,7 @@ export default function SignInPage() {
                               value={email}
                               onChange={(e) => setEmail(e.target.value)}
                               disabled={isLoading}
+                              className="bg-black/30 border-white/20 backdrop-blur-sm"
                             />
                           </div>
                           <div className="grid gap-2">
@@ -157,7 +158,7 @@ export default function SignInPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 disabled={isLoading}
-                                className="pr-10"
+                                className="pr-10 bg-black/30 border-white/20 backdrop-blur-sm"
                               />
                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
