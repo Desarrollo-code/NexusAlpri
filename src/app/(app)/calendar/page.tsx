@@ -278,7 +278,7 @@ export default function CalendarPage() {
                     className="w-full"
                     events={events}
                     onDateSelect={handleDayClick}
-                    numberOfMonths={isMobile ? 1 : 2}
+                    numberOfMonths={1}
                     month={currentDate}
                 />
                 )}
