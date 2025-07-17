@@ -1,4 +1,3 @@
-
 import type { JsonValue, LessonTemplate, TemplateBlock } from "@prisma/client";
 
 // --- USER & AUTH ---
