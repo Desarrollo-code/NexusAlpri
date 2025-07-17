@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { PlusCircle, Loader2, AlertTriangle, Trash2, MapPin, Calendar as CalendarIcon, Clock, Save, ChevronLeft, ChevronRight, Eye, Check } from 'lucide-react';
+import { PlusCircle, Loader2, AlertTriangle, Trash2, MapPin, Calendar as CalendarIcon, Clock, Save, ChevronLeft, ChevronRight, Video, Paperclip, Link as LinkIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -30,7 +30,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { CalendarEvent, User, EventAudienceType } from '@/types';
+import type { CalendarEvent, User, EventAudienceType, Attachment } from '@/types';
 import { format, addMonths, subMonths, startOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ColorfulCalendar from '@/components/colorful-calendar';
@@ -65,12 +65,16 @@ export default function CalendarPage() {
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formLocation, setFormLocation] = useState('');
+  const [formVideoConferenceLink, setFormVideoConferenceLink] = useState('');
   const [formStartDate, setFormStartDate] = useState('');
   const [formEndDate, setFormEndDate] = useState('');
   const [formAllDay, setFormAllDay] = useState(true);
   const [formAudienceMode, setFormAudienceMode] = useState<EventAudienceType>('ALL');
   const [formAttendees, setFormAttendees] = useState<string[]>([]);
   const [formColor, setFormColor] = useState<string>('blue');
+  const [formAttachments, setFormAttachments] = useState<Attachment[]>([]);
+  const [newAttachmentUrl, setNewAttachmentUrl] = useState('');
+
 
   const canEdit = useMemo(() => user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR', [user]);
 
@@ -111,6 +115,7 @@ export default function CalendarPage() {
 
   const resetForm = () => {
     setFormTitle(''); setFormDescription(''); setFormLocation('');
+    setFormVideoConferenceLink(''); setFormAttachments([]);
     setFormStartDate(''); setFormEndDate(''); setFormAllDay(true);
     setFormAudienceMode('ALL'); setFormAttendees([]);
     setFormColor('blue'); setEventToEdit(null);
@@ -125,21 +130,41 @@ export default function CalendarPage() {
     setFormEndDate(`${dateString}T10:00`);
     setShowEventModal(true);
   };
-
+  
   const handleOpenEventModal = (event: CalendarEvent) => {
     setEventToEdit(event);
-    setFormTitle(event.title); setFormDescription(event.description || '');
-    setFormLocation(event.location || ''); setFormAllDay(event.allDay);
+    setFormTitle(event.title);
+    setFormDescription(event.description || '');
+    setFormLocation(event.location || '');
+    setFormVideoConferenceLink(event.videoConferenceLink || '');
+    setFormAllDay(event.allDay);
     setFormStartDate(format(new Date(event.start), "yyyy-MM-dd'T'HH:mm"));
     setFormEndDate(format(new Date(event.end), "yyyy-MM-dd'T'HH:mm"));
     setFormAudienceMode(event.audienceType || 'ALL');
     setFormAttendees(event.attendees?.map(a => a.id) || []);
     setFormColor(event.color || 'blue');
+    setFormAttachments(event.attachments || []);
     setShowEventModal(true);
-  }
-  
+  };
+
   const handleDayClick = (day: Date) => {
       setSelectedDay(day);
+      const eventsOnDay = events.filter(event => format(new Date(event.start), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'));
+      if (eventsOnDay.length === 0 && canEdit) {
+          handleOpenCreateModal(day);
+      }
+  };
+  
+  const handleAddAttachment = () => {
+      if (newAttachmentUrl.trim()) {
+          try {
+              new URL(newAttachmentUrl); // Validate URL
+              setFormAttachments(prev => [...prev, { url: newAttachmentUrl.trim(), name: newAttachmentUrl.trim() }]);
+              setNewAttachmentUrl('');
+          } catch (_) {
+              toast({ title: "URL Inválida", description: "Por favor, ingresa una URL válida.", variant: "destructive" });
+          }
+      }
   };
 
   const handleSaveEvent = async (e: React.FormEvent) => {
@@ -151,7 +176,9 @@ export default function CalendarPage() {
       start: new Date(formStartDate).toISOString(), end: new Date(formEndDate).toISOString(),
       allDay: formAllDay, audienceType: formAudienceMode,
       attendeeIds: formAudienceMode === 'SPECIFIC' ? formAttendees : [],
-      color: formColor, creatorId: user.id
+      color: formColor, creatorId: user.id,
+      videoConferenceLink: formVideoConferenceLink,
+      attachments: formAttachments,
     };
     const endpoint = eventToEdit ? `/api/events/${eventToEdit.id}` : '/api/events';
     const method = eventToEdit ? 'PUT' : 'POST';
@@ -240,8 +267,35 @@ export default function CalendarPage() {
           <form onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 py-2">
             <div className="sm:col-span-2"><Label htmlFor="event-title">Título del Evento</Label><Input id="event-title" value={formTitle} onChange={e => setFormTitle(e.target.value)} required disabled={isSaving || !canEdit} /></div>
             <div className="sm:col-span-2"><Label htmlFor="event-location">Ubicación (Ej: Sala 3, Zoom)</Label><div className="relative"><MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input id="event-location" value={formLocation} onChange={e => setFormLocation(e.target.value)} disabled={isSaving || !canEdit} className="pl-10" /></div></div>
+            <div className="sm:col-span-2"><Label htmlFor="event-video-link">Enlace de Videoconferencia (Opcional)</Label><div className="relative"><Video className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input id="event-video-link" value={formVideoConferenceLink} onChange={e => setFormVideoConferenceLink(e.target.value)} disabled={isSaving || !canEdit} className="pl-10" /></div></div>
             <div className="sm:col-span-2"><Label htmlFor="event-description">Descripción (Opcional)</Label><Textarea id="event-description" value={formDescription} onChange={e => setFormDescription(e.target.value)} disabled={isSaving || !canEdit} rows={3} /></div>
             <div className="sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4"><div className="flex items-center space-x-2 flex-shrink-0"><Switch id="all-day" checked={formAllDay} onCheckedChange={setFormAllDay} disabled={isSaving || !canEdit} /><Label htmlFor="all-day">Todo el día</Label></div>{!formAllDay && (<div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow w-full"><div><Label htmlFor="start-date">Inicio</Label><Input id="start-date" type="datetime-local" value={formStartDate} onChange={e => setFormStartDate(e.target.value)} required disabled={isSaving || !canEdit} /></div><div><Label htmlFor="end-date">Fin</Label><Input id="end-date" type="datetime-local" value={formEndDate} onChange={e => setFormEndDate(e.target.value)} required disabled={isSaving || !canEdit} /></div></div>)}</div>
+            
+            <div className="sm:col-span-2 border-t pt-4 mt-2 space-y-4">
+                <div className="space-y-2">
+                    <Label>Adjuntos (Enlaces a documentos, etc.)</Label>
+                    <div className="flex gap-2">
+                        <Input placeholder="Pega una URL aquí" value={newAttachmentUrl} onChange={(e) => setNewAttachmentUrl(e.target.value)} disabled={isSaving || !canEdit}/>
+                        <Button type="button" variant="outline" onClick={handleAddAttachment} disabled={isSaving || !canEdit}>Añadir</Button>
+                    </div>
+                    {formAttachments.length > 0 && (
+                        <div className="space-y-2 rounded-md border p-2">
+                            {formAttachments.map((att, index) => (
+                                <div key={index} className="flex items-center justify-between text-sm">
+                                    <a href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline truncate">
+                                        <LinkIcon className="h-4 w-4 shrink-0" />
+                                        <span className="truncate">{att.name}</span>
+                                    </a>
+                                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => setFormAttachments(prev => prev.filter((_, i) => i !== index))}>
+                                        <X className="h-4 w-4"/>
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+
             <div className="sm:col-span-2"><Label>Color del Evento</Label><div className="flex flex-wrap gap-3 mt-2 justify-start">{eventColors.map(({ value, className }) => (<div key={value} className={cn("h-8 w-8 rounded-full border-2 flex items-center justify-center transition-all duration-200 ease-in-out", formColor === value ? 'border-primary scale-110' : 'border-transparent', canEdit ? "cursor-pointer" : "cursor-default", className)} onClick={() => canEdit && setFormColor(value)} title={value}>{formColor === value && (<Check className="h-4 w-4 text-white" />)}</div>))}</div></div>
             <div className="sm:col-span-2"><Label>Dirigido a</Label><RadioGroup value={formAudienceMode} onValueChange={(value) => setFormAudienceMode(value as EventAudienceType)} className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2" disabled={isSaving || !canEdit}><div className="flex items-center space-x-2"><RadioGroupItem value="ALL" id="audience-all" /><Label htmlFor="audience-all">Todos</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="ADMINISTRATOR" id="audience-admin" /><Label htmlFor="audience-admin">Admins</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="INSTRUCTOR" id="audience-instructor" /><Label htmlFor="audience-instructor">Instructores</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="STUDENT" id="audience-student" /><Label htmlFor="audience-student">Estudiantes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="SPECIFIC" id="audience-specific" /><Label htmlFor="audience-specific">Específicos</Label></div></RadioGroup></div>
             {canEdit && formAudienceMode === 'SPECIFIC' && (<div className="sm:col-span-2"><Label>Asistentes Específicos</Label><ScrollArea className="h-40 w-full rounded-md border p-2"><div className="space-y-2">{allUsers.length > 0 ? allUsers.map((u) => (<div key={u.id} className="flex items-center space-x-2 p-1 hover:bg-muted/50 rounded-sm transition-colors"><Checkbox id={`attendee-${u.id}`} checked={formAttendees.includes(u.id)} onCheckedChange={(checked) => { return checked ? setFormAttendees([...formAttendees, u.id]) : setFormAttendees(formAttendees.filter((id) => id !== u.id)); }} disabled={isSaving || !canEdit} /><Label htmlFor={`attendee-${u.id}`} className="font-normal cursor-pointer">{u.name} <span className="text-xs text-muted-foreground">({u.email})</span></Label></div>)) : <p className="text-sm text-muted-foreground text-center py-4">No hay otros usuarios.</p>}</div></ScrollArea></div>)}

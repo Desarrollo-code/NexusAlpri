@@ -169,6 +169,11 @@ export interface Notification {
 // --- CALENDAR ---
 export type EventAudienceType = 'ALL' | UserRole | 'SPECIFIC';
 
+export interface Attachment {
+    name: string;
+    url: string;
+}
+
 export interface CalendarEvent {
     id: string;
     title: string;
@@ -182,6 +187,8 @@ export interface CalendarEvent {
     color: string;
     creatorId: string;
     creator?: { id: string, name: string | null };
+    videoConferenceLink?: string | null;
+    attachments: Attachment[];
 }
 
 // --- SECURITY ---
