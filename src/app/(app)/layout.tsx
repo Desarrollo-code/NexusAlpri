@@ -94,6 +94,8 @@ function ThemeApplier({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
     const themeClass = user?.colorTheme ? `theme-${user.colorTheme}` : 'theme-corporate-blue';
 
+    // This component now just wraps its children in a div with the theme class.
+    // It's applied inside the main content area, isolating the theme.
     return (
         <div className={cn("bg-background", themeClass)}>
             {children}
