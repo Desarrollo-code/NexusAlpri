@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -19,6 +18,7 @@ import {
   BookMarked,
   UserCog,
   Info,
+  LineChart, // Añadir LineChart para la sección de progreso si queremos un gráfico de línea
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { UserAnalyticsData, CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog, User as AppUser } from '@/types';
@@ -32,9 +32,11 @@ import { GaugeChart } from '@/components/ui/gauge';
 import { getEventDetails, getInitials } from '@/lib/security-log-utils';
 import { Separator } from '@/components/ui/separator';
 
+// Componente para las métricas individuales (Tarjeta más compacta)
 const MetricItem = ({ title, value, icon: Icon, unit = '' }: { title: string, value: string | number, icon: React.ElementType, unit?: string }) => (
-  <Card className="flex flex-col p-4">
+  <Card className="flex flex-col p-4 bg-zinc-900 border-zinc-800 text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl"> {/* Fondo más oscuro, borde y sombra */}
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
+<<<<<<< HEAD
 <<<<<<< HEAD
       <CardTitle className="text-sm font-medium text-gray-300">{title}</CardTitle> {/* Color de título más suave */}
       <Icon className="h-4 w-4 text-teal-400" /> {/* Icono en color de contraste */}
@@ -42,9 +44,13 @@ const MetricItem = ({ title, value, icon: Icon, unit = '' }: { title: string, va
       <CardTitle className="text-sm font-medium">{title}</CardTitle>
       <Icon className="h-4 w-4 text-muted-foreground" />
 >>>>>>> 9a46a5f7e74c001d5e280229ad99a70552384fb5
+=======
+      <CardTitle className="text-sm font-medium text-gray-300">{title}</CardTitle> {/* Color de título más suave */}
+      <Icon className="h-4 w-4 text-teal-400" /> {/* Icono en color de contraste */}
+>>>>>>> 143b55e (.)
     </CardHeader>
     <CardContent className="p-0 pt-2">
-      <div className="text-2xl font-bold">{value}<span className="text-lg font-normal text-muted-foreground">{unit}</span></div>
+      <div className="text-2xl font-bold text-teal-400">{value}<span className="text-lg font-normal text-teal-600">{unit}</span></div> {/* Valor en color de acento, unidad más suave */}
     </CardContent>
   </Card>
 );
@@ -74,15 +80,15 @@ const UserAnalyticsSection = () => {
   }, [fetchUserAnalytics]);
 
   if (isLoading) {
-    return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /> Cargando...</div>;
+    return <div className="flex justify-center items-center p-8 text-white"><Loader2 className="h-6 w-6 animate-spin text-primary" /> Cargando...</div>;
   }
 
   if (error || !data) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-destructive">
+      <div className="flex flex-col items-center justify-center p-8 text-red-400"> {/* Color para errores */}
         <FileWarning className="h-6 w-6 mb-2" />
         <p>Error al cargar datos de usuarios.</p>
-        <Button onClick={fetchUserAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
+        <Button onClick={fetchUserAnalytics} variant="outline" size="sm" className="mt-2 border-red-500 text-red-500 hover:bg-red-900">Reintentar</Button>
       </div>
     );
   }
@@ -107,34 +113,39 @@ const UserAnalyticsSection = () => {
   const totalUsers = data.usersByRole.reduce((acc, curr) => acc + curr.count, 0);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricItem title="Total de Usuarios" value={totalUsers} icon={Users} />
-        <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={UserCheck} />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"> {/* Gap más ajustado */}
+      {/* Las dos primeras métricas se mantienen en línea */}
+      <MetricItem title="Total de Usuarios" value={totalUsers} icon={Users} />
+      <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={UserCheck} />
 
-        <Card className="lg:col-span-2">
-            <CardHeader>
-                <CardTitle className="text-base">Nuevos Registros (Últimos 30 días)</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[200px]">
-                <ChartContainer config={newUsersChartConfig} className="w-full h-full">
-                    <AreaChart data={data.newUsersLast30Days} margin={{ left: -10, right: 10, top: 10, bottom: 0 }}>
-                    <defs>
-                        <linearGradient id="colorNewUsers" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="var(--color-count)" stopOpacity={0} />
-                        </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(value, index) => (index % 5 === 0 ? value : "")} />
-                    <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
-                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator />} />
-                    <Area type="monotone" dataKey="count" stroke="var(--color-count)" fill="url(#colorNewUsers)" name="Nuevos Usuarios" />
-                    </AreaChart>
-                </ChartContainer>
-            </CardContent>
-        </Card>
+      {/* Gráfico de Nuevos Registros ahora en 2 columnas en pantallas grandes */}
+      <Card className="lg:col-span-2 bg-zinc-900 border-zinc-800 text-white shadow-lg">
+        <CardHeader className="pb-3"> {/* Padding inferior más pequeño */}
+          <CardTitle className="text-base text-gray-200">Nuevos Registros (Últimos 30 días)</CardTitle>
+        </CardHeader>
+        <CardContent className="h-[200px] pb-0"> {/* Reducir altura del gráfico y quitar padding inferior */}
+          <ChartContainer config={newUsersChartConfig} className="w-full h-full">
+            <AreaChart data={data.newUsersLast30Days} margin={{ left: -10, right: 10, top: 10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorNewUsers" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="var(--color-count)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" /> {/* Color de la rejilla más discreto */}
+              <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} tickFormatter={(value, index) => (index % 5 === 0 ? value : "")} />
+              <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+              <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator className="bg-zinc-800 text-white border-zinc-700" />} /> {/* Estilo del tooltip */}
+              <Area type="monotone" dataKey="count" stroke="var(--color-count)" fill="url(#colorNewUsers)" name="Nuevos Usuarios" />
+            </AreaChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 143b55e (.)
       {/* Gráfico de Distribución por Rol en 2 columnas en pantallas grandes */}
       <Card className="lg:col-span-2 bg-zinc-900 border-zinc-800 text-white shadow-lg">
         <CardHeader className="pb-3"><CardTitle className="text-base text-gray-200">Distribución por Rol</CardTitle></CardHeader>
@@ -155,6 +166,7 @@ const UserAnalyticsSection = () => {
           </ChartContainer>
         </CardContent>
       </Card>
+<<<<<<< HEAD
 =======
         <Card className="lg:col-span-2">
             <CardHeader><CardTitle className="text-base">Distribución por Rol</CardTitle></CardHeader>
@@ -175,6 +187,8 @@ const UserAnalyticsSection = () => {
             </CardContent>
         </Card>
 >>>>>>> 9a46a5f7e74c001d5e280229ad99a70552384fb5
+=======
+>>>>>>> 143b55e (.)
     </div>
   );
 };
@@ -204,15 +218,15 @@ const CourseAnalyticsSection = () => {
   }, [fetchCourseAnalytics]);
 
   if (isLoading) {
-    return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /> Cargando...</div>;
+    return <div className="flex justify-center items-center p-8 text-white"><Loader2 className="h-6 w-6 animate-spin text-primary" /> Cargando...</div>;
   }
 
   if (error || !data) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-destructive">
+      <div className="flex flex-col items-center justify-center p-8 text-red-400">
         <FileWarning className="h-6 w-6 mb-2" />
         <p>Error al cargar datos de cursos.</p>
-        <Button onClick={fetchCourseAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
+        <Button onClick={fetchCourseAnalytics} variant="outline" size="sm" className="mt-2 border-red-500 text-red-500 hover:bg-red-900">Reintentar</Button>
       </div>
     );
   }
@@ -223,19 +237,22 @@ const CourseAnalyticsSection = () => {
   }, {} as ChartConfig);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4"> {/* Ajuste de gap */}
+      {/* Métricas de cursos en una sola fila */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 col-span-full"> {/* Asegurarse de que ocupen el ancho completo si es necesario */}
         <MetricItem title="Tasa de Finalización" value={data.averageCompletionRate.toFixed(1)} icon={Percent} unit="%" />
         <MetricItem title="Puntaje Promedio (Quizzes)" value={data.averageQuizScore.toFixed(1)} icon={Award} unit="%" />
       </div>
-      <Card className="lg:col-span-2">
-        <CardHeader><CardTitle className="text-base">Top 5 Cursos Más Populares</CardTitle></CardHeader>
-        <CardContent className="h-[250px]">
+
+      <Card className="lg:col-span-1 bg-zinc-900 border-zinc-800 text-white shadow-lg"> {/* Ocupa una columna en lg */}
+        <CardHeader className="pb-3"><CardTitle className="text-base text-gray-200">Top 5 Cursos Más Populares</CardTitle></CardHeader>
+        <CardContent className="h-[250px] pt-0"> {/* Ajuste de altura y padding */}
           <ChartContainer config={{ enrollments: { label: 'Inscripciones', color: 'hsl(var(--primary))' } }} className="w-full h-full">
-            <BarChart data={data.mostEnrolledCourses} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
+            <BarChart data={data.mostEnrolledCourses} layout="vertical" margin={{ left: 0, right: 30, top: 5, bottom: 5 }}> {/* Margen izquierdo ajustado */}
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
+              <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
               <YAxis type="category" dataKey="title" width={120} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} className="truncate" axisLine={false} tickLine={false} />
+<<<<<<< HEAD
 <<<<<<< HEAD
               <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent className="bg-zinc-800 text-white border-zinc-700" />} />
               <Bar dataKey="enrollments" name="Inscripciones" barSize={15} radius={[0, 4, 4, 0]} fill="hsl(var(--primary))" /> {/* Color de barra */}
@@ -243,11 +260,18 @@ const CourseAnalyticsSection = () => {
               <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent />} />
               <Bar dataKey="enrollments" name="Inscripciones" barSize={15} radius={[0, 4, 4, 0]} fill="var(--color-enrollments)" />
 >>>>>>> 9a46a5f7e74c001d5e280229ad99a70552384fb5
+=======
+              <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent className="bg-zinc-800 text-white border-zinc-700" />} />
+              <Bar dataKey="enrollments" name="Inscripciones" barSize={15} radius={[0, 4, 4, 0]} fill="hsl(var(--primary))" /> {/* Color de barra */}
+>>>>>>> 143b55e (.)
             </BarChart>
           </ChartContainer>
         </CardContent>
       </Card>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 143b55e (.)
       <Card className="lg:col-span-1 bg-zinc-900 border-zinc-800 text-white shadow-lg"> {/* Ocupa la otra columna en lg */}
         <CardHeader className="pb-3"><CardTitle className="text-base text-gray-200">Distribución por Categoría</CardTitle></CardHeader>
         <CardContent className="h-[300px] pt-0">
@@ -264,8 +288,11 @@ const CourseAnalyticsSection = () => {
           </ChartContainer>
         </CardContent>
       </Card>
+<<<<<<< HEAD
 =======
 >>>>>>> 9a46a5f7e74c001d5e280229ad99a70552384fb5
+=======
+>>>>>>> 143b55e (.)
     </div>
   );
 };
@@ -295,24 +322,27 @@ const ProgressAnalyticsSection = () => {
   }, [fetchProgressAnalytics]);
 
   if (isLoading) {
-    return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /> Cargando...</div>;
+    return <div className="flex justify-center items-center p-8 text-white"><Loader2 className="h-6 w-6 animate-spin text-primary" /> Cargando...</div>;
   }
 
   if (error || !data) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-destructive">
+      <div className="flex flex-col items-center justify-center p-8 text-red-400">
         <FileWarning className="h-6 w-6 mb-2" />
         <p>Error al cargar datos de progreso.</p>
-        <Button onClick={fetchProgressAnalytics} variant="outline" size="sm" className="mt-2">Reintentar</Button>
+        <Button onClick={fetchProgressAnalytics} variant="outline" size="sm" className="mt-2 border-red-500 text-red-500 hover:bg-red-900">Reintentar</Button>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4"> {/* Ajuste de gap */}
       <MetricItem title="Estudiantes en Progreso" value={data.activeStudentsInCourses} icon={UserCheck} />
       <MetricItem title="Tiempo Promedio Finalización" value={data.averageCompletionTimeDays} icon={Clock} unit=" días" />
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 143b55e (.)
       <Card className="bg-zinc-900 border-zinc-800 text-white shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-300">Tasa de Abandono (Est.)</CardTitle>
@@ -322,6 +352,7 @@ const ProgressAnalyticsSection = () => {
           <GaugeChart value={data.dropoutRate} size={120} /> {/* El componente GaugeChart ya es genial */}
         </CardContent>
       </Card>
+<<<<<<< HEAD
 =======
        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -332,12 +363,17 @@ const ProgressAnalyticsSection = () => {
           </CardContent>
         </Card>
 >>>>>>> 9a46a5f7e74c001d5e280229ad99a70552384fb5
+=======
+>>>>>>> 143b55e (.)
     </div>
   );
 };
 
 const InteractionAnalyticsSection = () => {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 143b55e (.)
   return (
     <Card className="bg-zinc-900 border-zinc-800 text-white shadow-lg">
       <CardHeader><CardTitle className="text-base text-gray-200">Interacción y Compromiso</CardTitle></CardHeader>
@@ -350,6 +386,7 @@ const InteractionAnalyticsSection = () => {
       </CardContent>
     </Card>
   );
+<<<<<<< HEAD
 =======
     return (
         <Card>
@@ -363,6 +400,8 @@ const InteractionAnalyticsSection = () => {
         </Card>
     );
 >>>>>>> 9a46a5f7e74c001d5e280229ad99a70552384fb5
+=======
+>>>>>>> 143b55e (.)
 };
 
 interface SecurityLogWithUser extends AppSecurityLog {
@@ -394,17 +433,17 @@ const SecurityAnalyticsSection = () => {
   }, [fetchLogs]);
 
   if (isLoading) {
-    return <div className="flex justify-center items-center p-8"><Loader2 className="h-6 w-6 animate-spin" /> Cargando...</div>;
+    return <div className="flex justify-center items-center p-8 text-white"><Loader2 className="h-6 w-6 animate-spin text-primary" /> Cargando...</div>;
   }
 
   if (error) {
     return (
-      <Card>
+      <Card className="bg-zinc-900 border-zinc-800 text-white shadow-lg">
         <CardContent className="pt-6">
-          <div className="flex flex-col items-center justify-center p-8 text-destructive">
+          <div className="flex flex-col items-center justify-center p-8 text-red-400">
             <FileWarning className="h-6 w-6 mb-2" />
             <p>Error al cargar registros de seguridad.</p>
-            <Button onClick={fetchLogs} variant="outline" size="sm" className="mt-2">Reintentar</Button>
+            <Button onClick={fetchLogs} variant="outline" size="sm" className="mt-2 border-red-500 text-red-500 hover:bg-red-900">Reintentar</Button>
           </div>
         </CardContent>
       </Card>
@@ -413,17 +452,23 @@ const SecurityAnalyticsSection = () => {
 
   return (
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 143b55e (.)
     <Card className="bg-zinc-900 border-zinc-800 text-white shadow-lg">
       <CardHeader className="pb-3">
         <CardTitle className="text-base text-gray-200">Últimos Eventos de Seguridad</CardTitle>
         <CardDescription className="text-gray-400"> {/* Color de descripción */}
+<<<<<<< HEAD
 =======
     <Card>
       <CardHeader>
         <CardDescription>
 >>>>>>> 9a46a5f7e74c001d5e280229ad99a70552384fb5
+=======
+>>>>>>> 143b55e (.)
           Mostrando los últimos 20 eventos. Para un historial completo, visita la página de{' '}
-          <Link href="/security-audit" className="text-primary hover:underline">Auditoría de Seguridad</Link>.
+          <Link href="/security-audit" className="text-teal-400 hover:underline">Auditoría de Seguridad</Link>. {/* Enlace en color de acento */}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
@@ -431,23 +476,36 @@ const SecurityAnalyticsSection = () => {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50"><TableHead className="w-[150px] pl-6 py-3">Evento</TableHead><TableHead className="w-[200px]">Usuario</TableHead><TableHead className="hidden md:table-cell w-[120px]">IP</TableHead><TableHead className="text-right pr-6 w-[180px]">Fecha</TableHead></TableRow>
+                <TableRow className="bg-zinc-800 text-gray-300"> {/* Fila de encabezado con fondo más oscuro y texto más claro */}
+                  <TableHead className="w-[150px] pl-6 py-3">Evento</TableHead>
+                  <TableHead className="w-[200px]">Usuario</TableHead>
+                  <TableHead className="hidden md:table-cell w-[120px]">IP</TableHead>
+                  <TableHead className="text-right pr-6 w-[180px]">Fecha</TableHead>
+                </TableRow>
               </TableHeader>
               <TableBody>
                 {logs.slice(0, 20).map(log => {
                   const eventInfo = getEventDetails(log.event, log.details);
                   return (
-                    <TableRow key={log.id}>
+                    <TableRow key={log.id} className="border-zinc-700 hover:bg-zinc-800/50 transition-colors"> {/* Borde y hover más sutil */}
                       <TableCell className="pl-6 py-2">
-                        <div className="flex items-center gap-2">{eventInfo.icon}<Badge variant={eventInfo.variant}>{eventInfo.label}</Badge></div>
+                        <div className="flex items-center gap-2">{eventInfo.icon}
+                          <Badge variant={eventInfo.variant} className="border-transparent text-xs px-2 py-0.5" >{eventInfo.label}</Badge> {/* Badge más compacto */}
+                        </div>
                       </TableCell>
                       <TableCell className="py-2">
                         {log.user ? (
-                          <div className="flex items-center gap-2"><Avatar className="h-7 w-7"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback>{getInitials(log.user.name)}</AvatarFallback></Avatar><span className="text-sm font-medium">{log.user.name}</span></div>
-                        ) : (<span className="text-sm text-muted-foreground">{log.emailAttempt || 'N/A'}</span>)}
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-7 w-7 border border-zinc-700"> {/* Borde para avatar */}
+                              <AvatarImage src={log.user.avatar || undefined} />
+                              <AvatarFallback className="bg-zinc-700 text-gray-300 text-xs">{getInitials(log.user.name)}</AvatarFallback> {/* Fallback estilizado */}
+                            </Avatar>
+                            <span className="text-sm font-medium text-gray-200">{log.user.name}</span>
+                          </div>
+                        ) : (<span className="text-sm text-gray-500">{log.emailAttempt || 'N/A'}</span>)}
                       </TableCell>
-                      <TableCell className="hidden md:table-cell text-sm font-mono py-2">{log.ipAddress}</TableCell>
-                      <TableCell className="text-right text-sm py-2 pr-6">{new Date(log.createdAt).toLocaleString()}</TableCell>
+                      <TableCell className="hidden md:table-cell text-sm font-mono py-2 text-gray-400">{log.ipAddress}</TableCell>
+                      <TableCell className="text-right text-sm py-2 pr-6 text-gray-400">{new Date(log.createdAt).toLocaleString()}</TableCell>
                     </TableRow>
                   )
                 })}
@@ -455,8 +513,8 @@ const SecurityAnalyticsSection = () => {
             </Table>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center p-8 text-muted-foreground">
-            <Info className="h-8 w-8 mb-4" />
+          <div className="flex flex-col items-center justify-center p-8 text-gray-500">
+            <Info className="h-8 w-8 mb-4 text-gray-600" />
             <p className="text-center">No hay registros de seguridad disponibles.</p>
           </div>
         )}
@@ -478,23 +536,29 @@ export default function AnalyticsPage() {
 
   if (currentUser?.role !== 'ADMINISTRATOR') {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex h-full items-center justify-center bg-zinc-950"> {/* Fondo consistente */}
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 143b55e (.)
   const Section = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
     <section className="space-y-6"> {/* Espacio entre secciones un poco más ajustado */}
       <h2 className="text-2xl font-semibold font-headline flex items-center gap-3 text-white"> {/* Título en blanco */}
         <Icon className="h-6 w-6 text-teal-400" /> {/* Icono de sección en color de acento */}
+<<<<<<< HEAD
 =======
   const Section = ({ title, icon: Icon, children, className }: { title: string, icon: React.ElementType, children: React.ReactNode, className?: string }) => (
     <section className={className}>
       <h2 className="text-2xl font-semibold font-headline flex items-center gap-3 mb-4">
         <Icon className="h-6 w-6 text-primary" />
 >>>>>>> 9a46a5f7e74c001d5e280229ad99a70552384fb5
+=======
+>>>>>>> 143b55e (.)
         {title}
       </h2>
       {children}
@@ -503,18 +567,25 @@ export default function AnalyticsPage() {
 
   return (
 <<<<<<< HEAD
+<<<<<<< HEAD
     <div className="space-y-12 p-4 md:p-8 bg-zinc-950 min-h-screen text-white"> {/* Fondo oscuro principal y padding general */}
 =======
     <div className="space-y-8 p-1">
 >>>>>>> 9a46a5f7e74c001d5e280229ad99a70552384fb5
+=======
+    <div className="space-y-12 p-4 md:p-8 bg-zinc-950 min-h-screen text-white"> {/* Fondo oscuro principal y padding general */}
+>>>>>>> 143b55e (.)
       <div>
-        <h1 className="text-3xl font-bold font-headline mb-2 text-foreground">Informes y Analíticas Avanzadas</h1>
-        <p className="text-muted-foreground">Métricas clave para la toma de decisiones y el seguimiento del rendimiento de la plataforma.</p>
+        <h1 className="text-4xl font-bold font-headline mb-2 text-white">Informes y Analíticas Avanzadas</h1> {/* Título más grande y blanco */}
+        <p className="text-gray-400">Métricas clave para la toma de decisiones y el seguimiento del rendimiento de la plataforma.</p> {/* Descripción más suave */}
       </div>
 
-      <Separator />
+      <Separator className="bg-zinc-700" /> {/* Separador más oscuro */}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 143b55e (.)
       <Section title="Analíticas de Usuarios" icon={Users}>
         <UserAnalyticsSection />
       </Section>
@@ -541,6 +612,7 @@ export default function AnalyticsPage() {
           <div className="lg:col-span-2">
             <SecurityAnalyticsSection />
           </div>
+<<<<<<< HEAD
 =======
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
@@ -552,6 +624,8 @@ export default function AnalyticsPage() {
                 <CourseAnalyticsSection />
             </Section>
 >>>>>>> 9a46a5f7e74c001d5e280229ad99a70552384fb5
+=======
+>>>>>>> 143b55e (.)
         </div>
       </Section>
 
@@ -559,7 +633,12 @@ export default function AnalyticsPage() {
   );
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     
 =======
 >>>>>>> 9a46a5f7e74c001d5e280229ad99a70552384fb5
+=======
+
+    
+>>>>>>> 143b55e (.)
