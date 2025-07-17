@@ -116,8 +116,9 @@ export default function SignUpPage() {
                 data-ai-hint="logo education"
               />
             </div>
-            <div className="relative p-[2px] rounded-lg bg-gradient-to-b from-primary/50 to-accent/50 w-full max-w-sm">
-                <Card className="w-full max-w-sm animate-fade-in-up border-none">
+            <div className="relative w-full max-w-sm rounded-xl bg-gradient-to-br from-blue-500 via-yellow-400 to-orange-500 p-1">
+              <div className="absolute -inset-1 rounded-xl bg-gradient-to-br from-blue-500 via-yellow-400 to-orange-500 opacity-70 blur-sm"></div>
+                <Card className="w-full max-w-sm animate-fade-in-up border-none relative">
                     <CardHeader>
                         <CardTitle className="text-center text-xl font-headline">Registro Deshabilitado</CardTitle>
                     </CardHeader>
@@ -160,8 +161,9 @@ export default function SignUpPage() {
           />
         </div>
 
-        <div className="relative p-[2px] rounded-lg bg-gradient-to-b from-primary/50 to-accent/50 w-full max-w-sm">
-            <Card className="w-full max-w-sm animate-fade-in-up border-none">
+        <div className="relative w-full max-w-sm rounded-xl bg-gradient-to-br from-blue-500 via-yellow-400 to-orange-500 p-1">
+          <div className="absolute -inset-1 rounded-xl bg-gradient-to-br from-blue-500 via-yellow-400 to-orange-500 opacity-70 blur-sm"></div>
+            <Card className="w-full max-w-sm animate-fade-in-up border-none relative">
                 <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
                 <CardDescription>Regístrate para empezar a aprender</CardDescription>
