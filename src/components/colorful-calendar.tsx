@@ -11,8 +11,9 @@ import { Calendar } from '@/components/ui/calendar';
 
 interface ColorfulCalendarProps extends Omit<React.ComponentProps<typeof Calendar>, 'onSelect'> {
   events: CalendarEvent[];
-  onDateSelect: (date: Date, eventsOnDay: CalendarEvent[]) => void;
+  onDateSelect: (date: Date) => void;
   className?: string;
+  selected?: Date;
 }
 
 const getEventColorClass = (color?: string): string => {
@@ -34,23 +35,21 @@ function CustomDayContent(props: DayContentProps & { eventsByDay: Record<string,
   return (
     <div className="relative w-full h-full flex flex-col p-1 overflow-hidden">
       <time dateTime={format(date, 'yyyy-MM-dd')} className={cn(
-        "self-start text-sm rounded-full h-6 w-6 flex items-center justify-center",
-        isSameDay(date, new Date()) && "bg-primary text-primary-foreground font-bold",
+        "self-end text-sm z-10",
         isOutside && "text-muted-foreground/50"
       )}>
         {format(date, 'd')}
       </time>
-      <div className="flex-grow mt-1 space-y-0.5">
-        {eventsForDay.slice(0, 2).map(event => (
-          <div key={event.id} className="w-full text-left flex items-center gap-1">
-             <div className={cn('h-1.5 w-1.5 rounded-full', getEventColorClass(event.color))} />
-             <span className="text-xs text-foreground/80 truncate">{event.title}</span>
-          </div>
-        ))}
-        {eventsForDay.length > 2 && (
-          <div className="text-muted-foreground text-xs">+ {eventsForDay.length - 2} más</div>
-        )}
-      </div>
+       {eventsForDay.length > 0 && (
+         <div className="absolute bottom-1.5 left-1.5 right-1.5 flex justify-center items-center gap-1">
+            {eventsForDay.slice(0, 3).map((event) => (
+                <div key={event.id} className={cn("h-1.5 w-1.5 flex-shrink-0 rounded-full", getEventColorClass(event.color))} />
+            ))}
+            {eventsForDay.length > 3 && (
+                <span className="text-xs text-muted-foreground -ml-0.5">+</span>
+            )}
+         </div>
+       )}
     </div>
   );
 }
@@ -58,6 +57,7 @@ function CustomDayContent(props: DayContentProps & { eventsByDay: Record<string,
 export default function ColorfulCalendar({
   events,
   onDateSelect,
+  selected,
   className,
   ...props
 }: ColorfulCalendarProps) {
@@ -73,16 +73,16 @@ export default function ColorfulCalendar({
 
   const handleDayClick = (day: Date | undefined) => {
     if (!day) return;
-    const dayKey = format(day, 'yyyy-MM-dd');
-    const eventsOnDay = eventsByDay[dayKey] || [];
-    onDateSelect(day, eventsOnDay);
+    onDateSelect(day);
   };
   
   return (
     <Calendar
       {...props}
       onDayClick={handleDayClick}
+      selected={selected}
       locale={es}
+      numberOfMonths={1}
       components={{
         DayContent: (dayProps) => <CustomDayContent {...dayProps} eventsByDay={eventsByDay} />,
       }}
@@ -98,16 +98,16 @@ export default function ColorfulCalendar({
         nav_button_next: "absolute right-1",
         table: "w-full border-collapse space-y-1",
         head_row: "flex",
-        head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-center text-[0.8rem] pb-2",
+        head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-center text-sm pb-2",
         row: "flex w-full mt-2 gap-1",
         cell: cn(
-          "flex-1 text-sm p-0 relative focus-within:relative focus-within:z-20 aspect-square",
+          "flex-1 p-0 relative focus-within:relative focus-within:z-20 aspect-[4/3]",
           "rounded-lg border bg-card/50 transition-colors hover:bg-accent/10"
         ),
         day: "w-full h-full",
         day_today: "border-2 border-primary",
-        day_selected: "",
-        day_outside: "day-outside text-muted-foreground opacity-50 bg-muted/20",
+        day_selected: "bg-accent/20 border-primary",
+        day_outside: "day-outside text-muted-foreground opacity-30 bg-muted/20",
         day_disabled: "text-muted-foreground opacity-50",
       }}
     />

@@ -1,0 +1,77 @@
+// src/components/calendar/event-sidebar.tsx
+'use client';
+
+import React from 'react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import type { CalendarEvent } from '@/types';
+import { PlusCircle, Edit, CalendarPlus } from 'lucide-react';
+
+interface EventSidebarProps {
+  selectedDate: Date;
+  events: CalendarEvent[];
+  onCreateEvent: (date: Date) => void;
+  onEditEvent: (event: CalendarEvent) => void;
+}
+
+export function EventSidebar({ selectedDate, events, onCreateEvent, onEditEvent }: EventSidebarProps) {
+
+  const getEventColorClass = (color?: string): string => {
+    switch (color) {
+      case 'blue': return 'bg-event-blue';
+      case 'green': return 'bg-event-green';
+      case 'red': return 'bg-event-red';
+      case 'orange': return 'bg-event-orange';
+      default: return 'bg-primary';
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-shrink-0">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold font-headline">
+            Eventos del {format(selectedDate, "d 'de' MMMM", { locale: es })}
+          </h2>
+          <Button size="sm" onClick={() => onCreateEvent(selectedDate)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Crear
+          </Button>
+        </div>
+        <Separator className="my-3" />
+      </div>
+
+      <ScrollArea className="flex-grow -mx-4 px-4">
+        {events.length > 0 ? (
+          <ul className="space-y-3">
+            {events.map(event => (
+              <li key={event.id} className="cursor-pointer" onClick={() => onEditEvent(event)}>
+                <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className={`mt-1.5 h-2.5 w-2.5 rounded-full flex-shrink-0 ${getEventColorClass(event.color)}`} />
+                  <div className="flex-grow">
+                    <p className="font-semibold text-sm leading-tight">{event.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {event.allDay ? 'Todo el día' : `${format(new Date(event.start), 'p', { locale: es })} - ${format(new Date(event.end), 'p', { locale: es })}`}
+                    </p>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Edit className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground pt-10">
+            <CalendarPlus className="h-10 w-10 mb-3" />
+            <p className="font-medium">No hay eventos para este día.</p>
+            <p className="text-sm">Puedes crear uno nuevo.</p>
+          </div>
+        )}
+      </ScrollArea>
+    </div>
+  );
+}
