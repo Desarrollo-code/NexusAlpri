@@ -54,8 +54,7 @@ export default function CalendarPage() {
   const [error, setError] = useState<string | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
 
-  const [currentDate, setCurrentDate] = useState(startOfMonth(new Date()));
-  const [selectedDay, setSelectedDay] = useState<Date>(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
   
   const [showEventModal, setShowEventModal] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
@@ -157,14 +156,6 @@ export default function CalendarPage() {
     setFormAttachments(event.attachments || []);
     setShowEventModal(true);
   };
-
-  const handleDayClick = (day: Date) => {
-      setSelectedDay(day);
-      const eventsOnDay = events.filter(event => isSameDay(new Date(event.start), day));
-      if (eventsOnDay.length === 0 && canEdit) {
-          handleOpenCreateModal(day);
-      }
-  };
   
   const handleAddAttachment = () => {
       if (newAttachmentUrl.trim()) {
@@ -237,11 +228,6 @@ export default function CalendarPage() {
   const modalTitle = !canEdit && eventToEdit ? "Detalles del Evento" : (eventToEdit ? 'Editar Evento' : 'Crear Nuevo Evento');
   const modalDescription = !canEdit && eventToEdit ? "Aquí puedes ver la información del evento." : (eventToEdit ? "Modifica los detalles del evento." : "Completa los detalles para agendar un nuevo evento.");
 
-  const eventsOnSelectedDay = useMemo(() => 
-      events.filter(event => isSameDay(new Date(event.start), selectedDay)),
-      [events, selectedDay]
-  );
-
   const LocationInput = () => {
     if (formLocationType === 'physical') {
       return (
@@ -268,37 +254,30 @@ export default function CalendarPage() {
                 {format(currentDate, "MMMM yyyy", { locale: es }).replace(/^\w/, (c) => c.toUpperCase())}
             </h1>
             <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(addMonths(currentDate, 1))}><ChevronRight className="h-4 w-4"/></Button>
-            <Button variant="outline" size="sm" className="h-8 px-3" onClick={() => { setCurrentDate(new Date()); setSelectedDay(new Date()); }}>Hoy</Button>
+            <Button variant="outline" size="sm" className="h-8 px-3" onClick={() => setCurrentDate(new Date())}>Hoy</Button>
+        </div>
+        <div>
+            <Button size="sm" onClick={() => handleOpenCreateModal()}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Crear Evento
+            </Button>
         </div>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-grow min-h-0">
-        <main className="lg:col-span-2 bg-card p-2 sm:p-4 border rounded-lg shadow-sm">
+      <main className="bg-card p-2 sm:p-4 border rounded-lg shadow-sm flex-grow min-h-0">
           {isLoading ? (
             <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-full text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}</div>
           ) : (
             <ColorfulCalendar
-              className="w-full"
-              events={events}
-              onDateSelect={handleDayClick}
+              className="w-full h-full"
               month={currentDate}
-              selected={selectedDay}
-              numberOfMonths={1}
+              events={events}
+              onEventClick={handleOpenEventModal}
+              onDateSelect={handleOpenCreateModal}
             />
           )}
         </main>
-        
-        <aside className="lg:col-span-1 bg-card p-4 border rounded-lg shadow-sm flex flex-col">
-          <EventSidebar 
-            selectedDate={selectedDay}
-            events={eventsOnSelectedDay}
-            onCreateEvent={handleOpenCreateModal}
-            onEditEvent={handleOpenEventModal}
-          />
-        </aside>
-      </div>
       
       <Dialog open={showEventModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowEventModal(isOpen); }}>
         <DialogContent className="w-[95vw] max-w-2xl overflow-y-auto max-h-[90vh]">
