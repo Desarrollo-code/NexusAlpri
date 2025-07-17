@@ -6,8 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { IconSave, IconBell, IconShieldAlert, IconList, IconTag, IconTrash, IconLoader, IconFileWarning, IconKey, IconClock } from '@/components/icons';
-import { Palette } from 'lucide-react';
+import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
@@ -54,7 +53,7 @@ export default function SettingsPage() {
 
   if (!user || user.role !== 'ADMINISTRATOR') {
     if (typeof window !== 'undefined') router.push('/dashboard');
-    return <div className="flex h-full items-center justify-center"><IconLoader className="h-8 w-8 animate-spin"/></div>;
+    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
   }
   
   if (isLoading || !formState) {
@@ -178,7 +177,7 @@ export default function SettingsPage() {
           
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><IconShieldAlert className="h-5 w-5 text-primary"/>Seguridad y Acceso</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5 text-primary"/>Seguridad y Acceso</CardTitle>
               <CardDescription>Gestiona las políticas de seguridad y registro.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -289,7 +288,7 @@ export default function SettingsPage() {
                         Asegúrate de que todas las configuraciones son correctas antes de guardar.
                     </p>
                     <Button className="w-full" onClick={handleSaveSettings} disabled={isSaving || isLoading}>
-                        {isSaving ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : <IconSave className="mr-2 h-4 w-4" />}
+                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         {isSaving ? 'Guardando...' : 'Guardar Configuración'}
                     </Button>
                 </CardContent>
@@ -297,7 +296,7 @@ export default function SettingsPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><IconList className="h-5 w-5 text-primary" />Categorías de Recursos</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary" />Categorías de Recursos</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -320,15 +319,15 @@ export default function SettingsPage() {
                     <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
                         {formState.resourceCategories.map(category => (
                         <div key={category} className="flex items-center justify-between p-2.5 border rounded-lg bg-card text-sm">
-                            <span className="flex items-center gap-2"><IconTag className="h-4 w-4 text-muted-foreground"/>{category}</span>
+                            <span className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/>{category}</span>
                             <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive-foreground" 
+                            className="h-7 w-7 text-destructive hover:bg-destructive/10"
                             onClick={() => setCategoryToDelete(category)}
                             disabled={isSaving}
                             >
-                            <IconTrash className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Eliminar {category}</span>
                             </Button>
                         </div>
@@ -354,7 +353,7 @@ export default function SettingsPage() {
             <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
                 <AlertDialogCancel disabled={isCheckingCategory}>Cancelar</AlertDialogCancel>
                 <AlertDialogAction onClick={handleDeleteCategory} disabled={isCheckingCategory} className={buttonVariants({ variant: "destructive" })}>
-                    {isCheckingCategory ? <IconLoader className="mr-2 h-4 w-4 animate-spin" /> : <IconTrash className="mr-2 h-4 w-4" />}
+                    {isCheckingCategory ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
                     Sí, eliminar
                 </AlertDialogAction>
             </AlertDialogFooter>
@@ -363,5 +362,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    
