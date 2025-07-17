@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { PlusCircle, Loader2, AlertTriangle, Trash2, MapPin, Calendar as CalendarIcon, Clock, Save, ChevronLeft, ChevronRight, Video, Paperclip, Link as LinkIcon, X, Check, List, LayoutGrid } from 'lucide-react';
+import { PlusCircle, Loader2, AlertTriangle, Trash2, MapPin, Calendar as CalendarIcon, Clock, Save, ChevronLeft, ChevronRight, Video, Paperclip, Link as LinkIcon, X, Check, List, LayoutGrid, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -31,7 +31,7 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { CalendarEvent, User, EventAudienceType, Attachment } from '@/types';
-import { format, addMonths, subMonths, startOfMonth, isSameDay } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, isSameDay, startOfToday } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ColorfulCalendar from '@/components/colorful-calendar';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -54,7 +54,8 @@ export default function CalendarPage() {
   const [error, setError] = useState<string | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
 
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(startOfToday());
+  const [selectedDate, setSelectedDate] = useState(startOfToday());
   
   const [showEventModal, setShowEventModal] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
@@ -119,6 +120,7 @@ export default function CalendarPage() {
     setFormAudienceMode('ALL'); setFormAttendees([]);
     setFormColor('blue'); setEventToEdit(null);
     setFormLocationType('physical');
+    setNewAttachmentUrl('');
   }
 
   const handleOpenCreateModal = (date?: Date) => {
@@ -136,7 +138,6 @@ export default function CalendarPage() {
     setFormTitle(event.title);
     setFormDescription(event.description || '');
     
-    // Set location type based on which field has data
     if (event.videoConferenceLink) {
         setFormLocationType('virtual');
         setFormVideoConferenceLink(event.videoConferenceLink);
@@ -154,6 +155,7 @@ export default function CalendarPage() {
     setFormAttendees(event.attendees?.map(a => a.id) || []);
     setFormColor(event.color || 'blue');
     setFormAttachments(event.attachments || []);
+    setNewAttachmentUrl('');
     setShowEventModal(true);
   };
   
@@ -225,58 +227,68 @@ export default function CalendarPage() {
     }
   }
 
+  const eventsForSelectedDate = useMemo(() => {
+    return events.filter(e => isSameDay(new Date(e.start), selectedDate));
+  }, [events, selectedDate]);
+
   const modalTitle = !canEdit && eventToEdit ? "Detalles del Evento" : (eventToEdit ? 'Editar Evento' : 'Crear Nuevo Evento');
   const modalDescription = !canEdit && eventToEdit ? "Aquí puedes ver la información del evento." : (eventToEdit ? "Modifica los detalles del evento." : "Completa los detalles para agendar un nuevo evento.");
 
-  const LocationInput = () => {
-    if (formLocationType === 'physical') {
-      return (
-          <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input id="event-location" value={formLocation} onChange={e => setFormLocation(e.target.value)} disabled={isSaving || !canEdit} className="pl-10" placeholder="Nombre de la sala, dirección, etc." />
-          </div>
-      );
-    }
-    return (
-        <div className="relative">
-            <Video className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input id="event-video-link" type="url" value={formVideoConferenceLink} onChange={e => setFormVideoConferenceLink(e.target.value)} disabled={isSaving || !canEdit} className="pl-10" placeholder="https://meet.google.com/..." />
-        </div>
-    );
-  };
+  const LocationInput = () => (
+    <div className="relative">
+      {formLocationType === 'physical' ? (
+        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      ) : (
+        <Video className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      )}
+      <Input
+        id={formLocationType === 'physical' ? 'event-location' : 'event-video-link'}
+        type={formLocationType === 'physical' ? 'text' : 'url'}
+        value={formLocationType === 'physical' ? formLocation : formVideoConferenceLink}
+        onChange={e => formLocationType === 'physical' ? setFormLocation(e.target.value) : setFormVideoConferenceLink(e.target.value)}
+        disabled={isSaving || !canEdit}
+        className="pl-10"
+        placeholder={formLocationType === 'physical' ? 'Nombre de la sala, dirección...' : 'https://meet.google.com/...'}
+      />
+    </div>
+  );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] gap-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(subMonths(currentDate, 1))}><ChevronLeft className="h-4 w-4"/></Button>
-            <h1 className="text-2xl font-bold font-headline text-primary min-w-[150px] text-center">
-                {format(currentDate, "MMMM yyyy", { locale: es }).replace(/^\w/, (c) => c.toUpperCase())}
+    <div className="flex flex-col h-[calc(100vh-8rem)]">
+        <div className="flex items-center gap-4 mb-4">
+            <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="h-4 w-4"/></Button>
+            <h1 className="text-2xl font-bold font-headline text-foreground min-w-[200px] text-center">
+                {format(currentMonth, "MMMM yyyy", { locale: es }).replace(/^\w/, (c) => c.toUpperCase())}
             </h1>
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(addMonths(currentDate, 1))}><ChevronRight className="h-4 w-4"/></Button>
-            <Button variant="outline" size="sm" className="h-8 px-3" onClick={() => setCurrentDate(new Date())}>Hoy</Button>
+            <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight className="h-4 w-4"/></Button>
+            <Button variant="outline" size="sm" className="h-9 px-3" onClick={() => setCurrentMonth(startOfToday())}>Hoy</Button>
         </div>
-        <div>
-            <Button size="sm" onClick={() => handleOpenCreateModal()}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Crear Evento
-            </Button>
-        </div>
-      </div>
-      
-      <main className="bg-card p-2 sm:p-4 border rounded-lg shadow-sm flex-grow min-h-0">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
-          ) : error ? (
-            <div className="flex flex-col items-center justify-center h-full text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}</div>
-          ) : (
-            <ColorfulCalendar
-              className="w-full h-full"
-              month={currentDate}
-              events={events}
-              onEventClick={handleOpenEventModal}
-              onDateSelect={handleOpenCreateModal}
+
+        <main className="flex-grow grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 min-h-0">
+          <div className="md:col-span-2 lg:col-span-3 bg-card p-2 sm:p-4 border rounded-lg shadow-sm">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center h-full text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}</div>
+            ) : (
+              <ColorfulCalendar
+                className="w-full h-full"
+                month={currentMonth}
+                events={events}
+                onDateSelect={setSelectedDate}
+                onEventClick={handleOpenEventModal}
+                selectedDay={selectedDate}
+              />
+            )}
+          </div>
+          <aside className="hidden md:block md:col-span-1 lg:col-span-1 bg-card p-4 border rounded-lg shadow-sm">
+            <EventSidebar 
+              selectedDate={selectedDate}
+              events={eventsForSelectedDate}
+              onCreateEvent={handleOpenCreateModal}
+              onEditEvent={handleOpenEventModal}
             />
-          )}
+          </aside>
         </main>
       
       <Dialog open={showEventModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowEventModal(isOpen); }}>
@@ -322,8 +334,8 @@ export default function CalendarPage() {
                 </div>
             </div>
 
-            <div className="sm:col-span-2"><Label>Color del Evento</Label><div className="flex flex-wrap gap-3 mt-2 justify-start">{eventColors.map(({ value, className }) => (<div key={value} className={cn("h-8 w-8 rounded-full border-2 flex items-center justify-center transition-all duration-200 ease-in-out", formColor === value ? 'border-primary scale-110' : 'border-transparent', canEdit ? "cursor-pointer" : "cursor-default", className)} onClick={() => canEdit && setFormColor(value)} title={value}>{formColor === value && (<Check className="h-4 w-4 text-white" />)}</div>))}</div></div>
-            <div className="sm:col-span-2"><Label>Dirigido a</Label><RadioGroup value={formAudienceMode} onValueChange={(value) => setFormAudienceMode(value as EventAudienceType)} className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2" disabled={isSaving || !canEdit}><div className="flex items-center space-x-2"><RadioGroupItem value="ALL" id="audience-all" /><Label htmlFor="audience-all">Todos</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="ADMINISTRATOR" id="audience-admin" /><Label htmlFor="audience-admin">Admins</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="INSTRUCTOR" id="audience-instructor" /><Label htmlFor="audience-instructor">Instructores</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="STUDENT" id="audience-student" /><Label htmlFor="audience-student">Estudiantes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="SPECIFIC" id="audience-specific" /><Label htmlFor="audience-specific">Específicos</Label></div></RadioGroup></div>
+            <div className="sm:col-span-2"><Label>Color del Evento</Label><div className="flex flex-wrap gap-3 mt-2 justify-start">{eventColors.map(({ value, className, label }) => (<div key={value} className="flex flex-col items-center gap-1"><div className={cn("h-8 w-8 rounded-full border-2 flex items-center justify-center transition-all duration-200 ease-in-out", formColor === value ? 'border-primary scale-110' : 'border-transparent', canEdit ? "cursor-pointer" : "cursor-default", className)} onClick={() => canEdit && setFormColor(value)} title={label}>{formColor === value && (<Check className="h-4 w-4 text-white" />)}</div><span className="text-xs text-muted-foreground">{label}</span></div>))}</div></div>
+            <div className="sm:col-span-2"><Label>Dirigido a</Label><div className="flex items-center gap-2 mt-2"><Users className="h-4 w-4 text-muted-foreground"/><RadioGroup value={formAudienceMode} onValueChange={(value) => setFormAudienceMode(value as EventAudienceType)} className="grid grid-cols-2 md:grid-cols-3 gap-2" disabled={isSaving || !canEdit}><div className="flex items-center space-x-2"><RadioGroupItem value="ALL" id="audience-all" /><Label htmlFor="audience-all">Todos</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="ADMINISTRATOR" id="audience-admin" /><Label htmlFor="audience-admin">Admins</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="INSTRUCTOR" id="audience-instructor" /><Label htmlFor="audience-instructor">Instructores</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="STUDENT" id="audience-student" /><Label htmlFor="audience-student">Estudiantes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="SPECIFIC" id="audience-specific" /><Label htmlFor="audience-specific">Específicos</Label></div></RadioGroup></div></div>
             {canEdit && formAudienceMode === 'SPECIFIC' && (<div className="sm:col-span-2"><Label>Asistentes Específicos</Label><ScrollArea className="h-40 w-full rounded-md border p-2"><div className="space-y-2">{allUsers.length > 0 ? allUsers.map((u) => (<div key={u.id} className="flex items-center space-x-2 p-1 hover:bg-muted/50 rounded-sm transition-colors"><Checkbox id={`attendee-${u.id}`} checked={formAttendees.includes(u.id)} onCheckedChange={(checked) => { return checked ? setFormAttendees([...formAttendees, u.id]) : setFormAttendees(formAttendees.filter((id) => id !== u.id)); }} disabled={isSaving || !canEdit} /><Label htmlFor={`attendee-${u.id}`} className="font-normal cursor-pointer">{u.name} <span className="text-xs text-muted-foreground">({u.email})</span></Label></div>)) : <p className="text-sm text-muted-foreground text-center py-4">No hay otros usuarios.</p>}</div></ScrollArea></div>)}
             <DialogFooter className="sm:col-span-2 mt-4 flex flex-col-reverse sm:flex-row sm:justify-between w-full gap-2">{canEdit ? (<>{eventToEdit && (<div><Button type="button" variant="destructive" onClick={() => { setEventToDelete(eventToEdit); setShowEventModal(false); }} disabled={isSaving} className="w-full sm:w-auto"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</Button></div>)}<div className="flex flex-col-reverse sm:flex-row gap-2"><Button type="button" variant="outline" onClick={() => setShowEventModal(false)} disabled={isSaving} className="w-full sm:w-auto">Cancelar</Button><Button type="submit" disabled={isSaving} className="w-full sm:w-auto">{isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (eventToEdit ? <Save className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />)} {eventToEdit ? 'Guardar Cambios' : 'Crear Evento'}</Button></div></>) : (<div className="flex justify-end w-full"><Button type="button" variant="outline" onClick={() => setShowEventModal(false)} className="w-full sm:w-auto">Cerrar</Button></div>)}</DialogFooter>
           </form>
