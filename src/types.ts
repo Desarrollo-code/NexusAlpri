@@ -1,3 +1,4 @@
+
 import type { JsonValue, LessonTemplate, TemplateBlock } from "@prisma/client";
 
 // --- USER & AUTH ---
@@ -230,3 +231,5 @@ export interface ProgressAnalyticsData {
 // --- TEMPLATES ---
 export type TemplateType = 'SYSTEM' | 'USER';
 export { type LessonTemplate, type TemplateBlock };
+
+    
