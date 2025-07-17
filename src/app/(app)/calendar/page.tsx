@@ -201,9 +201,13 @@ export default function CalendarPage() {
     setIsSaving(true);
     try {
       const response = await fetch(`/api/events/${eventId}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error((await response.json()).message || 'Failed to delete event');
-      toast({ title: 'Éxito', description: 'Evento eliminado.' });
-      setEvents(prev => prev.filter(event => event.id !== eventId));
+      if (response.status === 204) {
+        toast({ title: 'Éxito', description: 'Evento eliminado.' });
+        setEvents(prev => prev.filter(event => event.id !== eventId));
+      } else {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to delete event' }));
+        throw new Error(errorData.message);
+      }
     } catch (err) {
       toast({ title: 'Error', description: `No se pudo eliminar: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
     } finally {
@@ -286,9 +290,9 @@ export default function CalendarPage() {
                                         <LinkIcon className="h-4 w-4 shrink-0" />
                                         <span className="truncate">{att.name}</span>
                                     </a>
-                                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => setFormAttachments(prev => prev.filter((_, i) => i !== index))}>
+                                    {canEdit && <Button type="button" variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => setFormAttachments(prev => prev.filter((_, i) => i !== index))}>
                                         <X className="h-4 w-4"/>
-                                    </Button>
+                                    </Button>}
                                 </div>
                             ))}
                         </div>
