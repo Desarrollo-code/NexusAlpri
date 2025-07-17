@@ -32,12 +32,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning className="dark">
       <body className={`${inter.variable} ${spaceGrotesk.variable} ${sourceCodePro.variable} font-body antialiased`}>
         <AuthProvider>
           <NextThemesProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="dark"
             enableSystem
           >
             {children}

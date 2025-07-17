@@ -116,20 +116,22 @@ export default function SignUpPage() {
                 data-ai-hint="logo education"
               />
             </div>
-            <Card className="w-full max-w-sm animate-fade-in-up">
-                <CardHeader>
-                    <CardTitle className="text-center text-xl font-headline">Registro Deshabilitado</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
-                    <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-4" />
-                    <p className="text-sm text-muted-foreground">
-                        El registro de nuevas cuentas está deshabilitado. Solo un administrador puede crear una cuenta para ti.
-                    </p>
-                    <Button asChild variant="link" className="mt-4 text-primary">
-                        <Link href="/sign-in">Volver a Inicio de Sesión</Link>
-                    </Button>
-                </CardContent>
-            </Card>
+            <div className="relative p-[2px] rounded-lg bg-gradient-to-b from-primary/50 to-accent/50 w-full max-w-sm">
+                <Card className="w-full max-w-sm animate-fade-in-up border-none">
+                    <CardHeader>
+                        <CardTitle className="text-center text-xl font-headline">Registro Deshabilitado</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                        <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-4" />
+                        <p className="text-sm text-muted-foreground">
+                            El registro de nuevas cuentas está deshabilitado. Solo un administrador puede crear una cuenta para ti.
+                        </p>
+                        <Button asChild variant="link" className="mt-4 text-primary">
+                            <Link href="/sign-in">Volver a Inicio de Sesión</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
              <div className="fixed bottom-4 right-4 z-0 pointer-events-none">
               <Image
                 src="/uploads/images/watermark-alprigrama.png" 
@@ -158,85 +160,87 @@ export default function SignUpPage() {
           />
         </div>
 
-        <Card className="w-full max-w-lg animate-fade-in-up">
-            <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
-            <CardDescription>Regístrate para empezar a aprender</CardDescription>
-            </CardHeader>
-            <CardContent>
-            <form onSubmit={handleSubmit} className="grid gap-4">
-                {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
-                <div className="grid gap-2">
-                    <Label htmlFor="name">Nombre Completo</Label>
-                    <Input
-                        id="name"
-                        type="text"
-                        placeholder="Tu nombre completo"
-                        required
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        disabled={isLoading}
-                    />
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="email">Correo Electrónico</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        placeholder="tu@email.com"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={isLoading}
-                    />
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="password">Contraseña</Label>
-                    <div className="relative">
-                      <Input
-                          id="password"
-                          type={showPassword ? "text" : "password"}
-                          required
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          disabled={isLoading}
-                          className="pr-10"
-                      />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
-                          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                      </button>
+        <div className="relative p-[2px] rounded-lg bg-gradient-to-b from-primary/50 to-accent/50 w-full max-w-sm">
+            <Card className="w-full max-w-sm animate-fade-in-up border-none">
+                <CardHeader className="text-center">
+                <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
+                <CardDescription>Regístrate para empezar a aprender</CardDescription>
+                </CardHeader>
+                <CardContent>
+                <form onSubmit={handleSubmit} className="grid gap-4">
+                    {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
+                    <div className="grid gap-2">
+                        <Label htmlFor="name">Nombre Completo</Label>
+                        <Input
+                            id="name"
+                            type="text"
+                            placeholder="Tu nombre completo"
+                            required
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            disabled={isLoading}
+                        />
                     </div>
-                </div>
-                 <div className="grid gap-2">
-                    <Label htmlFor="confirm-password">Confirmar Contraseña</Label>
-                    <div className="relative">
-                      <Input
-                          id="confirm-password"
-                          type={showConfirmPassword ? "text" : "password"}
-                          required
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          disabled={isLoading}
-                          className="pr-10"
-                      />
-                      <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
-                          {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                      </button>
+                    <div className="grid gap-2">
+                        <Label htmlFor="email">Correo Electrónico</Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            placeholder="tu@email.com"
+                            required
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            disabled={isLoading}
+                        />
                     </div>
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    {isLoading ? 'Registrando...' : 'Registrarse'}
-                </Button>
-                <div className="mt-4 text-center text-sm">
-                    ¿Ya tienes una cuenta?{" "}
-                    <Link href="/sign-in" className="underline">
-                        Inicia sesión
-                    </Link>
-                </div>
-            </form>
-            </CardContent>
-          </Card>
+                    <div className="grid gap-2">
+                        <Label htmlFor="password">Contraseña</Label>
+                        <div className="relative">
+                          <Input
+                              id="password"
+                              type={showPassword ? "text" : "password"}
+                              required
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              disabled={isLoading}
+                              className="pr-10"
+                          />
+                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                          </button>
+                        </div>
+                    </div>
+                     <div className="grid gap-2">
+                        <Label htmlFor="confirm-password">Confirmar Contraseña</Label>
+                        <div className="relative">
+                          <Input
+                              id="confirm-password"
+                              type={showConfirmPassword ? "text" : "password"}
+                              required
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              disabled={isLoading}
+                              className="pr-10"
+                          />
+                           <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                              {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                          </button>
+                        </div>
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        {isLoading ? 'Registrando...' : 'Registrarse'}
+                    </Button>
+                    <div className="mt-4 text-center text-sm">
+                        ¿Ya tienes una cuenta?{" "}
+                        <Link href="/sign-in" className="underline">
+                            Inicia sesión
+                        </Link>
+                    </div>
+                </form>
+                </CardContent>
+              </Card>
+        </div>
       </div>
        <div className="fixed bottom-4 right-4 z-0 pointer-events-none">
         <Image
