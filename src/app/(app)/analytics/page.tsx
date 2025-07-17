@@ -16,14 +16,13 @@ import {
   Award,
   Percent,
   Clock,
-  Download,
   BookMarked,
   UserCog,
   Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { UserAnalyticsData, CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog, User as AppUser, EnterpriseResource } from '@/types';
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
+import type { UserAnalyticsData, CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog, User as AppUser } from '@/types';
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Cell, AreaChart, Area } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -44,17 +43,6 @@ const MetricItem = ({ title, value, icon: Icon, unit = '' }: { title: string, va
     </CardContent>
   </Card>
 );
-
-const userRolesChartConfig = {
-  count: { label: "Usuarios" },
-  ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-3))" },
-  INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
-  STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
-} satisfies ChartConfig
-
-const newUsersChartConfig = {
-  count: { label: "Usuarios", color: "hsl(var(--accent))" },
-} satisfies ChartConfig
 
 const UserAnalyticsSection = () => {
   const [data, setData] = useState<UserAnalyticsData | null>(null);
@@ -94,6 +82,17 @@ const UserAnalyticsSection = () => {
     );
   }
 
+  const userRolesChartConfig = {
+    count: { label: "Usuarios" },
+    ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-3))" },
+    INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
+    STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
+  } satisfies ChartConfig
+
+  const newUsersChartConfig = {
+    count: { label: "Usuarios", color: "hsl(var(--accent))" },
+  } satisfies ChartConfig
+  
   const pieChartData = data.usersByRole.map(roleData => ({
     name: userRolesChartConfig[roleData.role as keyof typeof userRolesChartConfig]?.label || roleData.role,
     count: roleData.count,
@@ -139,7 +138,6 @@ const UserAnalyticsSection = () => {
                     <XAxis dataKey="name" tick={{ fontSize: 12 }}/>
                     <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
                     <ChartTooltip cursor={{fill: 'hsl(var(--muted))'}} content={<ChartTooltipContent hideLabel />} />
-                    <Legend />
                     <Bar dataKey="count" name="Usuarios" radius={[4, 4, 0, 0]}>
                         {pieChartData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -211,24 +209,8 @@ const CourseAnalyticsSection = () => {
               <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
               <YAxis type="category" dataKey="title" width={120} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} className="truncate" axisLine={false} tickLine={false} />
               <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent />} />
-              <Bar dataKey="enrollments" name="Inscripciones" barSize={15} radius={[0, 4, 4, 0]} />
+              <Bar dataKey="enrollments" name="Inscripciones" barSize={15} radius={[0, 4, 4, 0]} fill="var(--color-enrollments)" />
             </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-      <Card className="lg:col-span-2">
-        <CardHeader><CardTitle className="text-base">Distribución por Categoría</CardTitle></CardHeader>
-        <CardContent className="h-[300px]">
-          <ChartContainer config={categoryChartConfig} className="w-full h-full">
-            <PieChart>
-              <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-              <Pie data={data.coursesByCategory} dataKey="count" nameKey="category" innerRadius={60} strokeWidth={5} >
-                {data.coursesByCategory.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={`var(--color-${entry.category.replace(/\s/g, '_')})`} className="stroke-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2" />
-                ))}
-              </Pie>
-              <Legend content={<ChartTooltipContent hideLabel hideIndicator nameKey="category" />} />
-            </PieChart>
           </ChartContainer>
         </CardContent>
       </Card>
@@ -293,8 +275,7 @@ const ProgressAnalyticsSection = () => {
 const InteractionAnalyticsSection = () => {
     return (
         <Card>
-            <CardHeader><CardTitle className="text-base">Interacción y Compromiso</CardTitle></CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
                 <div className="flex flex-col items-center justify-center p-8 text-center h-full text-muted-foreground">
                   <UserCog className="h-8 w-8 mb-3" />
                   <p className="font-semibold">Datos de Interacción</p>
@@ -354,7 +335,6 @@ const SecurityAnalyticsSection = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Últimos Eventos de Seguridad</CardTitle>
         <CardDescription>
           Mostrando los últimos 20 eventos. Para un historial completo, visita la página de{' '}
           <Link href="/security-audit" className="text-primary hover:underline">Auditoría de Seguridad</Link>.
@@ -418,9 +398,9 @@ export default function AnalyticsPage() {
     );
   }
 
-  const Section = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
-    <section className="space-y-4">
-      <h2 className="text-2xl font-semibold font-headline flex items-center gap-3">
+  const Section = ({ title, icon: Icon, children, className }: { title: string, icon: React.ElementType, children: React.ReactNode, className?: string }) => (
+    <section className={className}>
+      <h2 className="text-2xl font-semibold font-headline flex items-center gap-3 mb-4">
         <Icon className="h-6 w-6 text-primary" />
         {title}
       </h2>
@@ -429,7 +409,7 @@ export default function AnalyticsPage() {
   );
 
   return (
-    <div className="space-y-12 p-1">
+    <div className="space-y-8 p-1">
       <div>
         <h1 className="text-3xl font-bold font-headline mb-2 text-foreground">Informes y Analíticas Avanzadas</h1>
         <p className="text-muted-foreground">Métricas clave para la toma de decisiones y el seguimiento del rendimiento de la plataforma.</p>
@@ -437,33 +417,30 @@ export default function AnalyticsPage() {
 
       <Separator />
 
-      <Section title="Analíticas de Usuarios" icon={Users}>
-        <UserAnalyticsSection />
-      </Section>
-
-      <Separator />
-
-      <Section title="Analíticas de Cursos y Contenido" icon={BookMarked}>
-        <CourseAnalyticsSection />
-      </Section>
-
-      <Separator />
-
-      <Section title="Analíticas de Progreso de Estudiantes" icon={TrendingUp}>
-        <ProgressAnalyticsSection />
-      </Section>
-
-      <Separator />
-      
-      <Section title="Analíticas de Interacción y Seguridad" icon={Activity}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1">
-                <InteractionAnalyticsSection />
-            </div>
-            <div className="lg:col-span-2">
-                <SecurityAnalyticsSection />
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+            <Section title="Analíticas de Usuarios" icon={Users}>
+                <UserAnalyticsSection />
+            </Section>
+            
+            <Section title="Analíticas de Cursos y Contenido" icon={BookMarked}>
+                <CourseAnalyticsSection />
+            </Section>
         </div>
+
+        <div className="lg:col-span-1 space-y-8">
+            <Section title="Progreso de Estudiantes" icon={TrendingUp}>
+                <ProgressAnalyticsSection />
+            </Section>
+
+            <Section title="Interacción" icon={UserCog}>
+                <InteractionAnalyticsSection />
+            </Section>
+        </div>
+      </div>
+      
+      <Section title="Últimos Eventos de Seguridad" icon={Activity}>
+        <SecurityAnalyticsSection />
       </Section>
 
     </div>
