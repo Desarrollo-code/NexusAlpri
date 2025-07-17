@@ -52,6 +52,10 @@ const userRolesChartConfig = {
   STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
 } satisfies ChartConfig
 
+const newUsersChartConfig = {
+  count: { label: "Usuarios", color: "hsl(var(--accent))" },
+} satisfies ChartConfig
+
 const UserAnalyticsSection = () => {
   const [data, setData] = useState<UserAnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -99,67 +103,52 @@ const UserAnalyticsSection = () => {
   const totalUsers = data.usersByRole.reduce((acc, curr) => acc + curr.count, 0);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <MetricItem title="Total de Usuarios" value={totalUsers} icon={Users} />
-        <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={UserCheck} />
-      </div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <MetricItem title="Total de Usuarios" value={totalUsers} icon={Users} />
+            <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={UserCheck} />
+        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Nuevos Registros (Últimos 30 días)</CardTitle>
+        </CardHeader>
+        <CardContent className="h-[200px]">
+          <ChartContainer config={newUsersChartConfig} className="w-full h-full">
+            <AreaChart data={data.newUsersLast30Days} margin={{ left: -10, right: 10, top: 10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorNewUsers" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="var(--color-count)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(value, index) => (index % 5 === 0 ? value : "")} />
+              <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
+              <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator />} />
+              <Area type="monotone" dataKey="count" stroke="var(--color-count)" fill="url(#colorNewUsers)" name="Nuevos Usuarios" />
+            </AreaChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
 
-      <div className="md:col-span-2 lg:col-span-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Nuevos Registros (Últimos 30 días)</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.newUsersLast30Days}>
-                <defs>
-                  <linearGradient id="colorNewUsers" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(value, index) => (index % 5 === 0 ? value : "")} />
-                <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
-                <Tooltip content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="rounded-lg border bg-background p-2 shadow-sm">
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="flex flex-col"><span className="text-[0.70rem] uppercase text-muted-foreground">Fecha</span><span className="font-bold text-muted-foreground">{payload[0].payload.date}</span></div>
-                          <div className="flex flex-col"><span className="text-[0.70rem] uppercase text-muted-foreground">Usuarios</span><span className="font-bold text-foreground">{payload[0].value}</span></div>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                }} />
-                <Area type="monotone" dataKey="count" stroke="hsl(var(--accent))" fill="url(#colorNewUsers)" name="Nuevos Usuarios" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="md:col-span-2 lg:col-span-4">
+      <div className="lg:col-span-2">
         <Card>
           <CardHeader><CardTitle className="text-base">Distribución por Rol</CardTitle></CardHeader>
           <CardContent className="h-[250px] flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={pieChartData} layout="horizontal">
-                <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                <XAxis dataKey="name" tick={{ fontSize: 12 }}/>
-                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-                <Tooltip cursor={{fill: 'hsl(var(--muted))'}} content={<ChartTooltipContent hideLabel />} />
-                <Legend />
-                <Bar dataKey="count" name="Usuarios" radius={[4, 4, 0, 0]}>
-                    {pieChartData.map((entry) => (
-                      <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                    ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <ChartContainer config={userRolesChartConfig} className="w-full h-full">
+                <BarChart data={pieChartData} layout="horizontal">
+                  <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }}/>
+                  <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                  <ChartTooltip cursor={{fill: 'hsl(var(--muted))'}} content={<ChartTooltipContent hideLabel />} />
+                  <Legend />
+                  <Bar dataKey="count" name="Usuarios" radius={[4, 4, 0, 0]}>
+                      {pieChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                  </Bar>
+                </BarChart>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>
@@ -206,10 +195,9 @@ const CourseAnalyticsSection = () => {
   }
 
   const categoryChartConfig = data.coursesByCategory.reduce((acc, cat, index) => {
-    acc[cat.category] = { label: cat.category, color: `hsl(var(--chart-${(index % 5) + 1}))` };
+    acc[cat.category.replace(/\s/g, '_')] = { label: cat.category, color: `hsl(var(--chart-${(index % 5) + 1}))` };
     return acc;
   }, {} as ChartConfig);
-  categoryChartConfig['count'] = { label: 'Cursos' };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -220,31 +208,31 @@ const CourseAnalyticsSection = () => {
       <Card className="lg:col-span-2">
         <CardHeader><CardTitle className="text-base">Top 5 Cursos Más Populares</CardTitle></CardHeader>
         <CardContent className="h-[250px]">
-          <ResponsiveContainer width="100%" height="100%">
+          <ChartContainer config={{ enrollments: { label: 'Inscripciones', color: 'hsl(var(--primary))' } }} className="w-full h-full">
             <BarChart data={data.mostEnrolledCourses} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
               <YAxis type="category" dataKey="title" width={120} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} className="truncate" axisLine={false} tickLine={false} />
-              <Tooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent />} />
-              <Bar dataKey="enrollments" fill="hsl(var(--primary))" name="Inscripciones" barSize={15} radius={[0, 4, 4, 0]} />
+              <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent />} />
+              <Bar dataKey="enrollments" name="Inscripciones" barSize={15} radius={[0, 4, 4, 0]} />
             </BarChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </CardContent>
       </Card>
       <Card className="lg:col-span-2">
         <CardHeader><CardTitle className="text-base">Distribución por Categoría</CardTitle></CardHeader>
         <CardContent className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
+          <ChartContainer config={categoryChartConfig} className="w-full h-full">
             <PieChart>
               <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
               <Pie data={data.coursesByCategory} dataKey="count" nameKey="category" innerRadius={60} strokeWidth={5} >
                 {data.coursesByCategory.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={`var(--color-${entry.category})`} className="stroke-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2" />
+                  <Cell key={`cell-${index}`} fill={`var(--color-${entry.category.replace(/\s/g, '_')})`} className="stroke-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2" />
                 ))}
               </Pie>
               <Legend content={<ChartTooltipContent hideLabel hideIndicator nameKey="category" />} />
             </PieChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </CardContent>
       </Card>
     </div>
@@ -482,3 +470,5 @@ export default function AnalyticsPage() {
     </div>
   );
 }
+
+    
