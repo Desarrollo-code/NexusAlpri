@@ -101,7 +101,7 @@ export default function CalendarPage() {
       if (!res.ok) throw new Error((await res.json()).message || "Failed to fetch users");
       const data = await res.json();
       setAllUsers(data.users || []);
-    } catch (err) => {
+    } catch (err) {
       toast({ title: 'Error', description: `No se pudieron cargar los usuarios: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
     }
   }, [toast, canEdit]);
@@ -287,6 +287,7 @@ export default function CalendarPage() {
               onDateSelect={handleDayClick}
               month={currentDate}
               selected={selectedDay}
+              numberOfMonths={1}
             />
           )}
         </main>
