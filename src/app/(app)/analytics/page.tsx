@@ -85,53 +85,17 @@ const UserAnalyticsSection = () => {
     const totalUsers = data.usersByRole.reduce((acc, curr) => acc + curr.count, 0);
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 space-y-4">
-                <MetricItem title="Total de Usuarios" value={totalUsers} icon={Users} />
-                <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={UserCheck} />
-                <Card>
-                    <CardHeader><CardTitle className="text-base">Distribución por Rol</CardTitle></CardHeader>
-                    <CardContent>
-                         <ChartContainer
-                          config={userRolesChartConfig}
-                          className="mx-auto aspect-square"
-                        >
-                          <PieChart>
-                            <ChartTooltip
-                              content={<ChartTooltipContent hideLabel />}
-                            />
-                            <Pie
-                              data={pieChartData}
-                              dataKey="count"
-                              nameKey="name"
-                              innerRadius={60}
-                              strokeWidth={5}
-                            >
-                               {pieChartData.map((entry) => (
-                                <Cell
-                                  key={entry.name}
-                                  fill={entry.fill}
-                                />
-                              ))}
-                            </Pie>
-                             <g>
-                                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central" className="fill-foreground text-3xl font-bold">
-                                    {totalUsers.toLocaleString()}
-                                </text>
-                                <text x="50%" y="50%" dy="1.5em" textAnchor="middle" dominantBaseline="central" className="fill-muted-foreground text-sm">
-                                    Usuarios
-                                </text>
-                            </g>
-                          </PieChart>
-                        </ChartContainer>
-                    </CardContent>
-                </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <MetricItem title="Total de Usuarios" value={totalUsers} icon={Users} />
+              <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={UserCheck} />
             </div>
+            
             <div className="lg:col-span-2">
                  <Card>
                     <CardHeader><CardTitle className="text-base">Nuevos Registros (Últimos 30 días)</CardTitle></CardHeader>
-                    <CardContent>
-                        <ResponsiveContainer width="100%" height={300}>
+                    <CardContent className="h-[300px]">
+                        <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={data.newUsersLast30Days}>
                                 <defs>
                                     <linearGradient id="colorNewUsers" x1="0" y1="0" x2="0" y2="1">
@@ -172,6 +136,46 @@ const UserAnalyticsSection = () => {
                                 <Area type="monotone" dataKey="count" stroke="hsl(var(--accent))" fill="url(#colorNewUsers)" name="Nuevos Usuarios"/>
                             </AreaChart>
                         </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
+            
+            <div className="lg:col-span-2">
+                <Card>
+                    <CardHeader><CardTitle className="text-base">Distribución por Rol</CardTitle></CardHeader>
+                    <CardContent className="h-[300px]">
+                         <ChartContainer
+                          config={userRolesChartConfig}
+                          className="mx-auto aspect-square h-full"
+                        >
+                          <PieChart>
+                            <ChartTooltip
+                              content={<ChartTooltipContent hideLabel />}
+                            />
+                            <Pie
+                              data={pieChartData}
+                              dataKey="count"
+                              nameKey="name"
+                              innerRadius={60}
+                              strokeWidth={5}
+                            >
+                               {pieChartData.map((entry) => (
+                                <Cell
+                                  key={entry.name}
+                                  fill={entry.fill}
+                                />
+                              ))}
+                            </Pie>
+                             <g>
+                                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central" className="fill-foreground text-3xl font-bold">
+                                    {totalUsers.toLocaleString()}
+                                </text>
+                                <text x="50%" y="50%" dy="1.5em" textAnchor="middle" dominantBaseline="central" className="fill-muted-foreground text-sm">
+                                    Usuarios
+                                </text>
+                            </g>
+                          </PieChart>
+                        </ChartContainer>
                     </CardContent>
                 </Card>
             </div>
@@ -557,5 +561,7 @@ export default function AnalyticsPage() {
         </div>
     );
 }
+
+    
 
     
