@@ -262,15 +262,13 @@ export default function CalendarPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-10rem)] gap-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <div className="flex items-baseline gap-4">
-           <h1 className="text-2xl font-bold font-headline text-primary">
-             {format(currentDate, "MMMM yyyy", { locale: es }).replace(/^\w/, (c) => c.toUpperCase())}
-           </h1>
-           <div className="flex items-center gap-1">
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(subMonths(currentDate, 1))}><ChevronLeft className="h-4 w-4"/></Button>
-              <Button variant="outline" size="sm" className="h-8 px-3" onClick={() => { setCurrentDate(new Date()); setSelectedDay(new Date()); }}>Hoy</Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(addMonths(currentDate, 1))}><ChevronRight className="h-4 w-4"/></Button>
-           </div>
+        <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(subMonths(currentDate, 1))}><ChevronLeft className="h-4 w-4"/></Button>
+            <h1 className="text-2xl font-bold font-headline text-primary min-w-[150px] text-center">
+                {format(currentDate, "MMMM yyyy", { locale: es }).replace(/^\w/, (c) => c.toUpperCase())}
+            </h1>
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(addMonths(currentDate, 1))}><ChevronRight className="h-4 w-4"/></Button>
+            <Button variant="outline" size="sm" className="h-8 px-3" onClick={() => { setCurrentDate(new Date()); setSelectedDay(new Date()); }}>Hoy</Button>
         </div>
       </div>
       

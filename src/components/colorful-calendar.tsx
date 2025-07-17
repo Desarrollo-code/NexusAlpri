@@ -85,16 +85,14 @@ export default function ColorfulCalendar({
       components={{
         DayContent: (dayProps) => <CustomDayContent {...dayProps} eventsByDay={eventsByDay} />,
       }}
+      showOutsideDays={true}
+      disableNavigation
       className={className}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4 w-full",
-        caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-lg font-semibold text-primary",
-        nav: "space-x-1 flex items-center",
-        nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-        nav_button_previous: "absolute left-1",
-        nav_button_next: "absolute right-1",
+        caption: "hidden", // Hide the default caption
+        nav: "hidden", // Hide the default nav buttons
         table: "w-full border-collapse",
         head_row: "flex",
         head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-center text-sm pb-2",
