@@ -64,6 +64,7 @@ export default function CalendarPage() {
   
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
+  const [formLocationType, setFormLocationType] = useState<'physical' | 'virtual'>('physical');
   const [formLocation, setFormLocation] = useState('');
   const [formVideoConferenceLink, setFormVideoConferenceLink] = useState('');
   const [formStartDate, setFormStartDate] = useState('');
@@ -74,7 +75,6 @@ export default function CalendarPage() {
   const [formColor, setFormColor] = useState<string>('blue');
   const [formAttachments, setFormAttachments] = useState<Attachment[]>([]);
   const [newAttachmentUrl, setNewAttachmentUrl] = useState('');
-
 
   const canEdit = useMemo(() => user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR', [user]);
 
@@ -101,7 +101,7 @@ export default function CalendarPage() {
       if (!res.ok) throw new Error((await res.json()).message || "Failed to fetch users");
       const data = await res.json();
       setAllUsers(data.users || []);
-    } catch (err) {
+    } catch (err) => {
       toast({ title: 'Error', description: `No se pudieron cargar los usuarios: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
     }
   }, [toast, canEdit]);
@@ -119,6 +119,7 @@ export default function CalendarPage() {
     setFormStartDate(''); setFormEndDate(''); setFormAllDay(true);
     setFormAudienceMode('ALL'); setFormAttendees([]);
     setFormColor('blue'); setEventToEdit(null);
+    setFormLocationType('physical');
   }
 
   const handleOpenCreateModal = (date?: Date) => {
@@ -135,8 +136,18 @@ export default function CalendarPage() {
     setEventToEdit(event);
     setFormTitle(event.title);
     setFormDescription(event.description || '');
-    setFormLocation(event.location || '');
-    setFormVideoConferenceLink(event.videoConferenceLink || '');
+    
+    // Set location type based on which field has data
+    if (event.videoConferenceLink) {
+        setFormLocationType('virtual');
+        setFormVideoConferenceLink(event.videoConferenceLink);
+        setFormLocation('');
+    } else {
+        setFormLocationType('physical');
+        setFormLocation(event.location || '');
+        setFormVideoConferenceLink('');
+    }
+
     setFormAllDay(event.allDay);
     setFormStartDate(format(new Date(event.start), "yyyy-MM-dd'T'HH:mm"));
     setFormEndDate(format(new Date(event.end), "yyyy-MM-dd'T'HH:mm"));
@@ -171,17 +182,25 @@ export default function CalendarPage() {
     e.preventDefault();
     if (!canEdit || !user?.id) return;
     setIsSaving(true);
+
     const payload = {
-      title: formTitle, description: formDescription, location: formLocation,
-      start: new Date(formStartDate).toISOString(), end: new Date(formEndDate).toISOString(),
-      allDay: formAllDay, audienceType: formAudienceMode,
+      title: formTitle, 
+      description: formDescription, 
+      location: formLocationType === 'physical' ? formLocation : null,
+      videoConferenceLink: formLocationType === 'virtual' ? formVideoConferenceLink : null,
+      start: new Date(formStartDate).toISOString(), 
+      end: new Date(formEndDate).toISOString(),
+      allDay: formAllDay, 
+      audienceType: formAudienceMode,
       attendeeIds: formAudienceMode === 'SPECIFIC' ? formAttendees : [],
-      color: formColor, creatorId: user.id,
-      videoConferenceLink: formVideoConferenceLink,
+      color: formColor, 
+      creatorId: user.id,
       attachments: formAttachments,
     };
+
     const endpoint = eventToEdit ? `/api/events/${eventToEdit.id}` : '/api/events';
     const method = eventToEdit ? 'PUT' : 'POST';
+
     try {
       const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const updatedEvent = await response.json();
@@ -223,6 +242,23 @@ export default function CalendarPage() {
       [events, selectedDay]
   );
 
+  const LocationInput = () => {
+    if (formLocationType === 'physical') {
+      return (
+          <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input id="event-location" value={formLocation} onChange={e => setFormLocation(e.target.value)} disabled={isSaving || !canEdit} className="pl-10" placeholder="Nombre de la sala, dirección, etc." />
+          </div>
+      );
+    }
+    return (
+        <div className="relative">
+            <Video className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input id="event-video-link" type="url" value={formVideoConferenceLink} onChange={e => setFormVideoConferenceLink(e.target.value)} disabled={isSaving || !canEdit} className="pl-10" placeholder="https://meet.google.com/..." />
+        </div>
+    );
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-10rem)] gap-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
@@ -251,7 +287,6 @@ export default function CalendarPage() {
               onDateSelect={handleDayClick}
               month={currentDate}
               selected={selectedDay}
-              numberOfMonths={1}
             />
           )}
         </main>
@@ -271,8 +306,16 @@ export default function CalendarPage() {
           <DialogHeader><DialogTitle>{modalTitle}</DialogTitle><DialogDescription>{modalDescription}</DialogDescription></DialogHeader>
           <form onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 py-2">
             <div className="sm:col-span-2"><Label htmlFor="event-title">Título del Evento</Label><Input id="event-title" value={formTitle} onChange={e => setFormTitle(e.target.value)} required disabled={isSaving || !canEdit} /></div>
-            <div className="sm:col-span-2"><Label htmlFor="event-location">Ubicación (Ej: Sala 3, Zoom)</Label><div className="relative"><MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input id="event-location" value={formLocation} onChange={e => setFormLocation(e.target.value)} disabled={isSaving || !canEdit} className="pl-10" /></div></div>
-            <div className="sm:col-span-2"><Label htmlFor="event-video-link">Enlace de Videoconferencia (Opcional)</Label><div className="relative"><Video className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input id="event-video-link" value={formVideoConferenceLink} onChange={e => setFormVideoConferenceLink(e.target.value)} disabled={isSaving || !canEdit} className="pl-10" /></div></div>
+            
+            <div className="sm:col-span-2 space-y-2">
+                <Label>Ubicación</Label>
+                <RadioGroup value={formLocationType} onValueChange={(v) => setFormLocationType(v as 'physical' | 'virtual')} className="flex gap-4" disabled={isSaving || !canEdit}>
+                    <div className="flex items-center space-x-2"><RadioGroupItem value="physical" id="loc-physical"/><Label htmlFor="loc-physical">Física</Label></div>
+                    <div className="flex items-center space-x-2"><RadioGroupItem value="virtual" id="loc-virtual" /><Label htmlFor="loc-virtual">Virtual</Label></div>
+                </RadioGroup>
+                <LocationInput />
+            </div>
+
             <div className="sm:col-span-2"><Label htmlFor="event-description">Descripción (Opcional)</Label><Textarea id="event-description" value={formDescription} onChange={e => setFormDescription(e.target.value)} disabled={isSaving || !canEdit} rows={3} /></div>
             <div className="sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4"><div className="flex items-center space-x-2 flex-shrink-0"><Switch id="all-day" checked={formAllDay} onCheckedChange={setFormAllDay} disabled={isSaving || !canEdit} /><Label htmlFor="all-day">Todo el día</Label></div>{!formAllDay && (<div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow w-full"><div><Label htmlFor="start-date">Inicio</Label><Input id="start-date" type="datetime-local" value={formStartDate} onChange={e => setFormStartDate(e.target.value)} required disabled={isSaving || !canEdit} /></div><div><Label htmlFor="end-date">Fin</Label><Input id="end-date" type="datetime-local" value={formEndDate} onChange={e => setFormEndDate(e.target.value)} required disabled={isSaving || !canEdit} /></div></div>)}</div>
             

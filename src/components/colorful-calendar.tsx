@@ -40,7 +40,7 @@ function CustomDayContent(props: DayContentProps & { eventsByDay: Record<string,
       )}>
         {format(date, 'd')}
       </time>
-       {eventsForDay.length > 0 && (
+       {eventsForDay.length > 0 && !isOutside && (
          <div className="absolute bottom-1.5 left-1.5 right-1.5 flex justify-center items-center gap-1">
             {eventsForDay.slice(0, 3).map((event) => (
                 <div key={event.id} className={cn("h-1.5 w-1.5 flex-shrink-0 rounded-full", getEventColorClass(event.color))} />
@@ -82,7 +82,6 @@ export default function ColorfulCalendar({
       onDayClick={handleDayClick}
       selected={selected}
       locale={es}
-      numberOfMonths={1}
       components={{
         DayContent: (dayProps) => <CustomDayContent {...dayProps} eventsByDay={eventsByDay} />,
       }}
@@ -96,7 +95,7 @@ export default function ColorfulCalendar({
         nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
-        table: "w-full border-collapse space-y-1",
+        table: "w-full border-collapse",
         head_row: "flex",
         head_cell: "text-muted-foreground rounded-md flex-1 font-normal text-center text-sm pb-2",
         row: "flex w-full mt-2 gap-1",
