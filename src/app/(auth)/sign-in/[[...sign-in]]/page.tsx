@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
@@ -17,6 +16,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
+import { cn } from '@/lib/utils';
 
 export default function SignInPage() {
   const router = useRouter();
@@ -40,6 +40,7 @@ export default function SignInPage() {
     }
   }, [user, router]);
 
+  const inputStyles = "flex h-10 w-full rounded-md border border-white/20 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black/30 disabled:cursor-not-allowed disabled:opacity-50 backdrop-blur-sm";
 
   const handlePasswordSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -137,7 +138,7 @@ export default function SignInPage() {
                         <form onSubmit={handlePasswordSubmit} className="grid gap-4">
                           <div className="grid gap-2">
                             <Label htmlFor="email">Correo Electrónico</Label>
-                            <Input
+                            <input
                               id="email"
                               type="email"
                               placeholder="tu@email.com"
@@ -145,20 +146,20 @@ export default function SignInPage() {
                               value={email}
                               onChange={(e) => setEmail(e.target.value)}
                               disabled={isLoading}
-                              className="bg-black/30 border-white/20 backdrop-blur-sm"
+                              className={inputStyles}
                             />
                           </div>
                           <div className="grid gap-2">
                             <Label htmlFor="password">Contraseña</Label>
                             <div className="relative">
-                              <Input
+                              <input
                                 id="password"
                                 type={showPassword ? "text" : "password"}
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 disabled={isLoading}
-                                className="pr-10 bg-black/30 border-white/20 backdrop-blur-sm"
+                                className={cn(inputStyles, "pr-10")}
                               />
                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}

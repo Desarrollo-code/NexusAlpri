@@ -6,13 +6,13 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import { Loader2, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -36,6 +36,8 @@ export default function SignUpPage() {
     }
   }, [user, router]);
   
+  const inputStyles = "flex h-10 w-full rounded-md border border-white/20 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black/30 disabled:cursor-not-allowed disabled:opacity-50 backdrop-blur-sm";
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
@@ -173,7 +175,7 @@ export default function SignUpPage() {
                     {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
                     <div className="grid gap-2">
                         <Label htmlFor="name">Nombre Completo</Label>
-                        <Input
+                        <input
                             id="name"
                             type="text"
                             placeholder="Tu nombre completo"
@@ -181,12 +183,12 @@ export default function SignUpPage() {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             disabled={isLoading}
-                            className="bg-black/30 border-white/20 backdrop-blur-sm"
+                            className={inputStyles}
                         />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="email">Correo Electrónico</Label>
-                        <Input
+                        <input
                             id="email"
                             type="email"
                             placeholder="tu@email.com"
@@ -194,20 +196,20 @@ export default function SignUpPage() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             disabled={isLoading}
-                            className="bg-black/30 border-white/20 backdrop-blur-sm"
+                            className={inputStyles}
                         />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="password">Contraseña</Label>
                         <div className="relative">
-                          <Input
+                          <input
                               id="password"
                               type={showPassword ? "text" : "password"}
                               required
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
                               disabled={isLoading}
-                              className="pr-10 bg-black/30 border-white/20 backdrop-blur-sm"
+                              className={cn(inputStyles, "pr-10")}
                           />
                           <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -217,14 +219,14 @@ export default function SignUpPage() {
                      <div className="grid gap-2">
                         <Label htmlFor="confirm-password">Confirmar Contraseña</Label>
                         <div className="relative">
-                          <Input
+                          <input
                               id="confirm-password"
                               type={showConfirmPassword ? "text" : "password"}
                               required
                               value={confirmPassword}
                               onChange={(e) => setConfirmPassword(e.target.value)}
                               disabled={isLoading}
-                              className="pr-10 bg-black/30 border-white/20 backdrop-blur-sm"
+                              className={cn(inputStyles, "pr-10")}
                           />
                            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                               {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
