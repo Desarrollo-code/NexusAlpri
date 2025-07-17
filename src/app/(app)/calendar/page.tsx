@@ -1,4 +1,3 @@
-
 // src/app/(app)/calendar/page.tsx
 'use client';
 
@@ -254,8 +253,8 @@ export default function CalendarPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-headline mb-2">Calendario de Eventos</h1>
-          <p className="text-muted-foreground">Vista general de los eventos, talleres y fechas importantes.</p>
+          <h1 className="text-3xl font-bold font-headline mb-2 text-primary">Calendario Corporativo</h1>
+          <p className="text-muted-foreground">Coordina, planifica y visualiza los eventos de tu organización.</p>
         </div>
         <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => setCurrentDate(subMonths(currentDate, 1))}><ChevronLeft className="h-4 w-4"/></Button>
@@ -269,7 +268,7 @@ export default function CalendarPage() {
       
       {viewMode === 'month' ? (
           <>
-            <Card className="max-w-4xl mx-auto w-full shadow-lg bg-card text-foreground border-border p-2 sm:p-4">
+            <Card className="max-w-full mx-auto w-full shadow-lg bg-card text-foreground border-border p-2 sm:p-4">
                 {isLoading ? (
                 <div className="flex items-center justify-center h-96"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
                 ) : error ? (
@@ -284,7 +283,7 @@ export default function CalendarPage() {
                 />
                 )}
             </Card>
-            <Card className="p-4 shadow-lg max-w-4xl mx-auto w-full">
+            <Card className="p-4 shadow-lg max-w-full mx-auto w-full">
                 <h3 className="text-lg font-semibold mb-3">Leyenda</h3>
                 <div className="flex flex-wrap gap-x-6 gap-y-3">
                     {eventColors.map(colorInfo => (
@@ -356,5 +355,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-
-    
