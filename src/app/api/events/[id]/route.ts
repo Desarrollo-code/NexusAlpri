@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
@@ -107,5 +106,3 @@ export async function DELETE(
         return NextResponse.json({ message: 'Error al eliminar el evento' }, { status: 500 });
     }
 }
-
-    

@@ -1,4 +1,3 @@
-
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
@@ -19,7 +18,7 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
         if (!user) {
             return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
         }
-        const { password, ...userToReturn } = user;
+        const { password, twoFactorSecret, ...userToReturn } = user;
         return NextResponse.json(userToReturn);
     } catch (error) {
         console.error('[USER_GET_ERROR]', error);
@@ -88,7 +87,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
             data: dataToUpdate,
         });
 
-        const { password, ...userToReturn } = updatedUser;
+        const { password, twoFactorSecret, ...userToReturn } = updatedUser;
         return NextResponse.json(userToReturn);
 
     } catch (error) {

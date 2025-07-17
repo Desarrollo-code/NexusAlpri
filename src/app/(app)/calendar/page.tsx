@@ -1,4 +1,3 @@
-
 // src/app/(app)/calendar/page.tsx
 'use client';
 
@@ -356,5 +355,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-
-    

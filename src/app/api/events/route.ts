@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
@@ -101,5 +100,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Error al crear el evento' }, { status: 500 });
   }
 }
-
-    

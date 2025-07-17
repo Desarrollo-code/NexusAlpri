@@ -1,4 +1,3 @@
-
 import type { JsonValue, LessonTemplate, TemplateBlock } from "@prisma/client";
 
 // --- USER & AUTH ---
@@ -182,6 +181,7 @@ export interface CalendarEvent {
     attendees: { id: string, name: string | null, email: string }[];
     color: string;
     creatorId: string;
+    creator?: { id: string, name: string | null };
 }
 
 // --- SECURITY ---
@@ -231,5 +231,3 @@ export interface ProgressAnalyticsData {
 // --- TEMPLATES ---
 export type TemplateType = 'SYSTEM' | 'USER';
 export { type LessonTemplate, type TemplateBlock };
-
-    
