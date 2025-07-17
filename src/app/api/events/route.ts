@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color } = body;
+    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color, videoConferenceLink, attachments } = body;
     
     if (!title || !start || !end || !session.id) {
         return NextResponse.json({ message: 'Faltan campos requeridos (título, inicio, fin, creador).' }, { status: 400 });
@@ -71,6 +71,8 @@ export async function POST(req: NextRequest) {
       allDay,
       audienceType: audienceType as EventAudienceType,
       color,
+      videoConferenceLink,
+      attachments,
       creator: {
         connect: { id: session.id },
       },

@@ -30,7 +30,7 @@ export async function PUT(
     }
     
     const body = await req.json();
-    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color } = body;
+    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color, videoConferenceLink, attachments } = body;
 
     const dataToUpdate: any = {
       title,
@@ -41,6 +41,8 @@ export async function PUT(
       allDay,
       audienceType,
       color,
+      videoConferenceLink,
+      attachments,
     };
 
     if (attendeeIds && Array.isArray(attendeeIds)) {
