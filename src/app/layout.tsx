@@ -34,16 +34,16 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${inter.variable} ${spaceGrotesk.variable} ${sourceCodePro.variable} font-body antialiased`}>
-        <AuthProvider>
-          <NextThemesProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-          >
+        <NextThemesProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+        >
+          <AuthProvider>
             {children}
             <Toaster />
-          </NextThemesProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </NextThemesProvider>
       </body>
     </html>
   );

@@ -90,19 +90,21 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
   );
 };
 
-function ThemeApplier() {
+function ThemeApplier({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
-    
-    // This hook simply returns the theme class name based on the user's preference.
-    // The class is applied to a wrapper div in AppLayoutContent.
-    return user?.colorTheme ? `theme-${user.colorTheme}` : 'theme-corporate-blue';
+    const themeClass = user?.colorTheme ? `theme-${user.colorTheme}` : 'theme-corporate-blue';
+
+    return (
+        <div className={cn("bg-background", themeClass)}>
+            {children}
+        </div>
+    );
 }
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const { user, settings, logout } = useAuth();
     const pathname = usePathname();
     const { toast } = useToast();
-    const themeClass = ThemeApplier();
 
     const handleIdleLogout = useCallback(() => {
         if (user) {
@@ -133,7 +135,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const adminItems = navItems.find(item => item.label === 'Administración' && item.subItems && item.subItems.length > 0);
 
     return (
-        <div className={cn("bg-background", themeClass)}>
+        <ThemeApplier>
             <Sidebar>
                 <SidebarHeader className="group-data-[state=expanded]:px-4 group-data-[state=collapsed]:px-2">
                     <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground group-data-[state=collapsed]:justify-center">
@@ -201,7 +203,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 data-ai-hint="company logo"
               />
             </div>
-        </div>
+        </ThemeApplier>
     );
 }
 

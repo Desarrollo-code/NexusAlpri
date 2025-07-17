@@ -6,8 +6,7 @@ export default function AuthLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // This layout is a simple passthrough.
-  // The root layout handles the <html> and <body> tags.
-  // The auth pages themselves will have the specific dark background styling.
-  return <>{children}</>;
+  // This wrapper forces the dark theme for auth pages without creating a new <html> or <body> tag,
+  // which was the source of the hydration error. It isolates the auth pages' styling.
+  return <div className="dark">{children}</div>;
 }
