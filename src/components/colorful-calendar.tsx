@@ -74,7 +74,8 @@ export default function ColorfulCalendar({
     return grouped;
   }, [events]);
 
-  const handleDayClick = (day: Date) => {
+  const handleDayClick = (day: Date | undefined) => {
+    if (!day) return;
     const dayKey = format(day, 'yyyy-MM-dd');
     const eventsOnDay = eventsByDay[dayKey] || [];
     onDateSelect(day, eventsOnDay);

@@ -178,10 +178,10 @@ export interface CalendarEvent {
     allDay: boolean;
     description?: string | null;
     location?: string | null;
-    audienceType?: EventAudienceType;
-    attendees?: { id: string, name: string | null, email: string }[];
-    color?: string;
-    creatorId?: string;
+    audienceType: EventAudienceType;
+    attendees: { id: string, name: string | null, email: string }[];
+    color: string;
+    creatorId: string;
 }
 
 // --- SECURITY ---

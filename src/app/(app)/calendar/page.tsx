@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { PlusCircle, Loader2, AlertTriangle, Trash2, MapPin, Calendar as CalendarIcon, Clock, Check, Save, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { PlusCircle, Loader2, AlertTriangle, Trash2, MapPin, Calendar as CalendarIcon, Clock, Check, Save, ChevronLeft, ChevronRight, Eye, List, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -72,6 +72,7 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(startOfMonth(new Date()));
   const [selectedDayEvents, setSelectedDayEvents] = useState<CalendarEvent[]>([]);
   const [showDayEventsModal, setShowDayEventsModal] = useState(false);
+  const [viewMode, setViewMode] = useState<'month' | 'agenda'>('month');
 
   const [showEventModal, setShowEventModal] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
@@ -214,6 +215,41 @@ export default function CalendarPage() {
   const modalTitle = !canEdit && eventToEdit ? "Detalles del Evento" : (eventToEdit ? 'Editar Evento' : 'Crear Nuevo Evento');
   const modalDescription = !canEdit && eventToEdit ? "Aquí puedes ver la información del evento." : (eventToEdit ? "Modifica los detalles del evento." : "Completa los detalles para agendar un nuevo evento.");
 
+  const AgendaView = () => {
+    const upcomingEvents = events
+      .filter(event => new Date(event.start) >= new Date())
+      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+    
+    return (
+      <div className="space-y-4">
+        {upcomingEvents.length > 0 ? (
+          upcomingEvents.map(event => (
+            <Card key={event.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleOpenEventModal(event)}>
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="flex flex-col items-center justify-center text-center w-16">
+                    <span className="text-sm font-semibold text-primary uppercase">{format(new Date(event.start), 'MMM', { locale: es })}</span>
+                    <span className="text-2xl font-bold">{format(new Date(event.start), 'd')}</span>
+                </div>
+                <div className={cn('w-1.5 h-16 rounded-full', getEventColorClass(event.color || 'blue'))}></div>
+                <div className="flex-grow">
+                    <p className="font-semibold">{event.title}</p>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1">
+                        <Clock className="h-4 w-4" />
+                        {event.allDay ? 'Todo el día' : `${format(new Date(event.start), 'p', { locale: es })} - ${format(new Date(event.end), 'p', { locale: es })}`}
+                    </p>
+                    {event.location && <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1"><MapPin className="h-4 w-4" />{event.location}</p>}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <p className="text-center text-muted-foreground py-8">No hay eventos próximos.</p>
+        )}
+      </div>
+    );
+  };
+
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -224,38 +260,46 @@ export default function CalendarPage() {
         <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => setCurrentDate(subMonths(currentDate, 1))}><ChevronLeft className="h-4 w-4"/></Button>
             <Button variant="outline" onClick={() => setCurrentDate(addMonths(currentDate, 1))}><ChevronRight className="h-4 w-4"/></Button>
+            <Button variant="outline" size="icon" onClick={() => setViewMode(prev => prev === 'month' ? 'agenda' : 'month')}>
+                {viewMode === 'month' ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
+            </Button>
             {canEdit && <Button onClick={() => handleOpenCreateModal()}><PlusCircle className="mr-2 h-4 w-4" /> Crear Evento</Button>}
         </div>
       </div>
       
-      <Card className="max-w-2xl mx-auto w-full shadow-lg bg-card text-foreground border-border p-2 sm:p-4">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-96"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
-        ) : error ? (
-          <div className="flex flex-col items-center justify-center h-96 text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}</div>
-        ) : (
-          <ColorfulCalendar
-            className="w-full"
-            events={events}
-            onDateSelect={handleDayClick}
-            numberOfMonths={1}
-            month={currentDate}
-          />
-        )}
-      </Card>
+      {viewMode === 'month' ? (
+          <>
+            <Card className="max-w-4xl mx-auto w-full shadow-lg bg-card text-foreground border-border p-2 sm:p-4">
+                {isLoading ? (
+                <div className="flex items-center justify-center h-96"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
+                ) : error ? (
+                <div className="flex flex-col items-center justify-center h-96 text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}</div>
+                ) : (
+                <ColorfulCalendar
+                    className="w-full"
+                    events={events}
+                    onDateSelect={handleDayClick}
+                    numberOfMonths={isMobile ? 1 : 2}
+                    month={currentDate}
+                />
+                )}
+            </Card>
+            <Card className="p-4 shadow-lg max-w-4xl mx-auto w-full">
+                <h3 className="text-lg font-semibold mb-3">Leyenda</h3>
+                <div className="flex flex-wrap gap-x-6 gap-y-3">
+                    {eventColors.map(colorInfo => (
+                    <div key={colorInfo.value} className="flex items-center gap-2">
+                        <div className={cn('h-4 w-4 rounded-full', colorInfo.className)}></div>
+                        <span className="text-sm text-muted-foreground">{colorInfo.label}</span>
+                    </div>
+                    ))}
+                </div>
+            </Card>
+          </>
+      ) : (
+          <AgendaView />
+      )}
       
-       <Card className="p-4 shadow-lg max-w-2xl mx-auto w-full">
-          <h3 className="text-lg font-semibold mb-3">Leyenda</h3>
-          <div className="flex flex-wrap gap-x-6 gap-y-3">
-            {eventColors.map(colorInfo => (
-              <div key={colorInfo.value} className="flex items-center gap-2">
-                <div className={cn('h-4 w-4 rounded-full', colorInfo.className)}></div>
-                <span className="text-sm text-muted-foreground">{colorInfo.label}</span>
-              </div>
-            ))}
-          </div>
-       </Card>
-
       <Dialog open={showDayEventsModal} onOpenChange={setShowDayEventsModal}>
           <DialogContent>
               <DialogHeader>
