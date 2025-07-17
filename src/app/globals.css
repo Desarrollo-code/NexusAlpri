@@ -11,7 +11,7 @@
     --card-foreground: 220 15% 20%;
     --popover: 220 20% 100%;
     --popover-foreground: 220 15% 20%;
-    --primary: 262 82% 57%; /* Deep Purple */
+    --primary: (181, 31%, 76%) /* Deep Purple */
     --primary-foreground: 210 20% 98%;
     --secondary: 220 15% 94%;
     --secondary-foreground: 220 10% 25%;
