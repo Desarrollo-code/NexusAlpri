@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
                 description,
                 url: url || null,
                 category: category || 'General',
-                tags: tags || [],
+                tags: tags && Array.isArray(tags) ? tags : [],
                 uploaderId: session.id,
                 parentId: parentId || null,
             },
