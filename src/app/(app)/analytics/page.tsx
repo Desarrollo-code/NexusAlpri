@@ -103,55 +103,52 @@ const UserAnalyticsSection = () => {
   const totalUsers = data.usersByRole.reduce((acc, curr) => acc + curr.count, 0);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <MetricItem title="Total de Usuarios" value={totalUsers} icon={Users} />
-            <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={UserCheck} />
-        </div>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Nuevos Registros (Últimos 30 días)</CardTitle>
-        </CardHeader>
-        <CardContent className="h-[200px]">
-          <ChartContainer config={newUsersChartConfig} className="w-full h-full">
-            <AreaChart data={data.newUsersLast30Days} margin={{ left: -10, right: 10, top: 10, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorNewUsers" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="var(--color-count)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(value, index) => (index % 5 === 0 ? value : "")} />
-              <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
-              <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator />} />
-              <Area type="monotone" dataKey="count" stroke="var(--color-count)" fill="url(#colorNewUsers)" name="Nuevos Usuarios" />
-            </AreaChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricItem title="Total de Usuarios" value={totalUsers} icon={Users} />
+        <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={UserCheck} />
 
-      <div className="lg:col-span-2">
-        <Card>
-          <CardHeader><CardTitle className="text-base">Distribución por Rol</CardTitle></CardHeader>
-          <CardContent className="h-[250px] flex items-center justify-center">
-            <ChartContainer config={userRolesChartConfig} className="w-full h-full">
-                <BarChart data={pieChartData} layout="horizontal">
-                  <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }}/>
-                  <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-                  <ChartTooltip cursor={{fill: 'hsl(var(--muted))'}} content={<ChartTooltipContent hideLabel />} />
-                  <Legend />
-                  <Bar dataKey="count" name="Usuarios" radius={[4, 4, 0, 0]}>
-                      {pieChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                  </Bar>
-                </BarChart>
-            </ChartContainer>
-          </CardContent>
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle className="text-base">Nuevos Registros (Últimos 30 días)</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[200px]">
+                <ChartContainer config={newUsersChartConfig} className="w-full h-full">
+                    <AreaChart data={data.newUsersLast30Days} margin={{ left: -10, right: 10, top: 10, bottom: 0 }}>
+                    <defs>
+                        <linearGradient id="colorNewUsers" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="var(--color-count)" stopOpacity={0} />
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(value, index) => (index % 5 === 0 ? value : "")} />
+                    <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator />} />
+                    <Area type="monotone" dataKey="count" stroke="var(--color-count)" fill="url(#colorNewUsers)" name="Nuevos Usuarios" />
+                    </AreaChart>
+                </ChartContainer>
+            </CardContent>
         </Card>
-      </div>
+
+        <Card className="lg:col-span-2">
+            <CardHeader><CardTitle className="text-base">Distribución por Rol</CardTitle></CardHeader>
+            <CardContent className="h-[250px] flex items-center justify-center">
+                 <ChartContainer config={userRolesChartConfig} className="w-full h-full">
+                    <BarChart data={pieChartData} layout="horizontal">
+                    <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+                    <XAxis dataKey="name" tick={{ fontSize: 12 }}/>
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                    <ChartTooltip cursor={{fill: 'hsl(var(--muted))'}} content={<ChartTooltipContent hideLabel />} />
+                    <Legend />
+                    <Bar dataKey="count" name="Usuarios" radius={[4, 4, 0, 0]}>
+                        {pieChartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                    </Bar>
+                    </BarChart>
+                </ChartContainer>
+            </CardContent>
+        </Card>
     </div>
   );
 };
@@ -281,12 +278,14 @@ const ProgressAnalyticsSection = () => {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <MetricItem title="Estudiantes en Progreso" value={data.activeStudentsInCourses} icon={UserCheck} />
       <MetricItem title="Tiempo Promedio Finalización" value={data.averageCompletionTimeDays} icon={Clock} unit=" días" />
-      <Card className="flex flex-col justify-center text-center">
-        <CardHeader className="pb-2"><CardTitle className="text-base">Tasa de Abandono (Est.)</CardTitle></CardHeader>
-        <CardContent className="flex items-center justify-center">
-          <GaugeChart value={data.dropoutRate} />
-        </CardContent>
-      </Card>
+       <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tasa de Abandono (Est.)</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-center p-0">
+             <GaugeChart value={data.dropoutRate} size={120}/>
+          </CardContent>
+        </Card>
     </div>
   );
 };
@@ -470,5 +469,3 @@ export default function AnalyticsPage() {
     </div>
   );
 }
-
-    
