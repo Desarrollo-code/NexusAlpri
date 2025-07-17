@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { IconSave, IconPalette, IconBell, IconShieldAlert, IconList, IconTag, IconTrash, IconLoader, IconFileWarning, IconKey, IconClock } from '@/components/icons';
+import { IconSave, IconBell, IconShieldAlert, IconList, IconTag, IconTrash, IconLoader, IconFileWarning, IconKey, IconClock } from '@/components/icons';
+import { Palette } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
@@ -159,7 +160,7 @@ export default function SettingsPage() {
         <div className="lg:col-span-2 space-y-8">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><IconPalette className="h-5 w-5 text-primary"/>Apariencia y Generales</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary"/>Apariencia y Generales</CardTitle>
               <CardDescription>Configuraciones básicas de la plataforma.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -362,3 +363,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    
