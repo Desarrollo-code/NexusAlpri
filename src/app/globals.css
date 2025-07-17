@@ -71,12 +71,6 @@
     --sidebar-border: 220 15% 20%;
     --sidebar-ring: 217 91% 60%;
   }
-
-  .theme-corporate-blue { --primary: 217 91% 60%; --accent: 198 93% 60%; --ring: 217 91% 60%; --sidebar-accent: 217 91% 60%; }
-  .theme-ember-glow { --primary: 38 92% 50%; --accent: 8 89% 55%; --ring: 38 92% 50%; --sidebar-accent: 38 92% 50%; }
-  .theme-ocean-mist { --primary: 175 75% 40%; --accent: 140 60% 50%; --ring: 175 75% 40%; --sidebar-accent: 175 75% 40%;}
-  .theme-royal-purple { --primary: 280 65% 50%; --accent: 330 75% 55%; --ring: 280 65% 50%; --sidebar-accent: 280 65% 50%;}
-  .theme-slate-cool { --primary: 215 25% 45%; --accent: 215 15% 55%; --ring: 215 25% 45%; --sidebar-accent: 215 25% 45%;}
 }
 
 @layer base {

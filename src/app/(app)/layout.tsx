@@ -123,8 +123,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const generalItems = navItems.filter(item => !item.subItems || item.subItems.length === 0);
     const adminItems = navItems.find(item => item.label === 'Administración' && item.subItems && item.subItems.length > 0);
     
-    const themeClass = user?.colorTheme ? `theme-${user.colorTheme}` : 'theme-corporate-blue';
-
     return (
         <>
             <Sidebar>
@@ -178,8 +176,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             </Sidebar>
 
             <div className={cn(
-              "bg-background min-h-screen md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out",
-              themeClass
+              "bg-background min-h-screen md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out"
             )}>
                 <TopBar />
                 <main className="p-4 md:p-6 lg:p-8">

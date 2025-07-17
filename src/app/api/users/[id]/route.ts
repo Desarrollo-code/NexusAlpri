@@ -47,10 +47,9 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 
         let dataToUpdate: any = {};
         
-        // General profile updates (name, avatar, colorTheme) that a user can do for themselves
+        // General profile updates (name, avatar) that a user can do for themselves
         if ('name' in body) dataToUpdate.name = body.name;
         if ('avatar' in body) dataToUpdate.avatar = body.avatar;
-        if ('colorTheme' in body) dataToUpdate.colorTheme = body.colorTheme;
 
         // Admin-only updates
         if (session.role === 'ADMINISTRATOR') {

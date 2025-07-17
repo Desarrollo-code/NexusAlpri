@@ -12,7 +12,6 @@ export interface User {
   role: UserRole;
   isTwoFactorEnabled?: boolean;
   registeredDate?: string | Date;
-  colorTheme?: string | null;
 }
 
 export interface PlatformSettings {

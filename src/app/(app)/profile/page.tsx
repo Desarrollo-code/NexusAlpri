@@ -35,102 +35,6 @@ import {
 import { cn } from '@/lib/utils';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 
-const themes = [
-    { name: 'corporate-blue', label: 'Azul Corporativo', colors: ['#4f46e5', '#a855f7'] },
-    { name: 'ember-glow', label: 'Resplandor Ámbar', colors: ['#f59e0b', '#ef4444'] },
-    { name: 'ocean-mist', label: 'Niebla Oceánica', colors: ['#0d9488', '#22c55e'] },
-    { name: 'royal-purple', label: 'Púrpura Real', colors: ['#7e22ce', '#db2777'] },
-    { name: 'slate-cool', label: 'Pizarra Fría', colors: ['#475569', '#64748b'] },
-];
-
-function ThemeCustomizer() {
-    const { user, updateUser } = useAuth();
-    const { toast } = useToast();
-    const [selectedTheme, setSelectedTheme] = useState(user?.colorTheme || 'corporate-blue');
-    const [isSaving, setIsSaving] = useState(false);
-
-    useEffect(() => {
-        setSelectedTheme(user?.colorTheme || 'corporate-blue');
-    }, [user?.colorTheme]);
-
-    const handleThemeSelect = (themeName: string) => {
-        setSelectedTheme(themeName);
-        if (document) {
-            document.documentElement.classList.forEach(c => {
-                if (c.startsWith('theme-')) {
-                    document.documentElement.classList.remove(c);
-                }
-            });
-            document.documentElement.classList.add(`theme-${themeName}`);
-        }
-    };
-
-    const handleSaveTheme = async () => {
-        if (!user || selectedTheme === user.colorTheme) return;
-        setIsSaving(true);
-        try {
-            const res = await fetch(`/api/users/${user.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ colorTheme: selectedTheme }),
-            });
-            if (!res.ok) throw new Error((await res.json()).message);
-            
-            updateUser({ colorTheme: selectedTheme });
-            toast({ title: 'Tema Guardado', description: 'Tu nueva paleta de colores ha sido guardada.' });
-
-        } catch (error) {
-            toast({ title: 'Error', description: (error as Error).message, variant: 'destructive' });
-        } finally {
-            setIsSaving(false);
-        }
-    };
-    
-    const handleSaveThemeWithTransition = async () => {
-         if (!document.startViewTransition) {
-            handleSaveTheme();
-            return;
-        }
-        document.startViewTransition(() => {
-            handleSaveTheme();
-        });
-    }
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary"/> Personalización de Tema</CardTitle>
-                <CardDescription>Elige la paleta de colores que más te guste para la plataforma.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {themes.map((theme) => (
-                        <div
-                            key={theme.name}
-                            onClick={() => handleThemeSelect(theme.name)}
-                            className={cn(
-                                "cursor-pointer rounded-lg border-2 p-3 transition-all",
-                                selectedTheme === theme.name ? "border-primary ring-2 ring-primary/50" : "border-border"
-                            )}
-                        >
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="h-5 w-5 rounded-full" style={{ background: `linear-gradient(to right, ${theme.colors[0]}, ${theme.colors[1]})` }} />
-                                <span className="text-sm font-medium">{theme.label}</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </CardContent>
-             <CardFooter>
-                <Button onClick={handleSaveThemeWithTransition} disabled={isSaving || selectedTheme === user?.colorTheme} className="w-full">
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    Guardar Tema
-                </Button>
-            </CardFooter>
-        </Card>
-    );
-}
-
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
@@ -400,8 +304,6 @@ export default function ProfilePage() {
               <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><Mail className="h-4 w-4 text-primary"/> {user.email}</p>
             </CardContent>
           </Card>
-          
-          <ThemeCustomizer />
         </div>
 
         <div className="lg:col-span-2 space-y-6">
