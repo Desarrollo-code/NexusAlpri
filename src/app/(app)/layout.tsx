@@ -94,8 +94,6 @@ function ThemeApplier({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
     const themeClass = user?.colorTheme ? `theme-${user.colorTheme}` : 'theme-corporate-blue';
 
-    // This component now just wraps its children in a div with the theme class.
-    // It's applied inside the main content area, isolating the theme.
     return (
         <div className={cn("bg-background", themeClass)}>
             {children}
@@ -137,7 +135,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const adminItems = navItems.find(item => item.label === 'Administración' && item.subItems && item.subItems.length > 0);
 
     return (
-        <ThemeApplier>
+        <>
             <Sidebar>
                 <SidebarHeader className="group-data-[state=expanded]:px-4 group-data-[state=collapsed]:px-2">
                     <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground group-data-[state=collapsed]:justify-center">
@@ -188,12 +186,14 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
 
-            <div className="min-h-screen md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out">
-                <TopBar />
-                <main className="p-4 md:p-6 lg:p-8">
-                  {children}
-                </main>
-            </div>
+            <ThemeApplier>
+                <div className="min-h-screen md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out">
+                    <TopBar />
+                    <main className="p-4 md:p-6 lg:p-8">
+                      {children}
+                    </main>
+                </div>
+            </ThemeApplier>
 
             <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
               <Image
@@ -205,7 +205,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 data-ai-hint="company logo"
               />
             </div>
-        </ThemeApplier>
+        </>
     );
 }
 
