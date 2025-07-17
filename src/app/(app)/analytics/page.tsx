@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -18,11 +19,7 @@ import {
   BookMarked,
   UserCog,
   Info,
-<<<<<<< HEAD
   LineChart,
-=======
-  LineChart, // Añadir LineChart para la sección de progreso si queremos un gráfico de línea
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { UserAnalyticsData, CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog, User as AppUser, Course as AppCourse } from '@/types';
@@ -37,9 +34,7 @@ import { getEventDetails, getInitials } from '@/lib/security-log-utils';
 import { Separator } from '@/components/ui/separator';
 import { CourseCarousel } from '@/components/course-carousel';
 
-// Componente para las métricas individuales (Tarjeta más compacta)
 const MetricItem = ({ title, value, icon: Icon, unit = '' }: { title: string, value: string | number, icon: React.ElementType, unit?: string }) => (
-<<<<<<< HEAD
   <Card className="flex flex-col p-4 bg-zinc-900 border-zinc-800 text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl">
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
       <CardTitle className="text-sm font-medium text-gray-300">{title}</CardTitle>
@@ -47,15 +42,6 @@ const MetricItem = ({ title, value, icon: Icon, unit = '' }: { title: string, va
     </CardHeader>
     <CardContent className="p-0 pt-2">
       <div className="text-2xl font-bold text-teal-400">{value}<span className="text-lg font-normal text-teal-600">{unit}</span></div>
-=======
-  <Card className="flex flex-col p-4 bg-zinc-900 border-zinc-800 text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl"> {/* Fondo más oscuro, borde y sombra */}
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0">
-      <CardTitle className="text-sm font-medium text-gray-300">{title}</CardTitle> {/* Color de título más suave */}
-      <Icon className="h-4 w-4 text-teal-400" /> {/* Icono en color de contraste */}
-    </CardHeader>
-    <CardContent className="p-0 pt-2">
-      <div className="text-2xl font-bold text-teal-400">{value}<span className="text-lg font-normal text-teal-600">{unit}</span></div> {/* Valor en color de acento, unidad más suave */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
     </CardContent>
   </Card>
 );
@@ -90,11 +76,7 @@ const UserAnalyticsSection = () => {
 
   if (error || !data) {
     return (
-<<<<<<< HEAD
       <div className="flex flex-col items-center justify-center p-8 text-red-400">
-=======
-      <div className="flex flex-col items-center justify-center p-8 text-red-400"> {/* Color para errores */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
         <FileWarning className="h-6 w-6 mb-2" />
         <p>Error al cargar datos de usuarios.</p>
         <Button onClick={fetchUserAnalytics} variant="outline" size="sm" className="mt-2 border-red-500 text-red-500 hover:bg-red-900">Reintentar</Button>
@@ -122,7 +104,6 @@ const UserAnalyticsSection = () => {
   const totalUsers = data.usersByRole.reduce((acc, curr) => acc + curr.count, 0);
 
   return (
-<<<<<<< HEAD
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <MetricItem title="Total de Usuarios" value={totalUsers} icon={Users} />
       <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={UserCheck} />
@@ -132,19 +113,6 @@ const UserAnalyticsSection = () => {
           <CardTitle className="text-base text-gray-200">Nuevos Registros (Últimos 30 días)</CardTitle>
         </CardHeader>
         <CardContent className="h-[200px] pb-0">
-=======
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"> {/* Gap más ajustado */}
-      {/* Las dos primeras métricas se mantienen en línea */}
-      <MetricItem title="Total de Usuarios" value={totalUsers} icon={Users} />
-      <MetricItem title="Usuarios Activos (7d)" value={data.activeUsersLast7Days} icon={UserCheck} />
-
-      {/* Gráfico de Nuevos Registros ahora en 2 columnas en pantallas grandes */}
-      <Card className="lg:col-span-2 bg-zinc-900 border-zinc-800 text-white shadow-lg">
-        <CardHeader className="pb-3"> {/* Padding inferior más pequeño */}
-          <CardTitle className="text-base text-gray-200">Nuevos Registros (Últimos 30 días)</CardTitle>
-        </CardHeader>
-        <CardContent className="h-[200px] pb-0"> {/* Reducir altura del gráfico y quitar padding inferior */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
           <ChartContainer config={newUsersChartConfig} className="w-full h-full">
             <AreaChart data={data.newUsersLast30Days} margin={{ left: -10, right: 10, top: 10, bottom: 0 }}>
               <defs>
@@ -153,27 +121,16 @@ const UserAnalyticsSection = () => {
                   <stop offset="95%" stopColor="var(--color-count)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-<<<<<<< HEAD
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
               <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} tickFormatter={(value, index) => (index % 5 === 0 ? value : "")} />
               <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
               <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator className="bg-zinc-800 text-white border-zinc-700" />} />
-=======
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" /> {/* Color de la rejilla más discreto */}
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} tickFormatter={(value, index) => (index % 5 === 0 ? value : "")} />
-              <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
-              <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator className="bg-zinc-800 text-white border-zinc-700" />} /> {/* Estilo del tooltip */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
               <Area type="monotone" dataKey="count" stroke="var(--color-count)" fill="url(#colorNewUsers)" name="Nuevos Usuarios" />
             </AreaChart>
           </ChartContainer>
         </CardContent>
       </Card>
 
-<<<<<<< HEAD
-=======
-      {/* Gráfico de Distribución por Rol en 2 columnas en pantallas grandes */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
       <Card className="lg:col-span-2 bg-zinc-900 border-zinc-800 text-white shadow-lg">
         <CardHeader className="pb-3"><CardTitle className="text-base text-gray-200">Distribución por Rol</CardTitle></CardHeader>
         <CardContent className="h-[250px] flex items-center justify-center pt-0">
@@ -241,19 +198,12 @@ const CourseAnalyticsSection = () => {
   }, {} as ChartConfig);
 
   return (
-<<<<<<< HEAD
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 col-span-full">
-=======
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4"> {/* Ajuste de gap */}
-      {/* Métricas de cursos en una sola fila */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 col-span-full"> {/* Asegurarse de que ocupen el ancho completo si es necesario */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
         <MetricItem title="Tasa de Finalización" value={data.averageCompletionRate.toFixed(1)} icon={Percent} unit="%" />
         <MetricItem title="Puntaje Promedio (Quizzes)" value={data.averageQuizScore.toFixed(1)} icon={Award} unit="%" />
       </div>
 
-<<<<<<< HEAD
       <Card className="lg:col-span-full bg-zinc-900 border-zinc-800 text-white shadow-lg">
         <CardHeader className="pb-3"><CardTitle className="text-base text-gray-200">Top 5 Cursos Más Populares</CardTitle></CardHeader>
         <CardContent>
@@ -262,23 +212,6 @@ const CourseAnalyticsSection = () => {
       </Card>
       
       <Card className="lg:col-span-full bg-zinc-900 border-zinc-800 text-white shadow-lg">
-=======
-      <Card className="lg:col-span-1 bg-zinc-900 border-zinc-800 text-white shadow-lg"> {/* Ocupa una columna en lg */}
-        <CardHeader className="pb-3"><CardTitle className="text-base text-gray-200">Top 5 Cursos Más Populares</CardTitle></CardHeader>
-        <CardContent className="h-[250px] pt-0"> {/* Ajuste de altura y padding */}
-          <ChartContainer config={{ enrollments: { label: 'Inscripciones', color: 'hsl(var(--primary))' } }} className="w-full h-full">
-            <BarChart data={data.mostEnrolledCourses} layout="vertical" margin={{ left: 0, right: 30, top: 5, bottom: 5 }}> {/* Margen izquierdo ajustado */}
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
-              <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
-              <YAxis type="category" dataKey="title" width={120} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} className="truncate" axisLine={false} tickLine={false} />
-              <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent className="bg-zinc-800 text-white border-zinc-700" />} />
-              <Bar dataKey="enrollments" name="Inscripciones" barSize={15} radius={[0, 4, 4, 0]} fill="hsl(var(--primary))" /> {/* Color de barra */}
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-      <Card className="lg:col-span-1 bg-zinc-900 border-zinc-800 text-white shadow-lg"> {/* Ocupa la otra columna en lg */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
         <CardHeader className="pb-3"><CardTitle className="text-base text-gray-200">Distribución por Categoría</CardTitle></CardHeader>
         <CardContent className="h-[300px] pt-0">
           <ChartContainer config={categoryChartConfig} className="w-full h-full">
@@ -336,11 +269,7 @@ const ProgressAnalyticsSection = () => {
   }
 
   return (
-<<<<<<< HEAD
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-=======
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4"> {/* Ajuste de gap */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
       <MetricItem title="Estudiantes en Progreso" value={data.activeStudentsInCourses} icon={UserCheck} />
       <MetricItem title="Tiempo Promedio Finalización" value={data.averageCompletionTimeDays} icon={Clock} unit=" días" />
       <Card className="bg-zinc-900 border-zinc-800 text-white shadow-lg">
@@ -421,15 +350,9 @@ const SecurityAnalyticsSection = () => {
     <Card className="bg-zinc-900 border-zinc-800 text-white shadow-lg">
       <CardHeader className="pb-3">
         <CardTitle className="text-base text-gray-200">Últimos Eventos de Seguridad</CardTitle>
-<<<<<<< HEAD
         <CardDescription className="text-gray-400">
           Mostrando los últimos 20 eventos. Para un historial completo, visita la página de{' '}
           <Link href="/security-audit" className="text-teal-400 hover:underline">Auditoría de Seguridad</Link>.
-=======
-        <CardDescription className="text-gray-400"> {/* Color de descripción */}
-          Mostrando los últimos 20 eventos. Para un historial completo, visita la página de{' '}
-          <Link href="/security-audit" className="text-teal-400 hover:underline">Auditoría de Seguridad</Link>. {/* Enlace en color de acento */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
@@ -437,11 +360,7 @@ const SecurityAnalyticsSection = () => {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-<<<<<<< HEAD
                 <TableRow className="bg-zinc-800 text-gray-300">
-=======
-                <TableRow className="bg-zinc-800 text-gray-300"> {/* Fila de encabezado con fondo más oscuro y texto más claro */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
                   <TableHead className="w-[150px] pl-6 py-3">Evento</TableHead>
                   <TableHead className="w-[200px]">Usuario</TableHead>
                   <TableHead className="hidden md:table-cell w-[120px]">IP</TableHead>
@@ -452,31 +371,18 @@ const SecurityAnalyticsSection = () => {
                 {logs.slice(0, 20).map(log => {
                   const eventInfo = getEventDetails(log.event, log.details);
                   return (
-<<<<<<< HEAD
                     <TableRow key={log.id} className="border-zinc-700 hover:bg-zinc-800/50 transition-colors">
                       <TableCell className="pl-6 py-2">
                         <div className="flex items-center gap-2">{eventInfo.icon}
                           <Badge variant={eventInfo.variant} className="border-transparent text-xs px-2 py-0.5" >{eventInfo.label}</Badge>
-=======
-                    <TableRow key={log.id} className="border-zinc-700 hover:bg-zinc-800/50 transition-colors"> {/* Borde y hover más sutil */}
-                      <TableCell className="pl-6 py-2">
-                        <div className="flex items-center gap-2">{eventInfo.icon}
-                          <Badge variant={eventInfo.variant} className="border-transparent text-xs px-2 py-0.5" >{eventInfo.label}</Badge> {/* Badge más compacto */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
                         </div>
                       </TableCell>
                       <TableCell className="py-2">
                         {log.user ? (
                           <div className="flex items-center gap-2">
-<<<<<<< HEAD
                             <Avatar className="h-7 w-7 border border-zinc-700">
                               <AvatarImage src={log.user.avatar || undefined} />
                               <AvatarFallback className="bg-zinc-700 text-gray-300 text-xs">{getInitials(log.user.name)}</AvatarFallback>
-=======
-                            <Avatar className="h-7 w-7 border border-zinc-700"> {/* Borde para avatar */}
-                              <AvatarImage src={log.user.avatar || undefined} />
-                              <AvatarFallback className="bg-zinc-700 text-gray-300 text-xs">{getInitials(log.user.name)}</AvatarFallback> {/* Fallback estilizado */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
                             </Avatar>
                             <span className="text-sm font-medium text-gray-200">{log.user.name}</span>
                           </div>
@@ -514,26 +420,16 @@ export default function AnalyticsPage() {
 
   if (currentUser?.role !== 'ADMINISTRATOR') {
     return (
-<<<<<<< HEAD
       <div className="flex h-full items-center justify-center bg-zinc-950">
-=======
-      <div className="flex h-full items-center justify-center bg-zinc-950"> {/* Fondo consistente */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   const Section = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
-<<<<<<< HEAD
     <section className="space-y-6">
       <h2 className="text-2xl font-semibold font-headline flex items-center gap-3 text-white">
         <Icon className="h-6 w-6 text-teal-400" />
-=======
-    <section className="space-y-6"> {/* Espacio entre secciones un poco más ajustado */}
-      <h2 className="text-2xl font-semibold font-headline flex items-center gap-3 text-white"> {/* Título en blanco */}
-        <Icon className="h-6 w-6 text-teal-400" /> {/* Icono de sección en color de acento */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
         {title}
       </h2>
       {children}
@@ -541,7 +437,6 @@ export default function AnalyticsPage() {
   );
 
   return (
-<<<<<<< HEAD
     <div className="space-y-12 p-4 md:p-8 bg-zinc-950 min-h-screen text-white">
       <div>
         <h1 className="text-4xl font-bold font-headline mb-2 text-white">Informes y Analíticas Avanzadas</h1>
@@ -549,15 +444,6 @@ export default function AnalyticsPage() {
       </div>
 
       <Separator className="bg-zinc-700" />
-=======
-    <div className="space-y-12 p-4 md:p-8 bg-zinc-950 min-h-screen text-white"> {/* Fondo oscuro principal y padding general */}
-      <div>
-        <h1 className="text-4xl font-bold font-headline mb-2 text-white">Informes y Analíticas Avanzadas</h1> {/* Título más grande y blanco */}
-        <p className="text-gray-400">Métricas clave para la toma de decisiones y el seguimiento del rendimiento de la plataforma.</p> {/* Descripción más suave */}
-      </div>
-
-      <Separator className="bg-zinc-700" /> {/* Separador más oscuro */}
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
 
       <Section title="Analíticas de Usuarios" icon={Users}>
         <UserAnalyticsSection />
@@ -591,8 +477,3 @@ export default function AnalyticsPage() {
     </div>
   );
 }
-<<<<<<< HEAD
-=======
-
-    
->>>>>>> 15f58761bf9a60e8efeb647980696ad87dff3021
