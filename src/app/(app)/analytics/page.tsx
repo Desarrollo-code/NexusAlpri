@@ -426,9 +426,15 @@ export default function AnalyticsPage() {
     );
   }
 
+<<<<<<< HEAD
   const Section = ({ title, icon: Icon, children, className }: { title: string, icon: React.ElementType, children: React.ReactNode, className?: string }) => (
     <section className={className}>
       <h2 className="text-2xl font-semibold font-headline flex items-center gap-3 text-white mb-6">
+=======
+  const Section = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
+    <section className="space-y-6">
+      <h2 className="text-2xl font-semibold font-headline flex items-center gap-3 text-white">
+>>>>>>> 2827cdb700d545c7d02c83d25b9cfd0bdaa18017
         <Icon className="h-6 w-6 text-teal-400" />
         {title}
       </h2>
@@ -437,7 +443,11 @@ export default function AnalyticsPage() {
   );
 
   return (
+<<<<<<< HEAD
     <div className="space-y-8 p-4 md:p-8 bg-zinc-950 min-h-screen text-white">
+=======
+    <div className="space-y-12 p-4 md:p-8 bg-zinc-950 min-h-screen text-white">
+>>>>>>> 2827cdb700d545c7d02c83d25b9cfd0bdaa18017
       <div>
         <h1 className="text-4xl font-bold font-headline mb-2 text-white">Informes y Analíticas Avanzadas</h1>
         <p className="text-gray-400">Métricas clave para la toma de decisiones y el seguimiento del rendimiento de la plataforma.</p>
@@ -445,6 +455,7 @@ export default function AnalyticsPage() {
       
       <Separator className="bg-zinc-700 my-8" />
 
+<<<<<<< HEAD
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         <Section title="Analíticas de Usuarios" icon={Users} className="space-y-6">
           <UserAnalyticsSection />
@@ -460,6 +471,31 @@ export default function AnalyticsPage() {
         
         <Section title="Interacción y Seguridad" icon={Activity} className="space-y-6">
           <div className="space-y-4">
+=======
+      <Separator className="bg-zinc-700" />
+
+      <Section title="Analíticas de Usuarios" icon={Users}>
+        <UserAnalyticsSection />
+      </Section>
+
+      <Separator className="bg-zinc-700" />
+
+      <Section title="Analíticas de Cursos y Contenido" icon={BookMarked}>
+        <CourseAnalyticsSection />
+      </Section>
+
+      <Separator className="bg-zinc-700" />
+
+      <Section title="Analíticas de Progreso de Estudiantes" icon={TrendingUp}>
+        <ProgressAnalyticsSection />
+      </Section>
+
+      <Separator className="bg-zinc-700" />
+
+      <Section title="Analíticas de Interacción y Seguridad" icon={Activity}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-1">
+>>>>>>> 2827cdb700d545c7d02c83d25b9cfd0bdaa18017
             <InteractionAnalyticsSection />
             <SecurityAnalyticsSection />
           </div>
