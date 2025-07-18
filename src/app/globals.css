@@ -96,35 +96,30 @@
 }
 
 @layer components {
-    .animated-border-card {
-        @apply relative;
+    @keyframes border-beam-spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
     }
-    .animated-border-card .card-border-svg {
-        @apply absolute top-0 left-0 h-full w-full pointer-events-none;
-    }
-    .animated-border-card .card-border-line {
-        stroke-dasharray: 260;
-        stroke-width: 1px;
-        fill: transparent;
-        stroke: url(#card-border-gradient);
-        opacity: 0;
-        transition: opacity 0.3s ease-in-out;
-        animation: svg-border-animation 5s linear infinite paused;
-    }
-    .animated-border-card:hover .card-border-line {
-        opacity: 1;
-        animation-play-state: running;
-    }
-    .animated-border-card .card-content-wrapper {
-        @apply relative z-10 bg-card rounded-[calc(var(--radius)-1px)] h-full;
-    }
-}
 
-@keyframes svg-border-animation {
-  from {
-    stroke-dashoffset: 0;
-  }
-  to {
-    stroke-dashoffset: 520; /* 2 * dasharray */
-  }
+    .border-beam-card::before {
+        content: "";
+        position: absolute;
+        inset: -1px; /* Control border thickness */
+        border-radius: calc(var(--radius) + 2px);
+        z-index: 0;
+        background: conic-gradient(
+            from 180deg at 50% 50%,
+            #e92a67, /* Pink */
+            #f0a424, /* Orange */
+            #fbb300, /* Yellow */
+            #40c9ff, /* Blue */
+            transparent 30%,
+            transparent
+        );
+        animation: border-beam-spin 8s linear infinite;
+    }
 }

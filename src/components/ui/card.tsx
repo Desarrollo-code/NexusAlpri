@@ -9,28 +9,14 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "animated-border-card rounded-lg border bg-transparent text-card-foreground shadow-sm",
+      "relative overflow-hidden rounded-lg border-transparent shadow-sm",
+      "before:absolute before:inset-0 before:-z-10",
+      "border-beam-card",
       className
     )}
     {...props}
   >
-    <svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg" className="card-border-svg">
-      <defs>
-        <linearGradient id="card-border-gradient">
-          <stop offset="0%" stopColor="hsl(var(--accent))" />
-          <stop offset="50%" stopColor="hsl(var(--primary))" />
-          <stop offset="100%" stopColor="hsl(var(--accent))" />
-        </linearGradient>
-      </defs>
-      <rect
-        className="card-border-line"
-        height="100%"
-        width="100%"
-        rx="var(--radius)"
-        ry="var(--radius)"
-      />
-    </svg>
-    <div className="card-content-wrapper">
+    <div className="rounded-[calc(var(--radius)-1px)] bg-card text-card-foreground h-full w-full">
         {children}
     </div>
   </div>
