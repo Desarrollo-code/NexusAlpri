@@ -6,13 +6,4 @@
     .auth-bg {
         @apply bg-background min-h-screen;
     }
-
-    .auth-gradient-border {
-        @apply relative rounded-xl p-px;
-        background: linear-gradient(145deg, hsl(210 90% 50%), hsl(265 80% 60%));
-    }
-
-    .auth-gradient-border > .inner-card {
-        @apply bg-card h-full w-full rounded-[11px];
-    }
 }
