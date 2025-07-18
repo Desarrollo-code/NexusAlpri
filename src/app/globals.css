@@ -153,7 +153,7 @@
         background: conic-gradient(from 90deg at 50% 50%, #f72585, #fff200, #ff9100, #3a86ff, #f72585);
         opacity: 0;
         transition: opacity 0.3s ease-in-out;
-        animation: spin 10s linear infinite paused;
+        animation: spin 7s linear infinite paused;
         z-index: -1;
     }
 

@@ -116,7 +116,7 @@ export default function SignUpPage() {
                 data-ai-hint="logo education"
               />
             </div>
-            <Card className="w-full max-w-sm animate-fade-in-up glass-card border-none">
+            <Card className="w-full max-w-sm animate-fade-in-up bg-card/80 backdrop-blur-lg border-white/10 shadow-lg">
                 <CardHeader>
                     <CardTitle className="text-center text-xl font-headline">Registro Deshabilitado</CardTitle>
                 </CardHeader>
@@ -158,7 +158,7 @@ export default function SignUpPage() {
           />
         </div>
 
-        <Card className="w-full max-w-sm animate-fade-in-up glass-card border-none relative">
+        <Card className="w-full max-w-sm animate-fade-in-up bg-card/80 backdrop-blur-lg border-white/10 shadow-lg">
             <CardHeader className="text-center">
             <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
             <CardDescription>Regístrate para empezar a aprender</CardDescription>
