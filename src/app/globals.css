@@ -95,46 +95,41 @@
   }
 }
 
-@property --angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-@property --opacity {
-  syntax: "<number>";
-  initial-value: 0.8;
-  inherits: false;
-}
-
-@keyframes rotate {
-  to {
-    --angle: 360deg;
-  }
-}
-
-@keyframes opacityChange {
-  50% {
-    --opacity: 1;
-  }
-}
-
 @layer components {
-    .animated-rainbow-card {
-        --border-size: 2px;
-        border: var(--border-size) solid transparent;
-        border-image: conic-gradient(
-            from var(--angle),
-            hsl(330, 80%, 60%),
-            hsl(290, 80%, 60%),
-            hsl(220, 80%, 60%),
-            hsl(180, 80%, 60%),
-            hsl(90, 80%, 60%),
-            hsl(30, 80%, 60%),
-            hsl(330, 80%, 60%)
-          )
-          1 stretch;
-        background: hsl(var(--card) / var(--opacity));
-        animation: rotate 10s linear infinite, opacityChange 6s infinite alternate;
+  /* SVG Animated Border Card */
+  .card-container {
+    @apply relative overflow-hidden;
+  }
+
+  .card-border-svg {
+    @apply absolute top-0 left-0 h-full w-full;
+  }
+
+  .card-border-line {
+    stroke-width: 1px;
+    fill: transparent;
+    stroke: url(#card-border-gradient);
+    stroke-dasharray: 240 1000; /* Creates two opposite lines. Adjust numbers for different gap/line lengths */
+    stroke-dashoffset: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .card-container:hover .card-border-line {
+    opacity: 1;
+    animation: svg-border-animation 10s linear infinite;
+  }
+  
+  .card-content-wrapper {
+      @apply relative z-10 bg-card rounded-lg;
+  }
+
+  @keyframes svg-border-animation {
+    from {
+      stroke-dashoffset: 0;
     }
+    to {
+      stroke-dashoffset: 1240; /* The sum of dasharray values */
+    }
+  }
 }
