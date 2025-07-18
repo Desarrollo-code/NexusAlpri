@@ -93,48 +93,4 @@
   .text-balance {
     text-wrap: balance;
   }
-
-  @keyframes border-spin {
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  .animate-border-spin {
-    animation: border-spin 10s linear infinite;
-  }
-}
-
-@layer components {
-    .animated-border-card {
-        @apply relative;
-    }
-
-    .animated-border-card::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: calc(100% + 4px);
-        height: calc(100% + 4px);
-        background: conic-gradient(
-          from var(--angle, 0deg),
-          #e81cff, /* rosado */
-          #ffc700, /* amarillo */
-          #ff7200, /* naranja */
-          #40c9ff, /* azul */
-          #e81cff
-        );
-        z-index: -1;
-        border-radius: calc(var(--radius) + 2px);
-        opacity: 0;
-        transition: opacity 0.3s ease-in-out;
-        animation: border-spin 10s linear infinite paused;
-    }
-
-    .animated-border-card:hover::before {
-        opacity: 1;
-        animation-play-state: running;
-    }
 }
