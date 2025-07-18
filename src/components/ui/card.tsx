@@ -10,11 +10,15 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-xl border bg-card text-card-foreground shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1",
+      "rounded-xl bg-card text-card-foreground shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 relative group overflow-hidden p-px",
       className
     )}
-    {...props}
-  />
+  >
+    <span className="absolute -top-1 -left-1 w-[calc(100%+0.5rem)] h-[calc(100%+0.5rem)] animate-border-spin bg-[conic-gradient(from_90deg_at_50%_50%,hsl(var(--primary))_0%,hsl(var(--accent))_50%,hsl(var(--primary))_100%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+    <div className="relative rounded-[calc(0.75rem-1px)] h-full w-full bg-card">
+      {props.children}
+    </div>
+  </div>
 ))
 Card.displayName = "Card"
 

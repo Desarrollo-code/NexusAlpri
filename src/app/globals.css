@@ -109,6 +109,22 @@
   }
 }
 
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  @keyframes border-spin {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-border-spin {
+    animation: border-spin 7s linear infinite;
+  }
+}
+
 @layer components {
     .glass-card {
         @apply bg-card/60 backdrop-blur-xl border-white/5 shadow-2xl shadow-black/20;
