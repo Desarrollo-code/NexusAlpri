@@ -124,7 +124,7 @@ export default function SignInPage() {
           />
         </div>
         
-        <div className="gradient-border-card w-full">
+        <div className="auth-gradient-border w-full">
             <Card className="inner-card">
             {!show2fa ? (
                 <>

@@ -117,7 +117,7 @@ export default function SignUpPage() {
                 data-ai-hint="logo education"
               />
             </div>
-            <div className="gradient-border-card w-full max-w-sm">
+            <div className="auth-gradient-border w-full max-w-sm">
                 <Card className="inner-card">
                     <CardHeader>
                         <CardTitle className="text-center text-xl font-headline">Registro Deshabilitado</CardTitle>
@@ -161,7 +161,7 @@ export default function SignUpPage() {
           />
         </div>
 
-        <div className="gradient-border-card w-full">
+        <div className="auth-gradient-border w-full">
             <Card className="inner-card">
                 <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>

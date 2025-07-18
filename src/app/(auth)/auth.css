@@ -1,19 +1,18 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
+@layer components {
     .auth-bg {
         @apply bg-background min-h-screen;
     }
 
-    .gradient-border-card {
+    .auth-gradient-border {
         @apply relative rounded-xl p-px;
-        background: linear-gradient(145deg, hsl(185, 80%, 70%), hsl(270, 80%, 80%));
+        background: linear-gradient(145deg, hsl(210 90% 50%), hsl(265 80% 60%));
     }
 
-    .gradient-border-card > .inner-card {
+    .auth-gradient-border > .inner-card {
         @apply bg-card h-full w-full rounded-[11px];
     }
 }

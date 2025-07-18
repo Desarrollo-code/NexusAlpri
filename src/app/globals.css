@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -93,5 +92,44 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  @keyframes border-spin {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+@layer components {
+  .animated-border-card {
+    @apply relative;
+  }
+
+  .animated-border-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      from var(--angle, 0deg),
+      transparent 0deg,
+      #e81cff,
+      #40c9ff,
+      #e81cff,
+      #ffc700,
+      #ff7200,
+      #e81cff
+    );
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .animated-border-card:hover::before {
+    opacity: 1;
+    animation: border-spin 10s linear infinite;
   }
 }
