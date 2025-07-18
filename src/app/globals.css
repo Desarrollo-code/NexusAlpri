@@ -12,24 +12,24 @@
     --popover: 220 20% 100%;
     --popover-foreground: 220 10% 15%;
 
-    --primary: 45 85% 55%; /* Gold */
-    --primary-foreground: 220 15% 10%;
+    --primary: 262 80% 58%; /* Deep Purple */
+    --primary-foreground: 220 15% 98%;
     --secondary: 220 15% 94%;
     --secondary-foreground: 220 10% 25%;
     --muted: 220 15% 94%;
     --muted-foreground: 220 10% 45%;
-    --accent: 45 90% 96%; /* Light Gold */
-    --accent-foreground: 45 85% 55%;
+    --accent: 262 70% 68%; /* Electric Indigo */
+    --accent-foreground: 220 15% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 220 15% 88%;
     --input: 220 15% 92%;
-    --ring: 45 85% 55%;
+    --ring: 262 80% 58%;
     --radius: 0.75rem;
 
-    --chart-1: 45 85% 55%;   /* Gold */
-    --chart-2: 45 75% 65%;   /* Lighter Gold */
-    --chart-3: 45 82% 75%;   /* Lightest Gold */
+    --chart-1: 262 80% 58%;   /* Primary */
+    --chart-2: 262 70% 68%;   /* Accent */
+    --chart-3: 262 85% 75%;   /* Lighter Accent */
     --chart-4: 220 15% 70%;   /* Muted Gray */
     --chart-5: 220 15% 50%;   /* Darker Gray */
 
@@ -44,68 +44,79 @@
 
     --sidebar-background: 220 15% 96%;
     --sidebar-foreground: 220 15% 25%;
-    --sidebar-accent: 45 85% 55%;
-    --sidebar-accent-foreground: 220 15% 10%;
+    --sidebar-accent: 262 80% 58%;
+    --sidebar-accent-foreground: 220 15% 98%;
     --sidebar-border: 220 15% 88%;
-    --sidebar-ring: 45 85% 55%;
+    --sidebar-ring: 262 80% 58%;
   }
 
   .dark {
-    --background: 220 10% 12%; /* Graphite */
+    --background: 220 15% 15%; /* Dark Gray */
     --foreground: 220 15% 90%;
-    --card: 220 10% 16%; /* Lighter Graphite */
+    --card: 220 15% 18%; /* Lighter Gray */
     --card-foreground: 220 15% 90%;
-    --popover: 220 10% 14%;
+    --popover: 220 15% 15%;
     --popover-foreground: 220 15% 90%;
 
-    --primary: 45 75% 60%; /* Gold */
-    --primary-foreground: 220 15% 10%;
+    --primary: 262 80% 68%; /* Lighter Deep Purple */
+    --primary-foreground: 220 15% 98%;
     --secondary: 220 10% 25%;
     --secondary-foreground: 220 15% 90%;
-    --muted: 220 10% 20%;
+    --muted: 220 10% 22%;
     --muted-foreground: 220 10% 60%;
-    --accent: 45 75% 60%; /* Gold */
-    --accent-foreground: 220 15% 10%;
+    --accent: 262 70% 68%; /* Electric Indigo */
+    --accent-foreground: 220 15% 98%;
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 220 10% 25%;
     --input: 220 10% 20%;
-    --ring: 45 75% 60%;
+    --ring: 262 80% 68%;
     
     --sidebar-background: 220 10% 14%;
     --sidebar-foreground: 220 15% 80%;
-    --sidebar-accent: 45 75% 60%;
-    --sidebar-accent-foreground: 220 15% 10%;
+    --sidebar-accent: 262 80% 68%;
+    --sidebar-accent-foreground: 220 15% 98%;
     --sidebar-border: 220 10% 25%;
-    --sidebar-ring: 45 75% 60%;
+    --sidebar-ring: 262 80% 68%;
   }
 }
 
 /* View Transition API styles for Circular Reveal */
 @layer base {
+  @property --x {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
+  @property --y {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.5s;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: both;
+  }
+
+  ::view-transition-new(root) {
+    animation-name: reveal-in;
+  }
+  ::view-transition-old(root) {
+    animation-name: reveal-out;
+  }
+
   @keyframes reveal-in {
     from { clip-path: circle(0% at var(--x) var(--y)); }
     to { clip-path: circle(150% at var(--x) var(--y)); }
   }
-
-  ::view-transition-new(root) {
-    animation: reveal-in 0.7s ease-in-out;
-    mix-blend-mode: normal;
+   @keyframes reveal-out {
+    from { clip-path: circle(150% at var(--x) var(--y)); }
+    to { clip-path: circle(0% at var(--x) var(--y)); }
   }
 
-  ::view-transition-old(root) {
-    animation: none;
-    mix-blend-mode: normal;
-  }
-
-  @supports not (animation-timeline: view()) {
-    ::view-transition-old(root),
-    ::view-transition-new(root) {
-      animation-duration: 0.7s;
-      animation-timing-function: ease-in-out;
-      animation-fill-mode: both;
-    }
-  }
 }
 
 
