@@ -16,12 +16,13 @@ export async function GET(req: NextRequest) {
         const sevenDaysAgo = subDays(new Date(), 7);
 
         // Active students are those who have made progress recently
-        const activeStudentsInCourses = await prisma.courseProgress.count({
+        const activeStudentsInCoursesResult = await prisma.courseProgress.groupBy({
+            by: ['userId'],
             where: {
                 updatedAt: { gte: sevenDaysAgo },
             },
-            distinct: ['userId'],
         });
+        const activeStudentsInCourses = activeStudentsInCoursesResult.length;
         
         // Calculate average completion time
         const completedEnrollments = await prisma.enrollment.findMany({

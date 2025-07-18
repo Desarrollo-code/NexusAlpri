@@ -5,9 +5,9 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertTriangle, Users, BookOpenCheck, Activity, UsersRound, UserCheck, TrendingUp, BookCopy, PieChart as PieChartIcon } from 'lucide-react';
+import { AlertTriangle, BookCopy, PieChart as PieChartIcon, TrendingUp, UserCheck, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { type UserAnalyticsData, type CourseAnalyticsData, type ProgressAnalyticsData, type UserRole, type Course as AppCourse, type EnrolledCourse } from '@/types';
+import type { UserAnalyticsData, type CourseAnalyticsData, type ProgressAnalyticsData, type Course as AppCourse } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -16,12 +16,11 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Label, LabelList, Pie, PieChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, LabelList, Pie, PieChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { CourseCarousel } from '@/components/course-carousel';
 import { cn } from '@/lib/utils';
 import { GradientIcon } from '@/components/ui/gradient-icon';
 
-// --- Types & Data Fetching ---
 interface AnalyticsData {
   userStats: UserAnalyticsData | null;
   courseStats: CourseAnalyticsData | null;
@@ -63,6 +62,11 @@ const categoryChartConfig = {
   Marketing: { label: "Marketing", color: "hsl(var(--chart-3))" },
   Ventas: { label: "Ventas", color: "hsl(var(--chart-4))" },
   General: { label: "General", color: "hsl(var(--chart-5))" },
+  Legal: { label: "Legal", color: `hsl(var(--chart-1) / 0.5)` },
+  Operaciones: { label: "Operaciones", color: `hsl(var(--chart-2) / 0.5)` },
+  Finanzas: { label: "Finanzas", color: `hsl(var(--chart-3) / 0.5)` },
+  'Formación Interna': { label: 'Formación', color: `hsl(var(--chart-4) / 0.5)` },
+  'Documentación de Producto': { label: 'Producto', color: `hsl(var(--chart-5) / 0.5)` },
 } satisfies ChartConfig;
 
 
@@ -86,7 +90,12 @@ export default function AnalyticsPage() {
             ]);
             
             if (!userRes.ok || !courseRes.ok || !progressRes.ok) {
-                throw new Error('Failed to fetch one or more analytics endpoints.');
+                const errorDetails = [
+                    userRes.ok ? '' : `Usuarios: ${userRes.statusText}`,
+                    courseRes.ok ? '' : `Cursos: ${courseRes.statusText}`,
+                    progressRes.ok ? '' : `Progreso: ${progressRes.statusText}`,
+                ].filter(Boolean).join(', ');
+                throw new Error(`Falló la carga de datos. Errores: ${errorDetails}`);
             }
 
             const userStats = await userRes.json();
@@ -96,8 +105,8 @@ export default function AnalyticsPage() {
             setData({ userStats, courseStats, progressStats });
 
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error fetching analytics');
-            toast({ title: 'Error', description: 'Could not load analytics data.', variant: 'destructive' });
+            setError(err instanceof Error ? err.message : 'Error desconocido al cargar analíticas');
+            toast({ title: 'Error', description: 'No se pudieron cargar los datos de analíticas.', variant: 'destructive' });
         } finally {
             setIsLoading(false);
         }
@@ -129,6 +138,11 @@ export default function AnalyticsPage() {
             ...cat,
             fill: categoryChartConfig[cat.category as keyof typeof categoryChartConfig]?.color || `hsl(${Math.random() * 360}, 70%, 50%)`
         }));
+    }, [data?.courseStats]);
+    
+    const averageScore = useMemo(() => {
+        if (!data?.courseStats?.averageQuizScore) return 0;
+        return data.courseStats.averageQuizScore;
     }, [data?.courseStats]);
 
     if (isAuthLoading || isLoading) {
@@ -164,31 +178,29 @@ export default function AnalyticsPage() {
         <div className="space-y-8">
             <h1 className="text-3xl font-bold font-headline">Panel de Analíticas</h1>
             
-            {/* KPI Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard title="Total Usuarios" value={data.userStats?.usersByRole.reduce((acc, r) => acc + r.count, 0) || 0} icon={Users} trend={data.userStats?.activeUsersLast7Days} description="Usuarios activos en 7 días" />
                 <StatCard title="Total Cursos" value={data.courseStats?.coursesByCategory.reduce((acc, c) => acc + c.count, 0) || 0} icon={BookCopy} trend={data.courseStats?.averageCompletionRate} description="Tasa de finalización media" />
                 <StatCard title="Inscripciones" value={data.progressStats?.activeStudentsInCourses || 0} icon={UserCheck} trend={data.progressStats?.dropoutRate} description="Tasa de abandono" />
-                <StatCard title="Puntuación Media" value={`${data.progressStats?.averageQuizScore.toFixed(1) || 0}%`} icon={TrendingUp} description="En todos los quices"/>
+                <StatCard title="Puntuación Media" value={`${averageScore.toFixed(1)}%`} icon={TrendingUp} description="En todos los quices"/>
             </div>
 
-            {/* Main Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="shadow-lg">
                     <CardHeader>
                         <CardTitle>Nuevos Registros (Últimos 30 días)</CardTitle>
                     </CardHeader>
                     <CardContent className="h-80 w-full">
-                        <ResponsiveContainer>
-                            <AreaChart data={data.userStats?.newUsersLast30Days}>
+                        <ChartContainer config={{ count: { label: 'Nuevos usuarios', color: 'hsl(var(--primary))' } }}>
+                            <AreaChart data={data.userStats?.newUsersLast30Days} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                                 <defs><linearGradient id="colorNewUsers" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient></defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                                <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
                                 <ChartTooltip content={<ChartTooltipContent />} />
                                 <Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorNewUsers)" />
                             </AreaChart>
-                        </ResponsiveContainer>
+                        </ChartContainer>
                     </CardContent>
                 </Card>
                  <Card className="shadow-lg">
@@ -196,7 +208,7 @@ export default function AnalyticsPage() {
                         <CardTitle>Distribución de Usuarios por Rol</CardTitle>
                     </CardHeader>
                     <CardContent className="h-80 w-full">
-                        <ResponsiveContainer>
+                        <ChartContainer config={userRolesChartConfig}>
                             <BarChart data={userRolesChartData} margin={{ top: 20, right: 20, left: -5, bottom: 5 }}>
                                 <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
                                 <XAxis dataKey="role" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
@@ -208,12 +220,11 @@ export default function AnalyticsPage() {
                                   ))}
                                 </Bar>
                             </BarChart>
-                        </ResponsiveContainer>
+                        </ChartContainer>
                     </CardContent>
                 </Card>
             </div>
             
-            {/* Courses Section */}
             <div className="space-y-4">
               <h2 className="text-2xl font-semibold font-headline">Analíticas de Cursos</h2>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -234,7 +245,7 @@ export default function AnalyticsPage() {
                         <CardTitle className="flex items-center gap-2"><PieChartIcon className="text-primary"/> Cursos por Categoría</CardTitle>
                     </CardHeader>
                     <CardContent className="h-72">
-                         <ResponsiveContainer>
+                         <ChartContainer config={categoryChartConfig}>
                             <PieChart>
                                 <ChartTooltip content={<ChartTooltipContent nameKey="count" hideIndicator />} />
                                 <Pie data={categoryChartData} dataKey="count" nameKey="category" innerRadius={60} outerRadius={80} paddingAngle={2}>
@@ -248,7 +259,7 @@ export default function AnalyticsPage() {
                                     />
                                 </Pie>
                             </PieChart>
-                        </ResponsiveContainer>
+                        </ChartContainer>
                     </CardContent>
                 </Card>
               </div>
@@ -256,4 +267,3 @@ export default function AnalyticsPage() {
         </div>
     );
 }
-

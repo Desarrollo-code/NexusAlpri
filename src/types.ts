@@ -212,13 +212,8 @@ export interface SecurityLog {
 }
 
 // --- ANALYTICS ---
-export interface UsersByRole {
-    role: UserRole;
-    count: number;
-}
-
 export interface UserAnalyticsData {
-    usersByRole: UsersByRole[];
+    usersByRole: { role: UserRole; count: number }[];
     activeUsersLast7Days: number;
     newUsersLast30Days: { date: string; count: number }[];
 }

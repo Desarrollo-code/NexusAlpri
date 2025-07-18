@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import { subDays, startOfDay, endOfDay, format } from 'date-fns';
+import { subDays, startOfDay, format } from 'date-fns';
 import type { UserRole, UserAnalyticsData } from '@/types';
 
 export async function GET(req: NextRequest) {
