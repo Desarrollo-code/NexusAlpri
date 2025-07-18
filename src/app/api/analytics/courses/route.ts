@@ -81,7 +81,10 @@ export async function GET(req: NextRequest) {
             coursesByCategoryQuery,
         ]);
         
-        const appCourses = mostEnrolledCourses.map(mapPrismaCourseToAppCourse);
+        const appCourses = mostEnrolledCourses.map(c => ({
+            ...mapApiCourseToAppCourse(c),
+            enrollmentsCount: c._count.enrollments,
+        }));
 
         const stats: CourseAnalyticsData = {
             averageCompletionRate,

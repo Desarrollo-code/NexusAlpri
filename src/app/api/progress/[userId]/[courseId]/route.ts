@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import type { LessonCompletionRecord } from '@/types';
+import type { LessonCompletionRecord as AppLessonCompletionRecord } from '@/types';
 
 // Get progress for a specific user in a course
 export async function GET(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
@@ -20,6 +20,9 @@ export async function GET(req: NextRequest, context: { params: { userId: string,
             where: {
                 userId: userId,
                 courseId: courseId,
+            },
+            include: {
+                completedLessons: true // Include the related records
             }
         });
         
@@ -33,15 +36,16 @@ export async function GET(req: NextRequest, context: { params: { userId: string,
             });
         }
         
-        // Safely handle the completedLessonIds which is of type JsonValue
-        let completedLessonIds: LessonCompletionRecord[] = [];
-        if (progress.completedLessonIds && Array.isArray(progress.completedLessonIds)) {
-            completedLessonIds = progress.completedLessonIds as unknown as LessonCompletionRecord[];
-        }
+        // Map the included records to the desired structure for the client
+        const completedLessonIds = progress.completedLessons.map(record => ({
+            lessonId: record.lessonId,
+            type: record.type,
+            score: record.score,
+        }));
 
         return NextResponse.json({
             ...progress,
-            completedLessonIds, // Ensure it's always an array
+            completedLessonIds, // Return the mapped array
         });
 
     } catch (error) {

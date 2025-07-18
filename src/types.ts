@@ -1,5 +1,5 @@
 
-import type { JsonValue, LessonTemplate, TemplateBlock } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -106,6 +106,7 @@ export interface Course {
   modules: Module[];
   isEnrolled?: boolean;
   publicationDate?: Date | string | null;
+  enrollmentsCount?: number;
 }
 
 export interface EnrolledCourse extends Course {
@@ -113,16 +114,12 @@ export interface EnrolledCourse extends Course {
     progressPercentage?: number;
 }
 
-export interface LessonCompletionRecord {
-  lessonId: string;
-  type: 'view' | 'quiz';
-  score?: number; // Only for 'quiz' type
-}
+export type LessonCompletionRecord = Prisma.LessonCompletionRecordGetPayload<{}>;
 
 export interface CourseProgress {
     userId: string;
     courseId: string;
-    completedLessonIds: LessonCompletionRecord[];
+    completedLessons: LessonCompletionRecord[];
     progressPercentage: number;
 }
 
@@ -201,16 +198,10 @@ export type SecurityLogEvent =
     | 'TWO_FACTOR_DISABLED'
     | 'USER_ROLE_CHANGED';
 
-export interface SecurityLog {
-    id: string;
-    event: SecurityLogEvent;
-    ipAddress: string;
-    emailAttempt?: string | null;
-    userId?: string | null;
-    createdAt: string; // This will be an ISO string
-    details?: string | null;
-    user?: Partial<User> | null;
-}
+export type SecurityLog = Prisma.SecurityLogGetPayload<{
+    include: { user: { select: { id: true, name: true, avatar: true } } }
+}>;
+
 
 // --- ANALYTICS ---
 export interface UserAnalyticsData {
@@ -222,7 +213,7 @@ export interface UserAnalyticsData {
 export interface CourseAnalyticsData {
     averageCompletionRate: number;
     averageQuizScore: number;
-    mostEnrolledCourses: AppCourse[];
+    mostEnrolledCourses: (AppCourse & { enrollmentsCount: number })[];
     coursesByCategory: { category: string, count: number }[];
 }
 

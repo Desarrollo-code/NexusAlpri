@@ -47,17 +47,17 @@ El seguimiento del progreso es un sistema automático y robusto diseñado para r
     *   **Lecciones de Video/Archivo:** Se registra una interacción de "vista" al seleccionar la lección.
     *   **Quices:** El componente `QuizViewer` gestiona el envío del quiz y su puntuación.
 
-2.  **Registro de Interacciones (API):** Cada una de estas interacciones desencadena una llamada a la API (`POST /api/progress/[userId]/[courseId]/...`) de forma asíncrona. Esta API no calcula el progreso final, simplemente almacena la interacción en la base de datos.
+2.  **Registro de Interacciones (API):** Cada una de estas interacciones desencadena una llamada a la API (`POST /api/progress/[userId]/[courseId]/...`) de forma asíncrona. Esta API no calcula el progreso final, simplemente almacena la interacción en el modelo `LessonCompletionRecord`.
 
 3.  **Almacenamiento en Base de Datos:**
-    *   El modelo `CourseProgress` tiene un campo `completedLessonIds` de tipo `Json`.
-    *   Este campo almacena un array de objetos, donde cada objeto representa una lección completada y contiene: `lessonId`, `type` ('view' o 'quiz') y `score` (si es un quiz).
+    *   El modelo `CourseProgress` tiene una relación uno a muchos con el modelo `LessonCompletionRecord`.
+    *   `LessonCompletionRecord` almacena cada interacción individual (`lessonId`, `type`, `score`).
 
 4.  **Consolidación y Cálculo Final:**
     *   La UI activa el botón "Calcular Mi Puntuación Final" solo cuando todas las lecciones del curso tienen un registro de interacción.
     *   Al hacer clic, se llama a la API `POST /api/progress/[userId]/[courseId]/consolidate`.
     *   Esta ruta de API ejecuta la lógica de negocio en `src/lib/progress.ts`, que:
-        *   Lee todos los registros de interacción del campo `Json`.
+        *   Lee todos los registros de `LessonCompletionRecord` asociados a ese progreso.
         *   Calcula una **puntuación final ponderada**. Las lecciones de 'view' aportan un valor fijo (ej. 100 puntos), mientras que las de 'quiz' aportan un valor basado en la nota (`score`).
         *   Guarda este porcentaje final en el campo `progressPercentage` del modelo `CourseProgress`.
     *   La UI recibe este porcentaje final y lo muestra en el indicador circular de progreso.
@@ -70,7 +70,8 @@ El esquema se define en `prisma/schema.prisma`. Los modelos principales son:
 *   `User`: Almacena usuarios, roles y credenciales.
 *   `Course`, `Module`, `Lesson`: Estructura jerárquica de los cursos.
 *   `Quiz`, `Question`, `AnswerOption`: Componentes para las evaluaciones.
-*   **`CourseProgress`**: Guarda el progreso de un usuario en un curso. El campo `completedLessonIds` es de tipo `Json` y almacena un array de objetos detallando cada interacción (tipo y nota si aplica). El campo `progressPercentage` guarda la nota final consolidada. Este modelo tiene una relación directa con `Enrollment`.
+*   **`CourseProgress`**: Guarda el progreso de un usuario en un curso. El campo `completedLessonIds` fue reemplazado por una relación al nuevo modelo `LessonCompletionRecord`. El campo `progressPercentage` guarda la nota final consolidada.
+*   **`LessonCompletionRecord`**: Nuevo modelo que almacena cada interacción con una lección (vista, quiz completado, etc.).
 *   `Resource`: Para la biblioteca de recursos (archivos y carpetas). Su campo `pin` almacena el hash del PIN de seguridad.
 *   `Announcement`, `CalendarEvent`, `Notification`: Para comunicación y eventos.
 *   `PlatformSettings`: Almacena la configuración global de la plataforma.
@@ -153,5 +154,6 @@ La autenticación se realiza a través de un token JWT en una cookie de sesión.
 *   **Formularios:** Utilizar `react-hook-form` para la gestión de formularios complejos.
 *   **Código Asíncrono:** Utilizar `async/await` para operaciones asíncronas.
 *   **Comentarios:** Añadir comentarios JSDoc a funciones complejas y a las props de los componentes para clarificar su propósito.
+
 
 
