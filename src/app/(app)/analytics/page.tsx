@@ -112,7 +112,7 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent className="h-48">
+      <CardContent className="h-80">
         <ChartContainer config={config} className="w-full h-full">
           <ResponsiveContainer>
             <PieChart>
@@ -121,7 +121,7 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
                 data={data} 
                 dataKey="count" 
                 nameKey="label" 
-                innerRadius={50} 
+                innerRadius={60} 
                 strokeWidth={2}
                 activeIndex={activeIndex}
                 activeShape={renderActiveShape}
@@ -174,9 +174,6 @@ function UserAnalyticsSection({ stats }: { stats: UserAnalyticsData }) {
     return (
         <section className="space-y-6">
             <h2 className="text-xl font-semibold flex items-center gap-3"><Users className="text-primary"/> Analíticas de Usuarios</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <MetricCard title="Total Usuarios" value={userRolesChartData.reduce((acc, r) => acc + r.count, 0)} icon={UsersRound} description={`${stats.activeUsersLast7Days} activos esta semana`} />
-            </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-2">
                     <CardHeader><CardTitle>Nuevos Registros (Últimos 30 días)</CardTitle></CardHeader>
@@ -422,4 +419,3 @@ export default function AnalyticsPage() {
         </div>
     );
 }
-
