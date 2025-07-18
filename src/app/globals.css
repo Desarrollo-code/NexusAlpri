@@ -81,6 +81,34 @@
   }
 }
 
+/* View Transition API styles */
+@supports selector(:view-transition-group(root)) {
+ @custom-media --dark (prefers-color-scheme: dark);
+
+ :root {
+    --transition-duration: 150ms;
+    --transition-timing-function: ease-in-out;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: var(--transition-duration);
+    animation-timing-function: var(--transition-timing-function);
+  }
+
+  ::view-transition-old(root) {
+    animation-name: fade-out;
+  }
+
+  ::view-transition-new(root) {
+    animation-name: fade-in;
+  }
+}
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -89,23 +117,19 @@
     @apply bg-background text-foreground;
   }
 
-  /* View Transition API styles */
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation: none;
-    mix-blend-mode: normal;
-  }
-  ::view-transition-old(root) {
-    z-index: 1;
-  }
-  ::view-transition-new(root) {
-    z-index: 999;
-  }
-  .dark::view-transition-old(root) {
-    z-index: 999;
-  }
-  .dark::view-transition-new(root) {
-    z-index: 1;
+  /* Basic View Transition styles (for fallback or simpler transitions) */
+  @supports not selector(:view-transition-group(root)) {
+   ::view-transition-old(root),
+   ::view-transition-new(root) {
+      animation: none;
+      mix-blend-mode: normal;
+    }
+    ::view-transition-old(root) {
+      z-index: 1;
+    }
+    ::view-transition-new(root) {
+      z-index: 999;
+    }
   }
 }
 

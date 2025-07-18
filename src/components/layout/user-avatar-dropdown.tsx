@@ -27,11 +27,13 @@ function ThemeToggle() {
 
     const switchTheme = (theme: 'light' | 'dark' | 'system') => {
         // Fallback for browsers that don't support the View Transitions API
-        if (!document.startViewTransition) {
+        // @ts-ignore
+        if (!document.startViewTransition || !window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
             setTheme(theme);
             return;
         }
         // Use the View Transitions API
+        // @ts-ignore
         document.startViewTransition(() => setTheme(theme));
     };
 
