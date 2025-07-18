@@ -34,7 +34,7 @@ import type { Announcement as AnnouncementType, UserRole, Course as AppCourseTyp
 import { AnnouncementCard } from '@/components/announcement-card';
 import type { Announcement as PrismaAnnouncement, Course as PrismaCourse } from '@prisma/client';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import {
   ChartContainer,
@@ -42,7 +42,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Pie, PieChart, ResponsiveContainer, Cell, Label } from "recharts";
 import { cn } from '@/lib/utils';
 import { GradientIcon } from '@/components/ui/gradient-icon';
 
@@ -111,11 +111,69 @@ const StatCard = ({ title, value, icon: Icon, href }: { title: string; value: nu
     );
 };
 
+function DonutChartCard({ title, data, config, description }: { title: string, data: any[], config: ChartConfig, description?: string }) {
+  const total = useMemo(() => data.reduce((acc, curr) => acc + curr.count, 0), [data]);
+  
+  return (
+    <Card className="flex flex-col h-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">{title}</CardTitle>
+        {description && <CardDescription>{description}</CardDescription>}
+      </CardHeader>
+      <CardContent className="flex-1 pb-0">
+        <ChartContainer config={config} className="mx-auto aspect-square h-full max-h-[250px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
+              <Pie data={data} dataKey="count" nameKey="label" innerRadius="60%" strokeWidth={2}>
+                 {data.map((entry) => (
+                    <Cell key={`cell-${entry.label}`} fill={entry.fill} />
+                  ))}
+                 <Label
+                    content={({ viewBox }) => {
+                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                            return (
+                                <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
+                                    <tspan x={viewBox.cx} y={viewBox.cy} className="text-3xl font-bold fill-foreground">
+                                        {total.toLocaleString()}
+                                    </tspan>
+                                    <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 20} className="text-sm fill-muted-foreground">
+                                        Total
+                                    </tspan>
+                                </text>
+                            );
+                        }
+                    }}
+                />
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+      </CardContent>
+       <CardFooter className="flex-col gap-2 text-sm pt-4">
+        <div className="flex w-full items-center gap-2 font-medium leading-none">
+          Visualización de la distribución.
+        </div>
+        <div className="flex w-full items-center gap-1 text-muted-foreground">
+          {Object.entries(config).filter(([key]) => key !== 'count').map(([key, value]) => (
+            <div key={key} className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: value.color }} />
+              <span>{value.label}</span>
+            </div>
+          ))}
+        </div>
+      </CardFooter>
+    </Card>
+  )
+}
+
+
 function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
     const userRolesChartData = React.useMemo(() => {
         const order: ('STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR')[] = ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'];
         return order.map(role => ({
-            role: userRolesChartConfig[role]?.label || role,
+            role: role,
+            label: userRolesChartConfig[role]?.label || role,
             count: stats.usersByRole.find(item => item.role === role)?.count || 0,
             fill: userRolesChartConfig[role]?.color || 'hsl(var(--muted))'
         }));
@@ -125,7 +183,8 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
         if (!stats?.coursesByStatus) return [];
         const order: ('DRAFT' | 'PUBLISHED' | 'ARCHIVED')[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED'];
         return order.map(status => ({
-            status: courseStatusChartConfig[status]?.label || status,
+            status: status,
+            label: courseStatusChartConfig[status]?.label || status,
             count: stats.coursesByStatus.find(item => item.status === status)?.count || 0,
             fill: courseStatusChartConfig[status]?.color || 'hsl(var(--muted))'
         }));
@@ -141,61 +200,19 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
                 <StatCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={Activity} href="/manage-courses" />
                 <StatCard title="Total Inscripciones" value={stats.totalEnrollments} icon={UsersRound} href="/enrollments" />
             </div>
-            <section className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg"><Users className="text-primary" /> Distribución de Usuarios</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                       {userRolesChartData.length > 0 ? (
-                           <ChartContainer config={userRolesChartConfig} className="h-[250px] w-full">
-                                <ResponsiveContainer>
-                                    <BarChart data={userRolesChartData} margin={{ top: 20, right: 20, left: -5, bottom: 5 }} barGap={4}>
-                                        <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
-                                        <XAxis dataKey="role" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
-                                        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} allowDecimals={false} />
-                                        <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent />} />
-                                        <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                                          {userRolesChartData.map((entry) => (
-                                            <Cell
-                                              key={`cell-${entry.role}`}
-                                              fill={entry.fill}
-                                            />
-                                          ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </ChartContainer>
-                        ) : (<p className="text-muted-foreground text-center py-4">No hay datos de usuarios.</p>)}
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg"><BookOpenCheck className="text-primary" /> Estado General de Cursos</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {courseStatusChartData.length > 0 ? (
-                           <ChartContainer config={courseStatusChartConfig} className="h-[250px] w-full">
-                                <ResponsiveContainer>
-                                    <BarChart data={courseStatusChartData} margin={{ top: 20, right: 20, left: -5, bottom: 5 }} barGap={4}>
-                                        <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
-                                        <XAxis dataKey="status" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
-                                        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} allowDecimals={false} />
-                                        <ChartTooltip cursor={{ fill: 'hsl(var(--muted))', radius: 4 }} content={<ChartTooltipContent />} />
-                                        <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                                          {courseStatusChartData.map((entry) => (
-                                            <Cell
-                                              key={`cell-${entry.status}`}
-                                              fill={entry.fill}
-                                            />
-                                          ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </ChartContainer>
-                        ) : (<p className="text-muted-foreground text-center py-4">No hay datos de cursos.</p>)}
-                    </CardContent>
-                </Card>
+             <section className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                <DonutChartCard
+                    title={<><Users className="text-primary" /> Distribución de Usuarios</>}
+                    data={userRolesChartData}
+                    config={userRolesChartConfig}
+                    description="Proporción de cada rol en la plataforma."
+                />
+                <DonutChartCard
+                    title={<><BookOpenCheck className="text-primary" /> Estado General de Cursos</>}
+                    data={courseStatusChartData}
+                    config={courseStatusChartConfig}
+                    description="Distribución de los cursos según su estado."
+                />
             </section>
         </div>
     );
@@ -389,7 +406,7 @@ export default function DashboardPage() {
       { href: '/my-courses', label: 'Mis Cursos', icon: GraduationCap, description: 'Continúa tu aprendizaje.'},
       { href: '/courses', label: 'Explorar Cursos', icon: BookOpen, description: 'Descubre nuevas oportunidades.'},
       { href: '/resources', label: 'Biblioteca', icon: Folder, description: 'Accede a guías y materiales.'},
-      { href: '/announcements', label: 'Anuncios', icon: Megaphone, description: 'Revisa las últimas noticias.'},
+      { href: '/announcements', label: 'Anuncios', icon: 'Revisa las últimas noticias.'},
     ],
   };
   const linksToShow = quickLinks[user.role] || [];
@@ -560,3 +577,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
