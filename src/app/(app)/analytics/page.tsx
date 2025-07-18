@@ -27,8 +27,7 @@ interface AnalyticsData {
   progressStats: ProgressAnalyticsData | null;
 }
 
-const StatCard = ({ title, value, icon, trend, description }: { title: string, value: string | number, icon: React.ElementType, trend?: number, description?: string }) => {
-    const trendColor = trend && trend > 0 ? 'text-green-500' : 'text-red-500';
+const StatCard = ({ title, value, icon, description }: { title: string, value: string | number, icon: React.ElementType, description?: string }) => {
     return (
         <Card className="shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -38,11 +37,6 @@ const StatCard = ({ title, value, icon, trend, description }: { title: string, v
             <CardContent>
                 <div className="text-2xl font-bold">{value}</div>
                 {description && <p className="text-xs text-muted-foreground">{description}</p>}
-                {trend !== undefined && (
-                    <p className={cn("text-xs text-muted-foreground pt-1", trendColor)}>
-                        {trend > 0 ? `+${trend.toFixed(1)}%` : `${trend.toFixed(1)}%`} vs semana anterior
-                    </p>
-                )}
             </CardContent>
         </Card>
     );
@@ -174,14 +168,17 @@ export default function AnalyticsPage() {
     
     if (!data) return null;
 
+    const totalUsers = data.userStats?.usersByRole.reduce((acc, r) => acc + r.count, 0) || 0;
+    const totalCourses = data.courseStats?.coursesByCategory.reduce((acc, c) => acc + c.count, 0) || 0;
+
     return (
         <div className="space-y-8">
             <h1 className="text-3xl font-bold font-headline">Panel de Analíticas</h1>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total Usuarios" value={data.userStats?.usersByRole.reduce((acc, r) => acc + r.count, 0) || 0} icon={Users} trend={data.userStats?.activeUsersLast7Days} description="Usuarios activos en 7 días" />
-                <StatCard title="Total Cursos" value={data.courseStats?.coursesByCategory.reduce((acc, c) => acc + c.count, 0) || 0} icon={BookCopy} trend={data.courseStats?.averageCompletionRate} description="Tasa de finalización media" />
-                <StatCard title="Inscripciones" value={data.progressStats?.activeStudentsInCourses || 0} icon={UserCheck} trend={data.progressStats?.dropoutRate} description="Tasa de abandono" />
+                <StatCard title="Total Usuarios" value={totalUsers} icon={Users} description={`Total de usuarios registrados.`} />
+                <StatCard title="Total Cursos" value={totalCourses} icon={BookCopy} description={`Tasa media de finalización: ${data.courseStats?.averageCompletionRate.toFixed(1)}%`} />
+                <StatCard title="Inscripciones" value={data.progressStats?.activeStudentsInCourses || 0} icon={UserCheck} description={`Tasa de abandono: ${data.progressStats?.dropoutRate.toFixed(1)}%`} />
                 <StatCard title="Puntuación Media" value={`${averageScore.toFixed(1)}%`} icon={TrendingUp} description="En todos los quices"/>
             </div>
 
