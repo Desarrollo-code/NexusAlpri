@@ -82,42 +82,43 @@
 }
 
 /* View Transition API styles for Circular Reveal */
-@layer base {
-  @property --x {
-    syntax: '<length>';
-    inherits: true;
-    initial-value: 0px;
-  }
-  @property --y {
-    syntax: '<length>';
-    inherits: true;
-    initial-value: 0px;
-  }
+@supports (view-transition-name: none) {
+    @layer base {
+        @property --x {
+            syntax: '<length>';
+            inherits: true;
+            initial-value: 0px;
+        }
+        @property --y {
+            syntax: '<length>';
+            inherits: true;
+            initial-value: 0px;
+        }
 
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation-duration: 0.5s;
-    animation-timing-function: ease-in-out;
-    animation-fill-mode: both;
-  }
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation-duration: 0.5s;
+            animation-timing-function: ease-in-out;
+            animation-fill-mode: both;
+        }
 
-  ::view-transition-new(root) {
-    animation-name: reveal-in;
-  }
-  ::view-transition-old(root) {
-    animation-name: reveal-out;
-  }
+        ::view-transition-new(root) {
+            animation-name: reveal-in;
+        }
+        ::view-transition-old(root) {
+            animation-name: reveal-out;
+        }
 
-  @keyframes reveal-in {
-    from { clip-path: circle(0% at var(--x) var(--y)); }
-    to { clip-path: circle(150% at var(--x) var(--y)); }
-  }
-   @keyframes reveal-out {
-    from { clip-path: circle(150% at var(--x) var(--y)); }
-    to { clip-path: circle(0% at var(--x) var(--y)); }
-  }
+        @keyframes reveal-in {
+            from { clip-path: circle(0% at var(--x) var(--y)); }
+            to { clip-path: circle(150% at var(--x) var(--y)); }
+        }
+        @keyframes reveal-out {
+            from { clip-path: circle(150% at var(--x) var(--y)); }
+            to { clip-path: circle(0% at var(--x) var(--y)); }
+        }
+    }
 }
-
 
 @layer base {
   * {
@@ -145,7 +146,6 @@
     }
 
     .animated-border-card:hover {
-        transform: translateY(-4px); /* Elevate effect */
         box-shadow: 0 10px 25px -5px hsl(var(--primary)/0.2), 0 8px 10px -6px hsl(var(--primary)/0.2);
     }
     
