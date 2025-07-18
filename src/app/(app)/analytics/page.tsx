@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector } from "recharts";
 import type { UserAnalyticsData, CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog } from '@/types';
 import { CourseCarousel } from '@/components/course-carousel';
 import { getEventDetails, getInitials } from '@/lib/security-log-utils';
@@ -46,8 +46,62 @@ const courseStatusChartConfig = {
   ARCHIVED: { label: "Archivados", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
+
+const renderActiveShape = (props: any) => {
+  const RADIAN = Math.PI / 180;
+  const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+  const sin = Math.sin(-RADIAN * midAngle);
+  const cos = Math.cos(-RADIAN * midAngle);
+  const sx = cx + (outerRadius + 2) * cos;
+  const sy = cy + (outerRadius + 2) * sin;
+  const mx = cx + (outerRadius + 15) * cos;
+  const my = cy + (outerRadius + 15) * sin;
+  const ex = mx + (cos >= 0 ? 1 : -1) * 11;
+  const ey = my;
+  const textAnchor = cos >= 0 ? 'start' : 'end';
+
+  return (
+    <g>
+      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill} className="text-lg font-bold">
+        {payload.label}
+      </text>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+      />
+      <Sector
+        cx={cx}
+        cy={cy}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        innerRadius={outerRadius + 4}
+        outerRadius={outerRadius + 8}
+        fill={fill}
+      />
+       <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
+       <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
+       <text x={ex + (cos >= 0 ? 1 : -1) * 6} y={ey} textAnchor={textAnchor} fill="hsl(var(--foreground))" className="text-xs">{`${value} (${(percent * 100).toFixed(0)}%)`}</text>
+    </g>
+  );
+};
+
+
 function DonutChartCard({ title, data, config }: { title: string, data: any[], config: ChartConfig }) {
   const total = useMemo(() => data.reduce((acc, curr) => acc + curr.count, 0), [data]);
+  const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
+  
+  const onPieEnter = useCallback((_: any, index: number) => {
+    setActiveIndex(index);
+  }, [setActiveIndex]);
+
+  const onPieLeave = useCallback(() => {
+    setActiveIndex(undefined);
+  }, [setActiveIndex]);
   
   return (
     <Card>
@@ -59,26 +113,39 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
           <ResponsiveContainer>
             <PieChart>
               <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
-              <Pie data={data} dataKey="count" nameKey="label" innerRadius={50} strokeWidth={2}>
+              <Pie 
+                data={data} 
+                dataKey="count" 
+                nameKey="label" 
+                innerRadius={50} 
+                strokeWidth={2}
+                activeIndex={activeIndex}
+                activeShape={renderActiveShape}
+                onMouseEnter={onPieEnter}
+                onMouseLeave={onPieLeave}
+                className="cursor-pointer"
+              >
                  {data.map((entry) => (
                     <Cell key={`cell-${entry.label}`} fill={entry.fill} />
                   ))}
-                 <Label
-                    content={({ viewBox }) => {
-                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                            return (
-                                <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                                    <tspan x={viewBox.cx} y={viewBox.cy} className="text-2xl font-bold fill-foreground">
-                                        {total.toLocaleString()}
-                                    </tspan>
-                                    <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 16} className="text-xs fill-muted-foreground">
-                                        Total
-                                    </tspan>
-                                </text>
-                            );
-                        }
-                    }}
-                />
+                 {activeIndex === undefined && (
+                    <Label
+                        content={({ viewBox }) => {
+                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                                return (
+                                    <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
+                                        <tspan x={viewBox.cx} y={viewBox.cy} className="text-2xl font-bold fill-foreground">
+                                            {total.toLocaleString()}
+                                        </tspan>
+                                        <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 16} className="text-xs fill-muted-foreground">
+                                            Total
+                                        </tspan>
+                                    </text>
+                                );
+                            }
+                        }}
+                    />
+                 )}
               </Pie>
             </PieChart>
           </ResponsiveContainer>
@@ -90,7 +157,7 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
 
 function UserAnalyticsSection({ stats }: { stats: UserAnalyticsData }) {
     const userRolesChartData = useMemo(() => {
-        if (!stats.usersByRole) return [];
+        if (!stats?.usersByRole) return [];
         const order: ('STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR')[] = ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'];
         return order.map(role => ({
             role: role,
@@ -131,7 +198,7 @@ function UserAnalyticsSection({ stats }: { stats: UserAnalyticsData }) {
 
 function CourseAnalyticsSection({ stats }: { stats: CourseAnalyticsData }) {
     const courseStatusData = useMemo(() => {
-        if (!stats.coursesByStatus) return [];
+        if (!stats?.coursesByStatus) return [];
         const order: ('DRAFT' | 'PUBLISHED' | 'ARCHIVED')[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED'];
         return order.map(status => ({
             status: status,
@@ -142,7 +209,7 @@ function CourseAnalyticsSection({ stats }: { stats: CourseAnalyticsData }) {
     }, [stats.coursesByStatus]);
 
     const coursesByCategoryData = useMemo(() => {
-        if (!stats.coursesByCategory) return [];
+        if (!stats?.coursesByCategory) return [];
         return stats.coursesByCategory
             .sort((a,b) => b.count - a.count)
             .slice(0, 5) // Top 5 categories
