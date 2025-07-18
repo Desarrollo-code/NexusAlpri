@@ -112,7 +112,7 @@ export default function SignInPage() {
   return (
     <div className="auth-bg flex min-h-screen flex-col items-center justify-center p-4">
       <div className="relative flex flex-col items-center justify-center p-4">
-        <div className="mb-4" style={{ filter: 'drop-shadow(0 2px 4px rgba(255,255,255,0.2))' }}>
+        <div className="auth-logo-wrapper">
           <Image
             src="/uploads/images/logo-nexusalpri.png"
             alt="NexusAlpri Logo"

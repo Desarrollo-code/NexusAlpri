@@ -60,4 +60,7 @@
       focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
       disabled:cursor-not-allowed disabled:opacity-50;
   }
+  .auth-logo-wrapper {
+    @apply mb-4 drop-shadow-[0_2px_4px_hsl(var(--primary)/0.4)];
+  }
 }
