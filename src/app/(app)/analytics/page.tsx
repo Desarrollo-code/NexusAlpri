@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -11,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector } from "recharts";
-import type { UserAnalyticsData, CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog } from '@/types';
+import type { CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog, UserAnalyticsData } from '@/types';
 import { CourseCarousel } from '@/components/course-carousel';
 import { getEventDetails, getInitials } from '@/lib/security-log-utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -62,7 +63,7 @@ const renderActiveShape = (props: any) => {
 
   return (
     <g>
-      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill} className="text-lg font-bold">
+      <text x={cx} y={cy} dy={4} textAnchor="middle" fill={fill} className="text-base font-bold">
         {payload.label}
       </text>
       <Sector
@@ -85,7 +86,10 @@ const renderActiveShape = (props: any) => {
       />
        <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
        <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-       <text x={ex + (cos >= 0 ? 1 : -1) * 6} y={ey} textAnchor={textAnchor} fill="hsl(var(--foreground))" className="text-xs">{`${value} (${(percent * 100).toFixed(0)}%)`}</text>
+       <text x={ex + (cos >= 0 ? 1 : -1) * 6} y={ey} textAnchor={textAnchor} fill="hsl(var(--foreground))" className="text-xs">
+         <tspan x={ex + (cos >= 0 ? 1 : -1) * 6} dy="-0.5em">{value}</tspan>
+         <tspan x={ex + (cos >= 0 ? 1 : -1) * 6} dy="1em">{`(${(percent * 100).toFixed(0)}%)`}</tspan>
+      </text>
     </g>
   );
 };
@@ -418,3 +422,4 @@ export default function AnalyticsPage() {
         </div>
     );
 }
+
