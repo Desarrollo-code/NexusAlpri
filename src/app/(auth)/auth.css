@@ -12,6 +12,18 @@
 }
 
 @layer components {
+  /* New wrapper for the gradient border effect */
+  .auth-card-wrapper {
+    @apply relative w-full max-w-sm rounded-xl p-px;
+    background: linear-gradient(145deg, #3a86ff, #f72585); /* Gradient from blue to pink/purple */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  /* Styling for the card inside the wrapper */
+  .auth-card-wrapper > .auth-card-inner {
+    @apply bg-[#110e1f] rounded-[11px] h-full w-full;
+  }
+
   .auth-input {
     @apply
       w-full h-10
