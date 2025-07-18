@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, BookCopy, PieChart as PieChartIcon, TrendingUp, UserCheck, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { UserAnalyticsData, type CourseAnalyticsData, type ProgressAnalyticsData, type Course as AppCourse } from '@/types';
+import type { UserAnalyticsData, CourseAnalyticsData, ProgressAnalyticsData, Course as AppCourse } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -242,7 +242,7 @@ export default function AnalyticsPage() {
                         <CardTitle className="flex items-center gap-2"><PieChartIcon className="text-primary"/> Cursos por Categoría</CardTitle>
                     </CardHeader>
                     <CardContent className="h-72">
-                         <ChartContainer config={categoryChartConfig}>
+                        <ChartContainer config={categoryChartConfig}>
                             <PieChart>
                                 <ChartTooltip content={<ChartTooltipContent nameKey="count" hideIndicator />} />
                                 <Pie data={categoryChartData} dataKey="count" nameKey="category" innerRadius={60} outerRadius={80} paddingAngle={2}>
@@ -264,3 +264,5 @@ export default function AnalyticsPage() {
         </div>
     );
 }
+
+    
