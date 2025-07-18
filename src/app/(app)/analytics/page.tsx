@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, TrendingUp, UsersRound, BookOpenCheck, ShieldCheck, Activity, Users, FileText } from 'lucide-react';
+import { AlertTriangle, TrendingUp, UsersRound, BookOpenCheck, ShieldCheck, Activity, Users, FileText, BarChart3, GraduationCap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -90,6 +90,7 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
 
 function UserAnalyticsSection({ stats }: { stats: UserAnalyticsData }) {
     const userRolesChartData = useMemo(() => {
+        if (!stats.usersByRole) return [];
         const order: ('STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR')[] = ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'];
         return order.map(role => ({
             role: role,
@@ -110,13 +111,15 @@ function UserAnalyticsSection({ stats }: { stats: UserAnalyticsData }) {
                     <CardHeader><CardTitle>Nuevos Registros (Últimos 30 días)</CardTitle></CardHeader>
                     <CardContent className="h-72">
                          <ChartContainer config={{ count: { label: 'Nuevos usuarios', color: 'hsl(var(--primary))' } }} className="h-full w-full">
-                            <AreaChart data={stats.newUsersLast30Days} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                                <defs><linearGradient id="colorNewUsers" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient></defs>
-                                <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                                <YAxis allowDecimals={false} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                                <ChartTooltip content={<ChartTooltipContent />} />
-                                <Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorNewUsers)" />
-                            </AreaChart>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={stats.newUsersLast30Days || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                                    <defs><linearGradient id="colorNewUsers" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient></defs>
+                                    <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                                    <YAxis allowDecimals={false} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorNewUsers)" />
+                                </AreaChart>
+                            </ResponsiveContainer>
                         </ChartContainer>
                     </CardContent>
                 </Card>
@@ -128,6 +131,7 @@ function UserAnalyticsSection({ stats }: { stats: UserAnalyticsData }) {
 
 function CourseAnalyticsSection({ stats }: { stats: CourseAnalyticsData }) {
     const courseStatusData = useMemo(() => {
+        if (!stats.coursesByStatus) return [];
         const order: ('DRAFT' | 'PUBLISHED' | 'ARCHIVED')[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED'];
         return order.map(status => ({
             status: status,
@@ -137,27 +141,52 @@ function CourseAnalyticsSection({ stats }: { stats: CourseAnalyticsData }) {
         }));
     }, [stats.coursesByStatus]);
 
+    const coursesByCategoryData = useMemo(() => {
+        if (!stats.coursesByCategory) return [];
+        return stats.coursesByCategory
+            .sort((a,b) => b.count - a.count)
+            .slice(0, 5) // Top 5 categories
+            .map((item, index) => ({
+                ...item,
+                fill: `hsl(var(--chart-${(index % 5) + 1}))`
+            }));
+    }, [stats.coursesByCategory]);
+
     return (
         <section className="space-y-6">
             <h2 className="text-xl font-semibold flex items-center gap-3"><BookOpenCheck className="text-primary"/> Analíticas de Cursos</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricCard title="Total Cursos" value={courseStatusData.reduce((acc, c) => acc + c.count, 0)} icon={FileText} />
-                <MetricCard title="Puntuación Media" value={`${stats.averageQuizScore.toFixed(1)}%`} icon={TrendingUp} description="En todos los quices"/>
+                <MetricCard title="Tasa de Finalización Media" value={`${stats.averageCompletionRate.toFixed(1)}%`} icon={TrendingUp} description="En todos los cursos"/>
+                 <MetricCard title="Puntuación Media Quizzes" value={`${stats.averageQuizScore.toFixed(1)}%`} icon={GraduationCap} description="En todos los quices"/>
+                 <MetricCard title="Cursos Publicados" value={courseStatusData.find(c => c.status === 'PUBLISHED')?.count || 0} icon={BookOpenCheck} />
             </div>
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                   <Card>
-                       <CardHeader><CardTitle>Cursos Más Populares</CardTitle></CardHeader>
-                       <CardContent>
-                           {stats.mostEnrolledCourses.length > 0 ? (
-                              <CourseCarousel courses={stats.mostEnrolledCourses} userRole="ADMINISTRATOR" />
-                           ) : (
-                              <p className="text-muted-foreground text-center py-8">No hay datos de inscripciones para mostrar.</p>
-                           )}
-                       </CardContent>
-                   </Card>
-                </div>
-                <DonutChartCard title="Estado General de Cursos" data={courseStatusData} config={courseStatusChartConfig} />
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                   <CardHeader><CardTitle>Cursos Más Populares (por Inscritos)</CardTitle></CardHeader>
+                   <CardContent>
+                       {stats.mostEnrolledCourses && stats.mostEnrolledCourses.length > 0 ? (
+                          <CourseCarousel courses={stats.mostEnrolledCourses} userRole="ADMINISTRATOR" />
+                       ) : (
+                          <p className="text-muted-foreground text-center py-8">No hay datos de inscripciones para mostrar.</p>
+                       )}
+                   </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader><CardTitle>Cursos por Categoría</CardTitle></CardHeader>
+                    <CardContent className="h-72">
+                       <ChartContainer config={{count: {label: 'Cursos'}}} className="h-full w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={coursesByCategoryData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                                    <XAxis dataKey="category" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                                    <YAxis allowDecimals={false} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Area type="monotone" dataKey="count" stroke="hsl(var(--chart-3))" fill="hsl(var(--chart-3))" fillOpacity={0.4} />
+                                </AreaChart>
+                          </ResponsiveContainer>
+                       </ChartContainer>
+                    </CardContent>
+                </Card>
             </div>
         </section>
     );
@@ -309,7 +338,7 @@ export default function AnalyticsPage() {
     return (
         <div className="space-y-8">
             <header>
-                <h1 className="text-3xl font-bold">Informes y Analíticas Avanzadas</h1>
+                <h1 className="text-3xl font-bold font-headline flex items-center gap-3"><BarChart3/> Informes y Analíticas Avanzadas</h1>
                 <p className="text-muted-foreground">Métricas clave para la toma de decisiones y el seguimiento del rendimiento de la plataforma.</p>
             </header>
             
