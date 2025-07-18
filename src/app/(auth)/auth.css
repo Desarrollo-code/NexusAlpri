@@ -6,10 +6,10 @@
 @layer utilities {
   .auth-bg {
     @apply bg-[#110e1f]; /* Deep purple background */
-    --color-1: 330 84% 60%; /* Pink */
-    --color-2: 262 82% 57%; /* Purple */
-    --color-3: 40 95% 55%;  /* Orange */
-    --color-4: 150 70% 40%; /* Green */
+    --color-1: 330 84% 70%; /* Pink */
+    --color-2: 210 82% 65%; /* Blue */
+    --color-3: 45 95% 65%;  /* Yellow */
+    --color-4: 15 85% 60%;  /* Orange */
     position: relative;
     overflow: hidden;
   }

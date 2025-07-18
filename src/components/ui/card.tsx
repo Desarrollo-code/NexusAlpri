@@ -14,7 +14,7 @@ const Card = React.forwardRef<
       className
     )}
   >
-    <span className="absolute -top-1 -left-1 w-[calc(100%+0.5rem)] h-[calc(100%+0.5rem)] animate-border-spin bg-[conic-gradient(from_90deg_at_50%_50%,hsl(var(--primary))_0%,hsl(var(--accent))_50%,hsl(var(--primary))_100%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+    <span className="absolute -top-1 -left-1 w-[calc(100%+0.5rem)] h-[calc(100%+0.5rem)] animate-border-spin bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#39D3BB_25%,#FFD479_50%,#F87575_75%,#E2CBFF_100%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
     <div className="relative rounded-[calc(0.75rem-1px)] h-full w-full bg-card">
       {props.children}
     </div>
