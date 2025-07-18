@@ -5,34 +5,22 @@
 
 @layer utilities {
   .auth-bg {
-    @apply bg-[#110e1f]; /* Deep purple/graphite background */
+    @apply bg-background;
     position: relative;
     overflow: hidden;
   }
 }
 
 @layer components {
-  /* New wrapper for the gradient border effect */
-  .auth-card-wrapper {
-    @apply relative w-full max-w-sm rounded-xl p-px;
-    background: linear-gradient(145deg, #3a86ff, #f72585); /* Gradient from blue to pink/purple */
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  }
-
-  /* Styling for the card inside the wrapper */
-  .auth-card-wrapper > .auth-card-inner {
-    @apply bg-[#110e1f] rounded-[11px] h-full w-full;
-  }
-
   .auth-input {
     @apply
       w-full h-10
-      rounded-md border border-white/20
-      bg-black/30 text-white
+      rounded-md border border-input
+      bg-background text-foreground
       px-3 py-2 text-sm
-      placeholder:text-gray-400
+      placeholder:text-muted-foreground
       focus-visible:outline-none
-      focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+      focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
       disabled:cursor-not-allowed disabled:opacity-50;
   }
   .auth-logo-wrapper {
