@@ -1,4 +1,3 @@
-
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -10,11 +9,14 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
+      "relative group overflow-hidden p-[1px] rounded-[calc(var(--radius)+1px)]",
+      "transition-all duration-300 ease-in-out hover:shadow-md hover:shadow-black/20",
       className
     )}
-    {...props}
-  />
+  >
+    <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-border-spin rounded-[calc(var(--radius)+1px)] [background:conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#39D4D9_50%,#E2CBFF_100%)]" />
+    <div className="relative z-10 rounded-lg bg-card text-card-foreground h-full w-full" {...props} />
+  </div>
 ))
 Card.displayName = "Card"
 

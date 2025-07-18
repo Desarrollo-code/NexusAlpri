@@ -5,31 +5,31 @@
 
 @layer base {
   :root {
-    --background: 220 15% 98%;
-    --foreground: 220 10% 15%;
+    --background: 220 20% 98%;
+    --foreground: 220 15% 25%;
     --card: 220 20% 100%;
-    --card-foreground: 220 10% 15%;
+    --card-foreground: 220 15% 25%;
     --popover: 220 20% 100%;
-    --popover-foreground: 220 10% 15%;
-    
-    --primary: 45 85% 60%; /* Gold */
-    --primary-foreground: 220 15% 15%;
+    --popover-foreground: 220 15% 25%;
+
+    --primary: 45 80% 55%; /* Rich Gold */
+    --primary-foreground: 210 20% 98%;
     --secondary: 220 15% 94%;
     --secondary-foreground: 220 10% 25%;
     --muted: 220 15% 94%;
     --muted-foreground: 220 10% 45%;
-    --accent: 45 95% 65%; /* Lighter Gold */
-    --accent-foreground: 220 15% 15%;
+    --accent: 45 70% 60%; /* Lighter Gold Accent */
+    --accent-foreground: 210 20% 15%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 220 15% 88%;
     --input: 220 15% 92%;
-    --ring: 45 85% 60%;
+    --ring: 45 80% 55%;
     --radius: 0.75rem;
 
-    --chart-1: 45 85% 60%;   /* Gold */
-    --chart-2: 45 95% 65%;   /* Lighter Gold */
-    --chart-3: 35 85% 70%;   /* Lighter Orange/Gold */
+    --chart-1: 45 80% 55%;   /* Gold */
+    --chart-2: 45 70% 65%;   /* Lighter Gold */
+    --chart-3: 35 82% 70%;   /* Light Orange/Gold */
     --chart-4: 220 15% 70%;   /* Muted Gray */
     --chart-5: 220 15% 50%;   /* Darker Gray */
 
@@ -44,90 +44,42 @@
 
     --sidebar-background: 220 15% 96%;
     --sidebar-foreground: 220 15% 25%;
-    --sidebar-accent: 45 85% 60%;
-    --sidebar-accent-foreground: 220 15% 15%;
+    --sidebar-accent: 45 80% 55%;
+    --sidebar-accent-foreground: 45 90% 15%;
     --sidebar-border: 220 15% 88%;
-    --sidebar-ring: 45 85% 60%;
+    --sidebar-ring: 45 80% 55%;
   }
 
   .dark {
-    --background: 220 10% 8%; /* Darker Graphite */
-    --foreground: 220 15% 90%;
-    --card: 220 10% 16%; 
-    --card-foreground: 220 15% 90%;
-    --popover: 220 10% 12%;
-    --popover-foreground: 220 15% 90%;
+    --background: 220 10% 12%; /* Graphite */
+    --foreground: 210 20% 94%;
+    --card: 220 10% 16%; /* Slightly Lighter Graphite */
+    --card-foreground: 210 20% 94%;
+    --popover: 220 10% 10%;
+    --popover-foreground: 210 20% 94%;
 
-    --primary: 45 85% 60%; /* Gold */
-    --primary-foreground: 220 15% 15%;
+    --primary: 45 80% 55%; /* Rich Gold */
+    --primary-foreground: 45 90% 15%; /* Dark text for gold buttons */
     --secondary: 220 10% 25%;
-    --secondary-foreground: 220 15% 90%;
+    --secondary-foreground: 210 20% 94%;
     --muted: 220 10% 22%;
-    --muted-foreground: 220 10% 60%;
-    --accent: 45 95% 65%; /* Lighter Gold */
-    --accent-foreground: 220 15% 15%;
+    --muted-foreground: 220 10% 65%;
+    --accent: 45 70% 60%; /* Lighter Gold Accent */
+    --accent-foreground: 45 90% 15%;
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 220 10% 25%; /* Graphite border */
+    --border: 220 10% 25%;
     --input: 220 10% 20%;
-    --ring: 45 85% 60%;
+    --ring: 45 80% 55%;
     
     --sidebar-background: 220 10% 10%;
-    --sidebar-foreground: 220 15% 80%;
-    --sidebar-accent: 45 85% 60%;
-    --sidebar-accent-foreground: 220 15% 15%;
+    --sidebar-foreground: 210 20% 85%;
+    --sidebar-accent: 45 80% 55%;
+    --sidebar-accent-foreground: 45 90% 15%;
     --sidebar-border: 220 10% 20%;
-    --sidebar-ring: 45 85% 60%;
+    --sidebar-ring: 45 80% 55%;
   }
 }
-
-/* View Transition API styles for Circular Reveal */
-@supports (view-transition-name: none) {
-  @layer base {
-    @property --x {
-      syntax: "<length>";
-      inherits: true;
-      initial-value: 0px;
-    }
-    @property --y {
-      syntax: "<length>";
-      inherits: true;
-      initial-value: 0px;
-    }
-
-    ::view-transition-old(root),
-    ::view-transition-new(root) {
-      animation-duration: 0.5s;
-      animation-timing-function: ease-in-out;
-      animation-fill-mode: both;
-    }
-
-    ::view-transition-new(root) {
-      animation-name: reveal-in;
-    }
-    ::view-transition-old(root) {
-      animation-name: reveal-out;
-    }
-
-    @keyframes reveal-in {
-      from {
-        clip-path: circle(0% at var(--x) var(--y));
-      }
-      to {
-        clip-path: circle(150% at var(--x) var(--y));
-      }
-    }
-    @keyframes reveal-out {
-      from {
-        clip-path: circle(150% at var(--x) var(--y));
-      }
-      to {
-        clip-path: circle(0% at var(--x) var(--y));
-      }
-    }
-  }
-}
-
 
 @layer base {
   * {
@@ -142,14 +94,14 @@
   .text-balance {
     text-wrap: balance;
   }
-}
 
-@layer components {
-    .glass-card {
-        @apply relative rounded-lg p-px;
-        background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  @keyframes border-spin {
+    100% {
+      transform: rotate(-360deg);
     }
-    .glass-card > * {
-        @apply rounded-[7px];
-    }
+  }
+
+  .animate-border-spin {
+    animation: border-spin 10s linear infinite;
+  }
 }

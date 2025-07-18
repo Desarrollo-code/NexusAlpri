@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { Loader2, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -106,7 +107,7 @@ export default function SignUpPage() {
   if (!settings.allowPublicRegistration) {
       return (
         <div className="auth-bg flex min-h-screen flex-col items-center justify-center p-4">
-              <div className="auth-logo-wrapper">
+              <div className="mb-4 drop-shadow-[0_2px_4px_hsl(var(--primary)/0.4)]">
               <Image
                 src="/uploads/images/logo-nexusalpri.png"
                 alt="NexusAlpri Logo"
@@ -147,7 +148,7 @@ export default function SignUpPage() {
   return (
     <div className="auth-bg flex min-h-screen flex-col items-center justify-center p-4">
       <div className="relative flex w-full max-w-sm flex-col items-center justify-center p-4">
-        <div className="auth-logo-wrapper">
+        <div className="mb-4 drop-shadow-[0_2px_4px_hsl(var(--primary)/0.4)]">
           <Image
             src="/uploads/images/logo-nexusalpri.png"
             alt="NexusAlpri Logo"
@@ -168,7 +169,7 @@ export default function SignUpPage() {
                 {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
                 <div className="grid gap-2">
                     <Label htmlFor="name">Nombre Completo</Label>
-                    <input
+                    <Input
                         id="name"
                         type="text"
                         placeholder="Tu nombre completo"
@@ -176,12 +177,11 @@ export default function SignUpPage() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         disabled={isLoading}
-                        className="auth-input"
                     />
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="email">Correo Electrónico</Label>
-                    <input
+                    <Input
                         id="email"
                         type="email"
                         placeholder="tu@email.com"
@@ -189,20 +189,19 @@ export default function SignUpPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={isLoading}
-                        className="auth-input"
                     />
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="password">Contraseña</Label>
                     <div className="relative">
-                      <input
+                      <Input
                           id="password"
                           type={showPassword ? "text" : "password"}
                           required
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           disabled={isLoading}
-                          className="auth-input pr-10"
+                          className="pr-10"
                       />
                       <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                           {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -212,16 +211,16 @@ export default function SignUpPage() {
                 <div className="grid gap-2">
                     <Label htmlFor="confirm-password">Confirmar Contraseña</Label>
                     <div className="relative">
-                      <input
+                      <Input
                           id="confirm-password"
                           type={showConfirmPassword ? "text" : "password"}
                           required
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           disabled={isLoading}
-                          className="auth-input pr-10"
+                          className="pr-10"
                       />
-                      <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                       <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                           {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>

@@ -17,6 +17,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp"
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 
 export default function SignInPage() {
   const router = useRouter();
@@ -112,7 +113,7 @@ export default function SignInPage() {
   return (
     <div className="auth-bg flex min-h-screen flex-col items-center justify-center p-4">
       <div className="relative flex w-full max-w-sm flex-col items-center justify-center p-4">
-        <div className="auth-logo-wrapper">
+        <div className="mb-4 drop-shadow-[0_2px_4px_hsl(var(--primary)/0.4)]">
           <Image
             src="/uploads/images/logo-nexusalpri.png"
             alt="NexusAlpri Logo"
@@ -134,7 +135,7 @@ export default function SignInPage() {
                     <form onSubmit={handlePasswordSubmit} className="grid gap-4">
                       <div className="grid gap-2">
                         <Label htmlFor="email">Correo Electrónico</Label>
-                        <input
+                        <Input
                           id="email"
                           type="email"
                           placeholder="tu@email.com"
@@ -142,20 +143,19 @@ export default function SignInPage() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           disabled={isLoading}
-                          className="auth-input"
                         />
                       </div>
                       <div className="grid gap-2">
                         <Label htmlFor="password">Contraseña</Label>
                         <div className="relative">
-                          <input
+                          <Input
                             id="password"
                             type={showPassword ? "text" : "password"}
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             disabled={isLoading}
-                            className="auth-input pr-10"
+                            className="pr-10"
                           />
                           <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
