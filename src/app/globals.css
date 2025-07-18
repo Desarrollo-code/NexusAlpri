@@ -99,6 +99,10 @@
       transform: rotate(360deg);
     }
   }
+
+  .animate-border-spin {
+    animation: border-spin 10s linear infinite;
+  }
 }
 
 @layer components {
@@ -123,13 +127,14 @@
           #e81cff
         );
         z-index: -1;
-        border-radius: var(--radius);
+        border-radius: calc(var(--radius) + 2px);
         opacity: 0;
         transition: opacity 0.3s ease-in-out;
+        animation: border-spin 10s linear infinite paused;
     }
 
     .animated-border-card:hover::before {
         opacity: 1;
-        animation: border-spin 10s linear infinite;
+        animation-play-state: running;
     }
 }
