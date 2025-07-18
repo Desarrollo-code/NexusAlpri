@@ -111,7 +111,7 @@ export default function SignInPage() {
 
 
   return (
-    <div className="auth-bg flex min-h-screen flex-col items-center justify-center p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="relative flex w-full max-w-sm flex-col items-center justify-center p-4">
         <div className="mb-4 drop-shadow-[0_2px_4px_hsl(var(--primary)/0.4)]">
           <Image
@@ -124,7 +124,8 @@ export default function SignInPage() {
           />
         </div>
         
-        <Card className="w-full">
+        <div className="gradient-border-card w-full">
+            <Card className="inner-card">
             {!show2fa ? (
                 <>
                   <CardHeader className="text-center">
@@ -219,7 +220,8 @@ export default function SignInPage() {
                   </CardContent>
                 </>
             )}
-        </Card>
+            </Card>
+        </div>
       </div>
       <div className="fixed bottom-4 right-4 z-0 pointer-events-none">
         <Image

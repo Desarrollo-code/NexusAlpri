@@ -1,5 +1,5 @@
-
 import React from 'react';
+import './auth.css';
 
 export default function AuthLayout({
   children,
@@ -7,5 +7,5 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   // This wrapper forces the dark theme for auth pages without creating a new <html> or <body> tag.
-  return <div className="dark">{children}</div>;
+  return <div className="dark auth-bg">{children}</div>;
 }

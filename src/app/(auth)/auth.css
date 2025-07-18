@@ -3,10 +3,17 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .auth-bg {
-    @apply bg-background;
-    position: relative;
-    overflow: hidden;
-  }
+@layer base {
+    .auth-bg {
+        @apply bg-background min-h-screen;
+    }
+
+    .gradient-border-card {
+        @apply relative rounded-xl p-px;
+        background: linear-gradient(145deg, hsl(185, 80%, 70%), hsl(270, 80%, 80%));
+    }
+
+    .gradient-border-card > .inner-card {
+        @apply bg-card h-full w-full rounded-[11px];
+    }
 }
