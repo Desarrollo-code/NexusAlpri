@@ -16,7 +16,7 @@ const Card = React.forwardRef<
     )}
     {...props}
   >
-    <div className="rounded-[calc(var(--radius)-1px)] bg-card text-card-foreground h-full w-full">
+    <div className="rounded-[calc(var(--radius)-1px)] bg-card/80 backdrop-blur-xl text-card-foreground h-full w-full">
         {children}
     </div>
   </div>
