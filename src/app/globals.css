@@ -6,30 +6,30 @@
 @layer base {
   :root {
     --background: 220 20% 98%;
-    --foreground: 220 15% 25%;
+    --foreground: 220 10% 15%;
     --card: 220 20% 100%;
-    --card-foreground: 220 15% 25%;
+    --card-foreground: 220 10% 15%;
     --popover: 220 20% 100%;
-    --popover-foreground: 220 15% 25%;
+    --popover-foreground: 220 10% 15%;
 
-    --primary: 263 80% 58%;
-    --primary-foreground: 210 20% 98%;
+    --primary: 45 85% 55%; /* Gold */
+    --primary-foreground: 220 15% 10%;
     --secondary: 220 15% 94%;
     --secondary-foreground: 220 10% 25%;
     --muted: 220 15% 94%;
     --muted-foreground: 220 10% 45%;
-    --accent: 263 90% 96%;
-    --accent-foreground: 263 80% 58%;
+    --accent: 45 90% 96%; /* Light Gold */
+    --accent-foreground: 45 85% 55%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 220 15% 88%;
     --input: 220 15% 92%;
-    --ring: 263 80% 58%;
+    --ring: 45 85% 55%;
     --radius: 0.75rem;
 
-    --chart-1: 263 80% 58%;   /* Deep Purple */
-    --chart-2: 263 70% 68%;   /* Lighter Purple */
-    --chart-3: 263 82% 75%;   /* Light Lilac */
+    --chart-1: 45 85% 55%;   /* Gold */
+    --chart-2: 45 75% 65%;   /* Lighter Gold */
+    --chart-3: 45 82% 75%;   /* Lightest Gold */
     --chart-4: 220 15% 70%;   /* Muted Gray */
     --chart-5: 220 15% 50%;   /* Darker Gray */
 
@@ -44,40 +44,40 @@
 
     --sidebar-background: 220 15% 96%;
     --sidebar-foreground: 220 15% 25%;
-    --sidebar-accent: 263 80% 58%;
-    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-accent: 45 85% 55%;
+    --sidebar-accent-foreground: 220 15% 10%;
     --sidebar-border: 220 15% 88%;
-    --sidebar-ring: 263 80% 58%;
+    --sidebar-ring: 45 85% 55%;
   }
 
   .dark {
-    --background: 240 5% 18%; /* Dark Gray */
-    --foreground: 210 20% 94%;
-    --card: 240 5% 22%; /* Slightly Lighter Gray */
-    --card-foreground: 210 20% 94%;
-    --popover: 240 5% 16%;
-    --popover-foreground: 210 20% 94%;
+    --background: 220 10% 12%; /* Graphite */
+    --foreground: 220 15% 90%;
+    --card: 220 10% 16%; /* Lighter Graphite */
+    --card-foreground: 220 15% 90%;
+    --popover: 220 10% 14%;
+    --popover-foreground: 220 15% 90%;
 
-    --primary: 263 70% 65%; /* Brighter Purple */
-    --primary-foreground: 210 20% 98%;
-    --secondary: 240 5% 30%;
-    --secondary-foreground: 210 20% 94%;
-    --muted: 240 5% 25%;
-    --muted-foreground: 210 10% 65%;
-    --accent: 263 70% 65%; /* Electric Indigo */
-    --accent-foreground: 210 20% 98%;
+    --primary: 45 75% 60%; /* Gold */
+    --primary-foreground: 220 15% 10%;
+    --secondary: 220 10% 25%;
+    --secondary-foreground: 220 15% 90%;
+    --muted: 220 10% 20%;
+    --muted-foreground: 220 10% 60%;
+    --accent: 45 75% 60%; /* Gold */
+    --accent-foreground: 220 15% 10%;
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 240 5% 30%;
-    --input: 240 5% 25%;
-    --ring: 263 70% 65%;
+    --border: 220 10% 25%;
+    --input: 220 10% 20%;
+    --ring: 45 75% 60%;
     
-    --sidebar-background: 240 5% 16%;
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-accent: 263 70% 65%;
-    --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 240 5% 25%;
-    --sidebar-ring: 263 70% 65%;
+    --sidebar-background: 220 10% 14%;
+    --sidebar-foreground: 220 15% 80%;
+    --sidebar-accent: 45 75% 60%;
+    --sidebar-accent-foreground: 220 15% 10%;
+    --sidebar-border: 220 10% 25%;
+    --sidebar-ring: 45 75% 60%;
   }
 }
 
@@ -98,7 +98,6 @@
     mix-blend-mode: normal;
   }
 
-  /* Fallback for browsers that don't support the modern @supports syntax */
   @supports not (animation-timeline: view()) {
     ::view-transition-old(root),
     ::view-transition-new(root) {
@@ -122,16 +121,6 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
-  }
-
-  @keyframes border-spin {
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  .animate-border-spin {
-    animation: border-spin 10s linear infinite;
   }
 }
 
