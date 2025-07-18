@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    --background: 220 20% 98%;
+    --background: 220 15% 98%;
     --foreground: 220 10% 15%;
     --card: 220 20% 100%;
     --card-foreground: 220 10% 15%;
@@ -142,13 +142,9 @@
 
     .animated-border-card {
         @apply relative rounded-xl border-border bg-card text-card-foreground p-0 transition-all duration-300 ease-in-out;
-        border-width: 1px; /* Static border */
+        border-width: 1px;
     }
 
-    .animated-border-card:hover {
-        box-shadow: 0 10px 25px -5px hsl(var(--primary)/0.2), 0 8px 10px -6px hsl(var(--primary)/0.2);
-    }
-    
     .animated-border-card::before {
         content: "";
         position: absolute;
@@ -157,7 +153,7 @@
         background: conic-gradient(from 90deg at 50% 50%, #f72585, #fff200, #ff9100, #3a86ff, #f72585);
         opacity: 0;
         transition: opacity 0.3s ease-in-out;
-        animation: spin 7s linear infinite paused;
+        animation: spin 10s linear infinite paused;
         z-index: -1;
     }
 
