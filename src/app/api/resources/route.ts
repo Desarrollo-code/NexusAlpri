@@ -19,9 +19,9 @@ export async function GET(req: NextRequest) {
         whereClause.AND = whereClause.AND || [];
         whereClause.AND.push({
             OR: [
-                { title: { contains: search, mode: 'insensitive' } },
-                { description: { contains: search, mode: 'insensitive' } },
-                { tags: { has: search.toLowerCase() } },
+                { title: { contains: search } },
+                { description: { contains: search } },
+                { tags: { contains: search } },
             ],
         });
     }
@@ -47,10 +47,10 @@ export async function GET(req: NextRequest) {
             prisma.resource.count({ where: whereClause })
         ]);
         
-        // Don't expose the PIN hash to the client and correctly type cast JSON fields
+        // Don't expose the PIN hash to the client
         const safeResources = resources.map(({ pin, tags, ...resource }) => ({
             ...resource,
-            tags: (Array.isArray(tags) ? tags : []) as string[],
+            tags: tags?.split(',').filter(Boolean) ?? [],
             hasPin: !!pin,
         }));
 
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
                 description,
                 url: url || null,
                 category: category || 'General',
-                tags: tags && Array.isArray(tags) ? tags : [],
+                tags: Array.isArray(tags) ? tags.join(',') : '',
                 uploaderId: session.id,
                 parentId: parentId || null,
             },
@@ -96,7 +96,8 @@ export async function POST(req: NextRequest) {
         const { pin, ...safeResource } = newResource;
 
         return NextResponse.json({ 
-            ...safeResource, 
+            ...safeResource,
+            tags: safeResource.tags?.split(',').filter(Boolean) ?? [],
             hasPin: !!pin,
         }, { status: 201 });
 

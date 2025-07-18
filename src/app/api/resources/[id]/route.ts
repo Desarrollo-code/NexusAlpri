@@ -16,8 +16,12 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
         if (!resource) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
-        
-        return NextResponse.json(resource);
+        const { pin, tags, ...safeResource } = resource;
+        return NextResponse.json({
+            ...safeResource,
+            tags: tags?.split(',').filter(Boolean) ?? [],
+            hasPin: !!pin,
+        });
     } catch (error) {
         console.error('[RESOURCE_GET_ERROR]', error);
         return NextResponse.json({ message: 'Error al obtener el recurso' }, { status: 500 });
@@ -48,7 +52,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
             data: { 
                 title, 
                 category, 
-                tags: tags || [],
+                tags: Array.isArray(tags) ? tags.join(',') : '',
                 description,
             },
         });

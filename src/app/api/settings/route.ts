@@ -11,7 +11,7 @@ const DEFAULT_DB_SETTINGS = {
   allowPublicRegistration: true,
   enableEmailNotifications: true,
   emailWhitelist: "",
-  resourceCategories: ["Recursos Humanos", "TI y Seguridad", "Marketing", "Ventas", "Legal", "Operaciones", "Finanzas", "Formación Interna", "Documentación de Producto", "General"],
+  resourceCategories: "Recursos Humanos,TI y Seguridad,Marketing,Ventas,Legal,Operaciones,Finanzas,Formación Interna,Documentación de Producto,General",
   passwordMinLength: 8,
   passwordRequireUppercase: true,
   passwordRequireLowercase: true,
@@ -34,11 +34,10 @@ export async function GET(req: NextRequest) {
       });
     }
     
-    // Transform JSON fields to arrays for the client
+    // Transform string fields to arrays for the client
     const settingsToReturn: PlatformSettings = {
         ...dbSettings,
-        // The type from prisma is JsonValue, we cast it to what the client expects
-        resourceCategories: (dbSettings.resourceCategories as string[]) ?? [],
+        resourceCategories: dbSettings.resourceCategories?.split(',').filter(Boolean) ?? [],
         emailWhitelist: dbSettings.emailWhitelist || '',
     };
     
@@ -49,6 +48,7 @@ export async function GET(req: NextRequest) {
     // If there's a DB error, return the parsed default settings object to allow the app to function.
     const fallbackSettings: PlatformSettings = {
         ...DEFAULT_DB_SETTINGS,
+        resourceCategories: DEFAULT_DB_SETTINGS.resourceCategories.split(','),
     };
     return NextResponse.json(fallbackSettings);
   }
@@ -66,6 +66,7 @@ export async function POST(req: NextRequest) {
     
     const dataToSave = {
         ...dataFromClient,
+        resourceCategories: dataFromClient.resourceCategories.join(','),
     };
 
     // Remove fields that should not be manually set by client
@@ -75,9 +76,9 @@ export async function POST(req: NextRequest) {
     const currentSettings = await prisma.platformSettings.findFirst();
     
     // --- START: CATEGORY DELETION CHECK ---
-    if (currentSettings && currentSettings.resourceCategories && Array.isArray(currentSettings.resourceCategories)) {
-        const oldCategories = currentSettings.resourceCategories as string[];
-        const newCategories = dataToSave.resourceCategories;
+    if (currentSettings && currentSettings.resourceCategories) {
+        const oldCategories = currentSettings.resourceCategories.split(',').filter(Boolean);
+        const newCategories = dataToSave.resourceCategories.split(',').filter(Boolean);
         const deletedCategories = oldCategories.filter(cat => !newCategories.includes(cat));
 
         if (deletedCategories.length > 0) {
@@ -103,7 +104,7 @@ export async function POST(req: NextRequest) {
     
     const settingsToReturn: PlatformSettings = {
         ...updatedDbSettings,
-        resourceCategories: (updatedDbSettings.resourceCategories as string[]) ?? [],
+        resourceCategories: updatedDbSettings.resourceCategories?.split(',').filter(Boolean) ?? [],
         emailWhitelist: updatedDbSettings.emailWhitelist || '',
     };
 

@@ -114,7 +114,11 @@ export interface EnrolledCourse extends Course {
     progressPercentage?: number;
 }
 
-export type LessonCompletionRecord = Prisma.LessonCompletionRecordGetPayload<{}>;
+export type LessonCompletionRecord = {
+    lessonId: string;
+    type: 'view' | 'quiz';
+    score?: number | null;
+};
 
 export interface CourseProgress {
     userId: string;
