@@ -41,16 +41,13 @@ export async function GET(req: NextRequest) {
         const sumCompletionRate = courseProgressData.reduce((acc, curr) => acc + (curr.progressPercentage || 0), 0);
         const averageCompletionRate = totalProgressRecords > 0 ? sumCompletionRate / totalProgressRecords : 0;
         
-        // TODO: Re-enable when LessonCompletionRecord model is implemented and migrated.
-        // const quizScoresData = await prisma.lessonCompletionRecord.findMany({
-        //     where: { type: 'quiz', score: { not: null } },
-        //     select: { score: true }
-        // });
-        // const totalQuizzes = quizScoresData.length;
-        // const sumQuizScores = quizScoresData.reduce((acc, curr) => acc + (curr.score || 0), 0);
-        // const averageQuizScore = totalQuizzes > 0 ? sumQuizScores / totalQuizzes : 0;
-        const averageQuizScore = 0; // Placeholder
-        
+        const quizScoresData = await prisma.lessonCompletionRecord.findMany({
+            where: { type: 'quiz', score: { not: null } },
+            select: { score: true }
+        });
+        const totalQuizzes = quizScoresData.length;
+        const sumQuizScores = quizScoresData.reduce((acc, curr) => acc + (curr.score || 0), 0);
+        const averageQuizScore = totalQuizzes > 0 ? sumQuizScores / totalQuizzes : 0;
 
         const mostEnrolledCoursesQuery = prisma.course.findMany({
             where: {

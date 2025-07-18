@@ -12,71 +12,76 @@
     --popover: 220 20% 100%;
     --popover-foreground: 220 15% 25%;
 
-    /* Gold & Graphite Palette */
-    --primary: 38 92% 50%; /* Ocre/Gold for primary actions */
+    /* Deep Purple Palette */
+    --primary: 265 53% 52%; /* Deep Purple (#673AB7) */
     --primary-foreground: 210 20% 98%;
     --secondary: 220 15% 94%;
     --secondary-foreground: 220 10% 25%;
     --muted: 220 15% 94%;
     --muted-foreground: 220 10% 45%;
-    --accent: 25 84% 60%; /* Soft orange accent */
-    --accent-foreground: 220 15% 15%;
+    --accent: 263 52% 50%; /* Electric Indigo (#6F42C1) */
+    --accent-foreground: 210 20% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 220 15% 88%;
     --input: 220 15% 92%;
-    --ring: 38 92% 50%;
+    --ring: 265 53% 52%;
     --radius: 0.75rem;
 
-    /* Chart/Event Palette for Gold & Graphite theme */
-    --chart-1: 38 92% 50%;   /* Gold (Primary) */
-    --chart-2: 25 84% 60%;   /* Orange (Accent) */
-    --chart-3: 150 70% 35%;  /* Deep Green */
-    --chart-4: 220 15% 50%;  /* Slate Grey */
-    --chart-5: 20 50% 45%;   /* Terracotta */
+    /* Chart/Event Palette */
+    --chart-1: 265 53% 52%;   /* Primary */
+    --chart-2: 263 52% 60%;   /* Lighter Accent */
+    --chart-3: 340 82% 60%;   /* Pink/Magenta */
+    --chart-4: 190 80% 55%;   /* Cyan */
+    --chart-5: 45 90% 55%;    /* Yellow/Gold */
 
-    --event-blue: 210 90% 50%;   /* General (Kept for consistency) */
-    --event-green: 150 70% 35%;  /* Taller/Formación */
+    --event-blue: 210 90% 50%;   /* General */
+    --event-green: 150 70% 40%;  /* Taller/Formación */
     --event-red: 0 84% 60%;      /* Urgente/Límite */
     --event-orange: 25 84% 60%;  /* Festivo */
 
+    /* Gauge Colors */
+    --gauge-green: 140 70% 45%;
+    --gauge-yellow: 45 90% 55%;
+    --gauge-red: 0 84% 60%;
+
     --sidebar-background: 220 15% 96%;
     --sidebar-foreground: 220 15% 25%;
-    --sidebar-accent: 38 92% 50%;
+    --sidebar-accent: 265 53% 52%;
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: 220 15% 88%;
-    --sidebar-ring: 38 92% 50%;
+    --sidebar-ring: 265 53% 52%;
   }
 
   .dark {
-    --background: 220 15% 15%; /* Graphite Dark */
+    --background: 0 0% 18.8%; /* Dark Gray (#303030) */
     --foreground: 210 20% 94%;
-    --card: 220 15% 20%;
+    --card: 0 0% 22%;
     --card-foreground: 210 20% 94%;
-    --popover: 220 15% 10%;
+    --popover: 0 0% 10%;
     --popover-foreground: 210 20% 94%;
 
-    /* Gold & Graphite Palette */
-    --primary: 38 92% 50%;
-    --primary-foreground: 220 15% 10%;
-    --secondary: 220 15% 25%;
+    /* Deep Purple Palette */
+    --primary: 265 53% 58%; /* Lighter Deep Purple for dark mode */
+    --primary-foreground: 210 20% 98%;
+    --secondary: 0 0% 25%;
     --secondary-foreground: 210 20% 94%;
-    --muted: 220 15% 25%;
+    --muted: 0 0% 25%;
     --muted-foreground: 220 10% 65%;
-    --accent: 25 84% 60%;
-    --accent-foreground: 220 15% 15%;
+    --accent: 263 52% 60%; /* Lighter Electric Indigo */
+    --accent-foreground: 210 20% 98%;
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 220 15% 30%;
-    --input: 220 15% 28%;
-    --ring: 38 92% 50%;
+    --border: 0 0% 28%;
+    --input: 0 0% 26%;
+    --ring: 265 53% 58%;
     
-    --sidebar-background: 220 15% 12%;
+    --sidebar-background: 0 0% 15%;
     --sidebar-foreground: 210 20% 85%;
-    --sidebar-accent: 38 92% 50%;
-    --sidebar-accent-foreground: 220 15% 10%;
-    --sidebar-border: 220 15% 22%;
-    --sidebar-ring: 38 92% 50%;
+    --sidebar-accent: 265 53% 58%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 0 0% 25%;
+    --sidebar-ring: 265 53% 58%;
   }
 }
 

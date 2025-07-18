@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
     try {
         const today = new Date();
         const thirtyDaysAgo = startOfDay(subDays(today, 30));
+        const sevenDaysAgo = startOfDay(subDays(today, 7));
 
         // Aggregate user counts by role
         const usersByRoleQuery = prisma.user.groupBy({
@@ -23,8 +24,14 @@ export async function GET(req: NextRequest) {
         });
 
         // Count active users in the last 7 days (based on security logs for logins)
-        // TODO: Re-enable when SecurityLog model is implemented and migrated.
-        const activeUsersQuery = Promise.resolve(0); // This is not a prisma promise, handle separately.
+        const activeUsersQuery = prisma.securityLog.groupBy({
+            by: ['userId'],
+            where: { 
+                event: 'SUCCESSFUL_LOGIN',
+                createdAt: { gte: sevenDaysAgo } 
+            },
+        });
+
 
         // Aggregate new users per day for the last 30 days
         const newUsersLast30DaysQuery = prisma.user.groupBy({
@@ -42,17 +49,17 @@ export async function GET(req: NextRequest) {
             },
         });
         
-        // Correctly handle the transaction by only including Prisma promises
-        const [usersByRole, newUsersAggregated] = await prisma.$transaction([
+        const [usersByRole, activeUsersResult, newUsersAggregated] = await prisma.$transaction([
             usersByRoleQuery,
+            activeUsersQuery,
             newUsersLast30DaysQuery
         ]);
         
-        const activeUsersLast7Days = await activeUsersQuery;
+        const activeUsersLast7Days = activeUsersResult.length;
 
         // Process aggregated new user data into a day-by-day format
         const dateMap = new Map<string, number>();
-        for (let i = 0; i < 30; i++) {
+        for (let i = 29; i >= 0; i--) {
             const date = subDays(today, i);
             const formattedDate = format(date, 'MMM d');
             dateMap.set(formattedDate, 0);

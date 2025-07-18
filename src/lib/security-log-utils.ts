@@ -3,7 +3,7 @@ import type { SecurityLogEvent } from '@/types';
 import { ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert } from 'lucide-react';
 import React from 'react';
 
-export const getEventDetails = (event: SecurityLogEvent, details?: string | null) => {
+export const getEventDetails = (event: SecurityLogEvent) => {
     switch (event) {
         case 'SUCCESSFUL_LOGIN': return { label: 'Inicio Sesión Exitoso', icon: React.createElement(ShieldCheck, { className: "h-4 w-4 text-green-500" }), variant: 'secondary' as const };
         case 'FAILED_LOGIN_ATTEMPT': return { label: 'Intento Fallido', icon: React.createElement(ShieldX, { className: "h-4 w-4 text-destructive" }), variant: 'destructive' as const };
@@ -15,4 +15,12 @@ export const getEventDetails = (event: SecurityLogEvent, details?: string | null
     }
 };
 
-export const getInitials = (name?: string | null) => name?.split(' ').map(n => n[0]).join('') || '??';
+export const getInitials = (name?: string | null) => {
+  if (!name) return '??';
+  const names = name.split(' ');
+  if (names.length > 1 && names[0] && names[names.length - 1]) {
+      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+  }
+  if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
+  return name.substring(0, 2).toUpperCase();
+};

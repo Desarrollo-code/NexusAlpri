@@ -209,6 +209,7 @@ export interface SecurityLog {
     userId?: string | null;
     createdAt: string; // This will be an ISO string
     details?: string | null;
+    user?: Partial<User> | null;
 }
 
 // --- ANALYTICS ---
