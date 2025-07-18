@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek, differenceInDays, isWithinInterval } from 'date-fns';
+import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
@@ -53,7 +53,7 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
         <div
             onClick={() => onDateSelect(day)}
             className={cn(
-                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[100px]",
+                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[120px]",
                 !isCurrentMonth && "bg-muted/30 text-muted-foreground/50",
                 isSameDay(day, selectedDay) && "bg-accent/40"
             )}
@@ -108,68 +108,100 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
     return { weeks: weeksArray, daysInGrid: eachDayOfInterval({ start, end }) };
   }, [month]);
 
-  const sortedEvents = useMemo(() => events.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()), [events]);
-
   const multiDayEvents = useMemo(() => {
-      return sortedEvents
-          .filter(e => e.allDay || differenceInDays(new Date(e.end), new Date(e.start)) >= 1)
-          .map(event => {
-              const start = new Date(event.start);
-              const end = new Date(event.end);
-              return { ...event, start, end };
-          });
-  }, [sortedEvents]);
+    const eventPositions: Record<string, { top: number, event: CalendarEvent }[]> = {};
+    
+    // Sort events to prioritize longer events
+    const sorted = [...events].sort((a,b) => {
+        const aDuration = new Date(a.end).getTime() - new Date(a.start).getTime();
+        const bDuration = new Date(b.end).getTime() - new Date(b.start).getTime();
+        return bDuration - aDuration;
+    });
+
+    for (const event of sorted) {
+        if (!event.allDay && isSameDay(new Date(event.start), new Date(event.end))) continue;
+
+        let currentDay = startOfWeek(new Date(event.start));
+        let topPosition = 0;
+        let placed = false;
+
+        while (!placed) {
+            let weekIsFree = true;
+            let dayToCheck = new Date(event.start);
+
+            while(dayToCheck <= new Date(event.end)) {
+                 const dayKey = format(dayToCheck, 'yyyy-MM-dd');
+                 if(eventPositions[dayKey]?.some(p => p.top === topPosition)) {
+                     weekIsFree = false;
+                     break;
+                 }
+                 dayToCheck.setDate(dayToCheck.getDate() + 1);
+            }
+            
+            if (weekIsFree) {
+                let dayToPlace = new Date(event.start);
+                 while(dayToPlace <= new Date(event.end)) {
+                    const dayKey = format(dayToPlace, 'yyyy-MM-dd');
+                    if (!eventPositions[dayKey]) eventPositions[dayKey] = [];
+                    eventPositions[dayKey].push({top: topPosition, event});
+                    dayToPlace.setDate(dayToPlace.getDate() + 1);
+                 }
+                 placed = true;
+                 event.topPosition = topPosition; // Add position to event object
+            } else {
+                topPosition++;
+            }
+        }
+    }
+    return sorted.filter(e => e.allDay || !isSameDay(new Date(e.start), new Date(e.end)));
+  }, [events]);
 
 
   return (
     <TooltipProvider delayDuration={100}>
-      <div className={cn("grid grid-cols-7 grid-rows-[auto_repeat(6,1fr)] h-full gap-px bg-border rounded-lg overflow-hidden", className)}>
+      <div className={cn("grid grid-cols-7 grid-rows-[auto] auto-rows-fr h-full gap-px bg-border rounded-lg overflow-hidden", className)}>
         {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
           <div key={day} className="p-2 text-center text-xs font-semibold text-muted-foreground bg-card">{day}</div>
         ))}
-        {daysInGrid.map((day, index) => {
-            const isCurrentMonth = day.getMonth() === month.getMonth();
-            const isToday = isSameDay(day, today);
-            return <DayCell key={index} day={day} isCurrentMonth={isCurrentMonth} isToday={isToday} onDateSelect={onDateSelect} onEventClick={onEventClick} events={events} selectedDay={selectedDay} />;
-        })}
-        {multiDayEvents.map((event, eventIndex) => {
-            const startIdx = daysInGrid.findIndex(d => isSameDay(d, event.start));
-            const endIdx = daysInGrid.findIndex(d => isSameDay(d, event.end));
+        {weeks.map((week, weekIndex) => (
+            <React.Fragment key={weekIndex}>
+                 {week.map((day, dayIndex) => {
+                    const isCurrentMonth = day.getMonth() === month.getMonth();
+                    const isToday = isSameDay(day, today);
+                    return <DayCell key={day.toString()} day={day} isCurrentMonth={isCurrentMonth} isToday={isToday} onDateSelect={onDateSelect} onEventClick={onEventClick} events={events} selectedDay={selectedDay} />;
+                 })}
+                 
+                {multiDayEvents.filter(event => {
+                    const start = new Date(event.start);
+                    const end = new Date(event.end);
+                    return start <= week[6] && end >= week[0];
+                }).map(event => {
+                    const start = new Date(event.start);
+                    const end = new Date(event.end);
+                    const eventStartDay = start < week[0] ? week[0] : start;
+                    const eventEndDay = end > week[6] ? week[6] : end;
 
-            if (startIdx === -1 && endIdx === -1) return null; // Event not in this view
+                    const startCol = eventStartDay.getDay() + 1;
+                    const endCol = eventEndDay.getDay() + 1;
+                    const span = endCol - startCol + 1;
 
-            const firstDayOfWeek = startOfWeek(month);
-            const eventStart = event.start < firstDayOfWeek ? firstDayOfWeek : event.start;
-            const eventStartIdx = daysInGrid.findIndex(d => isSameDay(d, eventStart));
+                    return (
+                        <div key={event.id}
+                             className={cn("absolute h-6 rounded text-white text-xs px-2 flex items-center truncate cursor-pointer z-10 hover:opacity-80 transition-opacity", getEventColorClass(event.color, 'bg'))}
+                             style={{
+                                gridRow: weekIndex + 2,
+                                gridColumn: `${startCol} / span ${span}`,
+                                // @ts-ignore
+                                top: `${2.25 + ((event.topPosition ?? 0) * 1.75)}rem`
+                             }}
+                             onClick={(e) => { e.stopPropagation(); onEventClick(event); }}>
+                             {event.title}
+                        </div>
+                    );
+                })}
 
-            const lastDayOfWeek = endOfWeek(endOfMonth(month));
-            const eventEnd = event.end > lastDayOfWeek ? lastDayOfWeek : event.end;
-            const eventEndIdx = daysInGrid.findIndex(d => isSameDay(d, eventEnd));
-
-            const gridRow = Math.floor(eventStartIdx / 7) + 2;
-            const gridColumnStart = (eventStartIdx % 7) + 1;
-            const span = (eventEndIdx - eventStartIdx) + 1;
-            
-            if (eventStartIdx === -1) return null;
-
-            return (
-                 <div
-                    key={event.id}
-                    onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
-                    className={cn(
-                        "absolute h-6 rounded-md text-white text-xs px-2 flex items-center truncate cursor-pointer z-10 hover:opacity-80 transition-opacity",
-                        getEventColorClass(event.color, 'bg')
-                    )}
-                    style={{
-                        gridRow: gridRow,
-                        gridColumn: `${gridColumnStart} / span ${span > 0 ? span : 1}`,
-                        top: `${2 + (eventIndex % 4) * 1.75}rem`,
-                    }}
-                >
-                    {event.title}
-                </div>
-            );
-        })}
+            </React.Fragment>
+        ))}
       </div>
     </TooltipProvider>
   );
