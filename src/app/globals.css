@@ -121,7 +121,7 @@
   }
 
   .animate-border-spin {
-    animation: border-spin 7s linear infinite;
+    animation: border-spin 10s linear infinite;
   }
 }
 
