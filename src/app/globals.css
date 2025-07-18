@@ -12,7 +12,6 @@
     --popover: 220 20% 100%;
     --popover-foreground: 220 15% 25%;
 
-    /* Gold Palette */
     --primary: 45 80% 55%; /* Rich Gold */
     --primary-foreground: 210 20% 98%;
     --secondary: 220 15% 94%;
@@ -28,7 +27,6 @@
     --ring: 45 80% 55%;
     --radius: 0.75rem;
 
-    /* Chart/Event Palette */
     --chart-1: 45 80% 55%;   /* Gold */
     --chart-2: 45 70% 65%;   /* Lighter Gold */
     --chart-3: 35 82% 70%;   /* Light Orange/Gold */
@@ -40,7 +38,6 @@
     --event-red: 0 84% 60%;
     --event-orange: 25 84% 60%;
 
-    /* Gauge Colors */
     --gauge-green: 140 70% 45%;
     --gauge-yellow: 45 90% 55%;
     --gauge-red: 0 84% 60%;
@@ -61,7 +58,6 @@
     --popover: 220 10% 10%;
     --popover-foreground: 210 20% 94%;
 
-    /* Gold Palette */
     --primary: 45 80% 55%; /* Rich Gold */
     --primary-foreground: 45 90% 15%; /* Dark text for gold buttons */
     --secondary: 220 10% 25%;
@@ -115,6 +111,6 @@
 
 @layer components {
     .glass-card {
-        @apply bg-card/60 backdrop-blur-xl border-white/5;
+        @apply bg-card/60 backdrop-blur-xl border-white/5 shadow-2xl shadow-black/20;
     }
 }
