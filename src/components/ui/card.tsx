@@ -9,7 +9,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "card-container rounded-lg border bg-card text-card-foreground shadow-sm",
+      "animated-border-card rounded-lg border bg-transparent text-card-foreground shadow-sm",
       className
     )}
     {...props}
@@ -17,11 +17,9 @@ const Card = React.forwardRef<
     <svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg" className="card-border-svg">
       <defs>
         <linearGradient id="card-border-gradient">
-          <stop offset="0%" stopColor="hsl(320, 80%, 60%)" /> {/* Pink */}
-          <stop offset="25%" stopColor="hsl(50, 90%, 60%)" /> {/* Yellow */}
-          <stop offset="50%" stopColor="hsl(30, 90%, 60%)" /> {/* Orange */}
-          <stop offset="75%" stopColor="hsl(210, 90%, 60%)" /> {/* Blue */}
-          <stop offset="100%" stopColor="hsl(320, 80%, 60%)" /> {/* Pink to loop */}
+          <stop offset="0%" stopColor="hsl(var(--accent))" />
+          <stop offset="50%" stopColor="hsl(var(--primary))" />
+          <stop offset="100%" stopColor="hsl(var(--accent))" />
         </linearGradient>
       </defs>
       <rect
@@ -32,7 +30,7 @@ const Card = React.forwardRef<
         ry="var(--radius)"
       />
     </svg>
-    <div className="card-content-wrapper h-full">
+    <div className="card-content-wrapper">
         {children}
     </div>
   </div>
