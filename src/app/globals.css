@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @layer base {
+  /* --- Variables CSS para modo claro (por defecto) --- */
   :root {
     --background: 220 20% 98%;
     --foreground: 220 15% 25%;
@@ -49,6 +50,7 @@
     --sidebar-ring: 45 80% 55%;
   }
 
+  /* --- Variables CSS para modo oscuro --- */
   .dark {
     --background: 220 10% 12%; /* Graphite */
     --foreground: 210 20% 94%;
@@ -78,48 +80,80 @@
     --sidebar-border: 220 10% 20%;
     --sidebar-ring: 45 80% 55%;
   }
-}
 
-@layer base {
+  /* --- Estilos base globales --- */
   * {
-    @apply border-border;
+    @apply border-border; /* Aplica el borde por defecto a todos los elementos */
   }
   body {
     @apply bg-background text-foreground;
   }
+
+  /* --- Estilos para View Transition API --- */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+  ::view-transition-old(root) { z-index: 1; }
+  ::view-transition-new(root) { z-index: 999; }
+  .dark::view-transition-old(root) { z-index: 999; }
+  .dark::view-transition-new(root) { z-index: 1; }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+
+  /* --- Definición de la animación de rotación --- */
+  @keyframes border-spin {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* --- Clase de utilidad para aplicar la animación (usaremos directamente la propiedad `animation`) --- */
+  .animate-border-spin {
+    animation: border-spin 10s linear infinite;
+  }
 }
 
 @layer components {
-    @keyframes border-beam-spin {
-        from {
-            transform: rotate(0deg);
-        }
-        to {
-            transform: rotate(360deg);
-        }
+    .glass-card {
+        @apply bg-card/60 backdrop-blur-xl border-white/5 shadow-2xl shadow-black/20;
+        position: relative; /* Esencial para el posicionamiento absoluto del ::before */
+        overflow: hidden; /* Importante para que el haz de luz no se desborde fuera de la card */
+        z-index: 1; /* Asegura que el contenido de la card esté sobre el haz de luz (si el haz tiene z-index: 0) */
     }
 
-    .border-beam-card::before {
+    /* --- Estilo para el haz de luz en el borde de las cards --- */
+    .glass-card::before {
         content: "";
         position: absolute;
-        inset: -1px; /* Control border thickness */
-        border-radius: calc(var(--radius) + 2px);
-        z-index: 0;
+        inset: -2px; /* Expande el pseudo-elemento 2px en cada lado para el efecto de borde */
+        border-radius: calc(var(--radius, 0.75rem) + 2px); /* Adapta el radio a la expansión del `inset` */
+        z-index: 0; /* Coloca el haz detrás del contenido de la tarjeta */
+
+        /* El gradiente cónico que forma el haz de luz */
         background: conic-gradient(
             from 180deg at 50% 50%,
-            #e92a67, /* Pink */
-            #f0a424, /* Orange */
-            #fbb300, /* Yellow */
-            #40c9ff, /* Blue */
-            transparent 30%,
-            transparent
+            #e92a67, /* Rosa */
+            #f0a424, /* Naranja */
+            #fbb300, /* Amarillo */
+            #40c9ff, /* Azul */
+            transparent 30%, /* Controla la longitud del segmento de luz visible */
+            transparent /* El resto del círculo es transparente */
         );
-        animation: border-beam-spin 8s linear infinite;
+
+        /* --- Máscara para que solo se vea el contorno del haz --- */
+        mask:
+            linear-gradient(#fff 0 0) content-box, /* Máscara interior: crea un "agujero" transparente en el área de contenido */
+            linear-gradient(#fff 0 0);             /* Máscara exterior: define el contorno completo del pseudo-elemento */
+        -webkit-mask-composite: xor; /* Para navegadores basados en WebKit (Chrome, Safari) */
+        mask-composite: exclude;     /* Propiedad estándar CSS: similar a `xor`, excluye el área de la primera máscara */
+
+        /* --- ¡APLICACIÓN DE LA ANIMACIÓN PARA QUE SE MUEVA EL HAZ DE LUZ! --- */
+        animation: border-spin 10s linear infinite; /* Aplica la animación de rotación al haz de luz */
     }
 }
