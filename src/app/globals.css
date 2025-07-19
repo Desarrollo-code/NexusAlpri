@@ -1,9 +1,11 @@
+/* Directivas de Tailwind CSS */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Capa Base: Contiene variables CSS para el tema y estilos globales fundamentales */
 @layer base {
-  /* --- Variables CSS para modo claro (por defecto) --- */
+  /* --- Variables CSS para el tema en modo claro (por defecto) --- */
   :root {
     --background: 220 20% 98%;
     --foreground: 220 15% 25%;
@@ -25,7 +27,7 @@
     --border: 220 15% 88%;
     --input: 220 15% 92%;
     --ring: 45 80% 55%;
-    --radius: 0.75rem;
+    --radius: 0.75rem; /* Radio de borde predeterminado */
 
     --chart-1: 220 80% 60%; /* Blue */
     --chart-2: 150 70% 45%; /* Green */
@@ -50,7 +52,7 @@
     --sidebar-ring: 45 80% 55%;
   }
 
-  /* --- Variables CSS para modo oscuro --- */
+  /* --- Variables CSS para el tema en modo oscuro --- */
   .dark {
     --background: 220 10% 12%; /* Graphite */
     --foreground: 210 20% 94%;
@@ -81,28 +83,119 @@
     --sidebar-ring: 45 80% 55%;
   }
 
-  /* --- Estilos base globales --- */
+  /* --- Estilos base globales que aplican las variables del tema --- */
   * {
-    @apply border-border; /* Aplica el borde por defecto a todos los elementos */
+    @apply border-border; /* Aplica el color de borde definido por el tema */
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground; /* Aplica el fondo y color de texto del tema */
   }
 
-  /* --- Estilos para View Transition API --- */
-  ::view-transition-old(root),
+  /* --- Estilos para la View Transition API (transición de tema de página completa) --- */
+  /* La nueva vista (la que aparece) */
   ::view-transition-new(root) {
-    animation: none;
+    animation: fade-slide-in 0.5s ease-out; /* Animación de entrada: desvanecer y deslizar */
+    z-index: 999; /* Asegura que la nueva vista esté por encima */
+    mix-blend-mode: normal; /* Asegura un blend mode estándar */
+  }
+
+  /* La vieja vista (la que desaparece) */
+  ::view-transition-old(root) {
+    animation: fade-out 0.5s ease-out forwards; /* Animación de salida: desvanecer, 'forwards' mantiene el estado final */
+    z-index: 1; /* Asegura que la vista antigua esté por debajo */
     mix-blend-mode: normal;
   }
-  ::view-transition-old(root) { z-index: 1; }
-  ::view-transition-new(root) { z-index: 999; }
+
+  /* --- ¡ESTA SECCIÓN HA SIDO ELIMINADA PARA ASEGURAR UNA TRANSICIÓN CONSISTENTE! --- */
+  /*
   .dark::view-transition-old(root) { z-index: 999; }
   .dark::view-transition-new(root) { z-index: 1; }
+  */
 }
 
+/* Capa de Utilidades: Contiene animaciones personalizadas y utilidades de Tailwind */
 @layer utilities {
   .text-balance {
-    text-wrap: balance;
+    text-wrap: balance; /* Utilidad para equilibrar líneas de texto */
+  }
+<<<<<<< HEAD
+}
+=======
+
+  /* --- Definición de la animación para el haz de luz del borde (rotación) --- */
+  @keyframes border-spin {
+    100% {
+      transform: rotate(360deg); /* Rota el elemento 360 grados */
+    }
+  }
+
+  .animate-border-spin {
+    animation: border-spin 10s linear infinite; /* Clase de utilidad para aplicar esta animación */
+  }
+
+  /* --- Definiciones de animaciones para la View Transition API --- */
+
+  /* Animación de entrada: la nueva vista aparece desvaneciéndose y deslizándose ligeramente hacia arriba */
+  @keyframes fade-slide-in {
+    from {
+      opacity: 0; /* Comienza completamente transparente */
+      transform: translateY(20px); /* Comienza 20px más abajo */
+    }
+    to {
+      opacity: 1; /* Termina completamente opaco */
+      transform: translateY(0); /* Termina en su posición original */
+    }
+  }
+
+  /* Animación de salida: la vista antigua simplemente se desvanece */
+  @keyframes fade-out {
+    from {
+      opacity: 1; /* Comienza completamente opaco */
+    }
+    to {
+      opacity: 0; /* Termina completamente transparente */
+    }
   }
 }
+
+/* Capa de Componentes: Contiene estilos para componentes reutilizables como la glass-card */
+@layer components {
+    /* Estilos para la tarjeta con efecto de cristal (glassmorphism) */
+    .glass-card {
+        @apply bg-card/60 backdrop-blur-xl border-white/5 shadow-2xl shadow-black/20;
+        position: relative; /* Necesario para posicionar el pseudo-elemento ::before */
+        overflow: hidden; /* Recorta cualquier parte del haz de luz que sobresalga */
+        z-index: 1; /* Asegura que el contenido de la tarjeta esté por encima del haz */
+    }
+
+    /* Pseudo-elemento para el "haz de luz" animado en el borde de la glass-card */
+    .glass-card::before {
+        content: "";
+        position: absolute;
+        inset: -2px; /* Expande el pseudo-elemento 2px más allá del borde de la tarjeta */
+        border-radius: calc(var(--radius, 0.75rem) + 2px); /* Adapta el radio para que coincida con la expansión */
+        z-index: 0; /* Coloca el haz detrás del contenido de la tarjeta */
+
+        /* El gradiente cónico que crea el efecto de "haz de luz" */
+        background: conic-gradient(
+            from 180deg at 50% 50%, /* Inicia el gradiente desde la parte inferior central */
+            #e92a67, /* Rosa */
+            #f0a424, /* Naranja */
+            #fbb300, /* Amarillo */
+            #40c9ff, /* Azul */
+            transparent 30%, /* El haz de luz cubre el 30% del círculo */
+            transparent /* El resto del círculo es transparente */
+        );
+
+        /* La máscara que recorta el gradiente para que solo se vea en el contorno */
+        mask:
+            linear-gradient(#fff 0 0) content-box, /* Máscara interior: crea un "agujero" en el contenido de la tarjeta */
+            linear-gradient(#fff 0 0);             /* Máscara exterior: define el área completa del pseudo-elemento */
+        -webkit-mask-composite: xor; /* Para navegadores basados en WebKit (Chrome, Safari) */
+        mask-composite: exclude;     /* Propiedad estándar CSS equivalente a 'xor' */
+
+        /* Aplicación de la animación: hace que el haz de luz gire */
+        animation: border-spin 10s linear infinite; /* Rotación continua durante 10 segundos */
+    }
+}
+>>>>>>> a6d7b134a0bb727572d0d0ca0cec555eae5a6afb
