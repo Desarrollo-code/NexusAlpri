@@ -124,8 +124,8 @@ export default function SignInPage() {
           />
         </div>
         
-        <div className="animated-rainbow-card w-full">
-            <Card className="w-full">
+        <div className="auth-gradient-border w-full">
+            <Card className="inner-card">
             {!show2fa ? (
                 <>
                   <CardHeader className="text-center">

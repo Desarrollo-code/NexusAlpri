@@ -49,18 +49,19 @@
 }
 
 @layer components {
-  .auth-input {
-    @apply
-      w-full h-10
-      rounded-md border border-white/20
-      bg-black/30 text-white
-      px-3 py-2 text-sm
-      placeholder:text-gray-400
-      focus-visible:outline-none
-      focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
-      disabled:cursor-not-allowed disabled:opacity-50;
+  @keyframes border-spin {
+    100% {
+      transform: rotate(360deg);
+    }
   }
-  .auth-logo-wrapper {
-    @apply mb-4 drop-shadow-[0_2px_4px_hsl(var(--primary)/0.4)];
+  
+  .auth-gradient-border {
+    @apply relative rounded-xl p-px;
+    background: conic-gradient(from 180deg at 50% 50%, #d53e33, #fbb300, #377af5, #399953, #d53e33);
+    animation: border-spin 4s linear infinite;
+  }
+
+  .inner-card {
+    @apply h-full w-full rounded-[11px] bg-background/80 backdrop-blur-sm;
   }
 }
