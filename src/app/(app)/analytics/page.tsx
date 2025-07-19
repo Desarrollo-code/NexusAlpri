@@ -12,8 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector } from "recharts";
-import type { AdminDashboardStats, ProgressAnalyticsData, SecurityLog as AppSecurityLog } from '@/types';
-import { CourseCarousel } from '@/components/course-carousel';
+import type { AdminDashboardStats, SecurityLog as AppSecurityLog } from '@/types';
 import { getEventDetails, getInitials } from '@/lib/security-log-utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -201,6 +200,9 @@ function CourseAnalyticsSection({ stats }: { stats: AdminDashboardStats }) {
                 <MetricCard title="Total Cursos" value={stats.totalCourses} icon={FileText} />
                 <MetricCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={BookOpenCheck} />
                 <MetricCard title="Total Inscripciones" value={stats.totalEnrollments} icon={TrendingUp} />
+            </div>
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                 <DonutChartCard title="Distribución de Cursos" data={courseStatusData} config={courseStatusChartConfig} />
             </div>
         </section>
     );
