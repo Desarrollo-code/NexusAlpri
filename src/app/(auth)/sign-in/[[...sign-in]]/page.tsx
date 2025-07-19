@@ -83,7 +83,7 @@ export default function SignInPage() {
     setIsLoading(true);
 
     try {
-        const response = await fetch('/api/auth/2fa-login', {
+        const response = await fetch('/api/auth/2fa?action=login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: userIdFor2fa, token }),
@@ -124,8 +124,8 @@ export default function SignInPage() {
           />
         </div>
         
-        <div className="auth-gradient-border w-full">
-            <Card className="inner-card">
+        <div className="animated-rainbow-card w-full">
+            <Card className="w-full">
             {!show2fa ? (
                 <>
                   <CardHeader className="text-center">

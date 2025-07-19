@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
 import bcrypt from 'bcryptjs';
-import { getSession } from '@/lib/auth';
+import { createSession, getSession } from '@/lib/auth';
 
 authenticator.options = {
   window: 1, // 1 * 30-second window for verification
@@ -88,18 +88,49 @@ async function handleDisable(userId: string, pass: string, ipAddress: string) {
     return NextResponse.json({ message: '2FA desactivado exitosamente', user: userToReturn });
 }
 
+async function handleLoginVerify(userId: string, token: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.isTwoFactorEnabled || !user.twoFactorSecret) {
+      return NextResponse.json({ message: '2FA no está habilitado para este usuario.' }, { status: 400 });
+    }
+    
+    const isValidToken = authenticator.verify({
+        token,
+        secret: user.twoFactorSecret,
+    });
+
+    if (!isValidToken) {
+        return NextResponse.json({ message: 'Código 2FA inválido.' }, { status: 401 });
+    }
+
+    const { password: _, twoFactorSecret, ...userToReturn } = user;
+    await createSession(userToReturn);
+    return NextResponse.json({ user: userToReturn });
+}
+
+
 export async function POST(req: NextRequest) {
+    const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+    const body = await req.json();
+    const { searchParams } = new URL(req.url);
+    const action = searchParams.get('action');
+
+    // For login verification, we don't need a session yet
+    if (action === 'login') {
+        const { userId, token } = body;
+        if (!userId || !token) {
+            return NextResponse.json({ message: 'ID de usuario y token son requeridos para el login' }, { status: 400 });
+        }
+        return await handleLoginVerify(userId, token);
+    }
+
+    // For other actions, we require an active session
     const session = await getSession(req);
     if (!session) {
       return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
-    
-    const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
   
     try {
-      const { searchParams } = new URL(req.url);
-      const action = searchParams.get('action');
-      const body = await req.json();
       const { userId, token, password } = body;
   
       if (session.id !== userId) {
