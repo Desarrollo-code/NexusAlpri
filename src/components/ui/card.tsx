@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -5,19 +6,17 @@ import { cn } from "@/lib/utils"
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, children, ...props }, ref) => (
+>(({ className, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      "relative overflow-hidden rounded-lg border-transparent shadow-sm",
-      "before:absolute before:inset-0 before:-z-10",
-      "border-beam-card",
+      "rounded-xl bg-card text-card-foreground shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 relative group overflow-hidden p-px",
       className
     )}
-    {...props}
   >
-    <div className="rounded-[calc(var(--radius)-1px)] bg-card/80 backdrop-blur-xl text-card-foreground h-full w-full">
-        {children}
+    <span className="absolute -top-1 -left-1 w-[calc(100%+0.5rem)] h-[calc(100%+0.5rem)] animate-border-spin bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#39D3BB_25%,#FFD479_50%,#F87575_75%,#E2CBFF_100%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+    <div className="relative rounded-[calc(0.75rem-1px)] h-full w-full bg-card">
+      {props.children}
     </div>
   </div>
 ))
@@ -42,7 +41,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
+      "text-lg font-semibold leading-none tracking-tight",
       className
     )}
     {...props}
