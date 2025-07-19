@@ -18,7 +18,7 @@ export interface PlatformSettings {
     platformName: string;
     allowPublicRegistration: boolean;
     enableEmailNotifications: boolean;
-    emailWhitelist?: string; // Comma-separated list of emails
+    emailWhitelist?: string; 
     require2faForAdmins: boolean;
     idleTimeoutMinutes: number;
     enableIdleTimeout: boolean;
@@ -208,17 +208,13 @@ export type SecurityLog = Prisma.SecurityLogGetPayload<{
 
 
 // --- ANALYTICS ---
-export interface UserAnalyticsData {
+export interface AdminDashboardStats {
+    totalUsers: number;
+    totalCourses: number;
+    totalPublishedCourses: number;
+    totalEnrollments: number;
     usersByRole: { role: UserRole; count: number }[];
-    activeUsersLast7Days: number;
-    newUsersLast30Days: { date: string; count: number }[];
-}
-
-export interface CourseAnalyticsData {
-    averageCompletionRate: number;
-    averageQuizScore: number;
-    mostEnrolledCourses: (AppCourse & { enrollmentsCount: number })[];
-    coursesByCategory: { category: string, count: number }[];
+    coursesByStatus: { status: CourseStatus; count: number }[];
 }
 
 export interface ProgressAnalyticsData {

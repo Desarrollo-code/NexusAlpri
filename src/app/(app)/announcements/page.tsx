@@ -131,7 +131,9 @@ export default function AnnouncementsPage() {
   );
   
   const handlePageChange = (page: number) => {
-    router.push(`${pathname}?${createQueryString('page', String(page))}`);
+    if (page > 0 && page <= totalPages) {
+      router.push(`${pathname}?${createQueryString('page', String(page))}`);
+    }
   };
 
   const resetFormAndState = () => {

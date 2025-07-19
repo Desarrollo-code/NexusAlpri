@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector } from "recharts";
-import type { CourseAnalyticsData, ProgressAnalyticsData, SecurityLog as AppSecurityLog, UserAnalyticsData } from '@/types';
+import type { AdminDashboardStats, ProgressAnalyticsData, SecurityLog as AppSecurityLog } from '@/types';
 import { CourseCarousel } from '@/components/course-carousel';
 import { getEventDetails, getInitials } from '@/lib/security-log-utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -159,7 +159,7 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
   )
 }
 
-function UserAnalyticsSection({ stats }: { stats: UserAnalyticsData }) {
+function UserAnalyticsSection({ stats }: { stats: AdminDashboardStats }) {
     const userRolesChartData = useMemo(() => {
         if (!stats?.usersByRole) return [];
         const order: ('STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR')[] = ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'];
@@ -175,29 +175,14 @@ function UserAnalyticsSection({ stats }: { stats: UserAnalyticsData }) {
         <section className="space-y-6">
             <h2 className="text-xl font-semibold flex items-center gap-3"><Users className="text-primary"/> Analíticas de Usuarios</h2>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2">
-                    <CardHeader><CardTitle>Nuevos Registros (Últimos 30 días)</CardTitle></CardHeader>
-                    <CardContent className="h-72">
-                         <ChartContainer config={{ count: { label: 'Nuevos usuarios', color: 'hsl(var(--primary))' } }} className="h-full w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={stats.newUsersLast30Days || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                                    <defs><linearGradient id="colorNewUsers" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/></linearGradient></defs>
-                                    <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                                    <YAxis allowDecimals={false} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                                    <ChartTooltip content={<ChartTooltipContent />} />
-                                    <Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorNewUsers)" />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </ChartContainer>
-                    </CardContent>
-                </Card>
+                <MetricCard title="Total Usuarios" value={stats.totalUsers} icon={Users} />
                 <DonutChartCard title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
             </div>
         </section>
     );
 };
 
-function CourseAnalyticsSection({ stats }: { stats: CourseAnalyticsData }) {
+function CourseAnalyticsSection({ stats }: { stats: AdminDashboardStats }) {
     const courseStatusData = useMemo(() => {
         if (!stats?.coursesByStatus) return [];
         const order: ('DRAFT' | 'PUBLISHED' | 'ARCHIVED')[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED'];
@@ -209,74 +194,13 @@ function CourseAnalyticsSection({ stats }: { stats: CourseAnalyticsData }) {
         }));
     }, [stats.coursesByStatus]);
 
-    const coursesByCategoryData = useMemo(() => {
-        if (!stats?.coursesByCategory) return [];
-        return stats.coursesByCategory
-            .sort((a,b) => b.count - a.count)
-            .slice(0, 5) // Top 5 categories
-            .map((item, index) => ({
-                ...item,
-                fill: `hsl(var(--chart-${(index % 5) + 1}))`
-            }));
-    }, [stats.coursesByCategory]);
-
     return (
         <section className="space-y-6">
             <h2 className="text-xl font-semibold flex items-center gap-3"><BookOpenCheck className="text-primary"/> Analíticas de Cursos</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <MetricCard title="Total Cursos" value={courseStatusData.reduce((acc, c) => acc + c.count, 0)} icon={FileText} />
-                <MetricCard title="Tasa de Finalización Media" value={`${stats.averageCompletionRate.toFixed(1)}%`} icon={TrendingUp} description="En todos los cursos"/>
-                 <MetricCard title="Puntuación Media Quizzes" value={`${stats.averageQuizScore.toFixed(1)}%`} icon={GraduationCap} description="En todos los quices"/>
-                 <MetricCard title="Cursos Publicados" value={courseStatusData.find(c => c.status === 'PUBLISHED')?.count || 0} icon={BookOpenCheck} />
-            </div>
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                   <CardHeader><CardTitle>Cursos Más Populares (por Inscritos)</CardTitle></CardHeader>
-                   <CardContent>
-                       {stats.mostEnrolledCourses && stats.mostEnrolledCourses.length > 0 ? (
-                          <CourseCarousel courses={stats.mostEnrolledCourses} userRole="ADMINISTRATOR" />
-                       ) : (
-                          <p className="text-muted-foreground text-center py-8">No hay datos de inscripciones para mostrar.</p>
-                       )}
-                   </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader><CardTitle>Cursos por Categoría</CardTitle></CardHeader>
-                    <CardContent className="h-72">
-                       <ChartContainer config={{count: {label: 'Cursos'}}} className="h-full w-full">
-                          <ResponsiveContainer width="100%" height="100%">
-                              <AreaChart data={coursesByCategoryData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                                    <XAxis dataKey="category" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                                    <YAxis allowDecimals={false} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                                    <ChartTooltip content={<ChartTooltipContent />} />
-                                    <Area type="monotone" dataKey="count" stroke="hsl(var(--chart-3))" fill="hsl(var(--chart-3))" fillOpacity={0.4} />
-                                </AreaChart>
-                          </ResponsiveContainer>
-                       </ChartContainer>
-                    </CardContent>
-                </Card>
-            </div>
-        </section>
-    );
-};
-
-function ProgressAnalyticsSection({ stats }: { stats: ProgressAnalyticsData }) {
-    return (
-        <section className="space-y-6">
-            <h2 className="text-xl font-semibold flex items-center gap-3"><Activity className="text-primary"/> Analíticas de Progreso</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                 <Card>
-                    <CardHeader><CardTitle>Estudiantes Activos</CardTitle><CardDescription>Con progreso reciente</CardDescription></CardHeader>
-                    <CardContent><p className="text-3xl font-bold">{stats.activeStudentsInCourses}</p></CardContent>
-                 </Card>
-                 <Card>
-                    <CardHeader><CardTitle>Finalización Media</CardTitle><CardDescription>Tiempo para completar</CardDescription></CardHeader>
-                    <CardContent><p className="text-3xl font-bold">{stats.averageCompletionTimeDays.toFixed(1)} <span className="text-base text-muted-foreground">días</span></p></CardContent>
-                 </Card>
-                 <Card className="flex flex-col items-center justify-center text-center">
-                    <CardHeader><CardTitle>Tasa de Abandono</CardTitle></CardHeader>
-                    <CardContent><GaugeChart value={stats.dropoutRate} size="lg" /></CardContent>
-                 </Card>
+                <MetricCard title="Total Cursos" value={stats.totalCourses} icon={FileText} />
+                <MetricCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={BookOpenCheck} />
+                <MetricCard title="Total Inscripciones" value={stats.totalEnrollments} icon={TrendingUp} />
             </div>
         </section>
     );
@@ -322,9 +246,7 @@ export default function AnalyticsPage() {
     const { toast } = useToast();
 
     const [data, setData] = useState<{
-        userStats: UserAnalyticsData | null;
-        courseStats: CourseAnalyticsData | null;
-        progressStats: ProgressAnalyticsData | null;
+        adminStats: AdminDashboardStats | null;
         securityLogs: AppSecurityLog[] | null;
     } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -334,30 +256,24 @@ export default function AnalyticsPage() {
         setIsLoading(true);
         setError(null);
         try {
-            const [userRes, courseRes, progressRes, securityRes] = await Promise.all([
-                fetch('/api/analytics/users'),
-                fetch('/api/analytics/courses'),
-                fetch('/api/analytics/progress'),
+            const [adminStatsRes, securityRes] = await Promise.all([
+                fetch('/api/dashboard/admin-stats'),
                 fetch('/api/security/logs'),
             ]);
             
-            if (!userRes.ok || !courseRes.ok || !progressRes.ok || !securityRes.ok) {
+            if (!adminStatsRes.ok || !securityRes.ok) {
                 const errors = [];
-                if (!userRes.ok) errors.push(`Usuarios: ${userRes.statusText}`);
-                if (!courseRes.ok) errors.push(`Cursos: ${courseRes.statusText}`);
-                if (!progressRes.ok) errors.push(`Progreso: ${progressRes.statusText}`);
+                if (!adminStatsRes.ok) errors.push(`Estadísticas: ${adminStatsRes.statusText}`);
                 if (!securityRes.ok) errors.push(`Seguridad: ${securityRes.statusText}`);
                 throw new Error(`Falló la carga de datos. Errores: ${errors.join(', ')}`);
             }
 
-            const [userStats, courseStats, progressStats, securityLogsData] = await Promise.all([
-                userRes.json(),
-                courseRes.json(),
-                progressRes.json(),
+            const [adminStats, securityLogsData] = await Promise.all([
+                adminStatsRes.json(),
                 securityRes.json()
             ]);
 
-            setData({ userStats, courseStats, progressStats, securityLogs: securityLogsData.logs });
+            setData({ adminStats, securityLogs: securityLogsData.logs });
 
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error desconocido al cargar analíticas');
@@ -411,9 +327,8 @@ export default function AnalyticsPage() {
             </header>
             
             <main className="space-y-12">
-                {data.userStats && <UserAnalyticsSection stats={data.userStats} />}
-                {data.courseStats && <CourseAnalyticsSection stats={data.courseStats} />}
-                {data.progressStats && <ProgressAnalyticsSection stats={data.progressStats} />}
+                {data.adminStats && <UserAnalyticsSection stats={data.adminStats} />}
+                {data.adminStats && <CourseAnalyticsSection stats={data.adminStats} />}
                 {data.securityLogs && <SecurityAnalyticsSection logs={data.securityLogs} />}
             </main>
         </div>

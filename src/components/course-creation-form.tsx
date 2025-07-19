@@ -1,7 +1,7 @@
+
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -13,11 +13,10 @@ import { Loader2 } from 'lucide-react';
 import type { Course as AppCourseType } from '@/types';
 
 interface CourseCreationFormProps {
-  onSuccess: () => void;
+  onSuccess: (newCourseId: string) => void;
 }
 
 export function CourseCreationForm({ onSuccess }: CourseCreationFormProps) {
-  const router = useRouter();
   const { toast } = useToast();
   const { settings } = useAuth();
 
@@ -51,14 +50,8 @@ export function CourseCreationForm({ onSuccess }: CourseCreationFormProps) {
       }
 
       const newCourse: AppCourseType = await response.json();
-
-      toast({
-        title: '¡Curso Creado!',
-        description: 'Serás redirigido a la página de edición para añadir contenido.',
-      });
-
-      onSuccess(); // Close modal and refresh list in parent
-      router.push(`/manage-courses/${newCourse.id}/edit`); // Redirect to edit page
+      onSuccess(newCourse.id);
+      
     } catch (error) {
       toast({
         title: 'Error de Creación',

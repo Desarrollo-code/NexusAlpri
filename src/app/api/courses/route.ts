@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const isPaginated = pageParam && pageSizeParam;
     
     const page = parseInt(pageParam || '1', 10);
-    const pageSize = parseInt(pageSizeParam || '100', 10); // Default to a high number if not paginated
+    const pageSize = parseInt(pageSizeParam || '100', 10);
     const tab = searchParams.get('tab');
     const skip = (page - 1) * pageSize;
 
@@ -38,10 +38,10 @@ export async function GET(req: NextRequest) {
             where: whereClause,
             include: {
                 instructor: {
-                select: { id: true, name: true },
+                    select: { id: true, name: true },
                 },
                 _count: {
-                select: { modules: true },
+                    select: { modules: true },
                 },
             },
             orderBy: {
@@ -52,49 +52,43 @@ export async function GET(req: NextRequest) {
         prisma.course.count({ where: whereClause })
     ]);
     
-    let coursesToReturn: any[] = courses;
-
+    // Enrich with lesson counts for management view
     if (manageView) {
         const courseIds = courses.map(c => c.id);
-
         if (courseIds.length > 0) {
-            const lessonsCount = await prisma.lesson.groupBy({
+            const lessonsCountRaw = await prisma.lesson.groupBy({
                 by: ['moduleId'],
-                where: {
-                    module: {
-                        courseId: {
-                            in: courseIds,
-                        }
-                    }
-                },
                 _count: { _all: true },
+                where: { module: { courseId: { in: courseIds } } }
             });
-
-            const moduleToCourseMap = await prisma.module.findMany({
+            const modules = await prisma.module.findMany({
                 where: { courseId: { in: courseIds } },
                 select: { id: true, courseId: true }
             });
 
             const courseLessonsMap = new Map<string, number>();
-            for (const module of moduleToCourseMap) {
-                const count = lessonsCount.find(lc => lc.moduleId === module.id)?._count._all || 0;
-                courseLessonsMap.set(module.courseId, (courseLessonsMap.get(module.courseId) || 0) + count);
-            }
-
-            coursesToReturn = courses.map(course => ({
+            modules.forEach(module => {
+                const lessonCount = lessonsCountRaw.find(lc => lc.moduleId === module.id)?._count._all || 0;
+                courseLessonsMap.set(module.courseId, (courseLessonsMap.get(module.courseId) || 0) + lessonCount);
+            });
+            
+            const enrichedCourses = courses.map(course => ({
                 ...course,
-                modulesCount: course._count.modules,
-                lessonsCount: courseLessonsMap.get(course.id) || 0
+                lessonsCount: courseLessonsMap.get(course.id) || 0,
             }));
+
+            if (isPaginated) {
+              return NextResponse.json({ courses: enrichedCourses, totalCourses });
+            }
+            return NextResponse.json(enrichedCourses);
         }
     }
     
     if (isPaginated) {
-        return NextResponse.json({ courses: coursesToReturn, totalCourses });
+        return NextResponse.json({ courses, totalCourses });
     }
 
-    // For non-paginated requests, return the array directly for backward compatibility
-    return NextResponse.json(coursesToReturn);
+    return NextResponse.json(courses);
     
   } catch (error) {
     console.error('[COURSES_GET_ERROR]', error);
@@ -129,7 +123,7 @@ export async function POST(req: NextRequest) {
                 },
             },
             include: {
-                instructor: true, // Include instructor details in the response
+                instructor: true,
             }
         });
 

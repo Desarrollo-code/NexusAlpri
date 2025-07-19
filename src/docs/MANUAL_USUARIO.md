@@ -49,7 +49,7 @@ Es tu página de inicio. Aquí verás:
 
 Para asegurar un seguimiento real de tu aprendizaje, el sistema registra tu progreso de forma automática. **No hay botones para "marcar como completado"**. Así es como funciona:
 
-*   **Lecciones de Texto/Video/Archivo:** Se marcan como completadas automáticamente cuando las visitas por primera vez.
+*   **Lecciones de Texto/Video/Archivo:** Se marcan como completadas automáticamente cuando las **seleccionas** en el menú de lecciones.
 *   **Quices:** Aportan una puntuación variable. Tu nota se guarda al enviar el quiz.
 *   **Cálculo Final:** Una vez que has interactuado con **todas** las lecciones, se activará el botón **"Calcular Mi Puntuación Final"**. Al presionarlo, el sistema calculará tu nota final ponderada y la mostrará en el indicador circular de progreso.
 

@@ -12,7 +12,6 @@ export async function GET(req: NextRequest) {
   const pageParam = searchParams.get('page');
   const pageSizeParam = searchParams.get('pageSize');
   
-  // If no pagination params are provided, it's likely a call for a summary (e.g., dashboard)
   const isPaginated = pageParam && pageSizeParam;
 
   try {
@@ -33,13 +32,12 @@ export async function GET(req: NextRequest) {
         
         return NextResponse.json({ announcements, totalAnnouncements });
     } else {
-        // Default behavior for non-paginated requests (e.g., dashboard)
         const announcements = await prisma.announcement.findMany({
             orderBy: { date: 'desc' },
             include: { author: { select: { id: true, name: true } } },
-            take: 3, // Fetch the 3 most recent announcements
+            take: 3, 
         });
-        return NextResponse.json(announcements);
+        return NextResponse.json({ announcements, totalAnnouncements: announcements.length });
     }
 
   } catch (error) {
@@ -75,11 +73,10 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // --- NOTIFICATION & EMAIL LOGIC ---
     const settings = await prisma.platformSettings.findFirst();
     let targetUsersQuery: any = {};
     if (audience !== 'ALL') {
-        const roles = Array.isArray(audience) ? audience : [audience]; // Standardize to array
+        const roles = Array.isArray(audience) ? audience : [audience]; 
         if (Array.isArray(roles)) {
             targetUsersQuery = { where: { role: { in: roles as UserRole[] } } };
         }
@@ -87,7 +84,6 @@ export async function POST(req: NextRequest) {
     const targetUsers = await prisma.user.findMany(targetUsersQuery);
 
     if (targetUsers.length > 0) {
-      // Create in-app notifications
       await prisma.notification.createMany({
         data: targetUsers.map(user => ({
           userId: user.id,
@@ -97,10 +93,8 @@ export async function POST(req: NextRequest) {
         }))
       });
 
-      // Send emails if enabled
       if (settings?.enableEmailNotifications) {
         const recipientEmails = targetUsers.map(u => u.email).filter(Boolean);
-
         if (recipientEmails.length > 0) {
             await sendEmail({
                 to: recipientEmails,
@@ -115,7 +109,6 @@ export async function POST(req: NextRequest) {
         }
       }
     }
-    // --- END LOGIC ---
 
     return NextResponse.json(newAnnouncement, { status: 201 });
   } catch (error) {

@@ -111,14 +111,11 @@ export default function CourseDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null);
   const [isConsolidating, setIsConsolidating] = useState(false);
-  const [isFinalProgressVisible, setIsFinalProgressVisible] = useState(false);
   
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [sidebarSearch, setSidebarSearch] = useState('');
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
-
-  const contentRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
   const totalLessonsCount = allLessons.length;
@@ -129,7 +126,6 @@ export default function CourseDetailPage() {
   }, [user, course]);
   
   const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz', score?: number) => {
-    // Do not record progress for the course creator or if the user is not enrolled.
     if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || provisionalProgress[lessonId]) return;
     
     setProvisionalProgress(prev => ({ ...prev, [lessonId]: true }));
@@ -149,17 +145,6 @@ export default function CourseDetailPage() {
 
   }, [user, courseId, isEnrolled, provisionalProgress, isCreatorViewingCourse]);
 
-  const onScroll = useCallback((lessonId: string) => {
-    const element = contentRefs.current[lessonId];
-    if (element && !provisionalProgress[lessonId]) {
-        const isScrolledToEnd = element.scrollHeight - element.scrollTop <= element.clientHeight + 1.5;
-        if (isScrolledToEnd) {
-            recordInteraction(lessonId, 'view');
-        }
-    }
-  }, [provisionalProgress, recordInteraction]);
-
-
   const fetchCourseAndProgress = useCallback(async () => {
     if (!courseId) return;
     setIsLoading(true);
@@ -178,6 +163,9 @@ export default function CourseDetailPage() {
       const firstLessonId = appCourseData.modules?.[0]?.lessons?.[0]?.id;
       if (firstLessonId) {
         setSelectedLessonId(firstLessonId);
+        if (user && !isCreatorViewingCourse) {
+          recordInteraction(firstLessonId, 'view');
+        }
       }
 
       const enrollmentData = enrollmentStatusResponse?.ok ? await enrollmentStatusResponse.json() : { isEnrolled: false };
@@ -189,12 +177,8 @@ export default function CourseDetailPage() {
           const progressData: CourseProgress = await progressResponse.json();
           setCourseProgress(progressData);
           
-          if (progressData.progressPercentage > 0) {
-            setIsFinalProgressVisible(true);
-          }
-          
           const initialProvisional: Record<string, boolean> = {};
-          (progressData.completedLessonIds || []).forEach(record => {
+          (progressData.completedLessons || []).forEach(record => {
               initialProvisional[record.lessonId] = true;
           });
           setProvisionalProgress(initialProvisional);
@@ -230,7 +214,6 @@ export default function CourseDetailPage() {
           
           const finalProgressData = await response.json();
           setCourseProgress(finalProgressData);
-          setIsFinalProgressVisible(true);
           toast({ title: "Progreso Calculado", description: "Tu puntuación final ha sido guardada." });
       } catch (error) {
           toast({ title: "Error", description: `No se pudo calcular tu progreso: ${(error as Error).message}`, variant: "destructive"});
@@ -264,9 +247,7 @@ export default function CourseDetailPage() {
       if (isMobile) {
         setIsMobileSheetOpen(false);
       }
-      if (!provisionalProgress[lesson.id]) {
-        recordInteraction(lesson.id, 'view');
-      }
+      recordInteraction(lesson.id, 'view');
   };
 
   const getLessonIcon = (type: LessonType | undefined) => {
@@ -298,6 +279,7 @@ export default function CourseDetailPage() {
                 key={block.id}
                 quiz={block.quiz}
                 lessonId={selectedLessonId!}
+                courseId={courseId}
                 isCreatorPreview={isCreatorViewingCourse}
                 isEnrolled={isEnrolled}
                 onQuizCompleted={handleQuizSubmitted}
@@ -314,7 +296,7 @@ export default function CourseDetailPage() {
     
     if (isPdf) {
       return (
-        <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" onScroll={() => onScroll(selectedLessonId!)} ref={el => contentRefs.current[selectedLessonId!] = el} style={{ maxHeight: '600px', overflowY: 'auto' }}>
+        <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ maxHeight: '600px', overflowY: 'auto' }}>
           <iframe src={block.content} className="w-full h-[600px] border rounded-md" title={`PDF Preview: ${selectedLesson?.title}`}/>
         </div>
       );
@@ -356,7 +338,7 @@ export default function CourseDetailPage() {
          );
        }
        return (
-        <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card whitespace-pre-wrap" onScroll={() => onScroll(selectedLessonId!)} ref={el => contentRefs.current[selectedLessonId!] = el} style={{ maxHeight: '500px', overflowY: 'auto' }}>
+        <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card whitespace-pre-wrap" style={{ maxHeight: '500px', overflowY: 'auto' }}>
             {block.content}
         </div>
        );
@@ -458,11 +440,11 @@ export default function CourseDetailPage() {
                             <DialogHeader>
                                 <DialogTitle>Tu Progreso</DialogTitle>
                                 <DialogDescription>
-                                    {isFinalProgressVisible ? "Este es tu resultado final para el curso." : "Completa todas las lecciones para calcular tu puntuación."}
+                                    {courseProgress && courseProgress.progressPercentage > 0 ? "Este es tu resultado final para el curso." : "Completa todas las lecciones para calcular tu puntuación."}
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="flex flex-col items-center justify-center space-y-4 py-4">
-                                {isFinalProgressVisible && courseProgress ? (
+                                {courseProgress && courseProgress.progressPercentage > 0 ? (
                                     <div className="text-center space-y-3">
                                         <CircularProgress value={courseProgress.progressPercentage || 0} size={150} strokeWidth={12} />
                                         <h3 className="text-xl font-semibold text-foreground pt-4">Puntuación Final</h3>
@@ -495,7 +477,6 @@ export default function CourseDetailPage() {
         </div>
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6">
         
-        {/* Sidebar for Desktop */}
         {!isMobile && (
             <aside className={cn(
                 "bg-card border rounded-lg flex-col transition-all duration-300",
@@ -506,7 +487,6 @@ export default function CourseDetailPage() {
             </aside>
         )}
 
-        {/* Main Content */}
         <main className={cn(
             "bg-card rounded-lg border flex flex-col transition-all duration-300",
             !isMobile && (isSidebarVisible ? "md:col-span-3 lg:col-span-4" : "col-span-full"),
@@ -534,7 +514,6 @@ export default function CourseDetailPage() {
         </main>
       </div>
       
-      {/* Sidebar for Mobile (Sheet) */}
       {isMobile && (
         <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
           <SheetTrigger asChild>
@@ -550,5 +529,3 @@ export default function CourseDetailPage() {
     </div>
   );
 }
-
-    

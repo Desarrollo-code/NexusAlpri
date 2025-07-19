@@ -43,8 +43,7 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 El seguimiento del progreso es un sistema automático y robusto diseñado para reflejar la interacción real del usuario.
 
 1.  **Interacciones en el Frontend:** La página de detalle del curso (`/courses/[courseId]`) detecta diferentes tipos de interacción sin necesidad de que el usuario haga clic en un botón:
-    *   **Lecciones de Texto/PDF:** Se registra una interacción de "vista" cuando el usuario accede a la lección.
-    *   **Lecciones de Video/Archivo:** Se registra una interacción de "vista" al seleccionar la lección.
+    *   **Lecciones de Texto/Video/Archivo:** Se marca como completada automáticamente cuando el usuario **selecciona la lección** en la barra lateral.
     *   **Quices:** El componente `QuizViewer` gestiona el envío del quiz y su puntuación.
 
 2.  **Registro de Interacciones (API):** Cada una de estas interacciones desencadena una llamada a la API (`POST /api/progress/[userId]/[courseId]/...`) de forma asíncrona. Esta API no calcula el progreso final, simplemente almacena la interacción en el modelo `LessonCompletionRecord`.
@@ -120,7 +119,7 @@ Las rutas de la API se encuentran en `src/app/api/`. Algunos endpoints clave son
 *   `/api/resources`: CRUD para la biblioteca de recursos.
 *   `/api/settings`: Para obtener y guardar la configuración de la plataforma.
 
-La autenticación se realiza a través de un token JWT en una cookie de sesión. El `middleware.ts` protege las rutas.
+La autenticación se realiza a través de un token JWT en una cookie http-only. El `middleware.ts` protege las rutas.
 
 ## 5. Configuración del Entorno de Desarrollo
 
@@ -154,6 +153,3 @@ La autenticación se realiza a través de un token JWT en una cookie de sesión.
 *   **Formularios:** Utilizar `react-hook-form` para la gestión de formularios complejos.
 *   **Código Asíncrono:** Utilizar `async/await` para operaciones asíncronas.
 *   **Comentarios:** Añadir comentarios JSDoc a funciones complejas y a las props de los componentes para clarificar su propósito.
-
-
-
