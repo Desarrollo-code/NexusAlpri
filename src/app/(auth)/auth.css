@@ -5,7 +5,7 @@
 
 @layer utilities {
   .auth-bg {
-    @apply bg-[#110e1f]; /* Deep purple background */
+    @apply bg-background;
     --color-1: 330 84% 70%; /* Pink */
     --color-2: 210 82% 65%; /* Blue */
     --color-3: 45 95% 65%;  /* Yellow */
@@ -19,6 +19,7 @@
     position: absolute;
     filter: blur(100px);
     border-radius: 50%;
+    z-index: 0;
   }
 
   .auth-bg::before {
@@ -48,20 +49,8 @@
   }
 }
 
-@layer components {
-  @keyframes border-spin {
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-  
-  .auth-gradient-border {
-    @apply relative rounded-xl p-px;
-    background: conic-gradient(from 180deg at 50% 50%, #d53e33, #fbb300, #377af5, #399953, #d53e33);
-    animation: border-spin 4s linear infinite;
-  }
-
-  .inner-card {
-    @apply h-full w-full rounded-[11px] bg-background/80 backdrop-blur-sm;
+@layer base {
+  .dark {
+    --background: 220 10% 12%;
   }
 }
