@@ -118,9 +118,6 @@
   .text-balance {
     text-wrap: balance; /* Utilidad para equilibrar líneas de texto */
   }
-<<<<<<< HEAD
-}
-=======
 
   /* --- Definición de la animación para el haz de luz del borde (rotación) --- */
   @keyframes border-spin {
@@ -198,4 +195,3 @@
         animation: border-spin 10s linear infinite; /* Rotación continua durante 10 segundos */
     }
 }
->>>>>>> a6d7b134a0bb727572d0d0ca0cec555eae5a6afb
