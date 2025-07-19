@@ -26,11 +26,11 @@
     --ring: 45 80% 55%;
     --radius: 0.75rem;
 
-    --chart-1: 45 80% 55%;   /* Gold */
-    --chart-2: 45 70% 65%;   /* Lighter Gold */
-    --chart-3: 35 82% 70%;   /* Light Orange/Gold */
-    --chart-4: 220 15% 70%;   /* Muted Gray */
-    --chart-5: 220 15% 50%;   /* Darker Gray */
+    --chart-1: 220 80% 60%; /* Blue */
+    --chart-2: 150 70% 45%; /* Green */
+    --chart-3: 40 90% 55%;  /* Amber */
+    --chart-4: 0 85% 65%;   /* Red */
+    --chart-5: 260 80% 65%; /* Violet */
 
     --event-blue: 210 90% 50%;
     --event-green: 150 70% 40%;
@@ -96,30 +96,7 @@
 }
 
 @layer components {
-    @keyframes border-beam-spin {
-        from {
-            transform: rotate(0deg);
-        }
-        to {
-            transform: rotate(360deg);
-        }
-    }
-
-    .border-beam-card::before {
-        content: "";
-        position: absolute;
-        inset: -1px; /* Control border thickness */
-        border-radius: calc(var(--radius) + 2px);
-        z-index: 0;
-        background: conic-gradient(
-            from 180deg at 50% 50%,
-            #e92a67, /* Pink */
-            #f0a424, /* Orange */
-            #fbb300, /* Yellow */
-            #40c9ff, /* Blue */
-            transparent 30%,
-            transparent
-        );
-        animation: border-beam-spin 8s linear infinite;
+    .auth-bg {
+        @apply bg-background min-h-screen;
     }
 }

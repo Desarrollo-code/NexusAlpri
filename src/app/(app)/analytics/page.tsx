@@ -35,8 +35,8 @@ const MetricCard = ({ title, value, icon: Icon, description }: { title: string; 
 
 const userRolesChartConfig = {
   count: { label: "Usuarios" },
-  STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-2))" },
-  INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-1))" },
+  STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
+  INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
   ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
@@ -44,7 +44,7 @@ const courseStatusChartConfig = {
   count: { label: "Cursos" },
   DRAFT: { label: "Borrador", color: "hsl(var(--chart-1))" },
   PUBLISHED: { label: "Publicados", color: "hsl(var(--chart-2))" },
-  ARCHIVED: { label: "Archivados", color: "hsl(var(--chart-3))" },
+  ARCHIVED: { label: "Archivados", color: "hsl(var(--chart-4))" },
 } satisfies ChartConfig;
 
 
