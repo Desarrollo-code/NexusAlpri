@@ -63,13 +63,16 @@
     --secondary-foreground: 210 20% 94%;
     --muted: 220 10% 22%;
     --muted-foreground: 220 10% 65%;
-    --accent: 45 70% 60%;
-    --accent-foreground: 45 90% 15%;
+    
+    /* New Accent Color */
+    --accent: 210 90% 60%; /* Vibrant Blue */
+    --accent-foreground: 210 20% 98%; /* Light text for vibrant blue */
+
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 220 10% 25%;
     --input: 220 10% 20%;
-    --ring: 45 80% 55%;
+    --ring: 210 90% 60%; /* Ring matches new accent */
 
     --sidebar-background: 220 10% 10%;
     --sidebar-foreground: 210 20% 85%;
@@ -77,6 +80,13 @@
     --sidebar-accent-foreground: 45 90% 15%;
     --sidebar-border: 220 10% 20%;
     --sidebar-ring: 45 80% 55%;
+
+    /* New vibrant chart colors */
+    --chart-1: 210 80% 55%;  /* Bright Blue */
+    --chart-2: 150 70% 45%;  /* Emerald Green */
+    --chart-3: 40 90% 55%;   /* Amber Gold */
+    --chart-4: 0 85% 65%;    /* Bright Red */
+    --chart-5: 280 80% 65%;  /* Vivid Violet */
   }
 
   * {
