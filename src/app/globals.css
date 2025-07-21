@@ -5,35 +5,40 @@
 
 @layer base {
   :root {
-    --background: 220 20% 98%;
-    --foreground: 220 15% 25%;
-    --card: 220 20% 100%;
-    --card-foreground: 220 15% 25%;
-    --popover: 220 20% 100%;
-    --popover-foreground: 220 15% 25%;
-
-    --primary: 45 80% 55%;
-    --primary-foreground: 210 20% 98%;
-    --secondary: 220 15% 94%;
-    --secondary-foreground: 220 10% 25%;
-    --muted: 220 15% 94%;
-    --muted-foreground: 220 10% 45%;
+    --background: 240 10% 98%;
+    --foreground: 240 10% 10%;
     
-    --accent: 210 90% 60%;
-    --accent-foreground: 210 20% 15%;
+    --card: 240 10% 100%;
+    --card-foreground: 240 10% 10%;
+    
+    --popover: 240 10% 100%;
+    --popover-foreground: 240 10% 10%;
+    
+    --primary: 262 82% 57%; /* Deep Purple: #673AB7 */
+    --primary-foreground: 210 20% 98%;
+    
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 5% 10%;
+    
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 45%;
+    
+    --accent: 265 53% 50%; /* Electric Indigo: #6F42C1 */
+    --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 220 15% 88%;
-    --input: 220 15% 92%;
-    --ring: 45 80% 55%;
+    
+    --border: 240 6% 90%;
+    --input: 240 6% 94%;
+    --ring: 262 82% 57%;
     --radius: 0.75rem;
 
-    --chart-1: 195 80% 50%; /* Teal/Cyan */
-    --chart-2: 150 70% 45%; /* Emerald Green */
-    --chart-3: 35 90% 58%; /* Amber */
-    --chart-4: 0 82% 63%; /* Bright Red */
-    --chart-5: 270 80% 60%; /* Purple */
+    --chart-1: 195 80% 50%;
+    --chart-2: 150 70% 45%;
+    --chart-3: 35 90% 58%;
+    --chart-4: 0 82% 63%;
+    --chart-5: 270 80% 60%;
 
     --event-blue: 210 85% 58%;
     --event-green: 145 65% 42%;
@@ -44,44 +49,49 @@
     --gauge-yellow: 45 90% 55%;
     --gauge-red: 0 84% 60%;
 
-    --sidebar-background: 220 15% 96%;
-    --sidebar-foreground: 220 15% 25%;
-    --sidebar-accent: 45 80% 55%;
-    --sidebar-accent-foreground: 45 90% 15%;
-    --sidebar-border: 220 15% 88%;
-    --sidebar-ring: 45 80% 55%;
+    --sidebar-background: 240 5% 97%;
+    --sidebar-foreground: 240 10% 15%;
+    --sidebar-accent: 262 82% 57%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 240 6% 88%;
+    --sidebar-ring: 262 82% 57%;
   }
 
   .dark {
-    --background: 220 10% 12%;
+    --background: 0 0% 18.8%; /* Dark Gray: #303030 */
     --foreground: 210 20% 94%;
-    --card: 220 10% 16%;
-    --card-foreground: 210 20% 94%;
-    --popover: 220 10% 10%;
-    --popover-foreground: 210 20% 94%;
-
-    --primary: 45 80% 55%; /* Gold */
-    --primary-foreground: 45 90% 15%;
-    --secondary: 220 10% 25%;
-    --secondary-foreground: 210 20% 94%;
-    --muted: 220 10% 22%;
-    --muted-foreground: 220 10% 65%;
     
-    --accent: 210 90% 60%; /* Vibrant Blue */
+    --card: 0 0% 22%;
+    --card-foreground: 210 20% 94%;
+    
+    --popover: 0 0% 10%;
+    --popover-foreground: 210 20% 94%;
+    
+    --primary: 262 82% 67%; /* Lighter purple for dark mode */
+    --primary-foreground: 210 20% 98%;
+    
+    --secondary: 0 0% 25%;
+    --secondary-foreground: 210 20% 94%;
+    
+    --muted: 0 0% 25%;
+    --muted-foreground: 210 10% 65%;
+    
+    --accent: 265 53% 60%; /* Electric Indigo: #6F42C1 (adjusted slightly for dark mode) */
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 40% 98%;
-    --border: 220 10% 25%;
-    --input: 220 10% 20%;
-    --ring: 210 90% 60%;
+    
+    --border: 0 0% 28%;
+    --input: 0 0% 24%;
+    --ring: 265 53% 60%;
 
-    --sidebar-background: 220 10% 10%;
+    --sidebar-background: 0 0% 15%;
     --sidebar-foreground: 210 20% 85%;
-    --sidebar-accent: 45 80% 55%;
-    --sidebar-accent-foreground: 45 90% 15%;
-    --sidebar-border: 220 10% 20%;
-    --sidebar-ring: 45 80% 55%;
+    --sidebar-accent: 262 82% 67%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 0 0% 25%;
+    --sidebar-ring: 262 82% 67%;
 
     --chart-1: 195 80% 50%;
     --chart-2: 150 70% 45%;
@@ -108,7 +118,6 @@
     text-wrap: balance;
   }
 
-  /* Thin scrollbar styling */
   .thin-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;

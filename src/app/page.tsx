@@ -11,26 +11,33 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
+    // Add a class to body for auth-specific background
+    document.body.classList.add('auth-body');
+    
     if (!isLoading) {
       if (user) {
+        document.body.classList.remove('auth-body');
         router.replace('/dashboard');
       } else {
         router.replace('/sign-in');
       }
     }
+
+    // Cleanup function to remove the class when the component unmounts
+    // or when navigating away from the auth pages.
+    return () => {
+        // We don't remove it here because the auth layout will be unmounted
+        // and the main app layout doesn't have this class.
+    };
   }, [user, isLoading, router]);
 
-  // This loader is shown while the initial client-side check is happening.
-  // It prevents a flash of the sign-in page before redirecting a logged-in user.
-  if (isLoading) {
+  if (isLoading || !user) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-background">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      <div className="flex h-screen w-screen items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-white" />
       </div>
     );
   }
 
-  // Render nothing while redirecting to avoid layout shifts.
-  // The useEffect handles the actual navigation.
   return null;
 }

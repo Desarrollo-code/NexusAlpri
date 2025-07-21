@@ -1,17 +1,20 @@
 
 import type {Metadata} from 'next';
-import { Poppins } from 'next/font/google';
+import { Inter, Space_Grotesk } from 'next/font/google';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
 
-const poppins = Poppins({
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
   variable: '--font-body',
 });
 
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-headline',
+});
 
 export const metadata: Metadata = {
   title: 'NexusAlpri',
@@ -25,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${poppins.variable} font-body antialiased`}>
+      <body className={`${inter.variable} ${spaceGrotesk.variable} font-body antialiased`}>
         <NextThemesProvider
           attribute="class"
           defaultTheme="dark"
