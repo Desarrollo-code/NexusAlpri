@@ -157,55 +157,14 @@
     background: hsl(var(--primary));
   }
   
-  /* Animated Border Card */
+  /* Red Border Hover Effect */
   .card-border-animated {
-    position: relative;
-    overflow: hidden;
-    z-index: 0;
-    transition: box-shadow 0.3s ease-in-out;
+    @apply border-transparent; /* Start with a transparent border */
+    transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
   }
 
-  .card-border-animated::before {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: conic-gradient(
-      from 0deg,
-      hsl(var(--chart-4)) 0%,
-      hsl(var(--chart-3)) 25%,
-      hsl(var(--chart-1)) 50%,
-      hsl(var(--chart-5)) 75%,
-      hsl(var(--chart-4)) 100%
-    );
-    animation: rotateBorder 10s linear infinite;
-    z-index: -2;
-  }
-
-  .card-border-animated::after {
-    content: "";
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    right: 2px;
-    bottom: 2px;
-    background: hsl(var(--card)); 
-    border-radius: calc(var(--radius) - 2px); 
-    z-index: -1;
-  }
-  
   .card-border-animated:hover {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-  }
-
-  .card-border-animated:hover::before {
-    animation-duration: 5s;
-  }
-
-  @keyframes rotateBorder {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    @apply border-destructive/50; /* Add a red border on hover */
+    box-shadow: 0 0 15px hsl(var(--destructive) / 0.3); /* Add a red glow on hover */
   }
 }
