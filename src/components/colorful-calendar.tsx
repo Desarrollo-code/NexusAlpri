@@ -81,7 +81,7 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
                 </Tooltip>
             </div>
             
-             <div className="flex-grow overflow-y-auto space-y-1 min-h-0 pr-1">
+             <div className="flex-grow overflow-y-auto space-y-1 min-h-0 pr-1 thin-scrollbar">
                 {daySpecificEvents.map(event => (
                     <div 
                         key={event.id}
@@ -116,9 +116,21 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
     const days = eachDayOfInterval({ start, end });
     
     const weeksArray: Date[][] = [];
+    let weekIndex = 0;
     while (days.length) {
-      weeksArray.push(days.splice(0, 7));
+        // Ensure the last week is filled up to 7 days
+        const weekSlice = days.splice(0, 7);
+        weeksArray.push(weekSlice);
+        weekIndex++;
     }
+    // Fill the last week if it's not a full 7 days
+    if(weeksArray.length > 0) {
+        const lastWeek = weeksArray[weeksArray.length - 1];
+        while(lastWeek.length < 7) {
+            lastWeek.push(new Date(lastWeek[lastWeek.length - 1].getTime() + 24 * 60 * 60 * 1000));
+        }
+    }
+    
     return { weeks: weeksArray };
   }, [month]);
   
