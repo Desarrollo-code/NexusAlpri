@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -423,7 +424,7 @@ export default function UsersPage() {
             </Card>
           ))
       ) : usersList.map((u) => (
-        <Card key={u.id} className="p-4">
+        <Card key={u.id} className="p-4 card-border-animated">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-10 w-10">
@@ -544,7 +545,7 @@ export default function UsersPage() {
         </div>
       </div>
 
-      <Card>
+      <Card className="card-border-animated">
         <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className='flex-grow'>
                 <CardTitle>Lista de Usuarios</CardTitle>

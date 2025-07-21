@@ -96,7 +96,7 @@ export function CourseCard({ course, userRole, onEnrollmentChange, priority = fa
   };
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out group">
+    <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out group card-border-animated">
       <Link href={`/courses/${course.id}`} className="block">
         <div className="aspect-video w-full relative overflow-hidden">
             <Image

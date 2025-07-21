@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
@@ -264,7 +265,7 @@ export default function ProfilePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-8">
-          <Card className="text-center">
+          <Card className="text-center card-border-animated">
             <CardHeader>
               <div className="relative mx-auto w-32 h-32 mb-4">
                 <Avatar className="w-32 h-32 border-4 border-primary/20 shadow-md">
@@ -307,7 +308,7 @@ export default function ProfilePage() {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          <Card>
+          <Card className="card-border-animated">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-primary"/>Información Personal</CardTitle>
               <CardDescription>Estos datos son visibles en tu perfil público (si aplica).</CardDescription>
@@ -336,7 +337,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="card-border-animated">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/>Seguridad de la Cuenta</CardTitle>
                 <CardDescription>Gestiona la seguridad de tu acceso a NexusAlpri.</CardDescription>

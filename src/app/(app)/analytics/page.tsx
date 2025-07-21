@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -22,7 +23,7 @@ import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
 const MetricCard = ({ title, value: finalValue, icon: Icon, description }: { title: string; value: number; icon: React.ElementType; description?: string }) => {
     const animatedValue = useAnimatedCounter(finalValue);
     return (
-        <Card>
+        <Card className="card-border-animated">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
                 <Icon className="h-4 w-4 text-primary" />
@@ -109,7 +110,7 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
   }, [setActiveIndex]);
   
   return (
-    <Card>
+    <Card className="card-border-animated">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
@@ -189,7 +190,7 @@ function UserAnalyticsSection({ stats }: { stats: AdminDashboardStats }) {
             </div>
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                  <DonutChartCard title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
-                 <Card className="lg:col-span-2">
+                 <Card className="lg:col-span-2 card-border-animated">
                     <CardHeader>
                         <CardTitle>Tendencia de Registros (Últimos 7 Días)</CardTitle>
                     </CardHeader>
@@ -235,7 +236,7 @@ function CourseAnalyticsSection({ stats }: { stats: AdminDashboardStats }) {
             </div>
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                  <DonutChartCard title="Distribución de Cursos" data={courseStatusData} config={courseStatusChartConfig} />
-                 <Card className="lg:col-span-2">
+                 <Card className="lg:col-span-2 card-border-animated">
                     <CardHeader><CardTitle>Cursos Más Populares</CardTitle></CardHeader>
                     <CardContent className="flex items-center justify-center h-full text-muted-foreground">
                         <p>Próximamente...</p>
@@ -250,7 +251,7 @@ function SecurityAnalyticsSection({ logs }: { logs: AppSecurityLog[] }) {
     return (
          <section className="space-y-6">
              <h2 className="text-xl font-semibold flex items-center gap-3"><ShieldCheck className="text-primary"/> Interacción y Seguridad</h2>
-             <Card>
+             <Card className="card-border-animated">
                 <CardHeader>
                     <CardTitle>Últimos Eventos de Seguridad</CardTitle>
                     <CardDescription>

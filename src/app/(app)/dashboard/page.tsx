@@ -122,7 +122,7 @@ function DonutChartCard({ title, data, config, description }: { title: string, d
   const total = useMemo(() => data.reduce((acc, curr) => acc + curr.count, 0), [data]);
   
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col h-full card-border-animated">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
@@ -376,7 +376,7 @@ export default function DashboardPage() {
     }
 
     return (
-        <Alert className="relative bg-primary/10 border-primary/20 shadow-md mb-8">
+        <Alert className="relative bg-primary/10 border-primary/20 shadow-md mb-8 card-border-animated">
              <Button variant="ghost" size="icon" onClick={handleDismissWelcome} className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:bg-primary/20 z-10">
                 <X className="h-4 w-4" />
                 <span className="sr-only">Cerrar</span>
@@ -453,7 +453,7 @@ export default function DashboardPage() {
       {showWelcome && <WelcomeGuide />}
 
       {shouldSetup2fa && (
-        <Alert variant="destructive" className="mb-8">
+        <Alert variant="destructive" className="mb-8 card-border-animated">
             <ShieldAlert className="h-4 w-4" />
             <AlertTitle>Acción de Seguridad Requerida</AlertTitle>
             <AlertDescription>
@@ -466,7 +466,7 @@ export default function DashboardPage() {
       {user.role === 'STUDENT' && data?.studentStats && (
         <section>
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-              <Card>
+              <Card className="card-border-animated">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Inscritos</CardTitle>
                   <BookOpen className="h-5 w-5 text-chart-1" />
@@ -475,7 +475,7 @@ export default function DashboardPage() {
                   <div className="text-2xl font-bold">{data.studentStats.enrolled}</div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="card-border-animated">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Completados</CardTitle>
                   <CheckCircle className="h-5 w-5 text-chart-2" />
@@ -491,7 +491,7 @@ export default function DashboardPage() {
       {user.role === 'INSTRUCTOR' && data?.instructorStats && (
          <section>
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-               <Card>
+               <Card className="card-border-animated">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Impartidos</CardTitle>
                   <BookMarked className="h-5 w-5 text-chart-1" />
@@ -500,7 +500,7 @@ export default function DashboardPage() {
                   <div className="text-2xl font-bold">{data.instructorStats.taught}</div>
                 </CardContent>
               </Card>
-               <Card>
+               <Card className="card-border-animated">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Estudiantes</CardTitle>
                   <Users className="h-5 w-5 text-chart-2" />
@@ -527,7 +527,7 @@ export default function DashboardPage() {
                   ) : (
                     <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                       {data.taughtCourses.map(course => (
-                        <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
+                        <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow card-border-animated">
                            {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
                           <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
                           <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2"/> Editar Curso</Link></Button></CardFooter>
@@ -536,7 +536,7 @@ export default function DashboardPage() {
                     </div>
                   )
                 ) : (
-                  <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No has creado cursos aún.</p></CardContent></Card>
+                  <Card className="card-border-animated"><CardContent className="pt-6 text-center text-muted-foreground"><p>No has creado cursos aún.</p></CardContent></Card>
                 )}
               </section>
            )}
@@ -555,7 +555,7 @@ export default function DashboardPage() {
                       </div>
                    )
                 ) : (
-                  <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No estás inscrito en ningún curso.</p></CardContent></Card>
+                  <Card className="card-border-animated"><CardContent className="pt-6 text-center text-muted-foreground"><p>No estás inscrito en ningún curso.</p></CardContent></Card>
                 )}
               </section>
            )}
@@ -569,12 +569,12 @@ export default function DashboardPage() {
                   ))}
                 </div>
               ) : (
-                <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
+                <Card className="card-border-animated"><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
               )}
             </section>
         </div>
         <div className="lg:col-span-1">
-           <Card className="sticky top-24">
+           <Card className="sticky top-24 card-border-animated">
              <CardHeader><CardTitle>Accesos Rápidos</CardTitle></CardHeader>
              <CardContent className="space-y-3">
                {linksToShow.map((link) => (

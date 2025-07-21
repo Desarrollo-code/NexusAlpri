@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -261,7 +262,7 @@ export default function EnrollmentsPage() {
       {filteredEnrollments.map(enrollment => {
         const studentProg = progressData[`${enrollment.user.id}-${selectedCourse!.id}`];
         return (
-          <Card key={enrollment.user.id}>
+          <Card key={enrollment.user.id} className="card-border-animated">
             <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
                <Avatar className="h-10 w-10">
                   <AvatarImage src={enrollment.user.avatar || undefined} alt={enrollment.user.name || 'User'} />
@@ -297,7 +298,7 @@ export default function EnrollmentsPage() {
 
   return (
     <div className="space-y-8">
-      <Card>
+      <Card className="card-border-animated">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex-grow">

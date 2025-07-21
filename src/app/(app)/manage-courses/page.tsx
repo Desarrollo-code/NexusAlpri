@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -300,7 +301,7 @@ export default function ManageCoursesPage() {
     return (
       <div className={isMobile ? "space-y-4" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"}>
           {courses.map(course => (
-          <Card key={course.id} className="flex flex-col overflow-hidden">
+          <Card key={course.id} className="flex flex-col overflow-hidden card-border-animated">
               <CourseListItemImage
               src={course.imageUrl}
               alt={course.title}

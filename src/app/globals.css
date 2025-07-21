@@ -162,6 +162,7 @@
     position: relative;
     overflow: hidden;
     z-index: 0;
+    transition: box-shadow 0.3s ease-in-out;
   }
 
   .card-border-animated::before {
@@ -179,7 +180,7 @@
       hsl(var(--chart-5)) 75%,
       hsl(var(--chart-4)) 100%
     );
-    animation: rotateBorder 6s linear infinite;
+    animation: rotateBorder 10s linear infinite;
     z-index: -2;
   }
 
@@ -200,7 +201,7 @@
   }
 
   .card-border-animated:hover::before {
-    animation-duration: 3s;
+    animation-duration: 5s;
   }
 
   @keyframes rotateBorder {

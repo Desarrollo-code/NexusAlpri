@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -157,7 +158,7 @@ export default function SettingsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-          <Card>
+          <Card className="card-border-animated">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary"/>Apariencia y Generales</CardTitle>
               <CardDescription>Configuraciones básicas de la plataforma.</CardDescription>
@@ -175,7 +176,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="card-border-animated">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5 text-primary"/>Seguridad y Acceso</CardTitle>
               <CardDescription>Gestiona las políticas de seguridad y registro.</CardDescription>
@@ -279,7 +280,7 @@ export default function SettingsPage() {
         </div>
 
         <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
-            <Card>
+            <Card className="card-border-animated">
                 <CardHeader>
                     <CardTitle>Guardar Cambios</CardTitle>
                 </CardHeader>
@@ -294,7 +295,7 @@ export default function SettingsPage() {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-border-animated">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary" />Categorías de Recursos</CardTitle>
                 </CardHeader>
