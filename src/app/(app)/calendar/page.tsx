@@ -267,7 +267,7 @@ export default function CalendarPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
-        <div className="flex items-center gap-4 mb-4">
+        <div className="flex-shrink-0 flex items-center gap-4 mb-4">
             <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="h-4 w-4"/></Button>
             <h1 className="text-2xl font-bold font-headline text-foreground min-w-[200px] text-center">
                 {format(currentMonth, "MMMM yyyy", { locale: es }).replace(/^\w/, (c) => c.toUpperCase())}
@@ -277,7 +277,7 @@ export default function CalendarPage() {
         </div>
 
         <main className="flex-grow grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 min-h-0">
-          <div className="md:col-span-2 lg:col-span-3 bg-card p-2 sm:p-4 border rounded-lg shadow-sm">
+          <div className="md:col-span-2 lg:col-span-3 bg-card p-2 sm:p-4 border rounded-lg shadow-sm flex flex-col min-h-0">
             {isLoading ? (
               <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
             ) : error ? (

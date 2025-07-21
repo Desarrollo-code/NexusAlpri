@@ -59,7 +59,7 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
         <div
             onClick={() => onDateSelect(day)}
             className={cn(
-                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[100px] md:min-h-[120px]",
+                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer",
                 !isCurrentMonth && "bg-muted/30 text-muted-foreground/50",
                 isSameDay(day, selectedDay) && "bg-accent/40"
             )}
@@ -81,8 +81,7 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
                 </Tooltip>
             </div>
             
-             {/* This is the container that will scroll */}
-            <div className="flex-grow overflow-y-auto space-y-1 min-h-0 pr-1">
+             <div className="flex-grow overflow-y-auto space-y-1 min-h-0 pr-1">
                 {daySpecificEvents.map(event => (
                     <div 
                         key={event.id}
@@ -125,7 +124,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
   
   return (
     <TooltipProvider delayDuration={100}>
-      <div className={cn("grid grid-cols-7 grid-rows-[auto] auto-rows-fr h-full gap-px bg-border rounded-lg relative overflow-hidden", className)}>
+      <div className={cn("grid grid-cols-7 grid-rows-[auto_repeat(6,minmax(0,1fr))] h-full gap-px bg-border rounded-lg relative overflow-hidden", className)}>
         {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((day, i) => (
           <div key={`${day}-${i}`} className="p-2 text-center text-xs font-semibold text-muted-foreground bg-card">{day}</div>
         ))}
