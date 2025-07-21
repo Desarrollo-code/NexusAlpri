@@ -1,4 +1,5 @@
 
+
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
@@ -88,7 +89,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ courses, totalCourses });
     }
 
-    return NextResponse.json(courses);
+    return NextResponse.json({ courses, totalCourses: courses.length });
     
   } catch (error) {
     console.error('[COURSES_GET_ERROR]', error);

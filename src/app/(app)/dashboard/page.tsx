@@ -46,6 +46,8 @@ import {
 import { Pie, PieChart, ResponsiveContainer, Cell, Label } from "recharts";
 import { cn } from '@/lib/utils';
 import { GradientIcon } from '@/components/ui/gradient-icon';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { CourseCarousel } from '@/components/course-carousel';
 
 // --- TYPE DEFINITIONS & MAPPERS ---
 interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
@@ -221,6 +223,7 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
 
 export default function DashboardPage() {
   const { user, settings } = useAuth();
+  const isMobile = useIsMobile();
   
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -282,9 +285,9 @@ export default function DashboardPage() {
             dashboardPayload.adminStats = await roleSpecificRes[0].json();
         } else if (user.role === 'INSTRUCTOR') {
             const taughtCoursesResponse = await roleSpecificRes[0].json();
-            const taughtCoursesData = taughtCoursesResponse.courses || [];
+            const taughtCoursesData = Array.isArray(taughtCoursesResponse) ? taughtCoursesResponse : (taughtCoursesResponse.courses || []);
             dashboardPayload.instructorStats = { taught: taughtCoursesData.length };
-            dashboardPayload.taughtCourses = taughtCoursesData.map(mapApiCourseToAppCourse).slice(0, 3);
+            dashboardPayload.taughtCourses = taughtCoursesData.map(mapApiCourseToAppCourse).slice(0, 4);
         } else if (user.role === 'STUDENT') {
             const enrolledData: any[] = await roleSpecificRes[0].json();
             const mappedCourses: EnrolledCourse[] = enrolledData.map(item => ({
@@ -294,7 +297,7 @@ export default function DashboardPage() {
             }));
             const completedCount = mappedCourses.filter(c => c.progressPercentage === 100).length;
             dashboardPayload.studentStats = { enrolled: mappedCourses.length, completed: completedCount };
-            dashboardPayload.myDashboardCourses = mappedCourses.slice(0, 3);
+            dashboardPayload.myDashboardCourses = mappedCourses.slice(0, 4);
         }
         
         setData(dashboardPayload);
@@ -515,15 +518,19 @@ export default function DashboardPage() {
               <section>
                 <h2 className="text-2xl font-semibold font-headline mb-4">Mis Cursos Impartidos Recientemente</h2>
                  {data?.taughtCourses && data.taughtCourses.length > 0 ? (
-                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                    {data.taughtCourses.map(course => (
-                      <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
-                         {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
-                        <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
-                        <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2"/> Editar Curso</Link></Button></CardFooter>
-                      </Card>
-                    ))}
-                  </div>
+                  isMobile ? (
+                    <CourseCarousel courses={data.taughtCourses.map(c => ({ ...c, isEnrolled: false, progressPercentage: 0, enrolledAt:'' }))} userRole={user.role} />
+                  ) : (
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                      {data.taughtCourses.map(course => (
+                        <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
+                           {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
+                          <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
+                          <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2"/> Editar Curso</Link></Button></CardFooter>
+                        </Card>
+                      ))}
+                    </div>
+                  )
                 ) : (
                   <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No has creado cursos aún.</p></CardContent></Card>
                 )}
@@ -534,11 +541,15 @@ export default function DashboardPage() {
               <section>
                 <h2 className="text-2xl font-semibold font-headline mb-4">Continuar Aprendiendo</h2>
                  {data?.myDashboardCourses && data.myDashboardCourses.length > 0 ? (
-                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                    {data.myDashboardCourses.map((course, index) => (
-                      <CourseCard key={course.id} course={course} userRole={user.role} priority={index < 2}/>
-                    ))}
-                  </div>
+                   isMobile ? (
+                     <CourseCarousel courses={data.myDashboardCourses} userRole={user.role} />
+                   ) : (
+                      <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                        {data.myDashboardCourses.map((course, index) => (
+                          <CourseCard key={course.id} course={course} userRole={user.role} priority={index < 2}/>
+                        ))}
+                      </div>
+                   )
                 ) : (
                   <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No estás inscrito en ningún curso.</p></CardContent></Card>
                 )}
