@@ -102,16 +102,16 @@ const courseStatusChartConfig = {
 const StatCard = ({ title, value: finalValue, icon: Icon, href }: { title: string; value: number; icon: React.ElementType; href: string;}) => {
     const animatedValue = useAnimatedCounter(finalValue);
     return (
-        <Link href={href} className="card-border-beam h-full">
-            <div className="flex flex-col p-6 h-full">
-                 <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <h3 className="text-sm font-medium">{title}</h3>
+        <Link href={href}>
+             <Card className="card-border-beam h-full">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{title}</CardTitle>
                     <Icon className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div className="flex-grow flex items-end">
+                </CardHeader>
+                <CardContent>
                     <div className="text-2xl font-bold">{animatedValue}</div>
-                </div>
-            </div>
+                </CardContent>
+            </Card>
         </Link>
     );
 };
