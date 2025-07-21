@@ -49,6 +49,9 @@ import { GradientIcon } from '@/components/ui/gradient-icon';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourseCarousel } from '@/components/course-carousel';
 import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
+import { CursorCard, CursorCardsContainer } from '@/components/ui/cursor-cards';
+import { useTheme } from 'next-themes';
+
 
 // --- TYPE DEFINITIONS & MAPPERS ---
 interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
@@ -99,20 +102,27 @@ const courseStatusChartConfig = {
   ARCHIVED: { label: "Archivados", color: "hsl(var(--chart-4))" },
 } satisfies ChartConfig;
 
-const StatCard = ({ title, value: finalValue, icon: Icon, href }: { title: string; value: number; icon: React.ElementType; href: string;}) => {
+const StatCard = ({ title, value: finalValue, icon: Icon, href, primaryHue, secondaryHue }: { title: string; value: number; icon: React.ElementType; href: string; primaryHue: string; secondaryHue: string; }) => {
     const animatedValue = useAnimatedCounter(finalValue);
+    const { theme } = useTheme();
+    
     return (
-        <Link href={href}>
-             <Card className="card-border-beam h-full">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CursorCard
+            borderColor={theme === "dark" ? "#262626" : "#e5e5e5"}
+            primaryHue={primaryHue}
+            secondaryHue={secondaryHue}
+            className="rounded-xl h-auto w-full shadow-md"
+        >
+            <Link href={href}>
+                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">{title}</CardTitle>
                     <Icon className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{animatedValue}</div>
                 </CardContent>
-            </Card>
-        </Link>
+            </Link>
+        </CursorCard>
     );
 };
 
@@ -120,7 +130,7 @@ function DonutChartCard({ title, data, config, description }: { title: string, d
   const total = useMemo(() => data.reduce((acc, curr) => acc + curr.count, 0), [data]);
   
   return (
-    <Card className="flex flex-col h-full card-border-beam">
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
@@ -199,12 +209,12 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-semibold font-headline">Estadísticas de la Plataforma</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-                <StatCard title="Total Usuarios" value={stats.totalUsers} icon={Users} href="/users" />
-                <StatCard title="Total Cursos" value={stats.totalCourses} icon={BookOpenCheck} href="/manage-courses" />
-                <StatCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={Activity} href="/manage-courses" />
-                <StatCard title="Total Inscripciones" value={stats.totalEnrollments} icon={UsersRound} href="/enrollments" />
-            </div>
+             <CursorCardsContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                <StatCard title="Total Usuarios" value={stats.totalUsers} icon={Users} href="/users" primaryHue="#FF69B4" secondaryHue="#FFD700" />
+                <StatCard title="Total Cursos" value={stats.totalCourses} icon={BookOpenCheck} href="/manage-courses" primaryHue="#007bff" secondaryHue="#FFA500" />
+                <StatCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={Activity} href="/manage-courses" primaryHue="#FF69B4" secondaryHue="#FFA500" />
+                <StatCard title="Total Inscripciones" value={stats.totalEnrollments} icon={UsersRound} href="/enrollments" primaryHue="#007bff" secondaryHue="#FFD700" />
+            </CursorCardsContainer>
              <section className="grid gap-6 grid-cols-1 md:grid-cols-2">
                 <DonutChartCard
                     title={<><Users className="text-primary" /> Distribución de Usuarios</>}
@@ -464,7 +474,7 @@ export default function DashboardPage() {
       {user.role === 'STUDENT' && data?.studentStats && (
         <section>
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-              <Card className="card-border-beam">
+              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Inscritos</CardTitle>
                   <BookOpen className="h-5 w-5 text-chart-1" />
@@ -473,7 +483,7 @@ export default function DashboardPage() {
                   <div className="text-2xl font-bold">{data.studentStats.enrolled}</div>
                 </CardContent>
               </Card>
-              <Card className="card-border-beam">
+              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Completados</CardTitle>
                   <CheckCircle className="h-5 w-5 text-chart-2" />
@@ -489,7 +499,7 @@ export default function DashboardPage() {
       {user.role === 'INSTRUCTOR' && data?.instructorStats && (
          <section>
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-               <Card className="card-border-beam">
+               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Impartidos</CardTitle>
                   <BookMarked className="h-5 w-5 text-chart-1" />
@@ -498,7 +508,7 @@ export default function DashboardPage() {
                   <div className="text-2xl font-bold">{data.instructorStats.taught}</div>
                 </CardContent>
               </Card>
-               <Card className="card-border-beam">
+               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Estudiantes</CardTitle>
                   <Users className="h-5 w-5 text-chart-2" />
@@ -525,7 +535,7 @@ export default function DashboardPage() {
                   ) : (
                     <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                       {data.taughtCourses.map(course => (
-                        <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow card-border-beam">
+                        <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
                            {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
                           <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
                           <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2"/> Editar Curso</Link></Button></CardFooter>

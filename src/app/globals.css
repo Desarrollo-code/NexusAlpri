@@ -156,41 +156,4 @@
     left: 0;
     background: hsl(var(--primary));
   }
-  
-  @property --angle {
-    syntax: "<angle>";
-    inherits: false;
-    initial-value: 0deg;
-  }
-
-  @keyframes border-beam {
-    to {
-      --angle: 360deg;
-    }
-  }
-
-  .card-border-beam {
-    position: relative;
-    border-radius: var(--radius);
-    border: 1px solid transparent;
-  }
-
-  .card-border-beam:hover::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    z-index: -1;
-    background-image: conic-gradient(
-      from var(--angle),
-      hsl(var(--muted-foreground) / 0.5),
-      hsl(var(--accent)) 20%,
-      hsl(var(--primary)) 40%,
-      hsl(var(--accent)) 60%,
-      hsl(var(--primary)) 80%,
-      hsl(var(--muted-foreground) / 0.5)
-    );
-    animation: border-beam 3s linear infinite;
-  }
 }
-
