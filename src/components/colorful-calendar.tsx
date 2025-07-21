@@ -41,27 +41,30 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
     const dayKey = format(day, 'yyyy-MM-dd');
     const holiday = isHoliday(day, 'CO');
     
-    // Filter events that happen on this specific day but are NOT multi-day/all-day
-    const daySpecificEvents = events.filter(event => {
-        const start = new Date(event.start);
-        return isSameDay(start, day) && !event.allDay && isSameDay(new Date(event.end), start);
-    });
+    const daySpecificEvents = useMemo(() => {
+        return events
+            .filter(event => isSameDay(new Date(event.start), day))
+            .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+    }, [events, day]);
+
+    const dotEvents = useMemo(() => {
+        const uniqueColors = new Set<string>();
+        daySpecificEvents.forEach(event => {
+            if (event.color) uniqueColors.add(event.color);
+        });
+        return Array.from(uniqueColors).slice(0, 4);
+    }, [daySpecificEvents]);
 
     return (
         <div
             onClick={() => onDateSelect(day)}
             className={cn(
-                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[100px] md:min-h-[120px] overflow-hidden",
+                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[100px] md:min-h-[120px]",
                 !isCurrentMonth && "bg-muted/30 text-muted-foreground/50",
                 isSameDay(day, selectedDay) && "bg-accent/40"
             )}
         >
-            <div className="flex justify-between items-start mb-1 flex-shrink-0">
-                 <div className="flex flex-col items-start gap-1">
-                    {daySpecificEvents.slice(0, 3).map(event => (
-                        <div key={event.id} className={cn("h-1.5 w-1.5 rounded-full", getEventColorClass(event.color, 'bg'))}></div>
-                    ))}
-                 </div>
+            <div className="flex justify-end items-start mb-1 flex-shrink-0">
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <time
@@ -77,9 +80,28 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
                     {holiday && <TooltipContent><p>{holiday.name}</p></TooltipContent>}
                 </Tooltip>
             </div>
+            
+             {/* This is the container that will scroll */}
             <div className="flex-grow overflow-y-auto space-y-1 min-h-0 pr-1">
-                {/* Content for overflow is now primarily handled by the pop-up/sidebar */}
+                {daySpecificEvents.map(event => (
+                    <div 
+                        key={event.id}
+                        className={cn("text-xs p-1 rounded-md truncate", getEventColorClass(event.color, 'bg'))}
+                        style={{ color: 'hsl(var(--primary-foreground))' }}
+                        onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
+                    >
+                        {event.title}
+                    </div>
+                ))}
             </div>
+
+            {dotEvents.length > 0 && (
+                 <div className="flex justify-center items-center gap-1 pt-1 flex-shrink-0 md:hidden">
+                    {dotEvents.map((color, index) => (
+                         <div key={index} className={cn("h-1.5 w-1.5 rounded-full", getEventColorClass(color, 'bg'))}></div>
+                    ))}
+                 </div>
+            )}
         </div>
     );
 });
@@ -100,55 +122,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
     }
     return { weeks: weeksArray };
   }, [month]);
-
-  const multiDayEvents = useMemo(() => {
-    const eventPositions: Record<string, { top: number, event: CalendarEvent }[]> = {};
-    
-    // Sort events to prioritize longer events
-    const sorted = [...events].sort((a,b) => {
-        const aDuration = new Date(a.end).getTime() - new Date(a.start).getTime();
-        const bDuration = new Date(b.end).getTime() - new Date(a.start).getTime();
-        return bDuration - aDuration;
-    });
-
-    for (const event of sorted) {
-        if (!event.allDay && isSameDay(new Date(event.start), new Date(event.end))) continue;
-
-        let topPosition = 0;
-        let placed = false;
-
-        while (!placed) {
-            let weekIsFree = true;
-            let dayToCheck = new Date(event.start);
-
-            while(dayToCheck <= new Date(event.end)) {
-                 const dayKey = format(dayToCheck, 'yyyy-MM-dd');
-                 if(eventPositions[dayKey]?.some(p => p.top === topPosition)) {
-                     weekIsFree = false;
-                     break;
-                 }
-                 dayToCheck.setDate(dayToCheck.getDate() + 1);
-            }
-            
-            if (weekIsFree) {
-                let dayToPlace = new Date(event.start);
-                 while(dayToPlace <= new Date(event.end)) {
-                    const dayKey = format(dayToPlace, 'yyyy-MM-dd');
-                    if (!eventPositions[dayKey]) eventPositions[dayKey] = [];
-                    eventPositions[dayKey].push({top: topPosition, event});
-                    dayToPlace.setDate(dayToPlace.getDate() + 1);
-                 }
-                 placed = true;
-                 (event as any).topPosition = topPosition; // Add position to event object
-            } else {
-                topPosition++;
-            }
-        }
-    }
-    return sorted.filter(e => e.allDay || !isSameDay(new Date(e.start), new Date(e.end)));
-  }, [events]);
-
-
+  
   return (
     <TooltipProvider delayDuration={100}>
       <div className={cn("grid grid-cols-7 grid-rows-[auto] auto-rows-fr h-full gap-px bg-border rounded-lg relative overflow-hidden", className)}>
@@ -162,35 +136,6 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                     const isToday = isSameDay(day, today);
                     return <DayCell key={day.toString()} day={day} isCurrentMonth={isCurrentMonth} isToday={isToday} onDateSelect={onDateSelect} onEventClick={onEventClick} events={events} selectedDay={selectedDay} />;
                  })}
-                 
-                {multiDayEvents.filter(event => {
-                    const start = new Date(event.start);
-                    const end = new Date(event.end);
-                    return start <= week[6] && end >= week[0];
-                }).map(event => {
-                    const start = new Date(event.start);
-                    const end = new Date(event.end);
-                    const eventStartDay = start < week[0] ? week[0] : start;
-                    const eventEndDay = end > week[6] ? week[6] : end;
-
-                    const startCol = eventStartDay.getDay() + 1;
-                    const endCol = eventEndDay.getDay() + 1;
-                    const span = endCol - startCol + 1;
-
-                    return (
-                        <div key={event.id}
-                             className={cn("absolute h-6 rounded text-white text-xs px-2 flex items-center truncate cursor-pointer z-10 hover:opacity-80 transition-opacity", getEventColorClass(event.color, 'bg'))}
-                             style={{
-                                gridRow: weekIndex + 2,
-                                gridColumn: `${startCol} / span ${span}`,
-                                top: `${1 + (((event as any).topPosition ?? 0) * 1.6)}rem` // Adjusted positioning
-                             }}
-                             onClick={(e) => { e.stopPropagation(); onEventClick(event); }}>
-                             {event.title}
-                        </div>
-                    );
-                })}
-
             </React.Fragment>
         ))}
       </div>
