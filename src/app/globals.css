@@ -173,8 +173,8 @@
     background: conic-gradient(
       from 0deg,
       hsl(var(--destructive)),
-      hsl(var(--primary)),
-      hsl(var(--accent)),
+      hsl(var(--destructive) / 0.3),
+      hsl(var(--destructive) / 0.3),
       hsl(var(--destructive))
     );
     animation: rotateBorder 10s linear infinite;
@@ -202,3 +202,4 @@
     100% { transform: rotate(360deg); }
   }
 }
+
