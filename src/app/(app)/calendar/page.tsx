@@ -37,6 +37,9 @@ import ColorfulCalendar from '@/components/colorful-calendar';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import { EventSidebar } from '@/components/calendar/event-sidebar';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { useIsMobile } from '@/hooks/use-mobile';
+
 
 const eventColors = [
   { value: 'blue', label: 'Evento General', className: 'bg-event-blue' },
@@ -48,6 +51,7 @@ const eventColors = [
 export default function CalendarPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,6 +62,7 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(startOfToday());
   
   const [showEventModal, setShowEventModal] = useState(false);
+  const [showMobileEventList, setShowMobileEventList] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<CalendarEvent | null>(null);
@@ -230,6 +235,13 @@ export default function CalendarPage() {
   const eventsForSelectedDate = useMemo(() => {
     return events.filter(e => isSameDay(new Date(e.start), selectedDate));
   }, [events, selectedDate]);
+  
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+    if(isMobile) {
+      setShowMobileEventList(true);
+    }
+  };
 
   const modalTitle = !canEdit && eventToEdit ? "Detalles del Evento" : (eventToEdit ? 'Editar Evento' : 'Crear Nuevo Evento');
   const modalDescription = !canEdit && eventToEdit ? "Aquí puedes ver la información del evento." : (eventToEdit ? "Modifica los detalles del evento." : "Completa los detalles para agendar un nuevo evento.");
@@ -275,7 +287,7 @@ export default function CalendarPage() {
                 className="w-full h-full"
                 month={currentMonth}
                 events={events}
-                onDateSelect={setSelectedDate}
+                onDateSelect={handleDateSelect}
                 onEventClick={handleOpenEventModal}
                 selectedDay={selectedDate}
               />
@@ -290,6 +302,19 @@ export default function CalendarPage() {
             />
           </aside>
         </main>
+        
+        {isMobile && (
+          <Sheet open={showMobileEventList} onOpenChange={setShowMobileEventList}>
+             <SheetContent side="bottom" className="h-[75vh] flex flex-col p-0">
+                <EventSidebar 
+                  selectedDate={selectedDate}
+                  events={eventsForSelectedDate}
+                  onCreateEvent={handleOpenCreateModal}
+                  onEditEvent={handleOpenEventModal}
+                />
+            </SheetContent>
+          </Sheet>
+        )}
       
       <Dialog open={showEventModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowEventModal(isOpen); }}>
         <DialogContent className="w-[95vw] max-w-2xl overflow-y-auto max-h-[90vh]">

@@ -44,21 +44,24 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
     // Filter events that happen on this specific day but are NOT multi-day/all-day
     const daySpecificEvents = events.filter(event => {
         const start = new Date(event.start);
-        const end = new Date(event.end);
-        const isSingleDayEvent = isSameDay(start, end) && !event.allDay;
-        return isSameDay(start, day) && isSingleDayEvent;
+        return isSameDay(start, day) && !event.allDay && isSameDay(new Date(event.end), start);
     });
 
     return (
         <div
             onClick={() => onDateSelect(day)}
             className={cn(
-                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[120px] overflow-hidden",
+                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[100px] md:min-h-[120px] overflow-hidden",
                 !isCurrentMonth && "bg-muted/30 text-muted-foreground/50",
                 isSameDay(day, selectedDay) && "bg-accent/40"
             )}
         >
-            <div className="flex justify-end mb-1 flex-shrink-0">
+            <div className="flex justify-between items-start mb-1 flex-shrink-0">
+                 <div className="flex flex-col items-start gap-1">
+                    {daySpecificEvents.slice(0, 3).map(event => (
+                        <div key={event.id} className={cn("h-1.5 w-1.5 rounded-full", getEventColorClass(event.color, 'bg'))}></div>
+                    ))}
+                 </div>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <time
@@ -75,14 +78,7 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
                 </Tooltip>
             </div>
             <div className="flex-grow overflow-y-auto space-y-1 min-h-0 pr-1">
-                {daySpecificEvents.map(event => (
-                    <button key={event.id} onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
-                        className="w-full text-left text-xs flex items-center gap-1.5 truncate p-1 rounded-sm hover:bg-background/80"
-                    >
-                        <div className={cn("h-2 w-2 rounded-full flex-shrink-0", getEventColorClass(event.color, 'bg'))}></div>
-                        <span className="truncate">{event.title}</span>
-                    </button>
-                ))}
+                {/* Content for overflow is now primarily handled by the pop-up/sidebar */}
             </div>
         </div>
     );
@@ -93,7 +89,7 @@ DayCell.displayName = "DayCell";
 export default function ColorfulCalendar({ month, events, selectedDay, onDateSelect, onEventClick, className }: ColorfulCalendarProps) {
   const today = new Date();
 
-  const { weeks, daysInGrid } = useMemo(() => {
+  const { weeks } = useMemo(() => {
     const start = startOfWeek(startOfMonth(month), { weekStartsOn: 0 });
     const end = endOfWeek(endOfMonth(month), { weekStartsOn: 0 });
     const days = eachDayOfInterval({ start, end });
@@ -102,7 +98,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
     while (days.length) {
       weeksArray.push(days.splice(0, 7));
     }
-    return { weeks: weeksArray, daysInGrid: eachDayOfInterval({ start, end }) };
+    return { weeks: weeksArray };
   }, [month]);
 
   const multiDayEvents = useMemo(() => {
@@ -111,7 +107,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
     // Sort events to prioritize longer events
     const sorted = [...events].sort((a,b) => {
         const aDuration = new Date(a.end).getTime() - new Date(a.start).getTime();
-        const bDuration = new Date(b.end).getTime() - new Date(b.start).getTime();
+        const bDuration = new Date(b.end).getTime() - new Date(a.start).getTime();
         return bDuration - aDuration;
     });
 
@@ -155,13 +151,13 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
 
   return (
     <TooltipProvider delayDuration={100}>
-      <div className={cn("grid grid-cols-7 grid-rows-[auto] auto-rows-fr h-full gap-px bg-border rounded-lg overflow-hidden relative", className)}>
-        {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
-          <div key={day} className="p-2 text-center text-xs font-semibold text-muted-foreground bg-card">{day}</div>
+      <div className={cn("grid grid-cols-7 grid-rows-[auto] auto-rows-fr h-full gap-px bg-border rounded-lg relative overflow-hidden", className)}>
+        {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((day, i) => (
+          <div key={`${day}-${i}`} className="p-2 text-center text-xs font-semibold text-muted-foreground bg-card">{day}</div>
         ))}
         {weeks.map((week, weekIndex) => (
             <React.Fragment key={weekIndex}>
-                 {week.map((day, dayIndex) => {
+                 {week.map((day) => {
                     const isCurrentMonth = day.getMonth() === month.getMonth();
                     const isToday = isSameDay(day, today);
                     return <DayCell key={day.toString()} day={day} isCurrentMonth={isCurrentMonth} isToday={isToday} onDateSelect={onDateSelect} onEventClick={onEventClick} events={events} selectedDay={selectedDay} />;
@@ -187,7 +183,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                              style={{
                                 gridRow: weekIndex + 2,
                                 gridColumn: `${startCol} / span ${span}`,
-                                top: `${3.75 + (((event as any).topPosition ?? 0) * 1.6)}rem` // Adjusted positioning
+                                top: `${1 + (((event as any).topPosition ?? 0) * 1.6)}rem` // Adjusted positioning
                              }}
                              onClick={(e) => { e.stopPropagation(); onEventClick(event); }}>
                              {event.title}

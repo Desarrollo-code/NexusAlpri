@@ -37,7 +37,7 @@ export function EventSidebar({ selectedDate, events, onCreateEvent, onEditEvent 
   );
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full p-4">
       <div className="flex-shrink-0">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold font-headline">
