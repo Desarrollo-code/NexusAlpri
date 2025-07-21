@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
             totalEnrollments,
             usersByRole,
             coursesByStatus,
-            recentLogins,
+            recentLoginsResult,
             newUsersLast7Days,
             dailyRegistrations,
         ] = await prisma.$transaction([
@@ -64,8 +64,8 @@ export async function GET(req: NextRequest) {
         
         const dateRange = eachDayOfInterval({ start: sevenDaysAgo, end: new Date() });
         const registrationTrend = dateRange.map(date => {
-            const formattedDate = format(date, 'yyyy-MM-dd');
-            const dayData = dailyRegistrations.find(d => format(new Date(d.registeredDate as Date), 'yyyy-MM-dd') === formattedDate);
+            const formattedDate = format(new Date(date), 'yyyy-MM-dd');
+            const dayData = dailyRegistrations.find(d => d.registeredDate && format(new Date(d.registeredDate), 'yyyy-MM-dd') === formattedDate);
             return {
                 date: format(date, 'MMM d'),
                 count: dayData?._count.registeredDate || 0,
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
                 status: item.status as CourseStatus,
                 count: item._count.status,
             })),
-            recentLogins: recentLogins.length, // The count of groups is the count of distinct users
+            recentLogins: recentLoginsResult.length,
             newUsersLast7Days: newUsersLast7Days,
             userRegistrationTrend: registrationTrend,
         };
