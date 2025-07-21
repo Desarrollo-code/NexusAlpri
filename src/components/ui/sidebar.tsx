@@ -320,7 +320,7 @@ const SidebarMenuSeparator = React.forwardRef<
 SidebarMenuSeparator.displayName = "SidebarMenuSeparator";
 
 const sidebarMenuButtonVariants = cva(
-  "flex w-full items-center gap-3 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:px-0 group-data-[state=collapsed]:py-3 [&_span]:whitespace-nowrap [&_span]:group-data-[state=collapsed]:hidden",
+  "flex w-full items-center gap-3 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-colors duration-200 focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:px-0 group-data-[state=collapsed]:py-3 [&_span]:whitespace-nowrap [&_span]:group-data-[state=collapsed]:hidden",
   {
     variants: {
       variant: {
