@@ -24,7 +24,7 @@
     --muted: 220 10% 96%;
     --muted-foreground: 240 4% 45%;
     
-    --accent: 210 85% 58%; /* Vibrant Blue - NEW */
+    --accent: 210 85% 58%; /* Vibrant Blue */
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84.2% 60.2%;
@@ -62,7 +62,7 @@
     --background: 0 0% 0%; /* Pure Black */
     --foreground: 210 20% 94%;
     
-    --card: 240 5% 18%;
+    --card: 240 5% 15%; /* Slightly lighter than pure black for visibility */
     --card-foreground: 210 20% 94%;
     
     --popover: 240 5% 12%;
@@ -77,7 +77,7 @@
     --muted: 240 5% 25%;
     --muted-foreground: 210 10% 65%;
     
-    --accent: 210 85% 62%; /* Vibrant Blue - NEW */
+    --accent: 210 85% 62%; /* Vibrant Blue */
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 70% 55%;
@@ -155,5 +155,56 @@
     width: 100%;
     left: 0;
     background: hsl(var(--primary));
+  }
+  
+  /* Animated Border Card */
+  .card-border-animated {
+    position: relative;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  .card-border-animated::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      from 0deg,
+      hsl(var(--chart-4)) 0%,
+      hsl(var(--chart-3)) 25%,
+      hsl(var(--chart-1)) 50%,
+      hsl(var(--chart-5)) 75%,
+      hsl(var(--chart-4)) 100%
+    );
+    animation: rotateBorder 6s linear infinite;
+    z-index: -2;
+  }
+
+  .card-border-animated::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    background: hsl(var(--card)); 
+    border-radius: calc(var(--radius) - 2px); 
+    z-index: -1;
+  }
+  
+  .card-border-animated:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  .card-border-animated:hover::before {
+    animation-duration: 3s;
+  }
+
+  @keyframes rotateBorder {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 }

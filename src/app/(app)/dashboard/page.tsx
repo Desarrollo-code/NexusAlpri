@@ -49,8 +49,6 @@ import { GradientIcon } from '@/components/ui/gradient-icon';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourseCarousel } from '@/components/course-carousel';
 import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
-import { CursorCard, CursorCardsContainer } from '@/components/ui/cursor-cards';
-import { useTheme } from 'next-themes';
 
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -102,17 +100,11 @@ const courseStatusChartConfig = {
   ARCHIVED: { label: "Archivados", color: "hsl(var(--chart-4))" },
 } satisfies ChartConfig;
 
-const StatCard = ({ title, value: finalValue, icon: Icon, href, primaryHue, secondaryHue }: { title: string; value: number; icon: React.ElementType; href: string; primaryHue: string; secondaryHue: string; }) => {
+const StatCard = ({ title, value: finalValue, icon: Icon, href }: { title: string; value: number; icon: React.ElementType; href: string; }) => {
     const animatedValue = useAnimatedCounter(finalValue);
-    const { theme } = useTheme();
     
     return (
-        <CursorCard
-            borderColor={theme === "dark" ? "#262626" : "#e5e5e5"}
-            primaryHue={primaryHue}
-            secondaryHue={secondaryHue}
-            className="rounded-xl h-auto w-full shadow-md"
-        >
+        <Card className="card-border-animated">
             <Link href={href}>
                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">{title}</CardTitle>
@@ -122,7 +114,7 @@ const StatCard = ({ title, value: finalValue, icon: Icon, href, primaryHue, seco
                     <div className="text-2xl font-bold">{animatedValue}</div>
                 </CardContent>
             </Link>
-        </CursorCard>
+        </Card>
     );
 };
 
@@ -209,12 +201,12 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-semibold font-headline">Estadísticas de la Plataforma</h2>
-             <CursorCardsContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-                <StatCard title="Total Usuarios" value={stats.totalUsers} icon={Users} href="/users" primaryHue="#FF69B4" secondaryHue="#FFD700" />
-                <StatCard title="Total Cursos" value={stats.totalCourses} icon={BookOpenCheck} href="/manage-courses" primaryHue="#007bff" secondaryHue="#FFA500" />
-                <StatCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={Activity} href="/manage-courses" primaryHue="#FF69B4" secondaryHue="#FFA500" />
-                <StatCard title="Total Inscripciones" value={stats.totalEnrollments} icon={UsersRound} href="/enrollments" primaryHue="#007bff" secondaryHue="#FFD700" />
-            </CursorCardsContainer>
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                <StatCard title="Total Usuarios" value={stats.totalUsers} icon={Users} href="/users" />
+                <StatCard title="Total Cursos" value={stats.totalCourses} icon={BookOpenCheck} href="/manage-courses" />
+                <StatCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={Activity} href="/manage-courses" />
+                <StatCard title="Total Inscripciones" value={stats.totalEnrollments} icon={UsersRound} href="/enrollments" />
+            </div>
              <section className="grid gap-6 grid-cols-1 md:grid-cols-2">
                 <DonutChartCard
                     title={<><Users className="text-primary" /> Distribución de Usuarios</>}
