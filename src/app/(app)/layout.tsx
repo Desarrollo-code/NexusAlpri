@@ -27,7 +27,6 @@ import { cn } from '@/lib/utils';
 import { useIdleTimeout } from '@/hooks/useIdleTimeout';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { PageTransitionWrapper } from '@/components/layout/page-transition-wrapper';
 
 const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) => {
   const { user } = useAuth();
@@ -181,9 +180,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             )}>
                 <TopBar />
                 <main className="p-4 md:p-6 lg:p-8">
-                  <PageTransitionWrapper>
-                    {children}
-                  </PageTransitionWrapper>
+                  {children}
                 </main>
             </div>
 
