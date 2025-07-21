@@ -59,7 +59,7 @@
   }
 
   .dark {
-    --background: 240 5% 15%; /* Graphite Dark */
+    --background: 0 0% 0%; /* Pure Black */
     --foreground: 210 20% 94%;
     
     --card: 240 5% 18%;
@@ -193,3 +193,4 @@
     animation: border-beam 3s linear infinite;
   }
 }
+
