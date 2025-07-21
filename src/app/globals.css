@@ -157,14 +157,48 @@
     background: hsl(var(--primary));
   }
   
-  /* Red Border Hover Effect */
   .card-border-animated {
-    @apply border-transparent; /* Start with a transparent border */
-    transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+    z-index: 0;
   }
 
-  .card-border-animated:hover {
-    @apply border-destructive/50; /* Add a red border on hover */
-    box-shadow: 0 0 15px hsl(var(--destructive) / 0.3); /* Add a red glow on hover */
+  .card-border-animated::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      from 0deg,
+      hsl(var(--destructive)),
+      hsl(var(--primary)),
+      hsl(var(--accent)),
+      hsl(var(--destructive))
+    );
+    animation: rotateBorder 10s linear infinite;
+    z-index: -2;
+  }
+
+  .card-border-animated::after {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    right: 1px;
+    bottom: 1px;
+    background: hsl(var(--card));
+    border-radius: calc(var(--radius) - 1px);
+    z-index: -1;
+  }
+  
+  .card-border-animated:hover::before {
+    animation-duration: 5s;
+  }
+
+  @keyframes rotateBorder {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 }
