@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, type FormEvent, useEffect } from 'react';
+import { useState, type FormEvent, useEffect, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
@@ -13,6 +13,30 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp"
 import Image from 'next/image';
+
+const PasswordToggle = memo(({ isVisible, onClick }: { isVisible: boolean, onClick: () => void }) => (
+    <button type="button" className="password-toggle" onClick={onClick} aria-label={isVisible ? "Ocultar contraseña" : "Mostrar contraseña"}>
+        {isVisible ? <EyeOff size={20} /> : <Eye size={20} />}
+    </button>
+));
+PasswordToggle.displayName = 'PasswordToggle';
+
+
+const MemoizedInputOTP = memo(({ value, onChange, disabled }: { value: string, onChange: (value: string) => void, disabled: boolean }) => (
+    <InputOTP maxLength={6} value={value} onChange={onChange} disabled={disabled}>
+        <InputOTPGroup>
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+            <InputOTPSlot index={2} />
+        </InputOTPGroup>
+        <InputOTPGroup>
+            <InputOTPSlot index={3} />
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+        </InputOTPGroup>
+    </InputOTP>
+));
+MemoizedInputOTP.displayName = 'MemoizedInputOTP';
 
 
 export default function SignInPage() {
@@ -106,12 +130,6 @@ export default function SignInPage() {
   };
 
 
-  const PasswordToggle = ({ onClick }: { onClick: () => void}) => (
-      <button type="button" className="password-toggle" onClick={onClick}>
-        {showPassword ? <EyeOff size={20}/> : <Eye size={20} />}
-      </button>
-  );
-
   const LoginForm = () => (
     <form onSubmit={handlePasswordSubmit}>
         <div className="auth-header">
@@ -130,7 +148,7 @@ export default function SignInPage() {
             <div style={{position: 'relative'}}>
                 <input type={showPassword ? 'text' : 'password'} id="loginPassword" className="form-input" placeholder="••••••••" required
                        value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading}/>
-                <PasswordToggle onClick={() => setShowPassword(!showPassword)} />
+                <PasswordToggle isVisible={showPassword} onClick={() => setShowPassword(!showPassword)} />
             </div>
         </div>
         
@@ -155,18 +173,7 @@ export default function SignInPage() {
             <p className="auth-subtitle">Ingresa el código de tu app de autenticación.</p>
         </div>
         <div className="form-group flex justify-center">
-            <InputOTP maxLength={6} value={token} onChange={setToken}>
-              <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-              </InputOTPGroup>
-               <InputOTPGroup>
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
+            <MemoizedInputOTP value={token} onChange={setToken} disabled={isLoading} />
         </div>
         <button type="submit" className="submit-btn" disabled={isLoading || token.length < 6}>
            {isLoading && <Loader2 className="animate-spin" />}
