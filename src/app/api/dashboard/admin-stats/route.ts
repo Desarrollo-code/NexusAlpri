@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
             totalEnrollments,
             usersByRole,
             coursesByStatus,
-            recentLoginCount,
+            recentLogins,
             newUsersLast7Days,
             dailyRegistrations,
         ] = await prisma.$transaction([
@@ -44,12 +44,12 @@ export async function GET(req: NextRequest) {
             prisma.enrollment.count(),
             prisma.user.groupBy({ by: ['role'], _count: { role: true } }),
             prisma.course.groupBy({ by: ['status'], _count: { status: true } }),
-            prisma.securityLog.count({
+            prisma.securityLog.groupBy({
+                by: ['userId'],
                 where: {
                     event: 'SUCCESSFUL_LOGIN',
                     createdAt: { gte: sevenDaysAgo }
                 },
-                distinct: ['userId']
             }),
             prisma.user.count({
                 where: { registeredDate: { gte: sevenDaysAgo } }
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
                 status: item.status as CourseStatus,
                 count: item._count.status,
             })),
-            recentLogins: recentLoginCount,
+            recentLogins: recentLogins.length, // The count of groups is the count of distinct users
             newUsersLast7Days: newUsersLast7Days,
             userRegistrationTrend: registrationTrend,
         };
