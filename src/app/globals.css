@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,8 +18,10 @@
     --secondary-foreground: 220 10% 25%;
     --muted: 220 15% 94%;
     --muted-foreground: 220 10% 45%;
+    
     --accent: 210 90% 60%;
     --accent-foreground: 210 20% 15%;
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 220 15% 88%;
@@ -26,16 +29,16 @@
     --ring: 45 80% 55%;
     --radius: 0.75rem;
 
-    --chart-1: 220 80% 60%;
-    --chart-2: 150 70% 45%;
-    --chart-3: 40 90% 55%;
-    --chart-4: 0 85% 65%;
-    --chart-5: 280 80% 65%;
+    --chart-1: 195 80% 50%; /* Teal/Cyan */
+    --chart-2: 150 70% 45%; /* Emerald Green */
+    --chart-3: 330 85% 60%; /* Bright Pink */
+    --chart-4: 25 95% 55%;  /* Vibrant Orange */
+    --chart-5: 270 80% 60%; /* Purple */
 
-    --event-blue: 210 80% 55%;
-    --event-green: 145 60% 45%;
-    --event-red: 0 80% 60%;
-    --event-orange: 30 85% 55%;
+    --event-blue: 210 85% 58%;
+    --event-green: 145 65% 42%;
+    --event-red: 0 82% 63%;
+    --event-orange: 35 90% 58%;
     
     --gauge-green: 140 70% 45%;
     --gauge-yellow: 45 90% 55%;
@@ -57,17 +60,17 @@
     --popover: 220 10% 10%;
     --popover-foreground: 210 20% 94%;
 
-    --primary: 45 80% 55%;
+    --primary: 45 80% 55%; /* Gold */
     --primary-foreground: 45 90% 15%;
     --secondary: 220 10% 25%;
     --secondary-foreground: 210 20% 94%;
     --muted: 220 10% 22%;
     --muted-foreground: 220 10% 65%;
     
-    --accent: 210 90% 60%;
+    --accent: 210 90% 60%; /* Vibrant Blue */
     --accent-foreground: 210 20% 98%;
 
-    --destructive: 0 62.8% 50.6%;
+    --destructive: 0 70% 55%;
     --destructive-foreground: 210 40% 98%;
     --border: 220 10% 25%;
     --input: 220 10% 20%;
@@ -80,16 +83,16 @@
     --sidebar-border: 220 10% 20%;
     --sidebar-ring: 45 80% 55%;
 
-    --chart-1: 210 80% 55%;
-    --chart-2: 150 70% 45%;
-    --chart-3: 40 90% 55%;
-    --chart-4: 0 85% 65%;
-    --chart-5: 280 80% 65%;
+    --chart-1: 195 80% 50%; /* Teal/Cyan */
+    --chart-2: 150 70% 45%; /* Emerald Green */
+    --chart-3: 330 85% 60%; /* Bright Pink */
+    --chart-4: 25 95% 55%;  /* Vibrant Orange */
+    --chart-5: 270 80% 60%; /* Purple */
 
-    --event-blue: 210 80% 55%;
-    --event-green: 145 60% 45%;
-    --event-red: 0 80% 60%;
-    --event-orange: 30 85% 55%;
+    --event-blue: 210 85% 58%;
+    --event-green: 145 65% 42%;
+    --event-red: 0 82% 63%;
+    --event-orange: 35 90% 58%;
   }
 
   * {
