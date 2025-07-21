@@ -1,23 +1,22 @@
 
-
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, TrendingUp, UsersRound, BookOpenCheck, ShieldCheck, Activity, Users, FileText, BarChart3, GraduationCap } from 'lucide-react';
+import { AlertTriangle, TrendingUp, UsersRound, BookOpenCheck, ShieldCheck, Activity, Users, FileText, BarChart3, GraduationCap, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector } from "recharts";
+import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector, CartesianGrid, Line, LineChart, Bar } from "recharts";
 import type { AdminDashboardStats, SecurityLog as AppSecurityLog } from '@/types';
 import { getEventDetails, getInitials } from '@/lib/security-log-utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GaugeChart } from '@/components/ui/gauge';
+import Link from 'next/link';
 
 const MetricCard = ({ title, value, icon: Icon, description }: { title: string; value: string | number; icon: React.ElementType; description?: string }) => (
     <Card>
@@ -36,7 +35,7 @@ const userRolesChartConfig = {
   count: { label: "Usuarios" },
   STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
   INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
-  ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-3))" },
+  ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-5))" },
 } satisfies ChartConfig;
 
 const courseStatusChartConfig = {
@@ -45,7 +44,6 @@ const courseStatusChartConfig = {
   PUBLISHED: { label: "Publicados", color: "hsl(var(--chart-2))" },
   ARCHIVED: { label: "Archivados", color: "hsl(var(--chart-4))" },
 } satisfies ChartConfig;
-
 
 const renderActiveShape = (props: any) => {
   const RADIAN = Math.PI / 180;
@@ -169,13 +167,43 @@ function UserAnalyticsSection({ stats }: { stats: AdminDashboardStats }) {
             fill: userRolesChartConfig[role]?.color || 'hsl(var(--muted))'
         }));
     }, [stats.usersByRole]);
+    
+    const registrationTrendChartConfig = {
+      count: {
+        label: "Nuevos Usuarios",
+        color: "hsl(var(--chart-2))",
+      },
+    } satisfies ChartConfig;
 
     return (
         <section className="space-y-6">
             <h2 className="text-xl font-semibold flex items-center gap-3"><Users className="text-primary"/> Analíticas de Usuarios</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricCard title="Total Usuarios" value={stats.totalUsers} icon={Users} />
-                <DonutChartCard title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
+                <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="En los últimos 7 días" />
+                <MetricCard title="Nuevos Usuarios" value={stats.newUsersLast7Days} icon={UserPlus} description="En los últimos 7 días"/>
+            </div>
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                 <DonutChartCard title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
+                 <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Tendencia de Registros (Últimos 7 Días)</CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-80">
+                         <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
+                            <AreaChart
+                                data={stats.userRegistrationTrend}
+                                margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
+                            >
+                                <CartesianGrid vertical={false} strokeDasharray="3 3"/>
+                                <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)}/>
+                                <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false}/>
+                                <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
+                                <Area dataKey="count" type="monotone" fill="var(--color-count)" fillOpacity={0.4} stroke="var(--color-count)" />
+                            </AreaChart>
+                         </ChartContainer>
+                    </CardContent>
+                </Card>
             </div>
         </section>
     );
@@ -213,7 +241,12 @@ function SecurityAnalyticsSection({ logs }: { logs: AppSecurityLog[] }) {
          <section className="space-y-6">
              <h2 className="text-xl font-semibold flex items-center gap-3"><ShieldCheck className="text-primary"/> Interacción y Seguridad</h2>
              <Card>
-                <CardHeader><CardTitle>Últimos Eventos de Seguridad</CardTitle></CardHeader>
+                <CardHeader>
+                    <CardTitle>Últimos Eventos de Seguridad</CardTitle>
+                    <CardDescription>
+                        Revisa los eventos de seguridad más recientes. Para un registro completo, visita la página de <Link href="/security-audit" className="underline text-primary">Auditoría de Seguridad</Link>.
+                    </CardDescription>
+                </CardHeader>
                 <CardContent className="px-0">
                     <Table>
                         <TableHeader>
@@ -221,14 +254,18 @@ function SecurityAnalyticsSection({ logs }: { logs: AppSecurityLog[] }) {
                         </TableHeader>
                         <TableBody>
                             {logs.slice(0, 5).map(log => {
-                                const eventInfo = getEventDetails(log.event);
+                                const eventInfo = getEventDetails(log.event, log.details);
                                 return (
                                 <TableRow key={log.id}>
                                     <TableCell><Badge variant={eventInfo.variant}>{eventInfo.label}</Badge></TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-2">
                                             <Avatar className="h-6 w-6"><AvatarImage src={log.user?.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(log.user?.name)}</AvatarFallback></Avatar>
-                                            <span className="text-xs">{log.user?.name || log.emailAttempt || 'Sistema'}</span>
+                                            {log.user ? (
+                                                <Link href={`/users/${log.user.id}`} className="text-xs hover:underline">{log.user?.name || log.emailAttempt || 'Sistema'}</Link>
+                                            ) : (
+                                                <span className="text-xs">{log.emailAttempt || 'Sistema'}</span>
+                                            )}
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleDateString()}</TableCell>

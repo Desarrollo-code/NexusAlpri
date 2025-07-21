@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import { subDays, startOfDay, format } from 'date-fns';
+import { subDays, startOfDay, format, eachDayOfInterval } from 'date-fns';
 import type { UserRole, CourseStatus } from '@/types';
 
 export interface AdminDashboardStats {
@@ -13,6 +13,9 @@ export interface AdminDashboardStats {
     totalEnrollments: number;
     usersByRole: { role: UserRole; count: number }[];
     coursesByStatus: { status: CourseStatus; count: number }[];
+    recentLogins: number; // Active users in last 7 days
+    newUsersLast7Days: number;
+    userRegistrationTrend: { date: string, count: number }[];
 }
 
 export async function GET(req: NextRequest) {
@@ -22,6 +25,8 @@ export async function GET(req: NextRequest) {
     }
 
     try {
+        const sevenDaysAgo = subDays(new Date(), 7);
+
         const [
             totalUsers,
             totalCourses,
@@ -29,6 +34,9 @@ export async function GET(req: NextRequest) {
             totalEnrollments,
             usersByRole,
             coursesByStatus,
+            recentLoginCount,
+            newUsersLast7Days,
+            dailyRegistrations,
         ] = await prisma.$transaction([
             prisma.user.count(),
             prisma.course.count(),
@@ -36,7 +44,33 @@ export async function GET(req: NextRequest) {
             prisma.enrollment.count(),
             prisma.user.groupBy({ by: ['role'], _count: { role: true } }),
             prisma.course.groupBy({ by: ['status'], _count: { status: true } }),
+            prisma.securityLog.count({
+                where: {
+                    event: 'SUCCESSFUL_LOGIN',
+                    createdAt: { gte: sevenDaysAgo }
+                },
+                distinct: ['userId']
+            }),
+            prisma.user.count({
+                where: { registeredDate: { gte: sevenDaysAgo } }
+            }),
+            prisma.user.groupBy({
+                by: ['registeredDate'],
+                where: { registeredDate: { gte: startOfDay(sevenDaysAgo) }},
+                _count: { registeredDate: true },
+                orderBy: { registeredDate: 'asc' }
+            })
         ]);
+        
+        const dateRange = eachDayOfInterval({ start: sevenDaysAgo, end: new Date() });
+        const registrationTrend = dateRange.map(date => {
+            const formattedDate = format(date, 'yyyy-MM-dd');
+            const dayData = dailyRegistrations.find(d => format(new Date(d.registeredDate as Date), 'yyyy-MM-dd') === formattedDate);
+            return {
+                date: format(date, 'MMM d'),
+                count: dayData?._count.registeredDate || 0,
+            };
+        });
 
         const stats: AdminDashboardStats = {
             totalUsers,
@@ -51,6 +85,9 @@ export async function GET(req: NextRequest) {
                 status: item.status as CourseStatus,
                 count: item._count.status,
             })),
+            recentLogins: recentLoginCount,
+            newUsersLast7Days: newUsersLast7Days,
+            userRegistrationTrend: registrationTrend,
         };
 
         return NextResponse.json(stats);

@@ -215,6 +215,9 @@ export interface AdminDashboardStats {
     totalEnrollments: number;
     usersByRole: { role: UserRole; count: number }[];
     coursesByStatus: { status: CourseStatus; count: number }[];
+    recentLogins: number;
+    newUsersLast7Days: number;
+    userRegistrationTrend: { date: string, count: number }[];
 }
 
 export interface ProgressAnalyticsData {
