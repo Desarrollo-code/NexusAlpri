@@ -1,19 +1,27 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+
+:root {
+    --auth-bg: #000000;
+    --auth-card-bg: #1A1A1A;
+    --auth-border: #2C2C2C;
+    --auth-graphite: #3D3D3D;
+    --auth-gold: #D4AF37;
+    --auth-gold-hover: #E7C657;
+    --auth-text-primary: #FFFFFF;
+    --auth-text-secondary: #A0A0A0;
+    --auth-input-bg: #101010;
 }
 
+
 .auth-container {
-    background: hsl(var(--card));
-    border-radius: 1rem;
-    padding: 40px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    background-color: var(--auth-card-bg);
+    border-radius: 1.5rem; /* 24px */
+    padding: 2.5rem; /* 40px */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     max-width: 420px;
     width: 100%;
     position: relative;
     z-index: 10;
-    border: 1px solid hsl(var(--border));
+    border: 1px solid var(--auth-border);
     animation: fadeIn 0.5s ease-out;
 }
 
@@ -37,7 +45,7 @@
 .auth-logo img {
     width: 100px;
     height: auto;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
 }
 
 .auth-header {
@@ -46,15 +54,15 @@
 }
 
 .auth-title {
-    font-size: 1.75rem;
+    font-size: 1.75rem; /* 28px */
     font-family: var(--font-headline);
     font-weight: 700;
-    color: hsl(var(--foreground));
+    color: var(--auth-text-primary);
     margin-bottom: 0.5rem;
 }
 
 .auth-subtitle {
-    color: hsl(var(--muted-foreground));
+    color: var(--auth-text-secondary);
     font-size: 1rem;
 }
 
@@ -67,57 +75,57 @@
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
-    color: hsl(var(--muted-foreground));
-    font-size: 0.875rem;
+    color: var(--auth-text-secondary);
+    font-size: 0.875rem; /* 14px */
 }
 
 .form-input {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
+    padding: 0.875rem 1rem; /* 14px 16px */
+    border-radius: 0.75rem; /* 12px */
     font-size: 1rem;
-    background-color: hsl(var(--input));
-    border: 1px solid hsl(var(--border));
-    color: hsl(var(--foreground));
+    background-color: var(--auth-input-bg);
+    border: 1px solid var(--auth-border);
+    color: var(--auth-text-primary);
     transition: all 0.2s ease-in-out;
 }
 
 .form-input:focus {
     outline: none;
-    border-color: hsl(var(--primary));
-    box-shadow: 0 0 0 2px hsla(var(--primary), 0.2);
+    border-color: var(--auth-gold);
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
 }
 
 .form-input::placeholder {
-    color: hsl(var(--muted-foreground));
+    color: var(--auth-text-secondary);
     opacity: 0.7;
 }
 
 .password-toggle {
     position: absolute;
     right: 1rem;
-    top: calc(50% + 0.25rem);
+    top: calc(50% + 7px);
     transform: translateY(-50%);
     background: none;
     border: none;
     cursor: pointer;
-    color: hsl(var(--muted-foreground));
+    color: var(--auth-text-secondary);
     transition: color 0.2s ease;
 }
 
 .password-toggle:hover {
-    color: hsl(var(--foreground));
+    color: var(--auth-text-primary);
 }
 
 .submit-btn {
     width: 100%;
     padding: 0.875rem;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     font-size: 1rem;
     font-weight: 600;
-    color: hsl(var(--primary-foreground));
-    background-color: hsl(var(--primary));
+    color: var(--auth-card-bg);
+    background-color: var(--auth-gold);
     cursor: pointer;
     transition: all 0.2s ease-in-out;
     display: flex;
@@ -127,7 +135,8 @@
 }
 
 .submit-btn:hover {
-    background-color: hsla(var(--primary), 0.9);
+    background-color: var(--auth-gold-hover);
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
 }
 
 .submit-btn:active {
@@ -143,25 +152,26 @@
     text-align: center;
     margin-top: 1.5rem;
     font-size: 0.875rem;
-    color: hsl(var(--muted-foreground));
+    color: var(--auth-text-secondary);
 }
 
 .form-link {
-    color: hsl(var(--primary));
+    color: var(--auth-gold);
     text-decoration: none;
     font-weight: 500;
 }
 
 .form-link:hover {
     text-decoration: underline;
+    color: var(--auth-gold-hover);
 }
 
 .auth-alert {
     background-color: hsl(var(--destructive) / 0.1);
     border: 1px solid hsl(var(--destructive) / 0.2);
-    color: hsl(var(--destructive-foreground));
+    color: hsl(var(--destructive));
     padding: 1rem;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     margin-bottom: 1rem;
     font-size: 0.875rem;
     display: flex;

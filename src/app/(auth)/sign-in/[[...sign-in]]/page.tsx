@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -149,6 +150,7 @@ export default function SignInPage() {
   const TwoFactorForm = () => (
      <form onSubmit={handle2faSubmit}>
         <div className="auth-header">
+            <ShieldCheck className="mx-auto h-12 w-12 text-[var(--auth-gold)] mb-4" />
             <h1 className="auth-title">Verificación</h1>
             <p className="auth-subtitle">Ingresa el código de tu app de autenticación.</p>
         </div>
