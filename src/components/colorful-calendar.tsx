@@ -49,11 +49,13 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
         return isSameDay(start, day) && isSingleDayEvent;
     });
 
+    const MAX_EVENTS_VISIBLE = 2;
+
     return (
         <div
             onClick={() => onDateSelect(day)}
             className={cn(
-                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[120px]",
+                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[120px] overflow-hidden",
                 !isCurrentMonth && "bg-muted/30 text-muted-foreground/50",
                 isSameDay(day, selectedDay) && "bg-accent/40"
             )}
@@ -74,8 +76,8 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
                     {holiday && <TooltipContent><p>{holiday.name}</p></TooltipContent>}
                 </Tooltip>
             </div>
-            <div className="space-y-1 overflow-hidden">
-                {daySpecificEvents.slice(0, 2).map(event => (
+            <div className="space-y-1 overflow-hidden flex-grow">
+                {daySpecificEvents.slice(0, MAX_EVENTS_VISIBLE).map(event => (
                     <button key={event.id} onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
                         className="w-full text-left text-xs flex items-center gap-1.5 truncate p-1 rounded-sm hover:bg-background/80"
                     >
@@ -83,8 +85,10 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
                         <span className="truncate">{event.title}</span>
                     </button>
                 ))}
-                {daySpecificEvents.length > 2 && (
-                    <p className="text-xs text-muted-foreground pl-1">+ {daySpecificEvents.length - 2} más</p>
+                {daySpecificEvents.length > MAX_EVENTS_VISIBLE && (
+                    <p className="text-xs text-muted-foreground pl-1 mt-1 font-medium">
+                      + {daySpecificEvents.length - MAX_EVENTS_VISIBLE} más...
+                    </p>
                 )}
             </div>
         </div>
