@@ -178,7 +178,7 @@ function UserAnalyticsSection({ stats }: { stats: AdminDashboardStats }) {
     return (
         <section className="space-y-6">
             <h2 className="text-xl font-semibold flex items-center gap-3"><Users className="text-primary"/> Analíticas de Usuarios</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <MetricCard title="Total Usuarios" value={stats.totalUsers} icon={Users} />
                 <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="En los últimos 7 días" />
                 <MetricCard title="Nuevos Usuarios" value={stats.newUsersLast7Days} icon={UserPlus} description="En los últimos 7 días"/>
@@ -224,13 +224,19 @@ function CourseAnalyticsSection({ stats }: { stats: AdminDashboardStats }) {
     return (
         <section className="space-y-6">
             <h2 className="text-xl font-semibold flex items-center gap-3"><BookOpenCheck className="text-primary"/> Analíticas de Cursos</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <MetricCard title="Total Cursos" value={stats.totalCourses} icon={FileText} />
                 <MetricCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={BookOpenCheck} />
                 <MetricCard title="Total Inscripciones" value={stats.totalEnrollments} icon={TrendingUp} />
             </div>
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                  <DonutChartCard title="Distribución de Cursos" data={courseStatusData} config={courseStatusChartConfig} />
+                 <Card className="lg:col-span-2">
+                    <CardHeader><CardTitle>Cursos Más Populares</CardTitle></CardHeader>
+                    <CardContent className="flex items-center justify-center h-full text-muted-foreground">
+                        <p>Próximamente...</p>
+                    </CardContent>
+                </Card>
             </div>
         </section>
     );
