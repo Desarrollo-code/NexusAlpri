@@ -163,4 +163,87 @@
     from { --angle: 0deg; }
     to { --angle: 360deg; }
   }
+
+  .animated-underline {
+    position: relative;
+    text-decoration: none;
+  }
+
+  .animated-underline::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    display: block;
+    margin-top: 2px;
+    right: 0;
+    background: hsl(var(--primary));
+    transition: width .3s ease;
+  }
+
+  .animated-underline:hover::after {
+    width: 100%;
+    left: 0;
+    background: hsl(var(--primary));
+  }
+  
+  .statistic-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+    padding: 1.5rem;
+    z-index: 0;
+    transition: box-shadow 0.3s ease-in-out;
+  }
+
+  .statistic-card::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      from 0deg,
+      hsl(var(--chart-1)) 0%,
+      hsl(var(--chart-2)) 25%,
+      hsl(var(--chart-3)) 50%,
+      hsl(var(--chart-4)) 75%,
+      hsl(var(--chart-5)) 100%
+    );
+    animation: rotateBorder 6s linear infinite;
+    z-index: -1;
+  }
+
+  .statistic-card::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    background: hsl(var(--card));
+    border-radius: var(--radius);
+    z-index: -1;
+  }
+
+  .statistic-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .statistic-card:hover::before {
+    animation-duration: 3s;
+  }
+
+  .statistic-card > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  @keyframes rotateBorder {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 }

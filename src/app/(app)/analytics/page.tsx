@@ -17,19 +17,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
+import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
 
-const MetricCard = ({ title, value, icon: Icon, description }: { title: string; value: string | number; icon: React.ElementType; description?: string }) => (
-    <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-            <Icon className="h-4 w-4 text-primary" />
-        </CardHeader>
-        <CardContent>
-            <div className="text-2xl font-bold">{value}</div>
-            {description && <p className="text-xs text-muted-foreground">{description}</p>}
-        </CardContent>
-    </Card>
-);
+const MetricCard = ({ title, value: finalValue, icon: Icon, description }: { title: string; value: number; icon: React.ElementType; description?: string }) => {
+    const animatedValue = useAnimatedCounter(finalValue);
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{animatedValue}</div>
+                {description && <p className="text-xs text-muted-foreground">{description}</p>}
+            </CardContent>
+        </Card>
+    );
+};
 
 const userRolesChartConfig = {
   count: { label: "Usuarios" },
@@ -250,7 +254,7 @@ function SecurityAnalyticsSection({ logs }: { logs: AppSecurityLog[] }) {
                 <CardHeader>
                     <CardTitle>Últimos Eventos de Seguridad</CardTitle>
                     <CardDescription>
-                        Revisa los eventos de seguridad más recientes. Para un registro completo, visita la página de <Link href="/security-audit" className="underline text-primary">Auditoría de Seguridad</Link>.
+                        Revisa los eventos de seguridad más recientes. Para un registro completo, visita la página de <Link href="/security-audit" className="underline text-primary animated-underline">Auditoría de Seguridad</Link>.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="px-0">

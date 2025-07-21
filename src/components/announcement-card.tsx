@@ -100,7 +100,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
             <Button
               onClick={toggleExpand}
               variant="link"
-              className="p-0 h-auto text-sm mt-1"
+              className="p-0 h-auto text-sm mt-1 animated-underline"
             >
               {isExpanded ? 'Leer menos' : 'Leer más'}
             </Button>

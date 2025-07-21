@@ -48,6 +48,7 @@ import { cn } from '@/lib/utils';
 import { GradientIcon } from '@/components/ui/gradient-icon';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourseCarousel } from '@/components/course-carousel';
+import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
 
 // --- TYPE DEFINITIONS & MAPPERS ---
 interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
@@ -98,18 +99,19 @@ const courseStatusChartConfig = {
   ARCHIVED: { label: "Archivados", color: "hsl(var(--chart-4))" },
 } satisfies ChartConfig;
 
-const StatCard = ({ title, value, icon: Icon, href }: { title: string; value: number; icon: React.ElementType; href: string;}) => {
+const StatCard = ({ title, value: finalValue, icon: Icon, href }: { title: string; value: number; icon: React.ElementType; href: string;}) => {
+    const animatedValue = useAnimatedCounter(finalValue);
     return (
         <Link href={href}>
-            <Card className="hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{title}</CardTitle>
+            <div className="statistic-card">
+                 <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <h3 className="text-sm font-medium">{title}</h3>
                     <Icon className="h-5 w-5 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{value.toLocaleString('es-CO')}</div>
-                </CardContent>
-            </Card>
+                </div>
+                <div>
+                    <div className="text-2xl font-bold">{animatedValue}</div>
+                </div>
+            </div>
         </Link>
     );
 };
@@ -454,7 +456,7 @@ export default function DashboardPage() {
             <AlertTitle>Acción de Seguridad Requerida</AlertTitle>
             <AlertDescription>
                 La política de la plataforma requiere que todos los administradores usen autenticación de dos factores. 
-                Por favor, <Link href="/profile" className="font-bold underline">activa 2FA en tu perfil</Link> para asegurar tu cuenta.
+                Por favor, <Link href="/profile" className="font-bold underline animated-underline">activa 2FA en tu perfil</Link> para asegurar tu cuenta.
             </AlertDescription>
         </Alert>
       )}
