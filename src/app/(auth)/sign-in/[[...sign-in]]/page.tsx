@@ -11,8 +11,8 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
-import { cn } from '@/lib/utils';
-import { Input } from '@/components/ui/input';
+import Image from 'next/image';
+
 
 export default function SignInPage() {
   const router = useRouter();
@@ -105,28 +105,26 @@ export default function SignInPage() {
   };
 
 
-  const PasswordToggle = ({ onClick }: { onClick: () => void}) => {
-    return (
+  const PasswordToggle = ({ onClick }: { onClick: () => void}) => (
       <button type="button" className="password-toggle" onClick={onClick}>
-        {showPassword ? '🙈' : '👁️'}
+        {showPassword ? <EyeOff size={20}/> : <Eye size={20} />}
       </button>
-    )
-  }
+  );
 
   const LoginForm = () => (
     <form onSubmit={handlePasswordSubmit}>
-        <div className="form-header">
-            <h1 className="form-title">Iniciar Sesión</h1>
-            <p className="form-subtitle">Ingresa a tu cuenta de NexusAlpri</p>
+        <div className="auth-header">
+            <h1 className="auth-title">Iniciar Sesión</h1>
+            <p className="auth-subtitle">Ingresa a tu cuenta de NexusAlpri</p>
         </div>
         
-        <div className="form-group" style={{animationDelay: '0.1s'}}>
+        <div className="form-group">
             <label className="form-label" htmlFor="loginEmail">Correo Electrónico</label>
             <input type="email" id="loginEmail" className="form-input" placeholder="tu@email.com" required 
                    value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
         </div>
         
-        <div className="form-group" style={{animationDelay: '0.2s'}}>
+        <div className="form-group">
             <label className="form-label" htmlFor="loginPassword">Contraseña</label>
             <div style={{position: 'relative'}}>
                 <input type={showPassword ? 'text' : 'password'} id="loginPassword" className="form-input" placeholder="••••••••" required
@@ -136,7 +134,7 @@ export default function SignInPage() {
         </div>
         
         <button type="submit" className="submit-btn" disabled={isLoading}>
-          {isLoading ? <Loader2 className="inline mr-2 h-4 w-4 animate-spin" /> : null}
+          {isLoading && <Loader2 className="animate-spin" />}
           Ingresar
         </button>
         
@@ -150,9 +148,9 @@ export default function SignInPage() {
   
   const TwoFactorForm = () => (
      <form onSubmit={handle2faSubmit}>
-        <div className="form-header">
-            <h1 className="form-title">Verificación</h1>
-            <p className="form-subtitle">Ingresa el código de tu app de autenticación.</p>
+        <div className="auth-header">
+            <h1 className="auth-title">Verificación</h1>
+            <p className="auth-subtitle">Ingresa el código de tu app de autenticación.</p>
         </div>
         <div className="form-group flex justify-center">
             <InputOTP maxLength={6} value={token} onChange={setToken}>
@@ -169,7 +167,7 @@ export default function SignInPage() {
             </InputOTP>
         </div>
         <button type="submit" className="submit-btn" disabled={isLoading || token.length < 6}>
-           {isLoading ? <Loader2 className="inline mr-2 h-4 w-4 animate-spin" /> : null}
+           {isLoading && <Loader2 className="animate-spin" />}
            Verificar
         </button>
         <div className="form-footer">
@@ -180,8 +178,15 @@ export default function SignInPage() {
 
   return (
     <div className="auth-container">
-        <div className="logo">
-            <div className="logo-icon"></div>
+        <div className="auth-logo">
+             <Image
+                src="/uploads/images/logo-nexusalpri.png"
+                alt="NexusAlpri Logo"
+                width={120}
+                height={97.5}
+                priority
+                data-ai-hint="logo education"
+              />
         </div>
         
         {show2fa ? <TwoFactorForm /> : <LoginForm />}

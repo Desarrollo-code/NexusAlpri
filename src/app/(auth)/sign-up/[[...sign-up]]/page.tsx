@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { Loader2, ShieldAlert } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, ShieldAlert, Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -89,7 +89,7 @@ export default function SignUpPage() {
 
   if (isAuthLoading || !settings) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-background">
+      <div className="flex h-screen w-screen items-center justify-center">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
@@ -97,17 +97,24 @@ export default function SignUpPage() {
   
   if (!settings.allowPublicRegistration) {
       return (
-        <div className="auth-container register-mode">
-          <div className="logo"><div className="logo-icon"></div></div>
-          <div className="form-header">
-              <h1 className="form-title">Registro Deshabilitado</h1>
+        <div className="auth-container">
+          <div className="auth-logo">
+             <Image
+                src="/uploads/images/logo-nexusalpri.png"
+                alt="NexusAlpri Logo"
+                width={120}
+                height={97.5}
+                priority
+                data-ai-hint="logo education"
+              />
           </div>
-          <Alert variant="destructive" className="text-center">
-            <ShieldAlert className="mx-auto mb-2"/>
-            <AlertDescription>
+          <div className="auth-header">
+              <h1 className="auth-title">Registro Deshabilitado</h1>
+          </div>
+           <div className="auth-alert">
+              <ShieldAlert />
               El registro de nuevas cuentas está deshabilitado. Contacta a un administrador para que cree una cuenta para ti.
-            </AlertDescription>
-          </Alert>
+            </div>
           <div className="form-footer">
             <Link href="/sign-in" className="form-link">Volver a Inicio de Sesión</Link>
           </div>
@@ -115,39 +122,51 @@ export default function SignUpPage() {
       );
   }
 
-  const PasswordToggle = ({ isVisible, onClick }: { isVisible: boolean, onClick: () => void}) => {
-    return (
+  const PasswordToggle = ({ isVisible, onClick }: { isVisible: boolean, onClick: () => void}) => (
       <button type="button" className="password-toggle" onClick={onClick}>
-        {isVisible ? '🙈' : '👁️'}
+        {isVisible ? <EyeOff size={20}/> : <Eye size={20}/>}
       </button>
-    )
-  }
+  );
 
   return (
-    <div className="auth-container register-mode">
-        <div className="logo">
-            <div className="logo-icon"></div>
+    <div className="auth-container">
+        <div className="auth-logo">
+             <Image
+                src="/uploads/images/logo-nexusalpri.png"
+                alt="NexusAlpri Logo"
+                width={120}
+                height={97.5}
+                priority
+                data-ai-hint="logo education"
+              />
         </div>
         
         <form onSubmit={handleSubmit}>
-            <div className="form-header">
-                <h1 className="form-title">Crear una Cuenta</h1>
-                <p className="form-subtitle">Regístrate para empezar a aprender</p>
+            <div className="auth-header">
+                <h1 className="auth-title">Crear una Cuenta</h1>
+                <p className="auth-subtitle">Regístrate para empezar a aprender</p>
             </div>
+
+            {error && (
+              <div className="auth-alert">
+                  <ShieldAlert />
+                  <span>{error}</span>
+              </div>
+            )}
             
-            <div className="form-group" style={{animationDelay: '0.1s'}}>
+            <div className="form-group">
                 <label className="form-label" htmlFor="registerName">Nombre Completo</label>
                 <input type="text" id="registerName" className="form-input" placeholder="Tu nombre completo" required 
                        value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
             </div>
             
-            <div className="form-group" style={{animationDelay: '0.2s'}}>
+            <div className="form-group">
                 <label className="form-label" htmlFor="registerEmail">Correo Electrónico</label>
                 <input type="email" id="registerEmail" className="form-input" placeholder="tu@email.com" required 
                        value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
             </div>
             
-            <div className="form-group" style={{animationDelay: '0.3s'}}>
+            <div className="form-group">
                 <label className="form-label" htmlFor="registerPassword">Contraseña</label>
                 <div style={{position: 'relative'}}>
                     <input type={showPassword ? "text" : "password"} id="registerPassword" className="form-input" placeholder="••••••••" required
@@ -156,7 +175,7 @@ export default function SignUpPage() {
                 </div>
             </div>
 
-            <div className="form-group" style={{animationDelay: '0.4s'}}>
+            <div className="form-group">
                 <label className="form-label" htmlFor="confirmPassword">Confirmar Contraseña</label>
                 <div style={{position: 'relative'}}>
                     <input type={showConfirmPassword ? "text" : "password"} id="confirmPassword" className="form-input" placeholder="••••••••" required
@@ -166,7 +185,7 @@ export default function SignUpPage() {
             </div>
             
             <button type="submit" className="submit-btn" disabled={isLoading}>
-                {isLoading ? <Loader2 className="inline mr-2 h-4 w-4 animate-spin" /> : null}
+                {isLoading && <Loader2 className="animate-spin" />}
                 Registrarse
             </button>
             

@@ -8,7 +8,6 @@ export default function AuthLayout({
 }>) {
   return (
     <div className="auth-body">
-      <div className="floating-elements"></div>
       {children}
     </div>
   );
