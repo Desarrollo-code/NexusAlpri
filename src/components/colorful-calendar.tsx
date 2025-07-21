@@ -49,8 +49,6 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
         return isSameDay(start, day) && isSingleDayEvent;
     });
 
-    const MAX_EVENTS_VISIBLE = 2;
-
     return (
         <div
             onClick={() => onDateSelect(day)}
@@ -60,7 +58,7 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
                 isSameDay(day, selectedDay) && "bg-accent/40"
             )}
         >
-            <div className="flex justify-end mb-1">
+            <div className="flex justify-end mb-1 flex-shrink-0">
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <time
@@ -76,8 +74,8 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
                     {holiday && <TooltipContent><p>{holiday.name}</p></TooltipContent>}
                 </Tooltip>
             </div>
-            <div className="space-y-1 overflow-hidden flex-grow">
-                {daySpecificEvents.slice(0, MAX_EVENTS_VISIBLE).map(event => (
+            <div className="flex-grow overflow-y-auto space-y-1 min-h-0 pr-1">
+                {daySpecificEvents.map(event => (
                     <button key={event.id} onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
                         className="w-full text-left text-xs flex items-center gap-1.5 truncate p-1 rounded-sm hover:bg-background/80"
                     >
@@ -85,11 +83,6 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
                         <span className="truncate">{event.title}</span>
                     </button>
                 ))}
-                {daySpecificEvents.length > MAX_EVENTS_VISIBLE && (
-                    <p className="text-xs text-muted-foreground pl-1 mt-1 font-medium">
-                      + {daySpecificEvents.length - MAX_EVENTS_VISIBLE} más...
-                    </p>
-                )}
             </div>
         </div>
     );
@@ -125,7 +118,6 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
     for (const event of sorted) {
         if (!event.allDay && isSameDay(new Date(event.start), new Date(event.end))) continue;
 
-        let currentDay = startOfWeek(new Date(event.start));
         let topPosition = 0;
         let placed = false;
 
