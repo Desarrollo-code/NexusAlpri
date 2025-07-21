@@ -43,6 +43,7 @@ import { CourseCreationForm } from '@/components/course-creation-form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
   instructor: { id: string; name: string } | null;
@@ -100,6 +101,7 @@ export default function ManageCoursesPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isMobile = useIsMobile();
 
   const [allCourses, setAllCourses] = useState<AppCourseType[]>([]);
   const [totalCourses, setTotalCourses] = useState(0);
@@ -296,7 +298,7 @@ export default function ManageCoursesPage() {
     }
     
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className={isMobile ? "space-y-4" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"}>
           {courses.map(course => (
           <Card key={course.id} className="flex flex-col overflow-hidden">
               <CourseListItemImage

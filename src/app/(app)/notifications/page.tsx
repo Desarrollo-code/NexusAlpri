@@ -188,16 +188,17 @@ export default function NotificationsPage() {
                         <p className="text-xs text-muted-foreground mt-2">{timeSince(notif.date)}</p>
                     </ContentWrapper>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-1">
-                    <Button variant="ghost" size="sm" onClick={(e) => handleToggleRead(notif, e)} className="h-8">
+                <div className="flex flex-col sm:flex-row gap-1 items-end sm:items-center">
+                    <Button variant="ghost" size="sm" onClick={(e) => handleToggleRead(notif, e)} className="h-8 justify-start sm:justify-center">
                         {notif.read ? <MailWarning className="mr-2 h-4 w-4"/> : <Check className="mr-2 h-4 w-4" />}
-                        {notif.read ? 'Marcar no leída' : 'Marcar leída'}
+                        <span className="hidden sm:inline">{notif.read ? 'Marcar no leída' : 'Marcar leída'}</span>
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => {
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0" onClick={(e) => {
                         e.stopPropagation(); e.preventDefault();
                         setNotificationToDelete(notif);
                     }}>
                         <XCircle className="h-4 w-4" />
+                        <span className="sr-only">Eliminar</span>
                     </Button>
                 </div>
             </li>

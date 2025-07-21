@@ -112,8 +112,8 @@ export default function SignInPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <div className="relative flex w-full max-w-sm flex-col items-center justify-center">
-        <div className="mb-4 drop-shadow-[0_2px_4px_hsl(var(--primary)/0.4)]">
+      <div className="w-full max-w-sm">
+        <div className="mb-4 text-center">
           <Image
             src="/uploads/images/logo-nexusalpri.png"
             alt="NexusAlpri Logo"
@@ -121,11 +121,12 @@ export default function SignInPage() {
             height={97.5}
             priority
             data-ai-hint="logo education"
+            className="inline-block"
           />
         </div>
         
-        <div className="relative w-full max-w-sm">
-            <Card className="w-full">
+        <div className="relative w-full conic-gradient-border rounded-xl">
+            <Card className="w-full bg-background/80 backdrop-blur-md border-none relative">
                 {!show2fa ? (
                     <>
                       <CardHeader className="text-center">
@@ -222,16 +223,6 @@ export default function SignInPage() {
                 )}
             </Card>
         </div>
-      </div>
-      <div className="fixed bottom-4 right-4 z-0 pointer-events-none">
-        <Image
-          src="/uploads/images/watermark-alprigrama.png"
-          alt="Alprigrama S.A.S. Watermark"
-          width={70}
-          height={70}
-          className="opacity-40"
-          data-ai-hint="company logo"
-        />
       </div>
     </div>
   );

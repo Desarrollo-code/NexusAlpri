@@ -107,7 +107,7 @@ export default function SignUpPage() {
   if (!settings.allowPublicRegistration) {
       return (
         <div className="flex min-h-screen flex-col items-center justify-center p-4">
-              <div className="mb-4 drop-shadow-[0_2px_4px_hsl(var(--primary)/0.4)]">
+             <div className="mb-4 text-center">
               <Image
                 src="/uploads/images/logo-nexusalpri.png"
                 alt="NexusAlpri Logo"
@@ -115,10 +115,11 @@ export default function SignUpPage() {
                 height={97.5}
                 priority
                 data-ai-hint="logo education"
+                className="inline-block"
               />
             </div>
-            <div className="relative w-full max-w-sm">
-                <Card className="w-full">
+            <div className="relative w-full max-w-sm conic-gradient-border rounded-xl">
+                <Card className="w-full bg-background/80 backdrop-blur-md border-none relative">
                     <CardHeader>
                         <CardTitle className="text-center text-xl font-headline">Registro Deshabilitado</CardTitle>
                     </CardHeader>
@@ -133,24 +134,14 @@ export default function SignUpPage() {
                     </CardContent>
                 </Card>
             </div>
-             <div className="fixed bottom-4 right-4 z-0 pointer-events-none">
-              <Image
-                src="/uploads/images/watermark-alprigrama.png" 
-                alt="Alprigrama S.A.S. Watermark"
-                width={70} 
-                height={70} 
-                className="opacity-40" 
-                data-ai-hint="company logo"
-              />
-            </div>
         </div>
       );
   }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <div className="relative flex w-full max-w-sm flex-col items-center justify-center">
-        <div className="mb-4 drop-shadow-[0_2px_4px_hsl(var(--primary)/0.4)]">
+      <div className="w-full max-w-sm">
+        <div className="mb-4 text-center">
           <Image
             src="/uploads/images/logo-nexusalpri.png"
             alt="NexusAlpri Logo"
@@ -158,11 +149,12 @@ export default function SignUpPage() {
             height={97.5}
             priority
             data-ai-hint="logo education"
+            className="inline-block"
           />
         </div>
 
-        <div className="relative w-full max-w-sm">
-            <Card className="w-full">
+        <div className="relative w-full conic-gradient-border rounded-xl">
+            <Card className="w-full bg-background/80 backdrop-blur-md border-none relative">
                 <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
                 <CardDescription>Regístrate para empezar a aprender</CardDescription>
@@ -242,16 +234,6 @@ export default function SignUpPage() {
                 </CardContent>
               </Card>
         </div>
-      </div>
-       <div className="fixed bottom-4 right-4 z-0 pointer-events-none">
-        <Image
-          src="/uploads/images/watermark-alprigrama.png"
-          alt="Alprigrama S.A.S. Watermark"
-          width={70}
-          height={70}
-          className="opacity-40"
-          data-ai-hint="company logo"
-        />
       </div>
     </div>
   );
