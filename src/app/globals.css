@@ -23,7 +23,7 @@
     --muted: 220 10% 96%;
     --muted-foreground: 240 4% 45%;
     
-    --accent: 265 53% 50%; /* Electric Indigo */
+    --accent: 210 85% 58%; /* Vibrant Blue - NEW */
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84.2% 60.2%;
@@ -34,11 +34,11 @@
     --ring: 45 85% 55%;
     --radius: 0.75rem;
 
-    --chart-1: 205 90% 50%; /* Vibrant Blue */
-    --chart-2: 150 70% 45%; /* Emerald Green */
-    --chart-3: 35 90% 58%; /* Bright Orange */
-    --chart-4: 340 82% 63%; /* Hot Pink */
-    --chart-5: 270 80% 60%; /* Deep Purple */
+    --chart-1: 205 90% 50%;
+    --chart-2: 150 70% 45%;
+    --chart-3: 35 90% 58%;
+    --chart-4: 340 82% 63%;
+    --chart-5: 270 80% 60%;
 
     --event-blue: 210 85% 58%;
     --event-green: 145 65% 42%;
@@ -76,7 +76,7 @@
     --muted: 240 5% 25%;
     --muted-foreground: 210 10% 65%;
     
-    --accent: 265 53% 60%; 
+    --accent: 210 85% 62%; /* Vibrant Blue - NEW */
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 70% 55%;
