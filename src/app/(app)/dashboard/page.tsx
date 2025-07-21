@@ -102,13 +102,13 @@ const courseStatusChartConfig = {
 const StatCard = ({ title, value: finalValue, icon: Icon, href }: { title: string; value: number; icon: React.ElementType; href: string;}) => {
     const animatedValue = useAnimatedCounter(finalValue);
     return (
-        <Link href={href}>
-            <div className="statistic-card">
+        <Link href={href} className="card-border-beam h-full">
+            <div className="flex flex-col p-6 h-full">
                  <div className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <h3 className="text-sm font-medium">{title}</h3>
                     <Icon className="h-5 w-5 text-muted-foreground" />
                 </div>
-                <div>
+                <div className="flex-grow flex items-end">
                     <div className="text-2xl font-bold">{animatedValue}</div>
                 </div>
             </div>
@@ -120,7 +120,7 @@ function DonutChartCard({ title, data, config, description }: { title: string, d
   const total = useMemo(() => data.reduce((acc, curr) => acc + curr.count, 0), [data]);
   
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col h-full card-border-beam">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
@@ -464,7 +464,7 @@ export default function DashboardPage() {
       {user.role === 'STUDENT' && data?.studentStats && (
         <section>
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-              <Card>
+              <Card className="card-border-beam">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Inscritos</CardTitle>
                   <BookOpen className="h-5 w-5 text-chart-1" />
@@ -473,7 +473,7 @@ export default function DashboardPage() {
                   <div className="text-2xl font-bold">{data.studentStats.enrolled}</div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="card-border-beam">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Completados</CardTitle>
                   <CheckCircle className="h-5 w-5 text-chart-2" />
@@ -489,7 +489,7 @@ export default function DashboardPage() {
       {user.role === 'INSTRUCTOR' && data?.instructorStats && (
          <section>
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-               <Card>
+               <Card className="card-border-beam">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Impartidos</CardTitle>
                   <BookMarked className="h-5 w-5 text-chart-1" />
@@ -498,7 +498,7 @@ export default function DashboardPage() {
                   <div className="text-2xl font-bold">{data.instructorStats.taught}</div>
                 </CardContent>
               </Card>
-               <Card>
+               <Card className="card-border-beam">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Estudiantes</CardTitle>
                   <Users className="h-5 w-5 text-chart-2" />
@@ -525,7 +525,7 @@ export default function DashboardPage() {
                   ) : (
                     <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                       {data.taughtCourses.map(course => (
-                        <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
+                        <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow card-border-beam">
                            {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
                           <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
                           <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2"/> Editar Curso</Link></Button></CardFooter>

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -65,7 +66,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
   const contentToShow = isExpanded ? announcement.content : `${announcement.content.substring(0, TRUNCATE_LENGTH)}${isTruncated ? '...' : ''}`;
 
   return (
-    <Card className="flex flex-col h-full shadow-sm hover:shadow-md transition-all duration-300 ease-in-out hover:-translate-y-1">
+    <Card className="flex flex-col h-full card-border-beam">
       <CardHeader>
         <div className="flex justify-between items-start gap-2">
             <CardTitle className="text-xl font-headline">{announcement.title}</CardTitle>

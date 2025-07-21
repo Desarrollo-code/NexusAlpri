@@ -1,4 +1,5 @@
 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -133,37 +134,6 @@
     background-color: hsl(var(--muted-foreground));
   }
   
-  .conic-gradient-border {
-      position: relative;
-      border: 2px solid transparent;
-      background-clip: padding-box;
-      overflow: hidden;
-  }
-
-  .conic-gradient-border::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 200%;
-      height: 200%;
-      background: conic-gradient(from var(--angle), hsl(var(--accent)), hsl(var(--primary)), hsl(var(--accent)));
-      animation: border-beam-spin 6s linear infinite;
-      transform: translate(-50%, -50%);
-      z-index: -1;
-  }
-
-  @property --angle {
-    syntax: '<angle>';
-    initial-value: 0deg;
-    inherits: false;
-  }
-
-  @keyframes border-beam-spin {
-    from { --angle: 0deg; }
-    to { --angle: 360deg; }
-  }
-
   .animated-underline {
     position: relative;
     text-decoration: none;
@@ -187,63 +157,39 @@
     background: hsl(var(--primary));
   }
   
-  .statistic-card {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius);
-    background: hsl(var(--card));
-    color: hsl(var(--card-foreground));
-    padding: 1.5rem;
-    z-index: 0;
-    transition: box-shadow 0.3s ease-in-out;
+  @property --angle {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
   }
 
-  .statistic-card::before {
+  @keyframes border-beam {
+    to {
+      --angle: 360deg;
+    }
+  }
+
+  .card-border-beam {
+    position: relative;
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+  }
+
+  .card-border-beam:hover::before {
     content: "";
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: conic-gradient(
-      from 0deg,
-      hsl(var(--chart-1)) 0%,
-      hsl(var(--chart-2)) 25%,
-      hsl(var(--chart-3)) 50%,
-      hsl(var(--chart-4)) 75%,
-      hsl(var(--chart-5)) 100%
+    inset: -1px;
+    border-radius: inherit;
+    z-index: -1;
+    background-image: conic-gradient(
+      from var(--angle),
+      hsl(var(--muted-foreground) / 0.5),
+      hsl(var(--accent)) 20%,
+      hsl(var(--primary)) 40%,
+      hsl(var(--accent)) 60%,
+      hsl(var(--primary)) 80%,
+      hsl(var(--muted-foreground) / 0.5)
     );
-    animation: rotateBorder 6s linear infinite;
-    z-index: -1;
-  }
-
-  .statistic-card::after {
-    content: "";
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    right: 2px;
-    bottom: 2px;
-    background: hsl(var(--card));
-    border-radius: var(--radius);
-    z-index: -1;
-  }
-
-  .statistic-card:hover {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  }
-
-  .statistic-card:hover::before {
-    animation-duration: 3s;
-  }
-
-  .statistic-card > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  @keyframes rotateBorder {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    animation: border-beam 3s linear infinite;
   }
 }

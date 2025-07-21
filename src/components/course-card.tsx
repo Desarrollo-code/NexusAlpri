@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, from 'react';
@@ -95,9 +96,9 @@ export function CourseCard({ course, userRole, onEnrollmentChange, priority = fa
   };
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1 rounded-xl group">
+    <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out card-border-beam group">
       <Link href={`/courses/${course.id}`} className="block">
-        <div className="aspect-video w-full relative overflow-hidden rounded-t-xl">
+        <div className="aspect-video w-full relative overflow-hidden">
             <Image
               src={course.imageUrl || `https://placehold.co/600x400.png`}
               alt={course.title}
