@@ -113,14 +113,14 @@ const CursorCard = React.forwardRef<HTMLDivElement, CursorCardProps>(
           className="absolute inset-0 w-full h-full rounded-[inherit] border border-[var(--border-color)] opacity-10"
           style={
             {
-              "mask-image": `
+              maskImage: `
                 radial-gradient(
                   250px 150px at var(--cursor-x) var(--cursor-y),
                   black,
                   transparent
                 )
               `,
-              "-webkit-mask-image": `
+              WebkitMaskImage: `
                 radial-gradient(
                   250px 150px at var(--cursor-x) var(--cursor-y),
                   black,
@@ -137,4 +137,3 @@ const CursorCard = React.forwardRef<HTMLDivElement, CursorCardProps>(
 CursorCard.displayName = "CursorCard";
 
 export { CursorCardsContainer, CursorCard };
-
