@@ -4,16 +4,6 @@
     box-sizing: border-box;
 }
 
-body.auth-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: hsl(var(--background));
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
 .auth-container {
     background: hsl(var(--card));
     border-radius: 1rem;
