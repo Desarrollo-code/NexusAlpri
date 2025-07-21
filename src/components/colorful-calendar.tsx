@@ -147,7 +147,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                     dayToPlace.setDate(dayToPlace.getDate() + 1);
                  }
                  placed = true;
-                 event.topPosition = topPosition; // Add position to event object
+                 (event as any).topPosition = topPosition; // Add position to event object
             } else {
                 topPosition++;
             }
@@ -159,7 +159,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
 
   return (
     <TooltipProvider delayDuration={100}>
-      <div className={cn("grid grid-cols-7 grid-rows-[auto] auto-rows-fr h-full gap-px bg-border rounded-lg overflow-hidden", className)}>
+      <div className={cn("grid grid-cols-7 grid-rows-[auto] auto-rows-fr h-full gap-px bg-border rounded-lg overflow-hidden relative", className)}>
         {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
           <div key={day} className="p-2 text-center text-xs font-semibold text-muted-foreground bg-card">{day}</div>
         ))}
@@ -191,8 +191,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                              style={{
                                 gridRow: weekIndex + 2,
                                 gridColumn: `${startCol} / span ${span}`,
-                                // @ts-ignore
-                                top: `${2.25 + ((event.topPosition ?? 0) * 1.75)}rem`
+                                top: `${3.75 + (((event as any).topPosition ?? 0) * 1.6)}rem` // Adjusted positioning
                              }}
                              onClick={(e) => { e.stopPropagation(); onEventClick(event); }}>
                              {event.title}
