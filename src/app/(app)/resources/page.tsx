@@ -1,4 +1,3 @@
-
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -321,11 +320,11 @@ export default function ResourcesPage() {
 
   return (
     <div className="flex h-[calc(100vh-8rem)]">
-        <aside className="w-64 flex-shrink-0 border-r p-4 hidden md:flex flex-col">
-            <h2 className="text-lg font-semibold font-headline mb-4">Workspace</h2>
+        <aside className="w-64 flex-shrink-0 border-r p-4 hidden md:flex flex-col bg-card">
+            <h2 className="text-lg font-semibold font-headline mb-4 px-2">Workspace</h2>
             <nav className="flex flex-col gap-1">
                 <Button variant={!currentFolderId ? 'secondary' : 'ghost'} className="justify-start gap-2" onClick={() => handleBreadcrumbClick(null, -1)}>
-                    <Home className="h-4 w-4"/> Toda la Biblioteca
+                    <Folder className="h-4 w-4"/> Toda la Biblioteca
                 </Button>
                 {settings?.resourceCategories.map(cat => (
                     <Button key={cat} variant="ghost" className="justify-start gap-2 text-muted-foreground hover:text-foreground">
@@ -337,16 +336,20 @@ export default function ResourcesPage() {
 
         <main className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
             <div className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-                 <form onSubmit={handleSearchSubmit} className="relative w-full sm:max-w-md">
-                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                     <Input type="search" placeholder="Buscar en la biblioteca..." className="pl-10 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
-                 </form>
+                 <h2 className="text-2xl font-bold font-headline">Biblioteca</h2>
                  {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-                    <Button onClick={() => setShowCreateFileModal(true)} className="w-full sm:w-auto">
+                    <Button onClick={() => setShowCreateFileModal(true)}>
                         <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
                     </Button>
                  )}
             </div>
+             <div className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
+                 <form onSubmit={handleSearchSubmit} className="relative w-full sm:max-w-md">
+                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                     <Input type="search" placeholder="Buscar en la biblioteca..." className="pl-10 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
+                 </form>
+            </div>
+
 
             <div className="flex items-center text-sm text-muted-foreground mb-4">
                 <button onClick={() => handleBreadcrumbClick(null, -1)} className="hover:text-primary flex items-center gap-1 shrink-0"><Home className="h-4 w-4"/> Biblioteca</button>
@@ -364,7 +367,11 @@ export default function ResourcesPage() {
                 ) : error ? (
                     <div className="flex flex-col items-center justify-center h-full text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p></div>
                 ) : allApiResources.length === 0 ? (
-                    <div className="text-center py-12"><ArchiveX className="mx-auto h-12 w-12 text-primary"/><h3 className="text-xl font-semibold">{searchTerm ? 'No hay coincidencias' : 'Carpeta Vacía'}</h3><p className="text-muted-foreground">{searchTerm ? 'Prueba con otro término.' : 'Sube un archivo para empezar.'}</p></div>
+                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                        <ArchiveX className="h-16 w-16 mb-4 text-primary"/>
+                        <h3 className="text-xl font-semibold text-foreground">{searchTerm ? 'No hay coincidencias' : 'Carpeta Vacía'}</h3>
+                        <p>{searchTerm ? 'Prueba con otro término.' : 'Sube un archivo para empezar.'}</p>
+                    </div>
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                         {allApiResources.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={() => {}} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} isSelected={selectedResource?.id === item.id}/>)}
