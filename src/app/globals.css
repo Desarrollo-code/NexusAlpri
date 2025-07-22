@@ -6,34 +6,40 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 220 10% 3.9%;
+    --background: 0 0% 0%;
+    --foreground: 210 40% 98%;
     
-    --card: 0 0% 100%;
-    --card-foreground: 220 10% 3.9%;
+    --card: 240 4% 12%;
+    --card-foreground: 210 40% 98%;
     
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 10% 3.9%;
+    --popover: 240 5% 10%;
+    --popover-foreground: 210 40% 98%;
     
     --primary: 48 98% 50%; /* Vibrant Gold */
-    --primary-foreground: 210 40% 98%;
+    --primary-foreground: 240 4% 12%;
     
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 240 5% 25%;
+    --secondary-foreground: 210 40% 98%;
     
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 240 5% 18%;
+    --muted-foreground: 210 10% 65%;
     
     --accent: 150 100% 90%; /* Neon Green */
     --accent-foreground: 150 100% 5%;
     
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 70% 55%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 240 5% 18%;
+    --input: 240 5% 15%;
     --ring: 48 98% 50%;
-    --radius: 0.75rem;
+
+    --sidebar-background: 240 4% 10%;
+    --sidebar-foreground: 210 20% 85%;
+    --sidebar-accent: 48 98% 50%; /* Gold */
+    --sidebar-accent-foreground: 240 4% 12%;
+    --sidebar-border: 240 5% 15%;
+    --sidebar-ring: 48 98% 52%;
 
     --chart-1: 170 100% 45%; /* Cyan */
     --chart-2: 30 100% 50%; /* Orange */
@@ -45,20 +51,13 @@
     --event-green: 150 100% 45%;
     --event-red: 0 100% 55%;
     --event-orange: 30 100% 50%;
-    
-    --sidebar-background: 240 5% 18%;
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-accent: 48 98% 50%; /* Gold */
-    --sidebar-accent-foreground: 240 4% 12%;
-    --sidebar-border: 240 5% 25%;
-    --sidebar-ring: 48 98% 52%;
   }
 
   .dark {
-    --background: 240 4% 10%; /* Graphite */
+    --background: 0 0% 0%; /* Black */
     --foreground: 210 40% 98%;
     
-    --card: 240 4% 12%; /* Darker Graphite */
+    --card: 240 4% 8%; /* Darker Graphite */
     --card-foreground: 210 40% 98%;
     
     --popover: 240 5% 10%;
@@ -152,4 +151,58 @@
     left: 0;
     background: hsl(var(--primary));
   }
+
+  /* 3D Card Flip Styles */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .transform-style-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+  .group-hover-rotate-y-180:hover .group-hover-content {
+      transform: rotateY(180deg);
+  }
+
+  .rotating-gradient::before {
+    position: absolute;
+    content: ' ';
+    display: block;
+    width: 160px;
+    height: 160%;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)), transparent);
+    animation: rotation_481 5000ms infinite linear;
+  }
+
+  @keyframes rotation_481 {
+    0% {
+      transform: rotateZ(0deg);
+    }
+    100% {
+      transform: rotateZ(360deg);
+    }
+  }
+  
+  .floating {
+    animation: floating 2600ms infinite linear;
+  }
+
+  @keyframes floating {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(10px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
 }
