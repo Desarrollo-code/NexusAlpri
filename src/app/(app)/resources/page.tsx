@@ -758,10 +758,10 @@ export default function ResourcesPage() {
             {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
               <Dialog open={showCreateFileModal} onOpenChange={(isOpen) => { if (!isOpen) resetCreateForm(); setShowCreateFileModal(isOpen); }}>
                 <DialogTrigger asChild>
-                  <button className="flex items-center gap-3 px-6 py-3 rounded-lg bg-blue-500 text-white font-bold uppercase text-xs cursor-pointer select-none shadow-[0_4px_6px_-1px_rgba(72,138,236,0.19),0_2px_4px_-1px_rgba(72,138,236,0.10)] transition-all duration-600 hover:shadow-[0_10px_15px_-3px_rgba(72,138,236,0.31),0_4px_6px_-2px_rgba(72,138,236,0.10)] active:opacity-85 active:shadow-none">
+                  <button className="flex items-center gap-3 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-bold uppercase text-xs cursor-pointer select-none shadow-md hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 active:opacity-85 active:shadow-none">
                     <svg aria-hidden="true" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
-                      <path strokeWidth={2} stroke="#ffffff" d="M13.5 3H12H8C6.34315 3 5 4.34315 5 6V18C5 19.6569 6.34315 21 8 21H11M13.5 3L19 8.625M13.5 3V7.625C13.5 8.17728 13.9477 8.625 14.5 8.625H19M19 8.625V11.8125" strokeLinejoin="round" strokeLinecap="round" />
-                      <path strokeLinejoin="round" strokeLinecap="round" strokeWidth="2" stroke="#ffffff" d="M17 15V18M17 21V18M17 18H14M17 18H20" />
+                      <path strokeWidth={2} stroke="currentColor" d="M13.5 3H12H8C6.34315 3 5 4.34315 5 6V18C5 19.6569 6.34315 21 8 21H11M13.5 3L19 8.625M13.5 3V7.625C13.5 8.17728 13.9477 8.625 14.5 8.625H19M19 8.625V11.8125" strokeLinejoin="round" strokeLinecap="round" />
+                      <path strokeLinejoin="round" strokeLinecap="round" strokeWidth="2" stroke="currentColor" d="M17 15V18M17 21V18M17 18H14M17 18H20" />
                     </svg>
                     Subir Recurso
                   </button>
