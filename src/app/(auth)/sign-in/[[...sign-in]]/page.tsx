@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -109,9 +110,9 @@ export default function SignInPage() {
 
 
   return (
-      <div className="w-full max-w-md">
+      <div className="w-full">
         {!show2fa ? (
-          <Card>
+          <Card className="border-primary/20 shadow-lg shadow-primary/10">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-headline">Iniciar Sesión</CardTitle>
                 <CardDescription>Ingresa a tu cuenta de NexusAlpri</CardDescription>
@@ -153,8 +154,8 @@ export default function SignInPage() {
                   </Button>
                    {settings?.allowPublicRegistration && (
                      <div className="mt-4 text-center text-sm">
-                        ¿No tienes una cuenta?{" "}
-                        <Link href="/sign-up" className="underline text-accent-foreground hover:text-primary">
+                        <span className="text-muted-foreground">¿No tienes una cuenta?</span>{" "}
+                        <Link href="/sign-up" className="font-semibold text-primary hover:underline">
                             Regístrate
                         </Link>
                      </div>
@@ -163,7 +164,7 @@ export default function SignInPage() {
               </CardContent>
           </Card>
         ) : (
-          <Card>
+          <Card className="border-primary/20 shadow-lg shadow-primary/10">
               <CardHeader className="text-center space-y-4">
                 <ShieldCheck className="mx-auto h-12 w-12 text-primary" />
                 <div className="space-y-1">
@@ -172,7 +173,7 @@ export default function SignInPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handle2faSubmit} className="grid gap-6">
+                <form onSubmit={handle2faSubmit} className="grid gap-4">
                   <div className="grid gap-2">
                     <InputOTP
                       maxLength={6}
