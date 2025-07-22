@@ -15,9 +15,10 @@ interface EventSidebarProps {
   events: CalendarEvent[];
   onCreateEvent: (date: Date) => void;
   onEditEvent: (event: CalendarEvent) => void;
+  canCreate: boolean;
 }
 
-export function EventSidebar({ selectedDate, events, onCreateEvent, onEditEvent }: EventSidebarProps) {
+export function EventSidebar({ selectedDate, events, onCreateEvent, onEditEvent, canCreate }: EventSidebarProps) {
 
   const getEventColorClass = (color?: string): string => {
     switch (color) {
@@ -43,10 +44,12 @@ export function EventSidebar({ selectedDate, events, onCreateEvent, onEditEvent 
           <h2 className="text-lg font-semibold font-headline">
             Eventos del <span className="text-primary">{format(selectedDate, "d 'de' MMMM", { locale: es })}</span>
           </h2>
-          <Button size="sm" onClick={() => onCreateEvent(selectedDate)}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Crear
-          </Button>
+          {canCreate && (
+            <Button size="sm" onClick={() => onCreateEvent(selectedDate)}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Crear
+            </Button>
+          )}
         </div>
         <Separator className="my-3" />
       </div>
@@ -86,9 +89,11 @@ export function EventSidebar({ selectedDate, events, onCreateEvent, onEditEvent 
             <CalendarPlus className="h-10 w-10 mb-3 text-primary/70" />
             <p className="font-medium">No hay eventos para este día.</p>
             <p className="text-sm">Puedes crear uno nuevo.</p>
-             <Button size="sm" variant="outline" className="mt-4" onClick={() => onCreateEvent(selectedDate)}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Crear Evento
-             </Button>
+             {canCreate && (
+                <Button size="sm" variant="outline" className="mt-4" onClick={() => onCreateEvent(selectedDate)}>
+                    <PlusCircle className="mr-2 h-4 w-4" /> Crear Evento
+                </Button>
+             )}
           </div>
         )}
       </ScrollArea>
