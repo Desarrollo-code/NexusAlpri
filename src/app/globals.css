@@ -30,7 +30,7 @@
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 240 5.9% 90%;
+    --border: 240 5.9% 85%;
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
     
@@ -222,6 +222,7 @@
     font-weight: 400;
     font-size: 15px;
     color: var(--submain-color);
+    padding-bottom: 2rem;
   }
   
   .art-design {
