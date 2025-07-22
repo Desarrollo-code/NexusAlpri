@@ -120,19 +120,19 @@ export default function SignInPage() {
         </div>
         
         <div className="form-group">
-            <label className="form-label" htmlFor="loginEmail">Correo Electrónico</label>
-            <input type="email" id="loginEmail" className="form-input" placeholder="tu@email.com" required 
-                   value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
-        </div>
-        
-        <div className="form-group">
-            <label className="form-label" htmlFor="loginPassword">Contraseña</label>
-            <div style={{position: 'relative'}}>
-                <input type={showPassword ? 'text' : 'password'} id="loginPassword" className="form-input" placeholder="••••••••" required
-                       value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading}/>
-                <PasswordToggle isVisible={showPassword} onClick={() => setShowPassword(!showPassword)} />
-            </div>
-        </div>
+    <label className="form-label" htmlFor="loginEmail">Correo Electrónico</label>
+    <input type="email" id="loginEmail" className="form-input" placeholder="tu@email.com" required 
+           value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
+</div>
+
+<div className="form-group">
+    <label className="form-label" htmlFor="loginPassword">Contraseña</label>
+    <div style={{position: 'relative'}}>
+        <input type={showPassword ? 'text' : 'password'} id="loginPassword" className="form-input" placeholder="••••••••" required
+               value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading}/>
+        <PasswordToggle isVisible={showPassword} onClick={() => setShowPassword(!showPassword)} />
+    </div>
+</div>
         
         <button type="submit" className="submit-btn" disabled={isLoading}>
           {isLoading && <Loader2 className="animate-spin" />}
