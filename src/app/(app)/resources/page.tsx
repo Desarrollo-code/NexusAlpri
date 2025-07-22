@@ -5,9 +5,9 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
-import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, MoreVertical, Folder, FileText, Video, Info, Notebook, Shield, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Filter, ArrowUp, ArrowDown, Lock, X } from 'lucide-react';
+import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, MoreVertical, Folder, FileText, Video, Info, Notebook, Shield, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Filter, ArrowUp, ArrowDown, Lock, X, UploadCloud } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -31,7 +30,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { Resource as PrismaResource, ResourceType as PrismaResourceType } from '@prisma/client';
-import { Progress } from '@/components/ui/progress';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
@@ -41,17 +39,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { Textarea } from '@/components/ui/textarea';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { UploadArea } from '@/components/ui/upload-area';
 import { ResourceDetailsSidebar } from '@/components/resources/details-sidebar';
 
-
-const PAGE_SIZE = 20;
 
 // --- Types and Mappers ---
 interface ApiResource extends Omit<PrismaResource, 'uploader' | 'tags' | 'type' | 'uploadDate' | 'pin'> {
@@ -181,11 +173,8 @@ ResourceGridItem.displayName = 'ResourceGridItem';
 export default function ResourcesPage() {
   const { user, settings } = useAuth();
   const { toast } = useToast();
-  const router = useRouter();
-  const pathname = usePathname();
 
   const [allApiResources, setAllApiResources] = useState<AppResourceType[]>([]);
-  const [totalResources, setTotalResources] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -197,7 +186,6 @@ export default function ResourcesPage() {
 
   // Modals state
   const [showCreateFileModal, setShowCreateFileModal] = useState(false);
-  const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   
   const [isSubmittingResource, setIsSubmittingResource] = useState(false);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
@@ -224,7 +212,6 @@ export default function ResourcesPage() {
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch resources');
       const data: { resources: AppResourceType[], totalResources: number } = await response.json();
       setAllApiResources(data.resources || []);
-      setTotalResources(data.totalResources || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido');
       toast({ title: "Error al cargar recursos", description: err instanceof Error ? err.message : 'No se pudo cargar la biblioteca.', variant: "destructive"});
@@ -236,6 +223,11 @@ export default function ResourcesPage() {
   useEffect(() => {
     fetchResources();
   }, [fetchResources]);
+  
+  useEffect(() => {
+    setBreadcrumbs(currentFolderId === null ? [] : breadcrumbs);
+  }, [currentFolderId]);
+
 
   // --- Event Handlers ---
   const resetCreateForm = () => {
@@ -245,7 +237,7 @@ export default function ResourcesPage() {
 
   const handleCreateFile = async (formData: FormData) => {
     if (!user?.id) return;
-    const file = formData.get('file') as File;
+    const file = newResourceFile;
     const title = formData.get('title') as string;
     const category = formData.get('category') as string;
     const type = formData.get('type') as string;
@@ -328,7 +320,6 @@ export default function ResourcesPage() {
 
   return (
     <div className="flex h-[calc(100vh-8rem)]">
-        {/* Left Sidebar */}
         <aside className="w-64 flex-shrink-0 border-r p-4 hidden md:flex flex-col">
             <h2 className="text-lg font-semibold font-headline mb-4">Workspace</h2>
             <nav className="flex flex-col gap-1">
@@ -343,7 +334,6 @@ export default function ResourcesPage() {
             </nav>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
             <div className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                  <form onSubmit={handleSearchSubmit} className="relative w-full sm:max-w-md">
@@ -376,14 +366,13 @@ export default function ResourcesPage() {
                     <div className="text-center py-12"><ArchiveX className="mx-auto h-12 w-12 text-primary"/><h3 className="text-xl font-semibold">{searchTerm ? 'No hay coincidencias' : 'Carpeta Vacía'}</h3><p className="text-muted-foreground">{searchTerm ? 'Prueba con otro término.' : 'Sube un archivo para empezar.'}</p></div>
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-                        {allApiResources.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={() => {}} onDelete={handleDeleteResource} onNavigate={handleNavigateFolder} isSelected={selectedResource?.id === item.id}/>)}
+                        {allApiResources.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={() => {}} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} isSelected={selectedResource?.id === item.id}/>)}
                     </div>
                 )}
             </div>
         </main>
 
-        {/* Right Details Sidebar */}
-        <aside className={cn("w-80 flex-shrink-0 border-l transition-all duration-300 ease-in-out", selectedResource ? "translate-x-0" : "translate-x-full absolute right-0")}>
+        <aside className={cn("w-80 flex-shrink-0 border-l transition-transform duration-300 ease-in-out", selectedResource ? "translate-x-0" : "translate-x-full absolute right-0")}>
            <ResourceDetailsSidebar
                 resource={selectedResource}
                 onClose={() => setSelectedResource(null)}
@@ -392,7 +381,6 @@ export default function ResourcesPage() {
            />
         </aside>
         
-        {/* Modals and Dialogs */}
         <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => !open && setResourceToDelete(null)}>
             <AlertDialogContent>
               <AlertDialogHeader><AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle><AlertDialogDescription>El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. {resourceToDelete?.type === 'FOLDER' && 'Todos los archivos dentro también serán eliminados.'}</AlertDialogDescription></AlertDialogHeader>
@@ -410,7 +398,6 @@ export default function ResourcesPage() {
                     <Separator />
                     <div className="space-y-1">
                         <UploadArea onFileSelect={(file) => setNewResourceFile(file)} disabled={isSubmittingResource} />
-                        <Input type="file" name="file" className="hidden" ref={(node) => { if (node && newResourceFile) { const dataTransfer = new DataTransfer(); dataTransfer.items.add(newResourceFile); node.files = dataTransfer.files; } }} />
                         {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
                         {newResourceFile && <p className="text-xs text-center text-muted-foreground mt-1">Archivo seleccionado: {newResourceFile.name}</p>}
                     </div>

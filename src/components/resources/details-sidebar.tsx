@@ -119,7 +119,7 @@ export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: 
                 <Button variant="outline" className="flex-1" onClick={() => onEdit(resource)}>
                     <Edit className="mr-2 h-4 w-4"/> Editar
                 </Button>
-                <Button variant="destructive-outline" className="flex-1" onClick={() => onDelete(resource.id)}>
+                <Button variant="destructive" className="flex-1" onClick={() => onDelete(resource.id)}>
                     <Trash2 className="mr-2 h-4 w-4"/> Eliminar
                 </Button>
             </footer>
