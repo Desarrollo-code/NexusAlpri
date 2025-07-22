@@ -34,7 +34,7 @@
     --input: 240 5% 15%;
     --ring: 48 98% 50%;
     
-    --radius: 1rem; /* Increased from 0.5rem for more rounded corners */
+    --radius: 1rem;
 
     --sidebar-background: 240 4% 10%;
     --sidebar-foreground: 210 20% 85%;
@@ -84,7 +84,7 @@
     --input: 240 5% 15%;
     --ring: 48 98% 52%;
     
-    --radius: 1rem; /* Increased from 0.5rem */
+    --radius: 1rem;
 
     --sidebar-background: 240 4% 10%;
     --sidebar-foreground: 210 20% 85%;
@@ -239,7 +239,6 @@
     color: var(--main-color);
     background: var(--bg-color);
     text-transform: uppercase;
-    transition: all 0.3s;
     @apply flex items-center justify-center;
   }
   
@@ -366,4 +365,5 @@
     }
 }
     
+
 
