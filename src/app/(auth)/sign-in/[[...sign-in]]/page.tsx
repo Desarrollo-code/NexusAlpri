@@ -28,8 +28,6 @@ const MemoizedInputOTP = memo(({ value, onChange, disabled }: { value: string, o
             <InputOTPSlot index={0} />
             <InputOTPSlot index={1} />
             <InputOTPSlot index={2} />
-        </InputOTPGroup>
-        <InputOTPGroup>
             <InputOTPSlot index={3} />
             <InputOTPSlot index={4} />
             <InputOTPSlot index={5} />
