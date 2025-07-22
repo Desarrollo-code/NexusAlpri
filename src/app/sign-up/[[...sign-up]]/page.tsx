@@ -1,13 +1,20 @@
-
 'use client';
 
-import { useState, type FormEvent, useEffect } from 'react';
+import { useState, type FormEvent, useEffect, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import { Loader2, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
+
+const PasswordToggle = memo(({ isVisible, onClick }: { isVisible: boolean, onClick: () => void }) => (
+    <button type="button" className="password-toggle" onClick={onClick} aria-label={isVisible ? "Ocultar contraseña" : "Mostrar contraseña"}>
+        {isVisible ? <EyeOff size={20} /> : <Eye size={20} />}
+    </button>
+));
+PasswordToggle.displayName = 'PasswordToggle';
+
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -122,12 +129,6 @@ export default function SignUpPage() {
         </div>
       );
   }
-
-  const PasswordToggle = ({ isVisible, onClick }: { isVisible: boolean, onClick: () => void}) => (
-      <button type="button" className="password-toggle" onClick={onClick}>
-        {isVisible ? <EyeOff size={20}/> : <Eye size={20}/>}
-      </button>
-  );
 
   return (
     <div className="auth-container">
