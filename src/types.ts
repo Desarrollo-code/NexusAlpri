@@ -1,4 +1,3 @@
-
 import type { LessonTemplate, TemplateBlock, Prisma } from "@prisma/client";
 
 // --- USER & AUTH ---
@@ -129,7 +128,7 @@ export interface CourseProgress {
 
 
 // --- RESOURCES ---
-export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'OTHER';
+export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER';
 
 export interface EnterpriseResource {
     id: string;

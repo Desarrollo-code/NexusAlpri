@@ -5,9 +5,8 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
-import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, List, MoreVertical, Folder, FileText, Video, Info, Notebook, Shield, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Filter, ArrowUp, ArrowDown, Lock, X, UploadCloud, Grid } from 'lucide-react';
+import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, List, MoreVertical, Folder, FileText, Video, Info, Notebook, Shield, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Filter, ArrowUp, ArrowDown, Lock, X, UploadCloud, Grid, Link as LinkIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -82,6 +81,7 @@ const getIconForType = (type: AppResourceType['type']) => {
       case 'MANUAL': return <Notebook className="h-5 w-5 text-indigo-500" />;
       case 'POLICY': return <Shield className="h-5 w-5 text-red-500" />;
       case 'VIDEO': return <Video className="h-5 w-5 text-purple-500" />;
+      case 'EXTERNAL_LINK': return <LinkIcon className="h-5 w-5 text-cyan-500" />;
       default: return <FileQuestion className="h-5 w-5 text-gray-500" />;
     }
 };
@@ -193,7 +193,13 @@ export default function ResourcesPage() {
   const [isSubmittingResource, setIsSubmittingResource] = useState(false);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Form State for new resource
+  const [newResourceTitle, setNewResourceTitle] = useState('');
+  const [newResourceType, setNewResourceType] = useState<AppResourceType['type']>('DOCUMENT');
+  const [newResourceCategory, setNewResourceCategory] = useState('');
   const [newResourceFile, setNewResourceFile] = useState<File | null>(null);
+  const [newResourceUrl, setNewResourceUrl] = useState('');
 
   const [resourceToDelete, setResourceToDelete] = useState<AppResourceType | null>(null);
   const [isDeletingResource, setIsDeletingResource] = useState(false);
@@ -234,45 +240,62 @@ export default function ResourcesPage() {
 
   // --- Event Handlers ---
   const resetCreateForm = () => {
+    setNewResourceTitle('');
+    setNewResourceType('DOCUMENT');
+    setNewResourceCategory('');
     setNewResourceFile(null);
+    setNewResourceUrl('');
     setUploadProgress(0);
   };
 
-  const handleCreateFile = async (formData: FormData) => {
-    if (!user?.id) return;
-    const file = newResourceFile;
-    const title = formData.get('title') as string;
-    const category = formData.get('category') as string;
-    const type = formData.get('type') as string;
-    
-    if (!file || !title || !category || !type) {
+  const handleCreateFile = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!user?.id || !newResourceTitle || !newResourceCategory || !newResourceType) {
         toast({ title: "Error", description: "Todos los campos son obligatorios.", variant: "destructive" });
         return;
     }
 
-    setIsSubmittingResource(true);
-    let finalResourceUrl = '';
+    let finalResourceUrl = newResourceUrl;
 
-    setIsUploadingFile(true);
-    setUploadProgress(0);
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', file);
-    try {
-        const result: { url: string } = await uploadWithProgress('/api/upload/resource-file', uploadFormData, setUploadProgress);
-        finalResourceUrl = result.url;
-    } catch (err) {
-        toast({ title: "Error de Subida", description: (err as Error).message, variant: "destructive" });
+    if (newResourceType !== 'EXTERNAL_LINK' && newResourceType !== 'FOLDER') {
+        if (!newResourceFile) {
+            toast({ title: "Error", description: "Por favor, selecciona un archivo para subir.", variant: "destructive" });
+            return;
+        }
+        
+        setIsUploadingFile(true);
+        setUploadProgress(0);
+        setIsSubmittingResource(true);
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', newResourceFile);
+        try {
+            const result: { url: string } = await uploadWithProgress('/api/upload/resource-file', uploadFormData, setUploadProgress);
+            finalResourceUrl = result.url;
+        } catch (err) {
+            toast({ title: "Error de Subida", description: (err as Error).message, variant: "destructive" });
+            setIsUploadingFile(false);
+            setIsSubmittingResource(false);
+            return;
+        }
         setIsUploadingFile(false);
-        setIsSubmittingResource(false);
-        return;
+    } else if (newResourceType === 'EXTERNAL_LINK' && !finalResourceUrl) {
+         toast({ title: "Error", description: "Por favor, introduce una URL para el enlace externo.", variant: "destructive" });
+         return;
     }
-    setIsUploadingFile(false);
     
+    setIsSubmittingResource(true);
     try {
-      const payload = { title, type, category, url: finalResourceUrl, uploaderId: user.id, parentId: currentFolderId };
+      const payload = { 
+          title: newResourceTitle, 
+          type: newResourceType, 
+          category: newResourceCategory, 
+          url: finalResourceUrl, 
+          uploaderId: user.id, 
+          parentId: currentFolderId 
+      };
       const response = await fetch('/api/resources', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to create resource');
-      toast({ title: "Recurso Creado", description: `El recurso "${title}" ha sido añadido.` });
+      toast({ title: "Recurso Creado", description: `El recurso "${newResourceTitle}" ha sido añadido.` });
       setShowCreateFileModal(false);
       resetCreateForm();
       fetchResources();
@@ -331,7 +354,8 @@ export default function ResourcesPage() {
     <div className="flex h-full">
       <main className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
         <header className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-           <div className="flex-grow">
+           <div>
+               <h1 className="text-3xl font-bold font-headline">Biblioteca de Recursos</h1>
                <p className="text-muted-foreground">Explora, busca y gestiona todos los archivos de la organización.</p>
            </div>
            {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
@@ -357,6 +381,7 @@ export default function ResourcesPage() {
                         <SelectItem value="DOCUMENT">Documento</SelectItem>
                         <SelectItem value="VIDEO">Video</SelectItem>
                         <SelectItem value="GUIDE">Guía</SelectItem>
+                        <SelectItem value="EXTERNAL_LINK">Enlace Externo</SelectItem>
                       </SelectContent>
                     </Select>
                     <div className="flex bg-muted rounded-md p-1">
@@ -390,7 +415,7 @@ export default function ResourcesPage() {
             ))}
         </div>
         
-        <div className="flex-grow overflow-auto -mx-4 px-4 thin-scrollbar">
+        <div className="flex-grow overflow-auto -mx-4 px-4 mt-4 thin-scrollbar">
             {isLoading ? (
                 <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : error ? (
@@ -402,7 +427,7 @@ export default function ResourcesPage() {
                     <p>{searchTerm ? 'Prueba con otro término.' : 'Sube un archivo para empezar.'}</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 mt-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                     {allApiResources.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={() => {}} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} isSelected={selectedResource?.id === item.id}/>)}
                 </div>
             )}
@@ -428,16 +453,25 @@ export default function ResourcesPage() {
        <Dialog open={showCreateFileModal} onOpenChange={(isOpen) => { if (!isOpen) resetCreateForm(); setShowCreateFileModal(isOpen); }}>
           <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>Subir Nuevo Recurso</DialogTitle><DialogDescription>Completa los detalles para añadir un nuevo recurso a la biblioteca.</DialogDescription></DialogHeader>
-              <form onSubmit={(e) => { e.preventDefault(); handleCreateFile(new FormData(e.currentTarget)); }} className="grid gap-4 py-4">
-                  <div className="space-y-1"><Label htmlFor="title">Título <span className="text-destructive">*</span></Label><Input id="title" name="title" required disabled={isSubmittingResource} /></div>
-                  <div className="space-y-1"><Label htmlFor="type">Tipo <span className="text-destructive">*</span></Label><Select name="type" required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent><SelectItem value="DOCUMENT">Documento</SelectItem><SelectItem value="GUIDE">Guía</SelectItem></SelectContent></Select></div>
-                  <div className="space-y-1"><Label htmlFor="category">Categoría <span className="text-destructive">*</span></Label><Select name="category" required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+              <form onSubmit={handleCreateFile} className="grid gap-4 py-4">
+                  <div className="space-y-1"><Label htmlFor="title">Título <span className="text-destructive">*</span></Label><Input id="title" name="title" value={newResourceTitle} onChange={(e) => setNewResourceTitle(e.target.value)} required disabled={isSubmittingResource} /></div>
+                  <div className="space-y-1"><Label htmlFor="type">Tipo <span className="text-destructive">*</span></Label><Select name="type" required value={newResourceType} onValueChange={(v) => setNewResourceType(v as any)} disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent><SelectItem value="DOCUMENT">Documento</SelectItem><SelectItem value="GUIDE">Guía</SelectItem><SelectItem value="VIDEO">Video</SelectItem><SelectItem value="EXTERNAL_LINK">Enlace Externo</SelectItem></SelectContent></Select></div>
+                  <div className="space-y-1"><Label htmlFor="category">Categoría <span className="text-destructive">*</span></Label><Select name="category" required value={newResourceCategory} onValueChange={setNewResourceCategory} disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
                   <Separator />
-                  <div className="space-y-1">
-                      <UploadArea onFileSelect={(file) => setNewResourceFile(file)} disabled={isSubmittingResource} />
-                      {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
-                      {newResourceFile && <p className="text-xs text-center text-muted-foreground mt-1">Archivo seleccionado: {newResourceFile.name}</p>}
-                  </div>
+                  
+                  {newResourceType === 'EXTERNAL_LINK' ? (
+                     <div className="space-y-1">
+                        <Label htmlFor="url">URL del Enlace Externo<span className="text-destructive">*</span></Label>
+                        <Input id="url" name="url" type="url" placeholder="https://ejemplo.com" value={newResourceUrl} onChange={(e) => setNewResourceUrl(e.target.value)} required disabled={isSubmittingResource} />
+                      </div>
+                  ) : newResourceType !== 'FOLDER' && (
+                    <div className="space-y-1">
+                        <UploadArea onFileSelect={(file) => setNewResourceFile(file)} disabled={isSubmittingResource} />
+                        {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
+                        {newResourceFile && <p className="text-xs text-center text-muted-foreground mt-1">Archivo seleccionado: {newResourceFile.name}</p>}
+                    </div>
+                  )}
+
                   <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4"><Button type="button" variant="outline" onClick={() => setShowCreateFileModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Guardar</Button></DialogFooter>
               </form>
           </DialogContent>
