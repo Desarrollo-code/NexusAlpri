@@ -53,6 +53,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Folder3D } from '@/components/ui/folder-3d';
 import { FolderPreview } from '@/components/ui/folder-preview';
 import { UploadArea } from '@/components/ui/upload-area';
+import { DownloadButton } from '@/components/ui/download-button';
 
 
 const PAGE_SIZE = 20;
@@ -1018,11 +1019,9 @@ export default function ResourcesPage() {
                         {getPreviewIconForType(previewResource.type)}
                         <h3 className="text-lg font-semibold">Previsualización no disponible</h3>
                         <p className="text-muted-foreground max-w-sm">Este tipo de archivo se debe descargar para poder visualizarlo.</p>
-                        <Button asChild>
-                            <a href={url || '#'} target="_blank" rel="noopener noreferrer" download>
-                                <Download className="mr-2 h-4 w-4" /> Descargar para ver
-                            </a>
-                        </Button>
+                        <a href={previewResource.url || '#'} target="_blank" rel="noopener noreferrer" download>
+                           <DownloadButton text="Descargar para ver" />
+                        </a>
                     </div>
                 );
             })()}
@@ -1042,3 +1041,5 @@ export default function ResourcesPage() {
     </div>
   );
 }
+
+    
