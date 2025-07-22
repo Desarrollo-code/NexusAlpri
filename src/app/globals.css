@@ -223,40 +223,6 @@
     color: var(--submain-color);
   }
   
-  .card__wrapper {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-  }
-  
-  .card__btn {
-    width: 120px;
-    height: 35px;
-    border: 2px solid var(--main-color);
-    border-radius: 4px;
-    font-weight: 700;
-    font-size: 11px;
-    color: var(--main-color);
-    background: var(--bg-color);
-    text-transform: uppercase;
-    @apply flex items-center justify-center;
-  }
-  
-  .card__btn-solid {
-    background: var(--main-color);
-    color: var(--bg-color);
-  }
-
-  .card__btn:hover {
-    background: var(--main-color);
-    color: var(--bg-color);
-  }
-
-  .card__btn-solid:hover {
-    background: var(--bg-color);
-    color: var(--main-color);
-  }
-
   .art-design {
     height: 100%;
     width: 100%;

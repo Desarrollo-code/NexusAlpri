@@ -294,14 +294,6 @@ export default function ProfilePage() {
             </div>
             <div className="card__title">{user.name}</div>
             <div className="card__subtitle capitalize">{(user.role as string)?.toLowerCase() || 'student'}</div>
-            <div className="card__wrapper">
-              <Button className="card__btn" onClick={() => document.getElementById('info-card')?.scrollIntoView({ behavior: 'smooth' })}>
-                <User className="mr-2"/> Info
-              </Button>
-              <Button className="card__btn card__btn-solid" onClick={() => document.getElementById('security-card')?.scrollIntoView({ behavior: 'smooth' })}>
-                <Shield className="mr-2"/> Seguridad
-              </Button>
-            </div>
         </div>
      </div>
   );
