@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
-import { Search, UploadCloud, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, Pin, PinOff, MoreVertical, Folder, FileText, Video, Info, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Notebook, Shield, Filter, ArrowUp, ArrowDown, Lock, ExternalLink } from 'lucide-react';
+import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, Pin, PinOff, MoreVertical, Folder, FileText, Video, Info, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Notebook, Shield, Filter, ArrowUp, ArrowDown, Lock, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
@@ -52,6 +52,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Folder3D } from '@/components/ui/folder-3d';
 import { FolderPreview } from '@/components/ui/folder-preview';
+import { UploadArea } from '@/components/ui/upload-area';
 
 
 const PAGE_SIZE = 20;
@@ -492,8 +493,6 @@ export default function ResourcesPage() {
     setNewResourceFile(null);
     setNewResourceUrl('');
     setUploadProgress(0);
-    const fileInput = document.getElementById('resource-file') as HTMLInputElement;
-    if (fileInput) fileInput.value = '';
   };
 
   const handleCreateFile = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -758,7 +757,10 @@ export default function ResourcesPage() {
             {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
               <Dialog open={showCreateFileModal} onOpenChange={(isOpen) => { if (!isOpen) resetCreateForm(); setShowCreateFileModal(isOpen); }}>
                 <DialogTrigger asChild>
-                  <Button disabled={isSubmittingResource || isUploadingFile}><UploadCloud className="mr-2 h-4 w-4" /> Subir Recurso</Button>
+                  <Button disabled={isSubmittingResource || isUploadingFile}>
+                     <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm-1 9v4h-2v-4H8l4-4 4 4h-3Zm1 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+                     Subir Recurso
+                  </Button>
                 </DialogTrigger>
                 <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
                   <DialogHeader><DialogTitle>Subir Nuevo Recurso</DialogTitle><DialogDescription>Completa los detalles para añadir un nuevo recurso a la biblioteca.</DialogDescription></DialogHeader>
@@ -776,9 +778,12 @@ export default function ResourcesPage() {
                      ) : (
                         <>
                           <div className="space-y-1">
-                            <Label htmlFor="resource-file">Subir Archivo</Label>
-                            <Input id="resource-file" type="file" onChange={(e) => setNewResourceFile(e.target.files ? e.target.files[0] : null)} disabled={isSubmittingResource || !!newResourceUrl} />
+                            <UploadArea 
+                              onFileSelect={(file) => setNewResourceFile(file)} 
+                              disabled={isSubmittingResource || !!newResourceUrl}
+                            />
                             {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
+                            {newResourceFile && <p className="text-xs text-center text-muted-foreground mt-1">Archivo seleccionado: {newResourceFile.name}</p>}
                           </div>
                           <div className="text-center text-xs text-muted-foreground">O</div>
                           <div className="space-y-1">

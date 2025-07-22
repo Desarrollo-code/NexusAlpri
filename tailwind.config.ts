@@ -101,10 +101,21 @@ export default {
             height: '0',
           },
         },
+        'press': {
+          '0%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(0.92)' },
+          'to': { transform: 'scale(1)' },
+        },
+        'bounce': {
+          '50%': { transform: 'rotate(5deg) translate(20px, -50px)' },
+          'to': { transform: 'scale(0.9) rotate(10deg) translate(50px, -80px)', opacity: '0' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'press': 'press 0.2s 1 linear',
+        'bounce': 'bounce 0.2s 1 linear',
       },
     },
   },
