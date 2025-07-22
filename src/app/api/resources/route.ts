@@ -7,8 +7,10 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const parentId = searchParams.get('parentId') || null;
     const search = searchParams.get('search');
+    const category = searchParams.get('category');
 
     let whereClause: any = { parentId };
+    
     if (search) {
         whereClause.AND = whereClause.AND || [];
         whereClause.AND.push({
@@ -18,6 +20,10 @@ export async function GET(req: NextRequest) {
                 { tags: { contains: search } },
             ],
         });
+    }
+
+    if (category) {
+        whereClause.category = category;
     }
 
     try {

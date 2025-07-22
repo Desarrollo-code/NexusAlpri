@@ -31,7 +31,7 @@ const getYoutubeVideoId = (url: string | undefined): string | null => {
 
 export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: ResourceDetailsSidebarProps) {
     if (!resource) {
-        return null;
+        return <div className="h-full w-full bg-card" />;
     }
 
     const isImage = resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
