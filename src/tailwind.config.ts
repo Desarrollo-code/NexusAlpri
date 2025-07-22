@@ -111,8 +111,8 @@ export default {
           'to': { transform: 'scale(0.9) rotate(10deg) translate(50px, -80px)', opacity: '0' },
         },
         'throw': {
-            'from': { transform: 'translate(-400%, -700%)', opacity: '0' },
-            'to': { transform: 'translate(0%, 0%)', opacity: '1' }
+            'from': { transform: 'translate(-400%, -700%) rotate(0deg)', opacity: '0' },
+            'to': { transform: 'translate(0%, 0%) rotate(45deg)', opacity: '1' }
         }
       },
       animation: {
