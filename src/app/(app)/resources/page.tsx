@@ -402,7 +402,7 @@ export default function ResourcesPage() {
                     <p>{searchTerm ? 'Prueba con otro término.' : 'Sube un archivo para empezar.'}</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 mt-4">
                     {allApiResources.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={() => {}} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} isSelected={selectedResource?.id === item.id}/>)}
                 </div>
             )}
