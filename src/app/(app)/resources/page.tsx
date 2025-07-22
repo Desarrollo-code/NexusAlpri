@@ -371,9 +371,8 @@ export default function ResourcesPage() {
                     <Button 
                         key={category} 
                         variant={activeCategory === category ? 'default' : 'outline'}
-                        size="sm"
                         onClick={() => handleCategoryChange(category)}
-                        className="rounded-full px-4"
+                        className="rounded-full px-3 py-1 h-auto text-xs"
                     >
                         {category === 'all' ? 'Toda la Biblioteca' : category}
                     </Button>
