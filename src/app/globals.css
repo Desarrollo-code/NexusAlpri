@@ -55,10 +55,10 @@
   }
 
   .dark {
-    --background: 240 5% 10%; /* Graphite */
+    --background: 0 0% 0%; /* Pure Black */
     --foreground: 210 20% 96%;
     
-    --card: 240 5% 12%; /* Darker Graphite for cards */
+    --card: 240 5% 8%; /* Very Dark Graphite for cards */
     --card-foreground: 210 20% 96%;
     
     --popover: 240 5% 10%;
@@ -70,7 +70,7 @@
     --secondary: 240 5% 25%;
     --secondary-foreground: 210 20% 96%;
     
-    --muted: 240 5% 25%;
+    --muted: 240 5% 18%; /* Slightly lighter for muted elements */
     --muted-foreground: 210 10% 65%;
     
     --accent: 330 100% 55%; /* Neon Pink */
@@ -79,8 +79,8 @@
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 240 5% 22%;
-    --input: 240 5% 20%;
+    --border: 240 5% 15%; /* Darker border for contrast on cards */
+    --input: 240 5% 12%;
     --ring: 45 100% 50%; /* Gold */
 
     --sidebar-background: 240 5% 10%; /* Graphite */
@@ -153,7 +153,7 @@
     background: hsl(var(--primary));
   }
   
-  @keyframes rotateBorder {
+ @keyframes rotateBorder {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
@@ -173,12 +173,13 @@
     height: 200%;
     background: conic-gradient(
       from 0deg,
-      hsl(var(--destructive)),
       hsl(var(--destructive) / 0.5),
-      hsl(var(--destructive))
+      hsl(var(--destructive)),
+      hsl(var(--destructive) / 0.5)
     );
     animation: rotateBorder 10s linear infinite;
     z-index: -2;
+    opacity: 0.8;
   }
   
   .card-border-animated:hover::before {
