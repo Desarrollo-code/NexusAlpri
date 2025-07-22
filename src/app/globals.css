@@ -30,7 +30,7 @@
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 240 5.9% 90%;
+    --border: 240 5.9% 80%;
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
     
@@ -181,6 +181,7 @@
     align-items: center;
     border-radius: 20px;
     background: var(--bg-color);
+    padding-bottom: 20px;
   }
 
   .card__img {
@@ -222,7 +223,6 @@
     font-weight: 400;
     font-size: 15px;
     color: var(--submain-color);
-    padding-bottom: 2rem;
   }
   
   .art-design {
@@ -310,7 +310,6 @@
       animation: rotation_481 5s infinite linear;
       background-size: 200% 200%;
   }
-
 }
 
 @keyframes press {
@@ -410,6 +409,10 @@
 .card-border-animated:hover::before {
     opacity: 1;
 }
-    
 
-    
+.button__text {
+  transition: transform 0.3s ease;
+}
+.button__icon {
+  transition: transform 0.3s ease;
+}

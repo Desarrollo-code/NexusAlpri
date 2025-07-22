@@ -3,9 +3,9 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
-import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, Pin, PinOff, MoreVertical, Folder, FileText, Video, Info, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Notebook, Shield, Filter, ArrowUp, ArrowDown, Lock, ExternalLink } from 'lucide-react';
+import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, Save, List, MoreVertical, Folder, FileText, Video, Info, Notebook, Shield, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Filter, ArrowUp, ArrowDown, Lock, X } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
@@ -45,15 +45,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import mammoth from 'mammoth';
-import * as XLSX from 'xlsx';
 import { Textarea } from '@/components/ui/textarea';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Folder3D } from '@/components/ui/folder-3d';
-import { FolderPreview } from '@/components/ui/folder-preview';
 import { UploadArea } from '@/components/ui/upload-area';
-import { DownloadButton } from '@/components/ui/download-button';
+import { ResourceDetailsSidebar } from '@/components/resources/details-sidebar';
 
 
 const PAGE_SIZE = 20;
@@ -98,19 +93,6 @@ const getIconForType = (type: AppResourceType['type']) => {
     }
 };
 
-const getPreviewIconForType = (type: AppResourceType['type']) => {
-    const className = "h-16 w-16 text-muted-foreground";
-    switch (type) {
-        case 'FOLDER': return <Folder className={cn(className, "text-yellow-500/80")} />;
-        case 'DOCUMENT': return <FileText className={cn(className, "text-blue-500/80")} />;
-        case 'GUIDE': return <Info className={cn(className, "text-green-500/80")} />;
-        case 'MANUAL': return <Notebook className={cn(className, "text-indigo-500/80")} />;
-        case 'POLICY': return <Shield className={cn(className, "text-red-500/80")} />;
-        case 'VIDEO': return <Video className={cn(className, "text-purple-500/80")} />;
-        default: return <FileQuestion className={cn(className, "text-primary")} />;
-    }
-};
-
 const getYoutubeVideoId = (url: string | undefined): string | null => {
     if (!url) return null;
     let videoId = null;
@@ -128,152 +110,72 @@ const getYoutubeVideoId = (url: string | undefined): string | null => {
     return videoId;
 };
 
-const getFileFormat = (url?: string) => {
-    if (!url) return 'Enlace';
-    const extension = url.split('.').pop()?.split('?')[0];
-    return extension ? extension.toUpperCase() : 'URL';
-};
-
-const ImageArtPlaceholder = () => (
-    <div className="art-design">
-        <div className="art-circle-1 art-color-border">
-            <div className="art-circle-2 art-color-border">
-                <div className="art-circle-3 art-color-border">
-                    <div className="art-circle-4 art-color-border">
-                        <div className="art-circle-5" />
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div className="art-mountain-1 art-shape art-shadow" />
-        <div className="art-mountain-2 art-shape" />
-        <div className="art-mountain-3 art-shape art-shadow" />
-    </div>
-);
-
-
 // --- Sub-components for Page ---
-const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }: { resource: AppResourceType, onDelete: (id: string) => void, onPreview: () => void, onDownload: () => void, onEdit: (resource: AppResourceType) => void }) => {
+const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onNavigate, isSelected }: { resource: AppResourceType, onSelect: () => void, onEdit: (r: AppResourceType) => void, onDelete: (id: string) => void, onNavigate: (r: AppResourceType) => void, isSelected: boolean }) => {
     const { user } = useAuth();
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
     const isFolder = resource.type === 'FOLDER';
+
+    const handleClick = (e: React.MouseEvent) => {
+        if (isFolder) {
+            onNavigate(resource);
+        } else {
+            onSelect();
+        }
+    };
     
     const Thumbnail = () => {
         const isImage = !isFolder && resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
         const youtubeId = !isFolder && resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
         
-        if (isFolder) {
-             return (
-                <FolderPreview folderId={resource.id}>
-                    <div className="w-full h-full"><Folder3D /></div>
-                </FolderPreview>
-            );
-        }
         if (isImage) {
-           return <ImageArtPlaceholder />;
+           return <Image src={resource.url!} alt={resource.title} fill className="object-cover" data-ai-hint="resource document"/>
         }
         if (youtubeId) {
             return <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail"/>
         }
         return (
-            <div className="flex items-center justify-center w-full h-full">
-                {getPreviewIconForType(resource.type)}
+            <div className="flex items-center justify-center w-full h-full bg-muted">
+                {getIconForType(resource.type)}
             </div>
         );
     };
 
     return (
-        <div 
-            className="group rounded-lg border bg-card text-card-foreground shadow-sm transition-all duration-300 ease-in-out flex flex-col cursor-pointer"
-            onClick={onPreview}
+        <Card 
+            className={cn("group w-full h-full overflow-hidden transition-all duration-200 cursor-pointer", isSelected ? "ring-2 ring-primary shadow-lg" : "shadow-sm hover:shadow-md")}
+            onClick={handleClick}
         >
-            <div className="aspect-[4/3] w-full bg-card-foreground/5 rounded-t-lg flex items-center justify-center overflow-hidden relative">
+            <div className="aspect-video w-full flex items-center justify-center overflow-hidden relative">
                 <Thumbnail />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"/>
                 {resource.hasPin && !isFolder && (
                     <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
                         <Lock className="h-3 w-3 text-amber-400" />
                     </div>
                 )}
             </div>
-            <div className="p-2 border-t flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 overflow-hidden">
-                    {isFolder ? <Folder className="h-5 w-5 text-primary" /> : getIconForType(resource.type)}
-                    <span className="font-medium text-sm truncate">{resource.title}</span>
-                </div>
-                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 -mr-2">
-                            <MoreVertical className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onClick={onPreview}><Eye className="mr-2 h-4 w-4 text-sky-500" /> {isFolder ? 'Abrir' : 'Ver'}</DropdownMenuItem>
-                        {!isFolder && (<DropdownMenuItem onClick={onDownload} disabled={!resource.url}><Download className="mr-2 h-4 w-4 text-green-500" /> Descargar</DropdownMenuItem>)}
-                        {canModify && (<><DropdownMenuSeparator /><DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4 text-blue-500" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem></>)}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-        </div>
-    );
-};
-
-const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit }: { resource: AppResourceType, onDelete: (id: string) => void, onPreview: () => void, onDownload: () => void, onEdit: (resource: AppResourceType) => void }) => {
-    const { user } = useAuth();
-    const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
-    const isFolder = resource.type === 'FOLDER';
-
-    const renderListItem = () => (
-      <TableRow className="cursor-pointer" onClick={onPreview}>
-            <TableCell>
-                <div className="flex items-center gap-3">
-                    {getIconForType(resource.type)}
-                    <div className="flex-grow overflow-hidden">
-                        <div className="flex items-center gap-1.5">
-                            <span className="font-medium truncate">{resource.title}</span>
-                            {resource.hasPin && <Lock className="h-4 w-4 text-amber-400 shrink-0" />}
-                        </div>
-                        {resource.description && (
-                            <p className="text-xs text-muted-foreground truncate">{resource.description}</p>
-                        )}
-                    </div>
-                </div>
-            </TableCell>
-            <TableCell className="hidden md:table-cell">{resource.uploaderName}</TableCell>
-            <TableCell>{isFolder ? '—' : resource.category}</TableCell>
-            <TableCell className="hidden lg:table-cell">{getFileFormat(resource.url)}</TableCell>
-            <TableCell className="hidden lg:table-cell">{new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</TableCell>
-            <TableCell className="text-right">
-                 <div className="flex items-center justify-end gap-1">
-                    {!isFolder && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); onDownload(); }} aria-label="Descargar">
-                            <Download className="h-4 w-4" />
-                        </Button>
+            <div className="p-3">
+                <div className="flex justify-between items-start gap-2">
+                    <p className="font-semibold text-sm leading-tight line-clamp-2">{resource.title}</p>
+                    {canModify && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 -mr-2"><MoreVertical className="h-4 w-4" /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                {!isFolder && <DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>}
+                                <DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     )}
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                            <DropdownMenuItem onClick={onPreview}><Eye className="mr-2 h-4 w-4 text-sky-500" /> {isFolder ? 'Abrir' : 'Ver'}</DropdownMenuItem>
-                            {canModify && (<><DropdownMenuSeparator /><DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4 text-blue-500" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem></>)}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </div>
-            </TableCell>
-        </TableRow>
+                <p className="text-xs text-muted-foreground mt-1">{isFolder ? 'Carpeta' : resource.category}</p>
+            </div>
+        </Card>
     );
-
-    if (isFolder) {
-        return (
-            <FolderPreview folderId={resource.id}>
-                {renderListItem()}
-            </FolderPreview>
-        );
-    }
-    
-    return renderListItem();
-};
-
+});
+ResourceGridItem.displayName = 'ResourceGridItem';
 
 // --- Main Page Component ---
 export default function ResourcesPage() {
@@ -281,24 +183,14 @@ export default function ResourcesPage() {
   const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
-  const [view, setView] = useState<'grid' | 'list'>('grid');
   const [allApiResources, setAllApiResources] = useState<AppResourceType[]>([]);
   const [totalResources, setTotalResources] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const currentPage = Number(searchParams.get('page')) || 1;
-  const totalPages = Math.ceil(totalResources / PAGE_SIZE);
-
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedFormat, setSelectedFormat] = useState<string>('all');
   
-  const [sortColumn, setSortColumn] = useState<'title' | 'category' | 'uploadDate'>('title');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-
   // Folder navigation state
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([]);
@@ -306,43 +198,16 @@ export default function ResourcesPage() {
   // Modals state
   const [showCreateFileModal, setShowCreateFileModal] = useState(false);
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
-  const [newFolderName, setNewFolderName] = useState('');
-
+  
   const [isSubmittingResource, setIsSubmittingResource] = useState(false);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [newResourceTitle, setNewResourceTitle] = useState('');
-  const [newResourceType, setNewResourceType] = useState<AppResourceType['type'] | ''>('');
-  const [newResourceCategory, setNewResourceCategory] = useState('');
-  const [newResourceDescription, setNewResourceDescription] = useState('');
   const [newResourceFile, setNewResourceFile] = useState<File | null>(null);
-  const [newResourceUrl, setNewResourceUrl] = useState('');
-  
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [resourceToEdit, setResourceToEdit] = useState<AppResourceType | null>(null);
-  const [editResourceTitle, setEditResourceTitle] = useState('');
-  const [editResourceCategory, setEditResourceCategory] = useState('');
-  const [editResourceDescription, setEditResourceDescription] = useState('');
-  const [editResourceTags, setEditResourceTags] = useState('');
-  const [isSavingEdit, setIsSavingEdit] = useState(false);
-  const [editResourcePin, setEditResourcePin] = useState('');
-  const [isSavingPin, setIsSavingPin] = useState(false);
 
   const [resourceToDelete, setResourceToDelete] = useState<AppResourceType | null>(null);
-  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
   const [isDeletingResource, setIsDeletingResource] = useState(false);
   
-  const [previewResource, setPreviewResource] = useState<AppResourceType | null>(null);
-  const [resourceToUnlock, setResourceToUnlock] = useState<{ resource: AppResourceType, action: 'preview' | 'download' } | null>(null);
-  const [pinInput, setPinInput] = useState('');
-  const [isVerifyingPin, setIsVerifyingPin] = useState(false);
-  const [pinError, setPinError] = useState<string | null>(null);
-
-  // Client-side preview state
-  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
-  const [isConverting, setIsConverting] = useState(false);
-  const [conversionError, setConversionError] = useState<string | null>(null);
-
+  const [selectedResource, setSelectedResource] = useState<AppResourceType | null>(null);
 
   // --- Data Fetching and Memoization ---
   const fetchResources = useCallback(async () => {
@@ -352,10 +217,7 @@ export default function ResourcesPage() {
     if (currentFolderId) {
       params.append('parentId', currentFolderId);
     }
-    params.append('page', String(currentPage));
-    params.append('pageSize', String(PAGE_SIZE));
     if (searchTerm) params.append('search', searchTerm);
-    if (selectedCategory !== 'all') params.append('category', selectedCategory);
 
     try {
       const response = await fetch(`/api/resources?${params.toString()}`, { cache: 'no-store' });
@@ -369,174 +231,53 @@ export default function ResourcesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast, currentFolderId, currentPage, searchTerm, selectedCategory]);
+  }, [toast, currentFolderId, searchTerm]);
 
   useEffect(() => {
     fetchResources();
   }, [fetchResources]);
 
-  const { folders, files, availableFormats } = useMemo(() => {
-    let formats = new Set<string>();
-    
-    allApiResources.forEach(resource => {
-      if (resource.type !== 'FOLDER' && resource.url) {
-        formats.add(getFileFormat(resource.url));
-      }
-    });
-
-    const sortedFiles = allApiResources.filter(item => item.type !== 'FOLDER')
-      .sort((a, b) => {
-          let compareA: string | number | Date = '';
-          let compareB: string | number | Date = '';
-
-          switch (sortColumn) {
-              case 'title':
-                  compareA = a.title.toLowerCase();
-                  compareB = b.title.toLowerCase();
-                  break;
-              case 'category':
-                  compareA = a.category.toLowerCase();
-                  compareB = b.category.toLowerCase();
-                  break;
-              case 'uploadDate':
-                  compareA = new Date(a.uploadDate);
-                  compareB = new Date(b.uploadDate);
-                  break;
-          }
-
-          if (compareA < compareB) {
-              return sortDirection === 'asc' ? -1 : 1;
-          }
-          if (compareA > compareB) {
-              return sortDirection === 'asc' ? 1 : -1;
-          }
-          return 0;
-      });
-
-    return {
-      folders: allApiResources.filter(item => item.type === 'FOLDER'),
-      files: sortedFiles,
-      availableFormats: Array.from(formats).sort()
-    };
-  }, [allApiResources, sortColumn, sortDirection]);
-  
-    // Effect for handling file conversions for preview
-  useEffect(() => {
-    if (!previewResource || !previewResource.url) {
-        setPreviewHtml(null);
-        return;
-    }
-
-    const fileUrl = previewResource.url;
-    const isDocx = fileUrl.toLowerCase().endsWith('.docx');
-    const isXlsx = fileUrl.toLowerCase().endsWith('.xlsx');
-    
-    if (!isDocx && !isXlsx) {
-        setPreviewHtml(null);
-        setConversionError(null);
-        return;
-    }
-
-    const convertFile = async () => {
-        setIsConverting(true);
-        setConversionError(null);
-        setPreviewHtml(null);
-
-        try {
-            const response = await fetch(fileUrl);
-            if (!response.ok) {
-                throw new Error(`Error al descargar el archivo: ${response.statusText}`);
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            
-            if (isDocx) {
-                const result = await mammoth.convertToHtml({ arrayBuffer });
-                setPreviewHtml(result.value);
-            } else if (isXlsx) {
-                const workbook = XLSX.read(arrayBuffer, { type: 'buffer' });
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                const html = XLSX.utils.sheet_to_html(worksheet);
-                setPreviewHtml(html);
-            }
-
-        } catch (e) {
-            console.error("Conversion error:", e);
-            setConversionError(e instanceof Error ? e.message : "Error al convertir el archivo para la previsualización.");
-        } finally {
-            setIsConverting(false);
-        }
-    };
-    
-    convertFile();
-
-  }, [previewResource]);
-
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString())
-      params.set(name, value)
-      return params.toString()
-    },
-    [searchParams]
-  );
-  
-  const handlePageChange = (page: number) => {
-    router.push(`${pathname}?${createQueryString('page', String(page))}`);
-  };
-
   // --- Event Handlers ---
   const resetCreateForm = () => {
-    setNewResourceTitle('');
-    setNewResourceType('');
-    setNewResourceCategory('');
-    setNewResourceDescription('');
     setNewResourceFile(null);
-    setNewResourceUrl('');
     setUploadProgress(0);
   };
 
-  const handleCreateFile = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!newResourceTitle || !newResourceType || !newResourceCategory) {
-        toast({ title: "Error", description: "Título, tipo y categoría son obligatorios.", variant: "destructive" });
-        return;
-    }
-    if (newResourceType !== 'VIDEO' && !newResourceFile && !newResourceUrl) {
-        toast({ title: "Error", description: "Debes adjuntar un archivo o proveer una URL.", variant: "destructive" });
-        return;
-    }
-    if (newResourceType === 'VIDEO' && !newResourceUrl) {
-        toast({ title: "Error", description: "Para videos, debes proveer una URL.", variant: "destructive" });
-        return;
-    }
+  const handleCreateFile = async (formData: FormData) => {
     if (!user?.id) return;
+    const file = formData.get('file') as File;
+    const title = formData.get('title') as string;
+    const category = formData.get('category') as string;
+    const type = formData.get('type') as string;
+    
+    if (!file || !title || !category || !type) {
+        toast({ title: "Error", description: "Todos los campos son obligatorios.", variant: "destructive" });
+        return;
+    }
 
     setIsSubmittingResource(true);
-    let finalResourceUrl = newResourceUrl;
+    let finalResourceUrl = '';
 
-    if (newResourceFile) {
-        setIsUploadingFile(true);
-        setUploadProgress(0);
-        const formData = new FormData();
-        formData.append('file', newResourceFile);
-        try {
-          const result: { url: string } = await uploadWithProgress('/api/upload/resource-file', formData, setUploadProgress);
-          finalResourceUrl = result.url;
-        } catch (err) {
-          toast({ title: "Error de Subida", description: (err as Error).message, variant: "destructive" });
-          setIsUploadingFile(false);
-          setIsSubmittingResource(false);
-          return;
-        }
+    setIsUploadingFile(true);
+    setUploadProgress(0);
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', file);
+    try {
+        const result: { url: string } = await uploadWithProgress('/api/upload/resource-file', uploadFormData, setUploadProgress);
+        finalResourceUrl = result.url;
+    } catch (err) {
+        toast({ title: "Error de Subida", description: (err as Error).message, variant: "destructive" });
         setIsUploadingFile(false);
+        setIsSubmittingResource(false);
+        return;
     }
+    setIsUploadingFile(false);
     
     try {
-      const payload = { title: newResourceTitle, type: newResourceType, category: newResourceCategory, url: finalResourceUrl, uploaderId: user.id, parentId: currentFolderId, description: newResourceDescription };
+      const payload = { title, type, category, url: finalResourceUrl, uploaderId: user.id, parentId: currentFolderId };
       const response = await fetch('/api/resources', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to create resource');
-      toast({ title: "Recurso Creado", description: `El recurso "${newResourceTitle}" ha sido añadido.` });
+      toast({ title: "Recurso Creado", description: `El recurso "${title}" ha sido añadido.` });
       setShowCreateFileModal(false);
       resetCreateForm();
       fetchResources();
@@ -547,33 +288,6 @@ export default function ResourcesPage() {
     }
   };
   
-  const handleCreateFolder = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!newFolderName.trim()) return;
-    setIsSubmittingResource(true);
-    try {
-      const payload = { title: newFolderName, type: 'FOLDER', uploaderId: user?.id, parentId: currentFolderId };
-      const response = await fetch('/api/resources', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      if (!response.ok) throw new Error((await response.json()).message || 'Failed to create folder');
-      toast({ title: "Carpeta Creada", description: `La carpeta "${newFolderName}" ha sido creada.` });
-      setShowCreateFolderModal(false);
-      setNewFolderName('');
-      fetchResources();
-    } catch (err) {
-      toast({ title: "Error al crear carpeta", description: (err as Error).message, variant: "destructive" });
-    } finally {
-      setIsSubmittingResource(false);
-    }
-  };
-
-  const openDeleteConfirmationModal = (resourceId: string) => {
-    const resToDelete = allApiResources.find(res => res.id === resourceId);
-    if (resToDelete) {
-      setResourceToDelete(resToDelete);
-      setShowDeleteConfirmDialog(true);
-    }
-  };
-
   const handleDeleteResource = async () => {
     if (!resourceToDelete) return;
     setIsDeletingResource(true);
@@ -581,474 +295,129 @@ export default function ResourcesPage() {
       const response = await fetch(`/api/resources/${resourceToDelete.id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to delete resource');
       toast({ title: 'Recurso Eliminado', description: `El recurso "${resourceToDelete.title}" ha sido eliminado.` });
+      if (selectedResource?.id === resourceToDelete.id) {
+          setSelectedResource(null);
+      }
       fetchResources();
     } catch (err) {
       toast({ title: 'Error al eliminar', description: (err as Error).message, variant: 'destructive' });
     } finally {
       setIsDeletingResource(false);
-      setShowDeleteConfirmDialog(false);
       setResourceToDelete(null);
     }
   };
 
-  const handleOpenEditModal = (resource: AppResourceType) => {
-    setResourceToEdit(resource);
-    setEditResourceTitle(resource.title);
-    setEditResourceCategory(resource.category);
-    setEditResourceDescription(resource.description || '');
-    setEditResourceTags((resource.tags || []).join(', '));
-    setEditResourcePin('');
-    setShowEditModal(true);
-  };
-
-  const handleSaveResourceEdit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!resourceToEdit) return;
-
-    setIsSavingEdit(true);
-    try {
-      const tagsArray = editResourceTags.split(',').map(tag => tag.trim()).filter(Boolean);
-      const payload = { title: editResourceTitle, category: editResourceCategory, tags: tagsArray, description: editResourceDescription };
-      const response = await fetch(`/api/resources/${resourceToEdit.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      if (!response.ok) throw new Error((await response.json()).message || 'Failed to update resource');
-      toast({ title: "Recurso Actualizado", description: "Los cambios han sido guardados." });
-      setShowEditModal(false);
-      fetchResources();
-    } catch (err) {
-      toast({ title: "Error al Guardar", description: (err as Error).message, variant: "destructive" });
-    } finally {
-      setIsSavingEdit(false);
-    }
-  };
-  
-  const handleSavePin = async () => {
-    if (!resourceToEdit || !editResourcePin || editResourcePin.length < 4) {
-      toast({ title: "Error", description: "Ingresa un PIN válido (mín. 4 caracteres).", variant: "destructive"});
-      return;
-    }
-    setIsSavingPin(true);
-    try {
-      const response = await fetch(`/api/resources/${resourceToEdit.id}/pin`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin: editResourcePin }) });
-      if (!response.ok) throw new Error((await response.json()).message || "Failed to set PIN");
-      toast({ title: "PIN Guardado", description: "El recurso ahora está protegido."});
-      setShowEditModal(false);
-      fetchResources();
-    } catch (err) {
-      toast({ title: "Error al guardar PIN", description: (err as Error).message, variant: "destructive"});
-    } finally {
-      setIsSavingPin(false);
-    }
-  };
-
-  const handleRemovePin = async () => {
-     if (!resourceToEdit) return;
-    setIsSavingPin(true);
-    try {
-      const response = await fetch(`/api/resources/${resourceToEdit.id}/pin`, { method: 'DELETE' });
-      if (!response.ok) throw new Error((await response.json()).message || "Failed to remove PIN");
-      toast({ title: "PIN Eliminado", description: "El recurso ya no está protegido."});
-      setShowEditModal(false);
-      fetchResources();
-    } catch (err) {
-      toast({ title: "Error al quitar PIN", description: (err as Error).message, variant: "destructive"});
-    } finally {
-      setIsSavingPin(false);
-    }
-  };
-
-  const handleAccessResource = (resource: AppResourceType, action: 'preview' | 'download') => {
+  const handleNavigateFolder = (resource: AppResourceType) => {
     if (resource.type === 'FOLDER') {
-        const newBreadcrumbs = [...breadcrumbs, {id: resource.id, title: resource.title}];
-        setBreadcrumbs(newBreadcrumbs);
         setCurrentFolderId(resource.id);
-        return;
-    }
-    if (resource.hasPin) {
-      setResourceToUnlock({ resource, action });
-    } else {
-      if (action === 'preview') setPreviewResource(resource);
-      else if (action === 'download' && resource.url) window.open(resource.url, '_blank');
+        setBreadcrumbs(prev => [...prev, { id: resource.id, title: resource.title }]);
+        setSelectedResource(null);
     }
   };
-  
+
   const handleBreadcrumbClick = (folderId: string | null, index: number) => {
     setCurrentFolderId(folderId);
     setBreadcrumbs(prev => prev.slice(0, index + 1));
-  };
-
-
-  const handleVerifyPin = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!resourceToUnlock || !pinInput) return;
-
-    setIsVerifyingPin(true);
-    setPinError(null);
-    try {
-      const response = await fetch(`/api/resources/${resourceToUnlock.resource.id}/verify-pin`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin: pinInput }) });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Failed to verify PIN');
-      setResourceToUnlock(null);
-      setPinInput('');
-      if (resourceToUnlock.action === 'preview') setPreviewResource({ ...resourceToUnlock.resource, url: data.url });
-      else if (resourceToUnlock.action === 'download') window.open(data.url, '_blank');
-    } catch (err) {
-      setPinError(err instanceof Error ? err.message : 'Ocurrió un error.');
-      toast({ title: "Error de Verificación", description: err instanceof Error ? err.message : 'PIN incorrecto o error del servidor.', variant: "destructive" });
-    } finally {
-      setIsVerifyingPin(false);
-    }
-  };
-  
-  const handleSort = (column: 'title' | 'category' | 'uploadDate') => {
-    if (sortColumn === column) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortColumn(column);
-      setSortDirection('asc');
-    }
+    setSelectedResource(null);
   };
   
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    handlePageChange(1); // Reset to first page on new search
     fetchResources();
   };
 
-  const SortableHeader = ({ column, label }: { column: 'title' | 'category' | 'uploadDate', label: string }) => (
-    <TableHead
-      className="cursor-pointer hover:bg-muted/50"
-      onClick={() => handleSort(column)}
-    >
-      <div className="flex items-center gap-2">
-        {label}
-        {sortColumn === column && (
-          sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
-        )}
-      </div>
-    </TableHead>
-  );
-
-  
-  const resourceTypeOptions: { value: AppResourceType['type']; label: string }[] = [
-    { value: 'DOCUMENT', label: 'Documento' }, { value: 'GUIDE', label: 'Guía' }, { value: 'MANUAL', label: 'Manual' },
-    { value: 'POLICY', label: 'Política' }, { value: 'VIDEO', label: 'Video (Enlace)' }, { value: 'OTHER', label: 'Otro' },
-  ];
-
-
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-            <h1 className="text-3xl font-bold font-headline mb-2">Biblioteca de Recursos</h1>
-            <p className="text-muted-foreground">Encuentra documentos, guías, manuales y más.</p>
-        </div>
-        <div className="flex flex-row flex-wrap items-center gap-2">
-            {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-                <Dialog open={showCreateFolderModal} onOpenChange={setShowCreateFolderModal}>
-                    <DialogTrigger asChild><Button><Folder className="mr-2 h-4 w-4" /> Crear Carpeta</Button></DialogTrigger>
-                    <DialogContent className="w-[95vw] max-w-md rounded-lg">
-                        <DialogHeader><DialogTitle>Crear Nueva Carpeta</DialogTitle><DialogDescription>Ingresa un nombre para la nueva carpeta en la ubicación actual.</DialogDescription></DialogHeader>
-                        <form onSubmit={handleCreateFolder} className="space-y-4">
-                            <div><Label htmlFor="folder-name" className="sr-only">Nombre de la carpeta</Label><Input id="folder-name" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} placeholder="Nombre de la carpeta" required disabled={isSubmittingResource} /></div>
-                            <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2"><Button type="button" variant="outline" onClick={() => setShowCreateFolderModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Crear</Button></DialogFooter>
-                        </form>
-                    </DialogContent>
-                </Dialog>
-            )}
-            {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-              <Dialog open={showCreateFileModal} onOpenChange={(isOpen) => { if (!isOpen) resetCreateForm(); setShowCreateFileModal(isOpen); }}>
-                <DialogTrigger asChild>
-                  <button className="flex items-center gap-3 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-bold uppercase text-xs cursor-pointer select-none shadow-md hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 active:opacity-85 active:shadow-none">
-                    <svg aria-hidden="true" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
-                      <path strokeWidth={2} stroke="currentColor" d="M13.5 3H12H8C6.34315 3 5 4.34315 5 6V18C5 19.6569 6.34315 21 8 21H11M13.5 3L19 8.625M13.5 3V7.625C13.5 8.17728 13.9477 8.625 14.5 8.625H19M19 8.625V11.8125" strokeLinejoin="round" strokeLinecap="round" />
-                      <path strokeLinejoin="round" strokeLinecap="round" strokeWidth="2" stroke="currentColor" d="M17 15V18M17 21V18M17 18H14M17 18H20" />
-                    </svg>
-                    Subir Recurso
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
-                  <DialogHeader><DialogTitle>Subir Nuevo Recurso</DialogTitle><DialogDescription>Completa los detalles para añadir un nuevo recurso a la biblioteca.</DialogDescription></DialogHeader>
-                  <form onSubmit={handleCreateFile} className="grid gap-4 py-4">
-                     <div className="space-y-1"><Label htmlFor="resource-title">Título <span className="text-destructive">*</span></Label><Input id="resource-title" value={newResourceTitle} onChange={(e) => setNewResourceTitle(e.target.value)} required disabled={isSubmittingResource} /></div>
-                     <div className="space-y-1"><Label htmlFor="resource-description">Descripción (Opcional)</Label><Textarea id="resource-description" value={newResourceDescription} onChange={(e) => setNewResourceDescription(e.target.value)} disabled={isSubmittingResource} rows={3} /></div>
-                     <div className="space-y-1"><Label htmlFor="resource-type">Tipo <span className="text-destructive">*</span></Label><Select name="resource-type" value={newResourceType} onValueChange={(v) => setNewResourceType(v as AppResourceType['type'])} required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent>{resourceTypeOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></div>
-                     <div className="space-y-1"><Label htmlFor="resource-category">Categoría <span className="text-destructive">*</span></Label><Select name="resource-category" value={newResourceCategory} onValueChange={setNewResourceCategory} required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-                     <Separator />
-                     {newResourceType === 'VIDEO' ? (
-                        <div className="space-y-1">
-                          <Label htmlFor="resource-url">Pegar URL de Video (ej. YouTube)</Label>
-                          <Input id="resource-url" type="url" placeholder="https://..." value={newResourceUrl} onChange={e => setNewResourceUrl(e.target.value)} required disabled={isSubmittingResource} />
-                        </div>
-                     ) : (
-                        <>
-                          <div className="space-y-1">
-                            <UploadArea 
-                              onFileSelect={(file) => setNewResourceFile(file)} 
-                              disabled={isSubmittingResource || !!newResourceUrl}
-                            />
-                            {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
-                            {newResourceFile && <p className="text-xs text-center text-muted-foreground mt-1">Archivo seleccionado: {newResourceFile.name}</p>}
-                          </div>
-                          <div className="text-center text-xs text-muted-foreground">O</div>
-                          <div className="space-y-1">
-                            <Label htmlFor="resource-url-alt">Pegar URL de recurso externo</Label>
-                            <Input id="resource-url-alt" type="url" placeholder="https://..." value={newResourceUrl} onChange={e => setNewResourceUrl(e.target.value)} disabled={isSubmittingResource || !!newResourceFile} />
-                          </div>
-                        </>
-                     )}
-                     <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4"><Button type="button" variant="outline" onClick={() => setShowCreateFileModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Guardar</Button></DialogFooter>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            )}
-        </div>
-      </div>
+    <div className="flex h-[calc(100vh-8rem)]">
+        {/* Left Sidebar */}
+        <aside className="w-64 flex-shrink-0 border-r p-4 hidden md:flex flex-col">
+            <h2 className="text-lg font-semibold font-headline mb-4">Workspace</h2>
+            <nav className="flex flex-col gap-1">
+                <Button variant={!currentFolderId ? 'secondary' : 'ghost'} className="justify-start gap-2" onClick={() => handleBreadcrumbClick(null, -1)}>
+                    <Home className="h-4 w-4"/> Toda la Biblioteca
+                </Button>
+                {settings?.resourceCategories.map(cat => (
+                    <Button key={cat} variant="ghost" className="justify-start gap-2 text-muted-foreground hover:text-foreground">
+                        <Folder className="h-4 w-4"/> {cat}
+                    </Button>
+                ))}
+            </nav>
+        </aside>
 
-       <Card className="p-4 space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center text-sm text-muted-foreground overflow-x-auto whitespace-nowrap pb-2 md:pb-0">
-            <button onClick={() => { setCurrentFolderId(null); setBreadcrumbs([]); }} className="hover:text-primary flex items-center gap-1 shrink-0"><Home className="h-4 w-4 text-primary"/> Biblioteca</button>
-            {breadcrumbs.map((crumb, index) => (
-              <React.Fragment key={crumb.id || 'root'}>
-                <ChevronRight className="h-4 w-4 mx-1 shrink-0" />
-                <button onClick={() => handleBreadcrumbClick(crumb.id, index)} className="hover:text-primary shrink-0 truncate">{crumb.title}</button>
-              </React.Fragment>
-            ))}
-          </div>
-
-          <form onSubmit={handleSearchSubmit} className="flex items-center gap-4 w-full md:w-auto shrink-0">
-            <div className="relative w-full md:flex-1 md:max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input type="search" placeholder="Buscar en esta carpeta..." className="pl-10 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
+        {/* Main Content */}
+        <main className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
+            <div className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                 <form onSubmit={handleSearchSubmit} className="relative w-full sm:max-w-md">
+                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                     <Input type="search" placeholder="Buscar en la biblioteca..." className="pl-10 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
+                 </form>
+                 {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
+                    <Button onClick={() => setShowCreateFileModal(true)} className="w-full sm:w-auto">
+                        <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
+                    </Button>
+                 )}
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('list')} aria-label="Vista de lista"><List className="h-5 w-5"/></Button>
-              <Button variant={view === 'grid' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('grid')} aria-label="Vista de cuadrícula"><LayoutGrid className="h-5 w-5"/></Button>
+
+            <div className="flex items-center text-sm text-muted-foreground mb-4">
+                <button onClick={() => handleBreadcrumbClick(null, -1)} className="hover:text-primary flex items-center gap-1 shrink-0"><Home className="h-4 w-4"/> Biblioteca</button>
+                {breadcrumbs.map((crumb, index) => (
+                <React.Fragment key={crumb.id || 'root'}>
+                    <ChevronRight className="h-4 w-4 mx-1 shrink-0" />
+                    <button onClick={() => handleBreadcrumbClick(crumb.id, index)} className="hover:text-primary shrink-0 truncate">{crumb.title}</button>
+                </React.Fragment>
+                ))}
             </div>
-          </form>
-        </div>
-
-        {!currentFolderId && (
-          <>
-            <Separator />
-            <div className="flex flex-col sm:flex-row sm:items-center gap-x-6 gap-y-4">
-              <div className="flex items-center gap-2">
-                <Label htmlFor="category-filter" className="text-sm shrink-0">Categoría:</Label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger id="category-filter" className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Categoría" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    {(settings?.resourceCategories || []).sort().map(category => (
-                      <SelectItem key={category} value={category}>{category}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="format-filter" className="text-sm shrink-0">Formato:</Label>
-                <Select value={selectedFormat} onValueChange={setSelectedFormat}>
-                  <SelectTrigger id="format-filter" className="w-full sm:w-[140px]">
-                    <SelectValue placeholder="Formato" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    {availableFormats.map(format => (
-                       <SelectItem key={format} value={format}>{format}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </>
-        )}
-      </Card>
-      
-      {isLoading ? (
-        <div className="flex justify-center items-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2">Cargando recursos...</p></div>
-      ) : error ? (
-        <div className="flex flex-col items-center justify-center py-12 text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p><Button onClick={() => fetchResources()} variant="outline" className="mt-4">Reintentar</Button></div>
-      ) : (allApiResources.length === 0) ? (
-        <div className="text-center py-12"><ArchiveX className="mx-auto h-12 w-12 text-primary"/><h3 className="text-xl font-semibold">{searchTerm ? 'No hay coincidencias' : 'Carpeta Vacía'}</h3><p className="text-muted-foreground">{searchTerm ? 'Prueba con otro término de búsqueda.' : 'Sube un archivo o crea una carpeta para empezar.'}</p></div>
-      ) : (
-        <div className="space-y-6">
-            {folders.length > 0 && (
-                <div>
-                    <h3 className="text-lg font-medium text-muted-foreground mb-3">Carpetas</h3>
-                    {view === 'grid' ? (
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                           {folders.map(item => <ResourceGridItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => {}} onEdit={handleOpenEditModal} />)}
-                        </div>
-                    ) : (
-                        <Card><Table><TableBody>{folders.map(item => <ResourceListItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => {}} onEdit={handleOpenEditModal} />)}</TableBody></Table></Card>
-                    )}
-                </div>
-            )}
-             {files.length > 0 && (
-                <div>
-                    <h3 className="text-lg font-medium text-muted-foreground mb-3">Archivos</h3>
-                    {view === 'grid' ? (
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                           {files.map(item => <ResourceGridItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => handleAccessResource(item, 'download')} onEdit={handleOpenEditModal} />)}
-                        </div>
-                    ) : (
-                        <Card>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <SortableHeader column="title" label="Nombre" />
-                                        <TableHead className="hidden md:table-cell">Subido por</TableHead>
-                                        <SortableHeader column="category" label="Categoría" />
-                                        <TableHead className="hidden lg:table-cell">Formato</TableHead>
-                                        <SortableHeader column="uploadDate" label="Fecha" />
-                                        <TableHead className="text-right">Acciones</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {files.map(item => <ResourceListItem key={item.id} resource={item} onDelete={openDeleteConfirmationModal} onPreview={() => handleAccessResource(item, 'preview')} onDownload={() => handleAccessResource(item, 'download')} onEdit={handleOpenEditModal} />)}
-                                </TableBody>
-                            </Table>
-                        </Card>
-                    )}
-                </div>
-            )}
-             {totalPages > 1 && (
-                <Pagination>
-                    <PaginationContent>
-                        <PaginationItem>
-                        <PaginationPrevious
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
-                            className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
-                        />
-                        </PaginationItem>
-                        {[...Array(totalPages)].map((_, i) => (
-                            <PaginationItem key={i}>
-                            <PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>
-                                {i + 1}
-                            </PaginationLink>
-                            </PaginationItem>
-                        ))}
-                        <PaginationItem>
-                        <PaginationNext
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
-                            className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}
-                        />
-                        </PaginationItem>
-                    </PaginationContent>
-                </Pagination>
-             )}
-        </div>
-      )}
-
-      <Dialog open={showEditModal} onOpenChange={(isOpen) => { if (!isOpen) setResourceToEdit(null); setShowEditModal(isOpen); }}>
-        <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Editar {resourceToEdit?.type === 'FOLDER' ? 'Carpeta' : 'Recurso'}</DialogTitle>
-            <DialogDescription>Modifica los detalles. El archivo adjunto no se puede cambiar.</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSaveResourceEdit} className="grid gap-4 py-4">
-            <div className="space-y-1"><Label htmlFor="edit-resource-title">Título</Label><Input id="edit-resource-title" value={editResourceTitle} onChange={(e) => setEditResourceTitle(e.target.value)} required disabled={isSavingEdit || isSavingPin} /></div>
-            {resourceToEdit?.type !== 'FOLDER' && (<>
-              <div className="space-y-1"><Label htmlFor="edit-resource-description">Descripción (Opcional)</Label><Textarea id="edit-resource-description" value={editResourceDescription} onChange={(e) => setEditResourceDescription(e.target.value)} disabled={isSavingEdit || isSavingPin} rows={3}/></div>
-              <div className="space-y-1"><Label htmlFor="edit-resource-category">Categoría</Label><Select name="edit-resource-category" value={editResourceCategory} onValueChange={setEditResourceCategory} required disabled={isSavingEdit || isSavingPin}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-              <div className="space-y-1"><Label htmlFor="edit-resource-tags">Etiquetas</Label><Input id="edit-resource-tags" value={editResourceTags} onChange={(e) => setEditResourceTags(e.target.value)} disabled={isSavingEdit || isSavingPin} /></div>
-            </>)}
-            <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><Button type="button" variant="outline" onClick={() => setShowEditModal(false)} disabled={isSavingEdit || isSavingPin}>Cancelar</Button><Button type="submit" disabled={isSavingEdit || isSavingPin}>{isSavingEdit ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Guardar</Button></DialogFooter>
-          </form>
-          {user?.role === 'ADMINISTRATOR' && resourceToEdit?.type !== 'FOLDER' && (<><Separator /><div className="space-y-3 pt-4"><h4 className="font-medium flex items-center gap-2"><Lock className="h-4 w-4 text-amber-500" />PIN de Seguridad</h4><p className="text-sm text-muted-foreground">Protege este recurso con un PIN.</p><div className="flex items-center gap-2"><Input id="edit-resource-pin" type="password" placeholder="Ingresa un PIN (mín. 4 caracteres)" value={editResourcePin} onChange={(e) => setEditResourcePin(e.target.value.replace(/\D/g, ''))} maxLength={16} disabled={isSavingPin || isSavingEdit} /><Button onClick={handleSavePin} disabled={isSavingPin || isSavingEdit || !editResourcePin}>{isSavingPin && !resourceToEdit?.hasPin ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pin className="h-4 w-4" />}</Button></div>{resourceToEdit?.hasPin && (<Button variant="destructive" className="w-full" onClick={handleRemovePin} disabled={isSavingPin || isSavingEdit}>{isSavingPin ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PinOff className="mr-2 h-4 w-4" />}Quitar PIN</Button>)}</div></>)}
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={showDeleteConfirmDialog} onOpenChange={setShowDeleteConfirmDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>¿Estás seguro?</AlertDialogTitle><AlertDialogDescription>El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. {resourceToDelete?.type === 'FOLDER' && 'Todos los archivos y subcarpetas dentro de esta carpeta también serán eliminados.'}</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel onClick={() => setResourceToDelete(null)} disabled={isDeletingResource}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction asChild disabled={isDeletingResource}>
-                <button onClick={handleDeleteResource} className="bin-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 39 7" className="bin-top"><line strokeWidth={4} stroke="white" y2={5} x2={39} y1={5} /><line strokeWidth={3} stroke="white" y2="1.5" x2="26.0357" y1="1.5" x1={12} /></svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 33 39" className="bin-bottom"><mask fill="white" id="path-1-inside-1_8_19"><path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z" /></mask><path mask="url(#path-1-inside-1_8_19)" fill="white" d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z" /><path strokeWidth={4} stroke="white" d="M12 6L12 29" /><path strokeWidth={4} stroke="white" d="M21 6V29" /></svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 89 80" className="garbage"><path fill="white" d="M20.5 10.5L37.5 15.5L42.5 11.5L51.5 12.5L68.75 0L72 11.5L79.5 12.5H88.5L87 22L68.75 31.5L75.5066 25L86 26L87 35.5L77.5 48L70.5 49.5L80 50L77.5 71.5L63.5 58.5L53.5 68.5L65.5 70.5L45.5 73L35.5 79.5L28 67L16 63L12 51.5L0 48L16 25L22.5 17L20.5 10.5Z" /></svg>
-                </button>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Dialog open={!!previewResource} onOpenChange={(isOpen) => { if (!isOpen) setPreviewResource(null); }}>
-        <DialogContent className="w-[95vw] max-w-4xl rounded-lg h-auto max-h-[90vh] flex flex-col p-4 sm:p-6">
-          <DialogHeader className="pr-10"><DialogTitle className="truncate">{previewResource?.title}</DialogTitle><DialogDescription>Categoría: {previewResource?.category}</DialogDescription></DialogHeader>
-          <ScrollArea className="flex-grow rounded-lg bg-muted/20 p-2">
-            {(() => {
-                if (!previewResource || !previewResource.url) {
-                    return <div className="text-center py-8"><p className="text-muted-foreground">No hay previsualización disponible.</p></div>;
-                }
-
-                if (isConverting) {
-                    return <div className="flex flex-col items-center justify-center h-full gap-2"><Loader2 className="h-8 w-8 animate-spin" /><p>Convirtiendo para previsualización...</p></div>;
-                }
-
-                if (conversionError) {
-                    return <div className="flex flex-col items-center justify-center h-full gap-2 text-destructive"><AlertTriangle className="h-8 w-8" /><p>Error en la previsualización</p><p className="text-xs">{conversionError}</p></div>;
-                }
-
-                const url = previewResource.url;
-                const youtubeId = getYoutubeVideoId(url);
-                const isImage = !youtubeId && url.toLowerCase().match(/\.(jpeg|jpg|gif|png|webp|svg)$/);
-                const isVideoFile = !youtubeId && url.toLowerCase().match(/\.(mp4|webm|ogv)$/);
-                const isPdf = url.toLowerCase().endsWith('.pdf');
-                const isOfficeDoc = url.toLowerCase().endsWith('.docx') || url.toLowerCase().endsWith('.xlsx');
-                const isExternalLink = !isImage && !isVideoFile && !isPdf && !isOfficeDoc && !youtubeId;
-
-
-                if (isOfficeDoc && previewHtml) {
-                    return <div className="prose dark:prose-invert max-w-none p-4 bg-background rounded-md" dangerouslySetInnerHTML={{ __html: previewHtml }} />;
-                }
-                if (youtubeId) return <iframe className="w-full aspect-video rounded-md" src={`https://www.youtube.com/embed/${youtubeId}`} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>;
-                if (isImage) return <div className="flex justify-center items-center h-full"><Image src={url} alt={previewResource.title} width={800} height={600} className="object-contain max-h-[70vh] rounded-md" data-ai-hint="resource preview" /></div>;
-                if (isVideoFile) return <video controls src={url} className="w-full rounded-md max-h-[70vh]">Tu navegador no soporta el tag de video.</video>;
-                if (isPdf) return <iframe src={url} className="w-full h-[75vh] border-none rounded-md" title={previewResource.title}></iframe>;
-                if (isExternalLink) {
-                    return (
-                        <div className="text-center py-8 flex flex-col items-center justify-center gap-4 h-full">
-                            <ExternalLink className="h-16 w-16 text-primary" />
-                            <h3 className="text-lg font-semibold">Enlace a Sitio Web Externo</h3>
-                            <p className="text-muted-foreground max-w-sm">Este recurso es un enlace a otra página web. Por seguridad, no se puede mostrar aquí.</p>
-                            <Button asChild>
-                                <a href={url} target="_blank" rel="noopener noreferrer">
-                                    <ExternalLink className="mr-2 h-4 w-4" /> Abrir en Nueva Pestaña
-                                </a>
-                            </Button>
-                        </div>
-                    );
-                }
-
-                return (
-                    <div className="text-center py-8 flex flex-col items-center justify-center gap-4 h-full">
-                        {getPreviewIconForType(previewResource.type)}
-                        <h3 className="text-lg font-semibold">Previsualización no disponible</h3>
-                        <p className="text-muted-foreground max-w-sm">Este tipo de archivo se debe descargar para poder visualizarlo.</p>
-                        <a href={previewResource.url || '#'} target="_blank" rel="noopener noreferrer" download>
-                           <DownloadButton text="Descargar para ver" />
-                        </a>
+            
+            <div className="flex-grow overflow-auto -mx-4 px-4 thin-scrollbar">
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                ) : error ? (
+                    <div className="flex flex-col items-center justify-center h-full text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p></div>
+                ) : allApiResources.length === 0 ? (
+                    <div className="text-center py-12"><ArchiveX className="mx-auto h-12 w-12 text-primary"/><h3 className="text-xl font-semibold">{searchTerm ? 'No hay coincidencias' : 'Carpeta Vacía'}</h3><p className="text-muted-foreground">{searchTerm ? 'Prueba con otro término.' : 'Sube un archivo para empezar.'}</p></div>
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+                        {allApiResources.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={() => {}} onDelete={handleDeleteResource} onNavigate={handleNavigateFolder} isSelected={selectedResource?.id === item.id}/>)}
                     </div>
-                );
-            })()}
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
-      
-      <Dialog open={!!resourceToUnlock} onOpenChange={(isOpen) => { if(!isOpen) { setResourceToUnlock(null); setPinInput(''); setPinError(null); } }}>
-        <DialogContent className="w-[95vw] max-w-md rounded-lg">
-            <DialogHeader>
-                <DialogTitle className="flex items-center gap-2"><Lock className="h-5 w-5 text-amber-500" />Se requiere PIN de acceso</DialogTitle>
-                <DialogDescription>Ingresa el PIN para acceder a "<strong>{resourceToUnlock?.resource.title}</strong>".</DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleVerifyPin}><div className="space-y-2 py-4"><Label htmlFor="pin-input" className="sr-only">PIN</Label><Input id="pin-input" type="password" placeholder="Ingresa el PIN" value={pinInput} onChange={e => { setPinInput(e.target.value.replace(/\D/g, '')); setPinError(null); }} autoFocus />{pinError && <p className="text-sm text-destructive">{pinError}</p>}</div><DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2"><Button type="button" variant="outline" onClick={() => setResourceToUnlock(null)}>Cancelar</Button><Button type="submit" disabled={isVerifyingPin || pinInput.length < 4}>{isVerifyingPin && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Verificar</Button></DialogFooter></form>
-        </DialogContent>
-      </Dialog>
+                )}
+            </div>
+        </main>
+
+        {/* Right Details Sidebar */}
+        <aside className={cn("w-80 flex-shrink-0 border-l transition-all duration-300 ease-in-out", selectedResource ? "translate-x-0" : "translate-x-full absolute right-0")}>
+           <ResourceDetailsSidebar
+                resource={selectedResource}
+                onClose={() => setSelectedResource(null)}
+                onDelete={(id) => { setResourceToDelete(allApiResources.find(r => r.id === id) || null); }}
+                onEdit={() => {}}
+           />
+        </aside>
+        
+        {/* Modals and Dialogs */}
+        <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => !open && setResourceToDelete(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader><AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle><AlertDialogDescription>El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. {resourceToDelete?.type === 'FOLDER' && 'Todos los archivos dentro también serán eliminados.'}</AlertDialogDescription></AlertDialogHeader>
+              <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteResource} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction></AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+        
+         <Dialog open={showCreateFileModal} onOpenChange={(isOpen) => { if (!isOpen) resetCreateForm(); setShowCreateFileModal(isOpen); }}>
+            <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
+                <DialogHeader><DialogTitle>Subir Nuevo Recurso</DialogTitle><DialogDescription>Completa los detalles para añadir un nuevo recurso a la biblioteca.</DialogDescription></DialogHeader>
+                <form onSubmit={(e) => { e.preventDefault(); handleCreateFile(new FormData(e.currentTarget)); }} className="grid gap-4 py-4">
+                    <div className="space-y-1"><Label htmlFor="title">Título <span className="text-destructive">*</span></Label><Input id="title" name="title" required disabled={isSubmittingResource} /></div>
+                    <div className="space-y-1"><Label htmlFor="type">Tipo <span className="text-destructive">*</span></Label><Select name="type" required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent><SelectItem value="DOCUMENT">Documento</SelectItem><SelectItem value="GUIDE">Guía</SelectItem></SelectContent></Select></div>
+                    <div className="space-y-1"><Label htmlFor="category">Categoría <span className="text-destructive">*</span></Label><Select name="category" required disabled={isSubmittingResource}><SelectTrigger><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                    <Separator />
+                    <div className="space-y-1">
+                        <UploadArea onFileSelect={(file) => setNewResourceFile(file)} disabled={isSubmittingResource} />
+                        <Input type="file" name="file" className="hidden" ref={(node) => { if (node && newResourceFile) { const dataTransfer = new DataTransfer(); dataTransfer.items.add(newResourceFile); node.files = dataTransfer.files; } }} />
+                        {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
+                        {newResourceFile && <p className="text-xs text-center text-muted-foreground mt-1">Archivo seleccionado: {newResourceFile.name}</p>}
+                    </div>
+                    <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4"><Button type="button" variant="outline" onClick={() => setShowCreateFileModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Guardar</Button></DialogFooter>
+                </form>
+            </DialogContent>
+         </Dialog>
     </div>
   );
 }
