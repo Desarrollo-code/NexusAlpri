@@ -15,8 +15,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 10% 10%;
     
-    --primary: 221 83% 53%; /* Vibrant Blue */
-    --primary-foreground: 210 20% 98%;
+    --primary: 45 100% 50%; /* Gold */
+    --primary-foreground: 240 6% 10%;
     
     --secondary: 220 10% 96%;
     --secondary-foreground: 240 5% 10%;
@@ -24,7 +24,7 @@
     --muted: 220 10% 96%;
     --muted-foreground: 240 4% 45%;
     
-    --accent: 330 85% 55%; /* Neon Pink */
+    --accent: 330 100% 50%; /* Neon Pink */
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84.2% 60.2%;
@@ -32,74 +32,74 @@
     
     --border: 220 10% 90%;
     --input: 220 10% 94%;
-    --ring: 221 83% 53%;
+    --ring: 45 100% 50%; /* Gold */
     --radius: 0.75rem;
 
-    --chart-1: 173 80% 40%; /* Teal */
-    --chart-2: 43 96% 56%; /* Bright Gold */
-    --chart-3: 198 93% 60%; /* Sky Blue */
-    --chart-4: 25 95% 53%; /* Bright Orange */
-    --chart-5: 270 91% 65%; /* Bright Purple */
+    --chart-1: 150 100% 50%; /* Neon Green */
+    --chart-2: 200 100% 50%; /* Neon Cyan */
+    --chart-3: 280 100% 60%; /* Neon Purple */
+    --chart-4: 30 100% 50%;  /* Neon Orange */
+    --chart-5: 330 100% 50%; /* Neon Pink */
 
-    --event-blue: 221 83% 53%;
-    --event-green: 145 65% 42%;
-    --event-red: 0 78% 60%;
-    --event-orange: 30 85% 55%;
+    --event-blue: 220 100% 55%;
+    --event-green: 150 100% 50%;
+    --event-red: 0 100% 55%;
+    --event-orange: 30 100% 50%;
     
-    --sidebar-background: 240 5% 18%; /* Dark Graphite */
+    --sidebar-background: 240 5% 18%;
     --sidebar-foreground: 210 20% 85%;
-    --sidebar-accent: 221 83% 53%; 
-    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-accent: 45 100% 50%; /* Gold */
+    --sidebar-accent-foreground: 240 6% 10%;
     --sidebar-border: 240 5% 25%;
-    --sidebar-ring: 221 83% 60%;
+    --sidebar-ring: 45 100% 55%; /* Gold */
   }
 
   .dark {
-    --background: 240 6% 10%;
-    --foreground: 210 20% 94%;
+    --background: 240 5% 10%; /* Graphite */
+    --foreground: 210 20% 96%;
     
-    --card: 240 5% 15%;
-    --card-foreground: 210 20% 94%;
+    --card: 240 5% 12%; /* Darker Graphite for cards */
+    --card-foreground: 210 20% 96%;
     
-    --popover: 240 5% 12%;
-    --popover-foreground: 210 20% 94%;
+    --popover: 240 5% 10%;
+    --popover-foreground: 210 20% 96%;
     
-    --primary: 221 83% 60%; /* Lighter Vibrant Blue */
-    --primary-foreground: 210 20% 98%;
+    --primary: 45 100% 50%; /* Gold */
+    --primary-foreground: 240 6% 10%;
     
     --secondary: 240 5% 25%;
-    --secondary-foreground: 210 20% 94%;
+    --secondary-foreground: 210 20% 96%;
     
     --muted: 240 5% 25%;
     --muted-foreground: 210 10% 65%;
     
-    --accent: 330 90% 65%; /* Lighter Neon Pink */
+    --accent: 330 100% 55%; /* Neon Pink */
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 240 5% 28%;
-    --input: 240 5% 24%;
-    --ring: 221 83% 60%;
+    --border: 240 5% 22%;
+    --input: 240 5% 20%;
+    --ring: 45 100% 50%; /* Gold */
 
-    --sidebar-background: 240 6% 12%;
+    --sidebar-background: 240 5% 10%; /* Graphite */
     --sidebar-foreground: 210 20% 85%;
-    --sidebar-accent: 221 83% 60%;
-    --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 240 5% 20%;
-    --sidebar-ring: 221 83% 65%;
+    --sidebar-accent: 45 100% 50%; /* Gold */
+    --sidebar-accent-foreground: 240 6% 10%;
+    --sidebar-border: 240 5% 15%;
+    --sidebar-ring: 45 100% 55%; /* Gold */
 
-    --chart-1: 173 75% 45%;
-    --chart-2: 43 90% 60%;
-    --chart-3: 198 85% 65%;
-    --chart-4: 25 90% 58%;
-    --chart-5: 270 85% 70%;
+    --chart-1: 150 100% 50%; /* Neon Green */
+    --chart-2: 200 100% 50%; /* Neon Cyan */
+    --chart-3: 280 100% 60%; /* Neon Purple */
+    --chart-4: 30 100% 50%;  /* Neon Orange */
+    --chart-5: 330 100% 50%; /* Neon Pink */
 
-    --event-blue: 221 83% 60%;
-    --event-green: 145 60% 50%;
-    --event-red: 0 75% 65%;
-    --event-orange: 30 80% 60%;
+    --event-blue: 220 100% 55%;
+    --event-green: 150 100% 50%;
+    --event-red: 0 100% 55%;
+    --event-orange: 30 100% 50%;
   }
 
   * {
@@ -153,6 +153,11 @@
     background: hsl(var(--primary));
   }
   
+  @keyframes rotateBorder {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
   .card-border-animated {
     position: relative;
     overflow: hidden;
@@ -168,13 +173,16 @@
     height: 200%;
     background: conic-gradient(
       from 0deg,
+      hsl(var(--destructive)),
       hsl(var(--destructive) / 0.5),
-      hsl(var(--destructive) / 0),
-      hsl(var(--destructive) / 0),
-      hsl(var(--destructive) / 0.5)
+      hsl(var(--destructive))
     );
     animation: rotateBorder 10s linear infinite;
     z-index: -2;
+  }
+  
+  .card-border-animated:hover::before {
+      animation-duration: 5s;
   }
 
   .card-border-animated::after {
@@ -187,14 +195,5 @@
     background: hsl(var(--card));
     border-radius: calc(var(--radius) - 1px);
     z-index: -1;
-  }
-  
-  .card-border-animated:hover::before {
-    animation-duration: 5s;
-  }
-
-  @keyframes rotateBorder {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
   }
 }
