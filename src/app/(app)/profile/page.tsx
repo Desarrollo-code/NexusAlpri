@@ -283,7 +283,7 @@ export default function ProfilePage() {
   }
   
   const MobileProfileView = () => (
-     <div className="w-full max-w-md">
+     <div className="w-full">
         <div className="profile-card">
             <ProfileCardBackground />
             <div className="card__avatar">

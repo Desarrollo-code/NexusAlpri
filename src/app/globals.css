@@ -173,7 +173,8 @@
     --bg-color: hsl(var(--card));
     font-family: var(--font-body);
     position: relative;
-    width: 300px;
+    width: 100%;
+    max-width: 320px;
     height: 384px;
     display: flex;
     flex-direction: column;
@@ -317,8 +318,13 @@
   to { transform: scale(1); }
 }
 @keyframes bounce {
-  50% { transform: rotate(5deg) translate(20px, -50px); }
-  to { transform: scale(0.9) rotate(10deg) translate(50px, -80px); opacity: 0; }
+  50% {
+    transform: rotate(5deg) translate(20px, -50px);
+  }
+  to {
+    transform: scale(0.9) rotate(10deg) translate(50px, -80px);
+    opacity: 0;
+  }
 }
 
 @keyframes throw {
