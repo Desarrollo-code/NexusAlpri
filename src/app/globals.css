@@ -6,10 +6,10 @@
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
+    --background: 240 4% 12%; /* Dark Graphite */
     --foreground: 210 40% 98%;
     
-    --card: 240 4% 12%;
+    --card: 240 4% 8%; 
     --card-foreground: 210 40% 98%;
     
     --popover: 240 5% 10%;
@@ -54,7 +54,7 @@
   }
 
   .dark {
-    --background: 0 0% 0%; /* Black */
+    --background: 0 0% 0%; /* Pure Black */
     --foreground: 210 40% 98%;
     
     --card: 240 4% 8%; /* Darker Graphite */
@@ -205,4 +205,49 @@
     }
   }
 
+  /* Chat Input Styles */
+  .styled-input-container {
+      @apply relative flex bg-gradient-to-br from-secondary to-muted p-px rounded-2xl overflow-hidden;
+  }
+  .styled-input-container::after {
+      @apply absolute content-[''] top-[-10px] left-[-10px] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.3),rgba(255,255,255,0.1),transparent_40%)] w-20 h-20 blur-sm;
+  }
+  .styled-input-chat {
+      @apply flex flex-col bg-black/50 rounded-2xl w-full overflow-hidden;
+  }
+  .styled-input-textarea {
+      @apply bg-transparent rounded-2xl border-none w-full h-24 text-foreground font-sans text-sm p-3 resize-none outline-none;
+  }
+  .styled-input-textarea::placeholder {
+      @apply text-muted-foreground transition-colors duration-300;
+  }
+  .styled-input-textarea:focus::placeholder {
+      @apply text-card;
+  }
+  .styled-input-options {
+      @apply flex justify-between items-end p-2.5;
+  }
+  .styled-input-btns-add {
+      @apply flex gap-2;
+  }
+  .styled-input-btns-add button {
+      @apply flex text-white/20 bg-transparent border-none cursor-pointer transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:text-white;
+  }
+  .styled-input-btn-submit {
+      @apply flex p-0.5 bg-gradient-to-t from-secondary to-muted rounded-xl shadow-[inset_0_6px_2px_-4px_rgba(255,255,255,0.5)] cursor-pointer border-none outline-none transition-transform duration-150 active:scale-95;
+  }
+  .styled-input-btn-submit i {
+      @apply w-8 h-8 p-1.5 bg-black/10 rounded-xl backdrop-blur-sm text-muted-foreground;
+  }
+  .styled-input-btn-submit svg {
+      @apply transition-all duration-300;
+  }
+  .styled-input-btn-submit:hover svg, .styled-input-btn-submit:focus svg {
+      @apply text-foreground drop-shadow-[0_0_5px_hsl(var(--primary))];
+  }
+  .styled-input-btn-submit:focus svg {
+      @apply scale-125 rotate-45 -translate-x-0.5 translate-y-px;
+  }
+
 }
+

@@ -287,18 +287,37 @@ export default function AnnouncementsPage() {
                       disabled={isProcessing}
                     />
                   </div>
+                  
                   <div className="space-y-1">
-                    <Label htmlFor="content">Contenido <span className="text-destructive">*</span></Label>
-                    <Textarea 
-                      id="content" 
-                      value={formContent}
-                      onChange={(e) => setFormContent(e.target.value)}
-                      placeholder="Escribe aquí el contenido del anuncio..." 
-                      className="col-span-3 min-h-[100px]" 
-                      required
-                      disabled={isProcessing}
-                    />
+                     <Label htmlFor="content">Contenido <span className="text-destructive">*</span></Label>
+                      <div className="styled-input-container">
+                        <div className="styled-input-chat">
+                          <div className="relative flex">
+                              <textarea 
+                                id="content" 
+                                name="content" 
+                                value={formContent}
+                                onChange={(e) => setFormContent(e.target.value)}
+                                placeholder="Imagina algo...✦˚"
+                                className="styled-input-textarea"
+                                required
+                                disabled={isProcessing}
+                              />
+                          </div>
+                           <div className="styled-input-options">
+                                <div className="styled-input-btns-add">
+                                  {/* Decorative buttons */}
+                                  <button type="button"><svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8v8a5 5 0 1 0 10 0V6.5a3.5 3.5 0 1 0-7 0V15a2 2 0 0 0 4 0V8" /></svg></button>
+                                  <button type="button"><svg viewBox="0 0 24 24" height={20} width={20} xmlns="http://www.w3.org/2000/svg"><path d="M4 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zm0 10a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zm10 0a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1zm0-8h6m-3-3v6" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" stroke="currentColor" fill="none" /></svg></button>
+                                </div>
+                                <button type="submit" className="styled-input-btn-submit" disabled={isProcessing}>
+                                    <i><svg viewBox="0 0 512 512"><path fill="currentColor" d="M473 39.05a24 24 0 0 0-25.5-5.46L47.47 185h-.08a24 24 0 0 0 1 45.16l.41.13l137.3 58.63a16 16 0 0 0 15.54-3.59L422 80a7.07 7.07 0 0 1 10 10L226.66 310.26a16 16 0 0 0-3.59 15.54l58.65 137.38c.06.2.12.38.19.57c3.2 9.27 11.3 15.81 21.09 16.25h1a24.63 24.63 0 0 0 23-15.46L478.39 64.62A24 24 0 0 0 473 39.05" /></svg></i>
+                                </button>
+                           </div>
+                        </div>
+                      </div>
                   </div>
+
                   <div className="space-y-1">
                     <Label htmlFor="audience">Dirigido a <span className="text-destructive">*</span></Label>
                      <Select 
