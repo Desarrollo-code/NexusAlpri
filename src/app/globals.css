@@ -24,7 +24,7 @@
     --muted: 220 10% 96%;
     --muted-foreground: 240 4% 45%;
     
-    --accent: 330 100% 50%; /* Neon Pink */
+    --accent: 150°, 100%, 90%;
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84.2% 60.2%;
@@ -39,7 +39,7 @@
     --chart-2: 200 100% 50%; /* Neon Cyan */
     --chart-3: 280 100% 60%; /* Neon Purple */
     --chart-4: 30 100% 50%;  /* Neon Orange */
-    --chart-5: 330 100% 50%; /* Neon Pink */
+    --chart-5: 150°, 100%, 90%; 
 
     --event-blue: 220 100% 55%;
     --event-green: 150 100% 50%;
@@ -73,7 +73,7 @@
     --muted: 240 5% 18%; /* Slightly lighter for muted elements */
     --muted-foreground: 210 10% 65%;
     
-    --accent: 330 100% 55%; /* Neon Pink */
+    --accent: 150°, 100%, 90%;
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 70% 55%;
@@ -94,7 +94,7 @@
     --chart-2: 200 100% 50%; /* Neon Cyan */
     --chart-3: 280 100% 60%; /* Neon Purple */
     --chart-4: 30 100% 50%;  /* Neon Orange */
-    --chart-5: 330 100% 50%; /* Neon Pink */
+    --chart-5: 150°, 100%, 90%;
 
     --event-blue: 220 100% 55%;
     --event-green: 150 100% 50%;
