@@ -16,7 +16,7 @@ export default function AuthLayout({
           alt="Alprigrama S.A.S. Watermark"
           width={70}
           height={70}
-          className="opacity-40"
+          className="watermark-img"
           data-ai-hint="company logo"
         />
       </div>

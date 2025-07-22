@@ -318,6 +318,12 @@
       animation: rotation_481 5s infinite linear;
       background-size: 200% 200%;
   }
+
+  .watermark-img {
+    opacity: 0.4;
+    width: 70px;
+    height: auto;
+  }
 }
 
 @keyframes press {
