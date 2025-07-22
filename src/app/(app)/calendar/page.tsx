@@ -154,9 +154,12 @@ export default function CalendarPage() {
   const [showEventModal, setShowEventModal] = useState(false);
   const [showMobileEventList, setShowMobileEventList] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false); // New state for edit mode
+
   const [isSaving, setIsSaving] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<CalendarEvent | null>(null);
   
+  // Form state
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formLocationType, setFormLocationType] = useState<'physical' | 'virtual'>('physical');
@@ -223,6 +226,7 @@ export default function CalendarPage() {
     setFormColor('blue'); setSelectedEvent(null);
     setFormLocationType('physical');
     setNewAttachmentUrl('');
+    setIsEditMode(false);
   }
 
   const handleOpenCreateModal = (date?: Date) => {
@@ -232,6 +236,7 @@ export default function CalendarPage() {
     const dateString = format(targetDate, 'yyyy-MM-dd');
     setFormStartDate(`${dateString}T09:00`);
     setFormEndDate(`${dateString}T10:00`);
+    setIsEditMode(true); // Go directly to edit mode for new events
     setShowEventModal(true);
   };
   
@@ -258,6 +263,7 @@ export default function CalendarPage() {
     setFormColor(event.color || 'blue');
     setFormAttachments(event.attachments || []);
     setNewAttachmentUrl('');
+    setIsEditMode(false); // Always start in view mode
     setShowEventModal(true);
   };
   
@@ -301,7 +307,12 @@ export default function CalendarPage() {
       if (!response.ok) throw new Error(updatedEvent.message || 'Failed to save event');
       toast({ title: 'Éxito', description: `Evento ${selectedEvent ? 'actualizado' : 'creado'}.` });
       fetchEvents();
-      setShowEventModal(false);
+      if (selectedEvent) {
+          setSelectedEvent(updatedEvent); // Update the selected event with new data
+          setIsEditMode(false); // Go back to view mode
+      } else {
+          setShowEventModal(false); // Close modal on new creation
+      }
     } catch (err) {
       toast({ title: 'Error', description: `No se pudo guardar: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
     } finally {
@@ -317,6 +328,7 @@ export default function CalendarPage() {
       if (response.status === 204) {
         toast({ title: 'Éxito', description: 'Evento eliminado.' });
         setEvents(prev => prev.filter(event => event.id !== eventId));
+        setShowEventModal(false);
       } else {
         const errorData = await response.json().catch(() => ({ message: 'Failed to delete event' }));
         throw new Error(errorData.message);
@@ -413,16 +425,20 @@ export default function CalendarPage() {
       
       <Dialog open={showEventModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowEventModal(isOpen); }}>
         <DialogContent className={cn("w-[95vw] max-w-2xl overflow-hidden flex flex-col max-h-[90vh]", selectedEvent && user?.id === selectedEvent.creatorId && "border-primary shadow-primary/20")}>
-          <DialogHeader>
-            <DialogTitle>{canEditEvent && selectedEvent ? 'Editar Evento' : (canCreateEvent && !selectedEvent ? 'Crear Evento' : selectedEvent?.title || 'Detalles del Evento')}</DialogTitle>
-            <DialogDescription>{canEditEvent && selectedEvent ? 'Modifica los detalles del evento.' : (canCreateEvent && !selectedEvent ? 'Completa los detalles para agendar un nuevo evento.' : 'Información detallada sobre el evento.')}</DialogDescription>
-             {user?.id === selectedEvent?.creatorId && (
-                <Badge variant="secondary" className="absolute top-4 right-4 text-xs">Tú creaste este evento</Badge>
-             )}
+          <DialogHeader className="flex flex-row items-center justify-between">
+            <div className="space-y-1.5">
+                <DialogTitle>{(selectedEvent && !isEditMode) ? selectedEvent.title : (isEditMode ? (selectedEvent ? "Editar Evento" : "Crear Evento") : "Detalles del Evento")}</DialogTitle>
+                <DialogDescription>{isEditMode ? "Completa los detalles para agendar un nuevo evento." : "Información detallada sobre el evento."}</DialogDescription>
+            </div>
+            {canEditEvent && !isEditMode && (
+                <Button variant="outline" size="icon" onClick={() => setIsEditMode(true)}>
+                    <Edit className="h-4 w-4" />
+                </Button>
+            )}
           </DialogHeader>
            <ScrollArea className="pr-3 -mr-6">
                 <div className="py-4 pr-6">
-                 {canEditEvent ? (
+                 {isEditMode ? (
                     <form id="event-form" onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                       <div className="sm:col-span-2"><Label htmlFor="event-title">Título del Evento</Label><Input id="event-title" value={formTitle} onChange={e => setFormTitle(e.target.value)} required disabled={isSaving} /></div>
                       <div className="sm:col-span-2 space-y-2">
@@ -469,19 +485,19 @@ export default function CalendarPage() {
                 </div>
            </ScrollArea>
           <DialogFooter className="sm:col-span-2 mt-4 flex flex-col-reverse sm:flex-row sm:justify-between w-full gap-2 border-t pt-4">
-              {canEditEvent ? (
+             {isEditMode ? (
                 <>
                   {selectedEvent && (
                     <div className="w-full sm:w-auto">
-                      <Button type="button" variant="destructive" onClick={() => { setEventToDelete(selectedEvent); setShowEventModal(false); }} disabled={isSaving} className="w-full sm:w-auto">
+                      <Button type="button" variant="destructive" onClick={() => { setEventToDelete(selectedEvent); }} disabled={isSaving} className="w-full sm:w-auto">
                         <Trash2 className="mr-2 h-4 w-4" /> Eliminar
                       </Button>
                     </div>
                   )}
                   <div className="flex flex-col-reverse sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
-                    <Button type="button" variant="outline" onClick={() => setShowEventModal(false)} disabled={isSaving} className="w-full sm:w-auto">Cancelar</Button>
+                    <Button type="button" variant="outline" onClick={() => selectedEvent ? setIsEditMode(false) : setShowEventModal(false)} disabled={isSaving} className="w-full sm:w-auto">Cancelar</Button>
                     <Button form="event-form" type="submit" disabled={isSaving} className="w-full sm:w-auto">
-                      {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (selectedEvent ? <Save className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />)}
+                      {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                       {selectedEvent ? 'Guardar Cambios' : 'Crear Evento'}
                     </Button>
                   </div>
