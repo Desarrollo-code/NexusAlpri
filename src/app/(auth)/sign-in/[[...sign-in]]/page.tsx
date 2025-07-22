@@ -21,22 +21,6 @@ const PasswordToggle = memo(({ isVisible, onClick }: { isVisible: boolean, onCli
 ));
 PasswordToggle.displayName = 'PasswordToggle';
 
-
-const MemoizedInputOTP = memo(({ value, onChange, disabled }: { value: string, onChange: (value: string) => void, disabled: boolean }) => (
-    <InputOTP maxLength={6} value={value} onChange={onChange} disabled={disabled}>
-        <InputOTPGroup>
-            <InputOTPSlot index={0} />
-            <InputOTPSlot index={1} />
-            <InputOTPSlot index={2} />
-            <InputOTPSlot index={3} />
-            <InputOTPSlot index={4} />
-            <InputOTPSlot index={5} />
-        </InputOTPGroup>
-    </InputOTP>
-));
-MemoizedInputOTP.displayName = 'MemoizedInputOTP';
-
-
 export default function SignInPage() {
   const router = useRouter();
   const { user, login, settings } = useAuth();
@@ -171,7 +155,16 @@ export default function SignInPage() {
             <p className="auth-subtitle">Ingresa el código de tu app de autenticación.</p>
         </div>
         <div className="form-group flex justify-center">
-            <MemoizedInputOTP value={token} onChange={setToken} disabled={isLoading} />
+            <InputOTP maxLength={6} value={token} onChange={setToken} disabled={isLoading}>
+                <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                </InputOTPGroup>
+            </InputOTP>
         </div>
         <button type="submit" className="submit-btn" disabled={isLoading || token.length < 6}>
            {isLoading && <Loader2 className="animate-spin" />}
