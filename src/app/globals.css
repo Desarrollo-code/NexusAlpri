@@ -174,7 +174,7 @@
     font-family: var(--font-body);
     position: relative;
     width: 100%;
-    max-width: 320px;
+    max-width: 420px;
     height: 384px;
     display: flex;
     flex-direction: column;
@@ -383,3 +383,5 @@
 .bin-button:hover .garbage {
   animation: throw 0.4s linear;
 }
+
+    
