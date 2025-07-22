@@ -110,12 +110,17 @@ export default {
           '50%': { transform: 'rotate(5deg) translate(20px, -50px)' },
           'to': { transform: 'scale(0.9) rotate(10deg) translate(50px, -80px)', opacity: '0' },
         },
+        'throw': {
+            'from': { transform: 'translate(-400%, -700%)', opacity: '0' },
+            'to': { transform: 'translate(0%, 0%)', opacity: '1' }
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'press': 'press 0.2s 1 linear',
         'bounce': 'bounce 0.2s 1 linear',
+        'throw': 'throw 0.4s linear',
       },
     },
   },

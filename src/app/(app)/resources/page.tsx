@@ -758,10 +758,13 @@ export default function ResourcesPage() {
             {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
               <Dialog open={showCreateFileModal} onOpenChange={(isOpen) => { if (!isOpen) resetCreateForm(); setShowCreateFileModal(isOpen); }}>
                 <DialogTrigger asChild>
-                  <Button disabled={isSubmittingResource || isUploadingFile}>
-                     <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm-1 9v4h-2v-4H8l4-4 4 4h-3Zm1 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-                     Subir Recurso
-                  </Button>
+                  <button className="flex items-center gap-3 px-6 py-3 rounded-lg bg-blue-500 text-white font-bold uppercase text-xs cursor-pointer select-none shadow-[0_4px_6px_-1px_rgba(72,138,236,0.19),0_2px_4px_-1px_rgba(72,138,236,0.10)] transition-all duration-600 hover:shadow-[0_10px_15px_-3px_rgba(72,138,236,0.31),0_4px_6px_-2px_rgba(72,138,236,0.10)] active:opacity-85 active:shadow-none">
+                    <svg aria-hidden="true" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
+                      <path strokeWidth="2" stroke="#ffffff" d="M13.5 3H12H8C6.34315 3 5 4.34315 5 6V18C5 19.6569 6.34315 21 8 21H11M13.5 3L19 8.625M13.5 3V7.625C13.5 8.17728 13.9477 8.625 14.5 8.625H19M19 8.625V11.8125" strokeLinejoin="round" strokeLinecap="round" />
+                      <path strokeLinejoin="round" strokeLinecap="round" strokeWidth="2" stroke="#ffffff" d="M17 15V18M17 21V18M17 18H14M17 18H20" />
+                    </svg>
+                    Subir Recurso
+                  </button>
                 </DialogTrigger>
                 <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
                   <DialogHeader><DialogTitle>Subir Nuevo Recurso</DialogTitle><DialogDescription>Completa los detalles para añadir un nuevo recurso a la biblioteca.</DialogDescription></DialogHeader>
@@ -962,7 +965,15 @@ export default function ResourcesPage() {
       <AlertDialog open={showDeleteConfirmDialog} onOpenChange={setShowDeleteConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader><AlertDialogTitle>¿Estás seguro?</AlertDialogTitle><AlertDialogDescription>El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. {resourceToDelete?.type === 'FOLDER' && 'Todos los archivos y subcarpetas dentro de esta carpeta también serán eliminados.'}</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel onClick={() => setResourceToDelete(null)} disabled={isDeletingResource}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteResource} disabled={isDeletingResource} className={buttonVariants({ variant: "destructive" })}>{isDeletingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel onClick={() => setResourceToDelete(null)} disabled={isDeletingResource}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction asChild disabled={isDeletingResource}>
+                <button onClick={handleDeleteResource} className="bin-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 39 7" className="bin-top"><line strokeWidth={4} stroke="white" y2={5} x2={39} y1={5} /><line strokeWidth={3} stroke="white" y2="1.5" x2="26.0357" y1="1.5" x1={12} /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 33 39" className="bin-bottom"><mask fill="white" id="path-1-inside-1_8_19"><path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z" /></mask><path mask="url(#path-1-inside-1_8_19)" fill="white" d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z" /><path strokeWidth={4} stroke="white" d="M12 6L12 29" /><path strokeWidth={4} stroke="white" d="M21 6V29" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 89 80" className="garbage"><path fill="white" d="M20.5 10.5L37.5 15.5L42.5 11.5L51.5 12.5L68.75 0L72 11.5L79.5 12.5H88.5L87 22L68.75 31.5L75.5066 25L86 26L87 35.5L77.5 48L70.5 49.5L80 50L77.5 71.5L63.5 58.5L53.5 68.5L65.5 70.5L45.5 73L35.5 79.5L28 67L16 63L12 51.5L0 48L16 25L22.5 17L20.5 10.5Z" /></svg>
+                </button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
