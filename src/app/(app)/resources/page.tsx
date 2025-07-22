@@ -51,6 +51,7 @@ import * as XLSX from 'xlsx';
 import { Textarea } from '@/components/ui/textarea';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Folder3D } from '@/components/ui/folder-3d';
+import { FolderPreview } from '@/components/ui/folder-preview';
 
 
 const PAGE_SIZE = 20;
@@ -160,7 +161,11 @@ const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
         const youtubeId = !isFolder && resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
         
         if (isFolder) {
-            return <Folder3D />;
+             return (
+                <FolderPreview folderId={resource.id}>
+                    <div className="w-full h-full"><Folder3D /></div>
+                </FolderPreview>
+            );
         }
         if (isImage) {
            return <ImageArtPlaceholder />;
@@ -214,9 +219,9 @@ const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
     const { user } = useAuth();
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
     const isFolder = resource.type === 'FOLDER';
-    
-    return (
-        <TableRow className="cursor-pointer" onClick={onPreview}>
+
+    const renderListItem = () => (
+      <TableRow className="cursor-pointer" onClick={onPreview}>
             <TableCell>
                 <div className="flex items-center gap-3">
                     {getIconForType(resource.type)}
@@ -255,6 +260,16 @@ const ResourceListItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
             </TableCell>
         </TableRow>
     );
+
+    if (isFolder) {
+        return (
+            <FolderPreview folderId={resource.id}>
+                {renderListItem()}
+            </FolderPreview>
+        );
+    }
+    
+    return renderListItem();
 };
 
 
