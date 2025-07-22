@@ -50,6 +50,8 @@ import mammoth from 'mammoth';
 import * as XLSX from 'xlsx';
 import { Textarea } from '@/components/ui/textarea';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Folder3D } from '@/components/ui/folder-3d';
+
 
 const PAGE_SIZE = 20;
 
@@ -138,29 +140,31 @@ const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
     const Thumbnail = () => {
         const isImage = !isFolder && resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
         const youtubeId = !isFolder && resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
-        const isPdf = !isFolder && resource.url && /\.pdf$/i.test(resource.url);
-
+        
+        if (isFolder) {
+            return <Folder3D />;
+        }
         if (isImage) {
            return <Image src={resource.url!} alt={resource.title} fill className="object-cover" data-ai-hint="resource file" onError={(e) => { e.currentTarget.style.display = 'none'; (e.currentTarget.nextSibling as HTMLElement | null)?.style.setProperty('display', 'flex'); }} />;
         }
         if (youtubeId) {
             return <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail"/>
         }
-        return null;
+        return (
+            <div className="flex items-center justify-center w-full h-full">
+                {getPreviewIconForType(resource.type)}
+            </div>
+        );
     };
-
 
     return (
         <div 
-            className="group rounded-lg border bg-card text-card-foreground shadow-sm transition-colors flex flex-col cursor-pointer"
+            className="group rounded-lg border bg-card text-card-foreground shadow-sm transition-all duration-300 ease-in-out flex flex-col cursor-pointer"
             onClick={onPreview}
         >
-            <div className="aspect-[4/3] w-full bg-muted/30 rounded-t-lg flex items-center justify-center overflow-hidden relative">
+            <div className="aspect-[4/3] w-full bg-card-foreground/5 rounded-t-lg flex items-center justify-center overflow-hidden relative">
                 <Thumbnail />
-                <div style={{ display: 'flex' }} className="items-center justify-center w-full h-full">
-                    {getPreviewIconForType(resource.type)}
-                </div>
-                {resource.hasPin && (
+                {resource.hasPin && !isFolder && (
                     <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
                         <Lock className="h-3 w-3 text-amber-400" />
                     </div>
@@ -168,7 +172,7 @@ const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
             </div>
             <div className="p-2 border-t flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 overflow-hidden">
-                    {getIconForType(resource.type)}
+                    {isFolder ? <Folder className="h-5 w-5 text-primary" /> : getIconForType(resource.type)}
                     <span className="font-medium text-sm truncate">{resource.title}</span>
                 </div>
                  <DropdownMenu>
