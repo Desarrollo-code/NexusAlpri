@@ -131,6 +131,24 @@ const getFileFormat = (url?: string) => {
     return extension ? extension.toUpperCase() : 'URL';
 };
 
+const ImageArtPlaceholder = () => (
+    <div className="art-design">
+        <div className="art-circle-1 art-color-border">
+            <div className="art-circle-2 art-color-border">
+                <div className="art-circle-3 art-color-border">
+                    <div className="art-circle-4 art-color-border">
+                        <div className="art-circle-5" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div className="art-mountain-1 art-shape art-shadow" />
+        <div className="art-mountain-2 art-shape" />
+        <div className="art-mountain-3 art-shape art-shadow" />
+    </div>
+);
+
+
 // --- Sub-components for Page ---
 const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }: { resource: AppResourceType, onDelete: (id: string) => void, onPreview: () => void, onDownload: () => void, onEdit: (resource: AppResourceType) => void }) => {
     const { user } = useAuth();
@@ -145,7 +163,7 @@ const ResourceGridItem = ({ resource, onDelete, onPreview, onDownload, onEdit }:
             return <Folder3D />;
         }
         if (isImage) {
-           return <Image src={resource.url!} alt={resource.title} fill className="object-cover" data-ai-hint="resource file" onError={(e) => { e.currentTarget.style.display = 'none'; (e.currentTarget.nextSibling as HTMLElement | null)?.style.setProperty('display', 'flex'); }} />;
+           return <ImageArtPlaceholder />;
         }
         if (youtubeId) {
             return <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail"/>

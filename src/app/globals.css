@@ -9,7 +9,7 @@
     --background: 240 4% 12%; /* Dark Graphite */
     --foreground: 210 40% 98%;
     
-    --card: 240 4% 8%; 
+    --card: 240 4% 16%; 
     --card-foreground: 210 40% 98%;
     
     --popover: 240 5% 10%;
@@ -30,7 +30,7 @@
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 240 5% 18%;
+    --border: 240 5% 22%;
     --input: 240 5% 15%;
     --ring: 48 98% 50%;
 
@@ -170,16 +170,6 @@
       transform: rotateY(180deg);
   }
 
-  .rotating-gradient::before {
-    position: absolute;
-    content: ' ';
-    display: block;
-    width: 160px;
-    height: 160%;
-    background: linear-gradient(90deg, transparent, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)), transparent);
-    animation: rotation_481 5000ms infinite linear;
-  }
-
   @keyframes rotation_481 {
     0% {
       transform: rotateZ(0deg);
@@ -189,10 +179,6 @@
     }
   }
   
-  .floating {
-    animation: floating 2600ms infinite linear;
-  }
-
   @keyframes floating {
     0% {
       transform: translateY(0px);
@@ -249,5 +235,31 @@
       @apply scale-125 rotate-45 -translate-x-0.5 translate-y-px;
   }
 
+  /* Resource Art Placeholder */
+  .art-design {
+    @apply h-full w-full rounded-t-lg relative overflow-hidden flex items-center justify-center
+           bg-gradient-to-b from-primary to-accent;
+  }
+  .art-color-border {
+    @apply rounded-full bg-white/20 shadow-lg flex items-center justify-center;
+  }
+  .art-circle-1 { @apply h-[220px] w-[220px] absolute -right-12 -top-12; }
+  .art-circle-2 { @apply h-[180px] w-[180px]; }
+  .art-circle-3 { @apply h-[140px] w-[140px]; }
+  .art-circle-4 { @apply h-[105px] w-[105px]; }
+  .art-circle-5 { @apply h-[70px] w-[70px] rounded-full bg-white; }
+  .art-shape {
+    @apply h-[200px] w-[200px] absolute;
+    background-color: hsl(var(--card));
+    transform: rotate(45deg);
+  }
+  .art-shadow {
+    @apply shadow-2xl shadow-black/75;
+  }
+  .art-mountain-1 { @apply z-10 -bottom-24 -left-24; }
+  .art-mountain-2 { @apply -bottom-28 -left-8; }
+  .art-mountain-3 { @apply z-20 -bottom-36 left-24; }
+
 }
+
 
