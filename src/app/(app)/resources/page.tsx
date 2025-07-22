@@ -43,6 +43,7 @@ import {
 import { cn } from '@/lib/utils';
 import { UploadArea } from '@/components/ui/upload-area';
 import { ResourceDetailsSidebar } from '@/components/resources/details-sidebar';
+import { Progress } from '@/components/ui/progress';
 
 
 // --- Types and Mappers ---
@@ -331,7 +332,6 @@ export default function ResourcesPage() {
       <main className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
         <header className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
            <div className="flex-grow">
-               <h1 className="text-3xl font-bold font-headline">Biblioteca de Recursos</h1>
                <p className="text-muted-foreground">Explora, busca y gestiona todos los archivos de la organización.</p>
            </div>
            {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
