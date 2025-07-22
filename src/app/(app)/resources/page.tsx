@@ -330,7 +330,10 @@ export default function ResourcesPage() {
     <div className="flex h-full">
       <main className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
         <header className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-           <h1 className="text-3xl font-bold font-headline">Biblioteca de Recursos</h1>
+           <div className="flex-grow">
+               <h1 className="text-3xl font-bold font-headline">Biblioteca de Recursos</h1>
+               <p className="text-muted-foreground">Explora, busca y gestiona todos los archivos de la organización.</p>
+           </div>
            {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
               <Button onClick={() => setShowCreateFileModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
                   <UploadCloud className="mr-2 h-4 w-4"/> Subir Nuevo Recurso
