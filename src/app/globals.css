@@ -6,98 +6,98 @@
 
 @layer base {
   :root {
-    --background: 220 10% 98%;
-    --foreground: 220 10% 10%;
+    --background: 0 0% 100%;
+    --foreground: 220 10% 3.9%;
     
     --card: 0 0% 100%;
-    --card-foreground: 220 10% 10%;
+    --card-foreground: 220 10% 3.9%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 220 10% 10%;
+    --popover-foreground: 220 10% 3.9%;
     
-    --primary: 262 82% 57%; /* Deep Purple */
-    --primary-foreground: 0 0% 100%;
+    --primary: 48 98% 50%; /* Vibrant Gold */
+    --primary-foreground: 210 40% 98%;
     
-    --secondary: 220 10% 96%;
-    --secondary-foreground: 240 5% 10%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
     
-    --muted: 220 10% 96%;
-    --muted-foreground: 240 4% 45%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
     
-    --accent: 150 100% 90%; /* Vibrant light green */
+    --accent: 150 100% 90%; /* Neon Green */
     --accent-foreground: 150 100% 5%;
     
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 220 10% 90%;
-    --input: 220 10% 94%;
-    --ring: 262 82% 57%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 48 98% 50%;
     --radius: 0.75rem;
 
-    --chart-1: 170 100% 50%;
-    --chart-2: 30 100% 50%;
-    --chart-3: 280 100% 60%;
-    --chart-4: 200 100% 50%;
-    --chart-5: 330 100% 50%;
+    --chart-1: 170 100% 45%; /* Cyan */
+    --chart-2: 30 100% 50%; /* Orange */
+    --chart-3: 280 100% 60%; /* Purple */
+    --chart-4: 200 100% 50%; /* Blue */
+    --chart-5: 90 100% 50%;  /* Lime Green */
 
     --event-blue: 220 100% 55%;
-    --event-green: 150 100% 50%;
+    --event-green: 150 100% 45%;
     --event-red: 0 100% 55%;
     --event-orange: 30 100% 50%;
     
     --sidebar-background: 240 5% 18%;
     --sidebar-foreground: 210 20% 85%;
-    --sidebar-accent: 262 82% 57%;
-    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-accent: 48 98% 50%; /* Gold */
+    --sidebar-accent-foreground: 240 4% 12%;
     --sidebar-border: 240 5% 25%;
-    --sidebar-ring: 262 82% 59%;
+    --sidebar-ring: 48 98% 52%;
   }
 
   .dark {
-    --background: 0 0% 0%; /* Pure Black */
-    --foreground: 210 20% 96%;
+    --background: 240 4% 10%; /* Graphite */
+    --foreground: 210 40% 98%;
     
-    --card: 240 4% 12%; /* Dark Graphite */
-    --card-foreground: 210 20% 96%;
+    --card: 240 4% 12%; /* Darker Graphite */
+    --card-foreground: 210 40% 98%;
     
     --popover: 240 5% 10%;
-    --popover-foreground: 210 20% 96%;
+    --popover-foreground: 210 40% 98%;
     
-    --primary: 262 82% 57%; /* Deep Purple */
-    --primary-foreground: 0 0% 100%;
+    --primary: 48 98% 50%; /* Vibrant Gold */
+    --primary-foreground: 240 4% 12%;
     
     --secondary: 240 5% 25%;
-    --secondary-foreground: 210 20% 96%;
+    --secondary-foreground: 210 40% 98%;
     
     --muted: 240 5% 18%;
     --muted-foreground: 210 10% 65%;
     
-    --accent: 150 100% 90%; /* Vibrant light green */
+    --accent: 150 100% 90%; /* Neon Green */
     --accent-foreground: 150 100% 5%;
 
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 240 5% 18%; /* Darker border */
+    --border: 240 5% 18%;
     --input: 240 5% 15%;
-    --ring: 262 82% 57%;
+    --ring: 48 98% 50%;
 
-    --sidebar-background: 240 4% 10%; /* Graphite */
+    --sidebar-background: 240 4% 10%;
     --sidebar-foreground: 210 20% 85%;
-    --sidebar-accent: 262 82% 57%;
-    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-accent: 48 98% 50%; /* Gold */
+    --sidebar-accent-foreground: 240 4% 12%;
     --sidebar-border: 240 5% 15%;
-    --sidebar-ring: 262 82% 59%;
+    --sidebar-ring: 48 98% 52%;
 
-    --chart-1: 170 100% 50%;
-    --chart-2: 30 100% 50%;
-    --chart-3: 280 100% 60%;
-    --chart-4: 200 100% 50%;
-    --chart-5: 330 100% 50%;
+    --chart-1: 170 100% 45%; /* Cyan */
+    --chart-2: 30 100% 50%; /* Orange */
+    --chart-3: 280 100% 60%; /* Purple */
+    --chart-4: 200 100% 50%; /* Blue */
+    --chart-5: 90 100% 50%;  /* Lime Green */
 
     --event-blue: 220 100% 55%;
-    --event-green: 150 100% 50%;
+    --event-green: 150 100% 45%;
     --event-red: 0 100% 55%;
     --event-orange: 30 100% 50%;
   }
