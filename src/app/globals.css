@@ -151,115 +151,107 @@
     left: 0;
     background: hsl(var(--primary));
   }
-
-  /* 3D Card Flip Styles */
-  .perspective-1000 {
-    perspective: 1000px;
-  }
-  .transform-style-3d {
-    transform-style: preserve-3d;
-  }
-  .backface-hidden {
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-  }
-  .rotate-y-180 {
-    transform: rotateY(180deg);
-  }
-  .group-hover-rotate-y-180:hover .group-hover-content {
-      transform: rotateY(180deg);
-  }
-
+  
   @keyframes rotation_481 {
-    0% {
-      transform: rotateZ(0deg);
-    }
-    100% {
-      transform: rotateZ(360deg);
-    }
+    0% { transform: rotateZ(0deg); }
+    100% { transform: rotateZ(360deg); }
   }
   
   @keyframes floating {
-    0% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(10px);
-    }
-    100% {
-      transform: translateY(0px);
-    }
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(10px); }
+    100% { transform: translateY(0px); }
+  }
+  
+  .profile-card {
+    --main-color: hsl(var(--foreground));
+    --submain-color: hsl(var(--muted-foreground));
+    --bg-color: hsl(var(--card));
+    font-family: var(--font-body);
+    position: relative;
+    width: 300px;
+    height: 384px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 20px;
+    background: var(--bg-color);
   }
 
-  /* Chat Input Styles */
-  .styled-input-container {
-      @apply relative flex bg-gradient-to-br from-secondary to-muted p-px rounded-2xl overflow-hidden;
-  }
-  .styled-input-container::after {
-      @apply absolute content-[''] top-[-10px] left-[-10px] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.3),rgba(255,255,255,0.1),transparent_40%)] w-20 h-20 blur-sm;
-  }
-  .styled-input-chat {
-      @apply flex flex-col bg-black/50 rounded-2xl w-full overflow-hidden;
-  }
-  .styled-input-textarea {
-      @apply bg-transparent rounded-2xl border-none w-full h-24 text-foreground font-sans text-sm p-3 resize-none outline-none;
-  }
-  .styled-input-textarea::placeholder {
-      @apply text-muted-foreground transition-colors duration-300;
-  }
-  .styled-input-textarea:focus::placeholder {
-      @apply text-card;
-  }
-  .styled-input-options {
-      @apply flex justify-between items-end p-2.5;
-  }
-  .styled-input-btns-add {
-      @apply flex gap-2;
-  }
-  .styled-input-btns-add button {
-      @apply flex text-white/20 bg-transparent border-none cursor-pointer transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:text-white;
-  }
-  .styled-input-btn-submit {
-      @apply flex p-0.5 bg-gradient-to-t from-secondary to-muted rounded-xl shadow-[inset_0_6px_2px_-4px_rgba(255,255,255,0.5)] cursor-pointer border-none outline-none transition-transform duration-150 active:scale-95;
-  }
-  .styled-input-btn-submit i {
-      @apply w-8 h-8 p-1.5 bg-black/10 rounded-xl backdrop-blur-sm text-muted-foreground;
-  }
-  .styled-input-btn-submit svg {
-      @apply transition-all duration-300;
-  }
-  .styled-input-btn-submit:hover svg, .styled-input-btn-submit:focus svg {
-      @apply text-foreground drop-shadow-[0_0_5px_hsl(var(--primary))];
-  }
-  .styled-input-btn-submit:focus svg {
-      @apply scale-125 rotate-45 -translate-x-0.5 translate-y-px;
+  .card__img {
+    height: 192px;
+    width: 100%;
   }
 
-  /* Resource Art Placeholder */
-  .art-design {
-    @apply h-full w-full rounded-t-lg relative overflow-hidden flex items-center justify-center
-           bg-gradient-to-b from-primary to-accent;
+  .card__img svg {
+    height: 100%;
+    border-radius: 20px 20px 0 0;
   }
-  .art-color-border {
-    @apply rounded-full bg-white/20 shadow-lg flex items-center justify-center;
+
+  .card__avatar {
+    position: absolute;
+    width: 114px;
+    height: 114px;
+    background: var(--bg-color);
+    border-radius: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: calc(50% - 57px);
   }
-  .art-circle-1 { @apply h-[220px] w-[220px] absolute -right-12 -top-12; }
-  .art-circle-2 { @apply h-[180px] w-[180px]; }
-  .art-circle-3 { @apply h-[140px] w-[140px]; }
-  .art-circle-4 { @apply h-[105px] w-[105px]; }
-  .art-circle-5 { @apply h-[70px] w-[70px] rounded-full bg-white; }
-  .art-shape {
-    @apply h-[200px] w-[200px] absolute;
-    background-color: hsl(var(--card));
-    transform: rotate(45deg);
+
+  .card__avatar svg {
+    width: 100px;
+    height: 100px;
   }
-  .art-shadow {
-    @apply shadow-2xl shadow-black/75;
+
+  .card__title {
+    margin-top: 60px;
+    font-weight: 500;
+    font-size: 18px;
+    color: var(--main-color);
   }
-  .art-mountain-1 { @apply z-10 -bottom-24 -left-24; }
-  .art-mountain-2 { @apply -bottom-28 -left-8; }
-  .art-mountain-3 { @apply z-20 -bottom-36 left-24; }
+
+  .card__subtitle {
+    margin-top: 10px;
+    font-weight: 400;
+    font-size: 15px;
+    color: var(--submain-color);
+  }
+  
+  .card__wrapper {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+  }
+  
+  .card__btn {
+    width: 120px;
+    height: 35px;
+    border: 2px solid var(--main-color);
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--main-color);
+    background: var(--bg-color);
+    text-transform: uppercase;
+    transition: all 0.3s;
+    @apply flex items-center justify-center;
+  }
+  
+  .card__btn-solid {
+    background: var(--main-color);
+    color: var(--bg-color);
+  }
+
+  .card__btn:hover {
+    background: var(--main-color);
+    color: var(--bg-color);
+  }
+
+  .card__btn-solid:hover {
+    background: var(--bg-color);
+    color: var(--main-color);
+  }
 
 }
-
-
