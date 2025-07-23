@@ -44,7 +44,7 @@ Este documento sirve como una matriz de trazabilidad de requisitos y, al mismo t
 | | Ver la lista de cursos a gestionar. | La lista en `/manage-courses` muestra únicamente los cursos creados por el instructor. No puede ver los de otros instructores (a menos que también sea admin). | [PENDIENTE] | |
 | | Editar el contenido de su propio curso. | El instructor puede añadir, editar y reordenar módulos y lecciones solo en los cursos que él ha creado. | [PENDIENTE] | |
 | | Publicar su propio curso. | El instructor puede cambiar el estado de sus cursos a "Publicado", haciéndolos visibles en el catálogo general. | [PENDIENTE] | |
-| **Seguimiento** | Ver la lista de inscritos. | En `/enrollments`, el instructor solo puede seleccionar y ver los estudiantes inscritos en los cursos que él imparte. | [PENDiente] | |
+| **Seguimiento** | Ver la lista de inscritos. | En `/enrollments`, el instructor solo puede seleccionar y ver los estudiantes inscritos en los cursos que él imparte. | [PENDIENTE] | |
 | **Contenido Global** | Crear un anuncio. | El instructor puede crear anuncios para diferentes audiencias (ej. solo sus estudiantes, todos los estudiantes, etc.). | [PENDIENTE] | |
 | | Subir un recurso a la biblioteca. | El instructor puede subir archivos a la biblioteca y estos se marcan como subidos por él. Puede editar y eliminar solo sus propios recursos. | [PENDIENTE] | |
 | **Perfil** | Editar su propio perfil. | El instructor puede cambiar su nombre, avatar y contraseña desde `/profile`. | [PENDIENTE] | |
@@ -57,7 +57,7 @@ Este documento sirve como una matriz de trazabilidad de requisitos y, al mismo t
 | :--- | :--- | :--- | :--- | :--- |
 | **Dashboard** | Visualizar el panel principal. | El dashboard muestra un resumen de los cursos en los que el estudiante está inscrito y los anuncios recientes. | [PENDIENTE] | |
 | **Catálogo de Cursos** | Explorar el catálogo de cursos. | La página `/courses` muestra todas las tarjetas de los cursos con estado "Publicado". | [PENDIENTE] | |
-| | Inscribirse a un curso. | Al hacer clic en "Inscribirse", el curso se añade a la sección "Mis Cursos" y el botón cambia a "Continuar Curso". | [PENDIENTE] | |
+| **Inscripción** | Inscribirse a un curso. | Al hacer clic en "Inscribirse", el curso se añade a la sección "Mis Cursos" y el botón cambia a "Continuar Curso". | [PENDIENTE] | |
 | | Cancelar la inscripción. | Desde la página de "Mis Cursos", el estudiante puede cancelar su inscripción. El curso desaparece de su lista y se borra su progreso. | [PENDIENTE] | |
 | **Consumo de Curso** | Ver el contenido de una lección. | Al hacer clic en una lección (video, texto, etc.), el contenido se muestra correctamente y la lección se marca como vista automáticamente para el progreso. | [PENDIENTE] | |
 | | Realizar un quiz. | El estudiante puede responder a las preguntas de un quiz y enviarlo. El sistema muestra la puntuación y la guarda. | [PENDIENTE] | |
