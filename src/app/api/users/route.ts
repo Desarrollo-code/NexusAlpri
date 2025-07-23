@@ -1,4 +1,5 @@
 
+
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
@@ -23,8 +24,8 @@ export async function GET(req: NextRequest) {
         if (search) {
             whereClause = {
                 OR: [
-                    { name: { contains: search, mode: 'insensitive' } },
-                    { email: { contains: search, mode: 'insensitive' } },
+                    { name: { contains: search } },
+                    { email: { contains: search } },
                 ],
             };
         }

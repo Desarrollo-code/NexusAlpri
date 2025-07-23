@@ -55,6 +55,7 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { GradientIcon } from '@/components/ui/gradient-icon';
+import { useDebounce } from '@/hooks/use-debounce';
 
 const PAGE_SIZE = 20;
 
@@ -71,6 +72,7 @@ export default function UsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   
   const currentPage = Number(searchParams.get('page')) || 1;
   const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
@@ -93,15 +95,15 @@ export default function UsersPage() {
   const [selectedNewRole, setSelectedNewRole] = useState<UserRole>('STUDENT');
 
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (page: number, search: string) => {
     setIsLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams();
-      params.append('page', String(currentPage));
+      params.append('page', String(page));
       params.append('pageSize', String(PAGE_SIZE));
-      if (searchTerm) {
-        params.append('search', searchTerm);
+      if (search) {
+        params.append('search', search);
       }
 
       const response = await fetch(`/api/users?${params.toString()}`, { cache: 'no-store' });
@@ -120,15 +122,31 @@ export default function UsersPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast, currentPage, searchTerm]);
-
+  }, [toast]);
+  
+  const createQueryString = useCallback(
+    (paramsToUpdate: Record<string, string | number>) => {
+      const params = new URLSearchParams(searchParams.toString())
+      Object.entries(paramsToUpdate).forEach(([name, value]) => {
+        params.set(name, String(value));
+      });
+      return params.toString()
+    },
+    [searchParams]
+  );
+  
   useEffect(() => {
-    if (currentUser?.role !== 'ADMINISTRATOR') {
-      if (typeof window !== 'undefined') router.push('/dashboard');
-      return;
-    }
-    fetchUsers();
-  }, [currentUser, router, fetchUsers]);
+      if (currentUser?.role === 'ADMINISTRATOR') {
+          if (debouncedSearchTerm !== searchParams.get('search')) {
+              handlePageChange(1, debouncedSearchTerm);
+          } else {
+              fetchUsers(currentPage, debouncedSearchTerm);
+          }
+      } else if(currentUser) {
+          router.push('/dashboard');
+      }
+  }, [currentUser, debouncedSearchTerm, currentPage, fetchUsers, router, searchParams]);
+
   
   const getInitials = (name?: string | null) => {
     if (!name) return '??';
@@ -186,18 +204,19 @@ export default function UsersPage() {
     setShowChangeRoleDialog(true);
   };
   
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString())
-      params.set(name, value)
-      return params.toString()
-    },
-    [searchParams]
-  );
   
-  const handlePageChange = (page: number) => {
-    router.push(`${pathname}?${createQueryString('page', String(page))}`);
+  const handlePageChange = (page: number, currentSearch?: string) => {
+      const params: Record<string, string | number> = { page };
+      if (currentSearch) {
+          params.search = currentSearch;
+      } else if (searchParams.get('search')) {
+          params.search = searchParams.get('search')!;
+      }
+      
+      const newQueryString = createQueryString(params);
+      router.push(`${pathname}?${newQueryString}`);
   };
+
 
   const handleAddEditUser = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -245,7 +264,7 @@ export default function UsersPage() {
         title: userToEdit ? "Usuario Actualizado" : "Usuario Creado", 
         description: `El usuario ${savedUser.name} ha sido ${userToEdit ? 'actualizado' : 'creado'}.` 
       });
-      fetchUsers(); 
+      fetchUsers(currentPage, debouncedSearchTerm);
       setShowAddEditModal(false);
       setUserToEdit(null); 
       resetFormFields();
@@ -272,7 +291,7 @@ export default function UsersPage() {
         throw new Error(errorData.message || 'Falló al eliminar el usuario');
       }
       toast({ title: "Usuario Eliminado", description: `El usuario ${userToDelete.name} ha sido eliminado.` });
-      fetchUsers();
+      fetchUsers(currentPage, debouncedSearchTerm);
     } catch (err) {
       toast({ title: "Error al eliminar", description: err instanceof Error ? err.message : 'No se pudo eliminar el usuario.', variant: "destructive" });
     } finally {
@@ -305,7 +324,7 @@ export default function UsersPage() {
         throw new Error(errorData.message || 'Falló al cambiar el rol del usuario');
       }
       toast({ title: "Rol Actualizado", description: `El rol de ${userToChangeRole.name} ha sido cambiado a ${getRoleInSpanish(selectedNewRole)}.` });
-      fetchUsers(); 
+      fetchUsers(currentPage, debouncedSearchTerm); 
       setShowChangeRoleDialog(false);
       setUserToChangeRole(null);
     } catch (err) {
@@ -315,11 +334,10 @@ export default function UsersPage() {
     }
   };
   
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handlePageChange(1);
-    fetchUsers();
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
   };
+
 
   if (currentUser?.role !== 'ADMINISTRATOR' && !isLoading) {
     return <div className="flex h-full items-center justify-center"><p>Acceso denegado. Serás redirigido.</p></div>;
@@ -551,16 +569,16 @@ export default function UsersPage() {
                 <CardTitle>Lista de Usuarios</CardTitle>
                 <CardDescription>Visualiza y gestiona todos los usuarios registrados.</CardDescription>
             </div>
-            <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-auto">
+            <div className="relative w-full sm:w-auto">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input 
                     type="search" 
                     placeholder="Buscar usuarios..." 
                     className="pl-8 w-full sm:w-[300px]" 
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleSearchInputChange}
                 />
-            </form>
+            </div>
         </CardHeader>
         <CardContent>
           {error && !isLoading && ( 
@@ -568,7 +586,7 @@ export default function UsersPage() {
               <AlertTriangle className="h-8 w-8 mb-2" />
               <p className="font-semibold">Error al cargar usuarios</p>
               <p className="text-sm">{error}</p>
-              <Button onClick={fetchUsers} variant="outline" className="mt-4">Reintentar</Button>
+              <Button onClick={() => fetchUsers(currentPage, debouncedSearchTerm)} variant="outline" className="mt-4">Reintentar</Button>
             </div>
           )}
           {!error && (
