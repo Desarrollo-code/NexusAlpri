@@ -64,3 +64,7 @@ El estudiante consume el contenido formativo de la plataforma.
 | **S-10** | **Perfil** | Editar su propio perfil y gestionar su contraseña y 2FA. | `/profile` | Información de su propia cuenta. | El estudiante puede actualizar su nombre, avatar y configuraciones de seguridad. |
 | **S-11** | **Autenticación** | Iniciar sesión y registrarse (si está habilitado). | `/sign-in`, `/sign-up` | Su cuenta de usuario, Registro de seguridad. | El usuario puede acceder a la plataforma o crear una cuenta nueva. |
 | **S-12** | | Cerrar sesión de forma segura. | (Botón en Layout) | Cierre de su sesión actual. | El usuario es desconectado y redirigido a la página de inicio de sesión. |
+| **S-13** | **Notificaciones** | Ver y gestionar sus notificaciones personales. | `/notifications` (Popover y página) | Sus notificaciones personales. | El estudiante puede ver una lista de sus notificaciones, marcarlas como leídas o eliminarlas. |
+| **S-14** | **Calendario** | Ver los eventos del calendario que le conciernen. | `/calendar` | Eventos del calendario. | El estudiante puede ver un calendario con los eventos dirigidos a él, a su rol o a todos. |
+| **S-15** | **Anuncios** | Ver los anuncios relevantes para él. | `/announcements` | Anuncios de la plataforma. | El estudiante ve los anuncios dirigidos a él, a su rol o a todos los usuarios. |
+| **S-16** | **Mis Cursos** | Ver una lista dedicada de los cursos en los que está inscrito. | `/my-courses` | Sus inscripciones, su progreso. | La página muestra solo los cursos en los que está inscrito, con su progreso visible. |
