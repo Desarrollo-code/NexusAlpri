@@ -1,4 +1,3 @@
-
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -44,8 +43,6 @@ import { cn } from '@/lib/utils';
 import { UploadArea } from '@/components/ui/upload-area';
 import { ResourceDetailsSidebar } from '@/components/resources/details-sidebar';
 import { Progress } from '@/components/ui/progress';
-import { FolderPreview } from '@/components/ui/folder-preview';
-import { Folder3D } from '@/components/ui/folder-3d';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 
@@ -78,15 +75,16 @@ function mapApiResourceToAppResource(apiResource: ApiResource): AppResourceType 
 
 // --- Helper Functions ---
 const getIconForType = (type: AppResourceType['type']) => {
+    const props = { className: "h-5 w-5 shrink-0" };
     switch (type) {
-      case 'FOLDER': return <Folder className="h-5 w-5 text-yellow-500" />;
-      case 'DOCUMENT': return <FileText className="h-5 w-5 text-blue-500" />;
-      case 'GUIDE': return <Info className="h-5 w-5 text-green-500" />;
-      case 'MANUAL': return <Notebook className="h-5 w-5 text-indigo-500" />;
-      case 'POLICY': return <Shield className="h-5 w-5 text-red-500" />;
-      case 'VIDEO': return <Video className="h-5 w-5 text-purple-500" />;
-      case 'EXTERNAL_LINK': return <LinkIcon className="h-5 w-5 text-cyan-500" />;
-      default: return <FileQuestion className="h-5 w-5 text-gray-500" />;
+      case 'FOLDER': return <Folder {...props} />;
+      case 'DOCUMENT': return <FileText {...props} />;
+      case 'GUIDE': return <Info {...props} />;
+      case 'MANUAL': return <Notebook {...props} />;
+      case 'POLICY': return <Shield {...props} />;
+      case 'VIDEO': return <Video {...props} />;
+      case 'EXTERNAL_LINK': return <LinkIcon {...props} />;
+      default: return <FileQuestion {...props} />;
     }
 };
 
@@ -108,7 +106,7 @@ const getYoutubeVideoId = (url: string | undefined): string | null => {
 };
 
 // --- Sub-components for Page ---
-const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onNavigate, isSelected }: { resource: AppResourceType, onSelect: () => void, onEdit: (r: AppResourceType) => void, onDelete: (id: string) => void, onNavigate: (r: AppResourceType) => void, isSelected: boolean }) => {
+const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onNavigate }: { resource: AppResourceType, onSelect: () => void, onEdit: (r: AppResourceType) => void, onDelete: (id: string) => void, onNavigate: (r: AppResourceType) => void }) => {
     const { user } = useAuth();
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
     const isFolder = resource.type === 'FOLDER';
@@ -125,8 +123,14 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
         const isImage = !isFolder && resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
         const youtubeId = !isFolder && resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
         
+        const fallbackIcon = (
+          <div className="flex h-full w-full items-center justify-center bg-muted">
+            {React.cloneElement(getIconForType(resource.type), { className: "h-16 w-16 text-muted-foreground/50" })}
+          </div>
+        );
+
         if (isFolder) {
-            return <Folder3D />;
+            return fallbackIcon;
         }
         if (isImage) {
            return <Image src={resource.url!} alt={resource.title} fill className="object-cover" data-ai-hint="resource document"/>
@@ -134,25 +138,18 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
         if (youtubeId) {
             return <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail"/>
         }
-        return (
-            <div className="flex items-center justify-center w-full h-full bg-muted">
-                {getIconForType(resource.type)}
-            </div>
-        );
+        return fallbackIcon;
     };
 
-    const Wrapper = isFolder ? FolderPreview : 'div';
-    const wrapperProps = isFolder ? { folderId: resource.id } : {};
-
     return (
-        <Wrapper {...wrapperProps}>
+        <div className="w-full">
             <Card 
-                className={cn("group w-full h-full overflow-hidden transition-all duration-200 cursor-pointer", isSelected ? "ring-2 ring-primary shadow-lg" : "shadow-sm hover:shadow-md")}
+                className={cn("group w-full h-full overflow-hidden transition-all duration-200 cursor-pointer bg-muted/30 hover:bg-muted/50 hover:shadow-lg")}
                 onClick={handleClick}
             >
-                <div className="aspect-video w-full flex items-center justify-center overflow-hidden relative">
+                <div className="aspect-video w-full flex items-center justify-center overflow-hidden relative border-b">
                     <Thumbnail />
-                    {resource.hasPin && !isFolder && (
+                     {resource.hasPin && !isFolder && (
                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
                             <Lock className="h-3 w-3 text-amber-400" />
                         </div>
@@ -160,11 +157,14 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                 </div>
                 <div className="p-3">
                     <div className="flex justify-between items-start gap-2">
-                        <p className="font-semibold text-sm leading-tight line-clamp-2">{resource.title}</p>
+                        <div className="flex items-center gap-2 flex-grow overflow-hidden">
+                          {React.cloneElement(getIconForType(resource.type), { className: "h-4 w-4 shrink-0 text-muted-foreground" })}
+                          <p className="font-medium text-sm leading-tight truncate">{resource.title}</p>
+                        </div>
                         {canModify && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 -mr-2"><MoreVertical className="h-4 w-4" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 -mr-2 text-muted-foreground"><MoreVertical className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                     {!isFolder && <DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>}
@@ -173,10 +173,12 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                             </DropdownMenu>
                         )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">{isFolder ? 'Carpeta' : resource.category}</p>
+                    <p className="text-xs text-muted-foreground mt-1 pl-6">
+                        {new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
                 </div>
             </Card>
-        </Wrapper>
+        </div>
     );
 });
 ResourceGridItem.displayName = 'ResourceGridItem';
@@ -439,7 +441,7 @@ export default function ResourcesPage() {
                 </div>
             ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-                    {allApiResources.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={() => {}} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} isSelected={selectedResource?.id === item.id}/>)}
+                    {allApiResources.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={() => {}} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
                 </div>
             ) : (
                 <Table>
