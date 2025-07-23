@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
     
-    --primary: 262 84% 58%; /* Morado Intenso */
+    --primary: 221 83% 53%; /* Azul Vibrante */
     --primary-foreground: 210 20% 98%;
     
     --secondary: 220 14.3% 95.9%;
@@ -29,18 +29,18 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
     
-    --border: 220 13% 60%; /* Borde más oscuro y prominente */
-    --input: 220 13% 60%; /* Borde de input más oscuro y prominente */
-    --ring: 262 84% 58%;
+    --border: 0 0% 90%; /* Gris muy claro para borde sutil */
+    --input: 0 0% 90%; /* Borde de input sutil */
+    --ring: 221 83% 53%;
     
     --radius: 0.5rem;
 
     --sidebar-background: 220 14.3% 98%;
     --sidebar-foreground: 224 71.4% 4.1%;
-    --sidebar-accent: 262 84% 58%;
+    --sidebar-accent: 221 83% 53%;
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: 220 13% 88%;
-    --sidebar-ring: 262 84% 58%;
+    --sidebar-ring: 221 83% 53%;
 
     --chart-1: 280 85% 60%; /* Violeta */
     --chart-2: 198 90% 48%; /* Cian Brillante */
@@ -59,13 +59,13 @@
     --background: 0 0% 0%;
     --foreground: 210 20% 98%;
     
-    --card: 220 15% 5%;
+    --card: 240 5% 15%; /* Gris muy oscuro, no negro puro */
     --card-foreground: 210 20% 98%;
     
     --popover: 224 71.4% 4.1%;
     --popover-foreground: 210 20% 98%;
     
-    --primary: 262 90% 68%; /* Morado más brillante */
+    --primary: 221 83% 63%; /* Azul más brillante */
     --primary-foreground: 210 20% 98%;
     
     --secondary: 215 28% 15%;
@@ -80,13 +80,13 @@
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 20% 98%;
     
-    --border: 215 28% 40%; /* Borde más claro y prominente */
-    --input: 215 28% 40%; /* Borde de input más claro y prominente */
-    --ring: 262 90% 68%;
+    --border: 0 0% 80% / 0.6; /* Blanco translúcido para borde sutil */
+    --input: 215 28% 40%;
+    --ring: 221 83% 63%;
     
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 210 20% 98%;
-    --sidebar-accent: 262 90% 68%;
+    --sidebar-accent: 221 83% 63%;
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: 0 0% 15%;
 
