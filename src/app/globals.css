@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
     
-    --primary: 262 82% 57%; /* Deep Purple */
+    --primary: 262 82% 57%; /* Morado Intenso */
     --primary-foreground: 210 20% 98%;
     
     --secondary: 220 14.3% 95.9%;
@@ -23,7 +23,7 @@
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
     
-    --accent: 263 70% 65%; /* Electric Indigo */
+    --accent: 158 78% 42%; /* Verde Esmeralda */
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84.2% 60.2%;
@@ -42,11 +42,11 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 262 82% 57%;
 
-    --chart-1: 22 90% 55%;
-    --chart-2: 198 90% 45%;
-    --chart-3: 280 80% 60%;
-    --chart-4: 110 70% 50%;
-    --chart-5: 340 90% 60%;
+    --chart-1: 22 95% 55%; /* Naranja Vibrante */
+    --chart-2: 198 90% 48%; /* Cian Brillante */
+    --chart-3: 280 85% 60%; /* Violeta */
+    --chart-4: 50 100% 50%; /* Amarillo Sol */
+    --chart-5: 340 95% 65%; /* Rosa Eléctrico */
 
     --event-blue: 210 90% 55%;
     --event-green: 140 70% 45%;
@@ -65,7 +65,7 @@
     --popover: 224 71.4% 4.1%;
     --popover-foreground: 210 20% 98%;
     
-    --primary: 262 82% 57%;
+    --primary: 263 70% 65%; /* Morado Neón */
     --primary-foreground: 210 20% 98%;
     
     --secondary: 215 27.9% 16.9%;
@@ -74,27 +74,27 @@
     --muted: 215 27.9% 16.9%;
     --muted-foreground: 217.9 10.6% 64.9%;
     
-    --accent: 263 70% 65%;
-    --accent-foreground: 210 20% 98%;
+    --accent: 158 70% 55%; /* Verde Esmeralda Neón */
+    --accent-foreground: 0 0% 10%;
     
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 20% 98%;
     
     --border: 215 27.9% 16.9%;
     --input: 215 27.9% 16.9%;
-    --ring: 262 82% 57%;
+    --ring: 263 70% 65%;
     
     --sidebar-background: 224 71.4% 2.1%;
     --sidebar-foreground: 210 20% 98%;
-    --sidebar-accent: 262 82% 57%;
+    --sidebar-accent: 263 70% 65%;
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: 215 27.9% 12.9%;
 
-    --chart-1: 25 100% 60%;
-    --chart-2: 200 100% 55%;
-    --chart-3: 280 100% 65%;
-    --chart-4: 110 80% 55%;
-    --chart-5: 340 100% 65%;
+    --chart-1: 25 100% 65%;
+    --chart-2: 200 100% 60%;
+    --chart-3: 280 100% 70%;
+    --chart-4: 50 100% 60%;
+    --chart-5: 340 100% 70%;
 
     --event-blue: 210 100% 60%;
     --event-green: 140 80% 50%;
@@ -113,7 +113,9 @@
 
 @layer components {
   .watermark-img {
-    @apply opacity-40 w-auto h-auto;
+    @apply opacity-40;
+    width: auto;
+    height: auto;
   }
 
   .card-border-animated {
