@@ -3,61 +3,8 @@
 @tailwind utilities;
 
 @layer base {
+  /* --- TEMA CLARO (POR DEFECTO) --- */
   :root {
-    --background: 0 0% 0%; /* Pure Black */
-    --foreground: 210 40% 98%;
-    
-    --card: 220 20% 8%; /* Very dark gray */
-    --card-foreground: 210 40% 98%;
-    
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 210 40% 98%;
-    
-    --primary: 45 100% 50%; /* Gold */
-    --primary-foreground: 220 20% 10%; 
-    
-    --secondary: 220 15% 15%; /* Dark gray */
-    --secondary-foreground: 210 40% 98%;
-    
-    --muted: 220 15% 15%;
-    --muted-foreground: 210 20% 65%;
-    
-    --accent: 45 100% 55%; 
-    --accent-foreground: 220 20% 10%;
-    
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    
-    --border: 220 20% 15%; /* Dark gray border */
-    --input: 220 20% 12%; 
-    --ring: 45 100% 50%;
-    
-    --radius: 0.5rem;
-
-    --sidebar-background: 220 20% 5%;
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-accent: 45 100% 50%;
-    --sidebar-accent-foreground: 220 20% 10%;
-    --sidebar-border: 220 20% 12%;
-    --sidebar-ring: 45 100% 55%;
-
-    --chart-1: 170 100% 45%;
-    --chart-2: 30 100% 50%;
-    --chart-3: 280 100% 60%;
-    --chart-4: 200 100% 50%;
-    --chart-5: 90 100% 50%;
-
-    --event-blue: 220 100% 55%;
-    --event-green: 150 100% 45%;
-    --event-red: 0 100% 55%;
-    --event-orange: 30 100% 50%;
-
-    --gauge-green: 140 80% 50%;
-    --gauge-yellow: 45 90% 50%;
-    --gauge-red: 0 90% 60%;
-  }
-
-  .dark {
     --background: 0 0% 100%; /* Pure White */
     --foreground: 222.2 84% 4.9%;
     
@@ -67,8 +14,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
     
-    --primary: 45 95% 48%; /* Gold */
-    --primary-foreground: 220 20% 10%;
+    --primary: 262 82% 57%; /* Deep Purple */
+    --primary-foreground: 210 40% 98%;
     
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -76,24 +23,24 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
     
-    --accent: 45 100% 55%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 263 70% 65%; /* Electric Indigo */
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 45 95% 48%;
+    --ring: 262 82% 57%;
     
     --radius: 0.5rem;
 
     --sidebar-background: 210 40% 98%;
     --sidebar-foreground: 222.2 47.4% 11.2%;
-    --sidebar-accent: 45 95% 48%;
+    --sidebar-accent: 262 82% 57%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 214.3 31.8% 91.4%;
-    --sidebar-ring: 45 95% 48%;
+    --sidebar-ring: 262 82% 57%;
 
     --chart-1: 170 80% 40%;
     --chart-2: 30 90% 50%;
@@ -109,6 +56,61 @@
     --gauge-green: 140 70% 45%;
     --gauge-yellow: 45 80% 50%;
     --gauge-red: 0 80% 55%;
+  }
+
+  /* --- TEMA OSCURO --- */
+  .dark {
+    --background: 222 47% 11%; /* Dark Gray from proposal */
+    --foreground: 210 40% 98%;
+    
+    --card: 222 47% 14%;
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 262 82% 57%; /* Deep Purple */
+    --primary-foreground: 210 40% 98%;
+    
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    
+    --accent: 263 70% 65%; /* Electric Indigo */
+    --accent-foreground: 210 40% 98%;
+    
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 262 82% 57%;
+    
+    --radius: 0.5rem;
+
+    --sidebar-background: 222 47% 9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-accent: 262 82% 57%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 15%;
+    --sidebar-ring: 262 82% 57%;
+
+    --chart-1: 170 100% 45%;
+    --chart-2: 30 100% 50%;
+    --chart-3: 280 100% 60%;
+    --chart-4: 200 100% 50%;
+    --chart-5: 90 100% 50%;
+
+    --event-blue: 220 100% 55%;
+    --event-green: 150 100% 45%;
+    --event-red: 0 100% 55%;
+    --event-orange: 30 100% 50%;
+
+    --gauge-green: 140 80% 50%;
+    --gauge-yellow: 45 90% 50%;
+    --gauge-red: 0 90% 60%;
   }
 
   * {
