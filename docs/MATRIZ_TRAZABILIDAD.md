@@ -71,4 +71,4 @@ Este documento sirve como una matriz de trazabilidad de requisitos y, al mismo t
 | **S-13** | **Notificaciones** | Ver notificaciones. | El estudiante recibe notificaciones (ej. nuevo curso publicado, nuevo anuncio) y puede verlas en el popover de la barra superior o en la página `/notifications`. | [PENDIENTE] | |
 | **S-14** | **Calendario** | Ver el calendario de eventos. | El estudiante puede ver en `/calendar` los eventos dirigidos a él, a su rol o a toda la organización. | [PENDIENTE] | |
 | **S-15** | **Anuncios** | Ver anuncios relevantes. | En `/announcements`, el estudiante ve una lista de los anuncios dirigidos a él, a su rol o a todos los usuarios. | [PENDIENTE] | |
-| **S-16** | **Mis Cursos** | Ver una lista dedicada de los cursos en los que está inscrito. | La página `/my-courses` muestra una página con las tarjetas de sus cursos, mostrando el progreso actual en cada uno. | [PENDIENTE] | |
+| **S-16** | **Mis Cursos** | Ver una lista dedicada de los cursos en los que está inscrito. | La página `/my-courses` muestra una página con las tarjetas de sus cursos, mostrando el progreso actual en cada uno. | [PENDiente] | |
