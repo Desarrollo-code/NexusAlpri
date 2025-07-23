@@ -1,3 +1,4 @@
+
 # Matriz de Trazabilidad y Plan de Pruebas - NexusAlpri
 
 Este documento sirve como una matriz de trazabilidad de requisitos y, al mismo tiempo, como una plantilla para el plan de pruebas funcionales de la plataforma. Cada fila representa una acción específica que un usuario puede realizar, detallando el resultado esperado para su correcta validación.
@@ -16,7 +17,7 @@ Este documento sirve como una matriz de trazabilidad de requisitos y, al mismo t
 | **A-06** | | Eliminar un usuario. | Al confirmar la eliminación, el usuario desaparece de la lista y ya no puede iniciar sesión. No se puede eliminar a sí mismo. | [PENDIENTE] | |
 | **A-07** | **Gestión de Cursos** | Crear un nuevo curso. | Al llenar el formulario inicial, se redirige a la página de edición completa (`/manage-courses/[id]/edit`) y el curso aparece en la lista como "Borrador". | [PENDIENTE] | |
 | **A-08** | | Editar la información de un curso. | Cualquier cambio en el título, descripción, categoría o imagen de un curso se guarda y persiste al recargar la página de edición. | [PENDIENTE] | |
-| **A-09** | | Reordenar módulos y lecciones. | Al arrastrar y soltar un módulo o una lección en el editor, su nueva posición se guarda correctamente y se mantiene al volver a entrar. | [PENDiente] | |
+| **A-09** | | Reordenar módulos y lecciones. | Al arrastrar y soltar un módulo o una lección en el editor, su nueva posición se guarda correctamente y se mantiene al volver a entrar. | [PENDIENTE] | |
 | **A-10** | | Publicar un curso. | Al cambiar el estado a "Publicado", el curso se vuelve visible en el `/courses` para los estudiantes y se envía una notificación. | [PENDIENTE] | |
 | **A-11** | | Archivar un curso. | Al cambiar el estado a "Archivado", el curso se oculta del catálogo principal pero se conservan los datos de inscripción y progreso. | [PENDIENTE] | |
 | **A-12** | | Eliminar un curso. | Al confirmar la eliminación, el curso desaparece de la lista de gestión y de la base de datos, junto con todo su contenido y los datos de progreso asociados. | [PENDIENTE] | |
@@ -70,4 +71,4 @@ Este documento sirve como una matriz de trazabilidad de requisitos y, al mismo t
 | **S-13** | **Notificaciones** | Ver notificaciones. | El estudiante recibe notificaciones (ej. nuevo curso publicado, nuevo anuncio) y puede verlas en el popover de la barra superior o en la página `/notifications`. | [PENDIENTE] | |
 | **S-14** | **Calendario** | Ver el calendario de eventos. | El estudiante puede ver en `/calendar` los eventos dirigidos a él, a su rol o a toda la organización. | [PENDIENTE] | |
 | **S-15** | **Anuncios** | Ver anuncios relevantes. | En `/announcements`, el estudiante ve una lista de los anuncios dirigidos a él, a su rol o a todos los usuarios. | [PENDIENTE] | |
-| **S-16** | **Mis Cursos** | Ver una lista dedicada de los cursos en los que está inscrito. | `/my-courses` | El estudiante ve una página con las tarjetas de sus cursos, mostrando el progreso actual en cada uno. | [PENDIENTE] | |
+| **S-16** | **Mis Cursos** | Ver una lista dedicada de los cursos en los que está inscrito. | La página `/my-courses` muestra una página con las tarjetas de sus cursos, mostrando el progreso actual en cada uno. | [PENDIENTE] | |

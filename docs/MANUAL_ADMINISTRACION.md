@@ -83,4 +83,3 @@ Esta sección te permite personalizar el comportamiento de toda la plataforma.
 
 *   **Copias de Seguridad:** La responsabilidad de las copias de seguridad de la base de datos recae en la configuración de la infraestructura del servidor de la base de datos (MySQL). Asegúrate de tener una política de copias de seguridad regular.
 *   **Logs del Sistema:** Los logs de la aplicación (errores, accesos) son gestionados por el entorno de despliegue (ej. Vercel, Docker, un servidor PM2). Consulta la documentación de tu proveedor de hosting para acceder a ellos.
-

@@ -27,7 +27,7 @@ Si un administrador crea tu cuenta, recibirás tus credenciales para iniciar ses
 La interfaz se divide en tres áreas principales:
 
 *   **Menú Lateral (Izquierda):** Tu principal herramienta de navegación. Contiene enlaces a todas las secciones importantes como el Panel Principal, Cursos, Recursos, etc.
-*   **Barra Superior:** Muestra el título de la página actual, una barra de búsqueda y el menú de tu perfil.
+*   **Barra Superior:** Muestra el título de la página actual y el menú de tu perfil con notificaciones.
 *   **Contenido Principal:** El área central donde interactúas con las diferentes secciones.
 
 ## 4. Funcionalidades Clave
@@ -43,21 +43,29 @@ Es tu página de inicio. Aquí verás:
 
 *   **Explorar:** En la sección "Catálogo de Cursos", puedes ver todos los cursos publicados.
 *   **Inscribirse:** Haz clic en el botón "Inscribirse" en la tarjeta de un curso. Una vez inscrito, el curso aparecerá en "Mis Cursos".
-*   **Acceder al Contenido:** Haz clic en "Continuar" o "Ver Curso" para acceder a los módulos y lecciones. Dentro, puedes marcar lecciones como completadas y realizar quizzes.
+*   **Acceder al Contenido:** Haz clic en "Continuar" o "Ver Curso" para acceder a los módulos y lecciones. Dentro, puedes realizar quizzes y consumir el contenido.
 
-### 4.3. Biblioteca de Recursos
+### 4.3. Lógica de Progreso Automático
+
+Para asegurar un seguimiento real de tu aprendizaje, el sistema registra tu progreso de forma automática. **No hay botones para "marcar como completado"**. Así es como funciona:
+
+*   **Lecciones de Texto/Video/Archivo:** Se marcan como completadas automáticamente cuando las **seleccionas** en el menú de lecciones.
+*   **Quices:** Aportan una puntuación variable. Tu nota se guarda al enviar el quiz.
+*   **Cálculo Final:** Una vez que has interactuado con **todas** las lecciones, se activará el botón **"Calcular Mi Puntuación Final"**. Al presionarlo, el sistema calculará tu nota final ponderada y la mostrará en el indicador circular de progreso.
+
+### 4.4. Biblioteca de Recursos
 
 Aquí encontrarás documentos, guías y políticas de la empresa.
 *   Navega por las carpetas para encontrar archivos.
 *   Haz clic en un recurso para previsualizarlo o descargarlo.
 *   Algunos recursos pueden requerir un PIN para acceder.
 
-### 4.4. Anuncios y Calendario
+### 4.5. Anuncios y Calendario
 
 *   **Anuncios:** Mantente al día con las últimas noticias y comunicados de la empresa.
 *   **Calendario:** Visualiza los próximos eventos, talleres o fechas importantes. Los eventos pueden tener colores para diferenciarlos.
 
-### 4.5. Gestionar tu Perfil
+### 4.6. Gestionar tu Perfil
 
 Haz clic en tu avatar en la esquina superior derecha y selecciona "Perfil" para:
 *   Cambiar tu nombre y foto de perfil.
@@ -72,4 +80,3 @@ Haz clic en tu avatar en la esquina superior derecha y selecciona "Perfil" para:
     *   Asegúrate de estar inscrito. Si el problema persiste, contacta al instructor o a un administrador.
 *   **La página se cierra sola.**
     *   Por seguridad, la sesión se cierra automáticamente tras un período de inactividad (normalmente 20 minutos). Simplemente vuelve a iniciar sesión.
-
