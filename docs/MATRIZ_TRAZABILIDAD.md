@@ -1,4 +1,3 @@
-
 # Matriz de Trazabilidad de Requisitos - NexusAlpri
 
 Este documento detalla la relación entre los requisitos funcionales, los roles de usuario, los componentes de la interfaz de usuario (UI), los endpoints de la API y los modelos de la base de datos (BD).
