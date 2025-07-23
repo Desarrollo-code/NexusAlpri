@@ -1,3 +1,4 @@
+
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -43,6 +44,9 @@ import { cn } from '@/lib/utils';
 import { UploadArea } from '@/components/ui/upload-area';
 import { ResourceDetailsSidebar } from '@/components/resources/details-sidebar';
 import { Progress } from '@/components/ui/progress';
+import { FolderPreview } from '@/components/ui/folder-preview';
+import { Folder3D } from '@/components/ui/folder-3d';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 
 // --- Types and Mappers ---
@@ -121,6 +125,9 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
         const isImage = !isFolder && resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
         const youtubeId = !isFolder && resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
         
+        if (isFolder) {
+            return <Folder3D />;
+        }
         if (isImage) {
            return <Image src={resource.url!} alt={resource.title} fill className="object-cover" data-ai-hint="resource document"/>
         }
@@ -134,38 +141,42 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
         );
     };
 
+    const Wrapper = isFolder ? FolderPreview : 'div';
+    const wrapperProps = isFolder ? { folderId: resource.id } : {};
+
     return (
-        <Card 
-            className={cn("group w-full h-full overflow-hidden transition-all duration-200 cursor-pointer", isSelected ? "ring-2 ring-primary shadow-lg" : "shadow-sm hover:shadow-md")}
-            onClick={handleClick}
-        >
-            <div className="aspect-video w-full flex items-center justify-center overflow-hidden relative">
-                <Thumbnail />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"/>
-                {resource.hasPin && !isFolder && (
-                    <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
-                        <Lock className="h-3 w-3 text-amber-400" />
-                    </div>
-                )}
-            </div>
-            <div className="p-3">
-                <div className="flex justify-between items-start gap-2">
-                    <p className="font-semibold text-sm leading-tight line-clamp-2">{resource.title}</p>
-                    {canModify && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 -mr-2"><MoreVertical className="h-4 w-4" /></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                {!isFolder && <DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>}
-                                <DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+        <Wrapper {...wrapperProps}>
+            <Card 
+                className={cn("group w-full h-full overflow-hidden transition-all duration-200 cursor-pointer", isSelected ? "ring-2 ring-primary shadow-lg" : "shadow-sm hover:shadow-md")}
+                onClick={handleClick}
+            >
+                <div className="aspect-video w-full flex items-center justify-center overflow-hidden relative">
+                    <Thumbnail />
+                    {resource.hasPin && !isFolder && (
+                        <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
+                            <Lock className="h-3 w-3 text-amber-400" />
+                        </div>
                     )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{isFolder ? 'Carpeta' : resource.category}</p>
-            </div>
-        </Card>
+                <div className="p-3">
+                    <div className="flex justify-between items-start gap-2">
+                        <p className="font-semibold text-sm leading-tight line-clamp-2">{resource.title}</p>
+                        {canModify && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 -mr-2"><MoreVertical className="h-4 w-4" /></Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                    {!isFolder && <DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>}
+                                    <DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{isFolder ? 'Carpeta' : resource.category}</p>
+                </div>
+            </Card>
+        </Wrapper>
     );
 });
 ResourceGridItem.displayName = 'ResourceGridItem';
@@ -426,10 +437,31 @@ export default function ResourcesPage() {
                     <h3 className="text-xl font-semibold text-foreground">{searchTerm ? 'No hay coincidencias' : 'Carpeta Vacía'}</h3>
                     <p>{searchTerm ? 'Prueba con otro término.' : 'Sube un archivo para empezar.'}</p>
                 </div>
-            ) : (
+            ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                     {allApiResources.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={() => {}} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} isSelected={selectedResource?.id === item.id}/>)}
                 </div>
+            ) : (
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Nombre</TableHead>
+                            <TableHead>Tipo</TableHead>
+                            <TableHead>Categoría</TableHead>
+                            <TableHead>Fecha</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {allApiResources.map(item => (
+                            <TableRow key={item.id} onClick={() => item.type === 'FOLDER' ? handleNavigateFolder(item) : setSelectedResource(item)} className="cursor-pointer">
+                                <TableCell className="font-medium flex items-center gap-2">{getIconForType(item.type)} {item.title}</TableCell>
+                                <TableCell>{item.type}</TableCell>
+                                <TableCell><Badge variant="outline">{item.category}</Badge></TableCell>
+                                <TableCell>{new Date(item.uploadDate).toLocaleDateString()}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
             )}
         </div>
       </main>

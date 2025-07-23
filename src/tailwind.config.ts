@@ -119,7 +119,7 @@ export default {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'press': 'press 0.2s 1 linear',
-        'bounce': 'bounce 0.2s 1 linear forwards',
+        'bounce': 'bounce 0.2s 1 linear',
         'throw': 'throw 0.4s linear',
       },
     },
