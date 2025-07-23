@@ -29,8 +29,8 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
     
-    --border: 220 13% 85%;
-    --input: 220 13% 85%;
+    --border: 220 13% 80%; /* Borde más oscuro para tema claro */
+    --input: 220 13% 80%; /* Borde más oscuro para tema claro */
     --ring: 220 95% 55%;
     
     --radius: 0.5rem;
@@ -80,8 +80,8 @@
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 20% 98%;
     
-    --border: 215 28% 20%;
-    --input: 215 28% 20%;
+    --border: 215 28% 25%; /* Borde más claro para tema oscuro */
+    --input: 215 28% 25%; /* Borde más claro para tema oscuro */
     --ring: 220 100% 65%;
     
     --sidebar-background: 0 0% 5%;
