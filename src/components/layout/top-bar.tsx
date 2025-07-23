@@ -157,7 +157,7 @@ export function TopBar() {
   
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between shadow-sm bg-background/95 px-4 backdrop-blur-md md:px-6">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/60 dark:border-white/10 bg-background/95 px-4 backdrop-blur-md md:px-6">
         <div className="flex items-center gap-2">
           <SidebarTrigger className="md:hidden" />
           <h1 className="hidden sm:block text-xl font-semibold font-headline truncate">{getPageTitle()}</h1>
