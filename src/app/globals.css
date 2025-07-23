@@ -29,8 +29,8 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
     
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
+    --border: 220 13% 85%;
+    --input: 220 13% 85%;
     --ring: 220 95% 55%;
     
     --radius: 0.5rem;
@@ -39,7 +39,7 @@
     --sidebar-foreground: 224 71.4% 4.1%;
     --sidebar-accent: 220 95% 55%;
     --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 220 13% 91%;
+    --sidebar-border: 220 13% 88%;
     --sidebar-ring: 220 95% 55%;
 
     --chart-1: 280 85% 60%; /* Violeta */
@@ -59,7 +59,7 @@
     --background: 0 0% 0%;
     --foreground: 210 20% 98%;
     
-    --card: 220 15% 10%;
+    --card: 220 15% 5%;
     --card-foreground: 210 20% 98%;
     
     --popover: 224 71.4% 4.1%;
@@ -80,15 +80,15 @@
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 20% 98%;
     
-    --border: 215 28% 15%;
-    --input: 215 28% 15%;
+    --border: 215 28% 20%;
+    --input: 215 28% 20%;
     --ring: 220 100% 65%;
     
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 210 20% 98%;
     --sidebar-accent: 220 100% 65%;
     --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 0 0% 12%;
+    --sidebar-border: 0 0% 15%;
 
     --chart-1: 280 100% 70%; 
     --chart-2: 200 100% 60%; 
