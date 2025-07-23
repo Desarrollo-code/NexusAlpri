@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { AnnouncementCard } from '@/components/announcement-card';
@@ -296,7 +295,7 @@ export default function AnnouncementsPage() {
                         id="content"
                         value={formContent}
                         onChange={(e) => setFormContent(e.target.value)}
-                        placeholder="Imagina algo..."
+                        placeholder="Escribe aquí el contenido del anuncio para los usuarios..."
                         required
                         disabled={isProcessing}
                         rows={5}
