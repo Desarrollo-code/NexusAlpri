@@ -20,11 +20,13 @@ El administrador tiene control total sobre la plataforma.
 | **A-08** | | Añadir, editar, reordenar y eliminar contenido en cualquier curso. | `/manage-courses/[id]/edit` | Estructura completa del curso (módulos, lecciones, etc.). | La estructura del curso se actualiza visualmente y se guarda correctamente. |
 | **A-09** | | Publicar, archivar o cambiar a borrador el estado de un curso. | `/manage-courses` | Estado de un curso. | El estado del curso cambia visualmente (ej. la insignia) y se notifica a los usuarios si se publica. |
 | **A-10** | | Eliminar cualquier curso de la plataforma. | `/manage-courses` | Eliminación completa de un curso y su contenido. | El curso desaparece de la lista. Todos los datos asociados se eliminan. |
-| **A-11** | **Analíticas** | Ver un dashboard con estadísticas clave de la plataforma. | `/analytics` | Datos de usuarios, cursos, inscripciones, etc. | Se muestran gráficos y métricas actualizadas sobre el uso de la plataforma. |
-| **A-12** | **Auditoría** | Revisar un registro de eventos de seguridad importantes. | `/security-audit` | Registros de eventos de seguridad. | La tabla muestra una lista cronológica de los eventos de seguridad con sus detalles. |
-| **A-13** | **Configuración** | Ver y modificar la configuración general de la plataforma. | `/settings` | Ajustes de la plataforma (nombre, políticas, etc.). | Los cambios se guardan y se aplican en toda la plataforma (ej. cambio de nombre). |
-| **A-14** | **Contenido Global** | Crear, editar y eliminar anuncios, eventos del calendario y recursos. | `/announcements`, `/calendar`, `/resources` | Anuncios, Eventos, Recursos de la biblioteca. | Las acciones (crear, editar, eliminar) se reflejan inmediatamente en las respectivas secciones. |
-| **A-15** | **Inscripciones** | Ver el progreso y los inscritos de cualquier curso. | `/enrollments` | Inscripciones y progreso de los estudiantes. | Al seleccionar un curso, se muestra la lista de estudiantes inscritos y su progreso. |
+| **A-11** | | Guardar una lección como plantilla reutilizable. | `/manage-courses/[id]/edit` | Creación de una nueva plantilla de lección. | La plantilla se guarda y está disponible para ser usada en otros cursos. |
+| **A-12** | | Crear una lección a partir de una plantilla existente. | `/manage-courses/[id]/edit` | Creación de una lección a partir de una plantilla. | Se añade una nueva lección al módulo con la estructura de la plantilla seleccionada. |
+| **A-13** | **Analíticas** | Ver un dashboard con estadísticas clave de la plataforma. | `/analytics` | Datos de usuarios, cursos, inscripciones, etc. | Se muestran gráficos y métricas actualizadas sobre el uso de la plataforma. |
+| **A-14** | **Auditoría** | Revisar un registro de eventos de seguridad importantes. | `/security-audit` | Registros de eventos de seguridad. | La tabla muestra una lista cronológica de los eventos de seguridad con sus detalles. |
+| **A-15** | **Configuración** | Ver y modificar la configuración general de la plataforma. | `/settings` | Ajustes de la plataforma (nombre, políticas, etc.). | Los cambios se guardan y se aplican en toda la plataforma (ej. cambio de nombre). |
+| **A-16** | **Contenido Global** | Crear, editar y eliminar anuncios, eventos del calendario y recursos. | `/announcements`, `/calendar`, `/resources` | Anuncios, Eventos, Recursos de la biblioteca. | Las acciones (crear, editar, eliminar) se reflejan inmediatamente en las respectivas secciones. |
+| **A-17** | **Inscripciones** | Ver el progreso y los inscritos de cualquier curso. | `/enrollments` | Inscripciones y progreso de los estudiantes. | Al seleccionar un curso, se muestra la lista de estudiantes inscritos y su progreso. |
 
 ---
 
@@ -39,10 +41,12 @@ El instructor gestiona sus propios cursos y estudiantes.
 | **I-03** | | Ver y gestionar únicamente los cursos que ha creado. | `/manage-courses` | Cursos creados por el instructor. | La lista solo muestra los cursos donde el usuario es el instructor. |
 | **I-04** | | Editar la información y contenido de sus propios cursos. | `/manage-courses/[id]/edit` | Actualización y estructura de sus cursos. | El instructor puede modificar sus cursos, pero no los de otros. |
 | **I-05** | | Publicar, archivar o cambiar a borrador el estado de sus cursos. | `/manage-courses` | Estado de sus cursos. | El instructor puede cambiar el estado de sus propios cursos. |
-| **I-06** | **Seguimiento** | Ver la lista de estudiantes inscritos en sus cursos y su progreso. | `/enrollments` | Inscripciones y progreso de los estudiantes en sus cursos. | El instructor puede seleccionar sus cursos y ver quién está inscrito y su avance. |
-| **I-07** | **Contenido Global** | Crear anuncios y eventos en el calendario para diferentes audiencias. | `/announcements`, `/calendar` | Anuncios, Eventos del calendario. | El instructor puede crear comunicados y eventos visibles para otros usuarios. |
-| **I-08** | | Subir, editar y eliminar los recursos que ha subido a la biblioteca. | `/resources` | Recursos de la biblioteca. | El instructor puede gestionar los archivos que él mismo ha subido. |
-| **I-09** | **Perfil** | Editar su propio perfil y gestionar su contraseña y 2FA. | `/profile` | Información de su propia cuenta. | El usuario puede actualizar su nombre, avatar y seguridad personal. |
+| **I-06** | | Guardar una de sus lecciones como plantilla reutilizable. | `/manage-courses/[id]/edit` | Creación de una nueva plantilla de lección. | La plantilla se guarda con el instructor como creador y está disponible para él en otros cursos. |
+| **I-07** | | Crear una lección en su curso a partir de una plantilla. | `/manage-courses/[id]/edit` | Creación de una lección a partir de una plantilla. | Se añade una nueva lección al módulo con la estructura de la plantilla seleccionada. |
+| **I-08** | **Seguimiento** | Ver la lista de estudiantes inscritos en sus cursos y su progreso. | `/enrollments` | Inscripciones y progreso de los estudiantes en sus cursos. | El instructor puede seleccionar sus cursos y ver quién está inscrito y su avance. |
+| **I-09** | **Contenido Global** | Crear anuncios y eventos en el calendario para diferentes audiencias. | `/announcements`, `/calendar` | Anuncios, Eventos del calendario. | El instructor puede crear comunicados y eventos visibles para otros usuarios. |
+| **I-10** | | Subir, editar y eliminar los recursos que ha subido a la biblioteca. | `/resources` | Recursos de la biblioteca. | El instructor puede gestionar los archivos que él mismo ha subido. |
+| **I-11** | **Perfil** | Editar su propio perfil y gestionar su contraseña y 2FA. | `/profile` | Información de su propia cuenta. | El usuario puede actualizar su nombre, avatar y seguridad personal. |
 
 ---
 
@@ -53,12 +57,12 @@ El estudiante consume el contenido formativo de la plataforma.
 | ID | Módulo/Funcionalidad | Descripción del Requisito | Ubicación en la App | Datos Involucrados | Resultado Esperado |
 | :-- | :--- | :--- | :--- | :--- | :--- |
 | **S-01** | **Dashboard** | Ver un panel con resúmenes de sus cursos inscritos y anuncios. | `/dashboard` | Sus inscripciones, su progreso, anuncios. | El panel muestra tarjetas con los cursos en los que está inscrito y los últimos anuncios. |
-| **S-02** | **Catálogo de Cursos** | Explorar todos los cursos publicados en la plataforma. | `/courses` | Lista de cursos públicos. | El estudiante ve todas las ofertas formativas publicadas, excepto sus propios cursos si es también instructor. |
+| **S-02** | **Catálogo de Cursos** | Explorar todos los cursos publicados en la plataforma. | `/courses` | Lista de cursos públicos. | El estudiante ve todas las ofertas formativas publicadas. |
 | **S-03** | | Inscribirse a un curso público. | `/courses` | Creación de un registro de inscripción. | El botón "Inscribirse" cambia a "Continuar Curso" y el curso aparece en "Mis Cursos". |
 | **S-04** | | Cancelar la inscripción a un curso. | `/my-courses` | Eliminación de su inscripción y progreso. | El curso desaparece de "Mis Cursos" y vuelve a estar disponible en el Catálogo. |
-| **S-05** | **Consumo de Curso** | Navegar y ver el contenido de las lecciones (texto, video, etc.). | `/courses/[courseId]` | Contenido de la lección, Registro de interacción. | El contenido de la lección se muestra en el área principal. La lección se marca como vista. |
+| **S-05** | **Consumo de Curso** | Navegar y ver el contenido de las lecciones (texto, video, etc.). | `/courses/[courseId]` | Contenido de la lección, Registro de interacción. | El contenido de la lección se muestra en el área principal. La lección se marca como vista automáticamente. |
 | **S-06** | | Realizar y enviar quizzes dentro de una lección. | `/courses/[courseId]` | Preguntas del quiz, Registro de la nota. | Después de responder, el sistema muestra el resultado y guarda la puntuación. |
-| **S-07** | **Progreso** | Solicitar el cálculo de la puntuación final del curso. | `/courses/[courseId]` | Consolidación de la nota final. | Tras ver todas las lecciones, el botón se activa. Al pulsarlo, se muestra la nota final en el indicador circular. |
+| **S-07** | **Progreso** | Solicitar el cálculo de la puntuación final del curso. | `/courses/[courseId]` | Consolidación de la nota final. | Tras interactuar con todas las lecciones, el botón se activa. Al pulsarlo, se muestra la nota final en el indicador circular. |
 | **S-08** | **Biblioteca** | Acceder y descargar recursos de la biblioteca. | `/resources` | Lista de recursos disponibles. | El estudiante puede navegar por las carpetas y ver o descargar los archivos. |
 | **S-09** | | Ingresar un PIN para acceder a recursos protegidos. | `/resources` | Verificación del PIN de un recurso. | Si el PIN es correcto, se concede el acceso al archivo; si no, se muestra un error. |
 | **S-10** | **Perfil** | Editar su propio perfil y gestionar su contraseña y 2FA. | `/profile` | Información de su propia cuenta. | El estudiante puede actualizar su nombre, avatar y configuraciones de seguridad. |
