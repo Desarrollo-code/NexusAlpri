@@ -29,8 +29,8 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
     
-    --border: 0 0% 90%; /* Gris muy claro para borde sutil */
-    --input: 0 0% 90%; /* Borde de input sutil */
+    --border: 0 0% 60%; 
+    --input: 0 0% 60%;
     --ring: 221 83% 53%;
     
     --radius: 0.5rem;
@@ -59,7 +59,7 @@
     --background: 0 0% 0%;
     --foreground: 210 20% 98%;
     
-    --card: 240 5% 15%; /* Gris muy oscuro, no negro puro */
+    --card: 224 15% 12%;
     --card-foreground: 210 20% 98%;
     
     --popover: 224 71.4% 4.1%;
@@ -80,8 +80,8 @@
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 20% 98%;
     
-    --border: 0 0% 80% / 0.6; /* Blanco translúcido para borde sutil */
-    --input: 215 28% 40%;
+    --border: 0 0% 40%; 
+    --input: 0 0% 40%;
     --ring: 221 83% 63%;
     
     --sidebar-background: 0 0% 5%;
