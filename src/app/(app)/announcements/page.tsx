@@ -265,12 +265,10 @@ export default function AnnouncementsPage() {
                 if (!isOpen) resetFormAndState();
             }}>
               <DialogTrigger asChild>
-                <button className="group relative flex items-center justify-start w-[100px] h-[40px] border-none p-5 bg-primary text-primary-foreground font-medium cursor-pointer rounded-lg shadow-[5px_5px_0px_hsl(var(--primary)_/_0.4)] transition-all duration-300 hover:text-transparent active:translate-x-1 active:translate-y-1 active:shadow-[2px_2px_0px_hsl(var(--primary)_/_0.6)]">
-                  {announcementToEdit ? 'Editar' : 'Crear'}
-                  <svg className="w-[13px] absolute right-5 fill-primary-foreground transition-all duration-300 group-hover:right-[43%] group-hover:m-0 group-hover:p-0 group-hover:border-none" viewBox="0 0 512 512">
-                    <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
-                  </svg>
-                </button>
+                <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  {announcementToEdit ? 'Editar Anuncio' : 'Crear Anuncio'}
+                </Button>
               </DialogTrigger>
               <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
@@ -294,32 +292,15 @@ export default function AnnouncementsPage() {
                   
                   <div className="space-y-1">
                      <Label htmlFor="content">Contenido <span className="text-destructive">*</span></Label>
-                      <div className="styled-input-container">
-                        <div className="styled-input-chat">
-                          <div className="relative flex">
-                              <textarea 
-                                id="content" 
-                                name="content" 
-                                value={formContent}
-                                onChange={(e) => setFormContent(e.target.value)}
-                                placeholder="Imagina algo...✦˚"
-                                className="styled-input-textarea"
-                                required
-                                disabled={isProcessing}
-                              />
-                          </div>
-                           <div className="styled-input-options">
-                                <div className="styled-input-btns-add">
-                                  {/* Decorative buttons */}
-                                  <button type="button"><svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8v8a5 5 0 1 0 10 0V6.5a3.5 3.5 0 1 0-7 0V15a2 2 0 0 0 4 0V8" /></svg></button>
-                                  <button type="button"><svg viewBox="0 0 24 24" height={20} width={20} xmlns="http://www.w3.org/2000/svg"><path d="M4 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zm0 10a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zm10 0a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1zm0-8h6m-3-3v6" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" stroke="currentColor" fill="none" /></svg></button>
-                                </div>
-                                <button type="submit" className="styled-input-btn-submit group" disabled={isProcessing}>
-                                    <i><svg viewBox="0 0 512 512"><path fill="currentColor" d="M473 39.05a24 24 0 0 0-25.5-5.46L47.47 185h-.08a24 24 0 0 0 1 45.16l.41.13l137.3 58.63a16 16 0 0 0 15.54-3.59L422 80a7.07 7.07 0 0 1 10 10L226.66 310.26a16 16 0 0 0-3.59 15.54l58.65 137.38c.06.2.12.38.19.57c3.2 9.27 11.3 15.81 21.09 16.25h1a24.63 24.63 0 0 0 23-15.46L478.39 64.62A24 24 0 0 0 473 39.05" /></svg></i>
-                                </button>
-                           </div>
-                        </div>
-                      </div>
+                      <Textarea
+                        id="content"
+                        value={formContent}
+                        onChange={(e) => setFormContent(e.target.value)}
+                        placeholder="Imagina algo..."
+                        required
+                        disabled={isProcessing}
+                        rows={5}
+                      />
                   </div>
 
                   <div className="space-y-1">
