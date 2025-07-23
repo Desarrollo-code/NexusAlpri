@@ -4,91 +4,37 @@
 
 @layer base {
   :root {
-    --background: 220 20% 5%; /* Very dark graphite */
+    --background: 0 0% 0%; /* Pure Black */
     --foreground: 210 40% 98%;
     
-    --card: 220 20% 10%; /* Slightly lighter graphite */
+    --card: 220 20% 8%; /* Very dark gray */
     --card-foreground: 210 40% 98%;
     
-    --popover: 220 20% 5%;
+    --popover: 0 0% 3.9%;
     --popover-foreground: 210 40% 98%;
     
     --primary: 45 100% 50%; /* Gold */
-    --primary-foreground: 220 20% 10%; /* Dark graphite for text on gold button */
+    --primary-foreground: 220 20% 10%; 
     
-    --secondary: 220 15% 20%; /* Medium graphite */
+    --secondary: 220 15% 15%; /* Dark gray */
     --secondary-foreground: 210 40% 98%;
     
-    --muted: 220 15% 20%;
+    --muted: 220 15% 15%;
     --muted-foreground: 210 20% 65%;
     
-    --accent: 45 100% 55%; /* Slightly brighter gold for accents */
+    --accent: 45 100% 55%; 
     --accent-foreground: 220 20% 10%;
     
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 220 15% 25%; /* Graphite border */
-    --input: 220 15% 15%; /* Darker graphite for input */
-    --ring: 45 100% 50%; /* Gold for focus rings */
-    
-    --radius: 0.5rem; /* Slightly sharper radius for a modern look */
-
-    --sidebar-background: 220 20% 8%;
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-accent: 45 100% 50%;
-    --sidebar-accent-foreground: 220 20% 10%;
-    --sidebar-border: 220 20% 12%;
-    --sidebar-ring: 45 100% 55%;
-
-    --chart-1: 170 100% 45%; /* Cyan */
-    --chart-2: 30 100% 50%; /* Orange */
-    --chart-3: 280 100% 60%; /* Purple */
-    --chart-4: 200 100% 50%; /* Blue */
-    --chart-5: 90 100% 50%;  /* Lime Green */
-
-    --event-blue: 220 100% 55%;
-    --event-green: 150 100% 45%;
-    --event-red: 0 100% 55%;
-    --event-orange: 30 100% 50%;
-
-    --gauge-green: 140 80% 50%;
-    --gauge-yellow: 45 90% 50%;
-    --gauge-red: 0 90% 60%;
-  }
-
-  .dark {
-    --background: 220 20% 5%;
-    --foreground: 210 40% 98%;
-    
-    --card: 220 20% 10%;
-    --card-foreground: 210 40% 98%;
-    
-    --popover: 220 20% 5%;
-    --popover-foreground: 210 40% 98%;
-    
-    --primary: 45 100% 50%;
-    --primary-foreground: 220 20% 10%;
-    
-    --secondary: 220 15% 20%;
-    --secondary-foreground: 210 40% 98%;
-    
-    --muted: 220 15% 20%;
-    --muted-foreground: 210 20% 65%;
-    
-    --accent: 45 100% 55%;
-    --accent-foreground: 220 20% 10%;
-
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    
-    --border: 220 15% 25%;
-    --input: 220 15% 15%;
+    --border: 220 20% 15%; /* Dark gray border */
+    --input: 220 20% 12%; 
     --ring: 45 100% 50%;
     
     --radius: 0.5rem;
 
-    --sidebar-background: 220 20% 8%;
+    --sidebar-background: 220 20% 5%;
     --sidebar-foreground: 210 20% 85%;
     --sidebar-accent: 45 100% 50%;
     --sidebar-accent-foreground: 220 20% 10%;
@@ -109,6 +55,60 @@
     --gauge-green: 140 80% 50%;
     --gauge-yellow: 45 90% 50%;
     --gauge-red: 0 90% 60%;
+  }
+
+  .dark {
+    --background: 0 0% 100%; /* Pure White */
+    --foreground: 222.2 84% 4.9%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    
+    --primary: 45 95% 48%; /* Gold */
+    --primary-foreground: 220 20% 10%;
+    
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    
+    --accent: 45 100% 55%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 45 95% 48%;
+    
+    --radius: 0.5rem;
+
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 222.2 47.4% 11.2%;
+    --sidebar-accent: 45 95% 48%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 45 95% 48%;
+
+    --chart-1: 170 80% 40%;
+    --chart-2: 30 90% 50%;
+    --chart-3: 280 80% 55%;
+    --chart-4: 200 90% 45%;
+    --chart-5: 90 80% 45%;
+
+    --event-blue: 220 90% 60%;
+    --event-green: 150 80% 40%;
+    --event-red: 0 90% 60%;
+    --event-orange: 30 90% 55%;
+
+    --gauge-green: 140 70% 45%;
+    --gauge-yellow: 45 80% 50%;
+    --gauge-red: 0 80% 55%;
   }
 
   * {
