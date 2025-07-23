@@ -1,0 +1,95 @@
+/* 
+  Este archivo contiene estilos personalizados EXCLUSIVAMENTE para las páginas 
+  de autenticación (/sign-in, /sign-up), creando una experiencia visual única
+  que no se ve afectada por el cambio de tema claro/oscuro de la aplicación.
+*/
+
+.auth-scope {
+  --graphite-50: #e0e0e0;
+  --graphite-100: #b0b0b0;
+  --graphite-300: #8a8a8a;
+  --graphite-800: #2a2a2a;
+  --graphite-900: #1a1a1a;
+  --graphite-950: #101010;
+  
+  --gold-50: #fffbeb;
+  --gold-100: #fef3c7;
+  --gold-200: #fde68a;
+  --gold-300: #fcd34d;
+  --gold-400: #fbbf24;
+
+  --bg: var(--graphite-950);
+  --card-bg: var(--graphite-900);
+  --border-color: var(--graphite-800);
+  --text-primary: var(--gold-50);
+  --text-secondary: var(--graphite-300);
+  --accent-color: var(--gold-400);
+
+  background-color: var(--bg);
+  color: var(--text-primary);
+}
+
+.auth-card {
+  @apply w-full max-w-sm rounded-xl border p-6 sm:p-8;
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 80px rgba(251, 191, 36, 0.1) inset;
+}
+
+.auth-label {
+  @apply text-sm font-medium;
+  color: var(--text-secondary);
+}
+
+.auth-input {
+  @apply flex h-10 w-full rounded-md border bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.auth-input::placeholder {
+  color: var(--graphite-300);
+}
+
+
+.auth-input:focus-visible {
+  --ring-color: var(--accent-color);
+  --ring-offset-color: var(--bg);
+  border-color: var(--accent-color);
+}
+
+.auth-button {
+  @apply inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 w-full;
+  background-color: var(--accent-color);
+  color: var(--graphite-950);
+}
+
+.auth-button:hover {
+  background-color: var(--gold-300);
+}
+
+.auth-button:disabled {
+  background-color: var(--accent-color);
+  opacity: 0.6;
+}
+
+.auth-link {
+  @apply font-semibold underline-offset-4 hover:underline;
+  color: var(--accent-color);
+  transition: color 0.2s;
+}
+
+.auth-link:hover {
+  color: var(--gold-200);
+}
+
+/* Estilos específicos para el componente InputOTP */
+.auth-scope .otp-group > div {
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.auth-scope .otp-group > div.z-10 {
+  border-color: var(--accent-color);
+}

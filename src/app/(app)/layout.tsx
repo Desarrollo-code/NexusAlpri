@@ -189,8 +189,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
               <Image
                 src="/uploads/images/watermark-alprigrama.png"
                 alt="Alprigrama S.A.S. Watermark"
-                width={70}
-                height={70}
+                width={60}
+                height={60}
                 className="watermark-img"
                 data-ai-hint="company logo"
               />
