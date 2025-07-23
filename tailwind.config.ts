@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -113,7 +114,20 @@ export default {
         'throw': {
             'from': { transform: 'translate(-400%, -700%)', opacity: '0' },
             'to': { transform: 'translate(0%, 0%)', opacity: '1' }
-        }
+        },
+        'rotate-y-180': {
+          'from': { transform: 'rotateY(0deg)' },
+          'to': { transform: 'rotateY(180deg)' },
+        },
+        'gradient-spin': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
+        },
+        'float': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -121,6 +135,8 @@ export default {
         'press': 'press 0.2s 1 linear',
         'bounce': 'bounce 0.2s 1 linear',
         'throw': 'throw 0.4s linear',
+        'gradient-spin': 'gradient-spin 8s linear infinite',
+        'float': 'float 6s ease-in-out infinite',
       },
     },
   },

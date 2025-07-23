@@ -1,3 +1,4 @@
+
 // This file serves as a central hub for exporting all custom icons.
 // This makes importing icons cleaner in other components.
 
@@ -26,3 +27,4 @@ export { IconUserCog } from './icon-user-cog';
 export { IconUsersRound } from './icon-users-round';
 export { IconZoomIn } from './icon-zoom-in';
 export { IconZoomOut } from './icon-zoom-out';
+export { RocketIcon } from './icon-rocket';
