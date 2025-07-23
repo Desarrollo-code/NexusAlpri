@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -124,7 +123,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card>
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
         <CardDescription>Regístrate para empezar a aprender</CardDescription>
