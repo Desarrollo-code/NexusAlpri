@@ -1,74 +1,72 @@
-# Matriz de Trazabilidad de Requisitos - NexusAlpri
+# Matriz de Trazabilidad y Plan de Pruebas - NexusAlpri
 
-Este documento detalla la relación entre los requisitos funcionales, los roles de usuario y las áreas clave de la aplicación, explicando qué puede hacer cada rol, dónde lo hace, qué tipo de información se ve afectada y cuál es el resultado esperado.
+Este documento sirve como una matriz de trazabilidad de requisitos y, al mismo tiempo, como una plantilla para el plan de pruebas funcionales de la plataforma. Cada fila representa una acción específica que un usuario puede realizar, detallando el resultado esperado para su correcta validación.
 
 ---
 
 ## 1. Rol: Administrador (`ADMINISTRATOR`)
 
-El administrador tiene control total sobre la plataforma.
-
-| ID | Módulo/Funcionalidad | Descripción del Requisito | Ubicación en la App | Datos Involucrados | Resultado Esperado |
-| :-- | :--- | :--- | :--- | :--- | :--- |
-| **A-01** | **Gestión de Usuarios** | Visualizar, buscar y paginar todos los usuarios de la plataforma. | `/users` | Información de todos los usuarios. | La tabla muestra la lista de usuarios. La búsqueda filtra los resultados correctamente. |
-| **A-02** | | Crear un nuevo usuario con nombre, email, contraseña y rol. | `/users` (Modal) | Creación de un nuevo registro de usuario. | El nuevo usuario aparece en la lista. El usuario puede iniciar sesión con las credenciales proporcionadas. |
-| **A-03** | | Editar la información de un usuario existente (nombre, email). | `/users` (Modal) | Actualización de la información de un usuario. | Los cambios se reflejan inmediatamente en la lista de usuarios. |
-| **A-04** | | Cambiar el rol de un usuario. | `/users` (Modal) | Rol del usuario, Registro de seguridad. | El nuevo rol del usuario se muestra en la lista. Se genera un log de seguridad. |
-| **A-05** | | Eliminar un usuario de la plataforma (excepto a sí mismo). | `/users` | Eliminación de datos del usuario, inscripciones y progreso. | El usuario desaparece de la lista. El usuario ya no puede iniciar sesión. |
-| **A-06** | **Gestión de Cursos** | Crear un nuevo curso (borrador inicial). | `/manage-courses` (Modal) | Creación de un nuevo registro de curso. | Se redirige a la página de edición del nuevo curso. El curso aparece en la lista como "Borrador". |
-| **A-07** | | Editar toda la información de cualquier curso (título, imagen, etc.). | `/manage-courses/[id]/edit` | Actualización de la información de un curso. | Los cambios se guardan y persisten al recargar la página. |
-| **A-08** | | Añadir, editar, reordenar y eliminar contenido en cualquier curso. | `/manage-courses/[id]/edit` | Estructura completa del curso (módulos, lecciones, etc.). | La estructura del curso se actualiza visualmente y se guarda correctamente. |
-| **A-09** | | Publicar, archivar o cambiar a borrador el estado de un curso. | `/manage-courses` | Estado de un curso. | El estado del curso cambia visualmente (ej. la insignia) y se notifica a los usuarios si se publica. |
-| **A-10** | | Eliminar cualquier curso de la plataforma. | `/manage-courses` | Eliminación completa de un curso y su contenido. | El curso desaparece de la lista. Todos los datos asociados se eliminan. |
-| **A-11** | | Guardar una lección como plantilla reutilizable. | `/manage-courses/[id]/edit` | Creación de una nueva plantilla de lección. | La plantilla se guarda y está disponible para ser usada en otros cursos. |
-| **A-12** | | Crear una lección a partir de una plantilla existente. | `/manage-courses/[id]/edit` | Creación de una lección a partir de una plantilla. | Se añade una nueva lección al módulo con la estructura de la plantilla seleccionada. |
-| **A-13** | **Analíticas** | Ver un dashboard con estadísticas clave de la plataforma. | `/analytics` | Datos de usuarios, cursos, inscripciones, etc. | Se muestran gráficos y métricas actualizadas sobre el uso de la plataforma. |
-| **A-14** | **Auditoría** | Revisar un registro de eventos de seguridad importantes. | `/security-audit` | Registros de eventos de seguridad. | La tabla muestra una lista cronológica de los eventos de seguridad con sus detalles. |
-| **A-15** | **Configuración** | Ver y modificar la configuración general de la plataforma. | `/settings` | Ajustes de la plataforma (nombre, políticas, etc.). | Los cambios se guardan y se aplican en toda la plataforma (ej. cambio de nombre). |
-| **A-16** | **Contenido Global** | Crear, editar y eliminar anuncios, eventos del calendario y recursos. | `/announcements`, `/calendar`, `/resources` | Anuncios, Eventos, Recursos de la biblioteca. | Las acciones (crear, editar, eliminar) se reflejan inmediatamente en las respectivas secciones. |
-| **A-17** | **Inscripciones** | Ver el progreso y los inscritos de cualquier curso. | `/enrollments` | Inscripciones y progreso de los estudiantes. | Al seleccionar un curso, se muestra la lista de estudiantes inscritos y su progreso. |
+| Módulo/Funcionalidad | Acción a Realizar | Verificación Esperada | Resultado | Observaciones |
+| :--- | :--- | :--- | :--- | :--- |
+| **Gestión de Usuarios** | Visualizar la lista de todos los usuarios. | La tabla en `/users` se carga y muestra una lista paginada de todos los usuarios registrados con su nombre, email, rol y fecha de registro. | [PENDIENTE] | |
+| | Buscar un usuario por nombre o email. | Al escribir en la barra de búsqueda, la lista de usuarios se filtra en tiempo real para mostrar solo las coincidencias. | [PENDIENTE] | |
+| | Crear un nuevo usuario. | Al completar el formulario y guardar, el nuevo usuario aparece en la lista y puede iniciar sesión con las credenciales creadas. Se registra el evento en la auditoría de seguridad. | [PENDIENTE] | |
+| | Editar el nombre de un usuario. | Al editar un usuario y guardar los cambios, el nuevo nombre se refleja inmediatamente en la lista de usuarios. | [PENDIENTE] | |
+| | Cambiar el rol de un usuario. | Al cambiar el rol desde el modal de edición o el menú rápido, el nuevo rol se muestra en la lista y se registra el cambio en la auditoría de seguridad. | [PENDIENTE] | |
+| | Eliminar un usuario. | Al confirmar la eliminación, el usuario desaparece de la lista y ya no puede iniciar sesión. No se puede eliminar a sí mismo. | [PENDIENTE] | |
+| **Gestión de Cursos** | Crear un nuevo curso. | Al llenar el formulario inicial, se redirige a la página de edición completa (`/manage-courses/[id]/edit`) y el curso aparece en la lista como "Borrador". | [PENDIENTE] | |
+| | Editar la información de un curso. | Cualquier cambio en el título, descripción, categoría o imagen de un curso se guarda y persiste al recargar la página de edición. | [PENDIENTE] | |
+| | Reordenar módulos y lecciones. | Al arrastrar y soltar un módulo o una lección en el editor, su nueva posición se guarda correctamente y se mantiene al volver a entrar. | [PENDIENTE] | |
+| | Publicar un curso. | Al cambiar el estado a "Publicado", el curso se vuelve visible en el `/courses` para los estudiantes y se envía una notificación. | [PENDIENTE] | |
+| | Archivar un curso. | Al cambiar el estado a "Archivado", el curso se oculta del catálogo principal pero se conservan los datos de inscripción y progreso. | [PENDIENTE] | |
+| | Eliminar un curso. | Al confirmar la eliminación, el curso desaparece de la lista de gestión y de la base de datos, junto con todo su contenido y los datos de progreso asociados. | [PENDIENTE] | |
+| | Guardar una lección como plantilla. | Al guardar una lección como plantilla desde el editor, esta se vuelve disponible en el modal "Usar Plantilla" para futuros usos en otros cursos. | [PENDIENTE] | |
+| | Crear lección desde plantilla. | Al seleccionar una plantilla, se añade una nueva lección al módulo con la estructura y contenido predefinidos por la plantilla. | [PENDIENTE] | |
+| **Analíticas** | Ver el dashboard de analíticas. | La página `/analytics` carga y muestra gráficos y métricas sobre usuarios, cursos e inscripciones sin errores. | [PENDIENTE] | |
+| **Auditoría** | Revisar los registros de seguridad. | La página `/security-audit` muestra una tabla cronológica de eventos como inicios de sesión, cambios de rol y cambios de contraseña. | [PENDIENTE] | |
+| **Configuración** | Cambiar el nombre de la plataforma. | Al guardar un nuevo nombre en `/settings`, el cambio se refleja en el layout principal de la aplicación. | [PENDIENTE] | |
+| | Habilitar/deshabilitar el registro público. | Al cambiar el switch y guardar, la página `/sign-up` se vuelve accesible o muestra un mensaje de "Registro deshabilitado". | [PENDIENTE] | |
+| | Gestionar categorías de recursos. | Al añadir una nueva categoría en `/settings`, esta aparece como una opción seleccionable al crear cursos o recursos. Al eliminarla, desaparece de dichas opciones. | [PENDIENTE] | |
+| **Contenido Global** | Crear un anuncio para todos. | Al crear un anuncio para "Todos", este es visible en el dashboard y en la página `/announcements` para todos los roles. | [PENDIENTE] | |
+| | Crear un evento en el calendario. | El evento creado en `/calendar` aparece en el calendario de la audiencia seleccionada (todos, un rol específico o usuarios concretos). | [PENDIENTE] | |
+| | Subir un recurso a la biblioteca. | El archivo subido en `/resources` aparece en la carpeta correspondiente y es accesible para todos los usuarios. | [PENDIENTE] | |
+| | Proteger un recurso con PIN. | Al asignar un PIN a un recurso, el sistema pide dicho PIN a los usuarios antes de permitirles la descarga o visualización. | [PENDIENTE] | |
+| **Inscripciones** | Ver inscritos de cualquier curso. | La página `/enrollments` permite seleccionar cualquier curso de la plataforma y muestra la lista de estudiantes inscritos con su progreso. | [PENDIENTE] | |
 
 ---
 
 ## 2. Rol: Instructor (`INSTRUCTOR`)
 
-El instructor gestiona sus propios cursos y estudiantes.
-
-| ID | Módulo/Funcionalidad | Descripción del Requisito | Ubicación en la App | Datos Involucrados | Resultado Esperado |
-| :-- | :--- | :--- | :--- | :--- | :--- |
-| **I-01** | **Dashboard** | Ver un panel con resúmenes de los cursos que imparte. | `/dashboard` | Cursos creados por el instructor. | Se muestra un resumen y accesos directos a los cursos del instructor. |
-| **I-02** | **Gestión de Cursos** | Crear un nuevo curso, que se le asigna automáticamente. | `/manage-courses` (Modal) | Creación de un nuevo registro de curso. | Se redirige a la página de edición del nuevo curso. El instructor se asigna como creador. |
-| **I-03** | | Ver y gestionar únicamente los cursos que ha creado. | `/manage-courses` | Cursos creados por el instructor. | La lista solo muestra los cursos donde el usuario es el instructor. |
-| **I-04** | | Editar la información y contenido de sus propios cursos. | `/manage-courses/[id]/edit` | Actualización y estructura de sus cursos. | El instructor puede modificar sus cursos, pero no los de otros. |
-| **I-05** | | Publicar, archivar o cambiar a borrador el estado de sus cursos. | `/manage-courses` | Estado de sus cursos. | El instructor puede cambiar el estado de sus propios cursos. |
-| **I-06** | | Guardar una de sus lecciones como plantilla reutilizable. | `/manage-courses/[id]/edit` | Creación de una nueva plantilla de lección. | La plantilla se guarda con el instructor como creador y está disponible para él en otros cursos. |
-| **I-07** | | Crear una lección en su curso a partir de una plantilla. | `/manage-courses/[id]/edit` | Creación de una lección a partir de una plantilla. | Se añade una nueva lección al módulo con la estructura de la plantilla seleccionada. |
-| **I-08** | **Seguimiento** | Ver la lista de estudiantes inscritos en sus cursos y su progreso. | `/enrollments` | Inscripciones y progreso de los estudiantes en sus cursos. | El instructor puede seleccionar sus cursos y ver quién está inscrito y su avance. |
-| **I-09** | **Contenido Global** | Crear anuncios y eventos en el calendario para diferentes audiencias. | `/announcements`, `/calendar` | Anuncios, Eventos del calendario. | El instructor puede crear comunicados y eventos visibles para otros usuarios. |
-| **I-10** | | Subir, editar y eliminar los recursos que ha subido a la biblioteca. | `/resources` | Recursos de la biblioteca. | El instructor puede gestionar los archivos que él mismo ha subido. |
-| **I-11** | **Perfil** | Editar su propio perfil y gestionar su contraseña y 2FA. | `/profile` | Información de su propia cuenta. | El usuario puede actualizar su nombre, avatar y seguridad personal. |
+| Módulo/Funcionalidad | Acción a Realizar | Verificación Esperada | Resultado | Observaciones |
+| :--- | :--- | :--- | :--- | :--- |
+| **Dashboard** | Visualizar el panel principal. | El dashboard muestra resúmenes y accesos directos a los cursos creados por el instructor. | [PENDIENTE] | |
+| **Gestión de Cursos** | Crear un nuevo curso. | Se crea un nuevo curso en estado "Borrador" y el instructor es asignado automáticamente como el creador. | [PENDIENTE] | |
+| | Ver la lista de cursos a gestionar. | La lista en `/manage-courses` muestra únicamente los cursos creados por el instructor. No puede ver los de otros instructores (a menos que también sea admin). | [PENDIENTE] | |
+| | Editar el contenido de su propio curso. | El instructor puede añadir, editar y reordenar módulos y lecciones solo en los cursos que él ha creado. | [PENDIENTE] | |
+| | Publicar su propio curso. | El instructor puede cambiar el estado de sus cursos a "Publicado", haciéndolos visibles en el catálogo general. | [PENDIENTE] | |
+| **Seguimiento** | Ver la lista de inscritos. | En `/enrollments`, el instructor solo puede seleccionar y ver los estudiantes inscritos en los cursos que él imparte. | [PENDiente] | |
+| **Contenido Global** | Crear un anuncio. | El instructor puede crear anuncios para diferentes audiencias (ej. solo sus estudiantes, todos los estudiantes, etc.). | [PENDIENTE] | |
+| | Subir un recurso a la biblioteca. | El instructor puede subir archivos a la biblioteca y estos se marcan como subidos por él. Puede editar y eliminar solo sus propios recursos. | [PENDIENTE] | |
+| **Perfil** | Editar su propio perfil. | El instructor puede cambiar su nombre, avatar y contraseña desde `/profile`. | [PENDIENTE] | |
 
 ---
 
 ## 3. Rol: Estudiante (`STUDENT`)
 
-El estudiante consume el contenido formativo de la plataforma.
-
-| ID | Módulo/Funcionalidad | Descripción del Requisito | Ubicación en la App | Datos Involucrados | Resultado Esperado |
-| :-- | :--- | :--- | :--- | :--- | :--- |
-| **S-01** | **Dashboard** | Ver un panel con resúmenes de sus cursos inscritos y anuncios. | `/dashboard` | Sus inscripciones, su progreso, anuncios. | El panel muestra tarjetas con los cursos en los que está inscrito y los últimos anuncios. |
-| **S-02** | **Catálogo de Cursos** | Explorar todos los cursos publicados en la plataforma. | `/courses` | Lista de cursos públicos. | El estudiante ve todas las ofertas formativas publicadas. |
-| **S-03** | | Inscribirse a un curso público. | `/courses` | Creación de un registro de inscripción. | El botón "Inscribirse" cambia a "Continuar Curso" y el curso aparece en "Mis Cursos". |
-| **S-04** | | Cancelar la inscripción a un curso. | `/my-courses` | Eliminación de su inscripción y progreso. | El curso desaparece de "Mis Cursos" y vuelve a estar disponible en el Catálogo. |
-| **S-05** | **Consumo de Curso** | Navegar y ver el contenido de las lecciones (texto, video, etc.). | `/courses/[courseId]` | Contenido de la lección, Registro de interacción. | El contenido de la lección se muestra en el área principal. La lección se marca como vista automáticamente. |
-| **S-06** | | Realizar y enviar quizzes dentro de una lección. | `/courses/[courseId]` | Preguntas del quiz, Registro de la nota. | Después de responder, el sistema muestra el resultado y guarda la puntuación. |
-| **S-07** | **Progreso** | Solicitar el cálculo de la puntuación final del curso. | `/courses/[courseId]` | Consolidación de la nota final. | Tras interactuar con todas las lecciones, el botón se activa. Al pulsarlo, se muestra la nota final en el indicador circular. |
-| **S-08** | **Biblioteca** | Acceder y descargar recursos de la biblioteca. | `/resources` | Lista de recursos disponibles. | El estudiante puede navegar por las carpetas y ver o descargar los archivos. |
-| **S-09** | | Ingresar un PIN para acceder a recursos protegidos. | `/resources` | Verificación del PIN de un recurso. | Si el PIN es correcto, se concede el acceso al archivo; si no, se muestra un error. |
-| **S-10** | **Perfil** | Editar su propio perfil y gestionar su contraseña y 2FA. | `/profile` | Información de su propia cuenta. | El estudiante puede actualizar su nombre, avatar y configuraciones de seguridad. |
-| **S-11** | **Autenticación** | Iniciar sesión y registrarse (si está habilitado). | `/sign-in`, `/sign-up` | Su cuenta de usuario, Registro de seguridad. | El usuario puede acceder a la plataforma o crear una cuenta nueva. |
-| **S-12** | | Cerrar sesión de forma segura. | (Botón en Layout) | Cierre de su sesión actual. | El usuario es desconectado y redirigido a la página de inicio de sesión. |
-| **S-13** | **Notificaciones** | Ver y gestionar sus notificaciones personales. | `/notifications` (Popover y página) | Sus notificaciones personales. | El estudiante puede ver una lista de sus notificaciones, marcarlas como leídas o eliminarlas. |
-| **S-14** | **Calendario** | Ver los eventos del calendario que le conciernen. | `/calendar` | Eventos del calendario. | El estudiante puede ver un calendario con los eventos dirigidos a él, a su rol o a todos. |
-| **S-15** | **Anuncios** | Ver los anuncios relevantes para él. | `/announcements` | Anuncios de la plataforma. | El estudiante ve los anuncios dirigidos a él, a su rol o a todos los usuarios. |
-| **S-16** | **Mis Cursos** | Ver una lista dedicada de los cursos en los que está inscrito. | `/my-courses` | Sus inscripciones, su progreso. | La página muestra solo los cursos en los que está inscrito, con su progreso visible. |
+| Módulo/Funcionalidad | Acción a Realizar | Verificación Esperada | Resultado | Observaciones |
+| :--- | :--- | :--- | :--- | :--- |
+| **Dashboard** | Visualizar el panel principal. | El dashboard muestra un resumen de los cursos en los que el estudiante está inscrito y los anuncios recientes. | [PENDIENTE] | |
+| **Catálogo de Cursos** | Explorar el catálogo de cursos. | La página `/courses` muestra todas las tarjetas de los cursos con estado "Publicado". | [PENDIENTE] | |
+| | Inscribirse a un curso. | Al hacer clic en "Inscribirse", el curso se añade a la sección "Mis Cursos" y el botón cambia a "Continuar Curso". | [PENDIENTE] | |
+| | Cancelar la inscripción. | Desde la página de "Mis Cursos", el estudiante puede cancelar su inscripción. El curso desaparece de su lista y se borra su progreso. | [PENDIENTE] | |
+| **Consumo de Curso** | Ver el contenido de una lección. | Al hacer clic en una lección (video, texto, etc.), el contenido se muestra correctamente y la lección se marca como vista automáticamente para el progreso. | [PENDIENTE] | |
+| | Realizar un quiz. | El estudiante puede responder a las preguntas de un quiz y enviarlo. El sistema muestra la puntuación y la guarda. | [PENDIENTE] | |
+| **Progreso** | Solicitar el cálculo de la nota final. | Cuando el estudiante ha interactuado con todas las lecciones, el botón "Calcular Mi Puntuación Final" se activa. Al pulsarlo, se muestra la nota final en el indicador circular. | [PENDIENTE] | |
+| **Biblioteca** | Acceder a un recurso público. | El estudiante puede navegar por las carpetas y descargar o visualizar cualquier recurso que no esté protegido. | [PENDIENTE] | |
+| | Acceder a un recurso protegido. | Al intentar acceder a un recurso con PIN, se muestra un modal pidiendo el código. Si es correcto, se concede el acceso. Si es incorrecto, se muestra un error. | [PENDIENTE] | |
+| **Perfil** | Editar su perfil y seguridad. | El estudiante puede cambiar su nombre, avatar, contraseña y gestionar la autenticación de dos factores (2FA) desde `/profile`. | [PENDIENTE] | |
+| **Autenticación** | Iniciar y cerrar sesión. | El usuario puede iniciar sesión con sus credenciales y cerrarla de forma segura, siendo redirigido a la página de login. | [PENDIENTE] | |
+| | Registrarse (si está habilitado). | Si el registro público está activo, el usuario puede crear una cuenta nueva y acceder al dashboard. | [PENDIENTE] | |
+| **Notificaciones** | Ver notificaciones. | El estudiante recibe notificaciones (ej. nuevo curso publicado, nuevo anuncio) y puede verlas en el popover de la barra superior o en la página `/notifications`. | [PENDIENTE] | |
+| **Calendario** | Ver el calendario de eventos. | El estudiante puede ver en `/calendar` los eventos dirigidos a él, a su rol o a toda la organización. | [PENDIENTE] | |
+| **Anuncios** | Ver anuncios relevantes. | En `/announcements`, el estudiante ve una lista de los anuncios dirigidos a él, a su rol o a todos los usuarios. | [PENDIENTE] | |
