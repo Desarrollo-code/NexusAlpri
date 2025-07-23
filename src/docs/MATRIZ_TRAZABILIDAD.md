@@ -13,18 +13,18 @@ Este documento describe la "hoja de ruta" o el mapa funcional de la plataforma N
 - **Caso de Uso:** Un usuario registrado quiere acceder a la plataforma.
 - **Flujo Detallado:**
   1.  **UI - Ruta `/sign-in`**: El usuario ingresa su `email` y `password` en el formulario de inicio de sesión.
-  2.  **UI - Acción del Usuario**: Al hacer clic en "Ingresar", el frontend (componente `SignInPage`) empaqueta las credenciales.
-  3.  **API - Conexión**: Se realiza una petición `POST` al endpoint `/api/auth/login`.
+  2.  **UI - Acción del Usuario**: Al hacer clic en "Ingresar", la interfaz empaqueta las credenciales para enviarlas al servidor.
+  3.  **API - Conexión**: La aplicación envía las credenciales de forma segura al servidor para su verificación.
   4.  **Backend - Lógica**:
       - El servidor recibe las credenciales.
       - Busca en la base de datos un `User` que coincida con el `email`.
       - Si el usuario existe, compara la `password` proporcionada con el hash almacenado usando `bcrypt`.
-      - Si las credenciales son válidas, verifica si el usuario tiene `isTwoFactorEnabled`.
-      - Si 2FA está activo, responde con `twoFactorRequired: true`. De lo contrario, crea una sesión JWT.
-  5.  **BD - Modelos Involucrados**: `User` (lectura), `SecurityLog` (escritura para registrar el evento).
+      - Si las credenciales son válidas, verifica si el usuario tiene la Autenticación de Dos Factores (`2FA`) activada.
+      - Si 2FA está activo, responde a la interfaz indicando que se necesita un segundo paso de verificación. De lo contrario, crea una sesión segura para el usuario.
+  5.  **BD - Modelos Involucrados**: `User` (lectura), `SecurityLog` (escritura para registrar el evento de inicio de sesión).
   6.  **UI - Respuesta**:
-      - Si se requiere 2FA, se muestra el formulario para el token.
-      - Si no, el `AuthContext` recibe los datos del usuario, la sesión se guarda en una cookie y el `middleware` redirige al `/dashboard`.
+      - Si se requiere 2FA, se muestra en pantalla el campo para ingresar el código de 6 dígitos.
+      - Si no, el sistema recibe la confirmación de que la sesión es válida, guarda la sesión en el navegador y redirige al usuario al `/dashboard`.
 
 ---
 
@@ -35,14 +35,12 @@ Este documento describe la "hoja de ruta" o el mapa funcional de la plataforma N
   1.  **UI - Ruta `/profile`**: El usuario accede a su página de perfil donde ve su información actual.
   2.  **UI - Acción del Usuario**:
       - **Para el nombre/avatar**: Modifica el campo de nombre o sube una nueva imagen y hace clic en "Guardar Información".
-      - **Para la contraseña**: Hace clic en "Cambiar Contraseña", abre un modal e ingresa su contraseña actual y la nueva.
-  3.  **API - Conexión**:
-      - **Nombre/avatar**: Se envía una petición `PUT` a `/api/users/[id]`.
-      - **Contraseña**: Se envía una petición `POST` a `/api/users/[id]/change-password`.
+      - **Para la contraseña**: Abre una ventana para ingresar su contraseña actual y la nueva.
+  3.  **API - Conexión**: La interfaz envía la información actualizada al servidor para que sea procesada.
   4.  **Backend - Lógica**:
-      - **Nombre/avatar**: El servidor verifica que el usuario que hace la petición es el dueño del perfil o un administrador y actualiza los campos correspondientes.
-      - **Contraseña**: El servidor valida la contraseña actual, comprueba que la nueva contraseña cumple las políticas de seguridad y, si todo es correcto, la hashea y la guarda.
-  5.  **BD - Modelos Involucrados**: `User` (actualización), `SecurityLog` (escritura).
+      - **Nombre/avatar**: El servidor verifica que el usuario que hace la petición es el dueño del perfil (o un administrador) y actualiza los campos correspondientes.
+      - **Contraseña**: El servidor valida que la contraseña actual sea correcta, comprueba que la nueva contraseña cumple con las políticas de seguridad y, si todo es correcto, la guarda de forma segura.
+  5.  **BD - Modelos Involucrados**: `User` (actualización), `SecurityLog` (escritura del evento de cambio de contraseña).
 
 ---
 
@@ -54,35 +52,34 @@ Este documento describe la "hoja de ruta" o el mapa funcional de la plataforma N
 
 - **Caso de Uso:** Un instructor o administrador necesita crear la estructura inicial de un curso.
 - **Flujo Detallado:**
-  1.  **UI - Ruta `/manage-courses`**: El usuario hace clic en el botón "Crear Nuevo Curso", lo que abre un modal.
-  2.  **UI - Acción del Usuario**: Completa el formulario inicial con título, descripción y categoría y hace clic en "Crear y Continuar".
-  3.  **API - Conexión**: Se realiza una petición `POST` al endpoint `/api/courses`.
+  1.  **UI - Ruta `/manage-courses`**: El usuario hace clic en "Crear Nuevo Curso", lo que abre una ventana emergente.
+  2.  **UI - Acción del Usuario**: Completa el formulario inicial con título, descripción y categoría, y hace clic en "Crear y Continuar".
+  3.  **API - Conexión**: La interfaz envía los datos del nuevo curso al servidor.
   4.  **Backend - Lógica**:
-      - El servidor valida que los campos requeridos (título, descripción) estén presentes.
-      - Crea un nuevo registro en la tabla `Course`, asignando el `instructorId` del usuario en sesión y estableciendo el `status` en `DRAFT` (borrador).
+      - El servidor valida que los campos requeridos estén presentes.
+      - Crea un nuevo registro en la base de datos para el curso, asociándolo al instructor que lo creó y dejándolo en estado "Borrador" (`DRAFT`).
   5.  **BD - Modelos Involucrados**: `Course` (escritura).
-  6.  **UI - Respuesta**: El frontend recibe el ID del nuevo curso y redirige automáticamente al usuario a la página de edición (`/manage-courses/[newCourseId]/edit`) para que pueda añadir contenido.
+  6.  **UI - Respuesta**: La interfaz recibe la confirmación y el ID del nuevo curso, y redirige automáticamente al usuario a la página de edición (`/manage-courses/[newCourseId]/edit`) para que pueda empezar a añadir contenido.
 
 ---
 
 ### **RF-COURSE-02: Edición de Contenido de un Curso (Módulos y Lecciones)**
 
-- **Caso de Uso:** Un instructor o administrador necesita añadir, editar, reordenar o eliminar el contenido de un curso existente.
+- **Caso de Uso:** Un instructor o administrador necesita añadir, editar, reordenar o eliminar el contenido de un curso.
 - **Flujo Detallado:**
-  1.  **UI - Ruta `/manage-courses/[courseId]/edit`**: La página carga toda la estructura del curso (módulos, lecciones, bloques) desde la API. El estado del curso se gestiona con `react-hook-form`.
+  1.  **UI - Ruta `/manage-courses/[courseId]/edit`**: La página solicita y muestra toda la estructura del curso (módulos, lecciones, etc.).
   2.  **UI - Acción del Usuario**:
-      - **Añadir:** Hace clic en "Añadir Módulo" o "Añadir Lección".
-      - **Reordenar:** Arrastra y suelta (`DragDropContext`) un módulo o lección a una nueva posición.
-      - **Editar:** Modifica el título de un módulo/lección directamente en el `input` o edita un bloque de contenido (texto, video, quiz).
-      - **Eliminar:** Marca un elemento para ser eliminado.
-  3.  **API - Conexión**: Al hacer clic en el botón principal "Guardar Cambios", se empaqueta **toda la estructura del curso** en un objeto JSON y se envía en una única petición `PUT` a `/api/courses/[courseId]`.
+      - **Añadir:** Usa los botones "Añadir Módulo" o "Añadir Lección".
+      - **Reordenar:** Arrastra y suelta un módulo o lección a una nueva posición.
+      - **Editar:** Modifica el título o el contenido de cualquier elemento directamente.
+      - **Eliminar:** Usa el icono de la papelera para marcar un elemento para ser eliminado.
+  3.  **API - Conexión**: Al hacer clic en "Guardar Cambios", la interfaz empaqueta **toda la estructura del curso actualizada** y la envía al servidor en una sola operación.
   4.  **Backend - Lógica (Transaccional)**:
-      - El servidor recibe el objeto completo del curso.
-      - **Inicia una transacción de base de datos** para asegurar la integridad de los datos.
-      - **Compara IDs:** Compara los IDs de los módulos y lecciones recibidos con los existentes en la BD para identificar elementos nuevos, modificados y eliminados (marcados con `_toBeDeleted`).
-      - **Elimina:** Borra los módulos/lecciones/bloques que ya no existen en el objeto recibido.
-      - **Actualiza/Crea (Upsert):** Recorre la estructura anidada y actualiza los elementos existentes con su nuevo contenido y `order`, y crea los nuevos elementos que no tienen un ID de base de datos.
-      - Si todo es exitoso, la transacción se completa (`commit`). Si algo falla, se revierte (`rollback`).
+      - El servidor recibe la estructura completa del curso.
+      - Para garantizar que no haya errores, **inicia una transacción de base de datos**.
+      - **Compara** los elementos recibidos con los que ya existen en la base de datos para identificar qué es nuevo, qué se modificó y qué se eliminó.
+      - Procede a **borrar, actualizar y crear** los elementos (módulos, lecciones, quizzes, etc.) según corresponda.
+      - Si todo el proceso se completa sin errores, confirma los cambios (`commit`). Si algo falla, revierte todo para no dejar datos inconsistentes (`rollback`).
   5.  **BD - Modelos Involucrados**: `Course`, `Module`, `Lesson`, `ContentBlock`, `Quiz`, `Question`, `AnswerOption` (lectura, escritura, actualización, eliminación).
 
 ---
@@ -96,42 +93,43 @@ Este documento describe la "hoja de ruta" o el mapa funcional de la plataforma N
 - **Caso de Uso:** Un estudiante desea inscribirse en un curso del catálogo.
 - **Flujo Detallado:**
   1.  **UI - Ruta `/courses`**: El estudiante explora el catálogo de cursos.
-  2.  **UI - Acción del Usuario**: Hace clic en el botón "Inscribirse" en la tarjeta de un curso.
-  3.  **API - Conexión**: Se realiza una petición `POST` a `/api/enrollments` con `{ "courseId": "...", "enroll": true }`.
+  2.  **UI - Acción del Usuario**: Hace clic en el botón "Inscribirse".
+  3.  **API - Conexión**: La aplicación informa al servidor que el usuario actual desea inscribirse en el curso seleccionado.
   4.  **Backend - Lógica**:
       - El servidor verifica que el usuario está autenticado.
-      - Crea un nuevo registro en la tabla `Enrollment` que vincula el `userId` del estudiante con el `courseId`.
+      - Crea un nuevo registro que vincula al estudiante con el curso.
   5.  **BD - Modelos Involucrados**: `Enrollment` (escritura).
-  6.  **UI - Respuesta**: El botón de la tarjeta cambia a "Continuar Curso" y el curso aparece ahora en la sección `/my-courses`.
+  6.  **UI - Respuesta**: El botón de la tarjeta cambia a "Continuar Curso" y el curso aparece ahora en la sección `/my-courses` del estudiante.
 
 ### **RF-STUDENT-02: Seguimiento Automático del Progreso**
 
-- **Caso de Uso:** El sistema debe registrar el avance del estudiante de forma automática mientras consume el contenido.
+- **Caso de Uso:** El sistema debe registrar el avance del estudiante de forma automática.
 - **Flujo Detallado:**
-  1.  **UI - Ruta `/courses/[courseId]`**: El estudiante navega por el contenido del curso.
+  1.  **UI - Ruta `/courses/[courseId]`**: El estudiante navega por las lecciones del curso.
   2.  **UI - Acción del Usuario (Automática)**:
-      - **Vista de Lección**: Cuando el estudiante hace clic en una lección de texto/video, el frontend **automáticamente** activa una función.
-      - **Envío de Quiz**: Cuando el estudiante completa y envía un quiz, el componente `QuizViewer` activa otra función.
+      - **Vista de Lección**: Al hacer clic en una lección (texto, video, etc.), la interfaz lo detecta.
+      - **Envío de Quiz**: Al enviar un quiz, la interfaz captura la nota obtenida.
   3.  **API - Conexión**:
-      - **Vista**: Se envía una petición `POST` silenciosa a `/api/progress/[userId]/[courseId]/lesson`.
-      - **Quiz**: Se envía una petición `POST` a `/api/progress/[userId]/[courseId]/quiz` con la nota (`score`).
+      - **Vista**: La interfaz informa silenciosamente al servidor que se ha visualizado una lección.
+      - **Quiz**: La interfaz envía la nota del quiz al servidor para que quede registrada.
   4.  **Backend - Lógica (`/lib/progress.ts`)**:
-      - La API recibe la interacción.
-      - **No calcula el porcentaje final aún**. Simplemente, crea o actualiza un registro en la tabla `LessonCompletionRecord`, asociándolo al progreso del curso del usuario. Esto crea un historial de todas las interacciones.
-  5.  **BD - Modelos Involucrados**: `CourseProgress` (creación si no existe), `LessonCompletionRecord` (escritura/actualización).
-  6.  **UI - Respuesta**: La lección se marca visualmente como completada en la barra lateral.
+      - El servidor recibe la notificación de la interacción.
+      - **Importante:** No calcula el porcentaje final en este momento. Simplemente, guarda un registro de que esa lección fue completada (ya sea por vista o por quiz), creando un historial de interacciones.
+  5.  **BD - Modelos Involucrados**: `CourseProgress` (se crea si no existe), `LessonCompletionRecord` (escritura/actualización).
+  6.  **UI - Respuesta**: La lección se marca visualmente como completada en la barra lateral del curso.
 
 ### **RF-STUDENT-03: Consolidación de la Puntuación Final**
 
-- **Caso de Uso:** El estudiante ha interactuado con todas las lecciones y quiere obtener su nota final del curso.
+- **Caso de Uso:** El estudiante ha interactuado con todas las lecciones y quiere obtener su nota final.
 - **Flujo Detallado:**
-  1.  **UI - Ruta `/courses/[courseId]`**: El frontend detecta que todas las lecciones tienen un registro en `LessonCompletionRecord` y habilita el botón "Calcular Mi Puntuación Final".
-  2.  **UI - Acción del Usuario**: El estudiante hace clic en dicho botón.
-  3.  **API - Conexión**: Se envía una petición `POST` a `/api/progress/[userId]/[courseId]/consolidate`.
+  1.  **UI - Ruta `/courses/[courseId]`**: La interfaz comprueba si ya se ha interactuado con todas las lecciones del curso. Si es así, habilita el botón "Calcular Mi Puntuación Final".
+  2.  **UI - Acción del Usuario**: El estudiante hace clic en el botón para obtener su nota.
+  3.  **API - Conexión**: La interfaz solicita al servidor que calcule la nota final para ese curso y usuario.
   4.  **Backend - Lógica (`/lib/progress.ts`)**:
-      - El servidor ejecuta la función `consolidateCourseProgress`.
-      - **Lee todos** los `LessonCompletionRecord` de ese usuario para ese curso.
-      - **Calcula una nota ponderada**: las vistas de lección valen 100 puntos, los quices valen su `score`. Suma los puntos obtenidos y los divide por el total de puntos posibles (N lecciones * 100).
-      - **Actualiza el registro `CourseProgress`**, guardando el resultado en el campo `progressPercentage`.
+      - El servidor ejecuta una lógica especial de consolidación.
+      - **Lee todo el historial de interacciones** de ese usuario para el curso.
+      - **Calcula una nota ponderada**: las vistas de lección valen 100 puntos, mientras que los quices valen su nota (`score`). Se suman los puntos obtenidos y se dividen por el total de puntos posibles.
+      - **Guarda el resultado final** (ej. 95%) en el registro de progreso del usuario.
   5.  **BD - Modelos Involucrados**: `LessonCompletionRecord` (lectura), `CourseProgress` (actualización).
-  6.  **UI - Respuesta**: El frontend recibe el `progressPercentage` final y actualiza el indicador circular de progreso para mostrar la nota consolidada.
+  6.  **UI - Respuesta**: La interfaz recibe el porcentaje final y lo muestra en el indicador circular de progreso, completando el ciclo de evaluación del curso.
+```
