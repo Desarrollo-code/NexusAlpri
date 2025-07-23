@@ -103,7 +103,7 @@ export default function SignUpPage() {
   
   if (!settings.allowPublicRegistration) {
       return (
-        <Card className="w-full max-w-md border-primary/20 shadow-lg shadow-primary/10">
+        <Card className="w-full max-w-md">
             <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-headline">Registro Deshabilitado</CardTitle>
             </CardHeader>
@@ -124,7 +124,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <Card className="w-full max-w-md border-primary/20 shadow-lg shadow-primary/10">
+    <Card className="w-full max-w-md">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
         <CardDescription>Regístrate para empezar a aprender</CardDescription>

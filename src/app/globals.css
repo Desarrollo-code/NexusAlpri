@@ -6,42 +6,42 @@
 
 @layer base {
   :root {
-    --background: 260 80% 3%;
+    --background: 220 20% 5%; /* Very dark graphite */
     --foreground: 210 40% 98%;
     
-    --card: 260 40% 8%;
+    --card: 220 20% 10%; /* Slightly lighter graphite */
     --card-foreground: 210 40% 98%;
     
-    --popover: 260 80% 3%;
+    --popover: 220 20% 5%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 265 90% 60%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 45 100% 50%; /* Gold */
+    --primary-foreground: 220 20% 10%; /* Dark graphite for text on gold button */
     
-    --secondary: 260 30% 15%;
+    --secondary: 220 15% 20%; /* Medium graphite */
     --secondary-foreground: 210 40% 98%;
     
-    --muted: 260 30% 15%;
+    --muted: 220 15% 20%;
     --muted-foreground: 210 20% 65%;
     
-    --accent: 265 90% 65%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 45 100% 55%; /* Slightly brighter gold for accents */
+    --accent-foreground: 220 20% 10%;
     
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 260 30% 15%;
-    --input: 260 30% 12%;
-    --ring: 265 90% 65%;
+    --border: 220 15% 25%; /* Graphite border */
+    --input: 220 15% 15%; /* Darker graphite for input */
+    --ring: 45 100% 50%; /* Gold for focus rings */
     
-    --radius: 1rem;
+    --radius: 0.5rem; /* Slightly sharper radius for a modern look */
 
-    --sidebar-background: 260 60% 5%;
+    --sidebar-background: 220 20% 8%;
     --sidebar-foreground: 210 20% 85%;
-    --sidebar-accent: 265 90% 60%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 260 40% 12%;
-    --sidebar-ring: 265 90% 65%;
+    --sidebar-accent: 45 100% 50%;
+    --sidebar-accent-foreground: 220 20% 10%;
+    --sidebar-border: 220 20% 12%;
+    --sidebar-ring: 45 100% 55%;
 
     --chart-1: 170 100% 45%; /* Cyan */
     --chart-2: 30 100% 50%; /* Orange */
@@ -60,48 +60,48 @@
   }
 
   .dark {
-    --background: 260 80% 3%;
+    --background: 220 20% 5%;
     --foreground: 210 40% 98%;
     
-    --card: 260 40% 8%;
+    --card: 220 20% 10%;
     --card-foreground: 210 40% 98%;
     
-    --popover: 260 80% 3%;
+    --popover: 220 20% 5%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 265 90% 60%; /* Electric Indigo */
-    --primary-foreground: 210 40% 98%;
+    --primary: 45 100% 50%;
+    --primary-foreground: 220 20% 10%;
     
-    --secondary: 260 30% 15%;
+    --secondary: 220 15% 20%;
     --secondary-foreground: 210 40% 98%;
     
-    --muted: 260 30% 15%;
+    --muted: 220 15% 20%;
     --muted-foreground: 210 20% 65%;
     
-    --accent: 265 90% 65%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 45 100% 55%;
+    --accent-foreground: 220 20% 10%;
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 260 30% 15%;
-    --input: 260 30% 12%;
-    --ring: 265 90% 65%;
+    --border: 220 15% 25%;
+    --input: 220 15% 15%;
+    --ring: 45 100% 50%;
     
-    --radius: 1rem;
+    --radius: 0.5rem;
 
-    --sidebar-background: 260 60% 5%;
+    --sidebar-background: 220 20% 8%;
     --sidebar-foreground: 210 20% 85%;
-    --sidebar-accent: 265 90% 60%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 260 40% 12%;
-    --sidebar-ring: 265 90% 65%;
+    --sidebar-accent: 45 100% 50%;
+    --sidebar-accent-foreground: 220 20% 10%;
+    --sidebar-border: 220 20% 12%;
+    --sidebar-ring: 45 100% 55%;
 
-    --chart-1: 170 100% 45%; /* Cyan */
-    --chart-2: 30 100% 50%; /* Orange */
-    --chart-3: 280 100% 60%; /* Purple */
-    --chart-4: 200 100% 50%; /* Blue */
-    --chart-5: 90 100% 50%;  /* Lime Green */
+    --chart-1: 170 100% 45%;
+    --chart-2: 30 100% 50%;
+    --chart-3: 280 100% 60%;
+    --chart-4: 200 100% 50%;
+    --chart-5: 90 100% 50%;
 
     --event-blue: 220 100% 55%;
     --event-green: 150 100% 45%;
@@ -321,7 +321,7 @@
 
   .watermark-img {
     opacity: 0.4;
-    width: 70px;
+    width: auto;
     height: auto;
   }
 }

@@ -112,7 +112,7 @@ export default function SignInPage() {
   return (
       <div className="w-full">
         {!show2fa ? (
-          <Card className="border-primary/20 shadow-lg shadow-primary/10">
+          <Card>
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-headline">Iniciar Sesión</CardTitle>
                 <CardDescription>Ingresa a tu cuenta de NexusAlpri</CardDescription>
@@ -164,7 +164,7 @@ export default function SignInPage() {
               </CardContent>
           </Card>
         ) : (
-          <Card className="border-primary/20 shadow-lg shadow-primary/10">
+          <Card>
               <CardHeader className="text-center space-y-4">
                 <ShieldCheck className="mx-auto h-12 w-12 text-primary" />
                 <div className="space-y-1">
