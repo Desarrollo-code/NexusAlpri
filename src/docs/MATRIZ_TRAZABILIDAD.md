@@ -132,4 +132,92 @@ Este documento describe la "hoja de ruta" o el mapa funcional de la plataforma N
       - **Guarda el resultado final** (ej. 95%) en el registro de progreso del usuario.
   5.  **BD - Modelos Involucrados**: `LessonCompletionRecord` (lectura), `CourseProgress` (actualización).
   6.  **UI - Respuesta**: La interfaz recibe el porcentaje final y lo muestra en el indicador circular de progreso, completando el ciclo de evaluación del curso.
-```
+
+---
+
+## 4. Módulo de Gestión de Usuarios (Rol: `ADMINISTRATOR`)
+
+---
+
+### **RF-ADMIN-01: Creación de un Nuevo Usuario**
+- **Caso de Uso**: Un administrador necesita añadir un nuevo usuario a la plataforma.
+- **Flujo Detallado:**
+  1. **UI - Ruta `/users`**: El administrador hace clic en "Añadir Nuevo Usuario".
+  2. **UI - Acción del Usuario**: Completa el formulario con nombre, email, rol y una contraseña inicial.
+  3. **API - Conexión**: La interfaz envía los datos del nuevo usuario al servidor.
+  4. **Backend - Lógica**:
+     - El servidor valida los datos.
+     - Verifica que el email no exista previamente.
+     - Hashea la contraseña.
+     - Crea un nuevo registro en la base de datos.
+  5. **BD - Modelos Involucrados**: `User` (escritura).
+  6. **UI - Respuesta**: La lista de usuarios se actualiza mostrando al nuevo miembro.
+
+### **RF-ADMIN-02: Cambio de Rol de un Usuario**
+- **Caso de Uso**: Un administrador necesita cambiar los permisos de un usuario.
+- **Flujo Detallado:**
+  1. **UI - Ruta `/users`**: El administrador busca al usuario y selecciona "Cambiar Rol" en el menú de acciones.
+  2. **UI - Acción del Usuario**: Elige el nuevo rol desde un selector.
+  3. **API - Conexión**: Se informa al servidor sobre el cambio de rol para el usuario específico.
+  4. **Backend - Lógica**:
+     - El servidor actualiza el campo `role` del usuario.
+     - Registra la acción en el log de seguridad para auditoría.
+  5. **BD - Modelos Involucrados**: `User` (actualización), `SecurityLog` (escritura).
+  6. **UI - Respuesta**: El rol del usuario se actualiza visualmente en la tabla.
+
+---
+
+## 5. Módulo de Contenido Global (Todos los Roles con permisos)
+
+---
+
+### **RF-GLOBAL-01: Gestión de Recursos en la Biblioteca**
+- **Caso de Uso**: Un instructor o administrador necesita subir un archivo importante (PDF, imagen, etc.) a la biblioteca.
+- **Flujo Detallado:**
+  1. **UI - Ruta `/resources`**: El usuario navega a la biblioteca y hace clic en "Subir Nuevo Recurso".
+  2. **UI - Acción del Usuario**:
+     - Sube el archivo a través del área de carga.
+     - Completa el título, descripción y categoría.
+     - Opcionalmente, define un PIN de seguridad.
+  3. **API - Conexión**:
+     - **Primero**: El archivo se envía a un endpoint de subida (`/api/upload/resource-file`) que lo guarda en el servidor y devuelve una URL.
+     - **Segundo**: La información del recurso (título, URL del archivo, etc.) se envía al servidor para ser guardada.
+  4. **Backend - Lógica**:
+     - El servidor recibe la información del recurso.
+     - Si se proporcionó un PIN, lo hashea de forma segura con `bcrypt`.
+     - Crea un nuevo registro en la base de datos con todos los detalles.
+  5. **BD - Modelos Involucrados**: `Resource` (escritura).
+  6. **UI - Respuesta**: La biblioteca se actualiza mostrando el nuevo recurso.
+
+### **RF-GLOBAL-02: Acceso a un Recurso Protegido**
+- **Caso de Uso**: Un estudiante necesita acceder a un recurso que está protegido con PIN.
+- **Flujo Detallado:**
+  1. **UI - Ruta `/resources`**: El estudiante hace clic en el recurso protegido.
+  2. **UI - Acción del Usuario**: Se le presenta una ventana para que ingrese el PIN de 4 dígitos.
+  3. **API - Conexión**: La interfaz envía el PIN ingresado para su verificación.
+  4. **Backend - Lógica**:
+     - El servidor recupera el hash del PIN almacenado para ese recurso.
+     - Compara el PIN ingresado con el hash usando `bcrypt`.
+  5. **BD - Modelos Involucrados**: `Resource` (lectura).
+  6. **UI - Respuesta**:
+     - **Si el PIN es correcto**: La interfaz recibe la URL del archivo y permite al usuario visualizarlo o descargarlo.
+     - **Si es incorrecto**: Se muestra un mensaje de error.
+
+---
+
+## 6. Módulo de Configuración de la Plataforma (Rol: `ADMINISTRATOR`)
+
+---
+
+### **RF-CONFIG-01: Modificación de Ajustes Generales**
+- **Caso de Uso**: Un administrador quiere cambiar el nombre de la plataforma o la política de registro público.
+- **Flujo Detallado:**
+  1. **UI - Ruta `/settings`**: La página carga y muestra los ajustes actuales de la plataforma.
+  2. **UI - Acción del Usuario**: El administrador cambia el valor de uno o más campos (ej. cambia el `platformName` o desactiva `allowPublicRegistration`) y hace clic en "Guardar Configuración".
+  3. **API - Conexión**: La interfaz envía **todo el objeto de configuración actualizado** al servidor.
+  4. **Backend - Lógica**:
+     - El servidor recibe el objeto de configuración.
+     - Realiza validaciones, como por ejemplo, si se está eliminando una categoría, verifica que no esté en uso por ningún curso o recurso.
+     - Actualiza el único registro existente en la tabla de configuración con los nuevos valores.
+  5. **BD - Modelos Involucrados**: `PlatformSettings` (actualización).
+  6. **UI - Respuesta**: La interfaz recibe la configuración actualizada y la refleja, mientras que el `AuthContext` global de la aplicación se actualiza para que los cambios (como el nombre de la plataforma) se propaguen a toda la aplicación sin necesidad de recargar la página.
