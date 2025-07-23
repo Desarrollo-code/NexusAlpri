@@ -3,39 +3,36 @@
 @tailwind utilities;
 
 @layer base {
+  /* --- TEMA CLARO (POR DEFECTO) --- */
   :root {
     --background: 0 0% 100%;
     --foreground: 224 71.4% 4.1%;
-
+    
     --card: 0 0% 100%;
     --card-foreground: 224 71.4% 4.1%;
-
+    
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
-
-    --primary: 221 83% 53%;
+    
+    --primary: 221 83% 53%; /* Azul Vibrante */
     --primary-foreground: 210 20% 98%;
-
+    
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 220.9 39.3% 11%;
-
+    
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
-
-    --accent: 158 78% 42%;
+    
+    --accent: 158 78% 42%; /* Verde Esmeralda */
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
     
-    --border: 0 0% 90%; /* Gris muy claro para borde sutil */
-    --input: 0 0% 90%; /* Borde de input sutil */
+    --border: 0 0% 60%; 
+    --input: 0 0% 60%;
     --ring: 221 83% 53%;
-
-    --card-shadow:
-      0px 80px 160px rgba(0, 0, 0, 0.7),
-      0px 40px 80px rgba(0, 0, 0, 0.4);
-
+    
     --radius: 0.5rem;
 
     --sidebar-background: 220 14.3% 98%;
@@ -45,11 +42,11 @@
     --sidebar-border: 220 13% 88%;
     --sidebar-ring: 221 83% 53%;
 
-    --chart-1: 280 85% 60%;
-    --chart-2: 198 90% 48%;
-    --chart-3: 340 95% 65%;
-    --chart-4: 50 100% 50%;
-    --chart-5: 158 78% 42%;
+    --chart-1: 280 85% 60%; /* Violeta */
+    --chart-2: 198 90% 48%; /* Cian Brillante */
+    --chart-3: 340 95% 65%; /* Rosa Eléctrico */
+    --chart-4: 50 100% 50%; /* Amarillo Sol */
+    --chart-5: 158 78% 42%; /* Verde Esmeralda */
 
     --event-blue: 210 90% 55%;
     --event-green: 140 70% 45%;
@@ -57,49 +54,46 @@
     --event-orange: 35 95% 55%;
   }
 
+  /* --- TEMA OSCURO --- */
   .dark {
     --background: 0 0% 0%;
     --foreground: 210 20% 98%;
     
-    --card: 240 5% 15%; /* Gris muy oscuro, no negro puro */
+    --card: 224 15% 12%;
     --card-foreground: 210 20% 98%;
-
+    
     --popover: 224 71.4% 4.1%;
     --popover-foreground: 210 20% 98%;
-
-    --primary: 221 83% 63%;
+    
+    --primary: 221 83% 63%; /* Azul más brillante */
     --primary-foreground: 210 20% 98%;
-
+    
     --secondary: 215 28% 15%;
     --secondary-foreground: 210 20% 98%;
-
+    
     --muted: 215 28% 15%;
     --muted-foreground: 217.9 10.6% 64.9%;
-
-    --accent: 158 70% 55%;
+    
+    --accent: 158 70% 55%; /* Verde Esmeralda más brillante */
     --accent-foreground: 210 20% 98%;
-
+    
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 20% 98%;
     
-    --border: 0 0% 80% / 0.6; /* Blanco translúcido para borde sutil */
-    --input: 215 28% 40%;
+    --border: 0 0% 40%; 
+    --input: 0 0% 40%;
     --ring: 221 83% 63%;
-
-    --card-shadow:
-      0px 140px 280px rgba(0, 0, 0, 0.75),
-      0px 60px 100px rgba(0, 0, 0, 0.45);
-
+    
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 210 20% 98%;
     --sidebar-accent: 221 83% 63%;
     --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 0 0% 25%;
+    --sidebar-border: 0 0% 15%;
 
-    --chart-1: 280 100% 70%;
-    --chart-2: 200 100% 60%;
+    --chart-1: 280 100% 70%; 
+    --chart-2: 200 100% 60%; 
     --chart-3: 340 100% 70%;
-    --chart-4: 50 100% 60%;
+    --chart-4: 50 100% 60%; 
     --chart-5: 158 70% 55%;
 
     --event-blue: 210 100% 60%;
@@ -108,6 +102,9 @@
     --event-orange: 35 100% 55%;
   }
 
+  * {
+    @apply border-border;
+  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -121,70 +118,43 @@
     height: auto;
   }
 
-  /* === CARD CON ELEVACIÓN EXTREMA === */
-  .card-base {
-    @apply rounded-2xl;
-    background-color: hsl(var(--card));
-    color: hsl(var(--card-foreground));
-    border: 5px solid hsl(var(--border));
-    box-shadow: var(--card-shadow);
-    transition:
-      transform 0.6s ease,
-      box-shadow 0.6s ease,
-      border-color 0.4s ease,
-      outline 0.4s ease;
-    transform-style: preserve-3d;
-    transform: perspective(1400px) rotateX(5deg);
-  }
-
-  .card-base:hover {
-    transform: perspective(1400px) translateY(-64px) rotateX(14deg) rotateY(8deg) scale(1.12);
-    box-shadow:
-      0px 140px 280px rgba(0, 0, 0, 0.75),
-      0px 60px 100px rgba(0, 0, 0, 0.45);
-    border-color: hsl(var(--accent));
-    outline: 4px solid hsl(var(--accent) / 0.8);
-    outline-offset: 4px;
-  }
-
   .card-border-animated {
-    position: relative;
+      position: relative;
+      border: 1px solid transparent;
+      transition: all 0.3s ease-in-out;
   }
 
   .card-border-animated::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--accent) / 0.9));
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    transition: all 0.3s ease-in-out;
-    opacity: 0;
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit; 
+      padding: 1px;
+      background: linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--accent) / 0.3));
+      -webkit-mask: 
+          linear-gradient(#fff 0 0) content-box, 
+          linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      transition: all 0.3s ease-in-out;
+      opacity: 0;
   }
 
   .card-border-animated:hover::before {
-    opacity: 1;
+      opacity: 1;
   }
 
   .thin-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-
   .thin-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
-
   .thin-scrollbar::-webkit-scrollbar-thumb {
     background-color: hsl(var(--border));
     border-radius: 20px;
   }
-
   .thin-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--muted-foreground));
   }
