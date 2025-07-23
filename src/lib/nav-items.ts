@@ -15,6 +15,7 @@ import {
   Shield,
   BarChart3,
   Bell,
+  GitCommitHorizontal,
 } from 'lucide-react';
 
 
@@ -66,6 +67,7 @@ const navItems: NavItem[] = [
             { href: '/analytics', label: 'Analíticas', icon: BarChart3, roles: ['ADMINISTRATOR'] },
             { href: '/users', label: 'Gestión de Usuarios', icon: Users, roles: ['ADMINISTRATOR'] },
             { href: '/security-audit', label: 'Auditoría de Seguridad', icon: ShieldAlert, roles: ['ADMINISTRATOR'] },
+            { href: '/traceability', label: 'Matriz de Trazabilidad', icon: GitCommitHorizontal, roles: ['ADMINISTRATOR'] },
             { href: '/settings', label: 'Configuración', icon: Settings, roles: ['ADMINISTRATOR'] },
         ]
     }
