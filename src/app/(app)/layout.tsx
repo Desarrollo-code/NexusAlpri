@@ -52,11 +52,11 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
           >
               <div className="flex items-center gap-3 flex-1">
                 <GradientIcon icon={item.icon} isActive={isParentActive || isActive} />
-                {sidebarState === 'expanded' && <span className="font-semibold text-base">{item.label}</span>}
+                <span className={cn("font-semibold text-base", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
             </div>
-            {sidebarState === 'expanded' && <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />}
+            <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200", "md:group-data-[state=collapsed]:hidden")} />
           </AccordionTrigger>
-          <AccordionContent className="p-0 pl-7 mt-1 group-data-[state=collapsed]/sidebar-wrapper:hidden">
+          <AccordionContent className="p-0 pl-7 mt-1 md:group-data-[state=collapsed]:hidden">
             <SidebarMenu className="border-l border-sidebar-border ml-2 pl-3">
               {filteredSubItems.map((subItem) => {
                 const isSubItemActive = pathname.startsWith(subItem.href || '');
@@ -71,7 +71,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
                     >
                       <Link href={subItem.href || '#'}>
                         <GradientIcon icon={subItem.icon} size="sm" isActive={isSubItemActive} />
-                        {sidebarState === 'expanded' && <span className="text-sm font-normal">{subItem.label}</span>}
+                        <span className="text-sm font-normal md:group-data-[state=collapsed]:hidden">{subItem.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -88,7 +88,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
       <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{children: item.label}}>
         <Link href={item.href || '#'}>
           <GradientIcon icon={item.icon} isActive={isActive} />
-          {sidebarState === 'expanded' && <span className="font-semibold text-base">{item.label}</span>}
+          <span className={cn("font-semibold text-base", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -131,8 +131,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     return (
         <>
             <Sidebar>
-                <SidebarHeader className="group-data-[state=expanded]:px-4 group-data-[state=collapsed]:px-2">
-                    <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground group-data-[state=collapsed]:justify-center">
+                <SidebarHeader className="group-data-[state=expanded]:px-4 md:group-data-[state=collapsed]:px-2">
+                    <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground md:group-data-[state=collapsed]:justify-center">
                         <Image
                             src="/uploads/images/logo-nexusalpri.png"
                             alt="NexusAlpri Logo"
@@ -142,7 +142,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                             priority
                             data-ai-hint="logo education"
                         />
-                        <span className="text-xl font-headline group-data-[state=collapsed]:hidden">{settings?.platformName || 'NexusAlpri'}</span>
+                        <span className={cn("text-xl font-headline", "md:group-data-[state=collapsed]:hidden")}>{settings?.platformName || 'NexusAlpri'}</span>
                     </Link>
                 </SidebarHeader>
 
@@ -173,7 +173,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                         <SidebarMenuItem>
                             <SidebarMenuButton onClick={logout} variant="ghost" className="justify-start gap-3 w-full text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive" tooltip={{children: "Cerrar Sesión"}}>
                                 <LogOut className="text-destructive h-5 w-5"/>
-                                <span className="font-semibold group-data-[state=collapsed]:hidden">Cerrar Sesión</span>
+                                <span className={cn("font-semibold", "md:group-data-[state=collapsed]:hidden")}>Cerrar Sesión</span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
@@ -181,7 +181,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             </Sidebar>
 
             <div className={cn(
-              "bg-background min-h-screen md:ml-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out"
+              "bg-background min-h-screen md:ml-[var(--sidebar-width)] md:group-data-[state=collapsed]:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-300 ease-in-out"
             )}>
                 <TopBar />
                 <main className="p-4 md:p-6 lg:p-8">
