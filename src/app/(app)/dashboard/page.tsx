@@ -39,7 +39,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, Bar, Cell, ComposedChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts";
+import { Area, Bar, Cell, ComposedChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, BarChart as RechartsBar } from "recharts";
 import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getEventDetails, getInitials } from '@/lib/security-log-utils.tsx';
@@ -147,18 +147,18 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
                     <CardTitle>Tendencia de Registros (Últimos 7 Días)</CardTitle>
                 </CardHeader>
                 <CardContent className="h-72">
-                        <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
-                          <ResponsiveContainer>
-                            <ComposedChart data={stats.userRegistrationTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                                <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                                <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-                                <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
-                                <ChartTooltip content={<ChartTooltipContent />} />
-                                <defs><linearGradient id="fillArea" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8}/><stop offset="95%" stopColor="var(--color-count)" stopOpacity={0.1}/></linearGradient></defs>
-                                <Area dataKey="count" type="monotone" fill="url(#fillArea)" stroke="var(--color-count)" strokeWidth={2} dot={false} />
-                            </ComposedChart>
-                          </ResponsiveContainer>
-                        </ChartContainer>
+                    <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
+                      <ResponsiveContainer>
+                        <ComposedChart data={stats.userRegistrationTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                            <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <defs><linearGradient id="fillArea" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8}/><stop offset="95%" stopColor="var(--color-count)" stopOpacity={0.1}/></linearGradient></defs>
+                            <Area dataKey="count" type="monotone" fill="url(#fillArea)" stroke="var(--color-count)" strokeWidth={2} dot={false} />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
                 </CardContent>
             </Card>
              <Card className="card-border-animated">
@@ -168,7 +168,7 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
                 <CardContent className="h-72">
                     <ChartContainer config={userRolesChartConfig} className="w-full h-full">
                         <ResponsiveContainer>
-                            <BarChart data={userRolesChartData} layout="vertical" margin={{ left: 10, right: 10 }}>
+                            <RechartsBar data={userRolesChartData} layout="vertical" margin={{ left: 10, right: 10 }}>
                                 <CartesianGrid horizontal={false} strokeDasharray="3 3"/>
                                 <XAxis type="number" dataKey="count" hide/>
                                 <YAxis type="category" dataKey="label" tickLine={false} axisLine={false} tickMargin={10} width={80} />
@@ -176,7 +176,7 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
                                 <Bar dataKey="count" radius={4}>
                                     {userRolesChartData.map((d) => (<Cell key={d.label} fill={d.fill} />))}
                                 </Bar>
-                            </BarChart>
+                            </RechartsBar>
                         </ResponsiveContainer>
                     </ChartContainer>
                 </CardContent>
@@ -210,12 +210,18 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
                     </Button>
                 </CardFooter>
              </Card>
-              <Card>
+             <Card>
                 <CardHeader>
                     <CardTitle>Accesos Rápidos</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <ul className="space-y-2">
+                        <li>
+                            <Link href="/manage-courses" className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                <span className="flex items-center gap-3 font-medium"><BookMarked className="h-5 w-5 text-primary"/>Gestionar Cursos</span>
+                                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                            </Link>
+                        </li>
                         <li>
                             <Link href="/users" className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors">
                                 <span className="flex items-center gap-3 font-medium"><Users className="h-5 w-5 text-primary"/>Gestionar Usuarios</span>
@@ -530,22 +536,6 @@ export default function DashboardPage() {
                      <li>
                         <Link href="/analytics" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
                             <span className="flex items-center gap-3"><BarChart className="h-5 w-5 text-primary"/>Analíticas</span>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                        </Link>
-                     </li>
-                 )}
-                 {user.role === 'ADMINISTRATOR' && (
-                     <li>
-                        <Link href="/users" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                            <span className="flex items-center gap-3"><Users className="h-5 w-5 text-primary"/>Gestionar Usuarios</span>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                        </Link>
-                     </li>
-                 )}
-                 {user.role === 'ADMINISTRATOR' && (
-                     <li>
-                        <Link href="/settings" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                            <span className="flex items-center gap-3"><Settings className="h-5 w-5 text-primary"/>Configuración</span>
                             <ArrowRight className="h-4 w-4 text-muted-foreground" />
                         </Link>
                      </li>

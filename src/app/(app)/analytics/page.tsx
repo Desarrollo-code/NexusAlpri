@@ -247,20 +247,20 @@ function AdminAnalyticsPage() {
                 <CardTitle>Tendencia de Registros (Últimos 7 Días)</CardTitle>
             </CardHeader>
             <CardContent className="h-80">
-                    <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
-                        <ResponsiveContainer>
-                            <RechartsArea
-                                data={stats?.userRegistrationTrend || []}
-                                margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
-                            >
-                                <CartesianGrid vertical={false} strokeDasharray="3 3"/>
-                                <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)}/>
-                                <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false}/>
-                                <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
-                                <Area dataKey="count" type="monotone" fill="var(--color-count)" fillOpacity={0.4} stroke="var(--color-count)" />
-                            </RechartsArea>
-                        </ResponsiveContainer>
-                    </ChartContainer>
+                <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
+                    <ResponsiveContainer>
+                        <RechartsArea
+                            data={stats?.userRegistrationTrend || []}
+                            margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
+                        >
+                            <CartesianGrid vertical={false} strokeDasharray="3 3"/>
+                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)}/>
+                            <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false}/>
+                            <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
+                            <Area dataKey="count" type="monotone" fill="var(--color-count)" fillOpacity={0.4} stroke="var(--color-count)" />
+                        </RechartsArea>
+                    </ResponsiveContainer>
+                </ChartContainer>
             </CardContent>
             </Card>
         </div>
