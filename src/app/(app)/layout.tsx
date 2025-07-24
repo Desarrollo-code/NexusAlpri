@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
@@ -201,33 +202,13 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
 
-            {/* Este es el div principal del layout del contenido.
-                Aquí es donde necesitas asegurarte de que el margen izquierdo
-                respete el ancho de la barra lateral.
-                Las variables --sidebar-width y --sidebar-width-icon deben estar definidas
-                en algún lugar de tu CSS global o en el componente Sidebar.
-                Si aún se superpone, verifica esos valores.
-            */}
             <div className={cn(
-<<<<<<< HEAD
               "bg-background min-h-screen transition-all duration-300 ease-in-out",
-              "md:group-data-[state=expanded]:ml-[var(--sidebar-width)]",
-              "md:group-data-[state=collapsed]:ml-[var(--sidebar-width-icon)]"
-=======
-              "bg-background min-h-screen transition-[margin-left] duration-300 ease-in-out",
-              // Clases para el margen izquierdo que empujan el contenido
-              // Asegúrate de que las variables CSS --sidebar-width y --sidebar-width-icon
-              // estén correctamente definidas en tu archivo CSS o en el componente Sidebar.
-              // A veces, un z-index en la barra lateral también puede ser necesario
-              // para asegurar que esté "encima" si hay algún solapamiento.
               "md:group-data-[state=expanded]/app-layout:ml-[var(--sidebar-width)]",
               "md:group-data-[state=collapsed]/app-layout:ml-[var(--sidebar-width-icon)]",
-              // Considera añadir un z-index al main content si la barra lateral tiene uno alto
-              "relative z-10" // Asegúrate de que el contenido no quede por debajo de otros elementos
->>>>>>> b77b4c7000dcecb69d3af918f001e3a19e380336
+              "relative z-10"
             )}>
                 <TopBar />
-                {/* Puedes ajustar el padding aquí también si es necesario */}
                 <main className="p-4 md:p-6 lg:p-8">
                   {children}
                 </main>
