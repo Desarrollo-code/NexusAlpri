@@ -1,4 +1,8 @@
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> d06d15a38b6910c5e40c94cb9b95fd79e1e13562
 'use client';
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
@@ -14,7 +18,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarMenuSeparator,
-  useSidebar
+  useSidebar 
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { getNavItemsForRole } from '@/lib/nav-items';
@@ -30,18 +34,14 @@ import { Loader2 } from 'lucide-react';
 
 const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) => {
   const { user } = useAuth();
-  // No necesitas sidebarState aquí a menos que lo uses para un efecto visual directo en el NavMenuItem
-  // const { state: sidebarState } = useSidebar();
+  const { state: sidebarState } = useSidebar(); 
 
   if (!user) return null;
 
   const isActive = item.href ? pathname.startsWith(item.href) : false;
   const isParentActive = item.subItems?.some(sub => sub.href && pathname.startsWith(sub.href));
 
-  // Filtrar sub-elementos basados en roles del usuario
-  const filteredSubItems = useMemo(() => {
-    return item.subItems?.filter(sub => sub.roles.includes(user.role)) ?? [];
-  }, [item.subItems, user.role]);
+  const filteredSubItems = item.subItems?.filter(sub => sub.roles.includes(user.role)) ?? [];
 
   if (filteredSubItems.length > 0) {
     return (
@@ -53,13 +53,10 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
             )}
           >
               <div className="flex items-center gap-3 flex-1">
-                {item.icon && <item.icon className={cn("h-5 w-5 shrink-0 transition-colors", isParentActive || isActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground group-hover:text-sidebar-accent-foreground")} />}
+                <item.icon className={cn("h-5 w-5 shrink-0 transition-colors", isParentActive || isActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground group-hover:text-sidebar-accent-foreground")} />
                 <span className={cn("font-semibold text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
             </div>
-            {/* Solo muestra el icono de chevron si hay subitems filtrados */}
-            {filteredSubItems.length > 0 && (
-              <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200", "md:group-data-[state=collapsed]:hidden")} />
-            )}
+            <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200", "md:group-data-[state=collapsed]:hidden")} />
           </AccordionTrigger>
           <AccordionContent className="p-0 pl-7 mt-1 md:group-data-[state=collapsed]:hidden">
             <SidebarMenu className="border-l border-sidebar-border ml-2 pl-3">
@@ -67,15 +64,15 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
                 const isSubItemActive = pathname.startsWith(subItem.href || '');
                 return (
                   <SidebarMenuItem key={subItem.href}>
-                    <SidebarMenuButton
-                      asChild
+                    <SidebarMenuButton 
+                      asChild 
                       isActive={isSubItemActive}
-                      size="sm"
-                      className="justify-start gap-2"
+                      size="sm" 
+                      className="justify-start gap-2" 
                       tooltip={{ children: subItem.label }}
                     >
                       <Link href={subItem.href || '#'}>
-                        {subItem.icon && <subItem.icon className="h-4 w-4 shrink-0" />}
+                        <subItem.icon className="h-4 w-4 shrink-0" />
                         <span className="text-sm font-normal md:group-data-[state=collapsed]:hidden whitespace-nowrap">{subItem.label}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -88,12 +85,11 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
       );
   }
 
-  // Si no tiene subItems o los subItems filtrados están vacíos, renderiza como un item normal
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{children: item.label}}>
         <Link href={item.href || '#'}>
-          {item.icon && <item.icon className="h-5 w-5 shrink-0" />}
+          <item.icon className="h-5 w-5 shrink-0" />
           <span className={cn("font-semibold text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
         </Link>
       </SidebarMenuButton>
@@ -105,7 +101,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const { user, settings, logout } = useAuth();
     const pathname = usePathname();
     const { toast } = useToast();
-    const { state: sidebarState } = useSidebar(); // Aquí obtienes el estado de la barra lateral
 
     const handleIdleLogout = useCallback(() => {
         if (user) {
@@ -123,8 +118,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
     useIdleTimeout(handleIdleLogout, idleTimeoutMinutes, isIdleTimeoutEnabled);
 
-    // Usa useMemo para memoizar navItems si user.role no cambia con frecuencia
-    const navItems = useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
+    const navItems = getNavItemsForRole(user?.role || 'STUDENT');
 
     const [openAccordionValue, setOpenAccordionValue] = useState<string[]>(() => {
         const parentItem = navItems.find(item =>
@@ -133,22 +127,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         return parentItem ? [parentItem.label] : [];
     });
 
-    // Usa useEffect para actualizar openAccordionValue si el pathname cambia y una nueva sección debe estar abierta
-    useEffect(() => {
-        const parentItem = navItems.find(item =>
-            item.subItems?.some(sub => sub.href && pathname.startsWith(sub.href))
-        );
-        const newOpenValue = parentItem ? [parentItem.label] : [];
-        // Solo actualiza si es diferente para evitar renderizados innecesarios
-        if (JSON.stringify(newOpenValue) !== JSON.stringify(openAccordionValue)) {
-            setOpenAccordionValue(newOpenValue);
-        }
-    }, [pathname, navItems, openAccordionValue]);
-
-
-    const generalItems = useMemo(() => navItems.filter(item => !item.subItems || item.subItems.length === 0), [navItems]);
-    const adminItems = useMemo(() => navItems.find(item => item.label === 'Administración' && item.subItems && item.subItems.length > 0), [navItems]);
-
+    const generalItems = navItems.filter(item => !item.subItems || item.subItems.length === 0);
+    const adminItems = navItems.find(item => item.label === 'Administración' && item.subItems && item.subItems.length > 0);
+    
     return (
         <div className="group/app-layout">
             <Sidebar>
@@ -170,22 +151,21 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 <SidebarContent>
                      <Accordion
                         type="multiple"
-                        // Asegúrate de que defaultValue y onValueChange usen el mismo estado
-                        value={openAccordionValue} // Usa 'value' en lugar de 'defaultValue' para un componente controlado
+                        defaultValue={openAccordionValue}
                         onValueChange={setOpenAccordionValue}
                         className="w-full p-2"
                     >
                         <SidebarMenu className="overflow-hidden">
-                          {generalItems.map((item) => ( // No necesitas el index si item.href o item.label son únicos
-                                <NavMenuItem key={item.href || item.label} item={item} pathname={pathname} />
-                            ))}
+                          {generalItems.map((item, index) => (
+                              <NavMenuItem key={item.href || item.label} item={item} pathname={pathname} />
+                          ))}
 
-                            {adminItems && (
-                              <>
-                                <SidebarMenuSeparator />
-                                <NavMenuItem key={adminItems.label} item={adminItems} pathname={pathname} />
-                              </>
-                            )}
+                          {adminItems && (
+                            <>
+                              <SidebarMenuSeparator />
+                              <NavMenuItem key={adminItems.label} item={adminItems} pathname={pathname} />
+                            </>
+                          )}
                         </SidebarMenu>
                     </Accordion>
                 </SidebarContent>
@@ -204,9 +184,14 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
             <div className={cn(
               "bg-background min-h-screen transition-all duration-300 ease-in-out",
+<<<<<<< HEAD
               "md:group-data-[state=expanded]/app-layout:ml-[var(--sidebar-width)]",
               "md:group-data-[state=collapsed]/app-layout:ml-[var(--sidebar-width-icon)]",
               "relative z-10"
+=======
+              "md:group-data-[state=expanded]:ml-[var(--sidebar-width)]",
+              "md:group-data-[state=collapsed]:ml-[var(--sidebar-width-icon)]"
+>>>>>>> d06d15a38b6910c5e40c94cb9b95fd79e1e13562
             )}>
                 <TopBar />
                 <main className="p-4 md:p-6 lg:p-8">
@@ -234,7 +219,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Si isLoading termina y no hay usuario, redirigir a sign-in
     if (!isLoading && !user) {
       router.replace('/sign-in');
     }
