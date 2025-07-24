@@ -43,8 +43,7 @@ export const GradientIcon = ({
         </linearGradient>
       </defs>
       <Icon
-        stroke={isActive ? 'hsl(var(--primary-foreground))' : `url(#${id})`}
-        fill={isActive ? 'hsl(var(--primary-foreground))' : 'none'}
+        stroke={isActive ? 'hsl(var(--sidebar-accent-foreground))' : `url(#${id})`}
         className="w-full h-full"
         {...props}
       />

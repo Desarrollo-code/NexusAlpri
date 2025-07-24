@@ -28,6 +28,7 @@ import { cn } from '@/lib/utils';
 import { useIdleTimeout } from '@/hooks/useIdleTimeout';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { GradientIcon } from '@/components/ui/gradient-icon';
 
 const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) => {
   const { user } = useAuth();
@@ -50,29 +51,32 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
             )}
           >
               <div className="flex items-center gap-3 flex-1">
-                <item.icon className={cn("h-5 w-5", isParentActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground")} />
+                <GradientIcon icon={item.icon} isActive={isParentActive} />
                 {sidebarState === 'expanded' && <span className="font-semibold text-base">{item.label}</span>}
             </div>
             {sidebarState === 'expanded' && <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />}
           </AccordionTrigger>
           <AccordionContent className="p-0 pl-7 mt-1 group-data-[state=collapsed]/sidebar-wrapper:hidden">
             <SidebarMenu className="border-l border-sidebar-border ml-2 pl-3">
-              {filteredSubItems.map((subItem) => (
-                <SidebarMenuItem key={subItem.href}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={pathname.startsWith(subItem.href || '')}
-                    size="sm" 
-                    className="justify-start gap-2" 
-                    tooltip={{ children: subItem.label }}
-                  >
-                    <Link href={subItem.href || '#'}>
-                      <subItem.icon className={cn("h-4 w-4", pathname.startsWith(subItem.href || '') ? "text-sidebar-accent-foreground" : "text-sidebar-foreground/80")}/>
-                      {sidebarState === 'expanded' && <span className="text-sm font-normal">{subItem.label}</span>}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {filteredSubItems.map((subItem) => {
+                const isSubItemActive = pathname.startsWith(subItem.href || '');
+                return (
+                  <SidebarMenuItem key={subItem.href}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={isSubItemActive}
+                      size="sm" 
+                      className="justify-start gap-2" 
+                      tooltip={{ children: subItem.label }}
+                    >
+                      <Link href={subItem.href || '#'}>
+                        <GradientIcon icon={subItem.icon} size="sm" isActive={isSubItemActive} />
+                        {sidebarState === 'expanded' && <span className="text-sm font-normal">{subItem.label}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </AccordionContent>
         </AccordionItem>
@@ -83,7 +87,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{children: item.label}}>
         <Link href={item.href || '#'}>
-          <item.icon className={cn("h-5 w-5", isActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground")} />
+          <GradientIcon icon={item.icon} isActive={isActive} />
           {sidebarState === 'expanded' && <span className="font-semibold text-base">{item.label}</span>}
         </Link>
       </SidebarMenuButton>
