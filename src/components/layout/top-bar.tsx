@@ -161,8 +161,11 @@ export function TopBar() {
     } else if (pathname.startsWith('/resources')) {
         title = 'Biblioteca';
         colorClass = 'bg-chart-3/10';
-    } else if (pathname.startsWith('/announcements') || pathname.startsWith('/calendar')) {
-        title = 'Comunicación';
+    } else if (pathname.startsWith('/announcements')) {
+        title = 'Anuncios';
+        colorClass = 'bg-chart-4/10';
+    } else if (pathname.startsWith('/calendar')) {
+        title = 'Calendario';
         colorClass = 'bg-chart-4/10';
     } else if (pathname.startsWith('/manage-courses') || pathname.startsWith('/users') || pathname.startsWith('/settings') || pathname.startsWith('/analytics') || pathname.startsWith('/security-audit') || pathname.startsWith('/enrollments')) {
         title = currentNavItem?.label || 'Administración';
