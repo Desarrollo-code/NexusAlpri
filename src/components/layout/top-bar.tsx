@@ -1,4 +1,3 @@
-
 'use client';
 
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -179,6 +178,10 @@ export function TopBar() {
     } else if (pathname.startsWith('/manage-courses') || pathname.startsWith('/users') || pathname.startsWith('/settings') || pathname.startsWith('/analytics') || pathname.startsWith('/security-audit') || pathname.startsWith('/enrollments')) {
         title = currentNavItem?.label || 'Administración';
         colorClass = 'bg-chart-5/10';
+    } else if (pathname.startsWith('/profile')) {
+        title = 'Mi Perfil';
+    } else if (pathname.startsWith('/notifications')) {
+        title = 'Notificaciones';
     }
     
     return { title, colorClass };
