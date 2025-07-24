@@ -136,9 +136,9 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
                         <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
                         <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
                         <Legend />
-                        <Bar dataKey="newCourses" stackId="a" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="publishedCourses" stackId="a" fill="var(--color-publishedCourses)" />
-                        <Bar dataKey="newEnrollments" stackId="a" fill="var(--color-newEnrollments)" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="newCourses" name="Nuevos Cursos" stackId="a" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="publishedCourses" name="Cursos Publicados" stackId="a" fill="var(--color-publishedCourses)" />
+                        <Bar dataKey="newEnrollments" name="Nuevas Inscripciones" stackId="a" fill="var(--color-newEnrollments)" radius={[4, 4, 0, 0]} />
                       </RechartsBar>
                     </ResponsiveContainer>
                   </ChartContainer>
@@ -173,7 +173,7 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
                     </Button>
                 </CardFooter>
              </Card>
-             <Card>
+              <Card>
                 <CardHeader>
                     <CardTitle>Accesos Rápidos</CardTitle>
                 </CardHeader>
