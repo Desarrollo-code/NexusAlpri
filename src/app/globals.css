@@ -206,4 +206,24 @@
     font-size: 1rem;
     color: var(--submain-color);
   }
+  
+  .animated-underline {
+      @apply relative;
+  }
+  .animated-underline::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      transform: scaleX(0);
+      height: 1px;
+      bottom: -2px;
+      left: 0;
+      background-color: hsl(var(--primary));
+      transform-origin: bottom center;
+      transition: transform 0.25s ease-out;
+  }
+  .animated-underline:hover::after {
+      transform: scaleX(1);
+      transform-origin: bottom center;
+  }
 }

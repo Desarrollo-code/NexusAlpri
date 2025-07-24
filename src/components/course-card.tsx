@@ -145,13 +145,12 @@ export function CourseCard({
               {descriptionToShow}
               {isTruncated && !isExpanded && '... '}
               {isTruncated && (
-                <Button
-                  onClick={toggleExpand}
-                  variant="link"
-                  className="p-0 h-auto text-sm"
+                 <button
+                    onClick={toggleExpand}
+                    className="text-primary font-semibold animated-underline"
                 >
-                  {isExpanded ? 'Leer menos' : 'Leer más'}
-                </Button>
+                    {isExpanded ? 'Leer menos' : 'Leer más'}
+                </button>
               )}
             </p>
           )}
