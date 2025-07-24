@@ -257,7 +257,7 @@ function AdminAnalyticsPage() {
                                 </linearGradient>
                             </defs>
                             <CartesianGrid vertical={false} strokeDasharray="3 3"/>
-                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)}/>
+                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)} interval={1}/>
                             <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false}/>
                             <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
                             <Area dataKey="count" type="monotone" fill="url(#fillArea)" stroke="var(--color-count)" />

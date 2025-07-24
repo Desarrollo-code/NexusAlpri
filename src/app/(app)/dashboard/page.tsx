@@ -39,7 +39,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, Bar, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, BarChart as RechartsBar, Legend } from "recharts";
+import { Area, Bar, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, BarChart as RechartsBar, Legend, ComposedChart } from "recharts";
 import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
 import { getEventDetails, getInitials } from '@/lib/security-log-utils.tsx';
 
@@ -132,7 +132,7 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
                     <ResponsiveContainer>
                       <RechartsBar data={stats.courseActivity} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
                         <CartesianGrid vertical={false} strokeDasharray="3 3"/>
-                        <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                        <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} interval={5} />
                         <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
                         <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
                         <Legend />
