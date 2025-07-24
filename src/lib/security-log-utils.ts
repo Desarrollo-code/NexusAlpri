@@ -1,4 +1,6 @@
 
+'use client';
+
 import type { SecurityLogEvent } from '@/types';
 import { ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert } from 'lucide-react';
 import React from 'react';
