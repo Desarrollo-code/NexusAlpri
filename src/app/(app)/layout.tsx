@@ -171,7 +171,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 <SidebarFooter>
                      <SidebarMenu>
                         <SidebarMenuItem>
-                            <SidebarMenuButton onClick={logout} variant="ghost" className="justify-start gap-3 w-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive" tooltip={{children: "Cerrar Sesión"}}>
+                            <SidebarMenuButton onClick={logout} variant="ghost" className="justify-start gap-3 w-full text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive" tooltip={{children: "Cerrar Sesión"}}>
                                 <LogOut className="text-destructive h-5 w-5"/>
                                 <span className="font-semibold group-data-[state=collapsed]:hidden">Cerrar Sesión</span>
                             </SidebarMenuButton>

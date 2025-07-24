@@ -24,29 +24,16 @@ export const GradientIcon = ({
     'lg': 'w-6 h-6',
     'xl': 'w-8 h-8',
   };
-
-  const id = `icon-gradient-${Icon.displayName || Math.random().toString()}`;
+  
+  // When active, the parent button will control the color via `text-sidebar-accent-foreground`
+  // When inactive, we use the `sidebar-foreground` color directly
+  const iconColor = isActive ? 'currentColor' : 'hsl(var(--sidebar-foreground))';
 
   return (
-    <svg 
-      viewBox="0 0 24 24"
+    <Icon
       className={cn(sizeClasses[size], className)}
-      fill="none"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <defs>
-        <linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style={{ stopColor: 'hsl(var(--primary))', stopOpacity: 1 }} />
-          <stop offset="100%" style={{ stopColor: 'hsl(var(--accent))', stopOpacity: 1 }} />
-        </linearGradient>
-      </defs>
-      <Icon
-        stroke={isActive ? 'hsl(var(--sidebar-accent-foreground))' : `url(#${id})`}
-        className="w-full h-full"
-        {...props}
-      />
-    </svg>
+      stroke={iconColor}
+      {...props}
+    />
   );
 };

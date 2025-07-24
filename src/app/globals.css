@@ -36,12 +36,12 @@
     
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 224 71.4% 4.1%;
-    --sidebar-accent: 45 96% 53%;
-    --sidebar-accent-foreground: 45 90% 5%;
-    --sidebar-border: 220 13% 88%;
-    --sidebar-ring: 45 96% 53%;
+    --sidebar-background: 221 83% 53%; /* Azul Vibrante */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 100%;
+    --sidebar-accent-foreground: 221 83% 53%;
+    --sidebar-border: 221 83% 60%;
+    --sidebar-ring: 0 0% 100%;
 
     --chart-1: 221 83% 53%; /* Azul */
     --chart-2: 45 96% 53%; /* Dorado */
@@ -85,11 +85,12 @@
     --input: 210 6% 25%;
     --ring: 48 96% 53%;
     
-    --sidebar-background: 210 6% 12%;
-    --sidebar-foreground: 210 20% 96%;
-    --sidebar-accent: 48 96% 53%;
-    --sidebar-accent-foreground: 48 90% 10%;
-    --sidebar-border: 210 6% 20%;
+    --sidebar-background: 221 83% 53%; /* Azul Vibrante */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 100%;
+    --sidebar-accent-foreground: 221 83% 53%;
+    --sidebar-border: 221 83% 45%;
+    --sidebar-ring: 0 0% 100%;
 
     --chart-1: 221 83% 63%; /* Azul Eléctrico */
     --chart-2: 48 96% 53%;  /* Dorado */
