@@ -140,27 +140,54 @@ export function TopBar() {
 
   const userAppRole = user?.role;
   const navItemsRaw = user ? getNavItemsForRole(userAppRole || 'STUDENT') : [];
-  const allNavItems = navItemsRaw.flatMap(item => (item.subItems ? [item, ...item.subItems] : [item]));
   
-  const getPageTitle = () => {
+  const getPageDetails = () => {
+    const allNavItems = navItemsRaw.flatMap(item => (item.subItems ? [item, ...item.subItems] : [item]));
+    
     const currentNavItem = allNavItems
       .slice()
       .sort((a, b) => (b.href?.length ?? 0) - (a.href?.length ?? 0))
       .find(item => item.href && item.href !== '#' && pathname.startsWith(item.href));
-      
-    if (pathname === '/dashboard') return 'Panel Principal';
-    if (pathname.startsWith('/courses/')) return 'Detalle del Curso';
-    if (pathname.startsWith('/manage-courses/')) return 'Gestión de Curso';
 
-    return currentNavItem?.label || 'NexusAlpri'; 
+    let title = 'NexusAlpri';
+    let colorClass = 'bg-background/95';
+
+    if (pathname.startsWith('/dashboard')) {
+        title = 'Panel Principal';
+        colorClass = 'bg-chart-1/10';
+    } else if (pathname.startsWith('/courses') || pathname.startsWith('/my-courses')) {
+        title = 'Cursos';
+        colorClass = 'bg-chart-2/10';
+    } else if (pathname.startsWith('/resources')) {
+        title = 'Biblioteca';
+        colorClass = 'bg-chart-3/10';
+    } else if (pathname.startsWith('/announcements') || pathname.startsWith('/calendar')) {
+        title = 'Comunicación';
+        colorClass = 'bg-chart-4/10';
+    } else if (pathname.startsWith('/manage-courses') || pathname.startsWith('/users') || pathname.startsWith('/settings') || pathname.startsWith('/analytics') || pathname.startsWith('/security-audit') || pathname.startsWith('/enrollments')) {
+        title = currentNavItem?.label || 'Administración';
+        colorClass = 'bg-chart-5/10';
+    } else if (currentNavItem) {
+        title = currentNavItem.label;
+    }
+    
+    if (pathname.startsWith('/courses/') && !pathname.endsWith('/courses')) title = 'Detalle del Curso';
+    if (pathname.startsWith('/manage-courses/') && !pathname.endsWith('/manage-courses')) title = 'Gestión de Curso';
+    
+    return { title, colorClass };
   };
+  
+  const { title, colorClass } = getPageDetails();
   
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/60 dark:border-white/10 bg-background/95 px-4 backdrop-blur-md md:px-6">
+      <header className={cn(
+          "sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/60 px-4 backdrop-blur-md md:px-6 transition-colors duration-300",
+          colorClass
+      )}>
         <div className="flex items-center gap-2">
           <SidebarTrigger className="md:hidden" />
-          <h1 className="hidden sm:block text-xl font-semibold font-headline truncate">{getPageTitle()}</h1>
+          <h1 className="hidden sm:block text-xl font-semibold font-headline truncate">{title}</h1>
         </div>
         <div className="flex items-center gap-3">
           <NotificationPopover />
