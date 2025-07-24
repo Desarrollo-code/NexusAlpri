@@ -148,14 +148,16 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
                 </CardHeader>
                 <CardContent className="h-72">
                         <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
-                        <ComposedChart data={stats.userRegistrationTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                            <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-                            <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <defs><linearGradient id="fillArea" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8}/><stop offset="95%" stopColor="var(--color-count)" stopOpacity={0.1}/></linearGradient></defs>
-                            <Area dataKey="count" type="monotone" fill="url(#fillArea)" stroke="var(--color-count)" strokeWidth={2} dot={false} />
-                        </ComposedChart>
+                        <ResponsiveContainer>
+                          <ComposedChart data={stats.userRegistrationTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                              <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                              <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                              <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
+                              <ChartTooltip content={<ChartTooltipContent />} />
+                              <defs><linearGradient id="fillArea" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8}/><stop offset="95%" stopColor="var(--color-count)" stopOpacity={0.1}/></linearGradient></defs>
+                              <Area dataKey="count" type="monotone" fill="url(#fillArea)" stroke="var(--color-count)" strokeWidth={2} dot={false} />
+                          </ComposedChart>
+                        </ResponsiveContainer>
                         </ChartContainer>
                 </CardContent>
             </Card>
