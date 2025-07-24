@@ -17,7 +17,7 @@
     
     /* Paleta de Ámbar/Naranja */
     --primary: 38 92% 50%;
-    --primary-foreground: 224 71.4% 4.1%;
+    --primary-foreground: 38 95% 15%;
     
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 220.9 39.3% 11%;
@@ -167,5 +167,43 @@
     align-items: center;
     border-radius: 20px;
     background: var(--bg-color);
+  }
+
+  .card__img {
+    position: absolute;
+    width: 100%;
+    height: 160px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    overflow: hidden;
+  }
+  .card__img svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .card__avatar {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    background: var(--bg-color);
+    border-radius: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: calc(160px - 55px);
+    box-shadow: 0 0 0 5px var(--bg-color);
+  }
+  .card__title {
+    margin-top: 210px;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--main-color);
+  }
+  .card__subtitle {
+    margin-top: 10px;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--submain-color);
   }
 }
