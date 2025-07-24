@@ -6,7 +6,7 @@
 @layer base {
   /* --- TEMA CLARO (POR DEFECTO) --- */
   :root {
-    --background: 220 20% 98%;
+    --background: 240 10% 98%;
     --foreground: 224 71.4% 4.1%;
     
     --card: 0 0% 100%;
@@ -43,11 +43,11 @@
     --sidebar-border: 262.1 83.3% 52.8%;
     --sidebar-ring: 210 20% 98%;
 
-    --chart-1: 221 83% 53%; /* Azul */
-    --chart-2: 45 96% 53%; /* Dorado */
-    --chart-3: 158 78% 42%; /* Verde */
-    --chart-4: 340 95% 65%; /* Rosa */
-    --chart-5: 280 85% 60%; /* Violeta */
+    --chart-1: 221 83% 53%;
+    --chart-2: 45 96% 53%;
+    --chart-3: 158 78% 42%;
+    --chart-4: 340 95% 65%;
+    --chart-5: 280 85% 60%;
 
     --event-blue: 210 90% 55%;
     --event-green: 140 70% 45%;
@@ -58,19 +58,19 @@
   /* --- TEMA OSCURO --- */
   .dark {
     --background: 0 0% 0%; /* Negro Puro */
-    --foreground: 210 20% 96%;
+    --foreground: 210 20% 98%;
     
     --card: 240 4% 10%; /* Grafito para Tarjetas */
-    --card-foreground: 210 20% 96%;
+    --card-foreground: 210 20% 98%;
     
     --popover: 240 4% 10%;
-    --popover-foreground: 210 20% 96%;
+    --popover-foreground: 210 20% 98%;
     
     --primary: 262.1 83.3% 57.8%; /* Deep Purple */
     --primary-foreground: 210 20% 98%;
     
     --secondary: 240 4% 15%;
-    --secondary-foreground: 210 20% 96%;
+    --secondary-foreground: 210 20% 98%;
     
     --muted: 240 4% 15%;
     --muted-foreground: 210 5% 64%;
@@ -92,11 +92,11 @@
     --sidebar-border: 262.1 83.3% 52.8%;
     --sidebar-ring: 210 20% 98%;
 
-    --chart-1: 221 83% 63%; /* Azul Eléctrico */
-    --chart-2: 48 96% 53%;  /* Dorado */
-    --chart-3: 158 70% 55%; /* Verde */
-    --chart-4: 340 100% 70%;/* Rosa */
-    --chart-5: 280 100% 70%;/* Violeta */
+    --chart-1: 221 83% 63%;
+    --chart-2: 48 96% 53%;
+    --chart-3: 158 70% 55%;
+    --chart-4: 340 100% 70%;
+    --chart-5: 280 100% 70%;
 
     --event-blue: 210 100% 60%;
     --event-green: 140 80% 50%;

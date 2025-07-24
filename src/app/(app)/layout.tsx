@@ -47,11 +47,11 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
           <AccordionTrigger
             className={cn(
               "w-full h-auto p-2 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground rounded-md text-sm hover:no-underline justify-start gap-3",
-              isParentActive && "bg-sidebar-accent/80"
+              isParentActive && "bg-sidebar-accent text-sidebar-accent-foreground"
             )}
           >
               <div className="flex items-center gap-3 flex-1">
-                <GradientIcon icon={item.icon} isActive={isParentActive} />
+                <GradientIcon icon={item.icon} isActive={isParentActive || isActive} />
                 {sidebarState === 'expanded' && <span className="font-semibold text-base">{item.label}</span>}
             </div>
             {sidebarState === 'expanded' && <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />}
