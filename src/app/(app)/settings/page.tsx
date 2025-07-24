@@ -152,7 +152,6 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold font-headline mb-2">Configuración de la Plataforma</h1>
         <p className="text-muted-foreground">Ajusta los parámetros generales y funcionalidades de NexusAlpri.</p>
       </div>
 

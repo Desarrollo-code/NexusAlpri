@@ -104,7 +104,6 @@ export default function MyCoursesPage() {
     );
   }
 
-  const pageTitle = "Mis Cursos Inscritos";
   const pageDescription = "Continúa tu aprendizaje y revisa tu progreso en los cursos a los que te has unido.";
 
 
@@ -112,7 +111,6 @@ export default function MyCoursesPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-headline mb-2">{pageTitle}</h1>
           <p className="text-muted-foreground">{pageDescription}</p>
         </div>
       </div>

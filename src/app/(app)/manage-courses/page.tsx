@@ -407,7 +407,6 @@ export default function ManageCoursesPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h1 className="text-3xl font-bold font-headline mb-2">Gestión de Cursos</h1>
             <p className="text-muted-foreground">Administradores e Instructores: Creen, editen y organicen los cursos.</p>
         </div>
         {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (

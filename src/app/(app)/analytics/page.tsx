@@ -372,7 +372,6 @@ export default function AnalyticsPage() {
     return (
         <div className="space-y-8">
             <header>
-                <h1 className="text-3xl font-bold font-headline flex items-center gap-3"><BarChart3/> Informes y Analíticas Avanzadas</h1>
                 <p className="text-muted-foreground">Métricas clave para la toma de decisiones y el seguimiento del rendimiento de la plataforma.</p>
             </header>
             

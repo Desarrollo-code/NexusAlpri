@@ -481,7 +481,6 @@ export default function UsersPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h1 className="text-3xl font-bold font-headline mb-2">Gestión de Usuarios</h1>
             <p className="text-muted-foreground">Administra los usuarios de la plataforma NexusAlpri.</p>
         </div>
         <div className="flex flex-row flex-wrap items-center gap-2">

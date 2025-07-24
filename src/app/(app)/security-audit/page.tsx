@@ -128,7 +128,6 @@ export default function SecurityAuditPage() {
     return (
         <div className="space-y-8">
             <div>
-                <h1 className="text-3xl font-bold font-headline mb-2">Auditoría de Seguridad</h1>
                 <p className="text-muted-foreground">Revisa los eventos de seguridad importantes de la plataforma.</p>
             </div>
 

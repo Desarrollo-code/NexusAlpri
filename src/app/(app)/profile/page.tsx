@@ -301,7 +301,6 @@ export default function ProfilePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold font-headline mb-2">Mi Perfil</h1>
         <p className="text-muted-foreground">Visualiza y actualiza tu información personal y de cuenta.</p>
       </div>
       

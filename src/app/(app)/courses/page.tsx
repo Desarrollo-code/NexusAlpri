@@ -148,7 +148,6 @@ export default function CoursesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold font-headline mb-2">Catálogo de Cursos</h1>
         <p className="text-muted-foreground">Explora nuestra oferta formativa y encuentra el curso perfecto para ti.</p>
       </div>
 
