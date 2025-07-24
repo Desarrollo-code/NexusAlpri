@@ -170,9 +170,7 @@ export function TopBar() {
   return (
     <>
       <header className={cn(
-          "sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur-md md:px-6 transition-colors duration-300",
-          "md:group-data-[state=expanded]/app-layout:ml-[var(--sidebar-width)]",
-          "md:group-data-[state=collapsed]/app-layout:ml-[var(--sidebar-width-icon)]"
+          "sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur-md md:px-6",
       )}>
         <div className="flex items-center gap-2">
           <SidebarTrigger className="md:hidden" />
