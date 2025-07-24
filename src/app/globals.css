@@ -69,8 +69,8 @@
     --popover: 240 4% 10%;
     --popover-foreground: 210 20% 98%;
     
-    /* Paleta de Ámbar/Naranja */
-    --primary: 38 92% 50%;
+    /* Paleta de Ámbar/Naranja (Más vibrante para tema oscuro) */
+    --primary: 38 92% 60%;
     --primary-foreground: 38 95% 15%;
     
     --secondary: 240 4% 15%;
@@ -87,11 +87,11 @@
     
     --border: 240 4% 18%; 
     --input: 240 4% 18%;
-    --ring: 38 92% 50%;
+    --ring: 38 92% 60%;
 
     --radius: 0.75rem;
     
-    /* Barra Lateral - Tema Oscuro */
+    /* Barra Lateral - Tema Oscuro (Ajustada para mayor contraste) */
     --sidebar-background: 38 92% 50%;
     --sidebar-foreground: 38 95% 15%;
     --sidebar-accent: 38 100% 97%;
@@ -99,7 +99,7 @@
     --sidebar-border: 38 92% 55%;
     --sidebar-ring: 38 92% 50%;
 
-    /* Paleta de Colores para Gráficos y Eventos */
+    /* Paleta de Colores para Gráficos y Eventos (Más vibrante) */
     --chart-1: 200 81% 55%; /* Azul */
     --chart-2: 139 51% 61%; /* Verde */
     --chart-3: 340 100% 70%; /* Rosa */
