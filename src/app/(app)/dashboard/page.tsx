@@ -545,18 +545,6 @@ export default function DashboardPage() {
                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
                    </Link>
                  </li>
-                 <li>
-                   <Link href="/resources" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                     <span className="flex items-center gap-3"><Folder className="h-5 w-5 text-primary"/>Biblioteca</span>
-                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                   </Link>
-                 </li>
-                 <li>
-                   <Link href="/announcements" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                     <span className="flex items-center gap-3"><Megaphone className="h-5 w-5 text-primary"/>Anuncios</span>
-                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                   </Link>
-                 </li>
                  {(user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR') && (
                      <li>
                         <Link href="/manage-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
