@@ -138,7 +138,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                             alt="NexusAlpri Logo"
                             width={120}
                             height={97.5}
-                            className="w-auto h-8"
+                            className="w-auto h-10"
                             priority
                             data-ai-hint="logo education"
                         />
