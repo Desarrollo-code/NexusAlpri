@@ -168,7 +168,6 @@ export function TopBar() {
   const pageTitle = getPageDetails();
   
   return (
-    <>
       <header className={cn(
           "sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur-md md:px-6",
       )}>
@@ -181,6 +180,5 @@ export function TopBar() {
           <UserAvatarDropdown />
         </div>
       </header>
-    </>
   );
 }
