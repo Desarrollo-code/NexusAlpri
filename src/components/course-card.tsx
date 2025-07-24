@@ -25,6 +25,8 @@ interface CourseCardProps {
   viewMode?: 'catalog' | 'management';
 }
 
+const TRUNCATE_LENGTH = 120;
+
 export function CourseCard({ 
   course, 
   userRole, 
@@ -37,10 +39,11 @@ export function CourseCard({
   const { user } = useAuth();
   const { toast } = useToast();
   
-  const isEnrolled = 'isEnrolled' in course ? course.isEnrolled : undefined;
+  const [isExpanded, setIsExpanded] = React.useState(false);
   const [isProcessingEnrollment, setIsProcessingEnrollment] = React.useState(false);
   const [isProcessingStatus, setIsProcessingStatus] = React.useState(false);
 
+  const isEnrolled = 'isEnrolled' in course ? course.isEnrolled : undefined;
   const progress = 'progressPercentage' in course ? course.progressPercentage : undefined;
 
   const handleEnrollment = async (e: React.MouseEvent, enroll: boolean) => {
@@ -84,41 +87,75 @@ export function CourseCard({
     }
   };
 
-  const mainLink = viewMode === 'management' ? `/manage-courses/${course.id}/edit` : `/courses/${course.id}`;
+  const isTruncated = course.description && course.description.length > TRUNCATE_LENGTH;
+  const descriptionToShow = isExpanded
+    ? course.description
+    : `${course.description?.substring(0, TRUNCATE_LENGTH)}${isTruncated ? '...' : ''}`;
+
+  const toggleExpand = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
+  };
+  
+  const mainLinkHref = viewMode === 'management' ? `/manage-courses/${course.id}/edit` : `/courses/${course.id}`;
+  const MainLink = ({ children }: { children: React.ReactNode }) =>
+    isExpanded ? <div>{children}</div> : <Link href={mainLinkHref} className="block h-full flex flex-col">{children}</Link>;
+
 
   return (
     <Card className="group flex flex-col h-full overflow-hidden transition-transform duration-300 ease-in-out hover:-translate-y-2 card-border-animated">
-      <Link href={mainLink} className="block h-full flex flex-col">
-        <div className="aspect-video w-full relative overflow-hidden">
-          <Image
-            src={course.imageUrl || `https://placehold.co/600x400.png`}
-            alt={course.title}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            data-ai-hint="online course abstract"
-            priority={priority}
-          />
-          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
-           {typeof progress === 'number' && (
-              <div className="absolute top-2 right-2 bg-background/50 backdrop-blur-sm rounded-full">
-                  <CircularProgress value={progress} size={40} strokeWidth={4} valueTextClass="text-xs font-semibold" />
-              </div>
-          )}
-          {viewMode === 'management' && (
-             <Badge className="absolute top-2 left-2 capitalize" variant={course.status === 'PUBLISHED' ? 'default' : 'secondary'}>
-                {course.status.toLowerCase()}
-             </Badge>
-          )}
-        </div>
-        <CardHeader className="p-4 flex-grow">
-          <CardTitle className="text-base font-headline leading-tight mb-1 line-clamp-2">{course.title}</CardTitle>
+      <MainLink>
+        <Link href={mainLinkHref}>
+            <div className="aspect-video w-full relative overflow-hidden">
+            <Image
+                src={course.imageUrl || `https://placehold.co/600x400.png`}
+                alt={course.title}
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                data-ai-hint="online course abstract"
+                priority={priority}
+            />
+            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
+            {typeof progress === 'number' && (
+                <div className="absolute top-2 right-2 bg-background/50 backdrop-blur-sm rounded-full">
+                    <CircularProgress value={progress} size={40} strokeWidth={4} valueTextClass="text-xs font-semibold" />
+                </div>
+            )}
+            {viewMode === 'management' && (
+                <Badge className="absolute top-2 left-2 capitalize" variant={course.status === 'PUBLISHED' ? 'default' : 'secondary'}>
+                    {course.status.toLowerCase()}
+                </Badge>
+            )}
+            </div>
+        </Link>
+        <CardHeader className="p-4">
+          <CardTitle className="text-base font-headline leading-tight mb-1 line-clamp-2">
+             <Link href={mainLinkHref}>{course.title}</Link>
+          </CardTitle>
           <div className="text-xs text-muted-foreground pt-1 flex flex-col gap-1.5">
             <div className="flex items-center"><User className="mr-1.5 h-3 w-3" /> Por {course.instructor}</div>
             <div className="flex items-center"><Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount} Módulos</div>
           </div>
         </CardHeader>
-        <CardFooter className="p-4 border-t pt-3 flex items-center justify-between">
+        <CardContent className="p-4 pt-0 flex-grow">
+          {course.description && (
+            <>
+              <p className="text-sm text-muted-foreground">{descriptionToShow}</p>
+              {isTruncated && (
+                <Button
+                  onClick={toggleExpand}
+                  variant="link"
+                  className="p-0 h-auto text-sm mt-1"
+                >
+                  {isExpanded ? 'Leer menos' : 'Leer más'}
+                </Button>
+              )}
+            </>
+          )}
+        </CardContent>
+        <CardFooter className="p-4 border-t pt-3 flex items-center justify-between mt-auto">
             {viewMode === 'catalog' && (
                 <EnrollmentButton isEnrolled={isEnrolled} handleEnrollment={handleEnrollment} isProcessing={isProcessingEnrollment} />
             )}
@@ -133,7 +170,7 @@ export function CourseCard({
               </>
             )}
         </CardFooter>
-      </Link>
+      </MainLink>
     </Card>
   );
 }
