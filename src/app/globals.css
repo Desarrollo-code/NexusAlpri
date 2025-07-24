@@ -6,7 +6,7 @@
 @layer base {
   /* --- TEMA CLARO (POR DEFECTO) --- */
   :root {
-    --background: 210 20% 98%;
+    --background: 220 20% 98%;
     --foreground: 224 71.4% 4.1%;
     
     --card: 0 0% 100%;
@@ -15,9 +15,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
     
-    /* Paleta Vibrante - Morado */
-    --primary: 291 64% 42%;
-    --primary-foreground: 300 100% 100%;
+    /* Paleta de Ámbar/Naranja */
+    --primary: 38 92% 50%;
+    --primary-foreground: 224 71.4% 4.1%;
     
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 220.9 39.3% 11%;
@@ -25,35 +25,32 @@
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
     
-    /* Paleta Vibrante - Cian */
-    --accent: 179 81% 45%;
-    --accent-foreground: 210 20% 98%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
     
     --border: 220 13% 91%; 
     --input: 220 13% 91%;
-    --ring: 291 64% 42%;
+    --ring: 38 92% 50%;
     
-    --radius: 0.5rem;
-
     /* Barra Lateral - Tema Claro */
-    --sidebar-background: 291 64% 42%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 100%;
-    --sidebar-accent-foreground: 291 64% 42%;
-    --sidebar-border: 291 64% 48%;
-    --sidebar-ring: 291 64% 42%;
+    --sidebar-background: 38 92% 50%;
+    --sidebar-foreground: 38 95% 15%;
+    --sidebar-accent: 38 100% 97%;
+    --sidebar-accent-foreground: 38 95% 15%;
+    --sidebar-border: 38 92% 55%;
+    --sidebar-ring: 38 92% 50%;
 
     /* Paleta de Colores para Gráficos y Eventos */
-    --chart-1: 179 81% 45%; /* Cian */
-    --chart-2: 45 96% 53%; /* Amarillo */
-    --chart-3: 139 51% 51%; /* Verde */
-    --chart-4: 340 95% 65%; /* Rosa */
-    --chart-5: 291 64% 52%; /* Morado */
+    --chart-1: 200 81% 45%; /* Azul */
+    --chart-2: 139 51% 51%; /* Verde */
+    --chart-3: 340 95% 65%; /* Rosa */
+    --chart-4: 24 97% 58%; /* Naranja */
+    --chart-5: 262 84% 59%; /* Púrpura */
 
-    --event-blue: 198 81% 56%;
+    --event-blue: 200 81% 56%;
     --event-green: 139 51% 51%;
     --event-red: 356 91% 68%;
     --event-orange: 24 97% 63%;
@@ -70,9 +67,9 @@
     --popover: 240 4% 10%;
     --popover-foreground: 210 20% 98%;
     
-    /* Paleta Vibrante - Morado */
-    --primary: 291 74% 52%;
-    --primary-foreground: 0 0% 100%;
+    /* Paleta de Ámbar/Naranja */
+    --primary: 38 92% 50%;
+    --primary-foreground: 38 95% 15%;
     
     --secondary: 240 4% 15%;
     --secondary-foreground: 210 20% 98%;
@@ -80,8 +77,7 @@
     --muted: 240 4% 15%;
     --muted-foreground: 210 5% 64%;
     
-    /* Paleta Vibrante - Cian */
-    --accent: 179 81% 45%;
+    --accent: 240 4% 15%;
     --accent-foreground: 210 20% 98%;
     
     --destructive: 0 70% 55%;
@@ -89,24 +85,24 @@
     
     --border: 240 4% 18%; 
     --input: 240 4% 18%;
-    --ring: 291 74% 52%;
+    --ring: 38 92% 50%;
     
     /* Barra Lateral - Tema Oscuro */
-    --sidebar-background: 291 64% 42%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 100%;
-    --sidebar-accent-foreground: 291 64% 42%;
-    --sidebar-border: 291 64% 48%;
-    --sidebar-ring: 291 74% 52%;
+    --sidebar-background: 38 92% 50%;
+    --sidebar-foreground: 38 95% 15%;
+    --sidebar-accent: 38 100% 97%;
+    --sidebar-accent-foreground: 38 95% 15%;
+    --sidebar-border: 38 92% 55%;
+    --sidebar-ring: 38 92% 50%;
 
     /* Paleta de Colores para Gráficos y Eventos */
-    --chart-1: 179 81% 55%; /* Cian */
-    --chart-2: 48 96% 53%; /* Amarillo */
-    --chart-3: 139 51% 61%; /* Verde */
-    --chart-4: 340 100% 70%; /* Rosa */
-    --chart-5: 291 74% 62%; /* Morado */
+    --chart-1: 200 81% 55%; /* Azul */
+    --chart-2: 139 51% 61%; /* Verde */
+    --chart-3: 340 100% 70%; /* Rosa */
+    --chart-4: 24 97% 68%; /* Naranja */
+    --chart-5: 262 84% 69%; /* Púrpura */
 
-    --event-blue: 198 81% 66%;
+    --event-blue: 200 81% 66%;
     --event-green: 139 51% 61%;
     --event-red: 356 91% 78%;
     --event-orange: 24 97% 73%;
@@ -129,11 +125,15 @@
   }
 
   .card-border-animated {
-    @apply shadow-[0_4px_20px_rgb(0,0,0,0.08)];
-    @apply dark:shadow-[0_8px_30px_rgb(0,0,0,0.15),inset_0_0_80px_hsl(var(--accent)/20%)];
-    @apply hover:shadow-[0_8px_30px_rgb(0,0,0,0.12),inset_0_0_80px_hsl(var(--accent)/30%)];
+    @apply shadow-lg shadow-black/5;
+    @apply dark:shadow-black/20;
+    @apply transition-all duration-300;
   }
 
+  .card-border-animated:hover {
+      @apply shadow-primary/20 shadow-2xl;
+  }
+  
   .thin-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;

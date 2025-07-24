@@ -25,8 +25,6 @@ export const GradientIcon = ({
     'xl': 'w-8 h-8',
   };
   
-  // When active, the parent button will control the color via `text-sidebar-accent-foreground`
-  // When inactive, we use the `sidebar-foreground` color directly
   const iconColor = isActive ? 'currentColor' : 'hsl(var(--sidebar-foreground))';
 
   return (
