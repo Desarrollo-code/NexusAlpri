@@ -39,10 +39,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, Bar, ComposedChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts";
+import { Area, Bar, ComposedChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Cell } from "recharts";
 import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { getEventDetails, getInitials } from '@/lib/security-log-utils';
+import { getEventDetails, getInitials } from '@/lib/security-log-utils.tsx';
 import { Badge } from '@/components/ui/badge';
 
 
@@ -548,4 +548,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
