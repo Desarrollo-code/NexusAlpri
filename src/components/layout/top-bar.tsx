@@ -149,14 +149,20 @@ export function TopBar() {
       .sort((a, b) => (b.href?.length ?? 0) - (a.href?.length ?? 0))
       .find(item => item.href && item.href !== '#' && pathname.startsWith(item.href));
 
-    let title = 'NexusAlpri';
+    let title = currentNavItem?.label || 'NexusAlpri';
     let colorClass = 'bg-background/95';
 
     if (pathname.startsWith('/dashboard')) {
         title = 'Panel Principal';
         colorClass = 'bg-chart-1/10';
-    } else if (pathname.startsWith('/courses') || pathname.startsWith('/my-courses')) {
-        title = 'Cursos';
+    } else if (pathname.startsWith('/courses/') && !pathname.endsWith('/courses')) {
+        title = 'Detalle del Curso';
+        colorClass = 'bg-chart-2/10';
+    } else if (pathname.startsWith('/my-courses')) {
+        title = 'Mis Cursos';
+        colorClass = 'bg-chart-2/10';
+    } else if (pathname.startsWith('/courses')) {
+        title = 'Catálogo de Cursos';
         colorClass = 'bg-chart-2/10';
     } else if (pathname.startsWith('/resources')) {
         title = 'Biblioteca';
@@ -167,15 +173,13 @@ export function TopBar() {
     } else if (pathname.startsWith('/calendar')) {
         title = 'Calendario';
         colorClass = 'bg-chart-4/10';
+    } else if (pathname.startsWith('/manage-courses/') && !pathname.endsWith('/manage-courses')) {
+        title = 'Gestión de Curso';
+        colorClass = 'bg-chart-5/10';
     } else if (pathname.startsWith('/manage-courses') || pathname.startsWith('/users') || pathname.startsWith('/settings') || pathname.startsWith('/analytics') || pathname.startsWith('/security-audit') || pathname.startsWith('/enrollments')) {
         title = currentNavItem?.label || 'Administración';
         colorClass = 'bg-chart-5/10';
-    } else if (currentNavItem) {
-        title = currentNavItem.label;
     }
-    
-    if (pathname.startsWith('/courses/') && !pathname.endsWith('/courses')) title = 'Detalle del Curso';
-    if (pathname.startsWith('/manage-courses/') && !pathname.endsWith('/manage-courses')) title = 'Gestión de Curso';
     
     return { title, colorClass };
   };
