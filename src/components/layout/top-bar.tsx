@@ -194,7 +194,7 @@ export function TopBar() {
   return (
     <>
       <header className={cn(
-          "sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/60 px-4 backdrop-blur-md md:px-6 transition-colors duration-300 md:ml-[var(--sidebar-width-icon)] md:group-data-[state=expanded]/sidebar-wrapper:ml-[var(--sidebar-width)]",
+          "sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/60 px-4 backdrop-blur-md md:px-6 transition-colors duration-300",
           colorClass
       )}>
         <div className="flex items-center gap-2">
