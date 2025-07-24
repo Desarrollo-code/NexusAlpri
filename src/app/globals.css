@@ -37,6 +37,9 @@
 
     --radius: 0.75rem;
     
+    --sidebar-width: 16rem; /* 256px */
+    --sidebar-width-icon: 3.75rem; /* 60px */
+    
     /* Barra Lateral - Tema OSCURO por defecto */
     --sidebar-background: 240 5% 12%;
     --sidebar-foreground: 210 20% 98%;
@@ -91,6 +94,9 @@
 
     --radius: 0.75rem;
     
+    --sidebar-width: 16rem; /* 256px */
+    --sidebar-width-icon: 3.75rem; /* 60px */
+
     /* Barra Lateral - Tema OSCURO */
     --sidebar-background: 240 5% 12%;
     --sidebar-foreground: 210 20% 98%;

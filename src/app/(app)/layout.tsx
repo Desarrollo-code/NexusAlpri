@@ -90,7 +90,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                          <div className="w-full p-2 flex flex-col gap-1">
                              <SidebarMenu>
                                 {navItems.map((item) => {
-                                    if (item.subItems) {
+                                    if (item.subItems && item.subItems.length > 0) {
                                         return (
                                             <div key={item.label} className="flex flex-col gap-1">
                                                 <div className="px-4 py-2 text-sm font-semibold text-muted-foreground/70 flex items-center gap-3 md:group-data-[state=collapsed]:hidden">
@@ -99,7 +99,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                                 </div>
                                                 <SidebarMenu className="pl-4 md:group-data-[state=collapsed]:pl-0">
                                                     {item.subItems.map((subItem) => {
-                                                        const isActive = pathname.startsWith(subItem.href || '___');
+                                                        const isActive = subItem.href ? pathname.startsWith(subItem.href) : false;
                                                         return (
                                                             <SidebarMenuItem key={subItem.href}>
                                                                 <SidebarMenuButton asChild isActive={isActive} disabled={subItem.disabled} className="justify-start gap-3" tooltip={{ children: subItem.label }}>
@@ -116,17 +116,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                         );
                                     }
                                     
-                                    const isActive = item.href ? pathname === item.href : false;
-                                    return (
-                                        <SidebarMenuItem key={item.href}>
-                                            <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{ children: item.label }}>
-                                                <Link href={item.href || '#'}>
-                                                {item.icon && <item.icon className="h-5 w-5 shrink-0" />}
-                                                <span className={cn("font-medium text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
-                                                </Link>
-                                            </SidebarMenuButton>
-                                        </SidebarMenuItem>
-                                    );
+                                    if (!item.subItems) {
+                                        const isActive = item.href ? pathname === item.href : false;
+                                        return (
+                                            <SidebarMenuItem key={item.href}>
+                                                <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{ children: item.label }}>
+                                                    <Link href={item.href || '#'}>
+                                                    {item.icon && <item.icon className="h-5 w-5 shrink-0" />}
+                                                    <span className={cn("font-medium text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
+                                                    </Link>
+                                                </SidebarMenuButton>
+                                            </SidebarMenuItem>
+                                        );
+                                    }
+                                    return null;
                                 })}
                             </SidebarMenu>
                          </div>
