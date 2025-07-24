@@ -180,9 +180,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             </Sidebar>
 
             <div className={cn(
-              "bg-background min-h-screen transition-[margin-left] duration-300 ease-in-out",
-              "md:group-data-[state=expanded]/app-layout:ml-[var(--sidebar-width)]",
-              "md:group-data-[state=collapsed]/app-layout:ml-[var(--sidebar-width-icon)]"
+              "bg-background min-h-screen transition-all duration-300 ease-in-out",
+              "md:group-data-[state=expanded]:ml-[var(--sidebar-width)]",
+              "md:group-data-[state=collapsed]:ml-[var(--sidebar-width-icon)]"
             )}>
                 <TopBar />
                 <main className="p-4 md:p-6 lg:p-8">
