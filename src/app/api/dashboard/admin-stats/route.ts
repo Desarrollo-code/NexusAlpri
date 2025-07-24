@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import { subDays, startOfDay, format, eachDayOfInterval } from 'date-fns';
+import { es } from 'date-fns/locale';
 import type { UserRole, CourseStatus } from '@/types';
 
 export interface AdminDashboardStats {
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
             coursesByStatus,
             recentLoginsResult,
             newUsersLast7Days,
-            dailyRegistrations,
+            recentUsers, // Changed from dailyRegistrations
         ] = await prisma.$transaction([
             prisma.user.count(),
             prisma.course.count(),
@@ -55,22 +56,29 @@ export async function GET(req: NextRequest) {
             prisma.user.count({
                 where: { registeredDate: { gte: sevenDaysAgo } }
             }),
-            prisma.user.groupBy({
-                by: ['registeredDate'],
+            // Fetch users created in the last 7 days instead of grouping
+            prisma.user.findMany({
                 where: { registeredDate: { gte: startOfDay(sevenDaysAgo) }},
-                _count: { registeredDate: true },
-                orderBy: { registeredDate: 'asc' }
+                select: { registeredDate: true }
             })
         ]);
         
         const dateRange = eachDayOfInterval({ start: sevenDaysAgo, end: new Date() });
+        
+        // Perform grouping in code instead of in the database
+        const registrationsByDate: Record<string, number> = {};
+        for (const user of recentUsers) {
+            if (user.registeredDate) {
+                const dateKey = format(new Date(user.registeredDate), 'yyyy-MM-dd');
+                registrationsByDate[dateKey] = (registrationsByDate[dateKey] || 0) + 1;
+            }
+        }
+        
         const registrationTrend = dateRange.map(date => {
-            const formattedDate = format(new Date(date), 'yyyy-MM-dd');
-            // Find a registration record that falls on this date.
-            const dayData = dailyRegistrations.find(d => d.registeredDate && format(new Date(d.registeredDate), 'yyyy-MM-dd') === formattedDate);
+            const dateKey = format(date, 'yyyy-MM-dd');
             return {
-                date: format(date, 'MMM d', { locale: 'es' }),
-                count: dayData?._count.registeredDate || 0,
+                date: format(date, 'MMM d', { locale: es }),
+                count: registrationsByDate[dateKey] || 0,
             };
         });
 
