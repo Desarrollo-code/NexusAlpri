@@ -159,7 +159,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     return (
         <SidebarProvider>
-             <div className="relative" id="app-layout-container">
+             <div className="relative group/app-layout" id="app-layout-container">
                 <Sidebar>
                     <SidebarHeader className="group-data-[state=expanded]:px-4 md:group-data-[state=collapsed]:px-2">
                         <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground md:group-data-[state=collapsed]:justify-center">
@@ -209,8 +209,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 
                 <div className={cn(
                   "bg-background min-h-screen transition-all duration-300 ease-in-out",
-                  "md:group-data-[state=expanded]/sidebar-wrapper:ml-[var(--sidebar-width)]",
-                  "md:group-data-[state=collapsed]/sidebar-wrapper:ml-[var(--sidebar-width-icon)]"
+                  "md:group-data-[state=expanded]/app-layout:ml-[var(--sidebar-width)]",
+                  "md:group-data-[state=collapsed]/app-layout:ml-[var(--sidebar-width-icon)]"
                 )}>
                     <TopBar />
                     <main className="p-4 md:p-6 lg:p-8">
