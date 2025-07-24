@@ -6,7 +6,7 @@
 @layer base {
   /* --- TEMA CLARO (POR DEFECTO) --- */
   :root {
-    --background: 220 20% 98%;
+    --background: 210 20% 98%;
     --foreground: 224 71.4% 4.1%;
     
     --card: 0 0% 100%;
@@ -151,5 +151,21 @@
   }
   .thin-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--muted-foreground));
+  }
+  
+  .profile-card {
+    --main-color: hsl(var(--foreground));
+    --submain-color: hsl(var(--muted-foreground));
+    --bg-color: hsl(var(--card));
+    font-family: var(--font-body);
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    height: 384px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 20px;
+    background: var(--bg-color);
   }
 }
