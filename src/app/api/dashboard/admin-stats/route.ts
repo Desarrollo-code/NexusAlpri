@@ -89,37 +89,36 @@ export async function GET(req: NextRequest) {
         const dateRange30Days = eachDayOfInterval({ start: thirtyDaysAgo, end: new Date() });
         const courseActivityMap: Record<string, { newCourses: number, publishedCourses: number, newEnrollments: number }> = {};
         
-        const initializeDate = (dateKey: string) => {
-            if (!courseActivityMap[dateKey]) {
-                courseActivityMap[dateKey] = { newCourses: 0, publishedCourses: 0, newEnrollments: 0 };
-            }
-        };
+        dateRange30Days.forEach(day => {
+            const key = format(day, 'yyyy-MM-dd');
+            courseActivityMap[key] = { newCourses: 0, publishedCourses: 0, newEnrollments: 0 };
+        });
 
         recentCourses.forEach(c => {
             const dateKey = format(c.createdAt, 'yyyy-MM-dd');
-            initializeDate(dateKey);
-            courseActivityMap[dateKey].newCourses++;
+            if (courseActivityMap[dateKey]) {
+                courseActivityMap[dateKey].newCourses++;
+            }
         });
         recentPublishedCourses.forEach(c => {
             if(c.publicationDate) {
               const dateKey = format(c.publicationDate, 'yyyy-MM-dd');
-              initializeDate(dateKey);
-              courseActivityMap[dateKey].publishedCourses++;
+              if (courseActivityMap[dateKey]) {
+                courseActivityMap[dateKey].publishedCourses++;
+              }
             }
         });
         recentEnrollments.forEach(e => {
             const dateKey = format(e.enrolledAt, 'yyyy-MM-dd');
-            initializeDate(dateKey);
-            courseActivityMap[dateKey].newEnrollments++;
+            if (courseActivityMap[dateKey]) {
+                courseActivityMap[dateKey].newEnrollments++;
+            }
         });
 
-        const courseActivity = dateRange30Days.map(date => {
-            const dateKey = format(date, 'yyyy-MM-dd');
-            return {
-                date: format(date, 'MMM d', { locale: es }),
-                ...(courseActivityMap[dateKey] || { newCourses: 0, publishedCourses: 0, newEnrollments: 0 })
-            };
-        });
+        const courseActivity = Object.entries(courseActivityMap).map(([date, counts]) => ({
+            date: format(new Date(date), 'MMM d', { locale: es }),
+            ...counts
+        }));
 
 
         const stats: AdminDashboardStats = {

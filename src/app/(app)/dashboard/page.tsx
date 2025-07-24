@@ -129,18 +129,16 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
               </CardHeader>
               <CardContent className="h-96">
                   <ChartContainer config={activityChartConfig} className="w-full h-full">
-                    <ResponsiveContainer>
-                      <RechartsBar data={stats.courseActivity} margin={{ top: 5, right: 10, left: -20, bottom: 20 }}>
+                    <RechartsBar data={stats.courseActivity} margin={{ top: 5, right: 10, left: -20, bottom: 20 }}>
                         <CartesianGrid vertical={false} strokeDasharray="3 3"/>
                         <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval={5} />
                         <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
                         <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
                         <Legend verticalAlign="bottom" height={36}/>
-                        <Bar dataKey="newCourses" name="Nuevos Cursos" stackId="a" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="publishedCourses" name="Cursos Publicados" stackId="a" fill="var(--color-publishedCourses)" />
-                        <Bar dataKey="newEnrollments" name="Nuevas Inscripciones" stackId="a" fill="var(--color-newEnrollments)" radius={[4, 4, 0, 0]} />
-                      </RechartsBar>
-                    </ResponsiveContainer>
+                        <Bar dataKey="newCourses" name="Nuevos Cursos" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="publishedCourses" name="Cursos Publicados" fill="var(--color-publishedCourses)" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="newEnrollments" name="Nuevas Inscripciones" fill="var(--color-newEnrollments)" radius={[4, 4, 0, 0]} />
+                    </RechartsBar>
                   </ChartContainer>
               </CardContent>
             </Card>
