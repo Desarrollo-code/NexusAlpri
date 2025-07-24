@@ -19,14 +19,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -45,6 +37,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { CourseCard } from '@/components/course-card';
 
 interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
   instructor: { id: string; name: string } | null;
@@ -53,7 +46,7 @@ interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' 
   status: CourseStatus;
 }
 
-const PAGE_SIZE = 8; // 2x4 grid of cards
+const PAGE_SIZE = 8;
 
 function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
   return {
@@ -70,31 +63,6 @@ function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
   };
 }
 
-const CourseListItemImage = ({ src, alt, defaultSrc }: { src?: string | null; alt: string; defaultSrc: string }) => {
-  const [currentSrc, setCurrentSrc] = useState(src || defaultSrc);
-
-  useEffect(() => {
-    setCurrentSrc(src || defaultSrc);
-  }, [src, defaultSrc]);
-
-  return (
-    <Image
-      src={currentSrc}
-      alt={alt}
-      width={600}
-      height={300}
-      className="aspect-video object-cover"
-      data-ai-hint="course online learning"
-      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-      onError={() => {
-        if (currentSrc !== defaultSrc) { 
-          setCurrentSrc(defaultSrc);
-        }
-      }}
-    />
-  );
-};
-
 
 export default function ManageCoursesPage() {
   const { user } = useAuth();
@@ -108,7 +76,6 @@ export default function ManageCoursesPage() {
   const [totalCourses, setTotalCourses] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isChangingStatus, setIsChangingStatus] = useState<string | null>(null);
   
   const [courseUpdateSignal, setCourseUpdateSignal] = useState(0);
 
@@ -205,7 +172,6 @@ export default function ManageCoursesPage() {
   };
 
   const handleChangeStatus = async (courseId: string, newStatus: CourseStatus) => {
-    setIsChangingStatus(courseId);
     try {
       const response = await fetch(`/api/courses/${courseId}/status`, {
         method: 'PATCH',
@@ -223,8 +189,6 @@ export default function ManageCoursesPage() {
       setCourseUpdateSignal(prev => prev + 1);
     } catch (err) {
       toast({ title: 'Error al Cambiar Estado', description: (err as Error).message, variant: 'destructive' });
-    } finally {
-      setIsChangingStatus(null);
     }
   };
 
@@ -252,26 +216,6 @@ export default function ManageCoursesPage() {
     }
   };
 
-  const getStatusBadgeVariant = (status: CourseStatus) => {
-    switch (status) {
-      case 'PUBLISHED': return 'default';
-      case 'DRAFT': return 'secondary';
-      case 'ARCHIVED': return 'outline';
-      case 'SCHEDULED': return 'default';
-      default: return 'outline';
-    }
-  };
-  const getStatusBadgeText = (status: CourseStatus) => {
-    switch (status) {
-      case 'PUBLISHED': return 'Publicado';
-      case 'DRAFT': return 'Borrador';
-      case 'ARCHIVED': return 'Archivado';
-      case 'SCHEDULED': return 'Programado';
-      default: return status;
-    }
-  };
-
-
   if (user && user.role !== 'ADMINISTRATOR' && user.role !== 'INSTRUCTOR' && !isLoading && allCourses.length === 0) {
     return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
@@ -287,121 +231,26 @@ export default function ManageCoursesPage() {
     );
   }
 
-  const CourseList = ({ courses }: { courses: AppCourseType[] }) => {
-    if (courses.length === 0) {
-      return (
-        <div className="text-center py-12">
-          <ListPlus className="mx-auto h-12 w-12 text-primary mb-4" />
-          <h3 className="text-xl font-semibold mb-2">No hay cursos en esta sección</h3>
-          <p className="text-muted-foreground">No se encontraron cursos que coincidan con este estado.</p>
-        </div>
-      );
-    }
-    
-    return (
-      <div className={isMobile ? "space-y-4" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"}>
-          {courses.map(course => (
-          <Card key={course.id} className="flex flex-col overflow-hidden card-border-animated">
-              <CourseListItemImage
-              src={course.imageUrl}
-              alt={course.title}
-              defaultSrc="https://placehold.co/600x300.png"
-              />
-              <CardHeader>
-              <div className="flex justify-between items-start gap-2">
-                  <CardTitle className="line-clamp-2 flex-grow pr-2">{course.title}</CardTitle>
-                  <Badge variant={getStatusBadgeVariant(course.status)} className="ml-2 shrink-0 capitalize">
-                      {getStatusBadgeText(course.status)}
-                  </Badge>
-              </div>
-              <CardDescription>Instructor: {course.instructor}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-              <p className="text-sm text-muted-foreground line-clamp-3">{course.description}</p>
-              <div className="text-xs text-muted-foreground mt-2">Módulos: {course.modulesCount}</div>
-              </CardContent>
-              <CardFooter className="border-t pt-4 flex justify-end">
-              <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                      <MoreVertical className="h-4 w-4" />
-                      <span className="sr-only">Más opciones</span>
-                  </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                      <Link href={`/manage-courses/${course.id}/edit`}>
-                      <Edit className="mr-2 h-4 w-4 text-blue-500" /> Editar Contenido
-                      </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                      <Link href={`/courses/${course.id}`} target="_blank">
-                      <Eye className="mr-2 h-4 w-4 text-sky-500" /> Vista Previa
-                      </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                      <Link href={`/enrollments?courseId=${course.id}`}>
-                      <Users className="mr-2 h-4 w-4 text-green-500" /> Ver Inscritos
-                      </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  {course.status !== 'ARCHIVED' && (
-                      <>
-                      <DropdownMenuItem
-                          onClick={() => handleChangeStatus(course.id, course.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED')}
-                          disabled={isChangingStatus === course.id}
-                      >
-                          {isChangingStatus === course.id && (course.status === 'PUBLISHED' || course.status === 'DRAFT') ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : course.status === 'PUBLISHED' ? (
-                          <CircleOff className="mr-2 h-4 w-4 text-gray-500" />
-                          ) : (
-                          <Zap className="mr-2 h-4 w-4 text-yellow-500" />
-                          )}
-                          <span>{course.status === 'PUBLISHED' ? 'Pasar a Borrador' : 'Publicar'}</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                          onClick={() => handleChangeStatus(course.id, 'ARCHIVED')}
-                          disabled={isChangingStatus === course.id}
-                          className="text-amber-600 focus:bg-amber-100 focus:text-amber-800 dark:text-amber-400 dark:focus:bg-amber-900/40 dark:focus:text-amber-300"
-                      >
-                          {isChangingStatus === course.id && (course.status !== 'ARCHIVED') ? null : <Archive className="mr-2 h-4 w-4" />}
-                          Archivar
-                      </DropdownMenuItem>
-                      </>
-                  )}
-                  {course.status === 'ARCHIVED' && (
-                      <DropdownMenuItem
-                      onClick={() => handleChangeStatus(course.id, 'DRAFT')}
-                      disabled={isChangingStatus === course.id}
-                      >
-                      {isChangingStatus === course.id ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                          <ArchiveRestore className="mr-2 h-4 w-4 text-emerald-600" />
-                      )}
-                      <span>Restaurar (a Borrador)</span>
-                      </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                      onClick={() => setCourseToDelete(course)}
-                      disabled={isChangingStatus === course.id}
-                      className="text-destructive focus:bg-destructive/90 focus:text-destructive-foreground"
-                  >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      <span>Eliminar</span>
-                  </DropdownMenuItem>
-                  </DropdownMenuContent>
-              </DropdownMenu>
-              </CardFooter>
-          </Card>
-          ))}
-      </div>
-    );
-  };
+  const CourseListSkeleton = () => (
+    <div className={isMobile ? "space-y-4" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"}>
+        {[...Array(4)].map((_, i) => (
+            <Card key={i} className="flex flex-col overflow-hidden">
+            <Skeleton className="aspect-video w-full" />
+            <CardHeader>
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+            </CardHeader>
+            <CardContent>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6 mt-2" />
+            </CardContent>
+            <CardFooter>
+                <Skeleton className="h-9 w-full" />
+            </CardFooter>
+            </Card>
+        ))}
+    </div>
+  );
 
   return (
     <div className="space-y-8">
@@ -441,24 +290,7 @@ export default function ManageCoursesPage() {
           </TabsList>
           <div className="mt-6">
             {isLoading ? (
-               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[...Array(4)].map((_, i) => (
-                    <Card key={i} className="flex flex-col overflow-hidden">
-                    <Skeleton className="aspect-video w-full" />
-                    <CardHeader>
-                        <Skeleton className="h-5 w-3/4" />
-                        <Skeleton className="h-4 w-1/2" />
-                    </CardHeader>
-                    <CardContent>
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-5/6 mt-2" />
-                    </CardContent>
-                    <CardFooter>
-                        <Skeleton className="h-9 w-full" />
-                    </CardFooter>
-                    </Card>
-                ))}
-              </div>
+               <CourseListSkeleton />
             ) : error ? (
               <div className="flex flex-col items-center justify-center py-12 text-destructive text-center">
                 <AlertTriangle className="h-8 w-8 mb-2" />
@@ -466,8 +298,25 @@ export default function ManageCoursesPage() {
                 <p className="text-sm">{error}</p>
                 <Button onClick={fetchCourses} variant="outline" className="mt-4">Reintentar</Button>
               </div>
+            ) : allCourses.length > 0 ? (
+                 <div className={isMobile ? "space-y-4" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"}>
+                    {allCourses.map(course => (
+                        <CourseCard 
+                            key={course.id}
+                            course={course}
+                            userRole={user?.role || null}
+                            viewMode="management"
+                            onStatusChange={handleChangeStatus}
+                            onDelete={setCourseToDelete}
+                        />
+                    ))}
+                </div>
             ) : (
-                <CourseList courses={allCourses} />
+                <div className="text-center py-12">
+                    <ListPlus className="mx-auto h-12 w-12 text-primary mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">No hay cursos en esta sección</h3>
+                    <p className="text-muted-foreground">No se encontraron cursos que coincidan con este estado.</p>
+                </div>
             )}
           </div>
        </Tabs>

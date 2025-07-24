@@ -8,27 +8,40 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import type { Course as AppCourse, EnrolledCourse, UserRole } from '@/types';
-import { Layers, ArrowRight, Check, Plus, Loader2, X, User } from 'lucide-react';
+import type { Course as AppCourse, EnrolledCourse, UserRole, CourseStatus } from '@/types';
+import { Layers, ArrowRight, Check, Plus, Loader2, X, User, Edit, MoreVertical, Eye } from 'lucide-react';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { cn } from '@/lib/utils';
-
+import { Badge } from './ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 interface CourseCardProps {
   course: AppCourse | EnrolledCourse;
   userRole: UserRole | null;
   onEnrollmentChange?: (courseId: string, newStatus: boolean) => void;
+  onStatusChange?: (courseId: string, newStatus: CourseStatus) => void;
+  onDelete?: (course: AppCourse) => void;
   priority?: boolean;
+  viewMode?: 'catalog' | 'management';
 }
 
-export function CourseCard({ course, userRole, onEnrollmentChange, priority = false }: CourseCardProps) {
+export function CourseCard({ 
+  course, 
+  userRole, 
+  onEnrollmentChange, 
+  onStatusChange,
+  onDelete,
+  priority = false, 
+  viewMode = 'catalog' 
+}: CourseCardProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   
-  const isEnrolled = (course as EnrolledCourse).isEnrolled ?? false;
+  const isEnrolled = 'isEnrolled' in course ? course.isEnrolled : undefined;
   const [isProcessingEnrollment, setIsProcessingEnrollment] = React.useState(false);
+  const [isProcessingStatus, setIsProcessingStatus] = React.useState(false);
 
-  const progress = (course as EnrolledCourse).progressPercentage;
+  const progress = 'progressPercentage' in course ? course.progressPercentage : undefined;
 
   const handleEnrollment = async (e: React.MouseEvent, enroll: boolean) => {
     e.preventDefault();
@@ -53,9 +66,7 @@ export function CourseCard({ course, userRole, onEnrollmentChange, priority = fa
         throw new Error(errorData.message || 'Error al procesar la inscripción');
       }
       
-      if (onEnrollmentChange) {
-        onEnrollmentChange(course.id, enroll);
-      }
+      onEnrollmentChange?.(course.id, enroll);
       
       toast({
         title: enroll ? '¡Inscripción Exitosa!' : 'Inscripción Cancelada',
@@ -73,9 +84,11 @@ export function CourseCard({ course, userRole, onEnrollmentChange, priority = fa
     }
   };
 
+  const mainLink = viewMode === 'management' ? `/manage-courses/${course.id}/edit` : `/courses/${course.id}`;
+
   return (
-    <Card className="group flex flex-col h-full overflow-hidden transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/10">
-      <Link href={`/courses/${course.id}`} className="block h-full flex flex-col">
+    <Card className="group flex flex-col h-full overflow-hidden transition-transform duration-300 ease-in-out hover:-translate-y-2 card-border-animated">
+      <Link href={mainLink} className="block h-full flex flex-col">
         <div className="aspect-video w-full relative overflow-hidden">
           <Image
             src={course.imageUrl || `https://placehold.co/600x400.png`}
@@ -86,27 +99,39 @@ export function CourseCard({ course, userRole, onEnrollmentChange, priority = fa
             data-ai-hint="online course abstract"
             priority={priority}
           />
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
            {typeof progress === 'number' && (
-              <div className="absolute top-2 right-2">
+              <div className="absolute top-2 right-2 bg-background/50 backdrop-blur-sm rounded-full">
                   <CircularProgress value={progress} size={40} strokeWidth={4} valueTextClass="text-xs font-semibold" />
               </div>
           )}
+          {viewMode === 'management' && (
+             <Badge className="absolute top-2 left-2 capitalize" variant={course.status === 'PUBLISHED' ? 'default' : 'secondary'}>
+                {course.status.toLowerCase()}
+             </Badge>
+          )}
         </div>
-        <CardHeader className="p-4">
-          <CardTitle className="text-base font-headline leading-tight mb-2 line-clamp-2">{course.title}</CardTitle>
-          <div className="text-xs text-muted-foreground pt-2 flex flex-col gap-2">
+        <CardHeader className="p-4 flex-grow">
+          <CardTitle className="text-base font-headline leading-tight mb-1 line-clamp-2">{course.title}</CardTitle>
+          <div className="text-xs text-muted-foreground pt-1 flex flex-col gap-1.5">
             <div className="flex items-center"><User className="mr-1.5 h-3 w-3" /> Por {course.instructor}</div>
             <div className="flex items-center"><Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount} Módulos</div>
           </div>
         </CardHeader>
-        <CardContent className="p-4 pt-0 flex-grow">
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {course.description}
-          </p>
-        </CardContent>
-        <CardFooter className="p-4 border-t pt-3">
-          <EnrollmentButton isEnrolled={isEnrolled} courseId={course.id} handleEnrollment={handleEnrollment} isProcessing={isProcessingEnrollment} />
+        <CardFooter className="p-4 border-t pt-3 flex items-center justify-between">
+            {viewMode === 'catalog' && (
+                <EnrollmentButton isEnrolled={isEnrolled} handleEnrollment={handleEnrollment} isProcessing={isProcessingEnrollment} />
+            )}
+            {viewMode === 'management' && (
+              <>
+                <Button asChild size="sm" variant="secondary" onClick={(e) => e.stopPropagation()}>
+                  <Link href={`/manage-courses/${course.id}/edit`}>
+                    <Edit className="mr-2 h-4 w-4" /> Editar
+                  </Link>
+                </Button>
+                <ManagementDropdown course={course} onStatusChange={onStatusChange} onDelete={onDelete} isProcessing={isProcessingStatus} />
+              </>
+            )}
         </CardFooter>
       </Link>
     </Card>
@@ -115,8 +140,7 @@ export function CourseCard({ course, userRole, onEnrollmentChange, priority = fa
 
 
 const EnrollmentButton = ({ isEnrolled, handleEnrollment, isProcessing }: {
-  isEnrolled: boolean;
-  courseId: string;
+  isEnrolled?: boolean;
   handleEnrollment: (e: React.MouseEvent, enroll: boolean) => void;
   isProcessing: boolean;
 }) => {
@@ -137,3 +161,44 @@ const EnrollmentButton = ({ isEnrolled, handleEnrollment, isProcessing }: {
     </Button>
   );
 };
+
+const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: {
+    course: AppCourse,
+    onStatusChange?: (courseId: string, newStatus: CourseStatus) => void,
+    onDelete?: (course: AppCourse) => void,
+    isProcessing: boolean,
+}) => {
+    const handleAction = (e: React.MouseEvent, action: () => void) => {
+        e.stopPropagation();
+        e.preventDefault();
+        action();
+    };
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
+                    <MoreVertical className="h-4 w-4"/>
+                    <span className="sr-only">Más opciones</span>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
+                <DropdownMenuItem asChild>
+                    <Link href={`/courses/${course.id}`} target="_blank"><Eye className="mr-2 h-4 w-4"/> Vista Previa</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'PUBLISHED'))} disabled={isProcessing || course.status === 'PUBLISHED'}>
+                    Publicar
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'DRAFT'))} disabled={isProcessing || course.status === 'DRAFT'}>
+                    Pasar a Borrador
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'ARCHIVED'))} disabled={isProcessing || course.status === 'ARCHIVED'}>
+                    Archivar
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onDelete?.(course))} disabled={isProcessing} className="text-destructive">
+                    Eliminar
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
