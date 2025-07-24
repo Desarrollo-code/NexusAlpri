@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -77,7 +78,7 @@ export default function SignInPage() {
     setIsLoading(true);
 
     try {
-        const response = await fetch('/api/auth/2fa-login', {
+        const response = await fetch('/api/auth/2fa?action=login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: userIdFor2fa, token }),
@@ -136,7 +137,7 @@ export default function SignInPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       disabled={isLoading}
-                      className="auth-input"
+                      className="auth-input pr-10"
                     />
                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-graphite-300 hover:text-gold-100">
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -173,6 +174,7 @@ export default function SignInPage() {
                     value={token}
                     onChange={(value) => setToken(value)}
                     disabled={isLoading}
+                    containerClassName="otp-group"
                   >
                     <InputOTPGroup>
                       <InputOTPSlot index={0} />

@@ -28,7 +28,6 @@ import { cn } from '@/lib/utils';
 import { useIdleTimeout } from '@/hooks/useIdleTimeout';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { GradientIcon } from '@/components/ui/gradient-icon';
 
 const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) => {
   const { user } = useAuth();
@@ -51,7 +50,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
             )}
           >
               <div className="flex items-center gap-3 flex-1">
-                <GradientIcon icon={item.icon} isActive={isParentActive || isActive} />
+                <item.icon className={cn("h-5 w-5 shrink-0 transition-colors", isParentActive || isActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground group-hover:text-sidebar-accent-foreground")} />
                 <span className={cn("font-semibold text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
             </div>
             <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200", "md:group-data-[state=collapsed]:hidden")} />
@@ -70,7 +69,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
                       tooltip={{ children: subItem.label }}
                     >
                       <Link href={subItem.href || '#'}>
-                        <GradientIcon icon={subItem.icon} size="sm" isActive={isSubItemActive} />
+                        <subItem.icon className="h-4 w-4 shrink-0" />
                         <span className="text-sm font-normal md:group-data-[state=collapsed]:hidden whitespace-nowrap">{subItem.label}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -87,7 +86,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{children: item.label}}>
         <Link href={item.href || '#'}>
-          <GradientIcon icon={item.icon} isActive={isActive} />
+          <item.icon className="h-5 w-5 shrink-0" />
           <span className={cn("font-semibold text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
         </Link>
       </SidebarMenuButton>
@@ -129,7 +128,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const adminItems = navItems.find(item => item.label === 'Administración' && item.subItems && item.subItems.length > 0);
     
     return (
-        <>
+        <div className="group/app-layout">
             <Sidebar>
                 <SidebarHeader className="group-data-[state=expanded]:px-4 md:group-data-[state=collapsed]:px-2">
                     <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground md:group-data-[state=collapsed]:justify-center">
@@ -182,7 +181,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
             <div className={cn(
               "bg-background min-h-screen transition-[margin-left] duration-300 ease-in-out",
-              "md:ml-[var(--sidebar-width-icon)] group-data-[state=expanded]/sidebar-wrapper:md:ml-[var(--sidebar-width)]"
+              "md:group-data-[state=expanded]/app-layout:ml-[var(--sidebar-width)]",
+              "md:group-data-[state=collapsed]/app-layout:ml-[var(--sidebar-width-icon)]"
             )}>
                 <TopBar />
                 <main className="p-4 md:p-6 lg:p-8">
@@ -201,7 +201,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 data-ai-hint="company logo"
               />
             </div>
-        </>
+        </div>
     );
 }
 

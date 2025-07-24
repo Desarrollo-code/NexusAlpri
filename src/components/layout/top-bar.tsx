@@ -84,7 +84,6 @@ const NotificationPopover = () => {
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && !isLoading && (
               <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75"></span>
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-destructive"></span>
               </span>
             )}
@@ -152,55 +151,32 @@ export function TopBar() {
       .find(item => item.href && item.href !== '#' && pathname.startsWith(item.href));
 
     let title = currentNavItem?.label || 'NexusAlpri';
-    let colorClass = 'bg-background/95';
-
+    
     if (pathname.startsWith('/dashboard')) {
         title = 'Panel Principal';
-        colorClass = 'bg-chart-1/10 dark:bg-chart-1/20';
     } else if (pathname.startsWith('/courses/') && !pathname.endsWith('/courses')) {
         title = 'Detalle del Curso';
-        colorClass = 'bg-chart-2/10 dark:bg-chart-2/20';
-    } else if (pathname.startsWith('/my-courses')) {
-        title = 'Mis Cursos';
-        colorClass = 'bg-chart-2/10 dark:bg-chart-2/20';
-    } else if (pathname.startsWith('/courses')) {
-        title = 'Catálogo de Cursos';
-        colorClass = 'bg-chart-2/10 dark:bg-chart-2/20';
-    } else if (pathname.startsWith('/resources')) {
-        title = 'Biblioteca';
-        colorClass = 'bg-chart-3/10 dark:bg-chart-3/20';
-    } else if (pathname.startsWith('/announcements')) {
-        title = 'Anuncios';
-        colorClass = 'bg-chart-4/10 dark:bg-chart-4/20';
-    } else if (pathname.startsWith('/calendar')) {
-        title = 'Calendario';
-        colorClass = 'bg-chart-4/10 dark:bg-chart-4/20';
     } else if (pathname.startsWith('/manage-courses/') && !pathname.endsWith('/manage-courses')) {
         title = 'Gestión de Curso';
-        colorClass = 'bg-chart-5/10 dark:bg-chart-5/20';
-    } else if (pathname.startsWith('/manage-courses') || pathname.startsWith('/users') || pathname.startsWith('/settings') || pathname.startsWith('/analytics') || pathname.startsWith('/security-audit') || pathname.startsWith('/enrollments')) {
-        title = currentNavItem?.label || 'Administración';
-        colorClass = 'bg-chart-5/10 dark:bg-chart-5/20';
     } else if (pathname.startsWith('/profile')) {
         title = 'Mi Perfil';
-    } else if (pathname.startsWith('/notifications')) {
-        title = 'Notificaciones';
     }
     
-    return { title, colorClass };
+    return title;
   };
   
-  const { title, colorClass } = getPageDetails();
+  const pageTitle = getPageDetails();
   
   return (
     <>
       <header className={cn(
-          "sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/60 px-4 backdrop-blur-md md:px-6 transition-colors duration-300",
-          colorClass
+          "sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur-md md:px-6 transition-colors duration-300",
+          "md:group-data-[state=expanded]/app-layout:ml-[var(--sidebar-width)]",
+          "md:group-data-[state=collapsed]/app-layout:ml-[var(--sidebar-width-icon)]"
       )}>
         <div className="flex items-center gap-2">
           <SidebarTrigger className="md:hidden" />
-          <h1 className="hidden sm:block text-xl font-semibold font-headline truncate">{title}</h1>
+          <h1 className="hidden sm:block text-xl font-semibold font-headline truncate">{pageTitle}</h1>
         </div>
         <div className="flex items-center gap-3">
           <NotificationPopover />
