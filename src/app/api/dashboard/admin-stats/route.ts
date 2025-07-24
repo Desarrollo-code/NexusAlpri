@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
             // Find a registration record that falls on this date.
             const dayData = dailyRegistrations.find(d => d.registeredDate && format(new Date(d.registeredDate), 'yyyy-MM-dd') === formattedDate);
             return {
-                date: format(date, 'MMM d'), // Format for chart label e.g. "Jul 21"
+                date: format(date, 'MMM d', { locale: 'es' }),
                 count: dayData?._count.registeredDate || 0,
             };
         });

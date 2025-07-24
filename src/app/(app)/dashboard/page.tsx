@@ -24,20 +24,26 @@ import {
   UsersRound,
   Activity,
   UserPlus,
-  AreaChart,
+  BarChart,
+  Server,
+  KeyRound,
+  UserCog,
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import type { AdminDashboardStats } from '@/app/api/dashboard/admin-stats/route';
+import type { AdminDashboardStats, SecurityLog as AppSecurityLog } from '@/types';
 import type { Announcement as AnnouncementType, UserRole, Course as AppCourseType, EnrolledCourse } from '@/types';
 import { AnnouncementCard } from '@/components/announcement-card';
-import type { Announcement as PrismaAnnouncement, Course as PrismaCourse } from '@prisma/client';
+import type { Announcement as PrismaAnnouncement, Course as PrismaCourse, SecurityLog, User as PrismaUser } from '@prisma/client';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area as RechartsArea, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector, CartesianGrid } from "recharts";
+import { Area, Bar, ComposedChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts";
 import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { getEventDetails, getInitials } from '@/lib/security-log-utils';
+import { Badge } from '@/components/ui/badge';
 
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -66,11 +72,16 @@ function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
   };
 }
 
+interface SecurityLogWithUser extends AppSecurityLog {
+    user: Pick<PrismaUser, 'id' | 'name' | 'avatar'> | null;
+}
+
 interface DashboardData {
     adminStats: AdminDashboardStats | null;
     studentStats: { enrolled: number; completed: number } | null;
     instructorStats: { taught: number } | null;
     recentAnnouncements: DisplayAnnouncement[];
+    securityLogs: SecurityLogWithUser[];
     taughtCourses: AppCourseType[];
     myDashboardCourses: EnrolledCourse[];
 }
@@ -81,7 +92,7 @@ interface DashboardData {
 const MetricCard = ({ title, value: finalValue, icon: Icon, description }: { title: string; value: number; icon: React.ElementType; description?: string }) => {
     const animatedValue = useAnimatedCounter(finalValue);
     return (
-        <Card>
+        <Card className="shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
                 <Icon className="h-4 w-4 text-primary" />
@@ -101,118 +112,7 @@ const userRolesChartConfig = {
   ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-5))" },
 } satisfies ChartConfig;
 
-const renderActiveShape = (props: any) => {
-  const RADIAN = Math.PI / 180;
-  const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
-  const sin = Math.sin(-RADIAN * midAngle);
-  const cos = Math.cos(-RADIAN * midAngle);
-  const sx = cx + (outerRadius + 2) * cos;
-  const sy = cy + (outerRadius + 2) * sin;
-  const mx = cx + (outerRadius + 15) * cos;
-  const my = cy + (outerRadius + 15) * sin;
-  const ex = mx + (cos >= 0 ? 1 : -1) * 11;
-  const ey = my;
-  const textAnchor = cos >= 0 ? 'start' : 'end';
-
-  return (
-    <g>
-      <text x={cx} y={cy} dy={4} textAnchor="middle" fill={fill} className="text-base font-bold">
-        {payload.label}
-      </text>
-      <Sector
-        cx={cx}
-        cy={cy}
-        innerRadius={innerRadius}
-        outerRadius={outerRadius}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        fill={fill}
-      />
-      <Sector
-        cx={cx}
-        cy={cy}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        innerRadius={outerRadius + 4}
-        outerRadius={outerRadius + 8}
-        fill={fill}
-      />
-       <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
-       <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-       <text x={ex + (cos >= 0 ? 1 : -1) * 6} y={ey} textAnchor={textAnchor} fill="hsl(var(--foreground))" className="text-xs">
-         <tspan x={ex + (cos >= 0 ? 1 : -1) * 6} dy="-0.5em">{value}</tspan>
-         <tspan x={ex + (cos >= 0 ? 1 : -1) * 6} dy="1em">{`(${(percent * 100).toFixed(0)}%)`}</tspan>
-      </text>
-    </g>
-  );
-};
-
-
-function DonutChartCard({ title, data, config }: { title: string, data: any[], config: ChartConfig }) {
-  const total = useMemo(() => data.reduce((acc, curr) => acc + curr.count, 0), [data]);
-  const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
-  
-  const onPieEnter = useCallback((_: any, index: number) => {
-    setActiveIndex(index);
-  }, [setActiveIndex]);
-
-  const onPieLeave = useCallback(() => {
-    setActiveIndex(undefined);
-  }, [setActiveIndex]);
-  
-  return (
-    <Card className="card-border-animated">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="h-80">
-        <ChartContainer config={config} className="w-full h-full">
-          <ResponsiveContainer>
-            <PieChart>
-              <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
-              <Pie 
-                data={data} 
-                dataKey="count" 
-                nameKey="label" 
-                innerRadius={60} 
-                strokeWidth={2}
-                activeIndex={activeIndex}
-                activeShape={renderActiveShape}
-                onMouseEnter={onPieEnter}
-                onMouseLeave={onPieLeave}
-                className="cursor-pointer"
-              >
-                 {data.map((entry) => (
-                    <Cell key={`cell-${entry.label}`} fill={entry.fill} />
-                  ))}
-                 {activeIndex === undefined && (
-                    <Label
-                        content={({ viewBox }) => {
-                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                                return (
-                                    <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                                        <tspan x={viewBox.cx} y={viewBox.cy} className="text-2xl font-bold fill-foreground">
-                                            {total.toLocaleString()}
-                                        </tspan>
-                                        <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 16} className="text-xs fill-muted-foreground">
-                                            Total
-                                        </tspan>
-                                    </text>
-                                );
-                            }
-                        }}
-                    />
-                 )}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartContainer>
-      </CardContent>
-    </Card>
-  )
-}
-
-function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
+function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: SecurityLogWithUser[] }) {
     const userRolesChartData = useMemo(() => {
         if (!stats?.usersByRole) return [];
         const order: ('STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR')[] = ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'];
@@ -220,8 +120,8 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
             role: role,
             label: userRolesChartConfig[role]?.label || role,
             count: stats.usersByRole.find(item => item.role === role)?.count || 0,
-            fill: userRolesChartConfig[role]?.color || 'hsl(var(--muted))'
-        }));
+            fill: `var(--color-${role})`
+        })).reverse(); // Reverse to have students at the top
     }, [stats.usersByRole]);
     
     const registrationTrendChartConfig = {
@@ -233,34 +133,103 @@ function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Resumen de la Plataforma</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <MetricCard title="Total Usuarios" value={stats.totalUsers} icon={UsersRound} />
-            <MetricCard title="Total Cursos" value={stats.totalCourses} icon={BookOpenCheck} />
             <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="En los últimos 7 días" />
-            <MetricCard title="Nuevos Usuarios" value={stats.newUsersLast7Days} icon={UserPlus} description="En los últimos 7 días"/>
+            <MetricCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={BookOpenCheck} />
+            <MetricCard title="Nuevos Registros" value={stats.newUsersLast7Days} icon={UserPlus} description="En los últimos 7 días"/>
         </div>
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <DonutChartCard title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
-            <Card className="lg:col-span-2 card-border-animated">
-            <CardHeader>
-                <CardTitle>Tendencia de Registros (Últimos 7 Días)</CardTitle>
-            </CardHeader>
-            <CardContent className="h-80">
-                    <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
-                    <RechartsArea
-                        data={stats.userRegistrationTrend}
-                        margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
-                    >
-                        <CartesianGrid vertical={false} strokeDasharray="3 3"/>
-                        <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)}/>
-                        <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false}/>
-                        <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
-                        <RechartsArea dataKey="count" type="monotone" fill="var(--color-count)" fillOpacity={0.4} stroke="var(--color-count)" />
-                    </RechartsArea>
-                    </ChartContainer>
-            </CardContent>
+          <main className="lg:col-span-2 space-y-6">
+            <Card className="card-border-animated">
+                <CardHeader>
+                    <CardTitle>Tendencia de Registros (Últimos 7 Días)</CardTitle>
+                </CardHeader>
+                <CardContent className="h-72">
+                        <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
+                        <ComposedChart data={stats.userRegistrationTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                            <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <defs><linearGradient id="fillArea" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8}/><stop offset="95%" stopColor="var(--color-count)" stopOpacity={0.1}/></linearGradient></defs>
+                            <Area dataKey="count" type="monotone" fill="url(#fillArea)" stroke="var(--color-count)" strokeWidth={2} dot={false} />
+                        </ComposedChart>
+                        </ChartContainer>
+                </CardContent>
             </Card>
+             <Card className="card-border-animated">
+                <CardHeader>
+                    <CardTitle>Distribución de Roles</CardTitle>
+                </CardHeader>
+                <CardContent className="h-72">
+                    <ChartContainer config={userRolesChartConfig} className="w-full h-full">
+                        <ResponsiveContainer>
+                            <BarChart data={userRolesChartData} layout="vertical" margin={{ left: 10, right: 10 }}>
+                                <CartesianGrid horizontal={false} strokeDasharray="3 3"/>
+                                <XAxis type="number" dataKey="count" hide/>
+                                <YAxis type="category" dataKey="label" tickLine={false} axisLine={false} tickMargin={10} width={80} />
+                                <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent hideLabel />} />
+                                <Bar dataKey="count" radius={4}>
+                                    {userRolesChartData.map((d) => (<Cell key={d.label} fill={d.fill} />))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+          </main>
+          
+          <aside className="lg:col-span-1 space-y-6">
+             <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><ShieldAlert className="text-primary"/>Última Actividad de Seguridad</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ul className="space-y-4">
+                        {logs.slice(0, 5).map(log => {
+                           const eventUI = getEventDetails(log.event, log.details);
+                           return (
+                            <li key={log.id} className="flex items-center gap-3">
+                                <div className="p-2 bg-muted rounded-full">{eventUI.icon}</div>
+                                <div className="text-sm">
+                                    <p className="font-semibold">{log.user?.name || log.emailAttempt}</p>
+                                    <p className="text-muted-foreground">{eventUI.label}</p>
+                                </div>
+                            </li>
+                           )
+                        })}
+                    </ul>
+                </CardContent>
+                <CardFooter>
+                    <Button asChild variant="secondary" size="sm" className="w-full">
+                        <Link href="/security-audit">Ver Auditoría Completa <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                    </Button>
+                </CardFooter>
+             </Card>
+              <Card>
+                <CardHeader>
+                    <CardTitle>Accesos Rápidos</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ul className="space-y-2">
+                        <li>
+                            <Link href="/users" className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                <span className="flex items-center gap-3 font-medium"><Users className="h-5 w-5 text-primary"/>Gestionar Usuarios</span>
+                                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                            </Link>
+                        </li>
+                         <li>
+                            <Link href="/settings" className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                <span className="flex items-center gap-3 font-medium"><Settings className="h-5 w-5 text-primary"/>Configuración</span>
+                                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                            </Link>
+                        </li>
+                    </ul>
+                </CardContent>
+            </Card>
+          </aside>
         </div>
     </div>
   );
@@ -273,8 +242,6 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   const shouldSetup2fa = useMemo(() => {
-    // This logic depends on settings, which are not part of this component's state.
-    // Assuming a simplified check for now.
     return user?.role === 'ADMINISTRATOR' && !user.isTwoFactorEnabled;
   }, [user]);
   
@@ -288,6 +255,7 @@ export default function DashboardPage() {
         
         if (user.role === 'ADMINISTRATOR') {
             promises.push(fetch('/api/dashboard/admin-stats'));
+            promises.push(fetch('/api/security/logs'));
         }
         if (user.role === 'INSTRUCTOR') {
             const queryParams = new URLSearchParams({ manageView: 'true', userId: user.id, userRole: user.role });
@@ -321,10 +289,13 @@ export default function DashboardPage() {
             })),
             taughtCourses: [],
             myDashboardCourses: [],
+            securityLogs: [],
         };
 
         if (user.role === 'ADMINISTRATOR') {
             dashboardPayload.adminStats = await roleSpecificRes[0].json();
+            const securityLogsJson = await roleSpecificRes[1].json();
+            dashboardPayload.securityLogs = securityLogsJson.logs || [];
         } else if (user.role === 'INSTRUCTOR') {
             const taughtCoursesResponse = await roleSpecificRes[0].json();
             const taughtCoursesData = Array.isArray(taughtCoursesResponse) ? taughtCoursesResponse : (taughtCoursesResponse.courses || []);
@@ -475,7 +446,7 @@ export default function DashboardPage() {
         </section>
       )}
       
-      {user.role === 'ADMINISTRATOR' && data?.adminStats && <AdminDashboard stats={data.adminStats} />}
+      {user.role === 'ADMINISTRATOR' && data?.adminStats && <AdminDashboard stats={data.adminStats} logs={data.securityLogs} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
@@ -577,3 +548,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

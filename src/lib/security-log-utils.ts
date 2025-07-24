@@ -5,13 +5,55 @@ import React from 'react';
 
 export const getEventDetails = (event: SecurityLogEvent, details?: string | null) => {
     switch (event) {
-        case 'SUCCESSFUL_LOGIN': return { label: 'Inicio Sesión Exitoso', variant: 'secondary' as const };
-        case 'FAILED_LOGIN_ATTEMPT': return { label: 'Intento Fallido', variant: 'destructive' as const };
-        case 'PASSWORD_CHANGE_SUCCESS': return { label: 'Cambio de Contraseña', variant: 'default' as const };
-        case 'TWO_FACTOR_ENABLED': return { label: '2FA Activado', variant: 'default' as const };
-        case 'TWO_FACTOR_DISABLED': return { label: '2FA Desactivado', variant: 'destructive' as const };
-        case 'USER_ROLE_CHANGED': return { label: 'Cambio de Rol', variant: 'default' as const };
-        default: return { label: 'Evento Desconocido', variant: 'outline' as const };
+        case 'SUCCESSFUL_LOGIN':
+             return {
+                label: 'Inicio de Sesión Exitoso',
+                icon: <ShieldCheck className="h-4 w-4 text-green-500" />,
+                variant: 'secondary',
+                details: 'Acceso concedido a la cuenta.'
+            };
+        case 'FAILED_LOGIN_ATTEMPT':
+            return {
+                label: 'Intento de Inicio Fallido',
+                icon: <ShieldX className="h-4 w-4 text-destructive" />,
+                variant: 'destructive',
+                details: 'Credenciales incorrectas o usuario no encontrado.'
+            };
+        case 'PASSWORD_CHANGE_SUCCESS':
+             return {
+                label: 'Cambio de Contraseña',
+                icon: <KeyRound className="h-4 w-4 text-primary" />,
+                variant: 'default',
+                details: 'La contraseña del usuario fue actualizada.'
+            };
+        case 'TWO_FACTOR_ENABLED':
+            return {
+                label: '2FA Activado',
+                icon: <ShieldCheck className="h-4 w-4 text-green-500" />,
+                variant: 'default',
+                details: 'El usuario activó la autenticación de dos factores.'
+            };
+        case 'TWO_FACTOR_DISABLED':
+            return {
+                label: '2FA Desactivado',
+                icon: <ShieldAlert className="h-4 w-4 text-orange-500" />,
+                variant: 'destructive',
+                details: 'El usuario desactivó la autenticación de dos factores.'
+            };
+         case 'USER_ROLE_CHANGED':
+            return {
+                label: 'Cambio de Rol de Usuario',
+                icon: <UserCog className="h-4 w-4 text-purple-500" />,
+                variant: 'default',
+                details: details || 'El rol del usuario ha sido modificado.'
+            };
+        default:
+            return {
+                label: event.replace(/_/g, ' ').toLowerCase(),
+                icon: <ShieldAlert className="h-4 w-4 text-muted-foreground" />,
+                variant: 'outline',
+                details: details || 'Evento de seguridad general.'
+            };
     }
 };
 

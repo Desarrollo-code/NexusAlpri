@@ -219,12 +219,6 @@ export interface AdminDashboardStats {
     userRegistrationTrend: { date: string, count: number }[];
 }
 
-export interface ProgressAnalyticsData {
-    activeStudentsInCourses: number;
-    averageCompletionTimeDays: number;
-    dropoutRate: number;
-}
-
 // --- TEMPLATES ---
 export type TemplateType = 'SYSTEM' | 'USER';
 export { type LessonTemplate, type TemplateBlock };
