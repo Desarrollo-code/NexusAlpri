@@ -249,7 +249,7 @@ function AdminAnalyticsPage() {
             <CardContent className="h-80">
                 <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
                     <ResponsiveContainer>
-                        <RechartsArea data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                        <RechartsArea data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 20, left: -10, bottom: 20 }}>
                             <defs>
                                 <linearGradient id="fillArea" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8}/>
@@ -257,7 +257,7 @@ function AdminAnalyticsPage() {
                                 </linearGradient>
                             </defs>
                             <CartesianGrid vertical={false} strokeDasharray="3 3"/>
-                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)} interval={1}/>
+                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval={0} />
                             <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false}/>
                             <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
                             <Area dataKey="count" type="monotone" fill="url(#fillArea)" stroke="var(--color-count)" />

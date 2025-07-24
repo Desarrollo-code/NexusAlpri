@@ -130,9 +130,9 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
               <CardContent className="h-96">
                   <ChartContainer config={activityChartConfig} className="w-full h-full">
                     <ResponsiveContainer>
-                      <RechartsBar data={stats.courseActivity} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                      <RechartsBar data={stats.courseActivity} margin={{ top: 5, right: 10, left: -20, bottom: 20 }}>
                         <CartesianGrid vertical={false} strokeDasharray="3 3"/>
-                        <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} interval={5} />
+                        <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval={5} />
                         <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
                         <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
                         <Legend />
