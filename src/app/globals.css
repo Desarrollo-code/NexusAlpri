@@ -36,7 +36,7 @@
     
     --radius: 0.5rem;
 
-    --sidebar-background: 220 14.3% 98%;
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 224 71.4% 4.1%;
     --sidebar-accent: 45 96% 53%;
     --sidebar-accent-foreground: 45 90% 5%;
@@ -85,11 +85,11 @@
     --input: 210 6% 25%;
     --ring: 48 96% 53%;
     
-    --sidebar-background: 0 0% 8%;
+    --sidebar-background: 210 10% 12%;
     --sidebar-foreground: 210 20% 96%;
     --sidebar-accent: 48 96% 53%;
     --sidebar-accent-foreground: 48 90% 10%;
-    --sidebar-border: 0 0% 15%;
+    --sidebar-border: 210 6% 20%;
 
     --chart-1: 221 83% 63%; /* Azul Eléctrico */
     --chart-2: 48 96% 53%;  /* Dorado */
