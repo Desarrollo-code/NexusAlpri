@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React from 'react';
@@ -13,7 +12,7 @@ import type { Course as AppCourse, EnrolledCourse, UserRole } from '@/types';
 import { Layers, ArrowRight, Check, Plus, Loader2, X, User } from 'lucide-react';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { cn } from '@/lib/utils';
-import { RocketIcon } from '@/components/icons/icon-rocket';
+
 
 interface CourseCardProps {
   course: AppCourse | EnrolledCourse;
@@ -75,63 +74,42 @@ export function CourseCard({ course, userRole, onEnrollmentChange, priority = fa
   };
 
   return (
-    <div className="group w-full h-[380px] perspective-1000">
-      <div className="relative w-full h-full transform-style-3d transition-transform duration-700 group-hover:rotate-y-180">
-        {/* Front of Card */}
-        <div className="absolute w-full h-full backface-hidden rounded-lg overflow-hidden border bg-card text-card-foreground shadow-sm hover:shadow-lg hover:shadow-primary/10 transition-shadow duration-300 course-card">
-          <Link href={`/courses/${course.id}`} className="block h-full">
-            <div className="flex flex-col h-full">
-              <div className="aspect-video w-full relative overflow-hidden course-image-container">
-                  <Image
-                    src={course.imageUrl || `https://placehold.co/600x400.png`}
-                    alt={course.title}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105 course-image"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    data-ai-hint="online course abstract"
-                    priority={priority}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/40 transition-colors" />
-                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                  {typeof progress === 'number' && (
-                      <div className="absolute top-2 right-2">
-                          <CircularProgress value={progress} size={40} strokeWidth={4} valueTextClass="text-xs font-semibold" />
-                      </div>
-                  )}
+    <Card className="group flex flex-col h-full overflow-hidden transition-transform duration-300 ease-in-out hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/10">
+      <Link href={`/courses/${course.id}`} className="block h-full flex flex-col">
+        <div className="aspect-video w-full relative overflow-hidden">
+          <Image
+            src={course.imageUrl || `https://placehold.co/600x400.png`}
+            alt={course.title}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            data-ai-hint="online course abstract"
+            priority={priority}
+          />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+           {typeof progress === 'number' && (
+              <div className="absolute top-2 right-2">
+                  <CircularProgress value={progress} size={40} strokeWidth={4} valueTextClass="text-xs font-semibold" />
               </div>
-              <CardHeader className="p-4 flex-grow">
-                <CardTitle className="text-base font-headline leading-tight mb-2 line-clamp-2">{course.title}</CardTitle>
-                 <div className="text-xs text-muted-foreground pt-2 flex flex-col gap-2">
-                  <div className="flex items-center"><User className="mr-1.5 h-3 w-3" /> Por {course.instructor}</div>
-                  <div className="flex items-center"><Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount} Módulos</div>
-                </div>
-              </CardHeader>
-              <CardFooter className="p-4 border-t pt-3">
-                 <EnrollmentButton isEnrolled={isEnrolled} courseId={course.id} handleEnrollment={handleEnrollment} isProcessing={isProcessingEnrollment} />
-              </CardFooter>
-            </div>
-          </Link>
+          )}
         </div>
-
-        {/* Back of Card */}
-        <div className="absolute w-full h-full backface-hidden rounded-lg overflow-hidden bg-muted rotate-y-180 course-card">
-          <Link href={`/courses/${course.id}`} className="block h-full w-full">
-            <div className="relative w-full h-full flex justify-center items-center rotating-gradient">
-              <div className="absolute w-[calc(100%-2px)] h-[calc(100%-2px)] bg-card rounded-lg flex flex-col justify-center items-center gap-4 text-center p-4">
-                  <div className="relative w-24 h-24">
-                      <div className="absolute top-0 left-8 w-[90px] h-[90px] rounded-full bg-primary/50 filter blur-xl floating" />
-                      <div className="absolute top-12 left-0 w-[150px] h-[150px] rounded-full bg-accent/30 filter blur-2xl floating" style={{animationDelay: '-800ms'}} />
-                  </div>
-                  <div className="z-10 flex flex-col items-center">
-                    <RocketIcon className="w-16 h-16 text-primary drop-shadow-lg" />
-                    <strong className="mt-4 font-headline text-lg text-foreground">Explorar Curso</strong>
-                  </div>
-              </div>
-            </div>
-          </Link>
-        </div>
-      </div>
-    </div>
+        <CardHeader className="p-4">
+          <CardTitle className="text-base font-headline leading-tight mb-2 line-clamp-2">{course.title}</CardTitle>
+          <div className="text-xs text-muted-foreground pt-2 flex flex-col gap-2">
+            <div className="flex items-center"><User className="mr-1.5 h-3 w-3" /> Por {course.instructor}</div>
+            <div className="flex items-center"><Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount} Módulos</div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-4 pt-0 flex-grow">
+          <p className="text-sm text-muted-foreground line-clamp-2">
+            {course.description}
+          </p>
+        </CardContent>
+        <CardFooter className="p-4 border-t pt-3">
+          <EnrollmentButton isEnrolled={isEnrolled} courseId={course.id} handleEnrollment={handleEnrollment} isProcessing={isProcessingEnrollment} />
+        </CardFooter>
+      </Link>
+    </Card>
   );
 }
 
