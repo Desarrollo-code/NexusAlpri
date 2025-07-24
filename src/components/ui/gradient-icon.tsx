@@ -25,11 +25,16 @@ export const GradientIcon = ({
     'xl': 'w-8 h-8',
   };
   
-  const iconColor = isActive ? 'currentColor' : 'hsl(var(--sidebar-foreground))';
+  const iconColor = isActive ? 'hsl(var(--sidebar-accent))' : 'hsl(var(--sidebar-foreground))';
 
   return (
     <Icon
-      className={cn(sizeClasses[size], className)}
+      className={cn(
+        sizeClasses[size],
+        "transition-colors duration-200 group-hover/menu-item:text-sidebar-accent",
+        isActive && "text-sidebar-accent",
+        className
+      )}
       stroke={iconColor}
       {...props}
     />

@@ -105,13 +105,13 @@ const StatCard = ({ title, value: finalValue, icon: Icon, href }: { title: strin
     
     return (
         <Card className="card-border-animated">
-            <Link href={href}>
-                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{title}</CardTitle>
+            <Link href={href} className="block hover:bg-white/5 transition-colors p-6">
+                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
                     <Icon className="h-5 w-5 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{animatedValue}</div>
+                </div>
+                <CardContent className="p-0">
+                    <div className="text-3xl font-bold text-primary">{animatedValue}</div>
                 </CardContent>
             </Link>
         </Card>
@@ -506,7 +506,7 @@ export default function DashboardPage() {
                   <Users className="h-5 w-5 text-chart-2" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">N/A</div>
+                  <div className="text-2xl font-bold text-muted-foreground">N/A</div>
                   <p className="text-xs text-muted-foreground">Próximamente</p>
                 </CardContent>
               </Card>
@@ -536,7 +536,7 @@ export default function DashboardPage() {
                     </div>
                   )
                 ) : (
-                  <Card className="card-border-animated"><CardContent className="pt-6 text-center text-muted-foreground"><p>No has creado cursos aún.</p></CardContent></Card>
+                  <Card className="card-border-animated"><CardContent className="pt-6 text-center text-muted-foreground flex flex-col items-center gap-3"><BookMarked className="h-8 w-8 text-primary" /><p>No has creado cursos aún.</p></CardContent></Card>
                 )}
               </section>
            )}
@@ -555,7 +555,7 @@ export default function DashboardPage() {
                       </div>
                    )
                 ) : (
-                  <Card className="card-border-animated"><CardContent className="pt-6 text-center text-muted-foreground"><p>No estás inscrito en ningún curso.</p></CardContent></Card>
+                  <Card className="card-border-animated"><CardContent className="pt-6 text-center text-muted-foreground flex flex-col items-center gap-3"><GraduationCap className="h-8 w-8 text-primary" /><p>No estás inscrito en ningún curso.</p></CardContent></Card>
                 )}
               </section>
            )}
@@ -569,7 +569,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
               ) : (
-                <Card className="card-border-animated"><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
+                <Card className="card-border-animated"><CardContent className="pt-6 text-center text-muted-foreground flex flex-col items-center gap-3"><Megaphone className="h-8 w-8 text-primary" /><p>No hay anuncios recientes.</p></CardContent></Card>
               )}
             </section>
         </div>
@@ -578,7 +578,7 @@ export default function DashboardPage() {
              <CardHeader><CardTitle>Accesos Rápidos</CardTitle></CardHeader>
              <CardContent className="space-y-3">
                {linksToShow.map((link) => (
-                 <Link key={link.href} href={link.href} className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors">
+                 <Link key={link.href} href={link.href} className="flex items-center gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors">
                    <GradientIcon icon={link.icon} size="lg"/>
                    <div>
                       <p className="font-semibold">{link.label}</p>

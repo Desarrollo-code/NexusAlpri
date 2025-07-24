@@ -60,18 +60,18 @@
 
   /* --- TEMA OSCURO --- */
   .dark {
-    --background: 0 0% 0%; /* Negro Puro */
+    --background: 240 5% 4%; /* Negro casi puro */
     --foreground: 210 20% 98%;
     
-    --card: linear-gradient(to bottom, hsl(240 4% 10%), hsl(40 8% 12%));
+    --card: linear-gradient(135deg, hsl(231, 28%, 12%), hsl(265, 28%, 12%)); /* Gradiente Azul-Púrpura Oscuro */
     --card-foreground: 210 20% 98%;
     
     --popover: 240 4% 10%;
     --popover-foreground: 210 20% 98%;
     
-    /* Paleta de Ámbar/Naranja (Más vibrante para tema oscuro) */
-    --primary: 38 92% 60%;
-    --primary-foreground: 38 95% 15%;
+    /* Color Primario: Cian Eléctrico */
+    --primary: 180 100% 50%; /* Cian */
+    --primary-foreground: 180 100% 10%;
     
     --secondary: 240 4% 15%;
     --secondary-foreground: 210 20% 98%;
@@ -87,29 +87,29 @@
     
     --border: 240 4% 18%; 
     --input: 240 4% 18%;
-    --ring: 38 92% 60%;
+    --ring: 180 100% 50%; /* Cian */
 
     --radius: 0.75rem;
     
     /* Barra Lateral - Tema Oscuro (Ajustada para mayor contraste) */
-    --sidebar-background: 38 92% 50%;
-    --sidebar-foreground: 38 95% 15%;
-    --sidebar-accent: 38 100% 97%;
-    --sidebar-accent-foreground: 38 95% 15%;
-    --sidebar-border: 38 92% 55%;
-    --sidebar-ring: 38 92% 50%;
+    --sidebar-background: 240 5% 4%;
+    --sidebar-foreground: 210 5% 64%;
+    --sidebar-accent: 180 100% 50%;
+    --sidebar-accent-foreground: 240 5% 4%;
+    --sidebar-border: 240 4% 18%;
+    --sidebar-ring: 180 100% 50%;
 
-    /* Paleta de Colores para Gráficos y Eventos (Más vibrante) */
-    --chart-1: 200 81% 55%; /* Azul */
-    --chart-2: 139 51% 61%; /* Verde */
-    --chart-3: 340 100% 70%; /* Rosa */
-    --chart-4: 24 97% 68%; /* Naranja */
-    --chart-5: 262 84% 69%; /* Púrpura */
+    /* Paleta de Colores para Gráficos y Eventos (Neón) */
+    --chart-1: 180 100% 50%; /* Cian */
+    --chart-2: 265 89% 60%; /* Púrpura Eléctrico */
+    --chart-3: 320 100% 55%; /* Magenta Vibrante */
+    --chart-4: 95 100% 50%; /* Verde Lima */
+    --chart-5: 210 100% 60%; /* Azul Neón */
 
-    --event-blue: 200 81% 66%;
-    --event-green: 139 51% 61%;
-    --event-red: 356 91% 78%;
-    --event-orange: 24 97% 73%;
+    --event-blue: 210 100% 60%;
+    --event-green: 95 100% 50%;
+    --event-red: 320 100% 55%;
+    --event-orange: 24 97% 68%;
   }
 
   * {
@@ -129,13 +129,14 @@
   }
 
   .card-border-animated {
-    @apply shadow-lg shadow-black/5;
-    @apply dark:shadow-black/20;
+    @apply border border-transparent shadow-lg shadow-black/20;
     @apply transition-all duration-300;
+    background-clip: padding-box;
   }
 
   .card-border-animated:hover {
-      @apply shadow-primary/20 shadow-2xl;
+    @apply shadow-primary/20 shadow-2xl;
+    border-color: hsl(var(--primary) / 0.5);
   }
   
   .thin-scrollbar::-webkit-scrollbar {
