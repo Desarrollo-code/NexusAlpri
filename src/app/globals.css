@@ -6,7 +6,7 @@
 @layer base {
   /* --- TEMA CLARO (POR DEFECTO) --- */
   :root {
-    --background: 0 0% 100%;
+    --background: 220 20% 98%;
     --foreground: 224 71.4% 4.1%;
     
     --card: 0 0% 100%;
@@ -15,8 +15,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
     
-    --primary: 221 83% 53%; /* Azul Vibrante */
-    --primary-foreground: 210 20% 98%;
+    --primary: 45 96% 53%; /* Dorado Vibrante */
+    --primary-foreground: 45 90% 5%;
     
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 220.9 39.3% 11%;
@@ -24,30 +24,30 @@
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
     
-    --accent: 158 78% 42%; /* Verde Esmeralda */
+    --accent: 221 83% 53%; /* Azul Vibrante como acento */
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
     
-    --border: 0 0% 80%; 
-    --input: 0 0% 80%;
-    --ring: 221 83% 53%;
+    --border: 0 0% 88%; 
+    --input: 0 0% 88%;
+    --ring: 45 96% 53%;
     
     --radius: 0.5rem;
 
     --sidebar-background: 220 14.3% 98%;
     --sidebar-foreground: 224 71.4% 4.1%;
-    --sidebar-accent: 221 83% 53%;
-    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-accent: 45 96% 53%;
+    --sidebar-accent-foreground: 45 90% 5%;
     --sidebar-border: 220 13% 88%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-ring: 45 96% 53%;
 
-    --chart-1: 280 85% 60%; /* Violeta */
-    --chart-2: 198 90% 48%; /* Cian Brillante */
-    --chart-3: 340 95% 65%; /* Rosa Eléctrico */
-    --chart-4: 50 100% 50%; /* Amarillo Sol */
-    --chart-5: 158 78% 42%; /* Verde Esmeralda */
+    --chart-1: 221 83% 53%; /* Azul */
+    --chart-2: 45 96% 53%; /* Dorado */
+    --chart-3: 158 78% 42%; /* Verde */
+    --chart-4: 340 95% 65%; /* Rosa */
+    --chart-5: 280 85% 60%; /* Violeta */
 
     --event-blue: 210 90% 55%;
     --event-green: 140 70% 45%;
@@ -57,45 +57,45 @@
 
   /* --- TEMA OSCURO --- */
   .dark {
-    --background: 0 0% 0%;
-    --foreground: 210 20% 98%;
+    --background: 210 6% 10%; /* Grafito Oscuro */
+    --foreground: 210 20% 96%;
     
-    --card: 224 15% 12%;
-    --card-foreground: 210 20% 98%;
+    --card: 210 6% 12%; /* Grafito para Tarjetas */
+    --card-foreground: 210 20% 96%;
     
-    --popover: 224 71.4% 4.1%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 210 6% 12%;
+    --popover-foreground: 210 20% 96%;
     
-    --primary: 221 83% 63%; /* Azul más brillante */
-    --primary-foreground: 210 20% 98%;
+    --primary: 48 96% 53%; /* Dorado Vibrante */
+    --primary-foreground: 48 90% 10%;
     
-    --secondary: 215 28% 15%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 210 6% 23%;
+    --secondary-foreground: 210 20% 96%;
     
-    --muted: 215 28% 15%;
-    --muted-foreground: 217.9 10.6% 64.9%;
+    --muted: 210 6% 23%;
+    --muted-foreground: 210 5% 64%;
     
-    --accent: 158 70% 55%; /* Verde Esmeralda más brillante */
+    --accent: 221 83% 63%; /* Azul Eléctrico como acento */
     --accent-foreground: 210 20% 98%;
     
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 20% 98%;
     
-    --border: 0 0% 40%; 
-    --input: 0 0% 40%;
-    --ring: 221 83% 63%;
+    --border: 210 6% 25%; 
+    --input: 210 6% 25%;
+    --ring: 48 96% 53%;
     
-    --sidebar-background: 0 0% 5%;
-    --sidebar-foreground: 210 20% 98%;
-    --sidebar-accent: 221 83% 63%;
-    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 210 20% 96%;
+    --sidebar-accent: 48 96% 53%;
+    --sidebar-accent-foreground: 48 90% 10%;
     --sidebar-border: 0 0% 15%;
 
-    --chart-1: 280 100% 70%; 
-    --chart-2: 200 100% 60%; 
-    --chart-3: 340 100% 70%;
-    --chart-4: 50 100% 60%; 
-    --chart-5: 158 70% 55%;
+    --chart-1: 221 83% 63%; /* Azul Eléctrico */
+    --chart-2: 48 96% 53%;  /* Dorado */
+    --chart-3: 158 70% 55%; /* Verde */
+    --chart-4: 340 100% 70%;/* Rosa */
+    --chart-5: 280 100% 70%;/* Violeta */
 
     --event-blue: 210 100% 60%;
     --event-green: 140 80% 50%;
