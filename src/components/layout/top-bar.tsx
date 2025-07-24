@@ -83,8 +83,9 @@ const NotificationPopover = () => {
           <Button variant="ghost" size="icon" className="relative h-9 w-9">
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && !isLoading && (
-              <span className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
-                {unreadCount > 9 ? '9+' : unreadCount}
+              <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75"></span>
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-destructive"></span>
               </span>
             )}
             <span className="sr-only">Notificaciones</span>
