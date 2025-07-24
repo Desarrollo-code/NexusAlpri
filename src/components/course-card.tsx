@@ -90,7 +90,7 @@ export function CourseCard({
   const isTruncated = course.description && course.description.length > TRUNCATE_LENGTH;
   const descriptionToShow = isExpanded
     ? course.description
-    : `${course.description?.substring(0, TRUNCATE_LENGTH)}${isTruncated ? '...' : ''}`;
+    : `${course.description?.substring(0, TRUNCATE_LENGTH)}`;
 
   const toggleExpand = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -141,18 +141,19 @@ export function CourseCard({
         </CardHeader>
         <CardContent className="p-4 pt-0 flex-grow">
           {course.description && (
-            <>
-              <p className="text-sm text-muted-foreground">{descriptionToShow}</p>
+            <p className="text-sm text-muted-foreground">
+              {descriptionToShow}
+              {isTruncated && !isExpanded && '... '}
               {isTruncated && (
                 <Button
                   onClick={toggleExpand}
                   variant="link"
-                  className="p-0 h-auto text-sm mt-1"
+                  className="p-0 h-auto text-sm"
                 >
                   {isExpanded ? 'Leer menos' : 'Leer más'}
                 </Button>
               )}
-            </>
+            </p>
           )}
         </CardContent>
         <CardFooter className="p-4 border-t pt-3 flex items-center justify-between mt-auto">
