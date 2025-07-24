@@ -159,7 +159,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     return (
         <SidebarProvider>
-             <div className="relative group/app-layout" id="app-layout-container">
+             <div className="relative group/app-layout min-h-screen" id="app-layout-container">
                 <Sidebar>
                     <SidebarHeader className="group-data-[state=expanded]:px-4 md:group-data-[state=collapsed]:px-2">
                         <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground md:group-data-[state=collapsed]:justify-center">
