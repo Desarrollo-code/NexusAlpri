@@ -39,7 +39,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, Bar, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, BarChart as RechartsBar, Legend, ComposedChart } from "recharts";
+import { Area, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, BarChart as RechartsBar, Legend, ComposedChart } from "recharts";
 import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
 import { getEventDetails, getInitials } from '@/lib/security-log-utils.tsx';
 
@@ -135,7 +135,7 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
                         <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval={5} />
                         <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
                         <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
-                        <Legend />
+                        <Legend verticalAlign="bottom" height={36}/>
                         <Bar dataKey="newCourses" name="Nuevos Cursos" stackId="a" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} />
                         <Bar dataKey="publishedCourses" name="Cursos Publicados" stackId="a" fill="var(--color-publishedCourses)" />
                         <Bar dataKey="newEnrollments" name="Nuevas Inscripciones" stackId="a" fill="var(--color-newEnrollments)" radius={[4, 4, 0, 0]} />
