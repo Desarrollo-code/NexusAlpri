@@ -45,13 +45,14 @@ const ProfileCardBackground = () => (
         <defs>
           <linearGradient id="a" gradientUnits="userSpaceOnUse" x1={0} x2={0} y1={0} y2="100%" gradientTransform="rotate(222,648,379)">
             <stop offset={0} stopColor="hsl(var(--primary))"></stop>
-            <stop offset={1} stopColor="hsl(var(--accent))"></stop>
+            <stop offset={0.5} stopColor="hsl(var(--chart-5))"></stop>
+            <stop offset={1} stopColor="hsl(var(--chart-1))"></stop>
           </linearGradient>
           <pattern patternUnits="userSpaceOnUse" id="b" width={300} height={250} x={0} y={0} viewBox="0 0 1080 900">
-            <g fillOpacity="0.1">
-                <polygon fill="hsl(var(--foreground))" points="90 150 0 300 180 300"></polygon>
-                <polygon fill="hsl(var(--secondary))" points="90 150 180 0 0 0"></polygon>
-                <polygon fill="hsl(var(--muted))" points="270 150 360 0 180 0"></polygon>
+            <g fillOpacity="0.15">
+                <polygon fill="hsl(var(--chart-1))" points="90 150 0 300 180 300"></polygon>
+                <polygon fill="hsl(var(--chart-2))" points="90 150 180 0 0 0"></polygon>
+                <polygon fill="hsl(var(--chart-3))" points="270 150 360 0 180 0"></polygon>
             </g>
           </pattern>
         </defs>
