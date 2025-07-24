@@ -1,7 +1,7 @@
 // src/app/(app)/layout.tsx
 'use client';
 
-import React, { useCallback, useMemo, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { useIdleTimeout } from '@/hooks/useIdleTimeout';
@@ -22,78 +22,64 @@ import { TopBar } from '@/components/layout/top-bar';
 import { getNavItemsForRole } from '@/lib/nav-items';
 import type { UserRole, NavItem } from '@/types';
 import Link from 'next/link';
-import { LogOut, ChevronDown, Loader2 } from 'lucide-react';
+import { LogOut, Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from '@/lib/utils';
 
-
+// Componente para un solo ítem de navegación
 const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) => {
   const { user } = useAuth();
   if (!user) return null;
 
-  const isActive = item.href ? pathname.startsWith(item.href) : false;
-  const isParentActive = item.subItems?.some(sub => sub.href && pathname.startsWith(sub.href));
-
-  const filteredSubItems = useMemo(() => {
-    return item.subItems?.filter(sub => sub.roles.includes(user.role)) ?? [];
-  }, [item.subItems, user.role]);
-
-  if (filteredSubItems.length > 0) {
-    return (
-        <AccordionItem value={item.label} className="border-none">
-          <AccordionTrigger
-            className={cn(
-              "w-full h-auto p-2 text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground rounded-md text-sm hover:no-underline justify-start gap-3",
-              isParentActive && "bg-sidebar-accent text-sidebar-accent-foreground"
-            )}
-          >
-              <div className="flex items-center gap-3 flex-1">
-                {item.icon && <item.icon className={cn("h-5 w-5 shrink-0 transition-colors", isParentActive || isActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground group-hover:text-sidebar-accent-foreground")} />}
-                <span className={cn("font-semibold text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
-            </div>
-            {filteredSubItems.length > 0 && (
-              <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200", "md:group-data-[state=collapsed]:hidden")} />
-            )}
-          </AccordionTrigger>
-          <AccordionContent className="p-0 pl-7 mt-1 md:group-data-[state=collapsed]:hidden">
-            <SidebarMenu className="border-l border-sidebar-border ml-2 pl-3">
-              {filteredSubItems.map((subItem) => {
-                const isSubItemActive = pathname.startsWith(subItem.href || '');
-                return (
-                  <SidebarMenuItem key={subItem.href}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isSubItemActive}
-                      size="sm"
-                      className="justify-start gap-2"
-                      tooltip={{ children: subItem.label }}
-                    >
-                      <Link href={subItem.href || '#'}>
-                        {subItem.icon && <subItem.icon className="h-4 w-4 shrink-0" />}
-                        <span className="text-sm font-normal md:group-data-[state=collapsed]:hidden whitespace-nowrap">{subItem.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </AccordionContent>
-        </AccordionItem>
-      );
-  }
+  const isActive = item.href ? pathname === item.href : false;
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{children: item.label}}>
+      <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{ children: item.label }}>
         <Link href={item.href || '#'}>
           {item.icon && <item.icon className="h-5 w-5 shrink-0" />}
-          <span className={cn("font-semibold text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
+          <span className={cn("font-medium text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
 };
+
+// Componente para una sección de administración (etiqueta + sub-ítems)
+const AdminNavSection = ({ section, pathname }: { section: NavItem; pathname: string }) => {
+    const { user } = useAuth();
+    if (!user) return null;
+
+    const filteredSubItems = useMemo(() => {
+        return section.subItems?.filter(sub => sub.roles.includes(user.role)) ?? [];
+    }, [section.subItems, user.role]);
+
+    if (filteredSubItems.length === 0) return null;
+
+    return (
+        <div className="flex flex-col gap-1">
+            <div className="px-4 py-2 text-sm font-semibold text-muted-foreground/70 flex items-center gap-3 md:group-data-[state=collapsed]:hidden">
+                {section.icon && <section.icon className="h-5 w-5 shrink-0" />}
+                {section.label}
+            </div>
+            <SidebarMenu className="pl-4 md:group-data-[state=collapsed]:pl-0">
+                {filteredSubItems.map((item) => {
+                    const isActive = pathname.startsWith(item.href || '___');
+                     return (
+                        <SidebarMenuItem key={item.href}>
+                            <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{ children: item.label }}>
+                                <Link href={item.href || '#'}>
+                                {item.icon && <item.icon className="h-5 w-5 shrink-0" />}
+                                <span className={cn("font-medium text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    );
+                })}
+            </SidebarMenu>
+        </div>
+    );
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
     const { user, settings, logout, isLoading } = useAuth();
@@ -120,26 +106,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     // --- Navigation Logic ---
     const navItems = useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
-
-    const [openAccordionValue, setOpenAccordionValue] = useState<string[]>(() => {
-        const parentItem = navItems.find(item =>
-        item.subItems?.some(sub => sub.href && pathname.startsWith(sub.href))
-        );
-        return parentItem ? [parentItem.label] : [];
-    });
-
-    useEffect(() => {
-        const parentItem = navItems.find(item =>
-            item.subItems?.some(sub => sub.href && pathname.startsWith(sub.href))
-        );
-        const newOpenValue = parentItem ? [parentItem.label] : [];
-        if (JSON.stringify(newOpenValue) !== JSON.stringify(openAccordionValue)) {
-            setOpenAccordionValue(newOpenValue);
-        }
-    }, [pathname, navItems, openAccordionValue]);
-
     const generalItems = useMemo(() => navItems.filter(item => !item.subItems || item.subItems.length === 0), [navItems]);
-    const adminItems = useMemo(() => navItems.find(item => item.label === 'Administración' && item.subItems && item.subItems.length > 0), [navItems]);
+    const adminSection = useMemo(() => navItems.find(item => item.label === 'Administración' && item.subItems && item.subItems.length > 0), [navItems]);
 
 
     // --- Loading and Auth Check ---
@@ -159,7 +127,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     return (
         <SidebarProvider>
-             <div className="relative group/app-layout min-h-screen" id="app-layout-container">
+             <div className="group/app-layout min-h-screen">
                 <Sidebar>
                     <SidebarHeader className="group-data-[state=expanded]:px-4 md:group-data-[state=collapsed]:px-2">
                         <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground md:group-data-[state=collapsed]:justify-center">
@@ -176,24 +144,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         </Link>
                     </SidebarHeader>
                     <SidebarContent>
-                         <Accordion
-                            type="multiple"
-                            value={openAccordionValue}
-                            onValueChange={setOpenAccordionValue}
-                            className="w-full p-2"
-                        >
-                            <SidebarMenu className="overflow-hidden">
-                              {generalItems.map((item) => (
+                         <div className="w-full p-2 flex flex-col gap-1">
+                             <SidebarMenu>
+                                {generalItems.map((item) => (
                                     <NavMenuItem key={item.href || item.label} item={item} pathname={pathname} />
                                 ))}
-                                {adminItems && (
-                                  <>
-                                    <SidebarMenuSeparator />
-                                    <NavMenuItem key={adminItems.label} item={adminItems} pathname={pathname} />
-                                  </>
-                                )}
                             </SidebarMenu>
-                        </Accordion>
+                            {adminSection && (
+                                <>
+                                <SidebarMenuSeparator />
+                                <AdminNavSection section={adminSection} pathname={pathname} />
+                                </>
+                            )}
+                         </div>
                     </SidebarContent>
                     <SidebarFooter>
                          <SidebarMenu>
