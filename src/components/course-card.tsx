@@ -99,40 +99,36 @@ export function CourseCard({
   };
   
   const mainLinkHref = viewMode === 'management' ? `/manage-courses/${course.id}/edit` : `/courses/${course.id}`;
-  const MainLink = ({ children }: { children: React.ReactNode }) =>
-    isExpanded ? <div>{children}</div> : <Link href={mainLinkHref} className="block h-full flex flex-col">{children}</Link>;
-
 
   return (
     <Card className="group flex flex-col h-full overflow-hidden transition-transform duration-300 ease-in-out hover:-translate-y-2 card-border-animated">
-      <MainLink>
         <Link href={mainLinkHref}>
             <div className="aspect-video w-full relative overflow-hidden">
-            <Image
-                src={course.imageUrl || `https://placehold.co/600x400.png`}
-                alt={course.title}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                data-ai-hint="online course abstract"
-                priority={priority}
-            />
-            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
-            {typeof progress === 'number' && (
-                <div className="absolute top-2 right-2 bg-background/50 backdrop-blur-sm rounded-full">
-                    <CircularProgress value={progress} size={40} strokeWidth={4} valueTextClass="text-xs font-semibold" />
-                </div>
-            )}
-            {viewMode === 'management' && (
-                <Badge className="absolute top-2 left-2 capitalize" variant={course.status === 'PUBLISHED' ? 'default' : 'secondary'}>
-                    {course.status.toLowerCase()}
-                </Badge>
-            )}
+                <Image
+                    src={course.imageUrl || `https://placehold.co/600x400.png`}
+                    alt={course.title}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    data-ai-hint="online course abstract"
+                    priority={priority}
+                />
+                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
+                {typeof progress === 'number' && (
+                    <div className="absolute top-2 right-2 bg-background/50 backdrop-blur-sm rounded-full">
+                        <CircularProgress value={progress} size={40} strokeWidth={4} valueTextClass="text-xs font-semibold" />
+                    </div>
+                )}
+                {viewMode === 'management' && (
+                    <Badge className="absolute top-2 left-2 capitalize" variant={course.status === 'PUBLISHED' ? 'default' : 'secondary'}>
+                        {course.status.toLowerCase()}
+                    </Badge>
+                )}
             </div>
         </Link>
         <CardHeader className="p-4">
           <CardTitle className="text-base font-headline leading-tight mb-1 line-clamp-2">
-             <Link href={mainLinkHref}>{course.title}</Link>
+             <Link href={mainLinkHref} className="animated-underline">{course.title}</Link>
           </CardTitle>
           <div className="text-xs text-muted-foreground pt-1 flex flex-col gap-1.5">
             <div className="flex items-center"><User className="mr-1.5 h-3 w-3" /> Por {course.instructor}</div>
@@ -157,7 +153,7 @@ export function CourseCard({
         </CardContent>
         <CardFooter className="p-4 border-t pt-3 flex items-center justify-between mt-auto">
             {viewMode === 'catalog' && (
-                <EnrollmentButton isEnrolled={isEnrolled} handleEnrollment={handleEnrollment} isProcessing={isProcessingEnrollment} />
+                <EnrollmentButton isEnrolled={isEnrolled} handleEnrollment={handleEnrollment} isProcessing={isProcessingEnrollment} mainLinkHref={mainLinkHref} />
             )}
             {viewMode === 'management' && (
               <>
@@ -170,23 +166,23 @@ export function CourseCard({
               </>
             )}
         </CardFooter>
-      </MainLink>
     </Card>
   );
 }
 
 
-const EnrollmentButton = ({ isEnrolled, handleEnrollment, isProcessing }: {
+const EnrollmentButton = ({ isEnrolled, handleEnrollment, isProcessing, mainLinkHref }: {
   isEnrolled?: boolean;
   handleEnrollment: (e: React.MouseEvent, enroll: boolean) => void;
   isProcessing: boolean;
+  mainLinkHref: string;
 }) => {
   if (isEnrolled) {
     return (
       <Button asChild className="w-full" size="sm">
-        <span className="cursor-pointer">
+        <Link href={mainLinkHref}>
           Continuar Curso <ArrowRight className="ml-2" />
-        </span>
+        </Link>
       </Button>
     );
   }

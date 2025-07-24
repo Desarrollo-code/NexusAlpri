@@ -30,6 +30,7 @@ export default function AuthLayout({
             alt="Alprigrama S.A.S. Watermark"
             width={60}
             height={60}
+            priority
             className="watermark-img"
             data-ai-hint="company logo"
           />
