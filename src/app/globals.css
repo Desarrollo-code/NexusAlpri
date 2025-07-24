@@ -6,7 +6,7 @@
 @layer base {
   /* --- TEMA CLARO (POR DEFECTO) --- */
   :root {
-    --background: 240 10% 98%;
+    --background: 210 20% 98%;
     --foreground: 224 71.4% 4.1%;
     
     --card: 0 0% 100%;
@@ -15,8 +15,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
     
-    --primary: 262.1 83.3% 57.8%; /* Deep Purple */
-    --primary-foreground: 210 20% 98%;
+    /* Paleta Vibrante - Morado */
+    --primary: 291 64% 42%;
+    --primary-foreground: 300 100% 100%;
     
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 220.9 39.3% 11%;
@@ -24,7 +25,8 @@
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
     
-    --accent: 258.4 46.7% 50.4%; /* Electric Indigo */
+    /* Paleta Vibrante - Cian */
+    --accent: 179 81% 45%;
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84.2% 60.2%;
@@ -32,27 +34,29 @@
     
     --border: 220 13% 91%; 
     --input: 220 13% 91%;
-    --ring: 262.1 83.3% 57.8%;
+    --ring: 291 64% 42%;
     
     --radius: 0.5rem;
 
-    --sidebar-background: 262.1 83.3% 57.8%;
-    --sidebar-foreground: 210 20% 98%;
+    /* Barra Lateral - Tema Claro */
+    --sidebar-background: 291 64% 42%;
+    --sidebar-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 100%;
-    --sidebar-accent-foreground: 262.1 83.3% 57.8%;
-    --sidebar-border: 262.1 83.3% 52.8%;
-    --sidebar-ring: 210 20% 98%;
+    --sidebar-accent-foreground: 291 64% 42%;
+    --sidebar-border: 291 64% 48%;
+    --sidebar-ring: 291 64% 42%;
 
-    --chart-1: 221 83% 53%;
-    --chart-2: 45 96% 53%;
-    --chart-3: 158 78% 42%;
-    --chart-4: 340 95% 65%;
-    --chart-5: 280 85% 60%;
+    /* Paleta de Colores para Gráficos y Eventos */
+    --chart-1: 179 81% 45%; /* Cian */
+    --chart-2: 45 96% 53%; /* Amarillo */
+    --chart-3: 139 51% 51%; /* Verde */
+    --chart-4: 340 95% 65%; /* Rosa */
+    --chart-5: 291 64% 52%; /* Morado */
 
-    --event-blue: 210 90% 55%;
-    --event-green: 140 70% 45%;
-    --event-red: 0 90% 60%;
-    --event-orange: 35 95% 55%;
+    --event-blue: 198 81% 56%;
+    --event-green: 139 51% 51%;
+    --event-red: 356 91% 68%;
+    --event-orange: 24 97% 63%;
   }
 
   /* --- TEMA OSCURO --- */
@@ -60,14 +64,15 @@
     --background: 0 0% 0%; /* Negro Puro */
     --foreground: 210 20% 98%;
     
-    --card: 240 4% 10%; /* Grafito para Tarjetas */
+    --card: 240 4% 10%;
     --card-foreground: 210 20% 98%;
     
     --popover: 240 4% 10%;
     --popover-foreground: 210 20% 98%;
     
-    --primary: 262.1 83.3% 57.8%; /* Deep Purple */
-    --primary-foreground: 210 20% 98%;
+    /* Paleta Vibrante - Morado */
+    --primary: 291 74% 52%;
+    --primary-foreground: 0 0% 100%;
     
     --secondary: 240 4% 15%;
     --secondary-foreground: 210 20% 98%;
@@ -75,7 +80,8 @@
     --muted: 240 4% 15%;
     --muted-foreground: 210 5% 64%;
     
-    --accent: 258.4 46.7% 50.4%; /* Electric Indigo */
+    /* Paleta Vibrante - Cian */
+    --accent: 179 81% 45%;
     --accent-foreground: 210 20% 98%;
     
     --destructive: 0 70% 55%;
@@ -83,25 +89,27 @@
     
     --border: 240 4% 18%; 
     --input: 240 4% 18%;
-    --ring: 262.1 83.3% 57.8%;
+    --ring: 291 74% 52%;
     
-    --sidebar-background: 262.1 83.3% 57.8%;
-    --sidebar-foreground: 210 20% 98%;
+    /* Barra Lateral - Tema Oscuro */
+    --sidebar-background: 291 64% 42%;
+    --sidebar-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 100%;
-    --sidebar-accent-foreground: 262.1 83.3% 57.8%;
-    --sidebar-border: 262.1 83.3% 52.8%;
-    --sidebar-ring: 210 20% 98%;
+    --sidebar-accent-foreground: 291 64% 42%;
+    --sidebar-border: 291 64% 48%;
+    --sidebar-ring: 291 74% 52%;
 
-    --chart-1: 221 83% 63%;
-    --chart-2: 48 96% 53%;
-    --chart-3: 158 70% 55%;
-    --chart-4: 340 100% 70%;
-    --chart-5: 280 100% 70%;
+    /* Paleta de Colores para Gráficos y Eventos */
+    --chart-1: 179 81% 55%; /* Cian */
+    --chart-2: 48 96% 53%; /* Amarillo */
+    --chart-3: 139 51% 61%; /* Verde */
+    --chart-4: 340 100% 70%; /* Rosa */
+    --chart-5: 291 74% 62%; /* Morado */
 
-    --event-blue: 210 100% 60%;
-    --event-green: 140 80% 50%;
-    --event-red: 0 100% 60%;
-    --event-orange: 35 100% 55%;
+    --event-blue: 198 81% 66%;
+    --event-green: 139 51% 61%;
+    --event-red: 356 91% 78%;
+    --event-orange: 24 97% 73%;
   }
 
   * {

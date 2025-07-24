@@ -9,12 +9,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border bg-card text-card-foreground transition-all duration-300",
-      // Hemos cambiado 'var(--primary)' a 'var(--accent)' para el efecto de sombra/glow
-      // Ahora el glow será de tu 'Azul Eléctrico' definido en global.css
-      "shadow-[0_4px_20px_rgb(0,0,0,0.08)]",
-      "dark:shadow-[0_8px_30px_rgb(0,0,0,0.15),inset_0_0_80px_hsl(var(--accent)/20%)]",
-      "hover:shadow-[0_8px_30px_rgb(0,0,0,0.12),inset_0_0_80px_hsl(var(--accent)/30%)]",
+      "rounded-lg border bg-card text-card-foreground shadow-sm transition-all duration-300",
       className
     )}
     {...props}
