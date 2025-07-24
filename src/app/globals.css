@@ -34,6 +34,8 @@
     --border: 220 13% 91%; 
     --input: 220 13% 91%;
     --ring: 38 92% 50%;
+
+    --radius: 0.75rem;
     
     /* Barra Lateral - Tema Claro */
     --sidebar-background: 38 92% 50%;
@@ -86,6 +88,8 @@
     --border: 240 4% 18%; 
     --input: 240 4% 18%;
     --ring: 38 92% 50%;
+
+    --radius: 0.75rem;
     
     /* Barra Lateral - Tema Oscuro */
     --sidebar-background: 38 92% 50%;
