@@ -63,7 +63,7 @@
     --background: 0 0% 0%; /* Negro Puro */
     --foreground: 210 20% 98%;
     
-    --card: 240 4% 10%;
+    --card: linear-gradient(to bottom, hsl(240 4% 10%), hsl(40 8% 12%));
     --card-foreground: 210 20% 98%;
     
     --popover: 240 4% 10%;
