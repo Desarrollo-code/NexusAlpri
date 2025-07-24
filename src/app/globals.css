@@ -15,7 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
     
-    --primary: 221 83% 53%; /* Azul Vibrante */
+    --primary: 262.1 83.3% 57.8%; /* Deep Purple */
     --primary-foreground: 210 20% 98%;
     
     --secondary: 220 14.3% 95.9%;
@@ -24,24 +24,24 @@
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
     
-    --accent: 45 96% 53%; /* Dorado como acento */
-    --accent-foreground: 45 90% 5%;
+    --accent: 258.4 46.7% 50.4%; /* Electric Indigo */
+    --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
     
     --border: 220 13% 91%; 
     --input: 220 13% 91%;
-    --ring: 221 83% 53%;
+    --ring: 262.1 83.3% 57.8%;
     
     --radius: 0.5rem;
 
-    --sidebar-background: 220 13% 91%;
-    --sidebar-foreground: 224 71.4% 4.1%;
-    --sidebar-accent: 221 83% 53%;
-    --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 220 13% 86%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-background: 262.1 83.3% 57.8%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-accent: 0 0% 100%;
+    --sidebar-accent-foreground: 262.1 83.3% 57.8%;
+    --sidebar-border: 262.1 83.3% 52.8%;
+    --sidebar-ring: 210 20% 98%;
 
     --chart-1: 221 83% 53%; /* Azul */
     --chart-2: 45 96% 53%; /* Dorado */
@@ -57,40 +57,40 @@
 
   /* --- TEMA OSCURO --- */
   .dark {
-    --background: 210 6% 10%; /* Grafito Oscuro */
+    --background: 0 0% 0%; /* Negro Puro */
     --foreground: 210 20% 96%;
     
-    --card: 210 6% 12%; /* Grafito para Tarjetas */
+    --card: 240 4% 10%; /* Grafito para Tarjetas */
     --card-foreground: 210 20% 96%;
     
-    --popover: 210 6% 12%;
+    --popover: 240 4% 10%;
     --popover-foreground: 210 20% 96%;
     
-    --primary: 221 83% 63%; /* Azul Eléctrico */
+    --primary: 262.1 83.3% 57.8%; /* Deep Purple */
     --primary-foreground: 210 20% 98%;
     
-    --secondary: 210 6% 23%;
+    --secondary: 240 4% 15%;
     --secondary-foreground: 210 20% 96%;
     
-    --muted: 210 6% 23%;
+    --muted: 240 4% 15%;
     --muted-foreground: 210 5% 64%;
     
-    --accent: 48 96% 53%;  /* Dorado */
-    --accent-foreground: 48 90% 10%;
+    --accent: 258.4 46.7% 50.4%; /* Electric Indigo */
+    --accent-foreground: 210 20% 98%;
     
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 20% 98%;
     
-    --border: 210 6% 25%; 
-    --input: 210 6% 25%;
-    --ring: 221 83% 63%;
+    --border: 240 4% 18%; 
+    --input: 240 4% 18%;
+    --ring: 262.1 83.3% 57.8%;
     
-    --sidebar-background: 210 6% 12%;
-    --sidebar-foreground: 210 20% 96%;
-    --sidebar-accent: 221 83% 63%;
-    --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 210 6% 25%;
-    --sidebar-ring: 221 83% 63%;
+    --sidebar-background: 262.1 83.3% 57.8%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-accent: 0 0% 100%;
+    --sidebar-accent-foreground: 262.1 83.3% 57.8%;
+    --sidebar-border: 262.1 83.3% 52.8%;
+    --sidebar-ring: 210 20% 98%;
 
     --chart-1: 221 83% 63%; /* Azul Eléctrico */
     --chart-2: 48 96% 53%;  /* Dorado */
@@ -121,29 +121,9 @@
   }
 
   .card-border-animated {
-      position: relative;
-      border: 1px solid transparent;
-      transition: all 0.3s ease-in-out;
-  }
-
-  .card-border-animated::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit; 
-      padding: 1px;
-      background: linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--accent) / 0.3));
-      -webkit-mask: 
-          linear-gradient(#fff 0 0) content-box, 
-          linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      transition: all 0.3s ease-in-out;
-      opacity: 0;
-  }
-
-  .card-border-animated:hover::before {
-      opacity: 1;
+    @apply shadow-[0_4px_20px_rgb(0,0,0,0.08)];
+    @apply dark:shadow-[0_8px_30px_rgb(0,0,0,0.15),inset_0_0_80px_hsl(var(--accent)/20%)];
+    @apply hover:shadow-[0_8px_30px_rgb(0,0,0,0.12),inset_0_0_80px_hsl(var(--accent)/30%)];
   }
 
   .thin-scrollbar::-webkit-scrollbar {
