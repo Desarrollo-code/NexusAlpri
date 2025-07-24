@@ -505,45 +505,48 @@ export default function DashboardPage() {
               )}
             </section>
         </div>
-        <div className="lg:col-span-1">
-           <Card>
-             <CardHeader>
-               <CardTitle>Accesos Rápidos</CardTitle>
-             </CardHeader>
-             <CardContent>
-               <ul className="space-y-3">
-                 <li>
-                   <Link href="/courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                     <span className="flex items-center gap-3"><BookOpen className="h-5 w-5 text-primary"/>Catálogo de Cursos</span>
-                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                   </Link>
-                 </li>
-                 <li>
-                   <Link href="/my-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                     <span className="flex items-center gap-3"><GraduationCap className="h-5 w-5 text-primary"/>Mis Cursos</span>
-                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                   </Link>
-                 </li>
-                 {(user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR') && (
-                     <li>
-                        <Link href="/manage-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                            <span className="flex items-center gap-3"><BookMarked className="h-5 w-5 text-primary"/>Gestionar Cursos</span>
+        
+        {user.role !== 'ADMINISTRATOR' && (
+             <div className="lg:col-span-1">
+                <Card>
+                    <CardHeader>
+                    <CardTitle>Accesos Rápidos</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <ul className="space-y-3">
+                        <li>
+                        <Link href="/courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
+                            <span className="flex items-center gap-3"><BookOpen className="h-5 w-5 text-primary"/>Catálogo de Cursos</span>
                             <ArrowRight className="h-4 w-4 text-muted-foreground" />
                         </Link>
-                     </li>
-                 )}
-                 {user.role === 'ADMINISTRATOR' && (
-                     <li>
-                        <Link href="/analytics" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                            <span className="flex items-center gap-3"><BarChart className="h-5 w-5 text-primary"/>Analíticas</span>
+                        </li>
+                        <li>
+                        <Link href="/my-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
+                            <span className="flex items-center gap-3"><GraduationCap className="h-5 w-5 text-primary"/>Mis Cursos</span>
                             <ArrowRight className="h-4 w-4 text-muted-foreground" />
                         </Link>
-                     </li>
-                 )}
-               </ul>
-             </CardContent>
-           </Card>
-        </div>
+                        </li>
+                        {(user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR') && (
+                            <li>
+                                <Link href="/manage-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
+                                    <span className="flex items-center gap-3"><BookMarked className="h-5 w-5 text-primary"/>Gestionar Cursos</span>
+                                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                                </Link>
+                            </li>
+                        )}
+                        {user.role === 'ADMINISTRATOR' && (
+                            <li>
+                                <Link href="/analytics" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
+                                    <span className="flex items-center gap-3"><BarChart className="h-5 w-5 text-primary"/>Analíticas</span>
+                                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                                </Link>
+                            </li>
+                        )}
+                    </ul>
+                    </CardContent>
+                </Card>
+            </div>
+        )}
       </div>
     </div>
   );
