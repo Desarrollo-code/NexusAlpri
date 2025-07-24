@@ -1,8 +1,3 @@
-
-<<<<<<< HEAD
-=======
-
->>>>>>> d06d15a38b6910c5e40c94cb9b95fd79e1e13562
 'use client';
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
@@ -184,14 +179,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
             <div className={cn(
               "bg-background min-h-screen transition-all duration-300 ease-in-out",
-<<<<<<< HEAD
               "md:group-data-[state=expanded]/app-layout:ml-[var(--sidebar-width)]",
               "md:group-data-[state=collapsed]/app-layout:ml-[var(--sidebar-width-icon)]",
               "relative z-10"
-=======
-              "md:group-data-[state=expanded]:ml-[var(--sidebar-width)]",
-              "md:group-data-[state=collapsed]:ml-[var(--sidebar-width-icon)]"
->>>>>>> d06d15a38b6910c5e40c94cb9b95fd79e1e13562
             )}>
                 <TopBar />
                 <main className="p-4 md:p-6 lg:p-8">
