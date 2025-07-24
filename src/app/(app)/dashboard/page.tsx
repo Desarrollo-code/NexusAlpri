@@ -20,7 +20,11 @@ import {
   AlertTriangle, 
   BookOpenCheck, 
   Edit,
-  GraduationCap
+  GraduationCap,
+  UsersRound,
+  Activity,
+  UserPlus,
+  AreaChart,
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
@@ -31,6 +35,10 @@ import type { Announcement as PrismaAnnouncement, Course as PrismaCourse } from 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Area as RechartsArea, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector, CartesianGrid } from "recharts";
+import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
+
 
 // --- TYPE DEFINITIONS & MAPPERS ---
 interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
@@ -69,56 +77,191 @@ interface DashboardData {
 
 
 // --- DASHBOARD COMPONENTS PER ROLE ---
+
+const MetricCard = ({ title, value: finalValue, icon: Icon, description }: { title: string; value: number; icon: React.ElementType; description?: string }) => {
+    const animatedValue = useAnimatedCounter(finalValue);
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{animatedValue}</div>
+                {description && <p className="text-xs text-muted-foreground">{description}</p>}
+            </CardContent>
+        </Card>
+    );
+};
+
+const userRolesChartConfig = {
+  count: { label: "Usuarios" },
+  STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
+  INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
+  ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-5))" },
+} satisfies ChartConfig;
+
+const renderActiveShape = (props: any) => {
+  const RADIAN = Math.PI / 180;
+  const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+  const sin = Math.sin(-RADIAN * midAngle);
+  const cos = Math.cos(-RADIAN * midAngle);
+  const sx = cx + (outerRadius + 2) * cos;
+  const sy = cy + (outerRadius + 2) * sin;
+  const mx = cx + (outerRadius + 15) * cos;
+  const my = cy + (outerRadius + 15) * sin;
+  const ex = mx + (cos >= 0 ? 1 : -1) * 11;
+  const ey = my;
+  const textAnchor = cos >= 0 ? 'start' : 'end';
+
+  return (
+    <g>
+      <text x={cx} y={cy} dy={4} textAnchor="middle" fill={fill} className="text-base font-bold">
+        {payload.label}
+      </text>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+      />
+      <Sector
+        cx={cx}
+        cy={cy}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        innerRadius={outerRadius + 4}
+        outerRadius={outerRadius + 8}
+        fill={fill}
+      />
+       <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
+       <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
+       <text x={ex + (cos >= 0 ? 1 : -1) * 6} y={ey} textAnchor={textAnchor} fill="hsl(var(--foreground))" className="text-xs">
+         <tspan x={ex + (cos >= 0 ? 1 : -1) * 6} dy="-0.5em">{value}</tspan>
+         <tspan x={ex + (cos >= 0 ? 1 : -1) * 6} dy="1em">{`(${(percent * 100).toFixed(0)}%)`}</tspan>
+      </text>
+    </g>
+  );
+};
+
+
+function DonutChartCard({ title, data, config }: { title: string, data: any[], config: ChartConfig }) {
+  const total = useMemo(() => data.reduce((acc, curr) => acc + curr.count, 0), [data]);
+  const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
+  
+  const onPieEnter = useCallback((_: any, index: number) => {
+    setActiveIndex(index);
+  }, [setActiveIndex]);
+
+  const onPieLeave = useCallback(() => {
+    setActiveIndex(undefined);
+  }, [setActiveIndex]);
+  
+  return (
+    <Card className="card-border-animated">
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="h-80">
+        <ChartContainer config={config} className="w-full h-full">
+          <ResponsiveContainer>
+            <PieChart>
+              <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
+              <Pie 
+                data={data} 
+                dataKey="count" 
+                nameKey="label" 
+                innerRadius={60} 
+                strokeWidth={2}
+                activeIndex={activeIndex}
+                activeShape={renderActiveShape}
+                onMouseEnter={onPieEnter}
+                onMouseLeave={onPieLeave}
+                className="cursor-pointer"
+              >
+                 {data.map((entry) => (
+                    <Cell key={`cell-${entry.label}`} fill={entry.fill} />
+                  ))}
+                 {activeIndex === undefined && (
+                    <Label
+                        content={({ viewBox }) => {
+                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                                return (
+                                    <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
+                                        <tspan x={viewBox.cx} y={viewBox.cy} className="text-2xl font-bold fill-foreground">
+                                            {total.toLocaleString()}
+                                        </tspan>
+                                        <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 16} className="text-xs fill-muted-foreground">
+                                            Total
+                                        </tspan>
+                                    </text>
+                                );
+                            }
+                        }}
+                    />
+                 )}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+      </CardContent>
+    </Card>
+  )
+}
+
 function AdminDashboard({ stats }: { stats: AdminDashboardStats }) {
+    const userRolesChartData = useMemo(() => {
+        if (!stats?.usersByRole) return [];
+        const order: ('STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR')[] = ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'];
+        return order.map(role => ({
+            role: role,
+            label: userRolesChartConfig[role]?.label || role,
+            count: stats.usersByRole.find(item => item.role === role)?.count || 0,
+            fill: userRolesChartConfig[role]?.color || 'hsl(var(--muted))'
+        }));
+    }, [stats.usersByRole]);
+    
+    const registrationTrendChartConfig = {
+      count: {
+        label: "Nuevos Usuarios",
+        color: "hsl(var(--chart-2))",
+      },
+    } satisfies ChartConfig;
+
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Estadísticas de la Plataforma</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Usuarios</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Cursos</CardTitle>
-            <BookOpenCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalCourses}</div>
-          </CardContent>
-        </Card>
-         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cursos Publicados</CardTitle>
-            <BookOpenCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalPublishedCourses}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Inscripciones</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalEnrollments}</div>
-          </CardContent>
-        </Card>
-      </div>
-      <Card>
-        <CardHeader>
-            <CardTitle>Analíticas Generales</CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center justify-center text-muted-foreground h-48">
-            <p>Gráficos y más estadísticas próximamente...</p>
-        </CardContent>
-      </Card>
+      <h2 className="text-2xl font-semibold">Resumen de la Plataforma</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+            <MetricCard title="Total Usuarios" value={stats.totalUsers} icon={UsersRound} />
+            <MetricCard title="Total Cursos" value={stats.totalCourses} icon={BookOpenCheck} />
+            <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="En los últimos 7 días" />
+            <MetricCard title="Nuevos Usuarios" value={stats.newUsersLast7Days} icon={UserPlus} description="En los últimos 7 días"/>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <DonutChartCard title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
+            <Card className="lg:col-span-2 card-border-animated">
+            <CardHeader>
+                <CardTitle>Tendencia de Registros (Últimos 7 Días)</CardTitle>
+            </CardHeader>
+            <CardContent className="h-80">
+                    <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
+                    <RechartsArea
+                        data={stats.userRegistrationTrend}
+                        margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
+                    >
+                        <CartesianGrid vertical={false} strokeDasharray="3 3"/>
+                        <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)}/>
+                        <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false}/>
+                        <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
+                        <RechartsArea dataKey="count" type="monotone" fill="var(--color-count)" fillOpacity={0.4} stroke="var(--color-count)" />
+                    </RechartsArea>
+                    </ChartContainer>
+            </CardContent>
+            </Card>
+        </div>
     </div>
   );
 }
