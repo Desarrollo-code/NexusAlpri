@@ -1,3 +1,4 @@
+
 'use client';
 
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -153,31 +154,31 @@ export function TopBar() {
 
     if (pathname.startsWith('/dashboard')) {
         title = 'Panel Principal';
-        colorClass = 'bg-chart-1/10';
+        colorClass = 'bg-chart-1/10 dark:bg-chart-1/20';
     } else if (pathname.startsWith('/courses/') && !pathname.endsWith('/courses')) {
         title = 'Detalle del Curso';
-        colorClass = 'bg-chart-2/10';
+        colorClass = 'bg-chart-2/10 dark:bg-chart-2/20';
     } else if (pathname.startsWith('/my-courses')) {
         title = 'Mis Cursos';
-        colorClass = 'bg-chart-2/10';
+        colorClass = 'bg-chart-2/10 dark:bg-chart-2/20';
     } else if (pathname.startsWith('/courses')) {
         title = 'Catálogo de Cursos';
-        colorClass = 'bg-chart-2/10';
+        colorClass = 'bg-chart-2/10 dark:bg-chart-2/20';
     } else if (pathname.startsWith('/resources')) {
         title = 'Biblioteca';
-        colorClass = 'bg-chart-3/10';
+        colorClass = 'bg-chart-3/10 dark:bg-chart-3/20';
     } else if (pathname.startsWith('/announcements')) {
         title = 'Anuncios';
-        colorClass = 'bg-chart-4/10';
+        colorClass = 'bg-chart-4/10 dark:bg-chart-4/20';
     } else if (pathname.startsWith('/calendar')) {
         title = 'Calendario';
-        colorClass = 'bg-chart-4/10';
+        colorClass = 'bg-chart-4/10 dark:bg-chart-4/20';
     } else if (pathname.startsWith('/manage-courses/') && !pathname.endsWith('/manage-courses')) {
         title = 'Gestión de Curso';
-        colorClass = 'bg-chart-5/10';
+        colorClass = 'bg-chart-5/10 dark:bg-chart-5/20';
     } else if (pathname.startsWith('/manage-courses') || pathname.startsWith('/users') || pathname.startsWith('/settings') || pathname.startsWith('/analytics') || pathname.startsWith('/security-audit') || pathname.startsWith('/enrollments')) {
         title = currentNavItem?.label || 'Administración';
-        colorClass = 'bg-chart-5/10';
+        colorClass = 'bg-chart-5/10 dark:bg-chart-5/20';
     } else if (pathname.startsWith('/profile')) {
         title = 'Mi Perfil';
     } else if (pathname.startsWith('/notifications')) {
