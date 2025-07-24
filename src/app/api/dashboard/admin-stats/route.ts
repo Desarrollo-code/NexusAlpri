@@ -18,6 +18,7 @@ export interface AdminDashboardStats {
     recentLogins: number; // Active users in last 7 days
     newUsersLast7Days: number;
     userRegistrationTrend: { date: string, count: number }[];
+    courseActivity: { date: string, newCourses: number, publishedCourses: number, newEnrollments: number }[];
 }
 
 export async function GET(req: NextRequest) {
@@ -27,6 +28,7 @@ export async function GET(req: NextRequest) {
     }
 
     try {
+        const thirtyDaysAgo = subDays(new Date(), 30);
         const sevenDaysAgo = subDays(new Date(), 7);
 
         const [
@@ -38,7 +40,10 @@ export async function GET(req: NextRequest) {
             coursesByStatus,
             recentLoginsResult,
             newUsersLast7Days,
-            recentUsers, // Changed from dailyRegistrations
+            recentUsers,
+            recentCourses,
+            recentPublishedCourses,
+            recentEnrollments
         ] = await prisma.$transaction([
             prisma.user.count(),
             prisma.course.count(),
@@ -48,24 +53,23 @@ export async function GET(req: NextRequest) {
             prisma.course.groupBy({ by: ['status'], _count: { status: true } }),
             prisma.securityLog.groupBy({
                 by: ['userId'],
-                where: {
-                    event: 'SUCCESSFUL_LOGIN',
-                    createdAt: { gte: sevenDaysAgo }
-                },
+                where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } },
             }),
             prisma.user.count({
                 where: { registeredDate: { gte: sevenDaysAgo } }
             }),
-            // Fetch users created in the last 7 days instead of grouping
             prisma.user.findMany({
                 where: { registeredDate: { gte: startOfDay(sevenDaysAgo) }},
                 select: { registeredDate: true }
-            })
+            }),
+            // Course activity last 30 days
+            prisma.course.findMany({ where: { createdAt: { gte: thirtyDaysAgo } }, select: { createdAt: true } }),
+            prisma.course.findMany({ where: { publicationDate: { gte: thirtyDaysAgo } }, select: { publicationDate: true } }),
+            prisma.enrollment.findMany({ where: { enrolledAt: { gte: thirtyDaysAgo } }, select: { enrolledAt: true } })
         ]);
         
-        const dateRange = eachDayOfInterval({ start: sevenDaysAgo, end: new Date() });
-        
-        // Perform grouping in code instead of in the database
+        // --- User Registration Trend (Last 7 days) ---
+        const dateRange7Days = eachDayOfInterval({ start: sevenDaysAgo, end: new Date() });
         const registrationsByDate: Record<string, number> = {};
         for (const user of recentUsers) {
             if (user.registeredDate) {
@@ -73,12 +77,47 @@ export async function GET(req: NextRequest) {
                 registrationsByDate[dateKey] = (registrationsByDate[dateKey] || 0) + 1;
             }
         }
-        
-        const registrationTrend = dateRange.map(date => {
+        const userRegistrationTrend = dateRange7Days.map(date => {
             const dateKey = format(date, 'yyyy-MM-dd');
             return {
                 date: format(date, 'MMM d', { locale: es }),
                 count: registrationsByDate[dateKey] || 0,
+            };
+        });
+
+        // --- Course Activity (Last 30 days) ---
+        const dateRange30Days = eachDayOfInterval({ start: thirtyDaysAgo, end: new Date() });
+        const courseActivityMap: Record<string, { newCourses: number, publishedCourses: number, newEnrollments: number }> = {};
+        
+        const initializeDate = (dateKey: string) => {
+            if (!courseActivityMap[dateKey]) {
+                courseActivityMap[dateKey] = { newCourses: 0, publishedCourses: 0, newEnrollments: 0 };
+            }
+        };
+
+        recentCourses.forEach(c => {
+            const dateKey = format(c.createdAt, 'yyyy-MM-dd');
+            initializeDate(dateKey);
+            courseActivityMap[dateKey].newCourses++;
+        });
+        recentPublishedCourses.forEach(c => {
+            if(c.publicationDate) {
+              const dateKey = format(c.publicationDate, 'yyyy-MM-dd');
+              initializeDate(dateKey);
+              courseActivityMap[dateKey].publishedCourses++;
+            }
+        });
+        recentEnrollments.forEach(e => {
+            const dateKey = format(e.enrolledAt, 'yyyy-MM-dd');
+            initializeDate(dateKey);
+            courseActivityMap[dateKey].newEnrollments++;
+        });
+
+        const courseActivity = dateRange30Days.map(date => {
+            const dateKey = format(date, 'yyyy-MM-dd');
+            return {
+                date: format(date, 'MMM d', { locale: es }),
+                ...(courseActivityMap[dateKey] || { newCourses: 0, publishedCourses: 0, newEnrollments: 0 })
             };
         });
 
@@ -98,7 +137,8 @@ export async function GET(req: NextRequest) {
             })),
             recentLogins: recentLoginsResult.length,
             newUsersLast7Days: newUsersLast7Days,
-            userRegistrationTrend: registrationTrend,
+            userRegistrationTrend,
+            courseActivity,
         };
 
         return NextResponse.json(stats);

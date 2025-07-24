@@ -39,11 +39,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, Bar, Cell, ComposedChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, BarChart as RechartsBar } from "recharts";
+import { Area, Bar, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, BarChart as RechartsBar, Legend } from "recharts";
 import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getEventDetails, getInitials } from '@/lib/security-log-utils.tsx';
-import { Badge } from '@/components/ui/badge';
 
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -105,81 +103,46 @@ const MetricCard = ({ title, value: finalValue, icon: Icon, description }: { tit
     );
 };
 
-const userRolesChartConfig = {
-  count: { label: "Usuarios" },
-  STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
-  INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
-  ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-5))" },
+const activityChartConfig = {
+  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-1))" },
+  publishedCourses: { label: "Cursos Publicados", color: "hsl(var(--chart-2))" },
+  newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
 function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: SecurityLogWithUser[] }) {
-    const userRolesChartData = useMemo(() => {
-        if (!stats?.usersByRole) return [];
-        const order: ('STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR')[] = ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'];
-        return order.map(role => ({
-            role: role,
-            label: userRolesChartConfig[role]?.label || role,
-            count: stats.usersByRole.find(item => item.role === role)?.count || 0,
-            fill: `var(--color-${role})`
-        })).reverse(); // Reverse to have students at the top
-    }, [stats.usersByRole]);
-    
-    const registrationTrendChartConfig = {
-      count: {
-        label: "Nuevos Usuarios",
-        color: "hsl(var(--chart-2))",
-      },
-    } satisfies ChartConfig;
 
   return (
     <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <MetricCard title="Total Usuarios" value={stats.totalUsers} icon={UsersRound} />
-            <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="En los últimos 7 días" />
             <MetricCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={BookOpenCheck} />
+            <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="En los últimos 7 días" />
             <MetricCard title="Nuevos Registros" value={stats.newUsersLast7Days} icon={UserPlus} description="En los últimos 7 días"/>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <main className="lg:col-span-2 space-y-6">
             <Card className="card-border-animated">
-                <CardHeader>
-                    <CardTitle>Tendencia de Registros (Últimos 7 Días)</CardTitle>
-                </CardHeader>
-                <CardContent className="h-72">
-                    <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
-                      <ResponsiveContainer>
-                        <ComposedChart data={stats.userRegistrationTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                            <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-                            <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <defs><linearGradient id="fillArea" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8}/><stop offset="95%" stopColor="var(--color-count)" stopOpacity={0.1}/></linearGradient></defs>
-                            <Area dataKey="count" type="monotone" fill="url(#fillArea)" stroke="var(--color-count)" strokeWidth={2} dot={false} />
-                        </ComposedChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                </CardContent>
-            </Card>
-             <Card className="card-border-animated">
-                <CardHeader>
-                    <CardTitle>Distribución de Roles</CardTitle>
-                </CardHeader>
-                <CardContent className="h-72">
-                    <ChartContainer config={userRolesChartConfig} className="w-full h-full">
-                        <ResponsiveContainer>
-                            <RechartsBar data={userRolesChartData} layout="vertical" margin={{ left: 10, right: 10 }}>
-                                <CartesianGrid horizontal={false} strokeDasharray="3 3"/>
-                                <XAxis type="number" dataKey="count" hide/>
-                                <YAxis type="category" dataKey="label" tickLine={false} axisLine={false} tickMargin={10} width={80} />
-                                <ChartTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent hideLabel />} />
-                                <Bar dataKey="count" radius={4}>
-                                    {userRolesChartData.map((d) => (<Cell key={d.label} fill={d.fill} />))}
-                                </Bar>
-                            </RechartsBar>
-                        </ResponsiveContainer>
-                    </ChartContainer>
-                </CardContent>
+              <CardHeader>
+                  <CardTitle>Actividad de los Cursos (Últimos 30 días)</CardTitle>
+                  <CardDescription>Resumen de creación, publicación e inscripciones.</CardDescription>
+              </CardHeader>
+              <CardContent className="h-96">
+                  <ChartContainer config={activityChartConfig} className="w-full h-full">
+                    <ResponsiveContainer>
+                      <RechartsBar data={stats.courseActivity} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                        <CartesianGrid vertical={false} strokeDasharray="3 3"/>
+                        <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                        <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
+                        <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
+                        <Legend />
+                        <Bar dataKey="newCourses" stackId="a" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="publishedCourses" stackId="a" fill="var(--color-publishedCourses)" />
+                        <Bar dataKey="newEnrollments" stackId="a" fill="var(--color-newEnrollments)" radius={[4, 4, 0, 0]} />
+                      </RechartsBar>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+              </CardContent>
             </Card>
           </main>
           
@@ -530,14 +493,6 @@ export default function DashboardPage() {
                             <li>
                                 <Link href="/manage-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
                                     <span className="flex items-center gap-3"><BookMarked className="h-5 w-5 text-primary"/>Gestionar Cursos</span>
-                                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                                </Link>
-                            </li>
-                        )}
-                        {user.role === 'ADMINISTRATOR' && (
-                            <li>
-                                <Link href="/analytics" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                                    <span className="flex items-center gap-3"><BarChart className="h-5 w-5 text-primary"/>Analíticas</span>
                                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
                                 </Link>
                             </li>

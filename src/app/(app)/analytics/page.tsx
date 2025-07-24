@@ -249,15 +249,18 @@ function AdminAnalyticsPage() {
             <CardContent className="h-80">
                 <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
                     <ResponsiveContainer>
-                        <RechartsArea
-                            data={stats?.userRegistrationTrend || []}
-                            margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
-                        >
+                        <RechartsArea data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                                <linearGradient id="fillArea" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor="var(--color-count)" stopOpacity={0.1}/>
+                                </linearGradient>
+                            </defs>
                             <CartesianGrid vertical={false} strokeDasharray="3 3"/>
                             <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)}/>
                             <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false}/>
                             <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
-                            <Area dataKey="count" type="monotone" fill="var(--color-count)" fillOpacity={0.4} stroke="var(--color-count)" />
+                            <Area dataKey="count" type="monotone" fill="url(#fillArea)" stroke="var(--color-count)" />
                         </RechartsArea>
                     </ResponsiveContainer>
                 </ChartContainer>

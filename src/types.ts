@@ -217,6 +217,7 @@ export interface AdminDashboardStats {
     recentLogins: number;
     newUsersLast7Days: number;
     userRegistrationTrend: { date: string, count: number }[];
+    courseActivity: { date: string, newCourses: number, publishedCourses: number, newEnrollments: number }[];
 }
 
 // --- TEMPLATES ---
