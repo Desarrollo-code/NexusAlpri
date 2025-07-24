@@ -52,7 +52,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
           >
               <div className="flex items-center gap-3 flex-1">
                 <GradientIcon icon={item.icon} isActive={isParentActive || isActive} />
-                <span className={cn("font-semibold text-base", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
+                <span className={cn("font-semibold text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
             </div>
             <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200", "md:group-data-[state=collapsed]:hidden")} />
           </AccordionTrigger>
@@ -71,7 +71,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
                     >
                       <Link href={subItem.href || '#'}>
                         <GradientIcon icon={subItem.icon} size="sm" isActive={isSubItemActive} />
-                        <span className="text-sm font-normal md:group-data-[state=collapsed]:hidden">{subItem.label}</span>
+                        <span className="text-sm font-normal md:group-data-[state=collapsed]:hidden whitespace-nowrap">{subItem.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -88,7 +88,7 @@ const NavMenuItem = ({ item, pathname }: { item: NavItem; pathname: string }) =>
       <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{children: item.label}}>
         <Link href={item.href || '#'}>
           <GradientIcon icon={item.icon} isActive={isActive} />
-          <span className={cn("font-semibold text-base", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
+          <span className={cn("font-semibold text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -142,7 +142,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                             priority
                             data-ai-hint="logo education"
                         />
-                        <span className={cn("text-xl font-headline", "md:group-data-[state=collapsed]:hidden")}>{settings?.platformName || 'NexusAlpri'}</span>
+                        <span className={cn("text-xl font-headline whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{settings?.platformName || 'NexusAlpri'}</span>
                     </Link>
                 </SidebarHeader>
 
@@ -173,7 +173,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                         <SidebarMenuItem>
                             <SidebarMenuButton onClick={logout} variant="ghost" className="justify-start gap-3 w-full text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive" tooltip={{children: "Cerrar Sesión"}}>
                                 <LogOut className="text-destructive h-5 w-5"/>
-                                <span className={cn("font-semibold", "md:group-data-[state=collapsed]:hidden")}>Cerrar Sesión</span>
+                                <span className={cn("font-semibold whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>Cerrar Sesión</span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
@@ -182,7 +182,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
             <div className={cn(
               "bg-background min-h-screen transition-[margin-left] duration-300 ease-in-out",
-              "md:ml-[var(--sidebar-width-icon)] md:group-data-[state=expanded]/sidebar-wrapper:ml-[var(--sidebar-width)]"
+              "md:ml-[var(--sidebar-width-icon)] group-data-[state=expanded]/sidebar-wrapper:md:ml-[var(--sidebar-width)]"
             )}>
                 <TopBar />
                 <main className="p-4 md:p-6 lg:p-8">
