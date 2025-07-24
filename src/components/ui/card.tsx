@@ -10,8 +10,8 @@ const Card = React.forwardRef<
     ref={ref}
     className={cn(
       "relative rounded-lg border bg-card text-card-foreground shadow-md dark:shadow-xl dark:shadow-black/40",
-      // Subtle inner glow effect
-      "shadow-[inset_0_0_80px_hsl(var(--primary)/20%)]",
+      // Glow effect
+      "shadow-[inset_0_0_80px_hsl(var(--destructive)/20%)]",
       "before:content-[''] before:absolute before:-z-10 before:inset-[-1px] before:rounded-[calc(var(--radius)+1px)] before:bg-gradient-to-br before:from-border/40 before:to-border/20",
       className
     )}
