@@ -28,7 +28,7 @@ export async function decrypt(input: string): Promise<any> {
     return payload;
   } catch (error) {
     // This can happen if the token is invalid or expired
-    console.log('Failed to verify session token');
+    console.log('Failed to verify session token, it may have expired.');
     return null;
   }
 }
@@ -46,9 +46,9 @@ export async function createSession(userId: string) {
 }
 
 /**
- * Lightweight session checker for middleware.
+ * Lightweight session checker for middleware (and other edge cases).
  * Only decrypts the cookie, does NOT query the database.
- * Use this in Edge runtime environments.
+ * This is safe for the Edge runtime.
  */
 export async function getSession() {
   const sessionCookie = cookies().get('session')?.value;
@@ -56,19 +56,22 @@ export async function getSession() {
   
   const decrypted = await decrypt(sessionCookie);
   if (!decrypted || new Date(decrypted.expires) < new Date()) {
+      cookies().set('session', '', { expires: new Date(0), path: '/' }); // Clear expired cookie
       return null;
   }
   
-  return decrypted; // Returns { userId, iat, exp, expires }
+  // Returns a lightweight session object, e.g., { userId, iat, exp, expires }
+  return decrypted;
 }
 
 /**
  * Fetches the full user object from the database based on the current session.
- * This is a server-only function and should not be used in middleware.
+ * This is the primary function to use in server-side components and API routes
+ * that are NOT running on the Edge.
  */
 export async function getCurrentUser(): Promise<User | null> {
-    const sessionData = await getSession(); // Uses the same lightweight session getter
-    if (!sessionData || !sessionData.userId) return null;
+    const sessionData = await getSession(); // Uses the lightweight session getter
+    if (!sessionData?.userId) return null;
 
     try {
         const user = await prisma.user.findUnique({
