@@ -109,7 +109,13 @@ export async function GET(req: NextRequest) {
             }),
             prisma.courseProgress.groupBy({
                 by: ['userId'],
-                where: { progressPercentage: { gte: 100 } },
+                where: { 
+                    progressPercentage: { gte: 100 },
+                    // Ensure the course still exists to prevent errors
+                    course: {
+                        isNot: null
+                    }
+                },
                 _count: { userId: true },
                 orderBy: { _count: { userId: 'desc' } },
                 take: 5
