@@ -6,6 +6,8 @@ import qrcode from 'qrcode';
 import bcrypt from 'bcryptjs';
 import { createSession, getCurrentUser } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 authenticator.options = {
   window: 1, // 1 * 30-second window for verification
 };

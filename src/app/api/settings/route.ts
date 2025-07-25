@@ -5,6 +5,8 @@ import { getCurrentUser } from '@/lib/auth';
 import type { PlatformSettings } from '@/types';
 import type { NextRequest } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // The default settings, but with arrays that will be stringified for the DB
 const DEFAULT_DB_SETTINGS = {
   platformName: "NexusAlpri",

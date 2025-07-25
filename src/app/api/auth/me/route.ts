@@ -17,8 +17,3 @@ export async function GET() {
   // The password and other sensitive fields are already removed by getCurrentUser
   return NextResponse.json({ user });
 }
-
-export const revalidate = 0; // Disable static caching for this route
-export const config = {
-    runtime: 'edge',
-};

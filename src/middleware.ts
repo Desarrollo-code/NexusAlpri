@@ -6,7 +6,7 @@ import { getSession } from './lib/auth';
 
 const PUBLIC_PATHS = ['/sign-in', '/sign-up'];
 const API_AUTH_PREFIX = '/api/auth';
-const PROTECTED_ROUTE_PREFIX = '/dashboard'; // O la ruta principal de tu app
+const PROTECTED_ROUTE_PREFIX = '/dashboard';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -21,38 +21,36 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // getSession is lightweight and safe for the Edge runtime
+  // getSession es ligero y seguro para el Edge runtime
   const session = await getSession(request);
   
   const isPublicPath = PUBLIC_PATHS.some(p => pathname.startsWith(p));
   const isApiAuthRoute = pathname.startsWith(API_AUTH_PREFIX);
 
-  // If the user has a valid session
+  // Si el usuario tiene una sesión válida
   if (session) {
-    // If they are trying to access a public-only path (like login), redirect to dashboard
+    // Si intenta acceder a una ruta pública (como /sign-in), redirigir al dashboard
     if (isPublicPath) {
       return NextResponse.redirect(new URL(PROTECTED_ROUTE_PREFIX, request.url));
     }
-    // Otherwise, allow the request
+    // De lo contrario, permitir la solicitud
     return NextResponse.next();
   }
 
-  // If the user does NOT have a session
-  // and is trying to access a protected route (not public, not API auth)
+  // Si el usuario NO tiene sesión y está tratando de acceder a una ruta protegida
   if (!session && !isPublicPath && !isApiAuthRoute) {
-    // For API routes, return a 401 Unauthorized error
+    // Para rutas de API, devolver un error 401
     if (pathname.startsWith('/api/')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
     
-    // For pages, redirect to the sign-in page, preserving the intended destination
+    // Para páginas, redirigir al login, preservando la URL original
     const signInUrl = new URL('/sign-in', request.url);
     signInUrl.searchParams.set('redirectedFrom', pathname);
     return NextResponse.redirect(signInUrl);
   }
 
-  // If none of the above conditions are met (e.g., accessing a public path without a session),
-  // allow the request to proceed.
+  // Si no se cumple ninguna de las condiciones anteriores (ej. acceso a ruta pública sin sesión), permitir
   return NextResponse.next();
 }
 

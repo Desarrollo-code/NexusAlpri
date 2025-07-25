@@ -74,10 +74,10 @@ export async function GET(req: NextRequest) {
             studentsByCompletionsRaw,
             instructorsByCoursesRaw
         ] = await prisma.$transaction([
-            prisma.user.count({}),
-            prisma.course.count({}),
+            prisma.user.count(),
+            prisma.course.count(),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
-            prisma.enrollment.count({}),
+            prisma.enrollment.count(),
             prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
             prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
             prisma.securityLog.groupBy({
@@ -215,6 +215,3 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ message: 'Error al obtener las estadísticas del dashboard' }, { status: 500 });
     }
 }
-export const config = {
-    runtime: 'edge',
-};

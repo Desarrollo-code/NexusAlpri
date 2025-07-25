@@ -1,6 +1,5 @@
 
 // src/lib/auth.ts
-
 import 'server-only';
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
@@ -39,29 +38,32 @@ async function encrypt(payload: JWTPayload): Promise<string> {
 /**
  * Desencripta y valida un token JWT.
  */
-async function decrypt(token: string): Promise<JWTPayload | null> {
+async function decrypt(input: string): Promise<any> {
   try {
-    const { payload } = await jwtVerify(token, key, { algorithms: ['HS256'] });
-    return payload as JWTPayload;
+    const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
+    return payload;
   } catch (error) {
+    // Esto puede ocurrir si el token es inválido, ha expirado, etc.
+    console.log('Failed to verify session token');
     return null;
   }
 }
 
 /**
  * Crea una sesión de usuario estableciendo una cookie segura y httpOnly.
- * Esta función debe ser llamada únicamente desde el lado del servidor.
+ * Esta función debe ser llamada únicamente desde el lado del servidor (ej. en una API Route).
  */
 export async function createSession(userId: string) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Expira en 7 días
   const token = await encrypt({ userId, expires });
 
+  // Accede a las cookies de la respuesta para establecer la cookie de sesión.
   cookies().set('session', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60 * 24 * 7,
-    path: '/',
-    sameSite: 'lax',
+    httpOnly: true, // Hace que la cookie no sea accesible por JavaScript en el navegador (mayor seguridad XSS)
+    secure: process.env.NODE_ENV === 'production', // Solo envía la cookie sobre HTTPS en producción
+    maxAge: 60 * 60 * 24 * 7, // Duración de la cookie: 7 días (en segundos)
+    path: '/', // La cookie está disponible en toda la aplicación
+    sameSite: 'lax', // Protección contra ataques CSRF
   });
 }
 
@@ -84,14 +86,18 @@ export async function getSession(request: NextRequest): Promise<JWTPayload | nul
     return await decrypt(sessionCookieValue);
 }
 
+
 /**
  * Obtiene los datos completos del usuario autenticado actualmente.
  * Utiliza React.cache para evitar consultas duplicadas a la base de datos en una misma solicitud.
+ * Esta función está diseñada para ser usada en Server Components y API Routes que NO se ejecutan en el Edge.
  */
 export const getCurrentUser = cache(async (): Promise<User | null> => {
+  // Al importar 'next/headers', le indicamos a Next.js que esta función es dinámica.
   const requestCookies = cookies();
   const sessionCookieValue = requestCookies.get('session')?.value;
 
+  // Si no hay una cookie de sesión, no hay usuario autenticado.
   if (!sessionCookieValue) {
     return null;
   }
@@ -108,6 +114,7 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
 
     if (!user) return null;
 
+    // Removemos datos sensibles antes de devolver el objeto de usuario.
     const { password, twoFactorSecret, ...safeUser } = user;
     return safeUser as User;
 

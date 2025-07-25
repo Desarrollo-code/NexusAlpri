@@ -36,31 +36,3 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ message: 'Error al obtener los registros de seguridad' }, { status: 500 });
     }
 }
-export async function POST(req: NextRequest) {
-    const session = await getCurrentUser();
-
-    if (!session || session.role !== 'ADMINISTRATOR') {
-        return NextResponse.json({ message: 'Acceso no autorizado. Se requieren permisos de administrador.' }, { status: 403 });
-    }
-
-    try {
-        const { action, description } = await req.json();
-
-        if (!action || !description) {
-            return NextResponse.json({ message: 'Faltan datos requeridos' }, { status: 400 });
-        }
-
-        const newLog = await prisma.securityLog.create({
-            data: {
-                action,
-                description,
-                userId: session.id,
-            },
-        });
-
-        return NextResponse.json({ log: newLog }, { status: 201 });
-    } catch (error) {
-        console.error('[SECURITY_LOGS_POST_ERROR]', error);
-        return NextResponse.json({ message: 'Error al crear el registro de seguridad' }, { status: 500 });
-    }
-}

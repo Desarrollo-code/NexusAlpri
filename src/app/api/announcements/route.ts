@@ -7,6 +7,8 @@ import { sendEmail } from '@/lib/email';
 import { AnnouncementEmail } from '@/components/emails/announcement-email';
 import type { UserRole } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const pageParam = searchParams.get('page');
@@ -116,3 +118,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Error al crear el anuncio' }, { status: 500 });
   }
 }
+
