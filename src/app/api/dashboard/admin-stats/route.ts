@@ -51,6 +51,8 @@ export async function GET(req: NextRequest) {
         const thirtyDaysAgo = subDays(new Date(), 30);
         const sevenDaysAgo = subDays(new Date(), 7);
 
+        // prisma.$transaction es una operación atómica que agrupa múltiples consultas.
+        // Esto mejora el rendimiento al reducir los viajes de ida y vuelta a la base de datos.
         const [
             totalUsers,
             totalCourses,
@@ -70,7 +72,7 @@ export async function GET(req: NextRequest) {
             studentsByCompletionsRaw,
             instructorsByCoursesRaw
         ] = await prisma.$transaction([
-            prisma.user.count(),
+            prisma.user.count(), // ✅ Corrección aquí: sintaxis simple y correcta
             prisma.course.count(),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
             prisma.enrollment.count(),
@@ -79,7 +81,6 @@ export async function GET(req: NextRequest) {
             prisma.securityLog.groupBy({
                 by: ['userId'],
                 where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } },
-                _count: { _all: true }
             }),
             prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo } } }),
             prisma.user.findMany({ where: { registeredDate: { gte: startOfDay(sevenDaysAgo) } }, select: { registeredDate: true } }),
