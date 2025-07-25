@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 import type { User } from '@/types';
 import prisma from './prisma';
+import { cache } from 'react';
 
 const secret = process.env.JWT_SECRET;
 if (!secret) {
@@ -27,7 +28,6 @@ export async function decrypt(input: string): Promise<any> {
     });
     return payload;
   } catch (error) {
-    // This can happen if the token is invalid or expired
     console.log('Failed to verify session token, it may have expired.');
     return null;
   }
@@ -43,6 +43,10 @@ export async function createSession(userId: string) {
     secure: process.env.NODE_ENV === 'production', 
     path: '/' 
   });
+}
+
+export async function deleteSession() {
+  cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
 
 /**
@@ -64,12 +68,14 @@ export async function getSession() {
   return decrypted;
 }
 
+
 /**
  * Fetches the full user object from the database based on the current session.
  * This is the primary function to use in server-side components and API routes
  * that are NOT running on the Edge.
+ * Uses `cache` to prevent multiple DB queries for the same user in a single request.
  */
-export async function getCurrentUser(): Promise<User | null> {
+export const getCurrentUser = cache(async (): Promise<User | null> => {
     const sessionData = await getSession(); // Uses the lightweight session getter
     if (!sessionData?.userId) return null;
 
@@ -87,9 +93,4 @@ export async function getCurrentUser(): Promise<User | null> {
         console.error("Error fetching user for session:", error);
         return null;
     }
-}
-
-
-export async function deleteSession() {
-  cookies().set('session', '', { expires: new Date(0), path: '/' });
-}
+});
