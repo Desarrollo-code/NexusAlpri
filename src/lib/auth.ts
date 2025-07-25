@@ -2,7 +2,6 @@
 import 'server-only';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
-import type { NextRequest } from 'next/server';
 import type { User } from '@/types';
 import prisma from './prisma';
 import { cache } from 'react';
@@ -50,7 +49,7 @@ export async function deleteSession() {
 }
 
 /**
- * Lightweight session checker for middleware (and other edge cases).
+ * Lightweight session checker for middleware.
  * Only decrypts the cookie, does NOT query the database.
  * This is safe for the Edge runtime.
  */
@@ -64,10 +63,8 @@ export async function getSession() {
       return null;
   }
   
-  // Returns a lightweight session object, e.g., { userId, iat, exp, expires }
   return decrypted;
 }
-
 
 /**
  * Fetches the full user object from the database based on the current session.
@@ -76,7 +73,7 @@ export async function getSession() {
  * Uses `cache` to prevent multiple DB queries for the same user in a single request.
  */
 export const getCurrentUser = cache(async (): Promise<User | null> => {
-    const sessionData = await getSession(); // Uses the lightweight session getter
+    const sessionData = await getSession();
     if (!sessionData?.userId) return null;
 
     try {

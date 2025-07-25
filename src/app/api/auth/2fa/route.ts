@@ -56,7 +56,6 @@ async function handleVerify(userId: string, token: string, ipAddress: string) {
     return NextResponse.json({ message: '2FA activado exitosamente', user: userToReturn });
 }
 
-
 async function handleDisable(userId: string, pass: string, ipAddress: string) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.password) {
@@ -108,7 +107,6 @@ async function handleLoginVerify(userId: string, token: string) {
     return NextResponse.json({ user: userToReturn });
 }
 
-
 export async function POST(req: NextRequest) {
     const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
     const body = await req.json();
@@ -125,7 +123,7 @@ export async function POST(req: NextRequest) {
     }
 
     // For other actions, we require an active session
-    const session = await getCurrentUser(req);
+    const session = await getCurrentUser();
     if (!session) {
       return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
