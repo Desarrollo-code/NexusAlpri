@@ -51,6 +51,8 @@ export async function GET(req: NextRequest) {
         const thirtyDaysAgo = subDays(new Date(), 30);
         const sevenDaysAgo = subDays(new Date(), 7);
 
+        // prisma.$transaction se utiliza para ejecutar múltiples consultas en una sola transacción de base de datos.
+        // Esto mejora el rendimiento al reducir los viajes de ida y vuelta a la base de datos.
         const [
             totalUsers,
             totalCourses,
@@ -74,18 +76,19 @@ export async function GET(req: NextRequest) {
             prisma.course.count(),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
             prisma.enrollment.count(),
-            prisma.user.groupBy({ by: ['role'], _count: { role: true } }),
-            prisma.course.groupBy({ by: ['status'], _count: { status: true } }),
+            prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
+            prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
             prisma.securityLog.groupBy({
                 by: ['userId'],
                 where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } },
+                _count: { _all: true }
             }),
             prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo } } }),
             prisma.user.findMany({ where: { registeredDate: { gte: startOfDay(sevenDaysAgo) } }, select: { registeredDate: true } }),
             prisma.course.findMany({ where: { createdAt: { gte: thirtyDaysAgo } }, select: { createdAt: true } }),
             prisma.course.findMany({ where: { publicationDate: { not: null, gte: thirtyDaysAgo } }, select: { publicationDate: true } }),
             prisma.enrollment.findMany({ where: { enrolledAt: { gte: thirtyDaysAgo } }, select: { enrolledAt: true } }),
-            prisma.courseProgress.findMany({ select: { courseId: true, progressPercentage: true, userId: true } }),
+            prisma.courseProgress.findMany({ where: { courseId: { not: null } }, select: { courseId: true, progressPercentage: true, userId: true } }),
             prisma.course.findMany({
                 where: { status: 'PUBLISHED' },
                 select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } },
@@ -112,19 +115,19 @@ export async function GET(req: NextRequest) {
         ]);
         
         const dateRange7Days = eachDayOfInterval({ start: sevenDaysAgo, end: new Date() });
-        const registrationsByDate = recentUsersData.reduce((acc, user) => {
+        const registrationsByDate = new Map<string, number>();
+        recentUsersData.forEach(user => {
             if (user.registeredDate) {
                 const dateKey = format(new Date(user.registeredDate), 'yyyy-MM-dd');
-                acc[dateKey] = (acc[dateKey] || 0) + 1;
+                registrationsByDate.set(dateKey, (registrationsByDate.get(dateKey) || 0) + 1);
             }
-            return acc;
-        }, {} as Record<string, number>);
+        });
 
         const userRegistrationTrend = dateRange7Days.map(date => {
             const dateKey = format(date, 'yyyy-MM-dd');
             return {
                 date: format(date, 'MMM d', { locale: es }),
-                count: registrationsByDate[dateKey] || 0,
+                count: registrationsByDate.get(dateKey) || 0,
             };
         });
 
@@ -152,18 +155,23 @@ export async function GET(req: NextRequest) {
             .slice(0, 5)
             .map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: c._count.enrollments }));
 
-        const completionRatesByCourse = allCourseProgressRaw.reduce((acc, p) => {
+        const completionRatesByCourse = new Map<string, { total: number; count: number }>();
+        allCourseProgressRaw.forEach(p => {
             if (p.courseId) {
-                if (!acc[p.courseId]) acc[p.courseId] = { total: 0, count: 0 };
-                acc[p.courseId].total += p.progressPercentage || 0;
-                acc[p.courseId].count++;
+                if (!completionRatesByCourse.has(p.courseId)) {
+                    completionRatesByCourse.set(p.courseId, { total: 0, count: 0 });
+                }
+                const courseData = completionRatesByCourse.get(p.courseId)!;
+                courseData.total += p.progressPercentage || 0;
+                courseData.count++;
             }
-            return acc;
-        }, {} as Record<string, { total: number; count: number }>);
+        });
 
         const coursesWithAvgRates = coursesWithEnrollmentCounts.map(course => ({
             ...course,
-            avgCompletion: completionRatesByCourse[course.id] ? completionRatesByCourse[course.id].total / completionRatesByCourse[course.id].count : 0,
+            avgCompletion: completionRatesByCourse.has(course.id)
+                ? completionRatesByCourse.get(course.id)!.total / completionRatesByCourse.get(course.id)!.count
+                : 0,
         }));
         
         const topCoursesByCompletion = [...coursesWithAvgRates].sort((a, b) => b.avgCompletion - a.avgCompletion).slice(0, 5).map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: Math.round(c.avgCompletion) }));
@@ -182,10 +190,10 @@ export async function GET(req: NextRequest) {
             totalCourses,
             totalPublishedCourses,
             totalEnrollments,
-            usersByRole: usersByRole.map(item => ({ role: item.role as UserRole, count: item._count.role })),
-            coursesByStatus: coursesByStatus.map(item => ({ status: item.status as CourseStatus, count: item._count.status })),
+            usersByRole: usersByRole.map(item => ({ role: item.role as UserRole, count: item._count._all })),
+            coursesByStatus: coursesByStatus.map(item => ({ status: item.status as CourseStatus, count: item._count._all })),
             recentLogins: recentLoginLogs.length,
-            newUsersLast7Days: newUsersLast7Days,
+            newUsersLast7Days,
             userRegistrationTrend,
             courseActivity,
             averageCompletionRate: Math.round(averageCompletionRate),
@@ -203,5 +211,4 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ message: 'Error al obtener las estadísticas del dashboard' }, { status: 500 });
     }
 }
-
     
