@@ -27,14 +27,12 @@ export async function decrypt(input: string): Promise<any> {
     });
     return payload;
   } catch (error) {
-    // This can happen if the token is invalid or expired
     return null;
   }
 }
 
 export async function createSession(userId: string) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  // Only store the userId in the session payload
   const session = await encrypt({ userId, expires: expires.toISOString() });
 
   cookies().set('session', session, { 
@@ -51,9 +49,7 @@ export async function createSession(userId: string) {
  * Use this in Edge runtime environments.
  */
 export async function getSession(request?: NextRequest) {
-  const cookieStore = request ? request.cookies : cookies();
-  const sessionCookie = cookieStore.get('session')?.value;
-
+  const sessionCookie = cookies().get('session')?.value;
   if (!sessionCookie) return null;
   
   const decrypted = await decrypt(sessionCookie);
@@ -64,17 +60,18 @@ export async function getSession(request?: NextRequest) {
   return decrypted; // Returns { userId, iat, exp, expires }
 }
 
+
 /**
  * Fetches the full user object from the database based on the current session.
  * This is a server-only function and should not be used in middleware.
  */
 export async function getCurrentUser(): Promise<User | null> {
-    const session = await getSession();
-    if (!session || !session.userId) return null;
+    const sessionData = await getSession(); // Uses the same lightweight session getter
+    if (!sessionData || !sessionData.userId) return null;
 
     try {
         const user = await prisma.user.findUnique({
-            where: { id: session.userId },
+            where: { id: sessionData.userId },
         });
 
         if (!user) return null;
