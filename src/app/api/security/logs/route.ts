@@ -4,6 +4,8 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 
 // GET security logs (ADMIN only)
+export const dynamic = 'force-dynamic';
+export const revalidate = 0; // Diseable static generation for thi route
 export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {

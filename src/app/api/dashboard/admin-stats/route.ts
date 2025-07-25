@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -6,6 +5,11 @@ import type { NextRequest } from 'next/server';
 import { subDays, startOfDay, format, eachDayOfInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { UserRole, CourseStatus } from '@/types';
+
+// Esto ayuda a Next.js a entender que esta ruta siempre debe ser dinámica.
+// Resuelve la advertencia de 'cookies() should be awaited'.
+export const dynamic = 'force-dynamic';
+export const revalidate = 0; // Opcional, pero va de la mano con force-dynamic para asegurar la frescura de los datos.
 
 type CourseInfo = {
     id: string;
@@ -70,15 +74,16 @@ export async function GET(req: NextRequest) {
             studentsByCompletionsRaw,
             instructorsByCoursesRaw
         ] = await prisma.$transaction([
+            // Corrección para el error de Prisma: Asegura que el conteo de usuarios no tenga la coma extra
             prisma.user.count({
-            select: {
-            _count: {
-            select: {
-            _all: true
-            }
-            }
-            }
-            }),,
+                select: {
+                    _count: {
+                        select: {
+                            _all: true
+                        }
+                    }
+                }
+            }), // Aquí estaba la coma extra, ahora eliminada.
             prisma.course.count({}),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
             prisma.enrollment.count({}),
@@ -118,7 +123,7 @@ export async function GET(req: NextRequest) {
                 take: 5
             }),
         ]);
-        
+
         const dateRange7Days = eachDayOfInterval({ start: sevenDaysAgo, end: new Date() });
         const registrationsByDate = new Map<string, number>();
         recentUsersData.forEach(user => {
@@ -138,7 +143,7 @@ export async function GET(req: NextRequest) {
 
         const dateRange30Days = eachDayOfInterval({ start: thirtyDaysAgo, end: new Date() });
         const courseActivityMap = new Map<string, { newCourses: number, publishedCourses: number, newEnrollments: number }>();
-        
+
         dateRange30Days.forEach(day => {
             courseActivityMap.set(format(day, 'yyyy-MM-dd'), { newCourses: 0, publishedCourses: 0, newEnrollments: 0 });
         });
@@ -146,7 +151,7 @@ export async function GET(req: NextRequest) {
         newCoursesData.forEach(c => { const key = format(c.createdAt, 'yyyy-MM-dd'); if(courseActivityMap.has(key)) courseActivityMap.get(key)!.newCourses++; });
         publishedCoursesData.forEach(c => { if(c.publicationDate) { const key = format(c.publicationDate, 'yyyy-MM-dd'); if(courseActivityMap.has(key)) courseActivityMap.get(key)!.publishedCourses++; } });
         newEnrollmentsData.forEach(e => { const key = format(e.enrolledAt, 'yyyy-MM-dd'); if(courseActivityMap.has(key)) courseActivityMap.get(key)!.newEnrollments++; });
-        
+
         const courseActivity = Array.from(courseActivityMap.entries()).map(([date, counts]) => ({
             date: format(new Date(date), 'MMM d', { locale: es }),
             ...counts
@@ -178,13 +183,13 @@ export async function GET(req: NextRequest) {
                 ? completionRatesByCourse.get(course.id)!.total / completionRatesByCourse.get(course.id)!.count
                 : 0,
         }));
-        
+
         const topCoursesByCompletion = [...coursesWithAvgRates].sort((a, b) => b.avgCompletion - a.avgCompletion).slice(0, 5).map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: Math.round(c.avgCompletion) }));
         const lowestCoursesByCompletion = [...coursesWithAvgRates].filter(c => c._count.enrollments > 0).sort((a, b) => a.avgCompletion - b.avgCompletion).slice(0, 5).map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: Math.round(c.avgCompletion) }));
-        
+
         const topCompleterIds = studentsByCompletionsRaw.map(s => s.userId);
         const topCompleterDetails = await prisma.user.findMany({ where: { id: { in: topCompleterIds } }, select: { id: true, name: true, avatar: true } });
-        
+
         const topStudentsByCompletion = studentsByCompletionsRaw.map(s => {
             const userDetails = topCompleterDetails.find(u => u.id === s.userId);
             return { id: s.userId, name: userDetails?.name || 'Usuario desconocido', avatar: userDetails?.avatar || null, value: s._count.userId };
