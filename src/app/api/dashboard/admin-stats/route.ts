@@ -51,8 +51,6 @@ export async function GET(req: NextRequest) {
         const thirtyDaysAgo = subDays(new Date(), 30);
         const sevenDaysAgo = subDays(new Date(), 7);
 
-        // This transaction bundles multiple database queries into a single operation.
-        // It improves performance by reducing round-trips to the database.
         const [
             totalUsers,
             totalCourses,
@@ -72,10 +70,10 @@ export async function GET(req: NextRequest) {
             studentsByCompletionsRaw,
             instructorsByCoursesRaw
         ] = await prisma.$transaction([
-            prisma.user.count(),
-            prisma.course.count(),
+            prisma.user.count({}), // FIXED: Explicit empty object
+            prisma.course.count({}), // FIXED: Explicit empty object
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
-            prisma.enrollment.count(),
+            prisma.enrollment.count({}), // FIXED: Explicit empty object
             prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
             prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
             prisma.securityLog.groupBy({
@@ -209,5 +207,4 @@ export async function GET(req: NextRequest) {
         console.error('[ADMIN_DASHBOARD_STATS_ERROR]', error);
         return NextResponse.json({ message: 'Error al obtener las estadísticas del dashboard' }, { status: 500 });
     }
-
-    
+}
