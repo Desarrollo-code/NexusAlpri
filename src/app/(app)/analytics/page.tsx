@@ -13,7 +13,9 @@ import {
   Activity, 
   UserPlus,
   Loader2, 
-  AlertTriangle, 
+  AlertTriangle,
+  GraduationCap,
+  Library,
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -45,6 +47,13 @@ const userRolesChartConfig = {
   STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
   INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
   ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-5))" },
+} satisfies ChartConfig;
+
+const courseStatusChartConfig = {
+    count: { label: "Cursos" },
+    DRAFT: { label: "Borrador", color: "hsl(var(--chart-4))" },
+    PUBLISHED: { label: "Publicado", color: "hsl(var(--chart-2))" },
+    ARCHIVED: { label: "Archivado", color: "hsl(var(--chart-5))" },
 } satisfies ChartConfig;
 
 const renderActiveShape = (props: any) => {
@@ -199,6 +208,17 @@ function AdminAnalyticsPage() {
         }));
     }, [stats?.usersByRole]);
     
+    const courseStatusChartData = useMemo(() => {
+        if (!stats?.coursesByStatus) return [];
+        const order: ('DRAFT' | 'PUBLISHED' | 'ARCHIVED')[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED'];
+        return order.map(status => ({
+            status: status,
+            label: courseStatusChartConfig[status]?.label || status,
+            count: stats.coursesByStatus.find(item => item.status === status)?.count || 0,
+            fill: courseStatusChartConfig[status]?.color || 'hsl(var(--muted))'
+        }));
+    }, [stats?.coursesByStatus]);
+
     const registrationTrendChartConfig = {
       count: {
         label: "Nuevos Usuarios",
@@ -212,9 +232,13 @@ function AdminAnalyticsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" />
                 </div>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Skeleton className="h-32" /><Skeleton className="h-32" />
+                </div>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <Skeleton className="h-96" />
-                    <Skeleton className="lg:col-span-2 h-96" />
+                     <Skeleton className="h-96" />
+                    <Skeleton className="h-96" />
                 </div>
             </div>
         )
@@ -236,13 +260,18 @@ function AdminAnalyticsPage() {
       <h2 className="text-2xl font-semibold">Resumen de la Plataforma</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} />
-            <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={BookOpenCheck} />
-            <MetricCard title="Usuarios Activos" value={stats?.recentLogins || 0} icon={Activity} description="En los últimos 7 días" />
+            <MetricCard title="Total Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} />
+            <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} />
+            <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={BookOpenCheck} />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+             <MetricCard title="Usuarios Activos" value={stats?.recentLogins || 0} icon={Activity} description="En los últimos 7 días" />
             <MetricCard title="Nuevos Usuarios" value={stats?.newUsersLast7Days || 0} icon={UserPlus} description="En los últimos 7 días"/>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <DonutChartCard title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
-            <Card className="lg:col-span-2 card-border-animated">
+            <DonutChartCard title="Distribución de Cursos" data={courseStatusChartData} config={courseStatusChartConfig} />
+            <Card className="card-border-animated">
             <CardHeader>
                 <CardTitle>Tendencia de Registros (Últimos 7 Días)</CardTitle>
             </CardHeader>
