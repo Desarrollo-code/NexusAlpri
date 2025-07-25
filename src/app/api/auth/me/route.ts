@@ -1,15 +1,19 @@
-
-import { getCurrentUser } from '@/lib/auth';
+// src/app/api/auth/me/route.ts
 import { NextResponse } from 'next/server';
+import { getCurrentUser } from '@/lib/auth';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0; // Diseable static generation for thi route
+// Add this line to force dynamic rendering for this API route
+export const dynamic = 'force-dynamic'; // <--- ADD THIS LINE
+
 export async function GET() {
-  const user = await getCurrentUser();
+  const session = await getCurrentUser();
 
-  if (!user) {
-    return NextResponse.json({ user: null }, { status: 401 });
+  if (!session) {
+    return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
   }
 
-  return NextResponse.json({ user });
+  // Devuelve solo la información segura del usuario, sin la contraseña ni secretos
+  const { password, twoFactorSecret, ...userSafeData } = session;
+
+  return NextResponse.json(userSafeData);
 }
