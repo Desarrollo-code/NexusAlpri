@@ -45,7 +45,7 @@ export async function GET(req: NextRequest, context: { params: { userId: string,
 
         return NextResponse.json({
             ...progress,
-            completedLessonIds, // Return the mapped array
+            completedLessons: completedLessonIds, // Return the mapped array
         });
 
     } catch (error) {
