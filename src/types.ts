@@ -212,7 +212,14 @@ type CourseInfo = {
     title: string;
     imageUrl: string | null;
     value: number;
-}
+};
+
+type UserInfo = {
+    id: string;
+    name: string | null;
+    avatar: string | null;
+    value: number;
+};
 
 export interface AdminDashboardStats {
     totalUsers: number;
@@ -225,11 +232,13 @@ export interface AdminDashboardStats {
     newUsersLast7Days: number;
     userRegistrationTrend: { date: string, count: number }[];
     courseActivity: { date: string, newCourses: number, publishedCourses: number, newEnrollments: number }[];
-    // New Advanced Stats
     averageCompletionRate: number;
     topCoursesByEnrollment: CourseInfo[];
     topCoursesByCompletion: CourseInfo[];
     lowestCoursesByCompletion: CourseInfo[];
+    topStudentsByEnrollment: UserInfo[];
+    topStudentsByCompletion: UserInfo[];
+    topInstructorsByCourses: UserInfo[];
 }
 
 // --- TEMPLATES ---

@@ -20,6 +20,9 @@ import {
   TrendingDown,
   Award,
   BadgePercent,
+  UserCheck,
+  UserRound,
+  FilePlus2 as CourseIcon,
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -210,6 +213,43 @@ function CourseRankingCard({ title, courses, metric, icon: Icon, unit = '' }: { 
     );
 }
 
+function UserRankingCard({ title, users, metric, icon: Icon, unit = '' }: { title: string; users: any[]; metric: string; icon: React.ElementType; unit?: string }) {
+    return (
+        <Card className="card-border-animated">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Icon className="text-primary"/>{title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Usuario</TableHead>
+                            <TableHead className="text-right">{metric}</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {users.map(user => (
+                            <TableRow key={user.id}>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <Avatar className="h-8 w-8 hidden sm:flex">
+                                            <AvatarImage src={user.avatar || undefined} />
+                                            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                                        </Avatar>
+                                        <Link href={`/profile/${user.id}`} className="font-medium hover:underline truncate">{user.name}</Link>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-right font-semibold">{user.value}{unit}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    );
+}
+
+
 function AdminAnalyticsPage() {
     const [stats, setStats] = useState<AdminDashboardStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -275,11 +315,13 @@ function AdminAnalyticsPage() {
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     <Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" />
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Skeleton className="h-[450px]" />
-                    <Skeleton className="h-[450px]" />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <Skeleton className="h-96" /><Skeleton className="h-96" /><Skeleton className="h-96" />
                 </div>
-                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Skeleton className="h-[450px]" /><Skeleton className="h-[450px]" />
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <Skeleton className="h-96" /><Skeleton className="h-96" /><Skeleton className="h-96" />
                 </div>
             </div>
@@ -308,12 +350,23 @@ function AdminAnalyticsPage() {
             <MetricCard title="Tasa de Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio de todos los cursos" />
         </div>
         
+        <Separator />
+        <h2 className="text-2xl font-semibold">Análisis de Cursos</h2>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <CourseRankingCard title="Cursos Más Populares" courses={stats?.topCoursesByEnrollment || []} metric="Inscritos" icon={TrendingUp} />
             <CourseRankingCard title="Cursos con Mejor Rendimiento" courses={stats?.topCoursesByCompletion || []} metric="Finalización" icon={Award} unit="%" />
             <CourseRankingCard title="Cursos con Oportunidad de Mejora" courses={stats?.lowestCoursesByCompletion || []} metric="Finalización" icon={TrendingDown} unit="%" />
         </div>
 
+        <Separator />
+        <h2 className="text-2xl font-semibold">Análisis de Usuarios</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+             <UserRankingCard title="Estudiantes Más Activos" users={stats?.topStudentsByEnrollment || []} metric="Inscripciones" icon={UserRound} />
+             <UserRankingCard title="Mejores Estudiantes" users={stats?.topStudentsByCompletion || []} metric="Cursos Completados" icon={UserCheck} />
+             <UserRankingCard title="Instructores Destacados" users={stats?.topInstructorsByCourses || []} metric="Cursos Creados" icon={CourseIcon} />
+        </div>
+
+        <Separator />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <DonutChartCard title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
             <DonutChartCard title="Distribución de Cursos por Estado" data={courseStatusChartData} config={courseStatusChartConfig} />
@@ -372,5 +425,3 @@ export default function AnalyticsPageWrapper() {
     </div>
   );
 }
-
-    

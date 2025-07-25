@@ -15,6 +15,13 @@ type CourseInfo = {
     value: number;
 }
 
+type UserInfo = {
+    id: string;
+    name: string | null;
+    avatar: string | null;
+    value: number;
+}
+
 export interface AdminDashboardStats {
     totalUsers: number;
     totalCourses: number;
@@ -26,11 +33,14 @@ export interface AdminDashboardStats {
     newUsersLast7Days: number;
     userRegistrationTrend: { date: string, count: number }[];
     courseActivity: { date: string, newCourses: number, publishedCourses: number, newEnrollments: number }[];
-    // New Advanced Stats
     averageCompletionRate: number;
     topCoursesByEnrollment: CourseInfo[];
     topCoursesByCompletion: CourseInfo[];
     lowestCoursesByCompletion: CourseInfo[];
+    // New User Rankings
+    topStudentsByEnrollment: UserInfo[];
+    topStudentsByCompletion: UserInfo[];
+    topInstructorsByCourses: UserInfo[];
 }
 
 export async function GET(req: NextRequest) {
@@ -58,6 +68,10 @@ export async function GET(req: NextRequest) {
             recentEnrollments,
             allCourseProgress,
             enrollmentsByCourse,
+            // New queries for user rankings
+            studentsByEnrollment,
+            studentsByCompletions,
+            instructorsByCourses,
         ] = await prisma.$transaction([
             prisma.user.count(),
             prisma.course.count(),
@@ -79,13 +93,32 @@ export async function GET(req: NextRequest) {
             prisma.course.findMany({ where: { createdAt: { gte: thirtyDaysAgo } }, select: { createdAt: true } }),
             prisma.course.findMany({ where: { publicationDate: { gte: thirtyDaysAgo } }, select: { publicationDate: true } }),
             prisma.enrollment.findMany({ where: { enrolledAt: { gte: thirtyDaysAgo } }, select: { enrolledAt: true } }),
-            // New queries for advanced stats
             prisma.courseProgress.findMany({
-                select: { courseId: true, progressPercentage: true }
+                select: { courseId: true, progressPercentage: true, userId: true }
             }),
             prisma.course.findMany({
                 select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } },
                 where: { status: 'PUBLISHED' },
+            }),
+            // User ranking queries
+            prisma.user.findMany({
+                where: { role: 'STUDENT' },
+                select: { id: true, name: true, avatar: true, _count: { select: { enrollments: true } } },
+                orderBy: { enrollments: { _count: 'desc' } },
+                take: 5
+            }),
+            prisma.courseProgress.groupBy({
+                by: ['userId'],
+                where: { progressPercentage: { gte: 100 } },
+                _count: { userId: true },
+                orderBy: { _count: { userId: 'desc' } },
+                take: 5
+            }),
+            prisma.user.findMany({
+                where: { role: { in: ['INSTRUCTOR', 'ADMINISTRATOR'] } },
+                select: { id: true, name: true, avatar: true, _count: { select: { courses: true } } },
+                orderBy: { courses: { _count: 'desc' } },
+                take: 5
             }),
         ]);
         
@@ -181,6 +214,23 @@ export async function GET(req: NextRequest) {
             .slice(0, 5)
             .map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: Math.round(c.avgCompletion) }));
 
+        // --- User Ranking Formatting ---
+        const studentIdsForCompletion = studentsByCompletions.map(s => s.userId);
+        const topCompleterDetails = await prisma.user.findMany({
+            where: { id: { in: studentIdsForCompletion } },
+            select: { id: true, name: true, avatar: true }
+        });
+        
+        const topStudentsByCompletionFormatted = studentsByCompletions.map(s => {
+            const userDetails = topCompleterDetails.find(u => u.id === s.userId);
+            return {
+                id: userDetails?.id || s.userId,
+                name: userDetails?.name || 'Usuario desconocido',
+                avatar: userDetails?.avatar || null,
+                value: s._count.userId
+            }
+        });
+
 
         const stats: AdminDashboardStats = {
             totalUsers,
@@ -202,7 +252,10 @@ export async function GET(req: NextRequest) {
             averageCompletionRate: Math.round(averageCompletionRate),
             topCoursesByEnrollment,
             topCoursesByCompletion,
-            lowestCoursesByCompletion
+            lowestCoursesByCompletion,
+            topStudentsByEnrollment: studentsByEnrollment.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, value: u._count.enrollments })),
+            topStudentsByCompletion: topStudentsByCompletionFormatted,
+            topInstructorsByCourses: instructorsByCourses.map(i => ({ id: i.id, name: i.name, avatar: i.avatar, value: i._count.courses })),
         };
 
         return NextResponse.json(stats);
