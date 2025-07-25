@@ -3,7 +3,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
 import { cache } from 'react';
-import type { User } from '@prisma/client';
+import type { User as PrismaUser } from '@prisma/client';
 import prisma from './prisma';
 import type { NextRequest } from 'next/server';
 
@@ -13,18 +13,11 @@ if (!secretKey) {
 }
 const key = new TextEncoder().encode(secretKey);
 
-/**
- * @interface JWTPayload
- * Define la estructura de los datos que se codificarán dentro del token JWT.
- */
 interface JWTPayload {
   userId: string;
   expires: Date;
 }
 
-/**
- * Encripta un payload para crear un token JWT.
- */
 async function encrypt(payload: JWTPayload): Promise<string> {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
@@ -33,69 +26,35 @@ async function encrypt(payload: JWTPayload): Promise<string> {
     .sign(key);
 }
 
-/**
- * Desencripta y valida un token JWT.
- */
 async function decrypt(input: string): Promise<any> {
   try {
     const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
     return payload;
   } catch (error) {
-    // Esto puede ocurrir si el token es inválido, ha expirado, etc.
-    console.log('Failed to verify session token');
     return null;
   }
 }
 
-/**
- * Crea una sesión de usuario estableciendo una cookie segura y httpOnly.
- * Esta función debe ser llamada únicamente desde el lado del servidor (ej. en una API Route).
- */
 export async function createSession(userId: string) {
-  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Expira en 7 días
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   const token = await encrypt({ userId, expires });
 
-  // Accede a las cookies de la respuesta para establecer la cookie de sesión.
   cookies().set('session', token, {
-    httpOnly: true, // Hace que la cookie no sea accesible por JavaScript en el navegador (mayor seguridad XSS)
-    secure: process.env.NODE_ENV === 'production', // Solo envía la cookie sobre HTTPS en producción
-    maxAge: 60 * 60 * 24 * 7, // Duración de la cookie: 7 días (en segundos)
-    path: '/', // La cookie está disponible en toda la aplicación
-    sameSite: 'lax', // Protección contra ataques CSRF
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7,
+    path: '/',
+    sameSite: 'lax',
   });
 }
 
-/**
- * Elimina la cookie de sesión para cerrar la sesión del usuario.
- */
 export async function deleteSession() {
   cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
 
-/**
- * [SOLO PARA MIDDLEWARE] Obtiene la sesión desde la cookie de la solicitud.
- * Es una función ligera diseñada para el Edge Runtime, ya que no accede a la base de datos.
- */
-export async function getSession(request: NextRequest): Promise<JWTPayload | null> {
-    const sessionCookieValue = request.cookies.get('session')?.value;
-    if (!sessionCookieValue) {
-        return null;
-    }
-    return await decrypt(sessionCookieValue);
-}
+export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
+  const sessionCookieValue = cookies().get('session')?.value;
 
-
-/**
- * Obtiene los datos completos del usuario autenticado actualmente.
- * Utiliza React.cache para evitar consultas duplicadas a la base de datos en una misma solicitud.
- * Esta función está diseñada para ser usada en Server Components y API Routes que NO se ejecutan en el Edge.
- */
-export const getCurrentUser = cache(async (): Promise<User | null> => {
-  // Al importar 'next/headers', le indicamos a Next.js que esta función es dinámica.
-  const requestCookies = cookies();
-  const sessionCookieValue = requestCookies.get('session')?.value;
-
-  // Si no hay una cookie de sesión, no hay usuario autenticado.
   if (!sessionCookieValue) {
     return null;
   }
@@ -111,10 +70,9 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
     });
 
     if (!user) return null;
-
-    // Removemos datos sensibles antes de devolver el objeto de usuario.
-    const { password, twoFactorSecret, ...safeUser } = user;
-    return safeUser as User;
+    
+    // Devolvemos el usuario completo, la exclusión de campos se hará donde se necesite.
+    return user;
 
   } catch (error) {
     console.error("Error al obtener el usuario desde la base de datos:", error);
