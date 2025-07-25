@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
             studentsByCompletions,
             instructorsByCourses,
         ] = await prisma.$transaction([
-            prisma.user.count(),
+            prisma.user.count({}),
             prisma.course.count(),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
             prisma.enrollment.count(),
@@ -214,9 +214,9 @@ export async function GET(req: NextRequest) {
             .slice(0, 5)
             .map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: Math.round(c.avgCompletion) }));
 
-        const studentIdsForCompletion = studentsByCompletions.map(s => s.userId);
+        
         const topCompleterDetails = await prisma.user.findMany({
-            where: { id: { in: studentIdsForCompletion } },
+            where: { id: { in: studentsByCompletions.map(s => s.userId) } },
             select: { id: true, name: true, avatar: true }
         });
         
