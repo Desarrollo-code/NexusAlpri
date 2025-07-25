@@ -1,53 +1,44 @@
-
+// src/middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth'; // Importamos la función correcta
 
 const PUBLIC_PATHS = ['/sign-in', '/sign-up'];
 const API_PREFIX = '/api';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
-  // Early exit for static files and internal Next.js assets
-  if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/static') ||
-    pathname.startsWith('/uploads') ||
-    pathname.match(/\.(.*)$/)
-  ) {
-    return NextResponse.next();
-  }
-  
-  // API routes are handled by their own logic, not redirected by middleware.
-  if (pathname.startsWith(API_PREFIX)) {
+
+  // Si la ruta es pública, permitimos el acceso sin autenticación
+  if (PUBLIC_PATHS.includes(pathname)) {
     return NextResponse.next();
   }
 
-  // Pass the request to getSession, making it Edge-compatible
-  const session = await getCurrentUser();
-  const isPublicPath = PUBLIC_PATHS.some(p => pathname.startsWith(p));
+  // Si la ruta es una API y no es de autenticación, la manejamos aquí
+  if (pathname.startsWith(API_PREFIX) && !pathname.startsWith('/api/auth')) {
+    // Para rutas API, necesitamos verificar la sesión.
+    // Usamos getCurrentUser, que es la función correcta.
+    const user = await getCurrentUser();
 
-  // If user is logged in
-  if (session?.userId) {
-    // If they try to access a public-only path (like sign-in), redirect to dashboard
-    if (isPublicPath) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+    if (!user) {
+      // Si no hay usuario, negamos el acceso a la API
+      return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
-    // Allow access to all other (protected) routes
+    // Si hay usuario, permitimos el paso a la API
     return NextResponse.next();
   }
 
-  // If user is NOT logged in
-  if (!session?.userId && !isPublicPath) {
-    // And tries to access a protected path, redirect them to sign-in
-    const url = request.nextUrl.clone();
-    url.pathname = '/sign-in';
-    url.searchParams.set('redirectedFrom', pathname);
-    return NextResponse.redirect(url);
+  // Para rutas de página (no API y no públicas)
+  // Verificamos si el usuario está autenticado para acceder a páginas protegidas.
+  const user = await getCurrentUser(); // Usamos la función correcta aquí también
+
+  if (!user) {
+    // Si no hay usuario, redirigimos a la página de inicio de sesión
+    const signInUrl = new URL('/sign-in', request.url);
+    return NextResponse.redirect(signInUrl);
   }
 
-  // Allow access to public paths for non-logged-in users
+  // Si el usuario está autenticado y la ruta no es pública, permitimos el acceso.
   return NextResponse.next();
 }
 
@@ -58,8 +49,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * This ensures the middleware runs on all pages and API routes.
+     * - /api/auth (authentication API routes, handled separately or bypass middleware if needed)
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/auth).*)',
   ],
 };

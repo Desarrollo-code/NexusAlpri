@@ -1,11 +1,9 @@
 // src/lib/auth.ts
+'use server';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 import prisma from './prisma'; // Asegúrate de que esta importación sea correcta
 
-// Añade esta directiva en la primera línea del archivo
-// Esto le dice a Next.js que este archivo contiene código de servidor
-'use server';
 
 // Define tu interfaz User si no está ya en otro lugar o aquí
 interface User {
