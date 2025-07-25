@@ -28,7 +28,7 @@ export async function decrypt(input: string): Promise<any> {
     });
     return payload;
   } catch (error) {
-    console.log('Failed to verify session token, it may have expired.');
+    // It's normal for tokens to expire, so we don't need to log this as an error.
     return null;
   }
 }
@@ -65,7 +65,8 @@ export async function getSession(request: NextRequest) {
       return null;
   }
   
-  return decrypted;
+  // Return only the essential parts for middleware checks
+  return { userId: decrypted.userId };
 }
 
 
@@ -76,12 +77,12 @@ export async function getSession(request: NextRequest) {
  * Uses `cache` to prevent multiple DB queries for the same user in a single request.
  */
 export const getCurrentUser = cache(async (): Promise<User | null> => {
-    const sessionCookie = cookies().get('session')?.value;
-    if (!sessionCookie) {
+    const sessionCookieValue = cookies().get('session')?.value;
+    if (!sessionCookieValue) {
         return null;
     }
 
-    const sessionData = await decrypt(sessionCookie);
+    const sessionData = await decrypt(sessionCookieValue);
     if (!sessionData?.userId) {
         return null;
     }

@@ -138,7 +138,7 @@ export default function SignUpPage() {
           <label htmlFor="registerPassword" className="auth-label">Contraseña</label>
           <div className="relative">
             <input type={showPassword ? "text" : "password"} id="registerPassword" placeholder="••••••••" required
-                   value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} className="auth-input" />
+                   value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} className="auth-input pr-10" />
             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-graphite-300 hover:text-gold-100">
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
@@ -148,7 +148,7 @@ export default function SignUpPage() {
           <label htmlFor="confirmPassword" className="auth-label">Confirmar Contraseña</label>
           <div className="relative">
             <input type={showConfirmPassword ? "text" : "password"} id="confirmPassword" placeholder="••••••••" required
-                   value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} className="auth-input" />
+                   value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} className="auth-input pr-10" />
             <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-graphite-300 hover:text-gold-100">
                 {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
