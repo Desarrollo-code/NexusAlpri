@@ -39,6 +39,7 @@ export async function createSession(userId: string) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
   const session = await encrypt({ userId, expires });
 
+  // Set the cookie
   cookies().set('session', session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -52,6 +53,7 @@ export async function deleteSession() {
   cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
 
+// Used in middleware where the full request object is available
 export async function getSession(request: NextRequest): Promise<{ userId: string } | null> {
     const sessionCookieValue = request.cookies.get('session')?.value;
     if (!sessionCookieValue) {
@@ -64,9 +66,9 @@ export async function getSession(request: NextRequest): Promise<{ userId: string
     return { userId: decryptedSession.userId };
 }
 
+
+// Used in API routes and server components. `cache` ensures this only runs once per request.
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
-  // Directly get the cookie value. `cookies()` is a dynamic function.
-  // Using it marks the request as dynamic.
   const sessionCookieValue = cookies().get('session')?.value;
 
   if (!sessionCookieValue) {

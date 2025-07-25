@@ -1,3 +1,4 @@
+
 // src/app/api/dashboard/admin-stats/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -11,7 +12,6 @@ export async function GET(req: NextRequest) {
         const session = await getCurrentUser();
 
         if (!session || session.role !== 'ADMINISTRATOR') {
-            console.warn(`[ADMIN_DASHBOARD_AUTH_WARN] Intento de acceso no autorizado al dashboard. Usuario: ${session?.email || 'N/A'}, Rol: ${session?.role || 'N/A'}`);
             return NextResponse.json({ message: 'Acceso no autorizado. Se requieren permisos de administrador.' }, { status: 403 });
         }
 
@@ -79,29 +79,38 @@ export async function GET(req: NextRequest) {
             }),
         ]);
 
-        // Procesamiento de datos (esto asumo que está bien por ahora)
-        const totalInstructors = usersByRole.find(r => r.role === 'INSTRUCTOR')?._count._all || 0;
-        const totalStudents = usersByRole.find(r => r.role === 'STUDENT')?._count._all || 0;
+        const recentLoginsCount = recentLoginLogs.length;
 
+        // Procesamiento de datos
         const usersData = recentUsersData.map(user => ({
             date: user.registeredDate,
             count: 1
         }));
 
-        const coursesCreationData = newCoursesData.map(course => ({
-            date: course.createdAt,
-            count: 1
-        }));
+        const courseActivityData: Record<string, { newCourses: number, publishedCourses: number, newEnrollments: number }> = {};
 
-        const coursesPublicationData = publishedCoursesData.map(course => ({
-            date: course.publicationDate,
-            count: 1
-        }));
+        newCoursesData.forEach(course => {
+            const date = format(course.createdAt, 'yyyy-MM-dd');
+            if (!courseActivityData[date]) courseActivityData[date] = { newCourses: 0, publishedCourses: 0, newEnrollments: 0 };
+            courseActivityData[date].newCourses++;
+        });
 
-        const enrollmentsData = newEnrollmentsData.map(enrollment => ({
-            date: enrollment.enrolledAt,
-            count: 1
-        }));
+        publishedCoursesData.forEach(course => {
+            if (course.publicationDate) {
+                const date = format(course.publicationDate, 'yyyy-MM-dd');
+                if (!courseActivityData[date]) courseActivityData[date] = { newCourses: 0, publishedCourses: 0, newEnrollments: 0 };
+                courseActivityData[date].publishedCourses++;
+            }
+        });
+
+        newEnrollmentsData.forEach(enrollment => {
+            const date = format(enrollment.enrolledAt, 'yyyy-MM-dd');
+            if (!courseActivityData[date]) courseActivityData[date] = { newCourses: 0, publishedCourses: 0, newEnrollments: 0 };
+            courseActivityData[date].newEnrollments++;
+        });
+        
+        const courseActivity = Object.entries(courseActivityData).map(([date, counts]) => ({ date, ...counts }));
+
 
         const courseProgressMap = new Map();
         allCourseProgressRaw.forEach(cp => {
@@ -109,53 +118,114 @@ export async function GET(req: NextRequest) {
                 courseProgressMap.set(cp.courseId, { totalProgress: 0, count: 0 });
             }
             const data = courseProgressMap.get(cp.courseId);
-            data.totalProgress += cp.progressPercentage;
+            data.totalProgress += cp.progressPercentage || 0;
             data.count += 1;
         });
 
-        const averageCourseProgress = Array.from(courseProgressMap.values()).reduce((sum, data) => sum + (data.totalProgress / data.count), 0) / courseProgressMap.size || 0;
+        let totalCompletionRate = 0;
+        let coursesWithProgress = 0;
+        courseProgressMap.forEach(data => {
+            totalCompletionRate += data.totalProgress / data.count;
+            coursesWithProgress++;
+        });
+        const averageCompletionRate = coursesWithProgress > 0 ? totalCompletionRate / coursesWithProgress : 0;
+        
+        const topCoursesByEnrollment = coursesWithEnrollmentCounts.sort((a, b) => b._count.enrollments - a._count.enrollments).slice(0, 5).map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: c._count.enrollments }));
 
+        const courseCompletionStats: { [courseId: string]: { totalProgress: number; count: number; title: string; imageUrl: string | null } } = {};
 
-        const studentsByEnrollment = studentsByEnrollmentRaw.map(user => ({
+        allCourseProgressRaw.forEach(cp => {
+            if (!courseCompletionStats[cp.courseId]) {
+                const courseInfo = coursesWithEnrollmentCounts.find(c => c.id === cp.courseId);
+                courseCompletionStats[cp.courseId] = {
+                    totalProgress: 0,
+                    count: 0,
+                    title: courseInfo?.title || 'Curso Desconocido',
+                    imageUrl: courseInfo?.imageUrl || null,
+                };
+            }
+            courseCompletionStats[cp.courseId].totalProgress += cp.progressPercentage || 0;
+            courseCompletionStats[cp.courseId].count++;
+        });
+
+        const allCourseCompletions = Object.entries(courseCompletionStats).map(([id, stats]) => ({
+            id,
+            title: stats.title,
+            imageUrl: stats.imageUrl,
+            value: stats.count > 0 ? parseFloat((stats.totalProgress / stats.count).toFixed(2)) : 0,
+        }));
+
+        const topCoursesByCompletion = [...allCourseCompletions].sort((a,b) => b.value - a.value).slice(0, 5);
+        const lowestCoursesByCompletion = [...allCourseCompletions].sort((a,b) => a.value - b.value).slice(0, 5);
+        
+        const studentCompletionCounts: { [userId: string]: number } = {};
+        allCourseProgressRaw.forEach(cp => {
+            if (cp.progressPercentage && cp.progressPercentage >= 100) {
+                studentCompletionCounts[cp.userId] = (studentCompletionCounts[cp.userId] || 0) + 1;
+            }
+        });
+        
+        const studentInfoMap = new Map((await prisma.user.findMany({ where: { role: 'STUDENT' }, select: { id: true, name: true, avatar: true } })).map(u => [u.id, u]));
+
+        const topStudentsByEnrollment = studentsByEnrollmentRaw.map(user => ({
             id: user.id,
             name: user.name,
             avatar: user.avatar,
-            enrollmentsCount: user._count.enrollments,
+            value: user._count.enrollments,
         }));
+        
+        const topStudentsByCompletion = Object.entries(studentCompletionCounts)
+            .map(([userId, count]) => ({
+                id: userId,
+                name: studentInfoMap.get(userId)?.name || 'Estudiante Desconocido',
+                avatar: studentInfoMap.get(userId)?.avatar || null,
+                value: count,
+            }))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 5);
 
-        const studentsByCompletions = studentsByCompletionsRaw.map(completion => ({
-            userId: completion.userId,
-            coursesCompleted: completion._count._all,
-        }));
-
-        const instructorsByCourses = instructorsByCoursesRaw.map(user => ({
+        const topInstructorsByCourses = instructorsByCoursesRaw.map(user => ({
             id: user.id,
             name: user.name,
             avatar: user.avatar,
-            coursesCount: user._count.courses,
+            value: user._count.courses,
         }));
+        
+        const formattedUsersByRole = usersByRole.map(item => ({ role: item.role, count: item._count._all }));
+        const formattedCoursesByStatus = coursesByStatus.map(item => ({ status: item.status, count: item._count._all }));
+        
+        const userRegistrationTrendData: { [key: string]: number } = {};
+        for (let i = 6; i >= 0; i--) {
+            const date = format(subDays(today, i), 'yyyy-MM-dd');
+            userRegistrationTrendData[date] = 0;
+        }
+        recentUsersData.forEach(user => {
+            const date = format(user.registeredDate, 'yyyy-MM-dd');
+            if (userRegistrationTrendData[date] !== undefined) {
+                userRegistrationTrendData[date]++;
+            }
+        });
+        const userRegistrationTrend = Object.keys(userRegistrationTrendData).map(date => ({ date, count: userRegistrationTrendData[date] }));
 
 
         const adminStats = {
-            totalUsers: totalUsers,
-            totalCourses: totalCourses,
-            totalPublishedCourses: totalPublishedCourses,
-            totalEnrollments: totalEnrollments,
-            usersByRole: usersByRole,
-            coursesByStatus: coursesByStatus,
-            recentLoginLogs: recentLoginLogs,
+            totalUsers,
+            totalCourses,
+            totalPublishedCourses,
+            totalEnrollments,
+            usersByRole: formattedUsersByRole,
+            coursesByStatus: formattedCoursesByStatus,
+            recentLogins: recentLoginsCount,
             newUsersLast7Days: newUsersLast7Days,
-            recentUsersData: usersData,
-            newCoursesData: coursesCreationData,
-            publishedCoursesData: coursesPublicationData,
-            newEnrollmentsData: enrollmentsData,
-            averageCourseProgress: parseFloat(averageCourseProgress.toFixed(2)),
-            coursesWithEnrollmentCounts: coursesWithEnrollmentCounts,
-            topStudentsByEnrollment: studentsByEnrollment,
-            topStudentsByCompletions: studentsByCompletions,
-            topInstructorsByCourses: instructorsByCourses,
-            totalInstructors: totalInstructors,
-            totalStudents: totalStudents,
+            userRegistrationTrend: userRegistrationTrend,
+            courseActivity: courseActivity,
+            averageCompletionRate: parseFloat(averageCompletionRate.toFixed(2)),
+            topCoursesByEnrollment,
+            topCoursesByCompletion,
+            lowestCoursesByCompletion,
+            topStudentsByEnrollment,
+            topStudentsByCompletion,
+            topInstructorsByCourses,
         };
 
         return NextResponse.json(adminStats);
