@@ -36,21 +36,24 @@ async function decrypt(input: string): Promise<any> {
 }
 
 export async function createSession(userId: string) {
-  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const token = await encrypt({ userId, expires });
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  const session = await encrypt({ userId, expires });
 
-  cookies().set('session', token, {
+  // Set the session cookie
+  cookies().set('session', session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
     path: '/',
     sameSite: 'lax',
   });
 }
 
+
 export async function deleteSession() {
   cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
+
 
 export async function getSession(request: NextRequest): Promise<{ userId: string } | null> {
     const sessionCookieValue = request.cookies.get('session')?.value;
@@ -63,6 +66,7 @@ export async function getSession(request: NextRequest): Promise<{ userId: string
     }
     return { userId: decryptedSession.userId };
 }
+
 
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
   const sessionCookieValue = cookies().get('session')?.value;
