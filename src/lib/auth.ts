@@ -1,4 +1,3 @@
-
 // src/lib/auth.ts
 import 'server-only';
 import { cookies } from 'next/headers';
@@ -13,7 +12,6 @@ if (!secretKey) {
   throw new Error('La variable de entorno JWT_SECRET no está configurada.');
 }
 const key = new TextEncoder().encode(secretKey);
-
 
 /**
  * @interface JWTPayload
