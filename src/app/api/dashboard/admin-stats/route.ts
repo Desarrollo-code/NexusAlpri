@@ -1,56 +1,20 @@
-
 // src/app/api/dashboard/admin-stats/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import type { NextRequest } from 'next/server';
-import { subDays, startOfDay, format, eachDayOfInterval } from 'date-fns';
-import { es } from 'date-fns/locale';
-import type { UserRole, CourseStatus } from '@prisma/client';
+import { startOfDay, subDays } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
 
-type CourseInfo = {
-    id: string;
-    title: string;
-    imageUrl: string | null;
-    value: number;
-}
-
-type UserInfo = {
-    id: string;
-    name: string | null;
-    avatar: string | null;
-    value: number;
-}
-
-export interface AdminDashboardStats {
-    totalUsers: number;
-    totalCourses: number;
-    totalPublishedCourses: number;
-    totalEnrollments: number;
-    usersByRole: { role: UserRole; count: number }[];
-    coursesByStatus: { status: CourseStatus; count: number }[];
-    recentLogins: number; // Active users in last 7 days
-    newUsersLast7Days: number;
-    userRegistrationTrend: { date: string, count: number }[];
-    courseActivity: { date: string, newCourses: number, publishedCourses: number, newEnrollments: number }[];
-    averageCompletionRate: number;
-    topCoursesByEnrollment: CourseInfo[];
-    topCoursesByCompletion: CourseInfo[];
-    lowestCoursesByCompletion: CourseInfo[];
-    topStudentsByEnrollment: UserInfo[];
-    topStudentsByCompletion: UserInfo[];
-    topInstructorsByCourses: UserInfo[];
-}
-
 export async function GET(req: NextRequest) {
-    const session = await getCurrentUser();
-    if (!session || session.role !== 'ADMINISTRATOR') {
-        return NextResponse.json({ message: 'No autorizado o no tiene permisos de administrador.' }, { status: 403 });
-    }
-
     try {
+        const session = await getCurrentUser();
+
+        if (!session || session.role !== 'ADMINISTRATOR') {
+            console.warn(`[ADMIN_DASHBOARD_AUTH_WARN] Intento de acceso no autorizado al dashboard. Usuario: ${session?.email || 'N/A'}, Rol: ${session?.role || 'N/A'}`);
+            return NextResponse.json({ message: 'Acceso no autorizado. Se requieren permisos de administrador.' }, { status: 403 });
+        }
+
         const today = new Date();
         const thirtyDaysAgo = subDays(today, 30);
         const sevenDaysAgo = subDays(today, 7);
@@ -115,101 +79,87 @@ export async function GET(req: NextRequest) {
             }),
         ]);
 
-        const dateRange7Days = eachDayOfInterval({ start: startOfDay(sevenDaysAgo), end: startOfDay(today) });
-        const registrationsByDate = new Map<string, number>();
-        recentUsersData.forEach(user => {
-            if (user.registeredDate) {
-                const dateKey = format(startOfDay(new Date(user.registeredDate)), 'yyyy-MM-dd');
-                registrationsByDate.set(dateKey, (registrationsByDate.get(dateKey) || 0) + 1);
-            }
-        });
+        // Procesamiento de datos (esto asumo que está bien por ahora)
+        const totalInstructors = usersByRole.find(r => r.role === 'INSTRUCTOR')?._count._all || 0;
+        const totalStudents = usersByRole.find(r => r.role === 'STUDENT')?._count._all || 0;
 
-        const userRegistrationTrend = dateRange7Days.map(date => {
-            const dateKey = format(date, 'yyyy-MM-dd');
-            return {
-                date: format(date, 'MMM d', { locale: es }),
-                count: registrationsByDate.get(dateKey) || 0,
-            };
-        });
-
-        const dateRange30Days = eachDayOfInterval({ start: startOfDay(thirtyDaysAgo), end: startOfDay(today) });
-        const courseActivityMap = new Map<string, { newCourses: number, publishedCourses: number, newEnrollments: number }>();
-
-        dateRange30Days.forEach(day => {
-            courseActivityMap.set(format(day, 'yyyy-MM-dd'), { newCourses: 0, publishedCourses: 0, newEnrollments: 0 });
-        });
-
-        newCoursesData.forEach(c => { const key = format(startOfDay(c.createdAt), 'yyyy-MM-dd'); if(courseActivityMap.has(key)) courseActivityMap.get(key)!.newCourses++; });
-        publishedCoursesData.forEach(c => { if(c.publicationDate) { const key = format(startOfDay(c.publicationDate), 'yyyy-MM-dd'); if(courseActivityMap.has(key)) courseActivityMap.get(key)!.publishedCourses++; } });
-        newEnrollmentsData.forEach(e => { const key = format(startOfDay(e.enrolledAt), 'yyyy-MM-dd'); if(courseActivityMap.has(key)) courseActivityMap.get(key)!.newEnrollments++; });
-
-        const courseActivity = Array.from(courseActivityMap.entries()).map(([date, counts]) => ({
-            date: format(new Date(date), 'MMM d', { locale: es }),
-            ...counts
-        })).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-        const totalProgressSum = allCourseProgressRaw.reduce((sum, p) => sum + (p.progressPercentage || 0), 0);
-        const averageCompletionRate = allCourseProgressRaw.length > 0 ? totalProgressSum / allCourseProgressRaw.length : 0;
-
-        const topCoursesByEnrollment = coursesWithEnrollmentCounts
-            .sort((a, b) => b._count.enrollments - a._count.enrollments)
-            .slice(0, 5)
-            .map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: c._count.enrollments }));
-
-        const completionRatesByCourse = new Map<string, { total: number; count: number }>();
-        allCourseProgressRaw.forEach(p => {
-            if (p.courseId) {
-                if (!completionRatesByCourse.has(p.courseId)) {
-                    completionRatesByCourse.set(p.courseId, { total: 0, count: 0 });
-                }
-                const courseData = completionRatesByCourse.get(p.courseId)!;
-                courseData.total += p.progressPercentage || 0;
-                courseData.count++;
-            }
-        });
-
-        const coursesWithAvgRates = coursesWithEnrollmentCounts.map(course => ({
-            ...course,
-            avgCompletion: completionRatesByCourse.has(course.id)
-                ? completionRatesByCourse.get(course.id)!.total / completionRatesByCourse.get(course.id)!.count
-                : 0,
+        const usersData = recentUsersData.map(user => ({
+            date: user.registeredDate,
+            count: 1
         }));
 
-        const topCoursesByCompletion = [...coursesWithAvgRates].sort((a, b) => b.avgCompletion - a.avgCompletion).slice(0, 5).map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: Math.round(c.avgCompletion) }));
-        const lowestCoursesByCompletion = [...coursesWithAvgRates].filter(c => c._count.enrollments > 0).sort((a, b) => a.avgCompletion - b.avgCompletion).slice(0, 5).map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: Math.round(c.avgCompletion) }));
+        const coursesCreationData = newCoursesData.map(course => ({
+            date: course.createdAt,
+            count: 1
+        }));
 
-        const topCompleterIds = studentsByCompletionsRaw.map(s => s.userId);
-        const topCompleterDetails = await prisma.user.findMany({
-            where: { id: { in: topCompleterIds } },
-            select: { id: true, name: true, avatar: true }
+        const coursesPublicationData = publishedCoursesData.map(course => ({
+            date: course.publicationDate,
+            count: 1
+        }));
+
+        const enrollmentsData = newEnrollmentsData.map(enrollment => ({
+            date: enrollment.enrolledAt,
+            count: 1
+        }));
+
+        const courseProgressMap = new Map();
+        allCourseProgressRaw.forEach(cp => {
+            if (!courseProgressMap.has(cp.courseId)) {
+                courseProgressMap.set(cp.courseId, { totalProgress: 0, count: 0 });
+            }
+            const data = courseProgressMap.get(cp.courseId);
+            data.totalProgress += cp.progressPercentage;
+            data.count += 1;
         });
 
-        const topStudentsByCompletion = studentsByCompletionsRaw.map(s => {
-            const userDetails = topCompleterDetails.find(u => u.id === s.userId);
-            return { id: s.userId, name: userDetails?.name || 'Usuario desconocido', avatar: userDetails?.avatar || null, value: s._count._all };
-        });
+        const averageCourseProgress = Array.from(courseProgressMap.values()).reduce((sum, data) => sum + (data.totalProgress / data.count), 0) / courseProgressMap.size || 0;
 
-        const stats: AdminDashboardStats = {
-            totalUsers,
-            totalCourses,
-            totalPublishedCourses,
-            totalEnrollments,
-            usersByRole: usersByRole.map(item => ({ role: item.role as UserRole, count: item._count._all })),
-            coursesByStatus: coursesByStatus.map(item => ({ status: item.status as CourseStatus, count: item._count._all })),
-            recentLogins: recentLoginLogs.length,
-            newUsersLast7Days,
-            userRegistrationTrend,
-            courseActivity,
-            averageCompletionRate: Math.round(averageCompletionRate),
-            topCoursesByEnrollment,
-            topCoursesByCompletion,
-            lowestCoursesByCompletion,
-            topStudentsByEnrollment: studentsByEnrollmentRaw.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, value: u._count.enrollments })),
-            topStudentsByCompletion,
-            topInstructorsByCourses: instructorsByCoursesRaw.map(i => ({ id: i.id, name: i.name, avatar: i.avatar, value: i._count.courses })),
+
+        const studentsByEnrollment = studentsByEnrollmentRaw.map(user => ({
+            id: user.id,
+            name: user.name,
+            avatar: user.avatar,
+            enrollmentsCount: user._count.enrollments,
+        }));
+
+        const studentsByCompletions = studentsByCompletionsRaw.map(completion => ({
+            userId: completion.userId,
+            coursesCompleted: completion._count._all,
+        }));
+
+        const instructorsByCourses = instructorsByCoursesRaw.map(user => ({
+            id: user.id,
+            name: user.name,
+            avatar: user.avatar,
+            coursesCount: user._count.courses,
+        }));
+
+
+        const adminStats = {
+            totalUsers: totalUsers,
+            totalCourses: totalCourses,
+            totalPublishedCourses: totalPublishedCourses,
+            totalEnrollments: totalEnrollments,
+            usersByRole: usersByRole,
+            coursesByStatus: coursesByStatus,
+            recentLoginLogs: recentLoginLogs,
+            newUsersLast7Days: newUsersLast7Days,
+            recentUsersData: usersData,
+            newCoursesData: coursesCreationData,
+            publishedCoursesData: coursesPublicationData,
+            newEnrollmentsData: enrollmentsData,
+            averageCourseProgress: parseFloat(averageCourseProgress.toFixed(2)),
+            coursesWithEnrollmentCounts: coursesWithEnrollmentCounts,
+            topStudentsByEnrollment: studentsByEnrollment,
+            topStudentsByCompletions: studentsByCompletions,
+            topInstructorsByCourses: instructorsByCourses,
+            totalInstructors: totalInstructors,
+            totalStudents: totalStudents,
         };
 
-        return NextResponse.json(stats);
+        return NextResponse.json(adminStats);
+
     } catch (error) {
         console.error('[ADMIN_DASHBOARD_STATS_ERROR]', error);
         return NextResponse.json({ message: 'Error al obtener las estadísticas del dashboard' }, { status: 500 });
