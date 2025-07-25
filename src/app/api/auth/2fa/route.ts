@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     }
 
     // For other actions, we require an active session
-    const session = await getCurrentUser();
+    const session = await getCurrentUser(req);
     if (!session) {
       return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }

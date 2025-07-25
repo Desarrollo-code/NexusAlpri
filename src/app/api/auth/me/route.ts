@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser(request);
 
   if (!user) {
     return NextResponse.json({ user: null }, { status: 401 });
