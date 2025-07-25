@@ -1,97 +1,145 @@
 
 // src/lib/auth.ts
-import 'server-only'; // Asegura que este módulo solo se ejecute en el servidor.
+
+// --- IMPORTS ---
+import 'server-only';
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
+import { cache } from 'react';
 import type { User } from '@prisma/client';
 import prisma from './prisma';
-import React from 'react';
+import type { NextRequest } from 'next/server';
 
+
+// --- CONFIGURACIÓN DE SEGURIDAD ---
+
+/**
+ * Clave secreta para firmar los tokens JWT.
+ * Se obtiene de las variables de entorno. Es crucial que esta variable esté definida.
+ */
 const secretKey = process.env.JWT_SECRET;
 if (!secretKey) {
-  throw new Error('JWT_SECRET is not set in environment variables.');
+  throw new Error('La variable de entorno JWT_SECRET no está configurada.');
 }
 const key = new TextEncoder().encode(secretKey);
 
+
+// --- TIPOS Y ESTRUCTURAS DE DATOS ---
+
+/**
+ * @interface JWTPayload
+ * Define la estructura de los datos que se codificarán dentro del token JWT.
+ * @property {string} userId - El ID único del usuario.
+ * @property {Date} expires - La fecha y hora de expiración del token.
+ */
 interface JWTPayload {
   userId: string;
   expires: Date;
 }
 
-// --- TOKEN ENCRYPTION/DECRYPTION ---
 
-async function encrypt(payload: JWTPayload) {
+// --- ENCRIPTACIÓN Y DESENCRIPTACIÓN DE TOKEN ---
+
+/**
+ * Encripta un payload para crear un token JWT.
+ * @param payload - Los datos a encriptar, que deben cumplir con la interfaz JWTPayload.
+ * @returns {Promise<string>} - El token JWT firmado.
+ */
+async function encrypt(payload: JWTPayload): Promise<string> {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime('7d') // El token expirará en 7 días.
     .sign(key);
 }
 
-async function decrypt(input: string): Promise<JWTPayload | null> {
+/**
+ * Desencripta y valida un token JWT.
+ * @param token - El token JWT a verificar.
+ * @returns {Promise<JWTPayload | null>} - El payload desencriptado o null si el token es inválido/expirado.
+ */
+async function decrypt(token: string): Promise<JWTPayload | null> {
   try {
-    const { payload } = await jwtVerify(input, key, {
-      algorithms: ['HS256'],
-    });
+    const { payload } = await jwtVerify(token, key, { algorithms: ['HS256'] });
     return payload as JWTPayload;
   } catch (error) {
-    // Esto puede ocurrir si el token es inválido o ha expirado.
-    console.error('Failed to verify session token:', error);
+    console.error('Fallo al verificar el token de sesión:', error);
     return null;
   }
 }
 
-// --- SESSION MANAGEMENT ---
+
+// --- GESTIÓN DE SESIÓN ---
 
 /**
- * Creates a session by setting a secure, httpOnly cookie.
- * This function should only be called from server-side code (e.g., API routes, Server Actions).
+ * Crea una sesión de usuario estableciendo una cookie segura y httpOnly.
+ * Esta función debe ser llamada únicamente desde el lado del servidor.
+ * @param userId - El ID del usuario para el cual se crea la sesión.
  */
 export async function createSession(userId: string) {
-  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
-  const sessionToken = await encrypt({ userId, expires });
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Expira en 7 días
+  const token = await encrypt({ userId, expires });
 
-  cookies().set('session', sessionToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    expires: expires,
-    sameSite: 'lax',
-    path: '/',
+  // Accede a las cookies de la respuesta para establecer la cookie de sesión.
+  cookies().set('session', token, {
+    httpOnly: true, // Hace que la cookie no sea accesible por JavaScript en el navegador (mayor seguridad XSS)
+    secure: process.env.NODE_ENV === 'production', // Solo envía la cookie sobre HTTPS en producción
+    maxAge: 60 * 60 * 24 * 7, // Duración de la cookie: 7 días (en segundos)
+    path: '/', // La cookie está disponible en todo el sitio
+    sameSite: 'lax', // Protección moderada contra ataques CSRF
   });
 }
 
 /**
- * Deletes the session cookie.
- * This function should only be called from server-side code.
+ * Elimina la cookie de sesión para cerrar la sesión del usuario.
+ * Esta función debe ser llamada únicamente desde el lado del servidor.
  */
 export async function deleteSession() {
   cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
 
-// --- USER/SESSION RETRIEVAL ---
+
+// --- OBTENCIÓN DE DATOS DE USUARIO ---
 
 /**
- * Retrieves the session from the request cookies.
- * This is the ONLY function that should be used in middleware.
- * It is lightweight and safe for the Edge runtime as it does NOT access the database.
+ * [SOLO PARA MIDDLEWARE] Obtiene la sesión desde la cookie de la solicitud.
+ * Es una función ligera diseñada para el Edge Runtime, ya que no accede a la base de datos.
+ * @param request - El objeto NextRequest, obligatorio en el middleware.
+ * @returns {Promise<JWTPayload | null>} - El payload de la sesión o null si no existe/es inválido.
  */
-export async function getSession() {
-  const sessionCookie = cookies().get('session')?.value;
-  if (!sessionCookie) return null;
-  return await decrypt(sessionCookie);
+export async function getSession(request: NextRequest): Promise<JWTPayload | null> {
+  const sessionCookieValue = request.cookies.get('session')?.value;
+  if (!sessionCookieValue) {
+    return null;
+  }
+  return await decrypt(sessionCookieValue);
 }
 
+
 /**
- * Fetches the full user object from the database based on the current session.
- * This is the primary function to use in server-side components and API routes.
- * It is wrapped in React.cache to prevent multiple DB queries for the same user in a single request.
+ * Obtiene los datos completos del usuario autenticado actualmente.
+ * Utiliza React.cache para evitar consultas duplicadas a la base de datos en una misma solicitud.
+ * Esta es la función que debe usarse en API Routes y Server Components.
+ * @returns {Promise<User | null>} - El objeto del usuario o null si no está autenticado.
  */
-export const getCurrentUser = React.cache(async (): Promise<User | null> => {
-  const session = await getSession();
+export const getCurrentUser = cache(async (): Promise<User | null> => {
+  // Para obtener las cookies en un Server Component o API Route, se debe usar la función `cookies()` de `next/headers`.
+  // Next.js detectará esta llamada como una API dinámica, asegurando que la ruta se renderice dinámicamente.
+  const requestCookies = cookies();
+  const sessionCookieValue = requestCookies.get('session')?.value;
+
+  // Si no hay una cookie de sesión, no hay usuario autenticado.
+  if (!sessionCookieValue) {
+    return null;
+  }
+
+  // Desencripta la cookie para obtener el payload.
+  const session = await decrypt(sessionCookieValue);
   if (!session?.userId) {
     return null;
   }
 
+  // Con el ID del usuario, busca los datos en la base de datos.
   try {
     const user = await prisma.user.findUnique({
       where: { id: session.userId },
@@ -99,12 +147,12 @@ export const getCurrentUser = React.cache(async (): Promise<User | null> => {
 
     if (!user) return null;
 
-    // IMPORTANT: Exclude sensitive fields before returning the user object.
+    // IMPORTANTE: Excluir campos sensibles antes de devolver el objeto de usuario.
     const { password, twoFactorSecret, ...safeUser } = user;
-    return safeUser as User; // Assuming the rest of the fields match the User type without password/secret.
+    return safeUser as User;
 
   } catch (error) {
-    console.error("Error fetching user for session:", error);
+    console.error("Error al obtener el usuario desde la base de datos:", error);
     return null;
   }
 });
