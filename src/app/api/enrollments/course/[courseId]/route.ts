@@ -4,6 +4,8 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // GET enrollments for a specific course
 export async function GET(req: NextRequest, context: { params: { courseId: string } }) {
     const session = await getCurrentUser();

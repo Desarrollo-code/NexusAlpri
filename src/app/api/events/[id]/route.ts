@@ -4,6 +4,8 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // PUT (update) an event
 export async function PUT(
   req: NextRequest, 

@@ -5,6 +5,8 @@ import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import type { LessonCompletionRecord as AppLessonCompletionRecord } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 // Get progress for a specific user in a course
 export async function GET(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
     const session = await getCurrentUser();

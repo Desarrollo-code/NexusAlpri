@@ -4,6 +4,8 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // GET a specific resource
 export async function GET(req: NextRequest, context: { params: { id: string } }) {
     try {

@@ -2,6 +2,7 @@
 import prisma from '@/lib/prisma';
 import type { LessonCompletionRecord as AppLessonCompletionRecord } from '@/types';
 
+export const dynamic = 'force-dynamic';
 
 interface RecordInteractionParams {
     userId: string;

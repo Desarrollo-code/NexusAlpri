@@ -40,7 +40,7 @@ async function decrypt(input: string): Promise<any> {
 export async function createSession(userId: string) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
   const session = await encrypt({ userId, expires });
-  cookies().set('session', session, {
+ (await cookies()).set('session', session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
@@ -50,12 +50,12 @@ export async function createSession(userId: string) {
 }
 
 export async function deleteSession() {
-  cookies().set('session', '', { expires: new Date(0), path: '/' });
+  (await cookies()).set('session', '', { expires: new Date(0), path: '/' });
 }
 
 // Used in middleware where the full request object is available
 export async function getSession(request: NextRequest): Promise<{ userId: string } | null> {
-    const sessionCookieValue = request.cookies.get('session')?.value;
+    const sessionCookieValue = (await cookies()).get('session')?.value;
     if (!sessionCookieValue) {
         return null;
     }
@@ -69,7 +69,7 @@ export async function getSession(request: NextRequest): Promise<{ userId: string
 
 // Used in API routes and server components. `cache` ensures this only runs once per request.
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
-  const sessionCookieValue = cookies().get('session')?.value;
+  const sessionCookieValue = (await cookies()).get('session')?.value;
 
   if (!sessionCookieValue) {
     return null;

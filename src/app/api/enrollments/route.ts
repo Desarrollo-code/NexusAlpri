@@ -4,6 +4,8 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // POST to enroll/unenroll a user from a course
 export async function POST(req: NextRequest) {
     const session = await getCurrentUser();

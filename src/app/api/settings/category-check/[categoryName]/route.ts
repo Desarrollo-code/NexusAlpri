@@ -3,6 +3,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
     req: NextRequest, 
     context: { params: { categoryName: string } }

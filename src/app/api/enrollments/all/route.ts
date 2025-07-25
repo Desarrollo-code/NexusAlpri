@@ -4,6 +4,8 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // GET all enrollments (ADMIN only)
 export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
