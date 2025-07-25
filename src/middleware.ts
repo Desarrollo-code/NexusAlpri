@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 
 const PUBLIC_PATHS = ['/sign-in', '/sign-up'];
 const API_PREFIX = '/api';
