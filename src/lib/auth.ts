@@ -7,7 +7,6 @@ import type { User as PrismaUser } from '@prisma/client';
 import prisma from './prisma';
 import type { NextRequest } from 'next/server';
 
-
 const secretKey = process.env.JWT_SECRET;
 if (!secretKey) {
   throw new Error('La variable de entorno JWT_SECRET no está configurada.');
@@ -38,7 +37,6 @@ async function encrypt(payload: JWTPayload): Promise<string> {
     .sign(key);
 }
 
-
 /**
  * Descifra un token JWT y devuelve su payload.
  * @param input - El token JWT a descifrar.
@@ -49,8 +47,7 @@ async function decrypt(input: string): Promise<any> {
     const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
     return payload;
   } catch (error) {
-    // Si la verificación falla (token expirado, firma inválida, etc.), se devuelve null.
-    // Esto es un comportamiento esperado para sesiones no válidas.
+    // Esto es esperado si el token es inválido (expirado, malformado, etc.)
     return null;
   }
 }
@@ -68,8 +65,8 @@ export async function createSession(userId: string) {
     httpOnly: true, // Hace que la cookie no sea accesible por JavaScript en el navegador (mayor seguridad XSS)
     secure: process.env.NODE_ENV === 'production', // Solo envía la cookie sobre HTTPS en producción
     maxAge: 60 * 60 * 24 * 7, // Duración de la cookie: 7 días (en segundos)
-    path: '/', // La cookie está disponible en todo el sitio
-    sameSite: 'lax', // Protección moderada contra ataques CSRF
+    path: '/', // La cookie estará disponible en todas las rutas de la aplicación
+    sameSite: 'lax', // Proporciona un equilibrio entre seguridad y experiencia de usuario
   });
 }
 
@@ -108,21 +105,18 @@ export async function getSession(request: NextRequest): Promise<{ userId: string
  */
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
   // Al importar 'next/headers', le indicamos a Next.js que esta función es dinámica.
-  const requestCookies = cookies();
-  const sessionCookieValue = requestCookies.get('session')?.value;
+  const sessionCookieValue = cookies().get('session')?.value;
 
   // Si no hay una cookie de sesión, no hay usuario autenticado.
   if (!sessionCookieValue) {
     return null;
   }
 
-  // Descifra el payload de la sesión.
   const session = await decrypt(sessionCookieValue);
   if (!session?.userId) {
     return null;
   }
 
-  // Con el ID de usuario, busca al usuario en la base de datos.
   try {
     const user = await prisma.user.findUnique({
       where: { id: session.userId },
