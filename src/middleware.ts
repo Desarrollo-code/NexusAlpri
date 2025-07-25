@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Use the lightweight getSession for middleware
-  const session = await getSession(); // No request needed here
+  const session = await getSession();
   const isPublicPath = PUBLIC_PATHS.some(p => pathname.startsWith(p));
 
   // If user is logged in

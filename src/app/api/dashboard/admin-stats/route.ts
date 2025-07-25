@@ -70,10 +70,10 @@ export async function GET(req: NextRequest) {
             studentsByCompletionsRaw,
             instructorsByCoursesRaw
         ] = await prisma.$transaction([
-            prisma.user.count({}), // FIXED: Explicit empty object
-            prisma.course.count({}), // FIXED: Explicit empty object
+            prisma.user.count({}), 
+            prisma.course.count({}),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
-            prisma.enrollment.count({}), // FIXED: Explicit empty object
+            prisma.enrollment.count({}),
             prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
             prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
             prisma.securityLog.groupBy({

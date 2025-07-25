@@ -27,6 +27,8 @@ export async function decrypt(input: string): Promise<any> {
     });
     return payload;
   } catch (error) {
+    // This can happen if the token is invalid or expired
+    console.log('Failed to verify session token');
     return null;
   }
 }
@@ -48,7 +50,7 @@ export async function createSession(userId: string) {
  * Only decrypts the cookie, does NOT query the database.
  * Use this in Edge runtime environments.
  */
-export async function getSession(request?: NextRequest) {
+export async function getSession() {
   const sessionCookie = cookies().get('session')?.value;
   if (!sessionCookie) return null;
   
@@ -59,7 +61,6 @@ export async function getSession(request?: NextRequest) {
   
   return decrypted; // Returns { userId, iat, exp, expires }
 }
-
 
 /**
  * Fetches the full user object from the database based on the current session.
