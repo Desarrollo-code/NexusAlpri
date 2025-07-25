@@ -51,8 +51,6 @@ export async function GET(req: NextRequest) {
         const thirtyDaysAgo = subDays(new Date(), 30);
         const sevenDaysAgo = subDays(new Date(), 7);
 
-        // Realizamos todas las consultas a la base de datos en una sola transacción para mayor eficiencia.
-        // Esto mejora el rendimiento al reducir los viajes de ida y vuelta a la base de datos.
         const [
             totalUsers,
             totalCourses,
@@ -72,7 +70,7 @@ export async function GET(req: NextRequest) {
             studentsByCompletionsRaw,
             instructorsByCoursesRaw
         ] = await prisma.$transaction([
-            prisma.user.count(), // ✅ Corrección aquí: sin `{}` para conteo total
+            prisma.user.count(),
             prisma.course.count(),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
             prisma.enrollment.count(),
@@ -113,7 +111,6 @@ export async function GET(req: NextRequest) {
             }),
         ]);
         
-        // Procesamiento de datos para los gráficos y rankings
         const dateRange7Days = eachDayOfInterval({ start: sevenDaysAgo, end: new Date() });
         const registrationsByDate = recentUsersData.reduce((acc, user) => {
             if (user.registeredDate) {
@@ -132,16 +129,17 @@ export async function GET(req: NextRequest) {
         });
 
         const dateRange30Days = eachDayOfInterval({ start: thirtyDaysAgo, end: new Date() });
-        const courseActivityMap = dateRange30Days.reduce((acc, day) => {
-            acc[format(day, 'yyyy-MM-dd')] = { newCourses: 0, publishedCourses: 0, newEnrollments: 0 };
-            return acc;
-        }, {} as Record<string, { newCourses: number, publishedCourses: number, newEnrollments: number }>);
+        const courseActivityMap = new Map<string, { newCourses: number, publishedCourses: number, newEnrollments: number }>();
         
-        newCoursesData.forEach(c => { const key = format(c.createdAt, 'yyyy-MM-dd'); if(courseActivityMap[key]) courseActivityMap[key].newCourses++; });
-        publishedCoursesData.forEach(c => { if(c.publicationDate) { const key = format(c.publicationDate, 'yyyy-MM-dd'); if(courseActivityMap[key]) courseActivityMap[key].publishedCourses++; } });
-        newEnrollmentsData.forEach(e => { const key = format(e.enrolledAt, 'yyyy-MM-dd'); if(courseActivityMap[key]) courseActivityMap[key].newEnrollments++; });
+        dateRange30Days.forEach(day => {
+            courseActivityMap.set(format(day, 'yyyy-MM-dd'), { newCourses: 0, publishedCourses: 0, newEnrollments: 0 });
+        });
+
+        newCoursesData.forEach(c => { const key = format(c.createdAt, 'yyyy-MM-dd'); if(courseActivityMap.has(key)) courseActivityMap.get(key)!.newCourses++; });
+        publishedCoursesData.forEach(c => { if(c.publicationDate) { const key = format(c.publicationDate, 'yyyy-MM-dd'); if(courseActivityMap.has(key)) courseActivityMap.get(key)!.publishedCourses++; } });
+        newEnrollmentsData.forEach(e => { const key = format(e.enrolledAt, 'yyyy-MM-dd'); if(courseActivityMap.has(key)) courseActivityMap.get(key)!.newEnrollments++; });
         
-        const courseActivity = Object.entries(courseActivityMap).map(([date, counts]) => ({
+        const courseActivity = Array.from(courseActivityMap.entries()).map(([date, counts]) => ({
             date: format(new Date(date), 'MMM d', { locale: es }),
             ...counts
         }));
@@ -179,7 +177,6 @@ export async function GET(req: NextRequest) {
             return { id: s.userId, name: userDetails?.name || 'Usuario desconocido', avatar: userDetails?.avatar || null, value: s._count.userId };
         });
 
-        // Construir el objeto final de estadísticas
         const stats: AdminDashboardStats = {
             totalUsers,
             totalCourses,
@@ -205,5 +202,6 @@ export async function GET(req: NextRequest) {
         console.error('[ADMIN_DASHBOARD_STATS_ERROR]', error);
         return NextResponse.json({ message: 'Error al obtener las estadísticas del dashboard' }, { status: 500 });
     }
+}
 
     
