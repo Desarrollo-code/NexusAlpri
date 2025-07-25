@@ -109,3 +109,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
   }
 }
+export const dynamic = 'force-dynamic'; // Ensure this route is always dynamic
+export const revalidate = 0; // Disable static caching for this route

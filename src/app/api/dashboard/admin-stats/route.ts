@@ -215,3 +215,6 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ message: 'Error al obtener las estadísticas del dashboard' }, { status: 500 });
     }
 }
+export const config = {
+    runtime: 'edge',
+};

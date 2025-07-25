@@ -62,3 +62,9 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };
+
+/**
+ * Middleware to handle authentication and session management.
+ * It checks if the user is authenticated before allowing access to protected routes.
+ * If not authenticated, it redirects to the sign-in page or returns a 401 for API routes.
+ */

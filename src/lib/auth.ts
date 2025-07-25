@@ -156,3 +156,9 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
     return null;
   }
 });
+
+/**
+ * Verifica si el usuario actual tiene un rol específico.
+ * @param role - El rol a verificar (por ejemplo, 'ADMINISTRATOR').
+ * @returns {Promise<boolean>} - Verdadero si el usuario tiene el rol, falso en caso contrario.
+ */
