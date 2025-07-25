@@ -1,7 +1,12 @@
 // src/middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getCurrentUser } from '@/lib/auth'; // Importamos la función correcta
+import { cookies } from 'next/headers'; // Importa cookies directamente aquí
+
+// Esto es solo un placeholder, no uses el getCurrentUser de lib/auth en middleware
+// Si necesitas autenticación avanzada en middleware, considera JWTs simples o NextAuth.js
+// o las opciones de Prisma Edge Runtime.
+// Aquí solo verificamos si la cookie de sesión existe.
 
 const PUBLIC_PATHS = ['/sign-in', '/sign-up'];
 const API_PREFIX = '/api';
@@ -14,31 +19,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Si la ruta es una API y no es de autenticación, la manejamos aquí
-  if (pathname.startsWith(API_PREFIX) && !pathname.startsWith('/api/auth')) {
-    // Para rutas API, necesitamos verificar la sesión.
-    // Usamos getCurrentUser, que es la función correcta.
-    const user = await getCurrentUser();
+  // Verificar la cookie de sesión en el middleware
+  const sessionCookieValue = request.cookies.get('session')?.value;
 
-    if (!user) {
-      // Si no hay usuario, negamos el acceso a la API
+  // Si no hay cookie de sesión y la ruta no es una API de auth pública,
+  // o si es una API protegida y no hay sesión, redirigir a /sign-in
+  if (!sessionCookieValue && !pathname.startsWith('/api/auth/')) {
+    // Si es una API Route protegida, retornar 401
+    if (pathname.startsWith(API_PREFIX)) {
       return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
-    // Si hay usuario, permitimos el paso a la API
-    return NextResponse.next();
-  }
-
-  // Para rutas de página (no API y no públicas)
-  // Verificamos si el usuario está autenticado para acceder a páginas protegidas.
-  const user = await getCurrentUser(); // Usamos la función correcta aquí también
-
-  if (!user) {
-    // Si no hay usuario, redirigimos a la página de inicio de sesión
+    // Si es una página protegida, redirigir al login
     const signInUrl = new URL('/sign-in', request.url);
     return NextResponse.redirect(signInUrl);
   }
 
-  // Si el usuario está autenticado y la ruta no es pública, permitimos el acceso.
+  // Permitir el paso si hay sesión o si la ruta es una API de autenticación.
   return NextResponse.next();
 }
 
