@@ -51,6 +51,8 @@ export async function GET(req: NextRequest) {
         const thirtyDaysAgo = subDays(new Date(), 30);
         const sevenDaysAgo = subDays(new Date(), 7);
 
+        // Realizamos todas las consultas a la base de datos en una sola transacción para mayor eficiencia.
+        // Esto mejora el rendimiento al reducir los viajes de ida y vuelta a la base de datos.
         const [
             totalUsers,
             totalCourses,
@@ -58,19 +60,19 @@ export async function GET(req: NextRequest) {
             totalEnrollments,
             usersByRole,
             coursesByStatus,
-            recentLoginsResult,
+            recentLoginLogs,
             newUsersLast7Days,
-            recentUsers,
-            recentCourses,
-            recentPublishedCourses,
-            recentEnrollments,
-            allCourseProgress,
-            enrollmentsByCourse,
-            studentsByEnrollment,
-            studentsByCompletions,
-            instructorsByCourses,
+            recentUsersData,
+            newCoursesData,
+            publishedCoursesData,
+            newEnrollmentsData,
+            allCourseProgressRaw,
+            coursesWithEnrollmentCounts,
+            studentsByEnrollmentRaw,
+            studentsByCompletionsRaw,
+            instructorsByCoursesRaw
         ] = await prisma.$transaction([
-            prisma.user.count(),
+            prisma.user.count(), // ✅ Corrección aquí: sin `{}` para conteo total
             prisma.course.count(),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
             prisma.enrollment.count(),
@@ -80,23 +82,15 @@ export async function GET(req: NextRequest) {
                 by: ['userId'],
                 where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } },
             }),
-            prisma.user.count({
-                where: { registeredDate: { gte: sevenDaysAgo } }
-            }),
-            prisma.user.findMany({
-                where: { registeredDate: { gte: startOfDay(sevenDaysAgo) }},
-                select: { registeredDate: true }
-            }),
+            prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo } } }),
+            prisma.user.findMany({ where: { registeredDate: { gte: startOfDay(sevenDaysAgo) } }, select: { registeredDate: true } }),
             prisma.course.findMany({ where: { createdAt: { gte: thirtyDaysAgo } }, select: { createdAt: true } }),
             prisma.course.findMany({ where: { publicationDate: { not: null, gte: thirtyDaysAgo } }, select: { publicationDate: true } }),
             prisma.enrollment.findMany({ where: { enrolledAt: { gte: thirtyDaysAgo } }, select: { enrolledAt: true } }),
-            prisma.courseProgress.findMany({
-                where: { courseId: { not: null }},
-                select: { courseId: true, progressPercentage: true, userId: true }
-            }),
+            prisma.courseProgress.findMany({ select: { courseId: true, progressPercentage: true, userId: true } }),
             prisma.course.findMany({
-                select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } },
                 where: { status: 'PUBLISHED' },
+                select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } },
             }),
             prisma.user.findMany({
                 where: { role: 'STUDENT' },
@@ -106,10 +100,7 @@ export async function GET(req: NextRequest) {
             }),
             prisma.courseProgress.groupBy({
                 by: ['userId'],
-                where: { 
-                    progressPercentage: { gte: 100 },
-                    courseId: { not: null }
-                },
+                where: { progressPercentage: { gte: 100 }, courseId: { not: null } },
                 _count: { userId: true },
                 orderBy: { _count: { userId: 'desc' } },
                 take: 5
@@ -122,14 +113,16 @@ export async function GET(req: NextRequest) {
             }),
         ]);
         
+        // Procesamiento de datos para los gráficos y rankings
         const dateRange7Days = eachDayOfInterval({ start: sevenDaysAgo, end: new Date() });
-        const registrationsByDate: Record<string, number> = {};
-        for (const user of recentUsers) {
+        const registrationsByDate = recentUsersData.reduce((acc, user) => {
             if (user.registeredDate) {
                 const dateKey = format(new Date(user.registeredDate), 'yyyy-MM-dd');
-                registrationsByDate[dateKey] = (registrationsByDate[dateKey] || 0) + 1;
+                acc[dateKey] = (acc[dateKey] || 0) + 1;
             }
-        }
+            return acc;
+        }, {} as Record<string, number>);
+
         const userRegistrationTrend = dateRange7Days.map(date => {
             const dateKey = format(date, 'yyyy-MM-dd');
             return {
@@ -139,110 +132,62 @@ export async function GET(req: NextRequest) {
         });
 
         const dateRange30Days = eachDayOfInterval({ start: thirtyDaysAgo, end: new Date() });
-        const courseActivityMap: Record<string, { newCourses: number, publishedCourses: number, newEnrollments: number }> = {};
+        const courseActivityMap = dateRange30Days.reduce((acc, day) => {
+            acc[format(day, 'yyyy-MM-dd')] = { newCourses: 0, publishedCourses: 0, newEnrollments: 0 };
+            return acc;
+        }, {} as Record<string, { newCourses: number, publishedCourses: number, newEnrollments: number }>);
         
-        dateRange30Days.forEach(day => {
-            const key = format(day, 'yyyy-MM-dd');
-            courseActivityMap[key] = { newCourses: 0, publishedCourses: 0, newEnrollments: 0 };
-        });
-
-        recentCourses.forEach(c => {
-            const dateKey = format(c.createdAt, 'yyyy-MM-dd');
-            if (courseActivityMap[dateKey]) {
-                courseActivityMap[dateKey].newCourses++;
-            }
-        });
-        recentPublishedCourses.forEach(c => {
-            if(c.publicationDate) {
-              const dateKey = format(c.publicationDate, 'yyyy-MM-dd');
-              if (courseActivityMap[dateKey]) {
-                courseActivityMap[dateKey].publishedCourses++;
-              }
-            }
-        });
-        recentEnrollments.forEach(e => {
-            const dateKey = format(e.enrolledAt, 'yyyy-MM-dd');
-            if (courseActivityMap[dateKey]) {
-                courseActivityMap[dateKey].newEnrollments++;
-            }
-        });
-
+        newCoursesData.forEach(c => { const key = format(c.createdAt, 'yyyy-MM-dd'); if(courseActivityMap[key]) courseActivityMap[key].newCourses++; });
+        publishedCoursesData.forEach(c => { if(c.publicationDate) { const key = format(c.publicationDate, 'yyyy-MM-dd'); if(courseActivityMap[key]) courseActivityMap[key].publishedCourses++; } });
+        newEnrollmentsData.forEach(e => { const key = format(e.enrolledAt, 'yyyy-MM-dd'); if(courseActivityMap[key]) courseActivityMap[key].newEnrollments++; });
+        
         const courseActivity = Object.entries(courseActivityMap).map(([date, counts]) => ({
             date: format(new Date(date), 'MMM d', { locale: es }),
             ...counts
         }));
 
-        const averageCompletionRate = allCourseProgress.length > 0
-            ? allCourseProgress.reduce((sum, p) => sum + (p.progressPercentage || 0), 0) / allCourseProgress.length
-            : 0;
+        const totalProgressSum = allCourseProgressRaw.reduce((sum, p) => sum + (p.progressPercentage || 0), 0);
+        const averageCompletionRate = allCourseProgressRaw.length > 0 ? totalProgressSum / allCourseProgressRaw.length : 0;
 
-        const topCoursesByEnrollment = enrollmentsByCourse
+        const topCoursesByEnrollment = coursesWithEnrollmentCounts
             .sort((a, b) => b._count.enrollments - a._count.enrollments)
             .slice(0, 5)
             .map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: c._count.enrollments }));
 
-        const completionRatesByCourse: Record<string, { total: number; count: number }> = {};
-        allCourseProgress.forEach(p => {
-            if (p.courseId && !completionRatesByCourse[p.courseId]) {
-                completionRatesByCourse[p.courseId] = { total: 0, count: 0 };
+        const completionRatesByCourse = allCourseProgressRaw.reduce((acc, p) => {
+            if (p.courseId) {
+                if (!acc[p.courseId]) acc[p.courseId] = { total: 0, count: 0 };
+                acc[p.courseId].total += p.progressPercentage || 0;
+                acc[p.courseId].count++;
             }
-            if(p.courseId) {
-                completionRatesByCourse[p.courseId].total += p.progressPercentage || 0;
-                completionRatesByCourse[p.courseId].count++;
-            }
-        });
+            return acc;
+        }, {} as Record<string, { total: number; count: number }>);
 
-        const averageCompletionRates = Object.entries(completionRatesByCourse).map(([courseId, data]) => ({
-            courseId,
-            avgRate: data.count > 0 ? data.total / data.count : 0,
-        }));
-        
-        const coursesWithAvgRates = enrollmentsByCourse.map(course => ({
+        const coursesWithAvgRates = coursesWithEnrollmentCounts.map(course => ({
             ...course,
-            avgCompletion: averageCompletionRates.find(c => c.courseId === course.id)?.avgRate || 0,
+            avgCompletion: completionRatesByCourse[course.id] ? completionRatesByCourse[course.id].total / completionRatesByCourse[course.id].count : 0,
         }));
         
-        const topCoursesByCompletion = coursesWithAvgRates
-            .sort((a, b) => b.avgCompletion - a.avgCompletion)
-            .slice(0, 5)
-            .map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: Math.round(c.avgCompletion) }));
-            
-        const lowestCoursesByCompletion = coursesWithAvgRates
-             .filter(c => c._count.enrollments > 0)
-            .sort((a, b) => a.avgCompletion - b.avgCompletion)
-            .slice(0, 5)
-            .map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: Math.round(c.avgCompletion) }));
-
+        const topCoursesByCompletion = [...coursesWithAvgRates].sort((a, b) => b.avgCompletion - a.avgCompletion).slice(0, 5).map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: Math.round(c.avgCompletion) }));
+        const lowestCoursesByCompletion = [...coursesWithAvgRates].filter(c => c._count.enrollments > 0).sort((a, b) => a.avgCompletion - b.avgCompletion).slice(0, 5).map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: Math.round(c.avgCompletion) }));
         
-        const topCompleterDetails = await prisma.user.findMany({
-            where: { id: { in: studentsByCompletions.map(s => s.userId) } },
-            select: { id: true, name: true, avatar: true }
-        });
+        const topCompleterIds = studentsByCompletionsRaw.map(s => s.userId);
+        const topCompleterDetails = await prisma.user.findMany({ where: { id: { in: topCompleterIds } }, select: { id: true, name: true, avatar: true } });
         
-        const topStudentsByCompletionFormatted = studentsByCompletions.map(s => {
+        const topStudentsByCompletion = studentsByCompletionsRaw.map(s => {
             const userDetails = topCompleterDetails.find(u => u.id === s.userId);
-            return {
-                id: userDetails?.id || s.userId,
-                name: userDetails?.name || 'Usuario desconocido',
-                avatar: userDetails?.avatar || null,
-                value: s._count.userId
-            }
+            return { id: s.userId, name: userDetails?.name || 'Usuario desconocido', avatar: userDetails?.avatar || null, value: s._count.userId };
         });
 
+        // Construir el objeto final de estadísticas
         const stats: AdminDashboardStats = {
             totalUsers,
             totalCourses,
             totalPublishedCourses,
             totalEnrollments,
-            usersByRole: usersByRole.map(item => ({
-                role: item.role as UserRole,
-                count: item._count.role,
-            })),
-            coursesByStatus: coursesByStatus.map(item => ({
-                status: item.status as CourseStatus,
-                count: item._count.status,
-            })),
-            recentLogins: recentLoginsResult.length,
+            usersByRole: usersByRole.map(item => ({ role: item.role as UserRole, count: item._count.role })),
+            coursesByStatus: coursesByStatus.map(item => ({ status: item.status as CourseStatus, count: item._count.status })),
+            recentLogins: recentLoginLogs.length,
             newUsersLast7Days: newUsersLast7Days,
             userRegistrationTrend,
             courseActivity,
@@ -250,9 +195,9 @@ export async function GET(req: NextRequest) {
             topCoursesByEnrollment,
             topCoursesByCompletion,
             lowestCoursesByCompletion,
-            topStudentsByEnrollment: studentsByEnrollment.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, value: u._count.enrollments })),
-            topStudentsByCompletion: topStudentsByCompletionFormatted,
-            topInstructorsByCourses: instructorsByCourses.map(i => ({ id: i.id, name: i.name, avatar: i.avatar, value: i._count.courses })),
+            topStudentsByEnrollment: studentsByEnrollmentRaw.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, value: u._count.enrollments })),
+            topStudentsByCompletion,
+            topInstructorsByCourses: instructorsByCoursesRaw.map(i => ({ id: i.id, name: i.name, avatar: i.avatar, value: i._count.courses })),
         };
 
         return NextResponse.json(stats);
@@ -260,4 +205,5 @@ export async function GET(req: NextRequest) {
         console.error('[ADMIN_DASHBOARD_STATS_ERROR]', error);
         return NextResponse.json({ message: 'Error al obtener las estadísticas del dashboard' }, { status: 500 });
     }
-}
+
+    
