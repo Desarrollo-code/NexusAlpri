@@ -5,6 +5,8 @@ import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest, context: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session) {

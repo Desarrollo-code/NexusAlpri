@@ -5,6 +5,8 @@ import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 async function checkAuth(req: NextRequest, resourceId: string) {
     const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {

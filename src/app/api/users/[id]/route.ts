@@ -4,6 +4,8 @@ import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 // GET a specific user
 export async function GET(req: NextRequest, context: { params: { id: string } }) {
     const session = await getCurrentUser();

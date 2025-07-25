@@ -3,6 +3,8 @@ import { Resend } from 'resend';
 import { type ReactElement } from 'react';
 import prisma from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 // Ensure RESEND_API_KEY is set in environment variables
 const resendApiKey = process.env.RESEND_API_KEY;
 
