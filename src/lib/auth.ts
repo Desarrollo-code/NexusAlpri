@@ -4,7 +4,7 @@ import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 import type { User } from '@/types';
-import prisma from './prisma'; // Import prisma client
+import prisma from './prisma';
 
 const secret = process.env.JWT_SECRET;
 if (!secret) {
@@ -27,13 +27,15 @@ export async function decrypt(input: string): Promise<any> {
     });
     return payload;
   } catch (error) {
+    // This can happen if the token is invalid or expired
     return null;
   }
 }
 
 export async function createSession(userId: string) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const session = await encrypt({ userId, expires });
+  // Only store the userId in the session payload
+  const session = await encrypt({ userId, expires: expires.toISOString() });
 
   cookies().set('session', session, { 
     expires, 
@@ -43,22 +45,32 @@ export async function createSession(userId: string) {
   });
 }
 
+/**
+ * Lightweight session checker for middleware.
+ * Only decrypts the cookie, does NOT query the database.
+ * Use this in Edge runtime environments.
+ */
 export async function getSession(request?: NextRequest) {
   const cookieStore = request ? request.cookies : cookies();
   const sessionCookie = cookieStore.get('session')?.value;
 
   if (!sessionCookie) return null;
   
-  return await decrypt(sessionCookie);
+  const decrypted = await decrypt(sessionCookie);
+  if (!decrypted || new Date(decrypted.expires) < new Date()) {
+      return null;
+  }
+  
+  return decrypted; // Returns { userId, iat, exp, expires }
 }
 
+/**
+ * Fetches the full user object from the database based on the current session.
+ * This is a server-only function and should not be used in middleware.
+ */
 export async function getCurrentUser(): Promise<User | null> {
     const session = await getSession();
     if (!session || !session.userId) return null;
-
-    if (new Date(session.expires) < new Date()) {
-        return null;
-    }
 
     try {
         const user = await prisma.user.findUnique({

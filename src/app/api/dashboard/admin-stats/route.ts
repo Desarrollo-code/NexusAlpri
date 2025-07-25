@@ -51,8 +51,6 @@ export async function GET(req: NextRequest) {
         const thirtyDaysAgo = subDays(new Date(), 30);
         const sevenDaysAgo = subDays(new Date(), 7);
 
-        // prisma.$transaction es una operación atómica que agrupa múltiples consultas.
-        // Esto mejora el rendimiento al reducir los viajes de ida y vuelta a la base de datos.
         const [
             totalUsers,
             totalCourses,
@@ -72,7 +70,7 @@ export async function GET(req: NextRequest) {
             studentsByCompletionsRaw,
             instructorsByCoursesRaw
         ] = await prisma.$transaction([
-            prisma.user.count(), // ✅ Corrección aquí: sintaxis simple y correcta
+            prisma.user.count(),
             prisma.course.count(),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
             prisma.enrollment.count(),
@@ -101,7 +99,7 @@ export async function GET(req: NextRequest) {
             prisma.courseProgress.groupBy({
                 by: ['userId'],
                 where: { progressPercentage: { gte: 100 }, courseId: { not: null } },
-                _count: { userId: true },
+                _count: { _all: true },
                 orderBy: { _count: { userId: 'desc' } },
                 take: 5
             }),
@@ -181,7 +179,7 @@ export async function GET(req: NextRequest) {
         
         const topStudentsByCompletion = studentsByCompletionsRaw.map(s => {
             const userDetails = topCompleterDetails.find(u => u.id === s.userId);
-            return { id: s.userId, name: userDetails?.name || 'Usuario desconocido', avatar: userDetails?.avatar || null, value: s._count.userId };
+            return { id: s.userId, name: userDetails?.name || 'Usuario desconocido', avatar: userDetails?.avatar || null, value: s._count._all };
         });
 
         const stats: AdminDashboardStats = {

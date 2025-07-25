@@ -1,3 +1,4 @@
+
 import { PrismaClient } from '@prisma/client';
 
 // PrismaClient is attached to the `globalThis` object in development to prevent
@@ -17,10 +18,11 @@ declare global {
   var prisma: undefined | ReturnType<typeof prismaClientSingleton>;
 }
 
-const prisma = globalThis.prisma ?? prismaClientSingleton();
+// Use `globalThis` which is available in both Node.js and Edge runtimes.
+const prisma = (globalThis as any).prisma ?? prismaClientSingleton();
 
 export default prisma;
 
 if (process.env.NODE_ENV !== 'production') {
-  globalThis.prisma = prisma;
+  (globalThis as any).prisma = prisma;
 }

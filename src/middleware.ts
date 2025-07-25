@@ -24,11 +24,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Use the lightweight getSession for middleware
   const session = await getSession(request);
   const isPublicPath = PUBLIC_PATHS.some(p => pathname.startsWith(p));
 
   // If user is logged in
-  if (session) {
+  if (session?.userId) {
     // If they try to access a public-only path (like sign-in), redirect to dashboard
     if (isPublicPath) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
@@ -38,7 +39,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // If user is NOT logged in
-  if (!session && !isPublicPath) {
+  if (!session?.userId && !isPublicPath) {
     // And tries to access a protected path, redirect them to sign-in
     const url = request.nextUrl.clone();
     url.pathname = '/sign-in';
