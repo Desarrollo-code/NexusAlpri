@@ -63,7 +63,7 @@ async function decrypt(token: string): Promise<JWTPayload | null> {
     const { payload } = await jwtVerify(token, key, { algorithms: ['HS256'] });
     return payload as JWTPayload;
   } catch (error) {
-    console.error('Fallo al verificar el token de sesión:', error);
+    // Es normal que falle si el token es inválido o expiró.
     return null;
   }
 }
@@ -108,11 +108,11 @@ export async function deleteSession() {
  * @returns {Promise<JWTPayload | null>} - El payload de la sesión o null si no existe/es inválido.
  */
 export async function getSession(request: NextRequest): Promise<JWTPayload | null> {
-  const sessionCookieValue = request.cookies.get('session')?.value;
-  if (!sessionCookieValue) {
-    return null;
-  }
-  return await decrypt(sessionCookieValue);
+    const sessionCookieValue = request.cookies.get('session')?.value;
+    if (!sessionCookieValue) {
+        return null;
+    }
+    return await decrypt(sessionCookieValue);
 }
 
 
@@ -124,7 +124,6 @@ export async function getSession(request: NextRequest): Promise<JWTPayload | nul
  */
 export const getCurrentUser = cache(async (): Promise<User | null> => {
   // Para obtener las cookies en un Server Component o API Route, se debe usar la función `cookies()` de `next/headers`.
-  // Next.js detectará esta llamada como una API dinámica, asegurando que la ruta se renderice dinámicamente.
   const requestCookies = cookies();
   const sessionCookieValue = requestCookies.get('session')?.value;
 
@@ -156,9 +155,3 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
     return null;
   }
 });
-
-/**
- * Verifica si el usuario actual tiene un rol específico.
- * @param role - El rol a verificar (por ejemplo, 'ADMINISTRATOR').
- * @returns {Promise<boolean>} - Verdadero si el usuario tiene el rol, falso en caso contrario.
- */

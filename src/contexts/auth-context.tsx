@@ -52,7 +52,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userData = userRes.ok ? (await userRes.json()).user : null;
       setUser(userData);
     } catch (error) {
-      console.error("An unexpected error occurred during session initialization:", error);
       setUser(null);
       setSettings(DEFAULT_SETTINGS);
     } finally {

@@ -21,8 +21,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get session is lightweight and safe for the Edge runtime
-  const session = await getSession();
+  // getSession is lightweight and safe for the Edge runtime
+  const session = await getSession(request);
   
   const isPublicPath = PUBLIC_PATHS.some(p => pathname.startsWith(p));
   const isApiAuthRoute = pathname.startsWith(API_AUTH_PREFIX);
@@ -62,9 +62,3 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };
-
-/**
- * Middleware to handle authentication and session management.
- * It checks if the user is authenticated before allowing access to protected routes.
- * If not authenticated, it redirects to the sign-in page or returns a 401 for API routes.
- */
