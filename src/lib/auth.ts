@@ -4,11 +4,10 @@ import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 import type { User } from '@/types';
+import prisma from './prisma'; // Import prisma client
 
 const secret = process.env.JWT_SECRET;
 if (!secret) {
-  // In a real app, you'd want to throw an error here or have a fallback.
-  // For this context, we'll log a warning and proceed with a default, insecure secret.
   console.warn('JWT_SECRET is not set in environment variables. Using a default, insecure secret.');
 }
 const key = new TextEncoder().encode(secret || 'default-insecure-secret-for-dev');
@@ -28,23 +27,23 @@ export async function decrypt(input: string): Promise<any> {
     });
     return payload;
   } catch (error) {
-    // This can happen if the token is expired or malformed
     return null;
   }
 }
 
-export async function createSession(user: Partial<User>) {
-  // Ensure we don't leak password hash or other sensitive data
-  const { ...userPayload } = user;
-  
+export async function createSession(userId: string) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const session = await encrypt({ user: userPayload, expires: expires.toISOString() });
+  const session = await encrypt({ userId, expires });
 
-  const cookieStore = cookies();
-  cookieStore.set('session', session, { expires, httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/' });
+  cookies().set('session', session, { 
+    expires, 
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === 'production', 
+    path: '/' 
+  });
 }
 
-export async function getSession(request?: NextRequest) {
+export async function getSession(request?: NextRequest): Promise<User | null> {
   const cookieStore = request ? request.cookies : cookies();
   const sessionCookie = cookieStore.get('session')?.value;
 
@@ -54,20 +53,34 @@ export async function getSession(request?: NextRequest) {
 
   const decryptedSession = await decrypt(sessionCookie);
 
-  if (!decryptedSession) {
+  if (!decryptedSession || !decryptedSession.userId) {
     return null;
   }
   
   if (new Date(decryptedSession.expires) < new Date()) {
-      // The session is expired and will be treated as null.
-      // The client will be redirected by the middleware.
       return null;
   }
 
-  return decryptedSession.user as User;
+  // Fetch the latest user data from the database
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: decryptedSession.userId },
+    });
+
+    if (!user) {
+      return null;
+    }
+    
+    // Omit password and other sensitive fields before returning
+    const { password, twoFactorSecret, ...safeUser } = user;
+    return safeUser as User;
+    
+  } catch (error) {
+    console.error("Error fetching user for session:", error);
+    return null;
+  }
 }
 
 export async function deleteSession() {
-  const cookieStore = cookies();
-  cookieStore.delete('session');
+  cookies().set('session', '', { expires: new Date(0), path: '/' });
 }

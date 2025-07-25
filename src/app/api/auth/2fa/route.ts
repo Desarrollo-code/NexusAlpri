@@ -104,7 +104,7 @@ async function handleLoginVerify(userId: string, token: string) {
     }
 
     const { password: _, twoFactorSecret, ...userToReturn } = user;
-    await createSession(userToReturn);
+    await createSession(user.id);
     return NextResponse.json({ user: userToReturn });
 }
 

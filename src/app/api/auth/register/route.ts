@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
 
     const { password: _, ...userToReturn } = newUser;
 
-    await createSession(userToReturn);
+    await createSession(newUser.id);
 
     return NextResponse.json({ user: userToReturn }, { status: 201 });
 

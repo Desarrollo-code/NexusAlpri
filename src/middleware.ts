@@ -1,25 +1,30 @@
+
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getSession } from '@/lib/auth';
 
 const PUBLIC_PATHS = ['/sign-in', '/sign-up'];
+const API_PREFIX = '/api';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Let static files, images, and API routes pass through without checks
+  // Early exit for static files and internal Next.js assets
   if (
     pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
     pathname.startsWith('/static') ||
     pathname.startsWith('/uploads') ||
     pathname.match(/\.(.*)$/)
   ) {
     return NextResponse.next();
   }
+  
+  // API routes are handled separately, not redirected. Let them pass to be handled by route handlers.
+  if (pathname.startsWith(API_PREFIX)) {
+    return NextResponse.next();
+  }
 
   const session = await getSession(request);
-
   const isPublicPath = PUBLIC_PATHS.some(p => pathname.startsWith(p));
 
   // If user is logged in
@@ -28,13 +33,13 @@ export async function middleware(request: NextRequest) {
     if (isPublicPath) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
-    // Allow access to protected routes
+    // Allow access to all other (protected) routes
     return NextResponse.next();
   }
 
-  // If user is NOT logged in and tries to access a protected path
+  // If user is NOT logged in
   if (!session && !isPublicPath) {
-    // Redirect to sign-in page, preserving the original destination for later
+    // And tries to access a protected path, redirect them to sign-in
     const url = request.nextUrl.clone();
     url.pathname = '/sign-in';
     url.searchParams.set('redirectedFrom', pathname);
@@ -49,11 +54,11 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * This ensures the middleware runs on all pages and API routes.
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };
