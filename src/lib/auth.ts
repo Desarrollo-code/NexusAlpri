@@ -35,14 +35,7 @@ export async function decrypt(input: string): Promise<any> {
 
 export async function createSession(user: Partial<User>) {
   // Ensure we don't leak password hash or other sensitive data
-  const userPayload = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      avatar: user.avatar,
-      isTwoFactorEnabled: user.isTwoFactorEnabled,
-  };
+  const { ...userPayload } = user;
   
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   const session = await encrypt({ user: userPayload, expires: expires.toISOString() });

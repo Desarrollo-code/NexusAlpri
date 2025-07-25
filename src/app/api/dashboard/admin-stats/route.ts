@@ -37,7 +37,6 @@ export interface AdminDashboardStats {
     topCoursesByEnrollment: CourseInfo[];
     topCoursesByCompletion: CourseInfo[];
     lowestCoursesByCompletion: CourseInfo[];
-    // New User Rankings
     topStudentsByEnrollment: UserInfo[];
     topStudentsByCompletion: UserInfo[];
     topInstructorsByCourses: UserInfo[];
@@ -68,7 +67,6 @@ export async function GET(req: NextRequest) {
             recentEnrollments,
             allCourseProgress,
             enrollmentsByCourse,
-            // New queries for user rankings
             studentsByEnrollment,
             studentsByCompletions,
             instructorsByCourses,
@@ -94,13 +92,13 @@ export async function GET(req: NextRequest) {
             prisma.course.findMany({ where: { publicationDate: { not: null, gte: thirtyDaysAgo } }, select: { publicationDate: true } }),
             prisma.enrollment.findMany({ where: { enrolledAt: { gte: thirtyDaysAgo } }, select: { enrolledAt: true } }),
             prisma.courseProgress.findMany({
+                where: { courseId: { not: null }},
                 select: { courseId: true, progressPercentage: true, userId: true }
             }),
             prisma.course.findMany({
                 select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } },
                 where: { status: 'PUBLISHED' },
             }),
-            // User ranking queries
             prisma.user.findMany({
                 where: { role: 'STUDENT' },
                 select: { id: true, name: true, avatar: true, _count: { select: { enrollments: true } } },
@@ -125,7 +123,6 @@ export async function GET(req: NextRequest) {
             }),
         ]);
         
-        // --- User Registration Trend (Last 7 days) ---
         const dateRange7Days = eachDayOfInterval({ start: sevenDaysAgo, end: new Date() });
         const registrationsByDate: Record<string, number> = {};
         for (const user of recentUsers) {
@@ -142,7 +139,6 @@ export async function GET(req: NextRequest) {
             };
         });
 
-        // --- Course Activity (Last 30 days) ---
         const dateRange30Days = eachDayOfInterval({ start: thirtyDaysAgo, end: new Date() });
         const courseActivityMap: Record<string, { newCourses: number, publishedCourses: number, newEnrollments: number }> = {};
         
@@ -177,9 +173,8 @@ export async function GET(req: NextRequest) {
             ...counts
         }));
 
-        // --- Advanced Course Stats ---
         const averageCompletionRate = allCourseProgress.length > 0
-            ? allCourseProgress.reduce((sum, p) => sum + p.progressPercentage, 0) / allCourseProgress.length
+            ? allCourseProgress.reduce((sum, p) => sum + (p.progressPercentage || 0), 0) / allCourseProgress.length
             : 0;
 
         const topCoursesByEnrollment = enrollmentsByCourse
@@ -193,14 +188,14 @@ export async function GET(req: NextRequest) {
                 completionRatesByCourse[p.courseId] = { total: 0, count: 0 };
             }
             if(p.courseId) {
-                completionRatesByCourse[p.courseId].total += p.progressPercentage;
+                completionRatesByCourse[p.courseId].total += p.progressPercentage || 0;
                 completionRatesByCourse[p.courseId].count++;
             }
         });
 
         const averageCompletionRates = Object.entries(completionRatesByCourse).map(([courseId, data]) => ({
             courseId,
-            avgRate: data.total / data.count,
+            avgRate: data.count > 0 ? data.total / data.count : 0,
         }));
         
         const coursesWithAvgRates = enrollmentsByCourse.map(course => ({
@@ -214,12 +209,11 @@ export async function GET(req: NextRequest) {
             .map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: Math.round(c.avgCompletion) }));
             
         const lowestCoursesByCompletion = coursesWithAvgRates
-             .filter(c => c._count.enrollments > 0) // Only show courses with students
+             .filter(c => c._count.enrollments > 0)
             .sort((a, b) => a.avgCompletion - b.avgCompletion)
             .slice(0, 5)
             .map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: Math.round(c.avgCompletion) }));
 
-        // --- User Ranking Formatting ---
         const studentIdsForCompletion = studentsByCompletions.map(s => s.userId);
         const topCompleterDetails = await prisma.user.findMany({
             where: { id: { in: studentIdsForCompletion } },
@@ -235,7 +229,6 @@ export async function GET(req: NextRequest) {
                 value: s._count.userId
             }
         });
-
 
         const stats: AdminDashboardStats = {
             totalUsers,
