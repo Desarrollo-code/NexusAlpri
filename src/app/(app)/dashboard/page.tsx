@@ -40,8 +40,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Area, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, BarChart as RechartsBar, Legend, ComposedChart } from "recharts";
-import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
-import { getEventDetails, getInitials } from '@/lib/security-log-utils.tsx';
+import { useAnimatedCounter } from '@/hooks/use-animated-counter';
+import { getEventDetails, getInitials } from '@/lib/security-log-utils';
 
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -518,3 +518,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
