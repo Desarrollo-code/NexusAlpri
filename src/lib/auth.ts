@@ -51,21 +51,17 @@ export async function deleteSession() {
 
 /**
  * Lightweight session checker.
- * Can be used in Middleware (by passing the request object) or in Server Components/API Routes (by omitting the request).
- * Only decrypts the cookie, does NOT query the database.
+ * This is the ONLY function that should be used in middleware.
+ * It only decrypts the cookie, it does NOT query the database.
  */
-export async function getSession(request?: NextRequest) {
-  const cookieStore = request ? request.cookies : cookies();
-  const sessionCookie = cookieStore.get('session')?.value;
+export async function getSession(request: NextRequest) {
+  const sessionCookie = request.cookies.get('session')?.value;
 
   if (!sessionCookie) return null;
 
   const decrypted = await decrypt(sessionCookie);
+
   if (!decrypted || new Date(decrypted.expires) < new Date()) {
-      // Clear expired cookie if we can (only possible in server components/actions)
-      if (!request) {
-        cookies().set('session', '', { expires: new Date(0), path: '/' });
-      }
       return null;
   }
   
@@ -80,7 +76,11 @@ export async function getSession(request?: NextRequest) {
  * Uses `cache` to prevent multiple DB queries for the same user in a single request.
  */
 export const getCurrentUser = cache(async (): Promise<User | null> => {
-    const sessionData = await getSession();
+    // We use `cookies()` here directly, which is safe for Server Components/API Routes.
+    const sessionCookie = cookies().get('session')?.value;
+    if (!sessionCookie) return null;
+
+    const sessionData = await decrypt(sessionCookie);
     if (!sessionData?.userId) return null;
 
     try {

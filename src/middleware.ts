@@ -19,7 +19,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // API routes are handled separately by their own logic, not redirected by middleware.
+  // API routes are handled by their own logic, not redirected by middleware.
   if (pathname.startsWith(API_PREFIX)) {
     return NextResponse.next();
   }
