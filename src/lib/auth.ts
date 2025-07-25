@@ -50,9 +50,9 @@ export async function deleteSession() {
 }
 
 /**
- * Lightweight session checker.
+ * Lightweight session checker for middleware.
  * This is the ONLY function that should be used in middleware.
- * It only decrypts the cookie, it does NOT query the database.
+ * It only decrypts the cookie from the request object, it does NOT query the database.
  */
 export async function getSession(request: NextRequest) {
   const sessionCookie = request.cookies.get('session')?.value;
@@ -76,12 +76,15 @@ export async function getSession(request: NextRequest) {
  * Uses `cache` to prevent multiple DB queries for the same user in a single request.
  */
 export const getCurrentUser = cache(async (): Promise<User | null> => {
-    // We use `cookies()` here directly, which is safe for Server Components/API Routes.
     const sessionCookie = cookies().get('session')?.value;
-    if (!sessionCookie) return null;
+    if (!sessionCookie) {
+        return null;
+    }
 
     const sessionData = await decrypt(sessionCookie);
-    if (!sessionData?.userId) return null;
+    if (!sessionData?.userId) {
+        return null;
+    }
 
     try {
         const user = await prisma.user.findUnique({
