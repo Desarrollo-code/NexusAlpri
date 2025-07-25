@@ -31,6 +31,8 @@ async function decrypt(input: string): Promise<any> {
     const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
     return payload;
   } catch (error) {
+    // This can happen if the token is invalid, expired, etc.
+    // It's a normal part of the process, not necessarily an error.
     return null;
   }
 }
@@ -38,8 +40,6 @@ async function decrypt(input: string): Promise<any> {
 export async function createSession(userId: string) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
   const session = await encrypt({ userId, expires });
-
-  // Set the cookie
   cookies().set('session', session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
