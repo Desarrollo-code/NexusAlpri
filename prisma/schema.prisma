@@ -5,8 +5,9 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma" // Importante para MySQL y auto-relaciones
 }
 
 // =================================================================
@@ -14,27 +15,29 @@ datasource db {
 // =================================================================
 
 model User {
-  id                    String        @id @default(cuid())
-  name                  String
-  email                 String        @unique
-  password              String
-  avatar                String?
-  role                  UserRole      @default(STUDENT)
-  isTwoFactorEnabled    Boolean       @default(false)
-  twoFactorSecret       String?
-  registeredDate        DateTime      @default(now())
+  id                  String           @id @default(cuid())
+  name                String
+  email               String           @unique
+  password            String
+  avatar              String?
+  role                UserRole         @default(STUDENT)
+  isTwoFactorEnabled  Boolean          @default(false)
+  twoFactorSecret     String?
+  registeredDate      DateTime         @default(now())
+  createdAt           DateTime         @default(now()) // Añadido para consistencia
+  updatedAt           DateTime         @updatedAt        // Añadido para consistencia
 
   // Relaciones
-  createdCourses        Course[]      @relation("CourseCreator")
-  enrollments           Enrollment[]  @relation("UserEnrollments")
-  courseProgress        CourseProgress[] @relation("UserProgress")
-  createdAnnouncements  Announcement[] @relation("AnnouncementCreator")
-  createdEvents         CalendarEvent[] @relation("EventCreator")
-  attendedEvents        CalendarEvent[] @relation("EventAttendees")
-  uploadedResources     Resource[]    @relation("ResourceUploader")
-  notifications         Notification[] @relation("UserNotifications")
-  securityLogs          SecurityLog[] @relation("UserSecurityLogs")
-  createdTemplates      LessonTemplate[] @relation("TemplateCreator")
+  createdCourses      Course[]         @relation("CourseCreator")
+  enrollments         Enrollment[]     @relation("UserEnrollments")
+  courseProgress      CourseProgress[] @relation("UserProgress")
+  createdAnnouncements Announcement[] @relation("AnnouncementCreator")
+  createdEvents       CalendarEvent[]  @relation("EventCreator")
+  attendedEvents      CalendarEvent[]  @relation("EventAttendees")
+  uploadedResources   Resource[]       @relation("ResourceUploader")
+  notifications       Notification[]   @relation("UserNotifications")
+  securityLogs        SecurityLog[]    @relation("UserSecurityLogs")
+  createdTemplates    LessonTemplate[] @relation("TemplateCreator")
 
   @@map("users")
 }
@@ -51,51 +54,55 @@ enum UserRole {
 // =================================================================
 
 model Course {
-  id              String      @id @default(cuid())
-  title           String
-  description     String      @db.Text
-  imageUrl        String?
-  category        String?
-  status          CourseStatus @default(DRAFT)
+  id            String         @id @default(cuid())
+  title         String
+  description   String         @db.Text
+  imageUrl      String?
+  category      String?
+  status        CourseStatus   @default(DRAFT)
   publicationDate DateTime?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   // Relaciones
-  instructorId    String
-  instructor      User        @relation("CourseCreator", fields: [instructorId], references: [id], onDelete: Cascade)
-  
-  modules         Module[]
-  enrollments     Enrollment[]
-  courseProgress  CourseProgress[]
+  instructorId  String
+  instructor    User           @relation("CourseCreator", fields: [instructorId], references: [id], onDelete: Cascade)
+
+  modules       Module[]
+  enrollments   Enrollment[]
+  courseProgress CourseProgress[]
 
   @@index([instructorId])
   @@map("courses")
 }
 
 model Module {
-  id          String    @id @default(cuid())
-  title       String
-  order       Int
+  id        String   @id @default(cuid())
+  title     String
+  order     Int
+  createdAt DateTime @default(now()) // Añadido para consistencia
+  updatedAt DateTime @updatedAt        // Añadido para consistencia
 
   // Relaciones
-  courseId    String
-  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  
-  lessons     Lesson[]
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  lessons   Lesson[]
 
   @@index([courseId])
   @@map("modules")
 }
 
 model Lesson {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
   order       Int
-  
+  createdAt   DateTime @default(now()) // Añadido para consistencia
+  updatedAt   DateTime @updatedAt        // Añadido para consistencia
+
   // Relaciones
   moduleId    String
-  module      Module    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
   contentBlocks ContentBlock[]
   completionRecords LessonCompletionRecord[]
@@ -105,63 +112,67 @@ model Lesson {
 }
 
 model ContentBlock {
-    id          String      @id @default(cuid())
-    type        LessonType
-    content     String?     @db.Text
-    order       Int
+  id          String     @id @default(cuid())
+  type        LessonType
+  content     String?    @db.Text
+  order       Int
+  createdAt   DateTime   @default(now()) // Añadido para consistencia
 
-    // Relaciones
-    lessonId    String
-    lesson      Lesson      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-    
-    quiz        Quiz?
+  // Relaciones
+  lessonId    String
+  lesson      Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
-    @@index([lessonId])
-    @@map("content_blocks")
+  quiz        Quiz?
+
+  @@index([lessonId])
+  @@map("content_blocks")
 }
 
 model Quiz {
-    id          String @id @default(cuid())
-    title       String
-    description String? @db.Text
+  id           String       @id @default(cuid())
+  title        String
+  description  String?      @db.Text
+  createdAt    DateTime     @default(now()) // Añadido para consistencia
 
-    // Relaciones
-    contentBlockId  String @unique
-    contentBlock    ContentBlock @relation(fields: [contentBlockId], references: [id], onDelete: Cascade)
-    
-    questions   Question[]
-    
-    @@map("quizzes")
+  // Relaciones
+  contentBlockId String     @unique
+  contentBlock   ContentBlock @relation(fields: [contentBlockId], references: [id], onDelete: Cascade)
+
+  questions    Question[]
+
+  @@map("quizzes")
 }
 
 model Question {
-    id      String       @id @default(cuid())
-    text    String       @db.Text
-    type    QuestionType @default(MULTIPLE_CHOICE)
-    order   Int
+  id        String       @id @default(cuid())
+  text      String       @db.Text
+  type      QuestionType @default(MULTIPLE_CHOICE)
+  order     Int
+  createdAt DateTime     @default(now()) // Añadido para consistencia
 
-    // Relaciones
-    quizId  String
-    quiz    Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
-    
-    options AnswerOption[]
-    
-    @@index([quizId])
-    @@map("questions")
+  // Relaciones
+  quizId    String
+  quiz      Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  options   AnswerOption[]
+
+  @@index([quizId])
+  @@map("questions")
 }
 
 model AnswerOption {
-    id          String  @id @default(cuid())
-    text        String  @db.Text
-    isCorrect   Boolean @default(false)
-    feedback    String? @db.Text
+  id        String   @id @default(cuid())
+  text      String   @db.Text
+  isCorrect Boolean  @default(false)
+  feedback  String?  @db.Text
+  createdAt DateTime @default(now()) // Añadido para consistencia
 
-    // Relaciones
-    questionId  String
-    question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-    
-    @@index([questionId])
-    @@map("answer_options")
+  // Relaciones
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+  @@map("answer_options")
 }
 
 enum LessonType {
@@ -190,17 +201,18 @@ enum CourseStatus {
 // =================================================================
 
 model Enrollment {
-  id          String    @id @default(cuid())
-  enrolledAt  DateTime  @default(now())
+  id          String        @id @default(cuid())
+  enrolledAt  DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt // Añadido para consistencia
 
   // Relaciones
   userId      String
   courseId    String
-  user        User      @relation("UserEnrollments", fields: [userId], references: [id], onDelete: Cascade)
-  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user        User          @relation("UserEnrollments", fields: [userId], references: [id], onDelete: Cascade)
+  course      Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   progress    CourseProgress?
-  
+
   @@unique([userId, courseId])
   @@index([userId])
   @@index([courseId])
@@ -208,36 +220,38 @@ model Enrollment {
 }
 
 model CourseProgress {
-    id                  String    @id @default(cuid())
-    progressPercentage  Float     @default(0)
+  id               String                 @id @default(cuid())
+  progressPercentage Float                @default(0)
+  updatedAt        DateTime               @updatedAt
 
-    // Relaciones
-    userId              String
-    courseId            String
-    enrollmentId        String    @unique
-    enrollment          Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-    user                User       @relation("UserProgress", fields: [userId], references: [id], onDelete: Cascade)
-    course              Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
-    
-    completedLessons    LessonCompletionRecord[]
+  // Relaciones
+  userId           String
+  courseId         String
+  enrollmentId     String                 @unique
+  enrollment       Enrollment             @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  user             User                   @relation("UserProgress", fields: [userId], references: [id], onDelete: Cascade)
+  course           Course                 @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
-    @@index([userId, courseId])
-    @@map("course_progress")
+  completedLessons LessonCompletionRecord[]
+
+  @@index([userId, courseId])
+  @@map("course_progress")
 }
 
 model LessonCompletionRecord {
-    id          String      @id @default(cuid())
-    type        String // "view" o "quiz"
-    score       Float?
+  id          String         @id @default(cuid())
+  type        String         // "view" o "quiz"
+  score       Float?
+  completedAt DateTime       @default(now()) // Añadido para consistencia
 
-    // Relaciones
-    progressId  String
-    lessonId    String
-    progress    CourseProgress @relation(fields: [progressId], references: [id], onDelete: Cascade)
-    lesson      Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-    
-    @@unique([progressId, lessonId])
-    @@map("lesson_completion_records")
+  // Relaciones
+  progressId  String
+  lessonId    String
+  progress    CourseProgress @relation(fields: [progressId], references: [id], onDelete: Cascade)
+  lesson      Lesson         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([progressId, lessonId])
+  @@map("lesson_completion_records")
 }
 
 
@@ -252,6 +266,8 @@ model Announcement {
   date      DateTime @default(now())
   audience  Json     // 'ALL', ['STUDENT'], ['INSTRUCTOR', 'ADMINISTRATOR'], etc.
   priority  String?  @default("Normal") // "Normal", "Urgente"
+  createdAt DateTime @default(now()) // Añadido para consistencia
+  updatedAt DateTime @updatedAt        // Añadido para consistencia
 
   // Relaciones
   authorId  String
@@ -262,25 +278,27 @@ model Announcement {
 }
 
 model CalendarEvent {
-    id          String      @id @default(cuid())
-    title       String
-    description String?     @db.Text
-    start       DateTime
-    end         DateTime
-    allDay      Boolean     @default(false)
-    location    String?
-    audienceType EventAudienceType @default(ALL)
-    color       String?     @default("blue")
-    videoConferenceLink String?
-    attachments Json?
+  id                  String            @id @default(cuid())
+  title               String
+  description         String?           @db.Text
+  start               DateTime
+  end                 DateTime
+  allDay              Boolean           @default(false)
+  location            String?
+  audienceType        EventAudienceType @default(ALL)
+  color               String?           @default("blue")
+  videoConferenceLink String?
+  attachments         Json?
+  createdAt           DateTime          @default(now()) // Añadido para consistencia
+  updatedAt           DateTime          @updatedAt        // Añadido para consistencia
 
-    // Relaciones
-    creatorId   String
-    creator     User        @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-    attendees   User[]      @relation("EventAttendees")
+  // Relaciones
+  creatorId           String
+  creator             User              @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  attendees           User[]            @relation("EventAttendees")
 
-    @@index([creatorId])
-    @@map("calendar_events")
+  @@index([creatorId])
+  @@map("calendar_events")
 }
 
 enum EventAudienceType {
@@ -292,27 +310,30 @@ enum EventAudienceType {
 }
 
 model Resource {
-    id          String       @id @default(cuid())
-    title       String
-    description String?      @db.Text
-    type        ResourceType @default(DOCUMENT)
-    category    String       @default("General")
-    tags        String?
-    url         String?
-    uploadDate  DateTime     @default(now())
-    pin         String?
+  id          String       @id @default(cuid())
+  title       String
+  description String?      @db.Text
+  type        ResourceType @default(DOCUMENT)
+  category    String       @default("General")
+  tags        String?
+  url         String?
+  uploadDate  DateTime     @default(now())
+  pin         String?
+  createdAt   DateTime     @default(now()) // Añadido para consistencia
+  updatedAt   DateTime     @updatedAt        // Añadido para consistencia
 
-    // Relaciones
-    uploaderId  String
-    uploader    User         @relation("ResourceUploader", fields: [uploaderId], references: [id], onDelete: Cascade)
-    
-    parentId    String?
-    parent      Resource?    @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
-    children    Resource[]   @relation("FolderChildren")
+  // Relaciones
+  uploaderId  String
+  uploader    User         @relation("ResourceUploader", fields: [uploaderId], references: [id], onDelete: Cascade)
 
-    @@index([uploaderId])
-    @@index([parentId])
-    @@map("resources")
+  parentId    String?
+  // CAMBIO CRÍTICO: onDelete y onUpdate a NoAction para auto-relaciones cíclicas
+  parent      Resource?    @relation("FolderChildren", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children    Resource[]   @relation("FolderChildren")
+
+  @@index([uploaderId])
+  @@index([parentId])
+  @@map("resources")
 }
 
 enum ResourceType {
@@ -333,11 +354,12 @@ model Notification {
   link        String?
   read        Boolean  @default(false)
   createdAt   DateTime @default(now())
-  
+  updatedAt   DateTime @updatedAt // Añadido para consistencia
+
   // Relaciones
   userId      String
   user        User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
   @@map("notifications")
 }
@@ -348,53 +370,54 @@ model Notification {
 // =================================================================
 
 model PlatformSettings {
-  id                          String    @id @default(cuid())
-  platformName                String    @default("NexusAlpri")
-  allowPublicRegistration     Boolean   @default(true)
-  enableEmailNotifications    Boolean   @default(true)
-  emailWhitelist              String?   @db.Text
-  resourceCategories          String    @db.Text @default("Recursos Humanos,TI y Seguridad,Marketing,Ventas,Legal,Operaciones,Finanzas,Formación Interna,Documentación de Producto,General")
-  
+  id                        String   @id @default(cuid())
+  platformName              String   @default("NexusAlpri")
+  allowPublicRegistration   Boolean  @default(true)
+  enableEmailNotifications  Boolean  @default(true)
+  emailWhitelist            String?  @db.Text
+  resourceCategories        String   @db.Text @default("Recursos Humanos,TI y Seguridad,Marketing,Ventas,Legal,Operaciones,Finanzas,Formación Interna,Documentación de Producto,General")
+
   // Políticas de Contraseña
-  passwordMinLength           Int       @default(8)
-  passwordRequireUppercase    Boolean   @default(true)
-  passwordRequireLowercase    Boolean   @default(true)
-  passwordRequireNumber       Boolean   @default(true)
-  passwordRequireSpecialChar  Boolean   @default(true)
+  passwordMinLength         Int      @default(8)
+  passwordRequireUppercase  Boolean  @default(true)
+  passwordRequireLowercase  Boolean  @default(true)
+  passwordRequireNumber     Boolean  @default(true)
+  passwordRequireSpecialChar Boolean @default(true)
 
   // Políticas de Sesión
-  enableIdleTimeout           Boolean   @default(true)
-  idleTimeoutMinutes          Int       @default(20)
-  require2faForAdmins         Boolean   @default(false)
+  enableIdleTimeout         Boolean  @default(true)
+  idleTimeoutMinutes        Int      @default(20)
+  require2faForAdmins       Boolean  @default(false)
 
-  updatedAt                   DateTime  @updatedAt
-  
+  createdAt                 DateTime @default(now()) // Añadido para consistencia
+  updatedAt                 DateTime @updatedAt
+
   @@map("platform_settings")
 }
 
 model SecurityLog {
-    id              String    @id @default(cuid())
-    event           SecurityLogEvent
-    ipAddress       String
-    details         String?
-    createdAt       DateTime  @default(now())
-    
-    // Relaciones
-    userId          String?
-    emailAttempt    String?
-    user            User?     @relation("UserSecurityLogs", fields: [userId], references: [id], onDelete:SetNull)
+  id          String           @id @default(cuid())
+  event       SecurityLogEvent
+  ipAddress   String
+  details     String?
+  createdAt   DateTime         @default(now())
 
-    @@index([userId])
-    @@map("security_logs")
+  // Relaciones
+  userId      String?
+  emailAttempt String?
+  user        User?            @relation("UserSecurityLogs", fields: [userId], references: [id], onDelete:SetNull)
+
+  @@index([userId])
+  @@map("security_logs")
 }
 
 enum SecurityLogEvent {
-    SUCCESSFUL_LOGIN
-    FAILED_LOGIN_ATTEMPT
-    PASSWORD_CHANGE_SUCCESS
-    TWO_FACTOR_ENABLED
-    TWO_FACTOR_DISABLED
-    USER_ROLE_CHANGED
+  SUCCESSFUL_LOGIN
+  FAILED_LOGIN_ATTEMPT
+  PASSWORD_CHANGE_SUCCESS
+  TWO_FACTOR_ENABLED
+  TWO_FACTOR_DISABLED
+  USER_ROLE_CHANGED
 }
 
 // =================================================================
@@ -402,14 +425,16 @@ enum SecurityLogEvent {
 // =================================================================
 
 model LessonTemplate {
-  id            String          @id @default(cuid())
-  name          String
-  description   String?         @db.Text
-  type          TemplateType    @default(USER)
+  id           String          @id @default(cuid())
+  name         String
+  description  String?         @db.Text
+  type         TemplateType    @default(USER)
+  createdAt    DateTime        @default(now()) // Añadido para consistencia
+  updatedAt    DateTime        @updatedAt        // Añadido para consistencia
 
   // Relaciones
-  creatorId     String?
-  creator       User?           @relation("TemplateCreator", fields: [creatorId], references: [id], onDelete: SetNull)
+  creatorId    String?
+  creator      User?           @relation("TemplateCreator", fields: [creatorId], references: [id], onDelete: SetNull)
   templateBlocks TemplateBlock[]
 
   @@index([creatorId])
@@ -417,14 +442,16 @@ model LessonTemplate {
 }
 
 model TemplateBlock {
-  id              String      @id @default(cuid())
-  type            LessonType
-  order           Int
+  id          String     @id @default(cuid())
+  type        LessonType
+  order       Int
+  createdAt   DateTime   @default(now()) // Añadido para consistencia
+  updatedAt   DateTime   @updatedAt        // Añadido para consistencia
 
   // Relaciones
-  templateId      String
-  template        LessonTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  
+  templateId  String
+  template    LessonTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
   @@index([templateId])
   @@map("template_blocks")
 }
