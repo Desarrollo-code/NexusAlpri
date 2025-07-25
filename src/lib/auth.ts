@@ -13,7 +13,6 @@ if (!secretKey) {
 }
 const key = new TextEncoder().encode(secretKey);
 
-
 /**
  * @interface JWTPayload
  * Define la estructura de los datos que se codificarán dentro del token JWT.
@@ -22,7 +21,6 @@ interface JWTPayload {
   userId: string;
   expires: Date;
 }
-
 
 /**
  * Cifra el payload del JWT y devuelve el token firmado.
@@ -47,7 +45,6 @@ async function decrypt(input: string): Promise<any> {
     const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
     return payload;
   } catch (error) {
-    // Esto es esperado si el token es inválido (expirado, malformado, etc.)
     return null;
   }
 }
@@ -57,16 +54,15 @@ async function decrypt(input: string): Promise<any> {
  * @param userId - El ID del usuario para el que se crea la sesión.
  */
 export async function createSession(userId: string) {
-  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 días desde ahora
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   const token = await encrypt({ userId, expires });
 
-  // Accede a las cookies de la respuesta para establecer la cookie de sesión.
   cookies().set('session', token, {
-    httpOnly: true, // Hace que la cookie no sea accesible por JavaScript en el navegador (mayor seguridad XSS)
-    secure: process.env.NODE_ENV === 'production', // Solo envía la cookie sobre HTTPS en producción
-    maxAge: 60 * 60 * 24 * 7, // Duración de la cookie: 7 días (en segundos)
-    path: '/', // La cookie estará disponible en todas las rutas de la aplicación
-    sameSite: 'lax', // Proporciona un equilibrio entre seguridad y experiencia de usuario
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7,
+    path: '/',
+    sameSite: 'lax',
   });
 }
 
@@ -77,10 +73,11 @@ export async function deleteSession() {
   cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
 
+
 /**
  * **Función solo para Middleware (Edge Runtime).**
  * Obtiene la sesión a partir de la cookie en el objeto `NextRequest`.
- * Es ligera y no consulta la base de datos, ideal para verificaciones rápidas en el middleware.
+ * Es ligera y no consulta la base de datos.
  * @param request - El objeto NextRequest del middleware.
  * @returns Un objeto con el userId si la sesión es válida, o null si no lo es.
  */
@@ -100,14 +97,12 @@ export async function getSession(request: NextRequest): Promise<{ userId: string
 /**
  * **Función para Rutas de API y Componentes de Servidor (Node.js Runtime).**
  * Obtiene los datos completos del usuario autenticado actualmente.
- * Utiliza 'next/headers' para acceder a las cookies y `cache` para memorizar el resultado en una misma petición.
+ * Utiliza 'next/headers' para acceder a las cookies y `cache` para memorizar el resultado.
  * @returns El objeto de usuario completo si está autenticado, o null si no lo está.
  */
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
-  // Al importar 'next/headers', le indicamos a Next.js que esta función es dinámica.
   const sessionCookieValue = cookies().get('session')?.value;
 
-  // Si no hay una cookie de sesión, no hay usuario autenticado.
   if (!sessionCookieValue) {
     return null;
   }

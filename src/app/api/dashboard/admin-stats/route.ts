@@ -1,3 +1,4 @@
+
 // src/app/api/dashboard/admin-stats/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -46,7 +47,6 @@ export interface AdminDashboardStats {
 export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
-        console.warn(`[ADMIN_DASHBOARD_AUTH_WARN] Intento de acceso no autorizado al dashboard. Usuario: ${session?.email || 'N/A'}, Rol: ${session?.role || 'N/A'}`);
         return NextResponse.json({ message: 'No autorizado o no tiene permisos de administrador.' }, { status: 403 });
     }
 
