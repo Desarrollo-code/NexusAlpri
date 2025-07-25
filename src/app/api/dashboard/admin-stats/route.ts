@@ -111,7 +111,6 @@ export async function GET(req: NextRequest) {
                 by: ['userId'],
                 where: { 
                     progressPercentage: { gte: 100 },
-                    // Ensure the course still exists to prevent errors
                     course: {
                         isNot: null
                     }
