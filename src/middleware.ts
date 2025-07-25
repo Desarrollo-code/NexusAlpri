@@ -1,7 +1,7 @@
 // src/middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getSessionFromMiddleware } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 
 const PUBLIC_PATHS = ['/sign-in', '/sign-up'];
 const API_AUTH_PREFIX = '/api/auth';
@@ -9,7 +9,7 @@ const PROTECTED_ROUTE_PREFIX = '/dashboard';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const session = await getSessionFromMiddleware(request);
+  const session = await getSession(request);
 
   if (
     pathname.startsWith('/_next') ||
