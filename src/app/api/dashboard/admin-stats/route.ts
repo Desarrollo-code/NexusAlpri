@@ -189,11 +189,13 @@ export async function GET(req: NextRequest) {
 
         const completionRatesByCourse: Record<string, { total: number; count: number }> = {};
         allCourseProgress.forEach(p => {
-            if (!completionRatesByCourse[p.courseId]) {
+            if (p.courseId && !completionRatesByCourse[p.courseId]) {
                 completionRatesByCourse[p.courseId] = { total: 0, count: 0 };
             }
-            completionRatesByCourse[p.courseId].total += p.progressPercentage;
-            completionRatesByCourse[p.courseId].count++;
+            if(p.courseId) {
+                completionRatesByCourse[p.courseId].total += p.progressPercentage;
+                completionRatesByCourse[p.courseId].count++;
+            }
         });
 
         const averageCompletionRates = Object.entries(completionRatesByCourse).map(([courseId, data]) => ({
