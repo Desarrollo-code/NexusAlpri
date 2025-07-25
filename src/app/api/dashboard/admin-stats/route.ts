@@ -44,6 +44,7 @@ export interface AdminDashboardStats {
 export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
+        console.log(`Intento de acceso no autorizado al dashboard. Usuario: ${session?.name || 'N/A'}, Rol: ${session?.role || 'N/A'}`);
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 

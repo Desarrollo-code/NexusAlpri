@@ -7,6 +7,7 @@ import { getCurrentUser } from '@/lib/auth';
 export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
+        console.log(`Intento de acceso no autorizado a /api/security/logs. Usuario: ${session?.name || 'N/A'}, Rol: ${session?.role || 'N/A'}`);
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
