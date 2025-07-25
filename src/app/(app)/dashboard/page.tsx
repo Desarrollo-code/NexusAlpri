@@ -109,7 +109,7 @@ const activityChartConfig = {
   newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
-function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: SecurityLogWithUser[] }) {
+function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardStats, logs: SecurityLogWithUser[], announcements: DisplayAnnouncement[] }) {
 
   return (
     <div className="space-y-6">
@@ -130,7 +130,7 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
               <CardContent className="h-96">
                   <ChartContainer config={activityChartConfig} className="w-full h-full">
                     <ResponsiveContainer>
-                      <RechartsBar data={stats.courseActivity} margin={{ top: 5, right: 10, left: -20, bottom: 20 }}>
+                      <RechartsBar data={stats.courseActivity} margin={{ top: 5, right: 10, left: -20, bottom: 30 }}>
                           <CartesianGrid vertical={false} strokeDasharray="3 3"/>
                           <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval={5} />
                           <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
@@ -144,6 +144,18 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
                   </ChartContainer>
               </CardContent>
             </Card>
+            <section>
+              <h2 className="text-2xl font-semibold mb-4">Anuncios Recientes</h2>
+              {announcements.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {announcements.map(announcement => (
+                    <AnnouncementCard key={announcement.id} announcement={announcement} />
+                  ))}
+                </div>
+              ) : (
+                <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
+              )}
+            </section>
           </main>
           
           <aside className="lg:col-span-1 space-y-6">
@@ -417,60 +429,60 @@ export default function DashboardPage() {
         </section>
       )}
       
-      {user.role === 'ADMINISTRATOR' && data?.adminStats && <AdminDashboard stats={data.adminStats} logs={data.securityLogs} />}
+      {user.role === 'ADMINISTRATOR' && data?.adminStats && <AdminDashboard stats={data.adminStats} logs={data.securityLogs} announcements={filteredAnnouncements} />}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-           {user.role === 'INSTRUCTOR' && (
-              <section>
-                <h2 className="text-2xl font-semibold mb-4">Mis Cursos Impartidos Recientemente</h2>
-                 {data?.taughtCourses && data.taughtCourses.length > 0 ? (
-                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                      {data.taughtCourses.map(course => (
-                        <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
-                           {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
-                          <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
-                          <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2"/> Editar Contenido</Link></Button></CardFooter>
-                        </Card>
-                      ))}
-                  </div>
-                ) : (
-                  <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No has creado cursos aún.</p></CardContent></Card>
+      {user.role !== 'ADMINISTRATOR' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+                {user.role === 'INSTRUCTOR' && (
+                    <section>
+                        <h2 className="text-2xl font-semibold mb-4">Mis Cursos Impartidos Recientemente</h2>
+                        {data?.taughtCourses && data.taughtCourses.length > 0 ? (
+                        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                            {data.taughtCourses.map(course => (
+                                <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
+                                {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
+                                <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
+                                <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2"/> Editar Contenido</Link></Button></CardFooter>
+                                </Card>
+                            ))}
+                        </div>
+                        ) : (
+                        <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No has creado cursos aún.</p></CardContent></Card>
+                        )}
+                    </section>
                 )}
-              </section>
-           )}
 
-           {user.role === 'STUDENT' && (
-              <section>
-                <h2 className="text-2xl font-semibold mb-4">Continuar Aprendiendo</h2>
-                 {data?.myDashboardCourses && data.myDashboardCourses.length > 0 ? (
-                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                    {data.myDashboardCourses.map((course, index) => (
-                      <CourseCard key={course.id} course={course} userRole={user.role} priority={index < 2}/>
-                    ))}
-                  </div>
-                ) : (
-                  <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No estás inscrito en ningún curso.</p></CardContent></Card>
+                {user.role === 'STUDENT' && (
+                    <section>
+                        <h2 className="text-2xl font-semibold mb-4">Continuar Aprendiendo</h2>
+                        {data?.myDashboardCourses && data.myDashboardCourses.length > 0 ? (
+                        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                            {data.myDashboardCourses.map((course, index) => (
+                            <CourseCard key={course.id} course={course} userRole={user.role} priority={index < 2}/>
+                            ))}
+                        </div>
+                        ) : (
+                        <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No estás inscrito en ningún curso.</p></CardContent></Card>
+                        )}
+                    </section>
                 )}
-              </section>
-           )}
-           
-            <section>
-              <h2 className="text-2xl font-semibold mb-4">Anuncios Recientes</h2>
-              {filteredAnnouncements.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {filteredAnnouncements.map(announcement => (
-                    <AnnouncementCard key={announcement.id} announcement={announcement} />
-                  ))}
-                </div>
-              ) : (
-                <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
-              )}
-            </section>
-        </div>
-        
-        {user.role !== 'ADMINISTRATOR' && (
-             <div className="lg:col-span-1">
+                
+                <section>
+                    <h2 className="text-2xl font-semibold mb-4">Anuncios Recientes</h2>
+                    {filteredAnnouncements.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {filteredAnnouncements.map(announcement => (
+                            <AnnouncementCard key={announcement.id} announcement={announcement} />
+                        ))}
+                        </div>
+                    ) : (
+                        <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
+                    )}
+                </section>
+            </div>
+            
+            <div className="lg:col-span-1">
                 <Card>
                     <CardHeader>
                     <CardTitle>Accesos Rápidos</CardTitle>
@@ -501,8 +513,8 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
             </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
