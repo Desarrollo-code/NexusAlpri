@@ -111,9 +111,7 @@ export async function GET(req: NextRequest) {
                 by: ['userId'],
                 where: { 
                     progressPercentage: { gte: 100 },
-                    course: {
-                        isNot: null
-                    }
+                    courseId: { not: null }
                 },
                 _count: { userId: true },
                 orderBy: { _count: { userId: 'desc' } },
