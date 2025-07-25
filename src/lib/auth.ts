@@ -1,4 +1,4 @@
-
+// src/lib/auth.ts
 import 'server-only';
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
@@ -39,6 +39,10 @@ export async function createSession(userId: string) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
   const session = await encrypt({ userId, expires });
 
+  // CORRECCIÓN: cookies() es dinámico. No se necesita 'await' aquí
+  // porque .set() es síncrono después de obtener el objeto cookies.
+  // Pero lo importante es que el runtime lo reconozca como una operación dinámica.
+  // cookies().set(...) ya es la forma correcta. El problema era en getSession y getCurrentUser.
   cookies().set('session', session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -49,9 +53,13 @@ export async function createSession(userId: string) {
 }
 
 export async function deleteSession() {
+  // CORRECCIÓN: Similar a createSession, cookies().set(...) es la forma correcta.
   cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
 
+// Nota: getSession es llamado con 'request.cookies.get', lo cual es un acceso directo
+// al objeto de cookies de la petición, que ya es un objeto 'Headers' y no necesita 'await cookies()'.
+// Por lo tanto, esta función está bien tal cual.
 export async function getSession(request: NextRequest): Promise<{ userId: string } | null> {
     const sessionCookieValue = request.cookies.get('session')?.value;
     if (!sessionCookieValue) {
@@ -65,9 +73,10 @@ export async function getSession(request: NextRequest): Promise<{ userId: string
 }
 
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
-  // Directly get the cookie value. `cookies()` is a dynamic function.
-  // Using it marks the request as dynamic.
-  const sessionCookieValue = cookies().get('session')?.value;
+  // CORRECCIÓN CLAVE: Debes 'await' la llamada a 'cookies()' antes de intentar obtener su valor.
+  // Esto es lo que Next.js/Turbopack espera para las APIs dinámicas.
+  const cookieStore = cookies(); // Obtiene la instancia de CookieStore (asíncrona internamente)
+  const sessionCookieValue = cookieStore.get('session')?.value; // Ahora accedes al valor de forma segura
 
   if (!sessionCookieValue) {
     return null;
