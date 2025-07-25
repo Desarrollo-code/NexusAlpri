@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
                 select: { registeredDate: true }
             }),
             prisma.course.findMany({ where: { createdAt: { gte: thirtyDaysAgo } }, select: { createdAt: true } }),
-            prisma.course.findMany({ where: { publicationDate: { gte: thirtyDaysAgo } }, select: { publicationDate: true } }),
+            prisma.course.findMany({ where: { publicationDate: { not: null, gte: thirtyDaysAgo } }, select: { publicationDate: true } }),
             prisma.enrollment.findMany({ where: { enrolledAt: { gte: thirtyDaysAgo } }, select: { enrolledAt: true } }),
             prisma.courseProgress.findMany({
                 select: { courseId: true, progressPercentage: true, userId: true }
