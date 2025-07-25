@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Pass the request to getSession, making it Edge-compatible
-  const session = await getSession(request);
+  const session = await getCurrentUser();
   const isPublicPath = PUBLIC_PATHS.some(p => pathname.startsWith(p));
 
   // If user is logged in
