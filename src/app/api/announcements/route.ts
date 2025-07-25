@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -118,4 +117,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Error al crear el anuncio' }, { status: 500 });
   }
 }
-

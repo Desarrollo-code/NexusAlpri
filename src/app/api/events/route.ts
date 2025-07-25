@@ -5,6 +5,8 @@ import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import type { UserRole, EventAudienceType } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 // GET all events relevant to the user
 export async function GET(req: NextRequest) {
   const session = await getCurrentUser();

@@ -1,8 +1,9 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { createSession } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 // --- Rate Limiting Logic ---
 const loginAttempts = new Map<string, { count: number; expiry: number }>();
@@ -109,5 +110,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
   }
 }
-export const dynamic = 'force-dynamic'; // Ensure this route is always dynamic
-export const revalidate = 0; // Disable static caching for this route
