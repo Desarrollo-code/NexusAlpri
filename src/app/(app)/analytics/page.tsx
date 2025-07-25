@@ -16,18 +16,26 @@ import {
   AlertTriangle,
   GraduationCap,
   Library,
+  TrendingUp,
+  TrendingDown,
+  Award,
+  BadgePercent,
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Area, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector, CartesianGrid, AreaChart as RechartsArea } from "recharts";
 import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
-import type { AdminDashboardStats } from '@/app/api/dashboard/admin-stats/route';
+import type { AdminDashboardStats, Course } from '@/types';
+import { Progress } from '@/components/ui/progress';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { getInitials } from '@/lib/security-log-utils';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 
 // --- DASHBOARD COMPONENTS ---
 
-const MetricCard = ({ title, value: finalValue, icon: Icon, description }: { title: string; value: number; icon: React.ElementType; description?: string }) => {
-    const animatedValue = useAnimatedCounter(finalValue);
+const MetricCard = ({ title, value, icon: Icon, description, suffix = '' }: { title: string; value: number; icon: React.ElementType; description?: string, suffix?: string }) => {
+    const animatedValue = useAnimatedCounter(value);
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -35,7 +43,7 @@ const MetricCard = ({ title, value: finalValue, icon: Icon, description }: { tit
                 <Icon className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{animatedValue}</div>
+                <div className="text-2xl font-bold">{animatedValue}{suffix}</div>
                 {description && <p className="text-xs text-muted-foreground">{description}</p>}
             </CardContent>
         </Card>
@@ -102,7 +110,6 @@ const renderActiveShape = (props: any) => {
   );
 };
 
-
 function DonutChartCard({ title, data, config }: { title: string, data: any[], config: ChartConfig }) {
   const total = useMemo(() => data.reduce((acc, curr) => acc + curr.count, 0), [data]);
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
@@ -116,7 +123,7 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
   }, [setActiveIndex]);
   
   return (
-    <Card className="card-border-animated">
+    <Card className="card-border-animated h-full">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
@@ -165,6 +172,42 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
       </CardContent>
     </Card>
   )
+}
+
+function CourseRankingCard({ title, courses, metric, icon: Icon, unit = '' }: { title: string, courses: any[], metric: string, icon: React.ElementType, unit?: string }) {
+    return (
+        <Card className="card-border-animated">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Icon className="text-primary"/>{title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Curso</TableHead>
+                            <TableHead className="text-right">{metric}</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {courses.map(course => (
+                            <TableRow key={course.id}>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <Avatar className="h-8 w-8 hidden sm:flex">
+                                            <AvatarImage src={course.imageUrl || undefined} />
+                                            <AvatarFallback>{course.title.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <Link href={`/courses/${course.id}`} className="font-medium hover:underline truncate">{course.title}</Link>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-right font-semibold">{course.value}{unit}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    );
 }
 
 function AdminAnalyticsPage() {
@@ -229,16 +272,15 @@ function AdminAnalyticsPage() {
     if (isLoading) {
         return (
             <div className="space-y-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" />
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" />
                 </div>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Skeleton className="h-32" /><Skeleton className="h-32" />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Skeleton className="h-[450px]" />
+                    <Skeleton className="h-[450px]" />
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <Skeleton className="h-96" />
-                     <Skeleton className="h-96" />
-                    <Skeleton className="h-96" />
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <Skeleton className="h-96" /><Skeleton className="h-96" /><Skeleton className="h-96" />
                 </div>
             </div>
         )
@@ -258,27 +300,33 @@ function AdminAnalyticsPage() {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold">Resumen de la Plataforma</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
             <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} />
             <MetricCard title="Total Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} />
             <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} />
             <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={BookOpenCheck} />
+            <MetricCard title="Tasa de Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio de todos los cursos" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-             <MetricCard title="Usuarios Activos" value={stats?.recentLogins || 0} icon={Activity} description="En los últimos 7 días" />
-            <MetricCard title="Nuevos Usuarios" value={stats?.newUsersLast7Days || 0} icon={UserPlus} description="En los últimos 7 días"/>
-        </div>
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <CourseRankingCard title="Cursos Más Populares" courses={stats?.topCoursesByEnrollment || []} metric="Inscritos" icon={TrendingUp} />
+            <CourseRankingCard title="Cursos con Mejor Rendimiento" courses={stats?.topCoursesByCompletion || []} metric="Finalización" icon={Award} unit="%" />
+            <CourseRankingCard title="Cursos con Oportunidad de Mejora" courses={stats?.lowestCoursesByCompletion || []} metric="Finalización" icon={TrendingDown} unit="%" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <DonutChartCard title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
-            <DonutChartCard title="Distribución de Cursos" data={courseStatusChartData} config={courseStatusChartConfig} />
-            <Card className="card-border-animated">
+            <DonutChartCard title="Distribución de Cursos por Estado" data={courseStatusChartData} config={courseStatusChartConfig} />
+        </div>
+
+        <Card className="card-border-animated">
             <CardHeader>
                 <CardTitle>Tendencia de Registros (Últimos 7 Días)</CardTitle>
             </CardHeader>
             <CardContent className="h-80">
                 <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
                     <ResponsiveContainer>
-                        <RechartsArea data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 20, left: -10, bottom: 30 }}>
+                        <RechartsArea data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 30, left: 0, bottom: 30 }}>
                             <defs>
                                 <linearGradient id="fillArea" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8}/>
@@ -294,8 +342,7 @@ function AdminAnalyticsPage() {
                     </ResponsiveContainer>
                 </ChartContainer>
             </CardContent>
-            </Card>
-        </div>
+        </Card>
     </div>
   );
 }

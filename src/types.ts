@@ -207,6 +207,13 @@ export type SecurityLog = Prisma.SecurityLogGetPayload<{
 
 
 // --- ANALYTICS ---
+type CourseInfo = {
+    id: string;
+    title: string;
+    imageUrl: string | null;
+    value: number;
+}
+
 export interface AdminDashboardStats {
     totalUsers: number;
     totalCourses: number;
@@ -218,6 +225,11 @@ export interface AdminDashboardStats {
     newUsersLast7Days: number;
     userRegistrationTrend: { date: string, count: number }[];
     courseActivity: { date: string, newCourses: number, publishedCourses: number, newEnrollments: number }[];
+    // New Advanced Stats
+    averageCompletionRate: number;
+    topCoursesByEnrollment: CourseInfo[];
+    topCoursesByCompletion: CourseInfo[];
+    lowestCoursesByCompletion: CourseInfo[];
 }
 
 // --- TEMPLATES ---
