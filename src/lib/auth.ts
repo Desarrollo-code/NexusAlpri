@@ -1,10 +1,9 @@
-
 // src/lib/auth.ts
 import 'server-only';
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
 import { cache } from 'react';
-import type { User as PrismaUser } from '@prisma/client';
+import type { User as PrismaUser } from '@prisma/client'; // Assuming User type from Prisma
 import prisma from './prisma';
 import type { NextRequest } from 'next/server';
 
@@ -60,21 +59,28 @@ export async function createSession(userId: string) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 días desde ahora
   const token = await encrypt({ userId, expires });
 
-  // Accede a las cookies de la respuesta para establecer la cookie de sesión.
-  cookies().set('session', token, {
-    httpOnly: true, // Hace que la cookie no sea accesible por JavaScript en el navegador (mayor seguridad XSS)
-    secure: process.env.NODE_ENV === 'production', // Solo envía la cookie sobre HTTPS en producción
-    maxAge: 60 * 60 * 24 * 7, // Duración de la cookie: 7 días (en segundos)
-    path: '/', // La cookie está disponible en todas las rutas de la aplicación
-    sameSite: 'lax', // Protección moderada contra ataques CSRF
-  });
+  // WORKAROUND para el error "cookies() should be awaited" en Next.js/Turbopack
+  const setCookie = async () => {
+    cookies().set('session', token, {
+      httpOnly: true, // Hace que la cookie no sea accesible por JavaScript en el navegador (mayor seguridad XSS)
+      secure: process.env.NODE_ENV === 'production', // Solo envía la cookie sobre HTTPS en producción
+      maxAge: 60 * 60 * 24 * 7, // Duración de la cookie: 7 días (en segundos)
+      path: '/', // La cookie está disponible en todas las rutas de la aplicación
+      sameSite: 'lax', // Protección moderada contra ataques CSRF
+    });
+  };
+  await setCookie(); // Await de la función que llama a cookies().set()
 }
 
 /**
  * Elimina la sesión del usuario actual borrando la cookie de sesión.
  */
 export async function deleteSession() {
-  cookies().set('session', '', { expires: new Date(0), path: '/' });
+  // WORKAROUND para el error "cookies() should be awaited" en Next.js/Turbopack
+  const deleteCookie = async () => {
+    cookies().set('session', '', { expires: new Date(0), path: '/' });
+  };
+  await deleteCookie(); // Await de la función que llama a cookies().set()
 }
 
 /**
@@ -84,18 +90,24 @@ export async function deleteSession() {
  * @returns {Promise<PrismaUser | null>} El objeto del usuario si está autenticado, o null en caso contrario.
  */
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
-  // Al importar 'next/headers', le indicamos a Next.js que esta función es dinámica.
-  const requestCookies = cookies();
-  const sessionCookieValue = requestCookies.get('session')?.value;
+  // WORKAROUND para el error "cookies() should be awaited" en Next.js/Turbopack
+  const getCookieValue = async () => {
+    const requestCookies = cookies();
+    return requestCookies.get('session')?.value;
+  };
+
+  const sessionCookieValue = await getCookieValue(); // Await de la función que llama a cookies().get()
 
   // Si no hay una cookie de sesión, no hay usuario autenticado.
   if (!sessionCookieValue) {
+    // console.log("getCurrentUser: No session cookie found."); // Puedes descomentar esto para depurar
     return null;
   }
 
   // Descifra la sesión para obtener el userId.
   const session = await decrypt(sessionCookieValue);
   if (!session?.userId) {
+    // console.log("getCurrentUser: Session invalid or missing userId."); // Puedes descomentar esto para depurar
     return null;
   }
 
@@ -104,6 +116,7 @@ export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
     const user = await prisma.user.findUnique({
       where: { id: session.userId },
     });
+    // console.log("getCurrentUser: User fetched from DB:", user); // Puedes descomentar esto para depurar
     return user || null;
   } catch (error) {
     console.error("Error al obtener el usuario desde la base de datos:", error);
@@ -119,6 +132,7 @@ export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
  * @returns {Promise<{ userId: string } | null>} Un objeto con el userId si la sesión es válida, o null.
  */
 export async function getSession(request: NextRequest): Promise<{ userId: string } | null> {
+  // No hay necesidad de workaround aquí ya que se usa request.cookies.get(), no directamente cookies() de next/headers
   const sessionCookieValue = request.cookies.get('session')?.value;
   if (!sessionCookieValue) {
     return null;

@@ -1,4 +1,3 @@
-
 // src/app/api/dashboard/admin-stats/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -46,8 +45,10 @@ export interface AdminDashboardStats {
 
 export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
+    // Mensaje de advertencia en consola para depuración de accesos no autorizados
     if (!session || session.role !== 'ADMINISTRATOR') {
-        return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
+        console.warn(`[ADMIN_DASHBOARD_AUTH_WARN] Intento de acceso no autorizado al dashboard. Usuario: ${session?.email || 'N/A'}, Rol: ${session?.role || 'N/A'}`);
+        return NextResponse.json({ message: 'No autorizado o no tiene permisos de administrador.' }, { status: 403 });
     }
 
     try {
@@ -55,6 +56,7 @@ export async function GET(req: NextRequest) {
         const thirtyDaysAgo = subDays(today, 30);
         const sevenDaysAgo = subDays(today, 7);
 
+        // Se utilizan nombres de variables para que coincidan con los nombres originales del array destructuring
         const [
             totalUsers,
             totalCourses,
@@ -77,7 +79,7 @@ export async function GET(req: NextRequest) {
             prisma.user.count(),
             prisma.course.count(),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
-            prisma.enrollment.count(),
+            prisma.enrollment.count(), // <<-- AQUI ESTABA EL PROBLEMA DE LA COMA Y EL SIGUIENTE '{'
             prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
             prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
             prisma.securityLog.groupBy({
