@@ -1,3 +1,4 @@
+
 // src/lib/auth.ts
 import 'server-only';
 import { cookies } from 'next/headers';
@@ -13,69 +14,120 @@ if (!secretKey) {
 }
 const key = new TextEncoder().encode(secretKey);
 
+/**
+ * @interface JWTPayload
+ * Define la estructura de los datos que se codificarán dentro del token JWT.
+ */
 interface JWTPayload {
   userId: string;
   expires: Date;
 }
 
+/**
+ * Cifra un objeto de payload en un token JWT (string).
+ * @param payload - Los datos a cifrar, que deben incluir el ID del usuario y la fecha de expiración.
+ * @returns {Promise<string>} El token JWT como una cadena de texto.
+ */
 async function encrypt(payload: JWTPayload): Promise<string> {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime('7d') // El token expira en 7 días
     .sign(key);
 }
 
+/**
+ * Descifra un token JWT para obtener el payload.
+ * @param input - El token JWT (string) a descifrar.
+ * @returns {Promise<any>} El payload del token o null si la verificación falla.
+ */
 async function decrypt(input: string): Promise<any> {
   try {
     const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
     return payload;
   } catch (error) {
+    // Esto puede ocurrir si el token es inválido, ha expirado, etc.
+    console.error('Error al descifrar el token:', error);
     return null;
   }
 }
 
+/**
+ * Crea una sesión para un usuario, estableciendo una cookie 'httpOnly' en el navegador.
+ * @param userId - El ID del usuario para el que se crea la sesión.
+ */
 export async function createSession(userId: string) {
-  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 días desde ahora
   const token = await encrypt({ userId, expires });
 
+  // Accede a las cookies de la respuesta para establecer la cookie de sesión.
   cookies().set('session', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60 * 24 * 7,
-    path: '/',
-    sameSite: 'lax',
+    httpOnly: true, // Hace que la cookie no sea accesible por JavaScript en el navegador (mayor seguridad XSS)
+    secure: process.env.NODE_ENV === 'production', // Solo envía la cookie sobre HTTPS en producción
+    maxAge: 60 * 60 * 24 * 7, // Duración de la cookie: 7 días (en segundos)
+    path: '/', // La cookie está disponible en todas las rutas de la aplicación
+    sameSite: 'lax', // Protección moderada contra ataques CSRF
   });
 }
 
+/**
+ * Elimina la sesión del usuario actual borrando la cookie de sesión.
+ */
 export async function deleteSession() {
   cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
 
+/**
+ * Obtiene el usuario actualmente autenticado.
+ * Esta función está diseñada para ser utilizada en API Routes y Server Components.
+ * Utiliza 'cache' de React para evitar múltiples consultas a la base de datos en una misma petición.
+ * @returns {Promise<PrismaUser | null>} El objeto del usuario si está autenticado, o null en caso contrario.
+ */
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
-  const sessionCookieValue = cookies().get('session')?.value;
+  // Al importar 'next/headers', le indicamos a Next.js que esta función es dinámica.
+  const requestCookies = cookies();
+  const sessionCookieValue = requestCookies.get('session')?.value;
 
+  // Si no hay una cookie de sesión, no hay usuario autenticado.
   if (!sessionCookieValue) {
     return null;
   }
 
+  // Descifra la sesión para obtener el userId.
   const session = await decrypt(sessionCookieValue);
   if (!session?.userId) {
     return null;
   }
 
+  // Busca al usuario en la base de datos.
   try {
     const user = await prisma.user.findUnique({
       where: { id: session.userId },
     });
-
-    if (!user) return null;
-    
-    // Devolvemos el usuario completo, la exclusión de campos se hará donde se necesite.
-    return user;
-
+    return user || null;
   } catch (error) {
     console.error("Error al obtener el usuario desde la base de datos:", error);
     return null;
   }
 });
+
+/**
+ * Obtiene la sesión del usuario a partir de la cookie, para ser usado principalmente en el Middleware.
+ * Esta función es más ligera que getCurrentUser porque no consulta la base de datos.
+ * Es segura para usar en el Edge Runtime.
+ * @param {NextRequest} [request] - El objeto de la petición, necesario en el middleware.
+ * @returns {Promise<{ userId: string } | null>} Un objeto con el userId si la sesión es válida, o null.
+ */
+export async function getSession(request: NextRequest): Promise<{ userId: string } | null> {
+  const sessionCookieValue = request.cookies.get('session')?.value;
+  if (!sessionCookieValue) {
+    return null;
+  }
+
+  const decryptedSession = await decrypt(sessionCookieValue);
+  if (!decryptedSession?.userId) {
+    return null;
+  }
+
+  return { userId: decryptedSession.userId };
+}
