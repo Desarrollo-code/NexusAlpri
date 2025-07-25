@@ -70,7 +70,15 @@ export async function GET(req: NextRequest) {
             studentsByCompletionsRaw,
             instructorsByCoursesRaw
         ] = await prisma.$transaction([
-            prisma.user.count(),
+            prisma.user.count({
+            select: {
+            _count: {
+            select: {
+            _all: true
+            }
+            }
+            }
+            }),,
             prisma.course.count({}),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
             prisma.enrollment.count({}),
