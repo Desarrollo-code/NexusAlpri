@@ -24,7 +24,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Area, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector, CartesianGrid, AreaChart as RechartsArea } from "recharts";
-import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
+import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import type { AdminDashboardStats, Course } from '@/types';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -372,3 +372,5 @@ export default function AnalyticsPageWrapper() {
     </div>
   );
 }
+
+    
