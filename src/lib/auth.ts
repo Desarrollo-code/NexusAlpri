@@ -43,43 +43,39 @@ export async function createSession(userId: string) {
   });
 }
 
-export async function getSession(request?: NextRequest): Promise<User | null> {
+export async function getSession(request?: NextRequest) {
   const cookieStore = request ? request.cookies : cookies();
   const sessionCookie = cookieStore.get('session')?.value;
 
-  if (!sessionCookie) {
-    return null;
-  }
-
-  const decryptedSession = await decrypt(sessionCookie);
-
-  if (!decryptedSession || !decryptedSession.userId) {
-    return null;
-  }
+  if (!sessionCookie) return null;
   
-  if (new Date(decryptedSession.expires) < new Date()) {
-      return null;
-  }
-
-  // Fetch the latest user data from the database
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: decryptedSession.userId },
-    });
-
-    if (!user) {
-      return null;
-    }
-    
-    // Omit password and other sensitive fields before returning
-    const { password, twoFactorSecret, ...safeUser } = user;
-    return safeUser as User;
-    
-  } catch (error) {
-    console.error("Error fetching user for session:", error);
-    return null;
-  }
+  return await decrypt(sessionCookie);
 }
+
+export async function getCurrentUser(): Promise<User | null> {
+    const session = await getSession();
+    if (!session || !session.userId) return null;
+
+    if (new Date(session.expires) < new Date()) {
+        return null;
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: session.userId },
+        });
+
+        if (!user) return null;
+
+        const { password, twoFactorSecret, ...safeUser } = user;
+        return safeUser as User;
+
+    } catch (error) {
+        console.error("Error fetching user for session:", error);
+        return null;
+    }
+}
+
 
 export async function deleteSession() {
   cookies().set('session', '', { expires: new Date(0), path: '/' });

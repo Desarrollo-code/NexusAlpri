@@ -2,11 +2,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
 async function checkAuth(req: NextRequest, resourceId: string) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return { authorized: false, error: NextResponse.json({ message: 'No autorizado' }, { status: 403 }) };
     }

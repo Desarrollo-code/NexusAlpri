@@ -1,6 +1,7 @@
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
 // PUT (update) an event
@@ -8,7 +9,7 @@ export async function PUT(
   req: NextRequest, 
   context: { params: { id: string } }
 ) {
-  const session = await getSession(req);
+  const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
@@ -25,8 +26,8 @@ export async function PUT(
       return NextResponse.json({ message: 'Evento no encontrado' }, { status: 404 });
     }
 
-    if (existingEvent.creatorId !== session.id && session.role !== 'ADMINISTRATOR') {
-      return NextResponse.json({ message: 'No tienes permiso para actualizar este evento' }, { status: 403 });
+    if (session.role !== 'ADMINISTRATOR' && existingEvent.creatorId !== session.id) {
+      return NextResponse.json({ message: 'No tienes permiso para actualizar este evento.' }, { status: 403 });
     }
     
     const body = await req.json();
@@ -49,11 +50,12 @@ export async function PUT(
       dataToUpdate.attendees = {
         set: attendeeIds.map((attendeeId: string) => ({ id: attendeeId })),
       };
-    } else {
+    } else if (attendeeIds === null) { // Handle clearing attendees
       dataToUpdate.attendees = {
         set: [],
       };
     }
+
 
     const updatedEvent = await prisma.calendarEvent.update({
       where: { id },
@@ -80,7 +82,7 @@ export async function DELETE(
   req: NextRequest, 
   context: { params: { id: string } }
 ) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
@@ -97,8 +99,8 @@ export async function DELETE(
             return NextResponse.json({ message: 'Evento no encontrado' }, { status: 404 });
         }
 
-        if (existingEvent.creatorId !== session.id && session.role !== 'ADMINISTRATOR') {
-            return NextResponse.json({ message: 'No tienes permiso para eliminar este evento' }, { status: 403 });
+        if (session.role !== 'ADMINISTRATOR' && existingEvent.creatorId !== session.id) {
+            return NextResponse.json({ message: 'No tienes permiso para eliminar este evento.' }, { status: 403 });
         }
         
         await prisma.calendarEvent.delete({ where: { id } });

@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
 import bcrypt from 'bcryptjs';
-import { createSession, getSession } from '@/lib/auth';
+import { createSession, getCurrentUser } from '@/lib/auth';
 
 authenticator.options = {
   window: 1, // 1 * 30-second window for verification
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     }
 
     // For other actions, we require an active session
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session) {
       return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }

@@ -1,12 +1,12 @@
 
-
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import type { UserRole, CourseStatus } from '@/types';
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await getCurrentUser();
     const { searchParams } = new URL(req.url);
     const manageView = searchParams.get('manageView') === 'true';
     const userId = searchParams.get('userId');
@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }

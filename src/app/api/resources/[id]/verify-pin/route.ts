@@ -2,11 +2,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest, context: { params: { id: string } }) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }

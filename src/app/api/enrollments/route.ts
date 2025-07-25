@@ -1,12 +1,12 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
 // POST to enroll/unenroll a user from a course
 export async function POST(req: NextRequest) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }

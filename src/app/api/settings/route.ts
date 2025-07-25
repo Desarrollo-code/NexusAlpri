@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import type { PlatformSettings } from '@/types';
 import type { NextRequest } from 'next/server';
 
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
 // POST /api/settings - Updates platform settings
 export async function POST(req: NextRequest) {
   try {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
       return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }

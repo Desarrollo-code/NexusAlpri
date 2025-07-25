@@ -1,11 +1,11 @@
 
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 
 // GET all notifications for the current user
 export async function GET(req: NextRequest) {
-  const session = await getSession(req);
+  const session = await getCurrentUser();
   if (!session) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
 
 // PATCH to mark notifications as read
 export async function PATCH(req: NextRequest) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
@@ -79,7 +79,7 @@ export async function PATCH(req: NextRequest) {
 
 // DELETE notifications
 export async function DELETE(req: NextRequest) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }

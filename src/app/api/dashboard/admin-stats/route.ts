@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import { subDays, startOfDay, format, eachDayOfInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -42,7 +42,7 @@ export interface AdminDashboardStats {
 }
 
 export async function GET(req: NextRequest) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
@@ -51,8 +51,6 @@ export async function GET(req: NextRequest) {
         const thirtyDaysAgo = subDays(new Date(), 30);
         const sevenDaysAgo = subDays(new Date(), 7);
 
-        // prisma.$transaction se utiliza para ejecutar múltiples consultas en una sola transacción de base de datos.
-        // Esto mejora el rendimiento al reducir los viajes de ida y vuelta a la base de datos.
         const [
             totalUsers,
             totalCourses,
@@ -211,4 +209,3 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ message: 'Error al obtener las estadísticas del dashboard' }, { status: 500 });
     }
 }
-    

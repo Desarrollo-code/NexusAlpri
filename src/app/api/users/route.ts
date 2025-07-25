@@ -1,13 +1,12 @@
 
-
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 
 // GET all users (ADMIN only)
 export async function GET(req: NextRequest) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
@@ -60,7 +59,7 @@ export async function GET(req: NextRequest) {
 
 // POST (create) a new user (ADMIN only)
 export async function POST(req: NextRequest) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }

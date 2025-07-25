@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import { sendEmail } from '@/lib/email';
 import { AnnouncementEmail } from '@/components/emails/announcement-email';
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession(req);
+  const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }

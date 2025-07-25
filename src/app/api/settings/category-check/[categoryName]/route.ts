@@ -1,13 +1,13 @@
 
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(
     req: NextRequest, 
     context: { params: { categoryName: string } }
 ) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }

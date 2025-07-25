@@ -1,11 +1,11 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
 export async function PUT(req: NextRequest, context: { params: { id: string } }) {
-  const session = await getSession(req);
+  const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
@@ -28,7 +28,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 }
 
 export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
-  const session = await getSession(req);
+  const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }

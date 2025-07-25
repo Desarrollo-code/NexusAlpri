@@ -2,10 +2,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function POST(req: NextRequest, context: { params: { id: string } }) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     const { id } = context.params;
 
     if (!session || session.id !== id) {

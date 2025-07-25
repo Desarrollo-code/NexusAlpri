@@ -1,12 +1,12 @@
 
 import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import { recordLessonInteraction } from '@/lib/progress';
 
 // Records a 'view' interaction for a lesson
 export async function POST(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     const { userId, courseId } = context.params;
 
     if (!session || session.id !== userId) {

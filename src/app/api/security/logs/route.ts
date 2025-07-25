@@ -1,11 +1,11 @@
 
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 
 // GET security logs (ADMIN only)
 export async function GET(req: NextRequest) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }

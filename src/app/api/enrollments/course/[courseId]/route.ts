@@ -1,12 +1,12 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
 // GET enrollments for a specific course
 export async function GET(req: NextRequest, context: { params: { courseId: string } }) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }

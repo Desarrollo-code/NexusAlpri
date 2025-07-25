@@ -1,11 +1,11 @@
 
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 
 // GET all available lesson templates
 export async function GET(req: NextRequest) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
 
 // POST a new lesson template from an existing lesson
 export async function POST(req: NextRequest) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }

@@ -1,6 +1,7 @@
+
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 
 // GET resources
 export async function GET(req: NextRequest) {
@@ -54,7 +55,7 @@ export async function GET(req: NextRequest) {
 
 // POST a new resource (file or folder)
 export async function POST(req: NextRequest) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }

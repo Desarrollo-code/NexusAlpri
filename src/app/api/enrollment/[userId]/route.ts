@@ -1,12 +1,12 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
 // Get all courses a specific user is enrolled in
 export async function GET(req: NextRequest, context: { params: { userId: string } }) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     const { userId } = context.params;
 
     if (!session || session.id !== userId) {

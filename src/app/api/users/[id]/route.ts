@@ -1,11 +1,12 @@
+
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 
 // GET a specific user
 export async function GET(req: NextRequest, context: { params: { id: string } }) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     const { id } = context.params;
     // Allow admins to get any user, and any user to get their own profile
     if (!session || (session.role !== 'ADMINISTRATOR' && session.id !== id)) {
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
 
 // PUT (update) a user
 export async function PUT(req: NextRequest, context: { params: { id: string } }) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
@@ -99,7 +100,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 
 // DELETE a user
 export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
-    const session = await getSession(req);
+    const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
