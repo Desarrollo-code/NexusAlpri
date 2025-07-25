@@ -24,8 +24,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Use the lightweight getSession for middleware
-  const session = await getSession();
+  // Pass the request to getSession, making it Edge-compatible
+  const session = await getSession(request);
   const isPublicPath = PUBLIC_PATHS.some(p => pathname.startsWith(p));
 
   // If user is logged in

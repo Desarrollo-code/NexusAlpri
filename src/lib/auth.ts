@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import type { User } from '@/types';
 import prisma from './prisma';
 import { cache } from 'react';
+import type { NextRequest } from 'next/server';
 
 const secret = process.env.JWT_SECRET;
 if (!secret) {
@@ -49,22 +50,28 @@ export async function deleteSession() {
 }
 
 /**
- * Lightweight session checker for middleware.
+ * Lightweight session checker.
+ * Can be used in Middleware (by passing the request object) or in Server Components/API Routes (by omitting the request).
  * Only decrypts the cookie, does NOT query the database.
- * This is safe for the Edge runtime.
  */
-export async function getSession() {
-  const sessionCookie = cookies().get('session')?.value;
+export async function getSession(request?: NextRequest) {
+  const cookieStore = request ? request.cookies : cookies();
+  const sessionCookie = cookieStore.get('session')?.value;
+
   if (!sessionCookie) return null;
-  
+
   const decrypted = await decrypt(sessionCookie);
   if (!decrypted || new Date(decrypted.expires) < new Date()) {
-      cookies().set('session', '', { expires: new Date(0), path: '/' }); // Clear expired cookie
+      // Clear expired cookie if we can (only possible in server components/actions)
+      if (!request) {
+        cookies().set('session', '', { expires: new Date(0), path: '/' });
+      }
       return null;
   }
   
   return decrypted;
 }
+
 
 /**
  * Fetches the full user object from the database based on the current session.
