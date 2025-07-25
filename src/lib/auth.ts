@@ -73,10 +73,8 @@ export async function getSession(request: NextRequest): Promise<{ userId: string
 }
 
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
-  // CORRECCIÓN CLAVE: Debes 'await' la llamada a 'cookies()' antes de intentar obtener su valor.
-  // Esto es lo que Next.js/Turbopack espera para las APIs dinámicas.
-  const cookieStore = cookies(); // Obtiene la instancia de CookieStore (asíncrona internamente)
-  const sessionCookieValue = cookieStore.get('session')?.value; // Ahora accedes al valor de forma segura
+  // CORRECCIÓN CLAVE DEFINITIVA: Forzar el 'await' explícito en la llamada a 'cookies()'.
+  const sessionCookieValue = (await cookies()).get('session')?.value; 
 
   if (!sessionCookieValue) {
     return null;
