@@ -1,9 +1,10 @@
 // src/lib/auth.ts
-'use server';
+
+'use server'; // Asegúrate de que esta línea sigue siendo la primera absoluta
 import { cookies } from 'next/headers';
 import { cache } from 'react';
-import prisma from './prisma'; // Asegúrate de que esta importación sea correcta
-
+import prisma from './prisma';
+import jwt from 'jsonwebtoken'; // Necesitarás instalar jsonwebtoken si no lo tienes: npm install jsonwebtoken
 
 // Define tu interfaz User si no está ya en otro lugar o aquí
 interface User {
@@ -20,8 +21,6 @@ interface User {
  * This function is cached to prevent multiple lookups in a single request.
  */
 export const getCurrentUser = cache(async (): Promise<User | null> => {
-  // Ya que este archivo está marcado con 'use server',
-  // Next.js sabe que `cookies()` es una operación del servidor.
   const sessionCookieValue = cookies().get('session')?.value;
 
   if (!sessionCookieValue) {
@@ -29,28 +28,52 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
   }
 
   try {
-    // Aquí es donde validarías tu sesión y obtendrías el usuario
-    // Por ejemplo, decodificando el JWT o consultando tu DB
-    // Esto es un placeholder; necesitas tu lógica de validación de sesión real
+    // En un entorno de producción, aquí decodificarías el JWT y obtendrías el ID del usuario
+    // Por ahora, asumimos que sessionCookieValue es directamente el ID del usuario (o un JWT válido)
+    // Si es un JWT, necesitarías algo como:
+    const decoded = jwt.verify(sessionCookieValue, process.env.JWT_SECRET as string) as { userId: string };
+    const userId = decoded.userId;
+
+
     const user = await prisma.user.findUnique({
-      where: { id: sessionCookieValue }, // Asumiendo que el valor de la cookie es el ID del usuario
+      where: { id: userId }, // Usar el userId del JWT decodificado
       select: {
         id: true,
         name: true,
         email: true,
-        image: true, // Si tienes un campo de imagen de perfil
+        // image: true, // Asegúrate de que este campo exista en tu schema.prisma o coméntalo
         role: true,
-        // ... otros campos que necesites para la sesión
       }
     });
 
-    // Asegúrate de que el 'User' retornado coincida con la interfaz 'User'
-    return user as User; // Castear para asegurar el tipo
+    return user as User;
   } catch (error) {
     console.error("Error al obtener el usuario actual:", error);
     return null;
   }
 });
 
-// Puedes tener otras funciones de autenticación aquí
-// ...
+/**
+ * Crea una sesión de usuario y la establece como una cookie HTTP-only.
+ * @param userId El ID del usuario para el que se crea la sesión.
+ * @param userRole El rol del usuario para incluir en la sesión.
+ */
+export async function createSession(userId: string, userRole: User['role']) {
+  // Idealmente, aquí generarías un JWT o un token seguro
+  const payload = { userId, role: userRole, expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7) }; // Expira en 7 días
+  const token = jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: '7d' }); // Firma el token
+
+  cookies().set('session', token, {
+    httpOnly: true, // No accesible por JavaScript en el navegador
+    secure: process.env.NODE_ENV === 'production', // Solo HTTPS en producción
+    maxAge: 60 * 60 * 24 * 7, // 7 días
+    path: '/', // Accesible en toda la aplicación
+  });
+}
+
+/**
+ * Elimina la sesión del usuario.
+ */
+export async function deleteSession() {
+  cookies().delete('session');
+}
