@@ -1,5 +1,4 @@
 
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
@@ -71,7 +70,7 @@ export async function GET(req: NextRequest) {
             studentsByCompletions,
             instructorsByCourses,
         ] = await prisma.$transaction([
-            prisma.user.count({}),
+            prisma.user.count(),
             prisma.course.count(),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
             prisma.enrollment.count(),
