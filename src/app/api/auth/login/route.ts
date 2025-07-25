@@ -99,6 +99,7 @@ export async function POST(req: NextRequest) {
       });
     }
     
+    // Create the session cookie
     await createSession(user.id);
 
     return NextResponse.json({ user: userToReturn });

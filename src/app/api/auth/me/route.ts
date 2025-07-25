@@ -1,26 +1,19 @@
+
 // src/app/api/auth/me/route.ts
 import { NextResponse } from 'next/server';
-<<<<<<< HEAD
-import type { NextRequest } from 'next/server';
-
-export async function GET(req: NextRequest) {
-  const user = await getCurrentUser();
-=======
 import { getCurrentUser } from '@/lib/auth';
 
-// Add this line to force dynamic rendering for this API route
-export const dynamic = 'force-dynamic'; // <--- ADD THIS LINE
+// This line is crucial for preventing Next.js from caching the response
+// and ensuring it always calls the function dynamically.
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const session = await getCurrentUser();
->>>>>>> 213a36c0747a30247f2a5200ddc2c201d82c4a0c
+  const user = await getCurrentUser();
 
-  if (!session) {
+  if (!user) {
     return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
   }
-
-  // Devuelve solo la información segura del usuario, sin la contraseña ni secretos
-  const { password, twoFactorSecret, ...userSafeData } = session;
-
-  return NextResponse.json(userSafeData);
+  
+  // The password and other sensitive fields are already removed by getCurrentUser
+  return NextResponse.json({ user });
 }
