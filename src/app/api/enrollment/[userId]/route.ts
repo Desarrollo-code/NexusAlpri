@@ -29,21 +29,14 @@ export async function GET(req: NextRequest, context: { params: { userId: string 
                         },
                     },
                 },
+                progress: true,
             },
             orderBy: {
                 enrolledAt: 'desc',
             },
         });
         
-        const courseProgress = await prisma.courseProgress.findMany({
-            where: {
-                userId: userId,
-                courseId: { in: enrollments.map(e => e.courseId) }
-            },
-        });
-
         const data = enrollments.map(enrollment => {
-            const progress = courseProgress.find(p => p.courseId === enrollment.courseId);
             return {
                 id: enrollment.course.id,
                 title: enrollment.course.title,
@@ -54,7 +47,7 @@ export async function GET(req: NextRequest, context: { params: { userId: string 
                 modulesCount: enrollment.course._count.modules,
                 enrolledAt: enrollment.enrolledAt,
                 status: enrollment.course.status,
-                progressPercentage: progress?.progressPercentage || 0
+                progressPercentage: enrollment.progress?.progressPercentage || 0
             };
         });
 

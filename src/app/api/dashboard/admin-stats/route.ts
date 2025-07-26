@@ -1,4 +1,3 @@
-
 // src/app/api/dashboard/admin-stats/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -50,7 +49,7 @@ export async function GET(req: NextRequest) {
             prisma.course.findMany({ where: { createdAt: { gte: thirtyDaysAgo } }, select: { createdAt: true } }),
             prisma.course.findMany({ where: { publicationDate: { not: null, gte: thirtyDaysAgo } }, select: { publicationDate: true } }),
             prisma.enrollment.findMany({ where: { enrolledAt: { gte: thirtyDaysAgo } }, select: { enrolledAt: true } }),
-            prisma.courseProgress.findMany({ where: { courseId: { not: null } }, select: { courseId: true, progressPercentage: true, userId: true } }),
+            prisma.courseProgress.findMany({ select: { enrollment: { select: { userId: true, courseId: true } }, progressPercentage: true } }),
             prisma.course.findMany({ where: { status: 'PUBLISHED' }, select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } } }),
             prisma.user.findMany({ where: { role: 'STUDENT' }, select: { id: true, name: true, avatar: true, _count: { select: { enrollments: true } } }, orderBy: { enrollments: { _count: 'desc' } }, take: 5 }),
             prisma.user.findMany({ where: { role: { in: ['INSTRUCTOR', 'ADMINISTRATOR'] } }, select: { id: true, name: true, avatar: true, _count: { select: { courses: true } } }, orderBy: { courses: { _count: 'desc' } }, take: 5 }),
@@ -87,21 +86,25 @@ export async function GET(req: NextRequest) {
             userRegistrationTrendData[date] = 0;
         }
         recentUsersData.forEach(user => {
-            const date = format(user.registeredDate, 'yyyy-MM-dd');
-            if (userRegistrationTrendData[date] !== undefined) userRegistrationTrendData[date]++;
+            if (user.registeredDate) {
+              const date = format(user.registeredDate, 'yyyy-MM-dd');
+              if (userRegistrationTrendData[date] !== undefined) userRegistrationTrendData[date]++;
+            }
         });
         const userRegistrationTrend = Object.keys(userRegistrationTrendData).map(date => ({ date, count: userRegistrationTrendData[date] }));
 
         // --- Completion and Ranking Processing ---
         const courseCompletionStats: { [courseId: string]: { totalProgress: number; count: number; title: string; imageUrl: string | null } } = {};
         allCourseProgressRaw.forEach(cp => {
-            const courseInfo = coursesWithEnrollmentCounts.find(c => c.id === cp.courseId);
-            if (courseInfo) {
-                if (!courseCompletionStats[cp.courseId]) {
-                    courseCompletionStats[cp.courseId] = { totalProgress: 0, count: 0, title: courseInfo.title, imageUrl: courseInfo.imageUrl };
+            if (cp.enrollment?.courseId) {
+                const courseInfo = coursesWithEnrollmentCounts.find(c => c.id === cp.enrollment.courseId);
+                if (courseInfo) {
+                    if (!courseCompletionStats[cp.enrollment.courseId]) {
+                        courseCompletionStats[cp.enrollment.courseId] = { totalProgress: 0, count: 0, title: courseInfo.title, imageUrl: courseInfo.imageUrl };
+                    }
+                    courseCompletionStats[cp.enrollment.courseId].totalProgress += cp.progressPercentage || 0;
+                    courseCompletionStats[cp.enrollment.courseId].count++;
                 }
-                courseCompletionStats[cp.courseId].totalProgress += cp.progressPercentage || 0;
-                courseCompletionStats[cp.courseId].count++;
             }
         });
 
@@ -121,8 +124,8 @@ export async function GET(req: NextRequest) {
         const studentInfoMap = new Map((await prisma.user.findMany({ where: { role: 'STUDENT' }, select: { id: true, name: true, avatar: true } })).map(u => [u.id, u]));
 
         const studentCompletionCounts = allCourseProgressRaw.reduce((acc, cp) => {
-            if (cp.progressPercentage && cp.progressPercentage >= 100) {
-                acc[cp.userId] = (acc[cp.userId] || 0) + 1;
+            if (cp.progressPercentage && cp.progressPercentage >= 100 && cp.enrollment?.userId) {
+                acc[cp.enrollment.userId] = (acc[cp.enrollment.userId] || 0) + 1;
             }
             return acc;
         }, {} as Record<string, number>);
