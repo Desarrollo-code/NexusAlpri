@@ -113,7 +113,8 @@ const activityChartConfig = {
 
 const formatDateTick = (tick: string) => {
     try {
-        return format(parseISO(tick), "MMM d", { locale: es });
+        const date = parseISO(tick);
+        return format(date, "MMM d", { locale: es });
     } catch (e) {
         return tick;
     }
