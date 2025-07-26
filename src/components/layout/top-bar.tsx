@@ -80,7 +80,7 @@ const NotificationPopover = () => {
   return (
     <Popover onOpenChange={(open) => { if(open) fetchNotifications()}}>
       <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="relative h-9 w-9">
+          <Button variant="ghost" size="icon" className="relative h-9 w-9 text-primary-foreground hover:bg-white/10">
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && !isLoading && (
               <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
@@ -169,10 +169,10 @@ export function TopBar() {
   
   return (
       <header className={cn(
-          "sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur-md md:px-6",
+          "topbar-gradient sticky top-0 z-30 flex h-16 items-center justify-between border-b px-4 text-primary-foreground md:px-6",
       )}>
         <div className="flex items-center gap-2">
-          <SidebarTrigger className="md:hidden" />
+          <SidebarTrigger className="md:hidden text-primary-foreground hover:bg-white/10" />
           <h1 className="hidden sm:block text-xl font-semibold font-headline truncate">{pageTitle}</h1>
         </div>
         <div className="flex items-center gap-3">
