@@ -49,12 +49,12 @@
     --sidebar-ring: 45 93% 58%;
 
 
-    /* Paleta de Colores para Gráficos y Eventos */
-    --chart-1: 200 81% 45%; /* Azul */
-    --chart-2: 139 51% 51%; /* Verde */
-    --chart-3: 340 95% 65%; /* Rosa */
-    --chart-4: 24 97% 58%; /* Naranja */
-    --chart-5: 262 84% 59%; /* Púrpura */
+    /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
+    --chart-1: 210 90% 55%; /* Azul Vibrante */
+    --chart-2: 150 75% 45%; /* Verde Menta */
+    --chart-3: 330 90% 65%; /* Rosa Intenso */
+    --chart-4: 30 100% 60%; /* Naranja */
+    --chart-5: 270 90% 65%; /* Púrpura */
 
     --event-blue: 200 81% 56%;
     --event-green: 139 51% 51%;
@@ -105,12 +105,12 @@
     --sidebar-border: 240 4% 18%;
     --sidebar-ring: 45 93% 58%;
 
-    /* Paleta de Colores para Gráficos y Eventos */
-    --chart-1: 200 81% 56%; /* Azul */
-    --chart-2: 139 51% 51%; /* Verde */
-    --chart-3: 340 95% 65%; /* Rosa */
-    --chart-4: 24 97% 63%; /* Naranja */
-    --chart-5: 262 84% 59%; /* Púrpura */
+    /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
+    --chart-1: 210 90% 65%; /* Azul Vibrante */
+    --chart-2: 150 75% 55%; /* Verde Menta */
+    --chart-3: 330 90% 70%; /* Rosa Intenso */
+    --chart-4: 30 100% 65%; /* Naranja */
+    --chart-5: 270 90% 70%; /* Púrpura */
 
     --event-blue: 200 81% 56%;
     --event-green: 139 51% 51%;

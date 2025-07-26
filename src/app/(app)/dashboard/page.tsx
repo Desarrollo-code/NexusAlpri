@@ -39,7 +39,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, BarChart as RechartsBar, Legend, ComposedChart } from "recharts";
+import { Area, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend } from "recharts";
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { getEventDetails, getInitials } from '@/lib/security-log-utils';
 
@@ -104,8 +104,8 @@ const MetricCard = ({ title, value: finalValue, icon: Icon, description }: { tit
 };
 
 const activityChartConfig = {
-  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-1))" },
-  publishedCourses: { label: "Cursos Publicados", color: "hsl(var(--chart-2))" },
+  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" },
+  publishedCourses: { label: "Cursos Publicados", color: "hsl(var(--chart-1))" },
   newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
@@ -130,16 +130,16 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
               <CardContent className="h-96">
                   <ChartContainer config={activityChartConfig} className="w-full h-full">
                     <ResponsiveContainer>
-                      <RechartsBar data={stats.courseActivity} margin={{ top: 5, right: 10, left: -20, bottom: 30 }}>
+                      <ComposedChart data={stats.courseActivity} margin={{ top: 5, right: 10, left: -20, bottom: 30 }}>
                           <CartesianGrid vertical={false} strokeDasharray="3 3"/>
                           <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval={5} />
                           <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
                           <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
-                          <Legend verticalAlign="bottom" height={36}/>
-                          <Bar dataKey="newCourses" name="Nuevos Cursos" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="publishedCourses" name="Cursos Publicados" fill="var(--color-publishedCourses)" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="newEnrollments" name="Nuevas Inscripciones" fill="var(--color-newEnrollments)" radius={[4, 4, 0, 0]} />
-                      </RechartsBar>
+                          <Legend verticalAlign="top" height={36}/>
+                          <Bar dataKey="newCourses" name="Nuevos Cursos" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} barSize={20} />
+                          <Bar dataKey="publishedCourses" name="Cursos Publicados" fill="var(--color-publishedCourses)" radius={[4, 4, 0, 0]} barSize={20} />
+                          <Bar dataKey="newEnrollments" name="Nuevas Inscripciones" fill="var(--color-newEnrollments)" radius={[4, 4, 0, 0]} barSize={20} />
+                      </ComposedChart>
                     </ResponsiveContainer>
                   </ChartContainer>
               </CardContent>
