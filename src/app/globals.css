@@ -141,7 +141,7 @@
   }
 
   .topbar-gradient {
-    background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+    background: linear-gradient(90deg, hsl(var(--chart-3)) 0%, hsl(var(--chart-4)) 33%, hsl(var(--gauge-yellow)) 66%, hsl(var(--chart-1)) 100%);
     color: hsl(var(--primary-foreground));
   }
   
