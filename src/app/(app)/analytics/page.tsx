@@ -33,6 +33,7 @@ import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getInitials } from '@/lib/security-log-utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 
 
 // --- DASHBOARD COMPONENTS ---
@@ -425,3 +426,5 @@ export default function AnalyticsPageWrapper() {
     </div>
   );
 }
+
+    

@@ -71,7 +71,7 @@ export default function UsersPage() {
   const [totalUsers, setTotalUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   
   const currentPage = Number(searchParams.get('page')) || 1;
@@ -128,7 +128,11 @@ export default function UsersPage() {
     (paramsToUpdate: Record<string, string | number>) => {
       const params = new URLSearchParams(searchParams.toString())
       Object.entries(paramsToUpdate).forEach(([name, value]) => {
-        params.set(name, String(value));
+          if (value) {
+            params.set(name, String(value));
+          } else {
+            params.delete(name);
+          }
       });
       return params.toString()
     },
@@ -136,16 +140,21 @@ export default function UsersPage() {
   );
   
   useEffect(() => {
-      if (currentUser?.role === 'ADMINISTRATOR') {
-          if (debouncedSearchTerm !== searchParams.get('search')) {
-              handlePageChange(1, debouncedSearchTerm);
-          } else {
-              fetchUsers(currentPage, debouncedSearchTerm);
-          }
-      } else if(currentUser) {
-          router.push('/dashboard');
-      }
-  }, [currentUser, debouncedSearchTerm, currentPage, fetchUsers, router, searchParams]);
+    if (currentUser?.role !== 'ADMINISTRATOR' && currentUser) {
+      router.push('/dashboard');
+      return;
+    }
+    
+    // Check if debounced search term has changed from what's in the URL
+    // If so, it means the user has typed something new, so we should go to page 1
+    if (debouncedSearchTerm !== (searchParams.get('search') || '')) {
+      const newQueryString = createQueryString({ page: 1, search: debouncedSearchTerm });
+      router.push(`${pathname}?${newQueryString}`);
+    } else {
+      // Otherwise, just fetch for the current page and search term
+      fetchUsers(currentPage, debouncedSearchTerm);
+    }
+  }, [currentUser, debouncedSearchTerm, currentPage, fetchUsers, router, pathname, searchParams, createQueryString]);
 
   
   const getInitials = (name?: string | null) => {
@@ -205,15 +214,8 @@ export default function UsersPage() {
   };
   
   
-  const handlePageChange = (page: number, currentSearch?: string) => {
-      const params: Record<string, string | number> = { page };
-      if (currentSearch) {
-          params.search = currentSearch;
-      } else if (searchParams.get('search')) {
-          params.search = searchParams.get('search')!;
-      }
-      
-      const newQueryString = createQueryString(params);
+  const handlePageChange = (page: number) => {
+      const newQueryString = createQueryString({ page });
       router.push(`${pathname}?${newQueryString}`);
   };
 
@@ -693,3 +695,5 @@ export default function UsersPage() {
     </div>
   );
 }
+
+    
