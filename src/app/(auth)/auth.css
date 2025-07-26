@@ -27,13 +27,41 @@
 
   background-color: var(--bg);
   color: var(--text-primary);
+  
+  /* Aurora Background */
+  position: relative;
+  overflow: hidden;
 }
+
+.auth-scope::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(circle at center, hsla(221, 83%, 53%, 0.15), transparent 40%),
+              radial-gradient(circle at 20% 80%, hsla(270, 90%, 65%, 0.15), transparent 40%),
+              radial-gradient(circle at 80% 30%, hsla(150, 75%, 45%, 0.15), transparent 40%);
+  transform: translate(-50%, -50%);
+  animation: aurora-flow 20s linear infinite;
+  z-index: 0;
+}
+
+
+@keyframes aurora-flow {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
 
 .auth-card {
   @apply w-full max-w-sm rounded-xl border p-6 sm:p-8;
   background-color: var(--card-bg);
   border-color: var(--border-color);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 80px rgba(251, 191, 36, 0.1) inset;
+  position: relative;
+  z-index: 1;
 }
 
 .auth-label {
@@ -63,10 +91,18 @@
   @apply inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 w-full;
   background-color: var(--accent-color);
   color: var(--graphite-950);
+  transition: all 0.2s ease-in-out;
 }
 
 .auth-button:hover {
   background-color: var(--gold-300);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px hsla(44, 96%, 50%, 0.2);
+}
+
+.auth-button:active {
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 .auth-button:disabled {

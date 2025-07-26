@@ -3,6 +3,7 @@
 
 import { cn } from "@/lib/utils";
 import React, { useRef } from 'react';
+import { UploadCloud, FileCheck, FileUp } from 'lucide-react';
 
 interface UploadAreaProps {
   onFileSelect: (file: File | null) => void;
@@ -33,15 +34,10 @@ export function UploadArea({ onFileSelect, disabled }: UploadAreaProps) {
       onClick={!disabled ? handleClick : undefined}
     >
       <div className="relative w-[100px] h-[100px] flex items-center justify-center group-active:animate-press">
-         <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-muted-foreground transition-colors group-hover:text-primary" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z" />
-            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M14 2v6h6m-4 5v6m-3-3h6" />
-        </svg>
-        <svg xmlns="http://www.w3.org/2000/svg" className="absolute h-12 w-12 text-primary opacity-0 group-active:animate-bounce" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2Z" />
-        </svg>
+         <UploadCloud className="h-16 w-16 text-muted-foreground transition-all duration-300 group-hover:text-primary group-hover:scale-110" />
+         <FileUp className="absolute h-12 w-12 text-primary opacity-0 transition-all duration-300 group-active:animate-throw" />
       </div>
-      <p className="text-sm font-semibold text-muted-foreground group-hover:text-primary">
+      <p className="text-sm font-semibold text-muted-foreground group-hover:text-primary transition-colors">
         Seleccionar Archivo
       </p>
       <input

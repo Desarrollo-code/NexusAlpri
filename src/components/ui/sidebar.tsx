@@ -329,7 +329,7 @@ const sidebarMenuButtonVariants = cva(
         lg: "h-12 text-base",
       },
       isActive: {
-        true: "bg-sidebar-accent/20 text-sidebar-accent font-semibold",
+        true: "bg-sidebar-accent/10 text-sidebar-accent font-semibold",
         false: "text-sidebar-foreground",
       },
     },
