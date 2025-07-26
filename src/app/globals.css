@@ -40,8 +40,8 @@
     --sidebar-width: 16rem;
     --sidebar-width-icon: 3.75rem;
     
-    /* Barra Lateral - Gradiente por defecto */
-    --sidebar-background: 240 5% 12%;
+    /* Barra Lateral - Gradiente para tema claro */
+    --sidebar-background: linear-gradient(180deg, hsl(var(--chart-5)) 0%, hsl(var(--chart-1)) 100%);
     --sidebar-foreground: 210 20% 98%;
     --sidebar-accent: 0 0% 100%;
     --sidebar-accent-foreground: 240 5% 12%;
