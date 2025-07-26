@@ -114,13 +114,14 @@ const activityChartConfig = {
 const formatDateTick = (tick: string) => {
     try {
         const date = parseISO(tick);
+        // Format to "Month Day", e.g., "Jul 15"
         return format(date, "MMM d", { locale: es });
     } catch (e) {
         return tick;
     }
 };
 
-function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: SecurityLogWithUser[] }) {
+function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardStats, logs: SecurityLogWithUser[], announcements: DisplayAnnouncement[] }) {
 
   return (
     <div className="space-y-6">
@@ -138,10 +139,10 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
                   <CardTitle>Actividad de los Cursos (Últimos 30 días)</CardTitle>
                   <CardDescription>Resumen de creación, publicación e inscripciones.</CardDescription>
               </CardHeader>
-              <CardContent className="h-80">
+              <CardContent className="h-[350px] p-0 pr-4">
                   <ChartContainer config={activityChartConfig} className="w-full h-full">
                     <ResponsiveContainer>
-                      <ComposedChart data={stats.courseActivity} margin={{ top: 5, right: 10, left: -20, bottom: 30 }}>
+                      <ComposedChart data={stats.courseActivity} margin={{ top: 20, right: 20, bottom: 40, left: 0 }}>
                           <CartesianGrid vertical={false} strokeDasharray="3 3"/>
                           <XAxis 
                               dataKey="date" 
@@ -164,6 +165,18 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
                   </ChartContainer>
               </CardContent>
             </Card>
+             <section>
+              <h2 className="text-2xl font-semibold">Anuncios Recientes</h2>
+              {announcements.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  {announcements.map(announcement => (
+                    <AnnouncementCard key={announcement.id} announcement={announcement} />
+                  ))}
+                </div>
+              ) : (
+                <Card className="mt-4"><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
+              )}
+            </section>
           </main>
           
           <aside className="lg:col-span-1 space-y-6">
@@ -344,7 +357,7 @@ export default function DashboardPage() {
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
-                    <Skeleton className="h-80" />
+                    <Skeleton className="h-96" />
                     <Skeleton className="h-64" />
                 </div>
                 <div className="lg:col-span-1"><Skeleton className="h-[400px]" /></div>
@@ -426,92 +439,92 @@ export default function DashboardPage() {
         </section>
       )}
       
-      {user.role === 'ADMINISTRATOR' && data?.adminStats && <AdminDashboard stats={data.adminStats} logs={data.securityLogs} />}
+      {user.role === 'ADMINISTRATOR' && data?.adminStats && <AdminDashboard stats={data.adminStats} logs={data.securityLogs} announcements={filteredAnnouncements}/>}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-           {user.role === 'INSTRUCTOR' && (
-              <section>
-                <h2 className="text-2xl font-semibold mb-4">Mis Cursos Impartidos Recientemente</h2>
-                 {data?.taughtCourses && data.taughtCourses.length > 0 ? (
-                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                      {data.taughtCourses.map(course => (
-                        <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
-                           {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
-                          <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
-                          <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2"/> Editar Contenido</Link></Button></CardFooter>
-                        </Card>
+      {user.role !== 'ADMINISTRATOR' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {user.role === 'INSTRUCTOR' && (
+                <section>
+                  <h2 className="text-2xl font-semibold mb-4">Mis Cursos Impartidos Recientemente</h2>
+                  {data?.taughtCourses && data.taughtCourses.length > 0 ? (
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                        {data.taughtCourses.map(course => (
+                          <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
+                            {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
+                            <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
+                            <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2"/> Editar Contenido</Link></Button></CardFooter>
+                          </Card>
+                        ))}
+                    </div>
+                  ) : (
+                    <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No has creado cursos aún.</p></CardContent></Card>
+                  )}
+                </section>
+            )}
+
+            {user.role === 'STUDENT' && (
+                <section>
+                  <h2 className="text-2xl font-semibold mb-4">Continuar Aprendiendo</h2>
+                  {data?.myDashboardCourses && data.myDashboardCourses.length > 0 ? (
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                      {data.myDashboardCourses.map((course, index) => (
+                        <CourseCard key={course.id} course={course} userRole={user.role} priority={index < 2}/>
                       ))}
-                  </div>
-                ) : (
-                  <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No has creado cursos aún.</p></CardContent></Card>
-                )}
-              </section>
-           )}
-
-           {user.role === 'STUDENT' && (
+                    </div>
+                  ) : (
+                    <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No estás inscrito en ningún curso.</p></CardContent></Card>
+                  )}
+                </section>
+            )}
+            
               <section>
-                <h2 className="text-2xl font-semibold mb-4">Continuar Aprendiendo</h2>
-                 {data?.myDashboardCourses && data.myDashboardCourses.length > 0 ? (
-                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                    {data.myDashboardCourses.map((course, index) => (
-                      <CourseCard key={course.id} course={course} userRole={user.role} priority={index < 2}/>
+                <h2 className="text-2xl font-semibold mb-4">Anuncios Recientes</h2>
+                {filteredAnnouncements.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {filteredAnnouncements.map(announcement => (
+                      <AnnouncementCard key={announcement.id} announcement={announcement} />
                     ))}
                   </div>
                 ) : (
-                  <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No estás inscrito en ningún curso.</p></CardContent></Card>
+                  <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
                 )}
               </section>
-           )}
-           
-            <section>
-              <h2 className="text-2xl font-semibold mb-4">Anuncios Recientes</h2>
-              {filteredAnnouncements.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {filteredAnnouncements.map(announcement => (
-                    <AnnouncementCard key={announcement.id} announcement={announcement} />
-                  ))}
-                </div>
-              ) : (
-                <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
-              )}
-            </section>
+          </div>
+          
+              <div className="lg:col-span-1">
+                  <Card>
+                      <CardHeader>
+                      <CardTitle>Accesos Rápidos</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                      <ul className="space-y-3">
+                          <li>
+                          <Link href="/courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
+                              <span className="flex items-center gap-3"><BookOpen className="h-5 w-5 text-primary"/>Catálogo de Cursos</span>
+                              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          </Link>
+                          </li>
+                          <li>
+                          <Link href="/my-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
+                              <span className="flex items-center gap-3"><GraduationCap className="h-5 w-5 text-primary"/>Mis Cursos</span>
+                              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          </Link>
+                          </li>
+                          {(user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR') && (
+                              <li>
+                                  <Link href="/manage-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
+                                      <span className="flex items-center gap-3"><BookMarked className="h-5 w-5 text-primary"/>Gestionar Cursos</span>
+                                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                                  </Link>
+                              </li>
+                          )}
+                      </ul>
+                      </CardContent>
+                  </Card>
+              </div>
         </div>
-        
-        {user.role !== 'ADMINISTRATOR' && (
-             <div className="lg:col-span-1">
-                <Card>
-                    <CardHeader>
-                    <CardTitle>Accesos Rápidos</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                    <ul className="space-y-3">
-                        <li>
-                        <Link href="/courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                            <span className="flex items-center gap-3"><BookOpen className="h-5 w-5 text-primary"/>Catálogo de Cursos</span>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                        </Link>
-                        </li>
-                        <li>
-                        <Link href="/my-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                            <span className="flex items-center gap-3"><GraduationCap className="h-5 w-5 text-primary"/>Mis Cursos</span>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                        </Link>
-                        </li>
-                        {(user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR') && (
-                            <li>
-                                <Link href="/manage-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                                    <span className="flex items-center gap-3"><BookMarked className="h-5 w-5 text-primary"/>Gestionar Cursos</span>
-                                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                                </Link>
-                            </li>
-                        )}
-                    </ul>
-                    </CardContent>
-                </Card>
-            </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
