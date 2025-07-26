@@ -248,7 +248,7 @@ const SidebarHeader = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex shrink-0 items-center border-b border-sidebar-border h-16", className)}
+      className={cn("flex shrink-0 items-center h-16", className)}
       {...props}
     />
   )
@@ -262,7 +262,7 @@ const SidebarFooter = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex flex-col p-2 mt-auto border-t border-sidebar-border", className)}
+      className={cn("flex flex-col p-2 mt-auto", className)}
       {...props}
     />
   )
@@ -311,7 +311,7 @@ const SidebarMenuSeparator = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div">
 >(({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("my-2 h-px bg-sidebar-border/50", className)} {...props} />
+    <div ref={ref} className={cn("my-2 h-px bg-sidebar-border/20", className)} {...props} />
 ));
 SidebarMenuSeparator.displayName = "SidebarMenuSeparator";
 

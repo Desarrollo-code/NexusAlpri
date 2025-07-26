@@ -1,4 +1,3 @@
-
 // src/app/(app)/layout.tsx
 'use client';
 
@@ -91,47 +90,48 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 <SidebarContent>
                      <div className="w-full p-2 flex flex-col gap-1">
                          <SidebarMenu>
-                            {navItems.map((item) => {
-                                if (item.subItems && item.subItems.length > 0) {
-                                    return (
-                                        <div key={item.label} className="flex flex-col gap-1">
-                                            <div className="px-4 py-2 text-sm font-semibold text-muted-foreground/70 flex items-center gap-3 md:group-data-[state=collapsed]:hidden">
-                                                {item.icon && <item.icon className="h-5 w-5 shrink-0" />}
-                                                {item.label}
-                                            </div>
-                                            <SidebarMenu className="pl-4 md:group-data-[state=collapsed]:pl-0">
-                                                {item.subItems.map((subItem) => {
-                                                    const isActive = subItem.href ? pathname.startsWith(subItem.href) : false;
-                                                    return (
-                                                        <SidebarMenuItem key={subItem.href}>
-                                                            <SidebarMenuButton asChild isActive={isActive} disabled={subItem.disabled} className="justify-start gap-3" tooltip={{ children: subItem.label }}>
-                                                                <Link href={subItem.href || '#'}>
-                                                                    <GradientIcon icon={subItem.icon} isActive={isActive} />
-                                                                    <span className={cn("font-medium text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{subItem.label}</span>
-                                                                </Link>
-                                                            </SidebarMenuButton>
-                                                        </SidebarMenuItem>
-                                                    )
-                                                })}
-                                            </SidebarMenu>
-                                        </div>
-                                    );
-                                }
+                            {navItems.map((item, index) => {
+                                const isSubMenu = item.subItems && item.subItems.length > 0;
                                 
-                                if (!item.subItems) {
-                                    const isActive = item.href ? pathname === item.href : false;
-                                    return (
-                                        <SidebarMenuItem key={item.href}>
-                                            <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{ children: item.label }}>
-                                                <Link href={item.href || '#'}>
-                                                    <GradientIcon icon={item.icon} isActive={isActive} />
-                                                    <span className={cn("font-medium text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
-                                                </Link>
-                                            </SidebarMenuButton>
-                                        </SidebarMenuItem>
-                                    );
-                                }
-                                return null;
+                                return (
+                                    <React.Fragment key={item.href || item.label}>
+                                        {isSubMenu ? (
+                                            <div className="flex flex-col gap-1">
+                                                <div className="px-4 py-2 text-sm font-semibold text-sidebar-foreground/70 flex items-center gap-3 md:group-data-[state=collapsed]:hidden">
+                                                    {item.icon && <item.icon className="h-5 w-5 shrink-0" />}
+                                                    {item.label}
+                                                </div>
+                                                <SidebarMenu className="pl-4 md:group-data-[state=collapsed]:pl-0">
+                                                    {item.subItems?.map((subItem) => {
+                                                        const isActive = subItem.href ? pathname.startsWith(subItem.href) : false;
+                                                        return (
+                                                            <SidebarMenuItem key={subItem.href}>
+                                                                <SidebarMenuButton asChild isActive={isActive} disabled={subItem.disabled} className="justify-start gap-3" tooltip={{ children: subItem.label }}>
+                                                                    <Link href={subItem.href || '#'}>
+                                                                        <GradientIcon icon={subItem.icon} isActive={isActive} />
+                                                                        <span className={cn("font-medium text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{subItem.label}</span>
+                                                                    </Link>
+                                                                </SidebarMenuButton>
+                                                            </SidebarMenuItem>
+                                                        )
+                                                    })}
+                                                </SidebarMenu>
+                                            </div>
+                                        ) : (
+                                            <SidebarMenuItem>
+                                                <SidebarMenuButton asChild isActive={pathname === item.href} disabled={item.disabled} className="justify-start gap-3" tooltip={{ children: item.label }}>
+                                                    <Link href={item.href || '#'}>
+                                                        <GradientIcon icon={item.icon} isActive={pathname === item.href} />
+                                                        <span className={cn("font-medium text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
+                                                    </Link>
+                                                </SidebarMenuButton>
+                                            </SidebarMenuItem>
+                                        )}
+                                        
+                                        {/* Add a separator after the main navigation block and before the administration block */}
+                                        {navItems.length > 1 && !isSubMenu && navItems[index+1]?.subItems && <SidebarMenuSeparator />}
+                                    </React.Fragment>
+                                );
                             })}
                         </SidebarMenu>
                      </div>
