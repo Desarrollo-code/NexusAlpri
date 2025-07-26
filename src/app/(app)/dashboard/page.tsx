@@ -112,7 +112,11 @@ const activityChartConfig = {
 } satisfies ChartConfig;
 
 const formatDateTick = (tick: string) => {
-    return format(parseISO(tick), "MMM d", { locale: es });
+    try {
+        return format(parseISO(tick), "MMM d", { locale: es });
+    } catch (e) {
+        return tick;
+    }
 };
 
 function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: SecurityLogWithUser[] }) {
@@ -133,7 +137,7 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
                   <CardTitle>Actividad de los Cursos (Últimos 30 días)</CardTitle>
                   <CardDescription>Resumen de creación, publicación e inscripciones.</CardDescription>
               </CardHeader>
-              <CardContent className="h-96">
+              <CardContent className="h-80">
                   <ChartContainer config={activityChartConfig} className="w-full h-full">
                     <ResponsiveContainer>
                       <ComposedChart data={stats.courseActivity} margin={{ top: 5, right: 10, left: -20, bottom: 30 }}>
