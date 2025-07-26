@@ -15,9 +15,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
     
-    /* Paleta de Ámbar/Naranja */
-    --primary: 38 92% 50%;
-    --primary-foreground: 38 95% 15%;
+    /* Paleta de Azul Eléctrico */
+    --primary: 221 83% 53%; /* Azul Intenso: #2563eb */
+    --primary-foreground: 210 20% 98%;
     
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 220.9 39.3% 11%;
@@ -33,7 +33,7 @@
     
     --border: 220 13% 91%; 
     --input: 220 13% 91%;
-    --ring: 38 92% 50%;
+    --ring: 221 83% 53%;
 
     --radius: 0.75rem;
     
@@ -43,10 +43,10 @@
     /* Barra Lateral - Tema OSCURO por defecto */
     --sidebar-background: 240 5% 12%;
     --sidebar-foreground: 210 20% 98%;
-    --sidebar-accent: 45 93% 58%; /* Amarillo brillante para el elemento activo */
-    --sidebar-accent-foreground: 240 5% 8%; /* Texto oscuro para el elemento activo */
+    --sidebar-accent: 221 83% 63%; /* Un azul más brillante para el acento */
+    --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: 240 4% 18%;
-    --sidebar-ring: 45 93% 58%;
+    --sidebar-ring: 221 83% 63%;
 
 
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
@@ -60,6 +60,10 @@
     --event-green: 139 51% 51%;
     --event-red: 356 91% 68%;
     --event-orange: 24 97% 63%;
+    
+    --gauge-green: 120 70% 45%;
+    --gauge-yellow: 45 90% 55%;
+    --gauge-red: 0 85% 60%;
   }
 
   /* --- TEMA OSCURO --- */
@@ -73,8 +77,8 @@
     --popover: 240 4% 10%;
     --popover-foreground: 210 20% 98%;
     
-    --primary: 38 92% 50%;
-    --primary-foreground: 38 95% 15%;
+    --primary: 221 83% 63%; /* Azul Eléctrico para el tema oscuro */
+    --primary-foreground: 210 20% 98%;
     
     --secondary: 240 4% 15%;
     --secondary-foreground: 210 20% 98%;
@@ -85,12 +89,12 @@
     --accent: 240 4% 15%;
     --accent-foreground: 210 20% 98%;
     
-    --destructive: 0 70% 55%;
+    --destructive: 0 63% 51%; /* Rojo más brillante para el tema oscuro */
     --destructive-foreground: 210 20% 98%;
     
     --border: 240 4% 18%; 
     --input: 240 4% 18%;
-    --ring: 38 92% 50%;
+    --ring: 221 83% 63%;
 
     --radius: 0.75rem;
     
@@ -100,10 +104,10 @@
     /* Barra Lateral - Tema OSCURO */
     --sidebar-background: 240 5% 12%;
     --sidebar-foreground: 210 20% 98%;
-    --sidebar-accent: 45 93% 58%; /* Amarillo brillante para el elemento activo */
-    --sidebar-accent-foreground: 240 5% 8%; /* Texto oscuro para el elemento activo */
+    --sidebar-accent: 221 83% 63%;
+    --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: 240 4% 18%;
-    --sidebar-ring: 45 93% 58%;
+    --sidebar-ring: 221 83% 63%;
 
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
     --chart-1: 210 90% 65%; /* Azul Vibrante */
@@ -116,6 +120,10 @@
     --event-green: 139 51% 51%;
     --event-red: 356 91% 68%;
     --event-orange: 24 97% 63%;
+    
+    --gauge-green: 120 70% 55%;
+    --gauge-yellow: 45 90% 60%;
+    --gauge-red: 0 85% 65%;
   }
 
   * {
@@ -135,14 +143,14 @@
   }
 
   .card-border-animated {
-    @apply border border-transparent shadow-lg shadow-black/20;
+    @apply border-t-4 border-transparent shadow-lg shadow-black/20;
     @apply transition-all duration-300;
     background-clip: padding-box;
   }
 
   .card-border-animated:hover {
     @apply shadow-primary/10 shadow-xl;
-    border-color: hsl(var(--primary) / 0.3);
+    border-top-color: hsl(var(--primary) / 0.5);
   }
   
   .thin-scrollbar::-webkit-scrollbar {

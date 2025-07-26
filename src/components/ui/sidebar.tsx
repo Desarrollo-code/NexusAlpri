@@ -192,7 +192,7 @@ const Sidebar = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "group fixed inset-y-0 left-0 z-40 hidden h-screen flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-in-out dark:border-white/10 md:flex",
+          "group fixed inset-y-0 left-0 z-40 hidden h-screen flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-in-out",
           state === "expanded" ? "w-[var(--sidebar-width)]" : "w-[var(--sidebar-width-icon)]",
           className
         )}
@@ -321,7 +321,7 @@ const sidebarMenuButtonVariants = cva(
     variants: {
       variant: {
         default: "",
-        ghost: "hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground",
+        ghost: "hover:bg-sidebar-accent/10 hover:text-sidebar-accent",
       },
       size: {
         default: "h-11 text-base",
@@ -329,7 +329,7 @@ const sidebarMenuButtonVariants = cva(
         lg: "h-12 text-base",
       },
       isActive: {
-        true: "bg-sidebar-accent text-sidebar-accent-foreground font-semibold",
+        true: "bg-sidebar-accent/20 text-sidebar-accent font-semibold",
         false: "text-sidebar-foreground",
       },
     },

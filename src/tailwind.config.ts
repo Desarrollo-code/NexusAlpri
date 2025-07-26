@@ -69,6 +69,11 @@ export default {
           red: 'hsl(var(--event-red))',
           orange: 'hsl(var(--event-orange))',
         },
+        gauge: {
+          green: 'hsl(var(--gauge-green))',
+          yellow: 'hsl(var(--gauge-yellow))',
+          red: 'hsl(var(--gauge-red))',
+        },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',
           foreground: 'hsl(var(--sidebar-foreground))',
@@ -79,9 +84,9 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 4px)",
-        sm: "calc(var(--radius) - 8px)",
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 4px)',
+        sm: 'calc(var(--radius) - 8px)',
       },
       keyframes: {
         'accordion-down': {

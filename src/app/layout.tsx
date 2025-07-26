@@ -37,10 +37,10 @@ export default function RootLayout({
           <title>NexusAlpri</title>
           <meta name="description" content="Plataforma E-learning Corporativa" />
       </head>
-      <body>
+      <body className="font-body">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >

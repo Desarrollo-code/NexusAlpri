@@ -1,3 +1,4 @@
+
 // src/app/(app)/layout.tsx
 'use client';
 
@@ -25,6 +26,7 @@ import Link from 'next/link';
 import { LogOut, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { GradientIcon } from '@/components/ui/gradient-icon';
 
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
@@ -104,7 +106,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                                         <SidebarMenuItem key={subItem.href}>
                                                             <SidebarMenuButton asChild isActive={isActive} disabled={subItem.disabled} className="justify-start gap-3" tooltip={{ children: subItem.label }}>
                                                                 <Link href={subItem.href || '#'}>
-                                                                    {subItem.icon && <subItem.icon className="h-5 w-5 shrink-0" />}
+                                                                    <GradientIcon icon={subItem.icon} isActive={isActive} />
                                                                     <span className={cn("font-medium text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{subItem.label}</span>
                                                                 </Link>
                                                             </SidebarMenuButton>
@@ -122,8 +124,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                         <SidebarMenuItem key={item.href}>
                                             <SidebarMenuButton asChild isActive={isActive} disabled={item.disabled} className="justify-start gap-3" tooltip={{ children: item.label }}>
                                                 <Link href={item.href || '#'}>
-                                                {item.icon && <item.icon className="h-5 w-5 shrink-0" />}
-                                                <span className={cn("font-medium text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
+                                                    <GradientIcon icon={item.icon} isActive={isActive} />
+                                                    <span className={cn("font-medium text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
                                                 </Link>
                                             </SidebarMenuButton>
                                         </SidebarMenuItem>
