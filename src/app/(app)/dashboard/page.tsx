@@ -42,6 +42,8 @@ import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "
 import { Area, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend } from "recharts";
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { getEventDetails, getInitials } from '@/lib/security-log-utils';
+import { format, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -109,6 +111,10 @@ const activityChartConfig = {
   newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
+const formatDateTick = (tick: string) => {
+    return format(parseISO(tick), "MMM d", { locale: es });
+};
+
 function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: SecurityLogWithUser[] }) {
 
   return (
@@ -132,7 +138,16 @@ function AdminDashboard({ stats, logs }: { stats: AdminDashboardStats, logs: Sec
                     <ResponsiveContainer>
                       <ComposedChart data={stats.courseActivity} margin={{ top: 5, right: 10, left: -20, bottom: 30 }}>
                           <CartesianGrid vertical={false} strokeDasharray="3 3"/>
-                          <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval={5} />
+                          <XAxis 
+                              dataKey="date" 
+                              tickLine={false} 
+                              axisLine={false} 
+                              tickMargin={10} 
+                              angle={-45} 
+                              textAnchor="end" 
+                              interval={5} 
+                              tickFormatter={formatDateTick}
+                          />
                           <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
                           <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
                           <Legend verticalAlign="top" height={36}/>
