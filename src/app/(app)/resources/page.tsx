@@ -44,6 +44,7 @@ import { UploadArea } from '@/components/ui/upload-area';
 import { ResourceDetailsSidebar } from '@/components/resources/details-sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DownloadButton } from '@/components/ui/download-button';
 
 
 // --- Types and Mappers ---

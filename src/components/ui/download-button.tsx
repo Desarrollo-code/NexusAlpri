@@ -4,6 +4,7 @@
 import React from 'react';
 import { Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from './button';
 
 interface DownloadButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   text?: string;
@@ -12,26 +13,12 @@ interface DownloadButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEleme
 export const DownloadButton = React.forwardRef<HTMLButtonElement, DownloadButtonProps>(
   ({ className, text = "Download", ...props }, ref) => {
     return (
-      <button
-        ref={ref}
-        className={cn(
-            "group relative w-[150px] h-10 cursor-pointer flex items-center border border-primary/80 bg-primary/90 rounded-md overflow-hidden",
-            className
-        )}
-        type="button"
-        {...props}
-      >
-        <span className="button__text absolute left-0 w-full text-center text-primary-foreground font-semibold transform-gpu transition-transform duration-300 group-hover:translate-x-[-150%]">
+      <Button ref={ref} className={cn(className)} {...props}>
+          <Download className="mr-2 h-4 w-4" />
           {text}
-        </span>
-        <span className="button__icon absolute w-full h-full flex items-center justify-center bg-primary transform-gpu translate-x-[-100%] transition-transform duration-300 group-hover:translate-x-0">
-          <Download className="w-5 h-5 text-primary-foreground" />
-        </span>
-      </button>
+      </Button>
     );
   }
 );
 
 DownloadButton.displayName = 'DownloadButton';
-
-    
