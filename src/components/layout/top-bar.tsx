@@ -84,6 +84,7 @@ const NotificationPopover = () => {
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && !isLoading && (
               <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-destructive"></span>
               </span>
             )}
