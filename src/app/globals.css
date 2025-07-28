@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,38 +7,38 @@
   :root {
     --background: 210 20% 98%;
     --foreground: 224 71.4% 4.1%;
-    
+
     --card: 0 0% 100%;
     --card-foreground: 224 71.4% 4.1%;
-    
+
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
-    
+
     /* Paleta de Azul Eléctrico */
     --primary: 221 83% 53%; /* Azul Intenso: #2563eb */
     --primary-foreground: 210 20% 98%;
-    
+
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 220.9 39.3% 11%;
-    
+
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
-    
+
     --accent: 220 14.3% 95.9%;
     --accent-foreground: 220.9 39.3% 11%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
-    
-    --border: 220 13% 91%; 
+
+    --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 221 83% 53%;
 
     --radius: 0.75rem;
-    
+
     --sidebar-width: 16rem;
     --sidebar-width-icon: 3.75rem;
-    
+
     /* Barra Lateral - Gradiente "Nebulosa de Grafito" */
     --sidebar-background: linear-gradient(180deg, hsl(215, 18%, 22%) 0%, hsl(222, 24%, 16%) 100%);
     --sidebar-foreground: 210 20% 98%;
@@ -47,6 +46,25 @@
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: hsl(var(--sidebar-accent) / 0.1);
     --sidebar-ring: 355 79% 51%;
+
+    /* Colores para el estado activo, hover y títulos de sección de la barra lateral */
+    --sidebar-active-background: 221 83% 63%; /* Azul Eléctrico Vibrante (para elemento activo) */
+    --sidebar-active-foreground: 210 20% 98%; /* Texto blanco para elemento activo */
+    --sidebar-active-ring: 221 83% 70%;
+
+    --sidebar-hover-background: 240 4% 10%; /* Un gris muy oscuro para hover */
+    --sidebar-section-title-foreground: 210 5% 75%; /* Gris claro sutil para títulos de sección */
+    --sidebar-subitem-foreground: 210 5% 64%; /* Muted foreground para texto de sub-items */
+
+    /* **AÑADIDO**: Colores para los iconos de la barra lateral (tema claro) */
+    --sidebar-icon-color: 210 20% 98%; /* Blanco por defecto */
+    --sidebar-active-icon-color: 210 20% 98%; /* Blanco para iconos activos */
+    --sidebar-hover-icon-color: 221 83% 63%; /* Azul eléctrico para iconos en hover */
+
+
+    /* **AÑADIDO**: Barra Superior - Degradado (para tema claro) */
+    --topbar-background: linear-gradient(180deg, hsl(221, 83%, 25%) 0%, hsl(270, 50%, 15%) 100%);
+    --topbar-foreground: 210 20% 98%; /* Texto blanco para la barra superior */
 
 
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
@@ -60,7 +78,7 @@
     --event-green: 139 51% 51%;
     --event-red: 356 91% 68%;
     --event-orange: 24 97% 63%;
-    
+
     --gauge-green: 120 70% 45%;
     --gauge-yellow: 45 90% 55%;
     --gauge-red: 0 85% 60%;
@@ -70,34 +88,34 @@
   .dark {
     --background: 0 0% 0%; /* Negro Puro */
     --foreground: 210 20% 98%;
-    
+
     --card: 240 4% 6%; /* Gris casi negro para tarjetas */
     --card-foreground: 210 20% 98%;
-    
+
     --popover: 240 4% 4%; /* Aún más oscuro para popovers */
     --popover-foreground: 210 20% 98%;
-    
+
     --primary: 221 83% 63%; /* Azul Eléctrico para el tema oscuro */
     --primary-foreground: 210 20% 98%;
-    
+
     --secondary: 240 4% 10%;
     --secondary-foreground: 210 20% 98%;
-    
+
     --muted: 240 4% 10%;
     --muted-foreground: 210 5% 64%;
-    
+
     --accent: 240 4% 10%;
     --accent-foreground: 210 20% 98%;
-    
+
     --destructive: 0 63% 51%; /* Rojo más brillante para el tema oscuro */
     --destructive-foreground: 210 20% 98%;
-    
-    --border: 240 4% 15%; 
+
+    --border: 240 4% 15%;
     --input: 240 4% 15%;
     --ring: 221 83% 63%;
 
     --radius: 0.75rem;
-    
+
     --sidebar-width: 16rem;
     --sidebar-width-icon: 3.75rem;
 
@@ -108,6 +126,26 @@
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: hsl(var(--sidebar-accent) / 0.1);
     --sidebar-ring: 355 79% 51%;
+
+    /* Colores para el estado activo, hover y títulos de sección de la barra lateral */
+    --sidebar-active-background: 221 83% 63%; /* Azul Eléctrico Vibrante (para elemento activo) */
+    --sidebar-active-foreground: 210 20% 98%; /* Texto blanco para elemento activo */
+    --sidebar-active-ring: 221 83% 70%;
+
+    --sidebar-hover-background: 240 4% 10%; /* Un gris muy oscuro para hover */
+    --sidebar-section-title-foreground: 210 5% 75%; /* Gris claro sutil para títulos de sección */
+    --sidebar-subitem-foreground: 210 5% 64%; /* Muted foreground para texto de sub-items */
+
+    /* **AÑADIDO**: Colores para los iconos de la barra lateral (tema oscuro) */
+    --sidebar-icon-color: 210 20% 98%; /* Blanco por defecto */
+    --sidebar-active-icon-color: 210 20% 98%; /* Blanco para iconos activos */
+    --sidebar-hover-icon-color: 221 83% 63%; /* Azul eléctrico para iconos en hover */
+
+
+    /* **YA EXISTÍA**: Barra Superior - Degradado (para tema oscuro) */
+    --topbar-background: linear-gradient(180deg, hsl(221, 83%, 25%) 0%, hsl(270, 50%, 15%) 100%);
+    --topbar-foreground: 210 20% 98%; /* Texto blanco para la barra superior */
+
 
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
     --chart-1: 210 90% 65%; /* Azul Vibrante */
@@ -120,7 +158,7 @@
     --event-green: 139 51% 51%;
     --event-red: 356 91% 68%;
     --event-orange: 24 97% 63%;
-    
+
     --gauge-green: 120 70% 55%;
     --gauge-yellow: 45 90% 60%;
     --gauge-red: 0 85% 65%;
@@ -141,10 +179,10 @@
   }
 
   .topbar-gradient {
-  background: var(--topbar-background); /* Asegúrate de que apunte aquí */
-  color: hsl(var(--primary-foreground));
+    background: var(--topbar-background); /* Ahora esto funcionará correctamente en ambos temas */
+    color: hsl(var(--primary-foreground));
   }
-  
+
   .watermark-img {
     @apply opacity-40;
     width: auto;
@@ -158,17 +196,23 @@
     animation: throw-in 0.5s ease-out forwards;
     opacity: 0;
   }
-  
+
   @keyframes throw-in {
-      from { transform: translateY(30px) scale(0.98); opacity: 0; }
-      to { transform: translateY(0) scale(1); opacity: 1; }
+    from {
+      transform: translateY(30px) scale(0.98);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
   }
 
   .card-border-animated:hover {
     @apply shadow-primary/10 shadow-xl;
     border-top-color: hsl(var(--primary) / 0.5);
   }
-  
+
   .thin-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -183,7 +227,7 @@
   .thin-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--muted-foreground));
   }
-  
+
   .profile-card {
     --main-color: hsl(var(--foreground));
     --submain-color: hsl(var(--muted-foreground));
@@ -237,24 +281,74 @@
     font-size: 1rem;
     color: var(--submain-color);
   }
-  
+
   .animated-underline {
-      @apply relative;
+    @apply relative;
   }
   .animated-underline::after {
-      content: '';
-      position: absolute;
-      width: 100%;
-      transform: scaleX(0);
-      height: 1px;
-      bottom: -2px;
-      left: 0;
-      background-color: hsl(var(--primary));
-      transform-origin: bottom center;
-      transition: transform 0.25s ease-out;
+    content: '';
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    height: 1px;
+    bottom: -2px;
+    left: 0;
+    background-color: hsl(var(--primary));
+    transform-origin: bottom center;
+    transition: transform 0.25s ease-out;
   }
   .animated-underline:hover::after {
-      transform: scaleX(1);
-      transform-origin: bottom center;
+    transform: scaleX(1);
+    transform-origin: bottom center;
+  }
+
+  /* **AÑADIDO**: Clase para los elementos de navegación principales */
+  .nav-item {
+    @apply flex items-center gap-3 px-4 py-2 rounded-lg text-sidebar-foreground transition-colors duration-200;
+    @apply hover:bg-[hsl(var(--sidebar-hover-background))] hover:text-sidebar-foreground;
+  }
+
+  /* **AÑADIDO**: Aplica el color del icono */
+  .nav-item svg {
+    color: hsl(var(--sidebar-icon-color)); /* Color de icono por defecto */
+  }
+
+  /* **AÑADIDO**: Clase para el elemento de navegación ACTIVO */
+  .nav-item.active {
+    @apply bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-active-foreground))];
+    @apply ring-2 ring-[hsl(var(--sidebar-active-ring))];
+  }
+
+  /* **AÑADIDO**: Aplica el color del icono cuando el elemento está activo */
+  .nav-item.active svg {
+    color: hsl(var(--sidebar-active-icon-color)); /* Color de icono activo */
+  }
+
+  /* **AÑADIDO**: Clase para el título de la sección (ej. "Administración") */
+  .nav-section-title {
+    @apply px-4 py-3 text-[hsl(var(--sidebar-section-title-foreground))] text-sm font-semibold uppercase tracking-wider;
+  }
+
+  /* **AÑADIDO**: Clase para los sub-elementos de navegación */
+  .nav-subitem {
+    @apply flex items-center gap-3 pl-8 py-2 rounded-lg text-[hsl(var(--sidebar-subitem-foreground))] transition-colors duration-200;
+    @apply hover:bg-[hsl(var(--sidebar-hover-background))] hover:text-sidebar-foreground;
+    font-size: 0.95rem; /* Fuente ligeramente más pequeña para los sub-items */
+  }
+
+  /* **AÑADIDO**: Aplica el color del icono para sub-items */
+  .nav-subitem svg {
+    color: hsl(var(--sidebar-icon-color)); /* Color de icono por defecto */
+  }
+
+  /* **AÑADIDO**: Clase para el sub-elemento ACTIVO */
+  .nav-subitem.active {
+    @apply bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-active-foreground))];
+    @apply ring-2 ring-[hsl(var(--sidebar-active-ring))];
+  }
+
+  /* **AÑADIDO**: Aplica el color del icono cuando el sub-elemento está activo */
+  .nav-subitem.active svg {
+    color: hsl(var(--sidebar-active-icon-color)); /* Color de icono activo */
   }
 }
