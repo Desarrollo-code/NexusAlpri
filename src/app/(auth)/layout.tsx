@@ -9,31 +9,49 @@ export default function AuthLayout({
 }>) {
   return (
     <div className="auth-scope">
-      <div className="flex min-h-screen flex-col items-center justify-center p-4">
-        <div className="w-full max-w-sm">
-          <div className="flex flex-col items-center">
+      <div className="auth-container">
+        {/* Columna Izquierda - Ilustración (visible en pantallas grandes) */}
+        <div className="auth-illustration-column">
+          <div className="auth-illustration-content">
+            <div className="auth-logo-container">
               <Image
                 src="/uploads/images/logo-nexusalpri.png"
                 alt="NexusAlpri Logo"
-                width={150}
-                height={122}
+                width={120}
+                height={97.5}
                 priority
                 data-ai-hint="logo education"
-                className="mb-6 drop-shadow-[0_5px_15px_rgba(255,215,0,0.2)]"
+                className="drop-shadow-sm"
               />
-              {children}
+            </div>
+            <Image
+              src="/uploads/images/auth-illustration.svg"
+              alt="E-learning Illustration"
+              width={500}
+              height={500}
+              priority
+              className="auth-main-illustration"
+              data-ai-hint="online learning collaboration"
+            />
+            <h1 className="auth-illustration-title">Bienvenido a NexusAlpri</h1>
+            <p className="auth-illustration-subtitle">Tu plataforma para el crecimiento y el aprendizaje continuo.</p>
           </div>
         </div>
-        <div className="fixed bottom-4 right-4 z-0 pointer-events-none">
-          <Image
-            src="/uploads/images/watermark-alprigrama.png"
-            alt="Alprigrama S.A.S. Watermark"
-            width={60}
-            height={60}
-            priority
-            className="watermark-img"
-            data-ai-hint="company logo"
-          />
+        
+        {/* Columna Derecha - Formulario */}
+        <div className="auth-form-column">
+          {children}
+          <div className="auth-watermark">
+            <Image
+              src="/uploads/images/watermark-alprigrama.png"
+              alt="Alprigrama S.A.S. Watermark"
+              width={60}
+              height={60}
+              priority
+              className="watermark-img"
+              data-ai-hint="company logo"
+            />
+          </div>
         </div>
       </div>
     </div>

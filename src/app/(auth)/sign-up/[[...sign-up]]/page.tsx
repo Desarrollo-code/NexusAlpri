@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { Loader2, ShieldAlert, Eye, EyeOff } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, EyeOff, UserPlus, LockKeyhole, UserCircle } from 'lucide-react';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -49,7 +49,6 @@ export default function SignUpPage() {
         }
     }
 
-
     setIsLoading(true);
 
     try {
@@ -90,20 +89,18 @@ export default function SignUpPage() {
   if (isAuthLoading || !settings) {
     return (
       <div className="flex h-screen w-screen items-center justify-center">
-          <Loader2 className="h-12 w-12 animate-spin text-gold-100" />
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
   
   if (!settings.allowPublicRegistration) {
       return (
-        <div className="auth-card">
-            <div className="text-center">
-                <h1 className="text-2xl font-bold text-gold-50">Registro Deshabilitado</h1>
-            </div>
-            <div className="mt-4 p-4 border border-gold-400/20 bg-gold-900/10 rounded-md text-center">
-              <ShieldAlert className="h-6 w-6 mx-auto mb-2 text-gold-200" />
-              <p className="text-sm text-gold-100">El registro de nuevas cuentas está deshabilitado. Contacta a un administrador.</p>
+        <div className="auth-card text-center">
+            <h1 className="text-2xl font-bold">Registro Deshabilitado</h1>
+            <div className="mt-4 p-4 border border-yellow-400/30 bg-yellow-500/10 rounded-md">
+              <ShieldAlert className="h-6 w-6 mx-auto mb-2 text-yellow-600" />
+              <p className="text-sm text-yellow-800">El registro de nuevas cuentas está deshabilitado. Contacta a un administrador.</p>
             </div>
             <div className="mt-4 text-center text-sm">
                 <Link href="/sign-in" className="auth-link">Volver a Inicio de Sesión</Link>
@@ -114,32 +111,42 @@ export default function SignUpPage() {
 
   return (
     <div className="auth-card">
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-gold-50">Crear una Cuenta</h1>
-        <p className="text-graphite-300">Regístrate para empezar a aprender</p>
+       <div className="auth-icon-wrapper">
+          <UserPlus />
+        </div>
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold">Crear una Cuenta</h1>
+        <p className="auth-text-secondary">Regístrate para empezar a aprender</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 border border-red-500/30 bg-red-900/20 rounded-md text-xs text-red-200 text-center">
+          <div className="p-3 border border-red-500/30 bg-red-500/10 rounded-md text-xs text-red-700 text-center">
             {error}
           </div>
         )}
         <div className="space-y-2">
           <label htmlFor="registerName" className="auth-label">Nombre Completo</label>
-          <input type="text" id="registerName" placeholder="Tu nombre completo" required 
-                 value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} className="auth-input"/>
+           <div className="relative">
+              <UserCircle className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <input type="text" id="registerName" placeholder="Tu nombre completo" required 
+                     value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} className="auth-input pl-10"/>
+           </div>
         </div>
         <div className="space-y-2">
           <label htmlFor="registerEmail" className="auth-label">Correo Electrónico</label>
-          <input type="email" id="registerEmail" placeholder="tu@email.com" required 
-                 value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="auth-input"/>
+           <div className="relative">
+              <UserCircle className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <input type="email" id="registerEmail" placeholder="tu@email.com" required 
+                     value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="auth-input pl-10"/>
+           </div>
         </div>
         <div className="space-y-2">
           <label htmlFor="registerPassword" className="auth-label">Contraseña</label>
           <div className="relative">
+            <LockKeyhole className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <input type={showPassword ? "text" : "password"} id="registerPassword" placeholder="••••••••" required
-                   value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} className="auth-input pr-10" />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-graphite-300 hover:text-gold-100">
+                   value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} className="auth-input pr-10 pl-10" />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
@@ -147,9 +154,10 @@ export default function SignUpPage() {
         <div className="space-y-2">
           <label htmlFor="confirmPassword" className="auth-label">Confirmar Contraseña</label>
           <div className="relative">
+             <LockKeyhole className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <input type={showConfirmPassword ? "text" : "password"} id="confirmPassword" placeholder="••••••••" required
-                   value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} className="auth-input pr-10" />
-            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-graphite-300 hover:text-gold-100">
+                   value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} className="auth-input pr-10 pl-10" />
+            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
                 {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
@@ -159,7 +167,7 @@ export default function SignUpPage() {
           Registrarse
         </button>
         <div className="mt-4 text-center text-sm">
-           <span className="text-graphite-300">¿Ya tienes una cuenta?</span>{' '}
+           <span className="auth-text-secondary">¿Ya tienes una cuenta?</span>{' '}
           <Link href="/sign-in" className="auth-link">Inicia sesión</Link>
         </div>
       </form>

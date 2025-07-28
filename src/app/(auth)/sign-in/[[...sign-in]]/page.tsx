@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { Loader2, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { Loader2, ShieldCheck, Eye, EyeOff, UserCircle, LockKeyhole } from 'lucide-react';
 import {
   InputOTP,
   InputOTPGroup,
@@ -106,40 +106,48 @@ export default function SignInPage() {
 
 
   return (
-      <div className="w-full">
+      <div className="auth-card">
         {!show2fa ? (
-          <div className="auth-card">
-              <div className="text-center mb-6">
-                <h1 className="text-2xl font-bold text-gold-50">Iniciar Sesión</h1>
-                <p className="text-graphite-300">Ingresa a tu cuenta de NexusAlpri</p>
+          <>
+              <div className="auth-icon-wrapper">
+                <UserCircle />
+              </div>
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold">Iniciar Sesión</h1>
+                <p className="auth-text-secondary">Ingresa a tu cuenta de NexusAlpri</p>
               </div>
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="email" className="auth-label">Correo Electrónico</label>
-                  <input
-                    id="email"
-                    type="email"
-                    placeholder="tu@email.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
-                    className="auth-input"
-                  />
+                   <div className="relative">
+                      <UserCircle className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                      <input
+                        id="email"
+                        type="email"
+                        placeholder="tu@email.com"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={isLoading}
+                        className="auth-input pl-10"
+                      />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="password" className="auth-label">Contraseña</label>
                   <div className="relative">
+                    <LockKeyhole className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
                     <input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       required
+                      placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       disabled={isLoading}
-                      className="auth-input pr-10"
+                      className="auth-input pr-10 pl-10"
                     />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-graphite-300 hover:text-gold-100">
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
@@ -150,21 +158,21 @@ export default function SignInPage() {
                 </button>
                  {settings?.allowPublicRegistration && (
                    <div className="mt-4 text-center text-sm">
-                      <span className="text-graphite-300">¿No tienes una cuenta?</span>{' '}
+                      <span className="auth-text-secondary">¿No tienes una cuenta?</span>{' '}
                       <Link href="/sign-up" className="auth-link">
                           Regístrate
                       </Link>
                    </div>
                  )}
               </form>
-          </div>
+          </>
         ) : (
-          <div className="auth-card">
+          <>
               <div className="text-center mb-6 space-y-4">
-                <ShieldCheck className="mx-auto h-12 w-12 text-gold-100" />
+                <ShieldCheck className="mx-auto h-12 w-12 text-auth-primary-purple" />
                 <div className="space-y-1">
-                  <h1 className="text-2xl font-bold text-gold-50">Verificación de Dos Factores</h1>
-                  <p className="text-graphite-300">Ingresa el código de 6 dígitos de tu aplicación de autenticación.</p>
+                  <h1 className="text-2xl font-bold">Verificación de Dos Factores</h1>
+                  <p className="auth-text-secondary">Ingresa el código de 6 dígitos de tu aplicación de autenticación.</p>
                 </div>
               </div>
               <form onSubmit={handle2faSubmit} className="space-y-4">
@@ -196,7 +204,7 @@ export default function SignInPage() {
                   Volver al inicio de sesión
                 </button>
               </div>
-          </div>
+          </>
         )}
       </div>
   );
