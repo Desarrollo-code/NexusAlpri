@@ -9,21 +9,10 @@
   --auth-text-secondary: #6B7280; /* gray-500 */
   
   /* Esquema de Color Teal */
-  --auth-primary: #14b8a6; /* teal-500 */
-  --auth-accent: #2dd4bf; /* teal-400 */
-  --auth-accent-bg: #f0fdfa; /* teal-50 */
-  --auth-accent-text: #14b8a6; /* teal-500 */
-
-<<<<<<< HEAD
-  /* Fondo oscuro para la ilustración */
-  --auth-illustration-bg: linear-gradient(145deg, #1A1A1A 0%, #000000 100%);
-=======
-  /* Nuevo fondo oscuro para la ilustración */
-  --auth-illustration-bg: linear-gradient(145deg, #000000 0%, #000000 100%);
->>>>>>> 9a680987c8c0e74f343d37dca0bad50e05aa51dd
-
-  background-color: var(--auth-bg);
-  color: var(--auth-text-primary);
+  --auth-primary-color: #14b8a6; /* teal-500 */
+  --auth-primary-color-hover: #10a392; /* Un poco más oscuro */
+  --auth-illustration-panel-bg: #7ad8cf; /* Un teal muy claro y suave */
+  
   min-height: 100vh;
   background-color: var(--auth-bg-color);
   background-image: url('https://placehold.co/1920x1080.png'); /* Placeholder para el fondo escénico */
@@ -48,8 +37,22 @@
 
 /* --- Columna de la Ilustración (Izquierda) --- */
 .auth-illustration-column {
-  @apply hidden lg:flex w-1/2 relative items-center justify-center p-12;
-  background: var(--auth-illustration-bg);
+  display: none; /* Oculto en móvil */
+  width: 50%;
+  background-color: var(--auth-illustration-panel-bg);
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+}
+
+@media (min-width: 1024px) {
+  .auth-illustration-column {
+    display: flex;
+  }
 }
 
 .auth-illustration-header {
@@ -111,16 +114,8 @@
 }
 
 .auth-logo {
-  @apply mx-auto mb-8 h-12 w-auto; /* Aumentado el margen inferior */
-}
-
-.auth-icon-wrapper {
-  @apply w-20 h-20 mx-auto mb-6 flex items-center justify-center rounded-full;
-  background-color: var(--auth-accent-bg);
-}
-.auth-icon-wrapper svg {
-  @apply w-10 h-10;
-  color: var(--auth-accent-text);
+  height: 32px;
+  width: auto;
 }
 
 .auth-label {
