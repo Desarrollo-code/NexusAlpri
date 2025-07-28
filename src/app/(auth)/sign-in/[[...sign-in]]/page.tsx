@@ -119,8 +119,8 @@ export default function SignInPage() {
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="email" className="auth-label">Correo Electrónico</label>
-                   <div className="relative">
-                      <UserCircle className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                   <div className="auth-input-container">
+                      <UserCircle className="auth-input-icon" />
                       <input
                         id="email"
                         type="email"
@@ -129,14 +129,14 @@ export default function SignInPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={isLoading}
-                        className="auth-input pl-10"
+                        className="auth-input auth-input-with-icon"
                       />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="password" className="auth-label">Contraseña</label>
-                  <div className="relative">
-                    <LockKeyhole className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                  <div className="auth-input-container">
+                    <LockKeyhole className="auth-input-icon" />
                     <input
                       id="password"
                       type={showPassword ? "text" : "password"}
@@ -145,7 +145,7 @@ export default function SignInPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       disabled={isLoading}
-                      className="auth-input pr-10 pl-10"
+                      className="auth-input auth-input-with-icon auth-input-password"
                     />
                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}

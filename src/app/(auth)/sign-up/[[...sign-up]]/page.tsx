@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { Loader2, ShieldAlert, Eye, EyeOff, UserPlus, LockKeyhole, UserCircle } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, EyeOff, UserPlus, LockKeyhole, UserCircle, Mail } from 'lucide-react';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -126,26 +126,26 @@ export default function SignUpPage() {
         )}
         <div className="space-y-2">
           <label htmlFor="registerName" className="auth-label">Nombre Completo</label>
-           <div className="relative">
-              <UserCircle className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+           <div className="auth-input-container">
+              <UserCircle className="auth-input-icon" />
               <input type="text" id="registerName" placeholder="Tu nombre completo" required 
-                     value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} className="auth-input pl-10"/>
+                     value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} className="auth-input auth-input-with-icon"/>
            </div>
         </div>
         <div className="space-y-2">
           <label htmlFor="registerEmail" className="auth-label">Correo Electrónico</label>
-           <div className="relative">
-              <UserCircle className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+           <div className="auth-input-container">
+              <Mail className="auth-input-icon" />
               <input type="email" id="registerEmail" placeholder="tu@email.com" required 
-                     value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="auth-input pl-10"/>
+                     value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="auth-input auth-input-with-icon"/>
            </div>
         </div>
         <div className="space-y-2">
           <label htmlFor="registerPassword" className="auth-label">Contraseña</label>
-          <div className="relative">
-            <LockKeyhole className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <div className="auth-input-container">
+            <LockKeyhole className="auth-input-icon" />
             <input type={showPassword ? "text" : "password"} id="registerPassword" placeholder="••••••••" required
-                   value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} className="auth-input pr-10 pl-10" />
+                   value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} className="auth-input auth-input-with-icon auth-input-password" />
             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
@@ -153,10 +153,10 @@ export default function SignUpPage() {
         </div>
         <div className="space-y-2">
           <label htmlFor="confirmPassword" className="auth-label">Confirmar Contraseña</label>
-          <div className="relative">
-             <LockKeyhole className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <div className="auth-input-container">
+             <LockKeyhole className="auth-input-icon" />
             <input type={showConfirmPassword ? "text" : "password"} id="confirmPassword" placeholder="••••••••" required
-                   value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} className="auth-input pr-10 pl-10" />
+                   value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} className="auth-input auth-input-with-icon auth-input-password" />
             <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
                 {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>

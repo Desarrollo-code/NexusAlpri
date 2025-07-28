@@ -86,10 +86,26 @@
   color: var(--auth-text-secondary);
 }
 
+.auth-input-container {
+    @apply relative flex items-center;
+}
+
 .auth-input {
-  @apply flex h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  @apply flex h-11 w-full rounded-lg border border-gray-300 bg-gray-50 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
   color: var(--auth-text-primary);
   transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.auth-input-icon {
+    @apply absolute left-3 h-5 w-5 text-gray-400 pointer-events-none;
+}
+
+.auth-input-with-icon {
+    @apply pl-10;
+}
+
+.auth-input-password {
+    @apply pr-10;
 }
 
 .auth-input:focus-visible {
@@ -128,4 +144,12 @@
 
 .watermark-img {
     @apply opacity-30;
+}
+
+.otp-group > div {
+    border-color: #D1D5DB; /* gray-300 */
+}
+.otp-group > div:focus-within {
+    border-color: var(--auth-primary-purple);
+    box-shadow: 0 0 0 2px var(--auth-primary-purple);
 }
