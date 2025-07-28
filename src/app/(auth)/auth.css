@@ -9,12 +9,12 @@
   --auth-text-primary: #1F2937; /* gray-800 */
   --auth-text-secondary: #6B7280; /* gray-500 */
   
-  /* Nuevo Esquema de Color Azul */
-  --auth-primary-blue: #3b82f6; /* blue-500 */
-  --auth-accent-blue: #60a5fa; /* blue-400 */
+  /* Nuevo Esquema de Color Teal */
+  --auth-primary: #14b8a6; /* teal-500 */
+  --auth-accent: #2dd4bf; /* teal-400 */
 
-  --auth-accent-bg: #eff6ff; /* blue-50 */
-  --auth-accent-text: #3b82f6; /* blue-500 */
+  --auth-accent-bg: #f0fdfa; /* teal-50 */
+  --auth-accent-text: #14b8a6; /* teal-500 */
 
   background-color: var(--auth-bg);
   color: var(--auth-text-primary);
@@ -27,7 +27,7 @@
 
 /* --- Columna de la Ilustración (Izquierda) --- */
 .auth-illustration-column {
-  @apply hidden lg:flex w-1/2 bg-[var(--auth-primary-blue)] relative items-center justify-center p-12;
+  @apply hidden lg:flex w-1/2 bg-[var(--auth-primary)] relative items-center justify-center p-12;
 }
 
 .auth-illustration-column::before {
@@ -109,19 +109,19 @@
 }
 
 .auth-input:focus-visible {
-  --ring-color: var(--auth-primary-blue);
-  border-color: var(--auth-primary-blue);
+  --ring-color: var(--auth-primary);
+  border-color: var(--auth-primary);
 }
 
 .auth-button {
   @apply inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-11 px-4 py-2 w-full;
-  background-color: var(--auth-primary-blue);
+  background-color: var(--auth-primary);
   color: white;
   transition: all 0.2s ease-in-out;
 }
 
 .auth-button:hover {
-  background-color: var(--auth-accent-blue);
+  background-color: var(--auth-accent);
 }
 
 .auth-button:disabled {
@@ -130,12 +130,12 @@
 
 .auth-link {
   @apply font-semibold underline-offset-4 hover:underline;
-  color: var(--auth-primary-blue);
+  color: var(--auth-primary);
   transition: color 0.2s;
 }
 
 .auth-link:hover {
-  color: var(--auth-accent-blue);
+  color: var(--auth-accent);
 }
 
 .auth-watermark {
@@ -150,6 +150,6 @@
     border-color: #D1D5DB; /* gray-300 */
 }
 .otp-group > div:focus-within {
-    border-color: var(--auth-primary-blue);
-    box-shadow: 0 0 0 2px var(--auth-primary-blue);
+    border-color: var(--auth-primary);
+    box-shadow: 0 0 0 2px var(--auth-primary);
 }
