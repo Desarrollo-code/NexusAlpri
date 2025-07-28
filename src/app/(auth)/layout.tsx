@@ -12,22 +12,16 @@ export default function AuthLayout({
       <div className="auth-container">
         
         {/* Columna Izquierda - Ilustración (visible en pantallas grandes) */}
-        <aside className="auth-illustration-column">
-          <header className="auth-illustration-header">
             <Image
               src="/uploads/images/logo-nexusalpri.png"
               alt="NexusAlpri Icon"
-              width={40}
-              height={40}
+              width={50}
+              height={50}
               priority
-              className="logo-icon"
-              data-ai-hint="logo"
             />
-            <span>NexusAlpri SSO</span>
-          </header>
           <div className="illustration-wrapper">
             <Image
-              src="/uploads/images/auth-illustration.svg"
+              src="/uploads/images/auth-illustration.png"
               alt="NexusAlpri Learning Mascot"
               width={320}
               height={320}
@@ -36,7 +30,7 @@ export default function AuthLayout({
               data-ai-hint="learning mascot"
             />
           </div>
-        </aside>
+        
         
         {/* Columna Derecha - Formulario */}
         <main className="auth-form-column">
