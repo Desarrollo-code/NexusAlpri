@@ -24,7 +24,7 @@ import {
   UsersRound,
   Activity,
   UserPlus,
-  BarChart,
+  BarChart3,
   Server,
   KeyRound,
   UserCog,
@@ -92,7 +92,7 @@ interface DashboardData {
 const MetricCard = ({ title, value: finalValue, icon: Icon, description }: { title: string; value: number; icon: React.ElementType; description?: string }) => {
     const animatedValue = useAnimatedCounter(finalValue);
     return (
-        <Card className="shadow-sm">
+        <Card className="shadow-sm card-border-animated">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
                 <Icon className="h-4 w-4 text-primary" />
@@ -193,7 +193,7 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
           </main>
           
           <aside className="lg:col-span-1 space-y-6">
-             <Card>
+             <Card className="card-border-animated">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><ShieldAlert className="text-primary"/>Última Actividad de Seguridad</CardTitle>
                 </CardHeader>
@@ -219,7 +219,7 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                     </Button>
                 </CardFooter>
              </Card>
-             <Card>
+             <Card className="card-border-animated">
                 <CardHeader>
                     <CardTitle>Accesos Rápidos</CardTitle>
                 </CardHeader>
@@ -240,6 +240,12 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                          <li>
                             <Link href="/settings" className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors">
                                 <span className="flex items-center gap-3 font-medium"><Settings className="h-5 w-5 text-primary"/>Configuración</span>
+                                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                            </Link>
+                        </li>
+                         <li>
+                            <Link href="/analytics" className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                <span className="flex items-center gap-3 font-medium"><BarChart3 className="h-5 w-5 text-primary"/>Analíticas</span>
                                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
                             </Link>
                         </li>
@@ -403,7 +409,7 @@ export default function DashboardPage() {
         <section>
             <h2 className="text-2xl font-semibold mb-4">Tu Progreso</h2>
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-              <Card>
+              <Card className="card-border-animated">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Inscritos</CardTitle>
                   <BookOpen className="h-4 w-4 text-muted-foreground" />
@@ -412,7 +418,7 @@ export default function DashboardPage() {
                   <div className="text-2xl font-bold">{data.studentStats.enrolled}</div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="card-border-animated">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Completados</CardTitle>
                   <CheckCircle className="h-4 w-4 text-muted-foreground" />
@@ -429,7 +435,7 @@ export default function DashboardPage() {
          <section>
             <h2 className="text-2xl font-semibold mb-4">Resumen de Instructor</h2>
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-               <Card>
+               <Card className="card-border-animated">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Cursos Impartidos</CardTitle>
                   <BookMarked className="h-4 w-4 text-muted-foreground" />
@@ -438,7 +444,7 @@ export default function DashboardPage() {
                   <div className="text-2xl font-bold">{data.instructorStats.taught}</div>
                 </CardContent>
               </Card>
-               <Card>
+               <Card className="card-border-animated">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Estudiantes</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
@@ -463,7 +469,7 @@ export default function DashboardPage() {
                   {data?.taughtCourses && data.taughtCourses.length > 0 ? (
                     <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                         {data.taughtCourses.map(course => (
-                          <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow">
+                          <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow card-border-animated">
                             {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} fill style={{objectFit: "cover"}} data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
                             <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
                             <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2"/> Editar Contenido</Link></Button></CardFooter>
@@ -506,7 +512,7 @@ export default function DashboardPage() {
           </div>
           
               <div className="lg:col-span-1">
-                  <Card>
+                  <Card className="card-border-animated">
                       <CardHeader>
                       <CardTitle>Accesos Rápidos</CardTitle>
                       </CardHeader>

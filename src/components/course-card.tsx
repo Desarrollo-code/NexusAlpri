@@ -10,11 +10,11 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import type { Course as AppCourse, EnrolledCourse, UserRole, CourseStatus } from '@/types';
-import { Layers, ArrowRight, Check, Plus, Loader2, X, User, Edit, MoreVertical, Eye } from 'lucide-react';
+import { Layers, ArrowRight, Check, Plus, Loader2, X, User, Edit, MoreVertical, Eye, BookOpenCheck } from 'lucide-react';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './ui/dropdown-menu';
 
 interface CourseCardProps {
   course: AppCourse | EnrolledCourse;
@@ -220,17 +220,19 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: 
                 <DropdownMenuItem asChild>
                     <Link href={`/courses/${course.id}`} target="_blank"><Eye className="mr-2 h-4 w-4"/> Vista Previa</Link>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'PUBLISHED'))} disabled={isProcessing || course.status === 'PUBLISHED'}>
-                    Publicar
+                    <BookOpenCheck className="mr-2 h-4 w-4 text-green-500" /> Publicar
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'DRAFT'))} disabled={isProcessing || course.status === 'DRAFT'}>
-                    Pasar a Borrador
+                     <Edit className="mr-2 h-4 w-4 text-blue-500" /> Pasar a Borrador
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'ARCHIVED'))} disabled={isProcessing || course.status === 'ARCHIVED'}>
-                    Archivar
+                     <Layers className="mr-2 h-4 w-4 text-orange-500" /> Archivar
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={(e) => handleAction(e, () => onDelete?.(course))} disabled={isProcessing} className="text-destructive">
-                    Eliminar
+                    <Trash2 className="mr-2 h-4 w-4"/> Eliminar
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
