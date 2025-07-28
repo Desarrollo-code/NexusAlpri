@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Zap, CircleOff, Paperclip, ChevronRight, Calendar as CalendarIcon, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Zap, CircleOff, Paperclip, ChevronRight, Calendar as CalendarIcon, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState, ChangeEvent, useCallback, useMemo } from 'react';
@@ -297,7 +297,7 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPr
                             onClick={() => setPreviewQuizDetails({ moduleIndex, lessonIndex, blockIndex })}
                             disabled={!currentQuizData?.questions || currentQuizData.questions.length === 0}
                         >
-                            Previsualizar Quiz
+                            <Eye className="mr-2 h-4 w-4" /> Previsualizar Quiz
                         </Button>
                     </div>
                     <Button onClick={onClose} type="button">Cerrar Editor</Button>
@@ -307,6 +307,16 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPr
     );
 }
 QuizEditorDialog.displayName = 'QuizEditorDialog';
+
+const getBlockTypeIcon = (type: AppLessonType) => {
+    switch (type) {
+        case 'TEXT': return <FileText className="h-4 w-4 text-blue-500" />;
+        case 'VIDEO': return <Video className="h-4 w-4 text-red-500" />;
+        case 'FILE': return <FileGenericIcon className="h-4 w-4 text-green-500" />;
+        case 'QUIZ': return <Lightbulb className="h-4 w-4 text-yellow-500" />;
+        default: return <FileText className="h-4 w-4 text-gray-500" />;
+    }
+};
 
 const ContentBlockList = React.memo(({ moduleIndex, lessonIndex, setItemToDeleteDetails, isSaving, openQuizEditor, openQuizPreview, appendBlock }: {
     moduleIndex: number;
@@ -331,7 +341,6 @@ const ContentBlockList = React.memo(({ moduleIndex, lessonIndex, setItemToDelete
     
     return (
         <div className="space-y-4 pt-4 border-t mt-4">
-            <h5 className="font-semibold text-xs text-muted-foreground">Bloques de Contenido</h5>
             <DragDropContext onDragEnd={onBlockDragEnd}>
                 <Droppable droppableId={`blocks-${moduleIndex}-${lessonIndex}`} type={`BLOCKS-${moduleIndex}-${lessonIndex}`}>
                     {(provided: DroppableProvided) => (
@@ -398,9 +407,13 @@ const ContentBlockItem = React.memo(({ moduleIndex, lessonIndex, blockIndex, dnd
                     {...provided.draggableProps}
                     className={`p-3 rounded-md border flex gap-3 items-start ${snapshot.isDragging ? 'shadow-md bg-muted' : 'bg-muted/30'}`}
                 >
-                    <div {...provided.dragHandleProps} className="cursor-grab pt-1"><GripVertical className="h-4 w-4 text-muted-foreground" /></div>
+                    <div {...provided.dragHandleProps} className="cursor-grab pt-1.5"><GripVertical className="h-4 w-4 text-muted-foreground" /></div>
                     <div className="flex-grow space-y-2">
-                        <div className="flex justify-end items-center">
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2 font-medium text-sm">
+                                {getBlockTypeIcon(block?.type)}
+                                {block?.type === 'TEXT' ? "Texto / Enlace" : block?.type === 'VIDEO' ? "Video" : block?.type === 'FILE' ? "Archivo" : "Quiz"}
+                            </div>
                             <div className="flex items-center gap-1">
                                 <Controller
                                     control={control}
@@ -417,19 +430,6 @@ const ContentBlockItem = React.memo(({ moduleIndex, lessonIndex, blockIndex, dnd
                                         </Select>
                                     )}
                                 />
-                                {block?.type === 'QUIZ' && block.quiz && (
-                                    <Tooltip delayDuration={200}>
-                                        <TooltipTrigger asChild>
-                                            <Button variant="ghost" size="icon" type="button" className="h-8 w-8 text-primary" onClick={() => openQuizPreview(moduleIndex, lessonIndex, blockIndex)} disabled={isSaving}>
-                                                <ChevronRight className="h-4 w-4" />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>Previsualizar Quiz</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                )}
-
                                 <Button variant="ghost" size="icon" type="button" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => {
                                     const blockValues = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}`);
                                     if (blockValues) {
@@ -489,8 +489,8 @@ const BlockSpecificInput = React.memo(({ moduleIndex, lessonIndex, blockIndex, o
     const isSaving = false;
 
     switch (blockType) {
-        case 'VIDEO': return (<><div className="mt-2 space-y-1"><Label className="text-xs">URL del Video (YouTube)</Label><Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content` as const)} placeholder="https://youtube.com/watch?v=..." className="h-8 text-xs" disabled={isSaving || isUploading} /></div></>);
-        case 'TEXT': return (<><div className="mt-2 space-y-1"><Label className="text-xs">Contenido de Texto o Enlace Externo</Label><Textarea {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content` as const)} placeholder="Escribe aquí el contenido o pega un enlace https://..." className="min-h-[80px] text-xs" disabled={isSaving || isUploading} /></div></>);
+        case 'VIDEO': return (<><div className="mt-2 space-y-1"><Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content` as const)} placeholder="https://youtube.com/watch?v=..." className="h-8 text-xs" disabled={isSaving || isUploading} /></div></>);
+        case 'TEXT': return (<><div className="mt-2 space-y-1"><Textarea {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content` as const)} placeholder="Escribe aquí el contenido o pega un enlace https://..." className="min-h-[80px] text-xs" disabled={isSaving || isUploading} /></div></>);
         case 'QUIZ': {
             return (<div className="mt-2 space-y-2">
                 <Button type="button" variant="secondary" className="w-full" onClick={openQuizEditor}>
@@ -504,7 +504,6 @@ const BlockSpecificInput = React.memo(({ moduleIndex, lessonIndex, blockIndex, o
             const hasExistingFile = typeof blockContent === 'string' && !!blockContent;
             return (<>
                 <div className="mt-2 space-y-2">
-                    <Label className="text-xs">Archivo Adjunto</Label>
                     {isUploading ? (
                         <div className="space-y-1">
                             <Progress value={progress} className="w-full h-1.5" />
@@ -544,7 +543,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
     appendBlock: (moduleIndex: number, lessonIndex: number, newBlock: EditableContentBlock) => void;
 }) => {
-    const { getValues, register, watch } = useFormContext<EditableCourse>();
+    const { getValues, register, watch, setValue } = useFormContext<EditableCourse>();
     const [quizEditorDetails, setQuizEditorDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
     const [previewQuizDetails, setPreviewQuizDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
     const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
@@ -553,9 +552,17 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
     const [isSavingTemplate, setIsSavingTemplate] = useState(false);
     const { toast } = useToast();
     const { user } = useAuth();
+    const [isExpanded, setIsExpanded] = useState(false);
 
     const openQuizEditor = useCallback((mIndex: number, lIndex: number, bIndex: number) => setQuizEditorDetails({ moduleIndex: mIndex, lessonIndex: lIndex, blockIndex: bIndex }), []);
-    const openQuizPreview = useCallback((mIndex: number, lIndex: number, bIndex: number) => setPreviewQuizDetails({ moduleIndex: mIndex, lessonIndex: lIndex, blockIndex: bIndex }), []);
+    const openQuizPreview = useCallback((mIndex: number, lIndex: number, bIndex: number) => {
+        const quizData = getValues(`modules.${mIndex}.lessons.${lIndex}.contentBlocks.${bIndex}.quiz`);
+        if (quizData && quizData.questions && quizData.questions.length > 0) {
+            setPreviewQuizDetails({ moduleIndex: mIndex, lessonIndex: lIndex, blockIndex: bIndex });
+        } else {
+            toast({ title: "Quiz Vacío", description: "Añade preguntas al quiz antes de previsualizar.", variant: "default" });
+        }
+    }, [getValues, toast]);
 
     const course = watch();
     const isCreatorPreview = user?.role === 'ADMINISTRATOR' || user?.id === course.instructorId;
@@ -591,82 +598,84 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
     return (
         <Draggable key={dndId} draggableId={dndId} index={lessonIndex}>
             {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
-                 <>
-                    <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value={dndId} ref={provided.innerRef} {...provided.draggableProps}
-                            className={`p-3 rounded-md border flex-col gap-3 items-start ${snapshot.isDragging ? 'shadow-md bg-muted' : 'bg-card'}`}>
-                            <div className="flex w-full items-start gap-3">
-                                <div {...provided.dragHandleProps} className="cursor-grab pt-1"><GripVertical className="h-4 w-4 text-muted-foreground" /></div>
-                                <div className="flex-grow space-y-2">
-                                    <AccordionTrigger className="p-0 hover:no-underline w-full">
-                                        <div className="flex-grow mr-2 w-full">
-                                            <Label htmlFor={`lesson-title-${dndId}`}>Título de la Lección</Label>
-                                            <Input id={`lesson-title-${dndId}`} {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.title` as const)} className="text-sm font-medium h-9 w-full" placeholder="Título de la lección" disabled={isSaving} />
-                                        </div>
-                                    </AccordionTrigger>
-                                </div>
-                                 <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                                            <MoreVertical className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => { setTemplateName(getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.title`)); setShowSaveTemplateModal(true); }}>
-                                            <Copy className="mr-2 h-4 w-4" /> Guardar como Plantilla
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem
-                                            className="text-destructive focus:bg-destructive/10"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (isSaving) return;
-                                                const lessonValues = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
-                                                if (lessonValues) {
-                                                    setItemToDeleteDetails({ type: 'lesson', id: lessonValues.id, name: lessonValues.title, moduleIndex, lessonIndex });
-                                                }
-                                            }}
-                                            disabled={isSaving}
-                                        >
-                                            <Trash2 className="mr-2 h-4 w-4" /> Eliminar Lección
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                 <div
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    className={`p-3 rounded-md border bg-card text-card-foreground shadow-sm ${snapshot.isDragging ? 'shadow-lg' : ''}`}
+                 >
+                    <div className="flex w-full items-start gap-3">
+                        <div {...provided.dragHandleProps} className="cursor-grab pt-1"><GripVertical className="h-4 w-4 text-muted-foreground" /></div>
+                        <div className="flex-grow space-y-2">
+                             <div className="flex-grow mr-2 w-full">
+                                <button type="button" onClick={() => setIsExpanded(!isExpanded)} className="flex items-center justify-between w-full text-left">
+                                  <div className="flex items-center gap-2">
+                                     <BookOpenText className="h-4 w-4 text-primary" />
+                                     <Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.title` as const)} className="text-sm font-medium h-9 w-full border-none p-0 focus-visible:ring-0" placeholder="Título de la lección" disabled={isSaving} />
+                                  </div>
+                                  <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isExpanded && "rotate-180")} />
+                                </button>
                             </div>
-                            <AccordionContent className="p-0">
-                                <ContentBlockList
-                                    moduleIndex={moduleIndex}
-                                    lessonIndex={lessonIndex}
-                                    setItemToDeleteDetails={setItemToDeleteDetails}
-                                    isSaving={isSaving}
-                                    openQuizEditor={openQuizEditor}
-                                    openQuizPreview={openQuizPreview}
-                                    appendBlock={appendBlock}
-                                />
-                                {quizEditorDetails?.lessonIndex === lessonIndex && (
-                                    <QuizEditorDialog
-                                        {...quizEditorDetails}
-                                        onClose={() => setQuizEditorDetails(null)}
-                                        setPreviewQuizDetails={setPreviewQuizDetails}
-                                    />
-                                )}
-                                {previewQuizDetails?.lessonIndex === lessonIndex && (
-                                    <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setPreviewQuizDetails(null)}>
-                                      <DialogContent className="max-w-3xl">
-                                        <DialogHeader>
-                                            <DialogTitle>Vista Previa del Quiz</DialogTitle>
-                                        </DialogHeader>
-                                        <QuizViewer
-                                            quiz={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.contentBlocks.${previewQuizDetails.blockIndex}.quiz`)}
-                                            lessonId={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}
-                                            isCreatorPreview={true}
-                                        />
-                                      </DialogContent>
-                                    </Dialog>
-                                )}
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
+                        </div>
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                    <MoreVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => { setTemplateName(getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.title`)); setShowSaveTemplateModal(true); }}>
+                                    <Copy className="mr-2 h-4 w-4" /> Guardar como Plantilla
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    className="text-destructive focus:bg-destructive/10"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (isSaving) return;
+                                        const lessonValues = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
+                                        if (lessonValues) {
+                                            setItemToDeleteDetails({ type: 'lesson', id: lessonValues.id, name: lessonValues.title, moduleIndex, lessonIndex });
+                                        }
+                                    }}
+                                    disabled={isSaving}
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" /> Eliminar Lección
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                    {isExpanded && (
+                         <ContentBlockList
+                            moduleIndex={moduleIndex}
+                            lessonIndex={lessonIndex}
+                            setItemToDeleteDetails={setItemToDeleteDetails}
+                            isSaving={isSaving}
+                            openQuizEditor={openQuizEditor}
+                            openQuizPreview={openQuizPreview}
+                            appendBlock={appendBlock}
+                        />
+                    )}
+                    {quizEditorDetails?.lessonIndex === lessonIndex && (
+                        <QuizEditorDialog
+                            {...quizEditorDetails}
+                            onClose={() => setQuizEditorDetails(null)}
+                            setPreviewQuizDetails={setPreviewQuizDetails}
+                        />
+                    )}
+                    {previewQuizDetails?.lessonIndex === lessonIndex && (
+                        <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setPreviewQuizDetails(null)}>
+                          <DialogContent className="max-w-3xl">
+                            <DialogHeader>
+                                <DialogTitle>Vista Previa del Quiz</DialogTitle>
+                            </DialogHeader>
+                            <QuizViewer
+                                quiz={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.contentBlocks.${previewQuizDetails.blockIndex}.quiz`)}
+                                lessonId={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}
+                                isCreatorPreview={true}
+                            />
+                          </DialogContent>
+                        </Dialog>
+                    )}
                      <Dialog open={showSaveTemplateModal} onOpenChange={setShowSaveTemplateModal}>
                         <DialogContent>
                             <DialogHeader>
@@ -692,7 +701,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
-                 </>
+                 </div>
             )}
         </Draggable>
     );
