@@ -129,9 +129,3 @@
 .auth-scope .otp-group > div.z-10 {
   border-color: var(--accent-color);
 }
-
-.watermark-img {
-    @apply opacity-40;
-    width: auto;
-    height: auto;
-}
