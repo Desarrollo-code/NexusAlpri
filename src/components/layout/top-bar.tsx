@@ -63,7 +63,7 @@ const NotificationPopover = () => {
     setIsLoading(true);
     try {
       const response = await fetch('/api/notifications', { cache: 'no-store' }); 
-      if (!response.ok) throw new Error('Failed to fetch notifications');
+      if (!response.ok) throw new Error('Falló la carga de notificaciones');
       const data: AppNotification[] = await response.json();
       setNotifications(data.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     } catch (err) {
