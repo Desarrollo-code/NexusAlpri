@@ -25,15 +25,17 @@ export default function AuthLayout({
             />
             <span>NexusAlpri SSO</span>
           </header>
-          <Image
-            src="/uploads/images/auth-illustration.svg"
-            alt="NexusAlpri Learning Mascot"
-            width={320}
-            height={320}
-            priority
-            className="auth-main-illustration"
-            data-ai-hint="learning mascot"
-          />
+          <div className="illustration-wrapper">
+            <Image
+              src="/uploads/images/auth-illustration.svg"
+              alt="NexusAlpri Learning Mascot"
+              width={320}
+              height={320}
+              priority
+              className="auth-main-illustration"
+              data-ai-hint="learning mascot"
+            />
+          </div>
         </aside>
         
         {/* Columna Derecha - Formulario */}
