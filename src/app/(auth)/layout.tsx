@@ -27,7 +27,18 @@ export default function AuthLayout({
         
         {/* Columna Derecha - Formulario */}
         <div className="auth-form-column">
-          {children}
+          <div className="w-full max-w-sm">
+             <Image
+                src="/uploads/images/logo-nexusalpri.png"
+                alt="NexusAlpri Logo"
+                width={200}
+                height={81}
+                priority
+                className="auth-logo"
+                data-ai-hint="company logo"
+              />
+            {children}
+          </div>
           <div className="auth-watermark">
             <Image
               src="/uploads/images/watermark-alprigrama.png"
