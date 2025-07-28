@@ -114,10 +114,18 @@ const activityChartConfig = {
 const formatDateTick = (tick: string) => {
     try {
         const date = parseISO(tick);
-        // Format to "Month Day", e.g., "Jul 15"
-        return format(date, "MMM d", { locale: es });
+        return format(date, "d MMM", { locale: es });
     } catch (e) {
         return tick;
+    }
+};
+
+const formatDateTooltip = (dateString: string) => {
+    try {
+        const date = parseISO(dateString);
+        return format(date, "d/MM/yyyy", { locale: es });
+    } catch (e) {
+        return dateString;
     }
 };
 
@@ -155,7 +163,12 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                               tickFormatter={formatDateTick}
                           />
                           <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
-                          <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
+                          <ChartTooltip 
+                            content={<ChartTooltipContent 
+                                hideIndicator 
+                                labelFormatter={(label, payload) => payload?.[0]?.payload.date ? formatDateTooltip(payload[0].payload.date) : ''}
+                            />} 
+                          />
                           <Legend verticalAlign="top" height={36}/>
                           <Bar dataKey="newCourses" name="Nuevos Cursos" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} barSize={20} />
                           <Bar dataKey="publishedCourses" name="Cursos Publicados" fill="var(--color-publishedCourses)" radius={[4, 4, 0, 0]} barSize={20} />
