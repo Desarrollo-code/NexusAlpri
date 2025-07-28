@@ -12,29 +12,34 @@ export default function AuthLayout({
       <div className="auth-container">
         
         {/* Columna Izquierda - Ilustración (visible en pantallas grandes) */}
-            <Image
-              src="/uploads/images/logo-nexusalpri.png"
-              alt="NexusAlpri Icon"
-              width={50}
-              height={50}
-              priority
-            />
+        <aside className="auth-illustration-column">
           <div className="illustration-wrapper">
             <Image
               src="/uploads/images/auth-illustration.png"
               alt="NexusAlpri Learning Mascot"
-              width={320}
-              height={320}
+              fill
               priority
               className="auth-main-illustration"
               data-ai-hint="learning mascot"
             />
           </div>
-        
+        </aside>
         
         {/* Columna Derecha - Formulario */}
         <main className="auth-form-column">
           <div className="auth-card">
+             <header className="auth-logo-header">
+                <Link href="/" className="auth-logo-link">
+                    <Image
+                        src="/uploads/images/logo-nexusalpri.png"
+                        alt="NexusAlpri Logo"
+                        width={180}
+                        height={40}
+                        className="auth-logo"
+                        data-ai-hint="logo"
+                    />
+                </Link>
+            </header>
             {children}
           </div>
           <a href="https://alprigrama.com" target="_blank" rel="noopener noreferrer" className="auth-footer-link">

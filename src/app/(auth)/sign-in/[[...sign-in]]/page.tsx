@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -108,23 +107,9 @@ export default function SignInPage() {
 
 
   return (
-      <div className="auth-card">
+      <div className="w-full">
         {!show2fa ? (
           <>
-            <header className="auth-logo-header">
-                <Link href="/" className="auth-logo-link">
-                    <Image
-                        src="/uploads/images/logo-nexusalpri.png"
-                        alt="NexusAlpri Logo"
-                        width={32}
-                        height={32}
-                        className="auth-logo"
-                        data-ai-hint="logo"
-                    />
-                    NexusAlpri
-                </Link>
-                <Button variant="ghost" size="icon"><Languages className="h-5 w-5 text-muted-foreground"/></Button>
-            </header>
               <div className="text-left mb-8">
                 <h1 className="text-2xl font-bold">Iniciar Sesión</h1>
               </div>
@@ -186,7 +171,7 @@ export default function SignInPage() {
         ) : (
           <>
               <div className="text-center mb-6 space-y-4">
-                <ShieldCheck className="mx-auto h-12 w-12 text-auth-primary-purple" />
+                <ShieldCheck className="mx-auto h-12 w-12 text-teal-500" />
                 <div className="space-y-1">
                   <h1 className="text-2xl font-bold">Verificación de Dos Factores</h1>
                   <p className="auth-text-secondary">Ingresa el código de 6 dígitos de tu aplicación de autenticación.</p>

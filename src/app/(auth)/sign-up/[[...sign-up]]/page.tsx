@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -112,21 +111,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="auth-card">
-       <header className="auth-logo-header">
-          <Link href="/" className="auth-logo-link">
-              <Image
-                  src="/uploads/images/logo-nexusalpri.png"
-                  alt="NexusAlpri Logo"
-                  width={32}
-                  height={32}
-                  className="auth-logo"
-                  data-ai-hint="logo"
-              />
-              NexusAlpri
-          </Link>
-          <Button variant="ghost" size="icon"><Languages className="h-5 w-5 text-muted-foreground"/></Button>
-      </header>
+    <div className="w-full">
        <div className="text-left mb-8">
         <h1 className="text-2xl font-bold">Crear una Cuenta</h1>
       </div>
