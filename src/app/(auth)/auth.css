@@ -16,7 +16,7 @@
   --auth-accent-text: #14b8a6; /* teal-500 */
 
   /* Nuevo fondo oscuro para la ilustración */
-  --auth-illustration-bg: linear-gradient(145deg, #1A1A1A 0%, #000000 100%);
+  --auth-illustration-bg: linear-gradient(145deg, #000000 0%, #000000 100%);
 
   background-color: var(--auth-bg);
   color: var(--auth-text-primary);
