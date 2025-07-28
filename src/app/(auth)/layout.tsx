@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import './auth.css';
 
 export default function AuthLayout({
@@ -11,16 +12,16 @@ export default function AuthLayout({
     <div className="auth-scope">
       <div className="auth-container">
         
-        {/* Columna Izquierda - Ilustración (visible en pantallas grandes) */}
+        {/* Columna Izquierda - Ilustración */}
         <aside className="auth-illustration-column">
           <div className="illustration-wrapper">
             <Image
               src="/uploads/images/auth-illustration.png"
-              alt="NexusAlpri Learning Mascot"
+              alt="NexusAlpri Learning Illustration"
               fill
               priority
               className="auth-main-illustration"
-              data-ai-hint="learning mascot"
+              data-ai-hint="learning illustration"
             />
           </div>
         </aside>
