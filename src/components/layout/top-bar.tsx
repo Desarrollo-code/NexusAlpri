@@ -73,7 +73,6 @@ const NotificationPopover = () => {
     }
   }, [user?.id]); 
 
-  // Fetch notifications on component mount
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
@@ -81,9 +80,32 @@ const NotificationPopover = () => {
   const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
   
   const recentNotifications = useMemo(() => notifications.slice(0, 5), [notifications]);
+  
+  const handleMarkAsRead = useCallback(async () => {
+    if (unreadCount === 0) return;
+
+    const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
+    
+    // Optimistic UI update
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+
+    try {
+      await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: unreadIds, read: true }),
+      });
+    } catch (error) {
+      // Revert on error
+      setNotifications(prev => prev.map(n => unreadIds.includes(n.id) ? { ...n, read: false } : n));
+      console.error("Failed to mark notifications as read", error);
+    }
+  }, [notifications, unreadCount]);
 
   return (
-    <Popover>
+    <Popover onOpenChange={(open) => {
+        if(open) handleMarkAsRead();
+    }}>
       <PopoverTrigger asChild>
           <Button variant="ghost" size="icon" className="relative h-9 w-9 text-primary-foreground hover:bg-white/10">
             <Bell className="h-5 w-5" />
