@@ -43,10 +43,10 @@
     /* Barra Lateral - Gris Oscuro Cálido con acento Rojo Cereza */
     --sidebar-background: #2C3E50; /* Gris Antracita/Pizarra */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-accent: 356 82% 56%; /* Rojo Cereza Vibrante: #E74C3C */
+    --sidebar-accent: 356 70% 56%; /* Rojo Cereza Vibrante: #E74C3C */
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: hsl(var(--sidebar-foreground) / 0.1);
-    --sidebar-ring: 356 82% 56%;
+    --sidebar-ring: 356 70% 56%;
 
 
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
@@ -104,10 +104,10 @@
     /* Barra Lateral - Gris Oscuro Cálido con acento Rojo Cereza */
     --sidebar-background: #2C3E50; /* Gris Antracita/Pizarra */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-accent: 356 82% 56%; /* Rojo Cereza Vibrante: #E74C3C */
+    --sidebar-accent: 356 70% 56%; /* Rojo Cereza Vibrante: #E74C3C */
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: hsl(var(--sidebar-foreground) / 0.1);
-    --sidebar-ring: 356 82% 56%;
+    --sidebar-ring: 356 70% 56%;
 
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
     --chart-1: 210 90% 65%; /* Azul Vibrante */
@@ -137,11 +137,11 @@
 
 @layer components {
   .sidebar-gradient {
-    background: var(--sidebar-background);
+    background: hsl(var(--sidebar-background));
   }
 
   .topbar-gradient {
-    background: var(--sidebar-background);
+    background-image: linear-gradient(90deg, hsl(var(--chart-3)), hsl(var(--chart-4)), hsl(var(--gauge-yellow)), hsl(var(--chart-1)));
     color: hsl(var(--primary-foreground));
   }
   
