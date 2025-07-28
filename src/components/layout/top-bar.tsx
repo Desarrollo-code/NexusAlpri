@@ -73,16 +73,21 @@ const NotificationPopover = () => {
     }
   }, [user?.id]); 
 
+  // Fetch notifications on component mount
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
   const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
   
   const recentNotifications = useMemo(() => notifications.slice(0, 5), [notifications]);
 
   return (
-    <Popover onOpenChange={(open) => { if(open) fetchNotifications()}}>
+    <Popover>
       <PopoverTrigger asChild>
           <Button variant="ghost" size="icon" className="relative h-9 w-9 text-primary-foreground hover:bg-white/10">
             <Bell className="h-5 w-5" />
-            {unreadCount > 0 && !isLoading && (
+            {unreadCount > 0 && (
               <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-destructive"></span>
