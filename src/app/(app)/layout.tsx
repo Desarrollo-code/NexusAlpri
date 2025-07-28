@@ -87,6 +87,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                         <span className={cn("text-xl font-headline whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{settings?.platformName || 'NexusAlpri'}</span>
                     </Link>
                 </SidebarHeader>
+                
+                <SidebarMenuSeparator />
+
                 <SidebarContent>
                      <div className="w-full p-2 flex flex-col gap-1">
                          <SidebarMenu>
@@ -128,7 +131,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                             </SidebarMenuItem>
                                         )}
                                         
-                                        {/* Add a separator after the main navigation block and before the administration block */}
                                         {navItems.length > 1 && !isSubMenu && navItems[index+1]?.subItems && <SidebarMenuSeparator />}
                                     </React.Fragment>
                                 );
@@ -136,6 +138,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                         </SidebarMenu>
                      </div>
                 </SidebarContent>
+
+                <SidebarMenuSeparator />
+                
                 <SidebarFooter>
                      <SidebarMenu>
                         <SidebarMenuItem>

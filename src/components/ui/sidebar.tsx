@@ -193,7 +193,7 @@ const Sidebar = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "sidebar-gradient group fixed inset-y-0 left-0 z-40 flex h-screen flex-col border-r border-sidebar-border text-sidebar-foreground transition-[width] duration-300 ease-in-out md:flex",
+          "sidebar-gradient group fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out md:flex",
           state === "expanded" ? "w-[var(--sidebar-width)]" : "w-[var(--sidebar-width-icon)]",
           className
         )}
@@ -249,7 +249,7 @@ const SidebarHeader = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex shrink-0 items-center h-16 border-b border-sidebar-border", className)}
+      className={cn("flex shrink-0 items-center h-16", className)}
       {...props}
     />
   )
@@ -263,7 +263,7 @@ const SidebarFooter = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex flex-col p-2 mt-auto border-t border-sidebar-border", className)}
+      className={cn("flex flex-col p-2 mt-auto", className)}
       {...props}
     />
   )
