@@ -6,12 +6,14 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { Loader2, ShieldCheck, Eye, EyeOff, UserCircle, LockKeyhole } from 'lucide-react';
+import { Loader2, ShieldCheck, Eye, EyeOff, UserCircle, LockKeyhole, Languages } from 'lucide-react';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 
 export default function SignInPage() {
   const router = useRouter();
@@ -109,12 +111,22 @@ export default function SignInPage() {
       <div className="auth-card">
         {!show2fa ? (
           <>
-              <div className="auth-icon-wrapper">
-                <UserCircle />
-              </div>
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold">Iniciar Sesión</h1>
-                <p className="auth-text-secondary">Ingresa a tu cuenta de NexusAlpri</p>
+            <header className="auth-logo-header">
+                <Link href="/" className="auth-logo-link">
+                    <Image
+                        src="/uploads/images/logo-nexusalpri.png"
+                        alt="NexusAlpri Logo"
+                        width={32}
+                        height={32}
+                        className="auth-logo"
+                        data-ai-hint="logo"
+                    />
+                    NexusAlpri
+                </Link>
+                <Button variant="ghost" size="icon"><Languages className="h-5 w-5 text-muted-foreground"/></Button>
+            </header>
+              <div className="text-left mb-8">
+                <h1 className="text-2xl font-bold">Iniciar Sesión</h1>
               </div>
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -152,6 +164,11 @@ export default function SignInPage() {
                     </button>
                   </div>
                 </div>
+                <div className="flex items-center justify-between text-sm">
+                    {/* Checkbox Placeholder */}
+                    <div></div> 
+                    <Link href="#" className="auth-link">¿Olvidaste tu contraseña?</Link>
+                </div>
                 <button type="submit" className="auth-button" disabled={isLoading}>
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   {isLoading ? 'Ingresando...' : 'Ingresar'}
@@ -160,7 +177,7 @@ export default function SignInPage() {
                    <div className="mt-4 text-center text-sm">
                       <span className="auth-text-secondary">¿No tienes una cuenta?</span>{' '}
                       <Link href="/sign-up" className="auth-link">
-                          Regístrate
+                          Regístrate ahora
                       </Link>
                    </div>
                  )}

@@ -10,47 +10,50 @@ export default function AuthLayout({
   return (
     <div className="auth-scope">
       <div className="auth-container">
+        
         {/* Columna Izquierda - Ilustración (visible en pantallas grandes) */}
-        <div className="auth-illustration-column">
-          <div className="auth-illustration-content">
+        <aside className="auth-illustration-column">
+          <header className="auth-illustration-header">
             <Image
-              src="/uploads/images/miniatura-nexusalpri.png"
-              alt="NexusAlpri Illustration"
-              width={500}
-              height={500}
+              src="/uploads/images/logo-nexusalpri.png"
+              alt="NexusAlpri Icon"
+              width={40}
+              height={40}
               priority
-              className="auth-main-illustration"
-              data-ai-hint="online learning collaboration"
+              className="logo-icon"
+              data-ai-hint="logo"
             />
-          </div>
-        </div>
+            <span>NexusAlpri SSO</span>
+          </header>
+          <Image
+            src="/uploads/images/auth-illustration.svg"
+            alt="NexusAlpri Learning Mascot"
+            width={320}
+            height={320}
+            priority
+            className="auth-main-illustration"
+            data-ai-hint="learning mascot"
+          />
+        </aside>
         
         {/* Columna Derecha - Formulario */}
-        <div className="auth-form-column">
-          <div className="w-full max-w-sm">
-             <Image
-                src="/uploads/images/logo-nexusalpri.png"
-                alt="NexusAlpri Logo"
-                width={200}
-                height={81}
-                priority
-                className="auth-logo"
-                data-ai-hint="company logo"
-              />
+        <main className="auth-form-column">
+          <div className="auth-card">
             {children}
           </div>
-          <div className="auth-watermark">
+          <a href="https://alprigrama.com" target="_blank" rel="noopener noreferrer" className="auth-footer-link">
+            Powered by 
             <Image
               src="/uploads/images/watermark-alprigrama.png"
-              alt="Alprigrama S.A.S. Watermark"
-              width={60}
-              height={60}
-              priority
-              className="watermark-img"
+              alt="Alprigrama S.A.S."
+              width={20}
+              height={20}
+              className="auth-footer-logo"
               data-ai-hint="company logo"
             />
-          </div>
-        </div>
+             Alprigrama
+          </a>
+        </main>
       </div>
     </div>
   );
