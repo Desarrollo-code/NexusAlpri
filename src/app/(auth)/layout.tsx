@@ -13,28 +13,15 @@ export default function AuthLayout({
         {/* Columna Izquierda - Ilustración (visible en pantallas grandes) */}
         <div className="auth-illustration-column">
           <div className="auth-illustration-content">
-            <div className="auth-logo-container">
-              <Image
-                src="/uploads/images/logo-nexusalpri.png"
-                alt="NexusAlpri Logo"
-                width={120}
-                height={97.5}
-                priority
-                data-ai-hint="logo education"
-                className="drop-shadow-sm"
-              />
-            </div>
             <Image
               src="/uploads/images/auth-illustration.svg"
-              alt="E-learning Illustration"
+              alt="NexusAlpri Illustration"
               width={500}
               height={500}
               priority
               className="auth-main-illustration"
               data-ai-hint="online learning collaboration"
             />
-            <h1 className="auth-illustration-title">Bienvenido a NexusAlpri</h1>
-            <p className="auth-illustration-subtitle">Tu plataforma para el crecimiento y el aprendizaje continuo.</p>
           </div>
         </div>
         

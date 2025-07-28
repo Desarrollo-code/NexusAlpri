@@ -44,23 +44,11 @@
 }
 
 .auth-illustration-content {
-    @apply z-10 flex flex-col items-center text-center text-white;
-}
-
-.auth-logo-container {
-    @apply absolute top-8 left-8;
+    @apply z-10 flex flex-col items-center text-center;
 }
 
 .auth-main-illustration {
-    @apply max-w-lg w-full mb-8;
-}
-
-.auth-illustration-title {
-    @apply text-3xl font-bold;
-}
-
-.auth-illustration-subtitle {
-    @apply text-lg opacity-80 mt-2 max-w-md;
+    @apply max-w-lg w-full;
 }
 
 /* --- Columna del Formulario (Derecha) --- */
@@ -97,7 +85,7 @@
 }
 
 .auth-input-icon {
-    @apply absolute left-3 h-5 w-5 text-gray-400 pointer-events-none;
+    @apply absolute left-3 h-5 w-5 text-gray-400;
 }
 
 .auth-input-with-icon {
