@@ -12,9 +12,11 @@
   /* Nuevo Esquema de Color Teal */
   --auth-primary: #14b8a6; /* teal-500 */
   --auth-accent: #2dd4bf; /* teal-400 */
-
   --auth-accent-bg: #f0fdfa; /* teal-50 */
   --auth-accent-text: #14b8a6; /* teal-500 */
+
+  /* Nuevo fondo oscuro para la ilustración */
+  --auth-illustration-bg: linear-gradient(145deg, #1A1A1A 0%, #000000 100%);
 
   background-color: var(--auth-bg);
   color: var(--auth-text-primary);
@@ -27,20 +29,8 @@
 
 /* --- Columna de la Ilustración (Izquierda) --- */
 .auth-illustration-column {
-  @apply hidden lg:flex w-1/2 bg-[var(--auth-primary)] relative items-center justify-center p-12;
-}
-
-.auth-illustration-column::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: -150px; /* Extiende la curva fuera de la pantalla */
-  width: 300px;
-  height: 100%;
-  background: var(--auth-bg);
-  border-radius: 60% 0 0 60%;
-  transform: translateX(50%);
-  box-shadow: -10px 0 20px rgba(0,0,0,0.1);
+  @apply hidden lg:flex w-1/2 relative items-center justify-center p-12;
+  background: var(--auth-illustration-bg);
 }
 
 .auth-illustration-content {
@@ -61,7 +51,7 @@
 }
 
 .auth-logo {
-  @apply mx-auto mb-6 h-12 w-auto;
+  @apply mx-auto mb-8 h-12 w-auto; /* Aumentado el margen inferior */
 }
 
 .auth-icon-wrapper {
