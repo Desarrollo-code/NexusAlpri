@@ -28,30 +28,19 @@
   background-color: var(--bg);
   color: var(--text-primary);
   
-  /* Aurora Background */
+  /* Geometric Pattern Background */
   position: relative;
   overflow: hidden;
+  background-image: 
+    linear-gradient(135deg, hsl(221, 83%, 15%), hsl(270, 50%, 10%)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3Cpattern id='p' width='100' height='100' patternUnits='userSpaceOnUse'%3E%3Cg fill-opacity='0.1'%3E%3Cpolygon fill='hsl(221, 83%, 53%)' points='50 0, 100 50, 50 100, 0 50'/%3E%3Cpolygon fill='hsl(150, 75%, 45%)' points='50 0, 100 0, 100 50'/%3E%3Cpolygon fill='hsl(270, 90%, 65%)' points='50 0, 0 0, 0 50'/%3E%3Cpolygon fill='hsl(30, 100%, 60%)' points='0 50, 0 100, 50 100'/%3E%3Cpolygon fill='hsl(330, 90%, 65%)' points='50 100, 100 100, 100 50'/%3E%3C/g%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23p)'/%3E%3C/svg%3E");
+  background-size: auto, 300px 300px;
+  animation: bg-pan 25s linear infinite;
 }
 
-.auth-scope::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 150%;
-  height: 150%;
-  background: radial-gradient(circle at center, hsla(221, 83%, 53%, 0.15), transparent 40%),
-              radial-gradient(circle at 20% 80%, hsla(270, 90%, 65%, 0.15), transparent 40%),
-              radial-gradient(circle at 80% 30%, hsla(150, 75%, 45%, 0.15), transparent 40%);
-  transform: translate(-50%, -50%);
-  animation: aurora-flow 20s linear infinite;
-  z-index: 0;
-}
-
-
-@keyframes aurora-flow {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(-50%, -50%) rotate(360deg); }
+@keyframes bg-pan {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
 }
 
 
