@@ -82,11 +82,15 @@ export async function POST(req: NextRequest) {
             targetUsersQuery = { where: { role: { in: roles as UserRole[] } } };
         }
     }
-    const targetUsers = await prisma.user.findMany(targetUsersQuery);
+    const allTargetUsers = await prisma.user.findMany(targetUsersQuery);
+    
+    // Filter out the author of the announcement from the notification list
+    const usersToNotify = allTargetUsers.filter(user => user.id !== session.id);
 
-    if (targetUsers.length > 0) {
+
+    if (usersToNotify.length > 0) {
       await prisma.notification.createMany({
-        data: targetUsers.map(user => ({
+        data: usersToNotify.map(user => ({
           userId: user.id,
           title: `Nuevo Anuncio: ${title}`,
           description: content.substring(0, 100) + (content.length > 100 ? '...' : ''),
@@ -95,7 +99,7 @@ export async function POST(req: NextRequest) {
       });
 
       if (settings?.enableEmailNotifications) {
-        const recipientEmails = targetUsers.map(u => u.email).filter(Boolean);
+        const recipientEmails = usersToNotify.map(u => u.email).filter(Boolean);
         if (recipientEmails.length > 0) {
             await sendEmail({
                 to: recipientEmails,

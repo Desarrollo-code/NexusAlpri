@@ -35,7 +35,10 @@ export async function PATCH(req: NextRequest, context: { params: { id: string } 
         });
         
         if (status === 'PUBLISHED' && courseToUpdate.status !== 'PUBLISHED') {
-            const allUsers = await prisma.user.findMany({ select: { id: true } });
+            const allUsers = await prisma.user.findMany({ 
+              where: { id: { not: session.id } }, // Exclude the user who triggered the action
+              select: { id: true } 
+            });
             
             await prisma.notification.createMany({
                 data: allUsers.map(user => ({

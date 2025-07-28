@@ -23,7 +23,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
   const { user } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const canModify = user && (user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR');
+  const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === announcement.author?.id));
 
   const getAudienceText = (audience: UserRole[] | 'ALL' | string): string => {
     if (audience === 'ALL') return 'Todos';
@@ -94,9 +94,9 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
         </div>
       </CardHeader>
       <CardContent className="flex-grow">
-        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+        <div className="text-sm text-muted-foreground whitespace-pre-wrap">
           {contentToShow}
-        </p>
+        </div>
          {isTruncated && (
             <Button
               onClick={toggleExpand}
