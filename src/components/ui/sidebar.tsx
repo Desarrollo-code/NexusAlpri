@@ -204,9 +204,9 @@ const Sidebar = React.forwardRef<
           {children}
         </div>
         <Button
-          variant="secondary"
+          variant="ghost"
           size="icon"
-          className="absolute -right-4 top-8 z-50 h-8 w-8 rounded-full border border-sidebar-border bg-sidebar-background text-sidebar-foreground hover:bg-sidebar-accent"
+          className="absolute -right-4 top-8 z-50 h-8 w-8 rounded-full border border-sidebar-border bg-sidebar-background text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           onClick={toggleSidebar}
         >
           <ChevronLeft className={cn("h-5 w-5 transition-transform", state === "collapsed" && "rotate-180")} />
