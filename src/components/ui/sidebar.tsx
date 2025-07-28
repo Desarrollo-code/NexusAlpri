@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from "react"
@@ -205,7 +206,7 @@ const Sidebar = React.forwardRef<
         <Button
           variant="secondary"
           size="icon"
-          className="absolute -right-4 top-8 z-50 h-8 w-8 rounded-full border bg-background text-foreground hover:bg-muted"
+          className="absolute -right-4 top-8 z-50 h-8 w-8 rounded-full border border-sidebar-border bg-sidebar-background text-sidebar-foreground hover:bg-sidebar-accent"
           onClick={toggleSidebar}
         >
           <ChevronLeft className={cn("h-5 w-5 transition-transform", state === "collapsed" && "rotate-180")} />
@@ -248,7 +249,7 @@ const SidebarHeader = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex shrink-0 items-center h-16", className)}
+      className={cn("flex shrink-0 items-center h-16 border-b border-sidebar-border", className)}
       {...props}
     />
   )
@@ -262,7 +263,7 @@ const SidebarFooter = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex flex-col p-2 mt-auto", className)}
+      className={cn("flex flex-col p-2 mt-auto border-t border-sidebar-border", className)}
       {...props}
     />
   )
