@@ -141,8 +141,8 @@
   }
 
   .topbar-gradient {
-    background: linear-gradient(90deg, hsl(221, 83%, 53%) 0%, hsl(221, 83%, 43%) 100%);
-    color: hsl(var(--primary-foreground));
+  background: var(--topbar-background); /* Asegúrate de que apunte aquí */
+  color: hsl(var(--primary-foreground));
   }
   
   .watermark-img {
