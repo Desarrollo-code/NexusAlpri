@@ -11,7 +11,7 @@
   /* Esquema de Color Teal */
   --auth-primary-color: #14b8a6; /* teal-500 */
   --auth-primary-color-hover: #10a392; /* Un poco más oscuro */
-  --auth-illustration-panel-bg: #7ad8cf; /* Un teal muy claro y suave */
+  --auth-illustration-panel-bg: #f0fdfa; /* Un teal muy claro y suave */
   
   min-height: 100vh;
   background-color: var(--auth-bg-color);
@@ -37,11 +37,10 @@
 
 /* --- Columna de la Ilustración (Izquierda) --- */
 .auth-illustration-column {
-  display: none; /* Oculto en móvil */
   width: 50%;
   background-color: var(--auth-illustration-panel-bg);
   padding: 3rem;
-  display: flex;
+  display: none; /* Oculto en móvil por defecto */
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -56,7 +55,7 @@
 }
 
 .auth-illustration-header {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--auth-text-primary);
   display: flex;
@@ -65,14 +64,10 @@
   margin-bottom: 2rem;
 }
 
-.auth-illustration-header .logo-icon {
-  width: 40px;
-  height: 40px;
-}
-
 .auth-main-illustration {
     width: 100%;
-    max-width: 320px;
+    max-width: 350px; /* Un poco más grande para llenar el espacio */
+    height: auto;
 }
 
 /* --- Columna del Formulario (Derecha) --- */
@@ -93,7 +88,7 @@
 
 .auth-card {
   width: 100%;
-  max-w-sm;
+  max-width: 384px; /* Equivalente a max-w-sm de Tailwind */
 }
 
 .auth-logo-header {
@@ -174,6 +169,7 @@
   width: 100%;
   color: white;
   background-color: var(--auth-primary-color);
+  border: none;
 }
 
 .auth-button:hover {
