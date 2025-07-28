@@ -76,7 +76,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 <SidebarHeader className="group-data-[state=expanded]:px-4 md:group-data-[state=collapsed]:px-2">
                     <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground md:group-data-[state=collapsed]:justify-center">
                         <Image
-                            src="/uploads/images/logo-nexusalpri.png"
+                            src="/uploads/images/auth-illustration.svg"
                             alt="NexusAlpri Logo"
                             width={120}
                             height={97.5}
