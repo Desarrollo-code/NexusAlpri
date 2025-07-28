@@ -40,13 +40,13 @@
     --sidebar-width: 16rem;
     --sidebar-width-icon: 3.75rem;
     
-    /* Barra Lateral - Gradiente para tema claro */
-    --sidebar-background: linear-gradient(180deg, hsl(221, 83%, 45%) 0%, hsl(240, 60%, 35%) 100%);
+    /* Barra Lateral - Gradiente "Nebulosa de Grafito" */
+    --sidebar-background: linear-gradient(180deg, hsl(215, 18%, 22%) 0%, hsl(222, 24%, 16%) 100%);
     --sidebar-foreground: 210 20% 98%;
-    --sidebar-accent: 0 0% 100%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: hsl(var(--primary) / 0.2);
-    --sidebar-ring: 221 83% 63%;
+    --sidebar-accent: 355 79% 51%; /* Rojo Cereza Vibrante */
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: hsl(var(--sidebar-accent) / 0.1);
+    --sidebar-ring: 355 79% 51%;
 
 
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
@@ -101,13 +101,13 @@
     --sidebar-width: 16rem;
     --sidebar-width-icon: 3.75rem;
 
-    /* Barra Lateral - Gradiente */
-    --sidebar-background: linear-gradient(180deg, hsl(221, 83%, 25%) 0%, hsl(270, 50%, 15%) 100%);
+    /* Barra Lateral - Gradiente "Nebulosa de Grafito" (idéntico al tema claro para cohesión) */
+    --sidebar-background: linear-gradient(180deg, hsl(215, 18%, 22%) 0%, hsl(222, 24%, 16%) 100%);
     --sidebar-foreground: 210 20% 98%;
-    --sidebar-accent: 0 0% 100%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: hsl(var(--primary) / 0.1);
-    --sidebar-ring: 221 83% 63%;
+    --sidebar-accent: 355 79% 51%; /* Rojo Cereza Vibrante */
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: hsl(var(--sidebar-accent) / 0.1);
+    --sidebar-ring: 355 79% 51%;
 
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
     --chart-1: 210 90% 65%; /* Azul Vibrante */
@@ -141,11 +141,7 @@
   }
 
   .topbar-gradient {
-<<<<<<< HEAD
-    background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(221, 83%, 43%) 100%);
-=======
-    background: var(--sidebar-background);
->>>>>>> 6e36ef6acd6f0272e8bdf0414435b7442c40816c
+    background: linear-gradient(90deg, hsl(221, 83%, 53%) 0%, hsl(221, 83%, 43%) 100%);
     color: hsl(var(--primary-foreground));
   }
   
@@ -262,4 +258,3 @@
       transform-origin: bottom center;
   }
 }
-
