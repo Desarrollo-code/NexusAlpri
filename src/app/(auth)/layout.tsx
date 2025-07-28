@@ -14,7 +14,7 @@ export default function AuthLayout({
         <div className="auth-illustration-column">
           <div className="auth-illustration-content">
             <Image
-              src="/uploads/images/auth-illustration.svg"
+              src="/uploads/images/miniatura-nexusalpri.png"
               alt="NexusAlpri Illustration"
               width={500}
               height={500}
