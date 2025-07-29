@@ -17,7 +17,7 @@ export default function AuthLayout({
         <aside className="auth-illustration-column">
           <div className="illustration-wrapper">
              <Image
-              src="/uploads/images/auth-illustration.png"
+              src="/uploads/images/auth-illustration-v2.png"
               alt="NexusAlpri Learning Illustration"
               fill
               priority
@@ -48,7 +48,7 @@ export default function AuthLayout({
           </div>
         </main>
       </div>
-      <div className="auth-watermark-fixed">
+       <div className="auth-watermark-fixed">
         <Image
             src="/uploads/images/watermark-alprigrama.png"
             alt="Alprigrama S.A.S. Watermark"

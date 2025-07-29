@@ -193,8 +193,7 @@ const Sidebar = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "sidebar-gradient group fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out md:flex",
-          state === "expanded" ? "w-[var(--sidebar-width)]" : "w-[var(--sidebar-width-icon)]",
+          "sidebar-gradient group fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out",
           className
         )}
         data-state={state}
@@ -206,7 +205,7 @@ const Sidebar = React.forwardRef<
         <Button
           variant="ghost"
           size="icon"
-          className="absolute -right-4 top-8 z-50 h-8 w-8 rounded-full border border-sidebar-border bg-sidebar-foreground text-gray-800 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          className="absolute -right-4 top-8 z-50 h-8 w-8 rounded-full border border-sidebar-border bg-sidebar-foreground/80 text-background backdrop-blur-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           onClick={toggleSidebar}
         >
           <ChevronLeft className={cn("h-5 w-5 transition-transform", state === "collapsed" && "rotate-180")} />
@@ -249,7 +248,7 @@ const SidebarHeader = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex shrink-0 items-center h-16", className)}
+      className={cn("flex shrink-0 items-center h-16 transition-all duration-300", className)}
       {...props}
     />
   )

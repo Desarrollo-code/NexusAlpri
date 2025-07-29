@@ -100,7 +100,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem; /* Reducido para acercar el logo al form */
 }
 
 .auth-logo-link {
@@ -114,7 +114,7 @@
 }
 
 .auth-logo {
-  height: 60px; /* Agrandamos el logo */
+  height: 50px; /* Agrandamos el logo */
   width: auto;
 }
 
@@ -212,7 +212,7 @@
     padding-top: 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem; /* Aumentamos el espacio entre los dos elementos del footer */
+    gap: 1.5rem; 
 }
 
 .auth-form-switch-link {

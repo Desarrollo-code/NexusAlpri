@@ -178,7 +178,7 @@ export function TopBar() {
       .sort((a, b) => (b.href?.length ?? 0) - (a.href?.length ?? 0))
       .find(item => item.href && item.href !== '#' && pathname.startsWith(item.href));
 
-    let title = currentNavItem?.label || 'NexusAlpri';
+    let title = currentNavItem?.label || '';
     
     if (pathname.startsWith('/dashboard')) {
         title = 'Panel Principal';
