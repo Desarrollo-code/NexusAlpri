@@ -45,22 +45,6 @@ export default function AuthLayout({
             <div className="auth-form-content">
               {children}
             </div>
-             <footer className="auth-card-footer">
-              <a href="https://alprigramasas.com" target="_blank" rel="noopener noreferrer" className="auth-footer-link">
-                <div className="auth-footer-top-line">
-                  <span>Desarrollado por</span>
-                  <Image
-                    src="/uploads/images/watermark-alprigrama.png"
-                    alt="Alprigrama S.A.S."
-                    width={24}
-                    height={24}
-                    className="auth-footer-logo"
-                    data-ai-hint="company logo"
-                  />
-                </div>
-                <span className="auth-footer-company-name">ALL PRINT GRAPHIC & MARKETING SAS - ALPRIGRAMA S.A.S</span>
-              </a>
-            </footer>
           </div>
         </main>
       </div>

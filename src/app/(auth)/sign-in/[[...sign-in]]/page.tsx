@@ -111,7 +111,7 @@ export default function SignInPage() {
       <div className="w-full h-full flex flex-col">
         {!show2fa ? (
           <>
-              <div className="text-left mb-6">
+              <div className="text-left mb-4">
                 <h1 className="text-2xl font-bold">Iniciar Sesión</h1>
               </div>
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
