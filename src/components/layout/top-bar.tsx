@@ -2,7 +2,7 @@
 
 'use client';
 
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { UserAvatarDropdown } from './user-avatar-dropdown';
 import { usePathname } from 'next/navigation';
 import { getNavItemsForRole } from '@/lib/nav-items';
@@ -166,6 +166,7 @@ const NotificationPopover = () => {
 export function TopBar() {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { state } = useSidebar();
 
   const userAppRole = user?.role;
   const navItemsRaw = user ? getNavItemsForRole(userAppRole || 'STUDENT') : [];
@@ -197,7 +198,8 @@ export function TopBar() {
   
   return (
       <header className={cn(
-          "topbar-gradient sticky top-0 z-30 flex h-16 items-center justify-between border-b border-black/10 px-4 text-primary-foreground md:px-6",
+          "topbar-gradient sticky top-0 z-30 flex h-16 items-center justify-between border-b border-black/10 px-4 text-primary-foreground md:px-6 transition-[padding-left] duration-300 ease-in-out",
+          state === 'collapsed' ? "md:pl-[var(--sidebar-width-icon)]" : "md:pl-[var(--sidebar-width)]"
       )}>
         <div className="flex items-center gap-2">
           <SidebarTrigger className="md:hidden text-primary-foreground hover:bg-white/10" />
