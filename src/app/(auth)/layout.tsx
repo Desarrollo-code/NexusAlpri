@@ -46,7 +46,7 @@ export default function AuthLayout({
             </div>
             <footer className="auth-card-footer">
               <a href="https://alprigramasas.com" target="_blank" rel="noopener noreferrer" className="auth-footer-link">
-                Desarrollado por 
+                Desarrollado por  
                 <Image
                   src="/uploads/images/watermark-alprigrama.png"
                   alt="Alprigrama S.A.S."
@@ -55,7 +55,7 @@ export default function AuthLayout({
                   className="auth-footer-logo"
                   data-ai-hint="company logo"
                 />
-                 Alprigrama
+                 ALL PRINT GRAPHIC & MARKETING SAS - ALPRIGRAMA S.A.S
               </a>
             </footer>
           </div>
