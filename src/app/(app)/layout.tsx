@@ -71,7 +71,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     }
     
     return (
-        <div data-state={state} className="group/app-layout min-h-screen">
+        <div data-state={state} className="min-h-screen">
             <Sidebar>
                 <SidebarHeader className="group-data-[state=expanded]:px-4 md:group-data-[state=collapsed]:px-2">
                     <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground md:group-data-[state=collapsed]:justify-center">
@@ -155,8 +155,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             
             <div className={cn(
               "bg-background min-h-screen transition-[margin-left] duration-300 ease-in-out",
-              "md:group-data-[state=expanded]/app-layout:ml-[var(--sidebar-width)]",
-              "md:group-data-[state=collapsed]/app-layout:ml-[var(--sidebar-width-icon)]"
+              "md:data-[state=expanded]:ml-[var(--sidebar-width)]",
+              "md:data-[state=collapsed]:ml-[var(--sidebar-width-icon)]"
             )}>
                 <TopBar />
                 <main className="p-4 md:p-6 lg:p-8">
