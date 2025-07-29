@@ -3,7 +3,7 @@
 */
 
 .auth-scope {
-  --auth-bg-color: #f0f2f5;
+  --auth-bg-color: #0a192f; /* Azul Marino Oscuro */
   --auth-card-bg: #ffffff;
   --auth-text-primary: #1F2937; /* gray-800 */
   --auth-text-secondary: #6B7280; /* gray-500 */
@@ -15,7 +15,6 @@
   
   min-height: 100vh;
   background-color: var(--auth-bg-color);
-  background-image: url('/uploads/images/auth-background.png'); /* Usando la nueva imagen de fondo */
   background-size: cover;
   background-position: center;
   display: flex;
