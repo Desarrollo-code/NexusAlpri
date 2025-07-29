@@ -26,7 +26,7 @@
 .auth-container {
   display: flex;
   width: 100%;
-  max-width: 960px; /* Ancho total de la tarjeta */
+  max-width: 1024px; /* Ancho total de la tarjeta aumentado */
   min-height: 600px;
   background-color: var(--auth-card-bg);
   border-radius: 1.5rem; /* Bordes bien redondeados */
@@ -36,7 +36,7 @@
 
 /* --- Columna de la Ilustración (Izquierda) --- */
 .auth-illustration-column {
-  width: 50%;
+  width: 45%; /* Reducido para dar más espacio al formulario */
   padding: 0;
   display: none; /* Oculto en móvil por defecto */
   flex-direction: column;
@@ -77,7 +77,7 @@
 
 @media (min-width: 1024px) {
   .auth-form-column {
-    width: 50%;
+    width: 55%; /* Aumentado para ocupar más espacio */
   }
 }
 
@@ -253,4 +253,10 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem; /* Aumentamos el espacio entre los dos elementos del footer */
+}
+
+.watermark-img {
+    opacity: 0.4;
+    width: auto;
+    height: auto;
 }
