@@ -25,7 +25,7 @@ export default function AuthLayout({
                 poster="/uploads/images/auth-illustration-v2.png" // Fallback image
                 data-ai-hint="background video"
               >
-                  <source src="/uploads/videos/auth-background-video.mp4" type="video/mp4" />
+                  <source src="/uploads/videos/Video_Generado_Listo_http_com_.mp4" type="video/mp4" />
                   Tu navegador no soporta el tag de video.
               </video>
           </div>
@@ -50,14 +50,6 @@ export default function AuthLayout({
               {children}
             </div>
             <div className="auth-page-footer">
-                <div className="auth-form-switch-link">
-                    <span className="auth-text-secondary">
-                        ¿Ya tienes una cuenta?{' '}
-                        <Link href="/sign-in" className="auth-link">
-                            Inicia sesión
-                        </Link>
-                    </span>
-                </div>
                 <div className="auth-card-footer">
                   <a href="https://alprigramasas.com" target="_blank" rel="noopener noreferrer" className="auth-footer-link">
                     <div className="auth-footer-top-line">
