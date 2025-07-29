@@ -43,8 +43,8 @@ export default function AuthLayout({
             </header>
             {children}
           </div>
-          <a href="https://alprigrama.com" target="_blank" rel="noopener noreferrer" className="auth-footer-link">
-            Powered by 
+          <a href="https://alprigramasas.com" target="_blank" rel="noopener noreferrer" className="auth-footer-link">
+            Desarrollado por 
             <Image
               src="/uploads/images/watermark-alprigrama.png"
               alt="Alprigrama S.A.S."
