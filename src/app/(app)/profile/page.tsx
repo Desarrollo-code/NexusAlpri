@@ -36,6 +36,7 @@ import {
 import { cn } from '@/lib/utils';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 import { useIsMobile } from '@/hooks/use-mobile';
+import type { UserRole } from '@/types';
 
 
 const ProfileCardBackground = () => (
@@ -109,6 +110,16 @@ export default function ProfilePage() {
     if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
     return name.substring(0, 2).toUpperCase();
   };
+  
+  const getRoleInSpanish = (role: UserRole) => {
+    switch (role) {
+      case 'ADMINISTRATOR': return 'Administrador';
+      case 'INSTRUCTOR': return 'Instructor';
+      case 'STUDENT': return 'Estudiante';
+      default: return role;
+    }
+  };
+
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -292,9 +303,26 @@ export default function ProfilePage() {
                   <AvatarImage src={avatarPreview || `https://placehold.co/100x100.png?text=${getInitials(user.name)}`} alt={user.name || ''} data-ai-hint="user avatar" />
                   <AvatarFallback className="text-4xl">{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
+                <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-background"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={isSaving || isUploadingAvatar}
+                    aria-label="Cambiar foto de perfil"
+                >
+                    <Camera className="h-4 w-4 text-primary" />
+                </Button>
+                <input 
+                    type="file" 
+                    ref={avatarInputRef} 
+                    onChange={handleFileChange} 
+                    accept="image/png, image/jpeg, image/gif, image/webp" 
+                    className="hidden"
+                />
             </div>
             <div className="card__title">{user.name}</div>
-            <div className="card__subtitle capitalize">{(user.role as string)?.toLowerCase() || 'student'}</div>
+            <div className="card__subtitle capitalize">{getRoleInSpanish(user.role) || 'student'}</div>
         </div>
      </div>
   );
@@ -308,6 +336,12 @@ export default function ProfilePage() {
       {isMobile ? (
         <div className="flex flex-col items-center gap-8">
             <MobileProfileView />
+             {isUploadingAvatar && (
+                <div className="w-full px-4">
+                  <Progress value={uploadProgress} className="h-1.5" />
+                  <p className="text-xs mt-1 text-muted-foreground text-center">{uploadProgress}%</p>
+                </div>
+              )}
             <div id="info-card" className="w-full">
                 <Card className="card-border-animated">
                     <CardHeader><CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-primary"/>Información Personal</CardTitle></CardHeader>
@@ -315,7 +349,7 @@ export default function ProfilePage() {
                       <div><Label htmlFor="fullNameMobile">Nombre Completo</Label><Input id="fullNameMobile" value={editableName} onChange={(e) => setEditableName(e.target.value)} disabled={isSaving || isUploadingAvatar}/></div>
                       <Button onClick={handleSaveChanges} disabled={isSaving || isUploadingAvatar} className="w-full">
                           {isSaving || isUploadingAvatar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                          {isSaving ? 'Guardando...' : 'Guardar Nombre'}
+                          {isSaving ? 'Guardando...' : (isUploadingAvatar ? 'Subiendo...' : 'Guardar Información')}
                       </Button>
                     </CardContent>
                 </Card>
@@ -376,7 +410,7 @@ export default function ProfilePage() {
                   )}
                   <CardTitle className="text-2xl font-headline mt-2">{user.name}</CardTitle>
                   <Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'default' : 'secondary'} className="capitalize mx-auto">
-                    {(user.role as string)?.toLowerCase() || 'student'}
+                    {getRoleInSpanish(user.role)}
                   </Badge>
                 </CardHeader>
                 <CardContent>
