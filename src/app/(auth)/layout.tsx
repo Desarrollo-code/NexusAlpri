@@ -48,6 +48,17 @@ export default function AuthLayout({
           </div>
         </main>
       </div>
+      <div className="auth-watermark-fixed">
+        <Image
+            src="/uploads/images/watermark-alprigrama.png"
+            alt="Alprigrama S.A.S. Watermark"
+            width={60}
+            height={60}
+            priority
+            className="watermark-img"
+            data-ai-hint="company logo"
+        />
+      </div>
     </div>
   );
 }
