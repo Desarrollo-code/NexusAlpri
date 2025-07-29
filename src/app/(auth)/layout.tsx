@@ -2,16 +2,12 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import './auth.css';
-import { usePathname } from 'next/navigation'; // Hook para obtener la ruta actual
 
 export default function AuthLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Nota: Este es un Server Component, pero podemos usar hooks que no dependen de estado de cliente, o pasarlos desde un client component.
-  // Para simplicidad, se asume que un componente cliente superior podría pasar el pathname o se usa un truco para obtenerlo si es necesario.
-  // Sin embargo, para este layout, vamos a estructurarlo para que funcione en el servidor y delegue la lógica dinámica a los componentes hijos.
 
   return (
     <div className="auth-scope">
