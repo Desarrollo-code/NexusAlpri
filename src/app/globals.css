@@ -183,10 +183,6 @@
     color: hsl(var(--primary-foreground));
   }
   
-  .main-content {
-      transition: margin-left .3s ease-in-out;
-  }
-
   .watermark-img {
     @apply opacity-40;
     width: auto;
@@ -345,5 +341,15 @@
 
   .nav-subitem.active svg {
     color: hsl(var(--sidebar-active-icon-color));
+  }
+
+  /* --- Fix para el texto de la barra lateral colapsada --- */
+  .group[data-state=collapsed] .sidebar-menu-button span,
+  .group[data-state=collapsed] .nav-section-title span {
+      @apply opacity-0 invisible transition-opacity duration-300;
+  }
+  .group[data-state=expanded] .sidebar-menu-button span,
+  .group[data-state=expanded] .nav-section-title span {
+      @apply opacity-100 visible transition-opacity duration-300;
   }
 }

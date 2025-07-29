@@ -84,7 +84,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                             priority
                             data-ai-hint="logo education"
                         />
-                        <span className={cn("text-xl font-headline whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{settings?.platformName || 'NexusAlpri'}</span>
+                        <span className="text-xl font-headline whitespace-nowrap">{settings?.platformName || 'NexusAlpri'}</span>
                     </Link>
                 </SidebarHeader>
                 
@@ -100,9 +100,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                     <React.Fragment key={item.href || item.label}>
                                         {isSubMenu ? (
                                             <div className="flex flex-col gap-1">
-                                                <div className="px-4 py-2 text-sm font-semibold text-sidebar-foreground/70 flex items-center gap-3 md:group-data-[state=collapsed]:hidden">
+                                                <div className="px-4 py-2 text-sm font-semibold text-sidebar-foreground/70 flex items-center gap-3">
                                                     {item.icon && <item.icon className="h-5 w-5 shrink-0" />}
-                                                    {item.label}
+                                                    <span className="whitespace-nowrap">{item.label}</span>
                                                 </div>
                                                 <SidebarMenu className="pl-4 md:group-data-[state=collapsed]:pl-0">
                                                     {item.subItems?.map((subItem) => {
@@ -112,7 +112,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                                                 <SidebarMenuButton asChild isActive={isActive} disabled={subItem.disabled} className="justify-start gap-3" tooltip={{ children: subItem.label }}>
                                                                     <Link href={subItem.href || '#'}>
                                                                         <GradientIcon icon={subItem.icon} isActive={isActive} />
-                                                                        <span className={cn("font-medium text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{subItem.label}</span>
+                                                                        <span className="font-medium text-base whitespace-nowrap">{subItem.label}</span>
                                                                     </Link>
                                                                 </SidebarMenuButton>
                                                             </SidebarMenuItem>
@@ -125,7 +125,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                                 <SidebarMenuButton asChild isActive={pathname === item.href} disabled={item.disabled} className="justify-start gap-3" tooltip={{ children: item.label }}>
                                                     <Link href={item.href || '#'}>
                                                         <GradientIcon icon={item.icon} isActive={pathname === item.href} />
-                                                        <span className={cn("font-medium text-base whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>{item.label}</span>
+                                                        <span className="font-medium text-base whitespace-nowrap">{item.label}</span>
                                                     </Link>
                                                 </SidebarMenuButton>
                                             </SidebarMenuItem>
@@ -146,7 +146,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                         <SidebarMenuItem>
                             <SidebarMenuButton onClick={logout} variant="ghost" className="justify-start gap-3 w-full text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive" tooltip={{children: "Cerrar Sesión"}}>
                                 <LogOut className="text-destructive h-5 w-5"/>
-                                <span className={cn("font-semibold whitespace-nowrap", "md:group-data-[state=collapsed]:hidden")}>Cerrar Sesión</span>
+                                <span className="font-semibold whitespace-nowrap">Cerrar Sesión</span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
@@ -154,8 +154,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             </Sidebar>
             
             <div className={cn(
-                "main-content",
-                state === 'collapsed' ? "md:ml-[var(--sidebar-width-icon)]" : "md:ml-[var(--sidebar-width)]"
+                "main-content transition-[padding-left] duration-300 ease-in-out",
+                state === 'collapsed' ? "md:pl-[var(--sidebar-width-icon)]" : "md:pl-[var(--sidebar-width)]"
             )}>
                 <TopBar />
                 <main className="p-4 md:p-6 lg:p-8">
