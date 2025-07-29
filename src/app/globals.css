@@ -178,12 +178,18 @@
     background: var(--sidebar-background);
   }
 
+  .sidebar-gradient .sidebar-menu-button span,
+  .sidebar-gradient .sidebar-header > a > span,
+  .sidebar-gradient .nav-section-title span {
+      transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+  }
+
   .sidebar-gradient[data-state="collapsed"] .sidebar-menu-button span,
   .sidebar-gradient[data-state="collapsed"] .nav-section-title span,
   .sidebar-gradient[data-state="collapsed"] .sidebar-header > a > span {
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.1s ease-in-out, visibility 0.1s ease-in-out;
+    transition-delay: 0s;
   }
   
   .sidebar-gradient[data-state="expanded"] .sidebar-menu-button span,
@@ -191,16 +197,19 @@
   .sidebar-gradient[data-state="expanded"] .sidebar-header > a > span {
     opacity: 1;
     visibility: visible;
-    transition: opacity 0.3s ease-in-out 0.1s, visibility 0.3s ease-in-out 0.1s;
+    transition-delay: 0.1s;
   }
-
-  .main-content {
-    transition: padding-left 0.3s ease-in-out;
+  
+  .sidebar-gradient[data-state="collapsed"] .sidebar-menu-button {
+      @apply justify-center px-0 py-3;
   }
-
+  
+  .sidebar-gradient[data-state="collapsed"] .sidebar-header {
+      @apply px-2 justify-center;
+  }
 
   .topbar-gradient {
-    background: var(--topbar-background); /* Ahora esto funcionará correctamente en ambos temas */
+    background: var(--topbar-background);
     color: hsl(var(--primary-foreground));
   }
   

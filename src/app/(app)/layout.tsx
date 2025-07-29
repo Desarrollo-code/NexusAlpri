@@ -73,8 +73,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     return (
         <div className="min-h-screen bg-background">
             <Sidebar>
-                <SidebarHeader className="group-data-[state=expanded]:px-4 md:group-data-[state=collapsed]:px-2">
-                    <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground md:group-data-[state=collapsed]:justify-center">
+                <SidebarHeader>
+                    <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground">
                         <Image
                             src="/uploads/images/logo-nexusalpri.png"
                             alt="NexusAlpri Logo"
@@ -104,7 +104,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                                     {item.icon && <item.icon className="h-5 w-5 shrink-0" />}
                                                     <span className="whitespace-nowrap">{item.label}</span>
                                                 </div>
-                                                <SidebarMenu className="pl-4 md:group-data-[state=collapsed]:pl-0">
+                                                <SidebarMenu className="pl-4">
                                                     {item.subItems?.map((subItem) => {
                                                         const isActive = subItem.href ? pathname.startsWith(subItem.href) : false;
                                                         return (
@@ -155,7 +155,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             
             <div className={cn(
                 "main-content transition-[padding-left] duration-300 ease-in-out",
-                state === 'collapsed' ? "md:pl-[var(--sidebar-width-icon)]" : "md:pl-[var(--sidebar-width)]"
+                 state === 'collapsed' ? "md:pl-[var(--sidebar-width-icon)]" : "md:pl-[var(--sidebar-width)]"
             )}>
                 <TopBar />
                 <main className="p-4 md:p-6 lg:p-8">
