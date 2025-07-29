@@ -153,9 +153,14 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
             
-            <div className={cn("main-content transition-[padding-left] duration-300 ease-in-out", 
-              state === 'collapsed' ? "md:pl-[var(--sidebar-width-icon)]" : "md:pl-[var(--sidebar-width)]"
-            )}>
+            <div 
+              className="main-content transition-[padding-left] duration-300 ease-in-out"
+              style={{
+                paddingLeft: state === 'collapsed' 
+                  ? 'var(--sidebar-width-icon)' 
+                  : 'var(--sidebar-width)'
+              }}
+            >
                 <TopBar />
                 <main className="p-4 md:p-6 lg:p-8">
                   {children}

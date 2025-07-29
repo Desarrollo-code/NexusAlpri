@@ -174,26 +174,22 @@
 }
 
 @layer components {
+  /* Reglas para la transición suave de la barra lateral */
   .sidebar-gradient {
-    background: var(--sidebar-background);
+    @apply shadow-lg;
+    box-shadow: 2px 0 15px -3px hsl(var(--foreground) / 0.1);
   }
-
-  .sidebar-gradient .sidebar-menu-button span,
-  .sidebar-gradient .sidebar-header > a > span,
-  .sidebar-gradient .nav-section-title span {
+  .sidebar-gradient span {
       transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
   }
 
-  .sidebar-gradient[data-state="collapsed"] .sidebar-menu-button span,
-  .sidebar-gradient[data-state="collapsed"] .nav-section-title span,
-  .sidebar-gradient[data-state="collapsed"] .sidebar-header > a > span {
+  /* Oculta el texto suavemente cuando la barra está colapsada */
+  .sidebar-gradient[data-state="collapsed"] span {
     opacity: 0;
     visibility: hidden;
   }
   
-  .sidebar-gradient[data-state="expanded"] .sidebar-menu-button span,
-  .sidebar-gradient[data-state="expanded"] .nav-section-title span,
-  .sidebar-gradient[data-state="expanded"] .sidebar-header > a > span {
+  .sidebar-gradient[data-state="expanded"] span {
     opacity: 1;
     visibility: visible;
   }
@@ -203,7 +199,7 @@
   }
   
   .sidebar-gradient[data-state="collapsed"] .sidebar-header {
-      @apply px-2 justify-center;
+      @apply justify-center;
   }
 
   .topbar-gradient {
