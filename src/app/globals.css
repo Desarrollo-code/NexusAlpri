@@ -342,17 +342,4 @@
   .nav-subitem.active svg {
     color: hsl(var(--sidebar-active-icon-color));
   }
-  
-  .main-content {
-      transition: margin-left 0.3s ease-in-out;
-  }
-
-  @media (min-width: 768px) {
-    [data-state="collapsed"] .main-content {
-        margin-left: var(--sidebar-width-icon);
-    }
-    [data-state="expanded"] .main-content {
-        margin-left: var(--sidebar-width);
-    }
-  }
 }
