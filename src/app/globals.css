@@ -302,53 +302,57 @@
     transform-origin: bottom center;
   }
 
-  /* **AÑADIDO**: Clase para los elementos de navegación principales */
   .nav-item {
     @apply flex items-center gap-3 px-4 py-2 rounded-lg text-sidebar-foreground transition-colors duration-200;
     @apply hover:bg-[hsl(var(--sidebar-hover-background))] hover:text-sidebar-foreground;
   }
 
-  /* **AÑADIDO**: Aplica el color del icono */
   .nav-item svg {
-    color: hsl(var(--sidebar-icon-color)); /* Color de icono por defecto */
+    color: hsl(var(--sidebar-icon-color));
   }
 
-  /* **AÑADIDO**: Clase para el elemento de navegación ACTIVO */
   .nav-item.active {
     @apply bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-active-foreground))];
     @apply ring-2 ring-[hsl(var(--sidebar-active-ring))];
   }
 
-  /* **AÑADIDO**: Aplica el color del icono cuando el elemento está activo */
   .nav-item.active svg {
-    color: hsl(var(--sidebar-active-icon-color)); /* Color de icono activo */
+    color: hsl(var(--sidebar-active-icon-color));
   }
 
-  /* **AÑADIDO**: Clase para el título de la sección (ej. "Administración") */
   .nav-section-title {
     @apply px-4 py-3 text-[hsl(var(--sidebar-section-title-foreground))] text-sm font-semibold uppercase tracking-wider;
   }
 
-  /* **AÑADIDO**: Clase para los sub-elementos de navegación */
   .nav-subitem {
     @apply flex items-center gap-3 pl-8 py-2 rounded-lg text-[hsl(var(--sidebar-subitem-foreground))] transition-colors duration-200;
     @apply hover:bg-[hsl(var(--sidebar-hover-background))] hover:text-sidebar-foreground;
-    font-size: 0.95rem; /* Fuente ligeramente más pequeña para los sub-items */
+    font-size: 0.95rem;
   }
 
-  /* **AÑADIDO**: Aplica el color del icono para sub-items */
   .nav-subitem svg {
-    color: hsl(var(--sidebar-icon-color)); /* Color de icono por defecto */
+    color: hsl(var(--sidebar-icon-color));
   }
 
-  /* **AÑADIDO**: Clase para el sub-elemento ACTIVO */
   .nav-subitem.active {
     @apply bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-active-foreground))];
     @apply ring-2 ring-[hsl(var(--sidebar-active-ring))];
   }
 
-  /* **AÑADIDO**: Aplica el color del icono cuando el sub-elemento está activo */
   .nav-subitem.active svg {
-    color: hsl(var(--sidebar-active-icon-color)); /* Color de icono activo */
+    color: hsl(var(--sidebar-active-icon-color));
+  }
+  
+  .main-content {
+      transition: margin-left 0.3s ease-in-out;
+  }
+
+  @media (min-width: 768px) {
+    [data-state="collapsed"] .main-content {
+        margin-left: var(--sidebar-width-icon);
+    }
+    [data-state="expanded"] .main-content {
+        margin-left: var(--sidebar-width);
+    }
   }
 }
