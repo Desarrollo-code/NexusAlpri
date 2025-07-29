@@ -108,10 +108,10 @@ export default function SignInPage() {
 
 
   return (
-      <div className="w-full">
+      <div className="w-full h-full flex flex-col">
         {!show2fa ? (
           <>
-              <div className="text-left mb-8">
+              <div className="text-left mb-6">
                 <h1 className="text-2xl font-bold">Iniciar Sesión</h1>
               </div>
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
@@ -155,15 +155,33 @@ export default function SignInPage() {
                   {isLoading ? 'Ingresando...' : 'Ingresar'}
                 </button>
               </form>
-              <div className="auth-form-switch-link">
-                {settings?.allowPublicRegistration && (
-                    <span className="auth-text-secondary">
-                        ¿No tienes una cuenta?{' '}
-                        <Link href="/sign-up" className="auth-link">
-                            Regístrate ahora
-                        </Link>
-                    </span>
-                )}
+              <div className="auth-page-footer">
+                  {settings?.allowPublicRegistration && (
+                    <div className="auth-form-switch-link">
+                        <span className="auth-text-secondary">
+                            ¿No tienes una cuenta?{' '}
+                            <Link href="/sign-up" className="auth-link">
+                                Regístrate ahora
+                            </Link>
+                        </span>
+                    </div>
+                  )}
+                  <div className="auth-card-footer">
+                      <a href="https://alprigramasas.com" target="_blank" rel="noopener noreferrer" className="auth-footer-link">
+                        <div className="auth-footer-top-line">
+                          <span>Desarrollado por</span>
+                          <Image
+                            src="/uploads/images/watermark-alprigrama.png"
+                            alt="Alprigrama S.A.S."
+                            width={28}
+                            height={28}
+                            className="auth-footer-logo"
+                            data-ai-hint="company logo"
+                          />
+                        </div>
+                        <span className="auth-footer-company-name">ALL PRINT GRAPHIC & MARKETING SAS - ALPRIGRAMA S.A.S</span>
+                      </a>
+                  </div>
               </div>
           </>
         ) : (
