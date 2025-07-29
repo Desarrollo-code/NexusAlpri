@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type FormEvent, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 
 export default function SignInPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, login, settings } = useAuth();
   const { toast } = useToast();
   
@@ -154,14 +155,16 @@ export default function SignInPage() {
                   {isLoading ? 'Ingresando...' : 'Ingresar'}
                 </button>
               </form>
-               {settings?.allowPublicRegistration && (
-                 <div className="mt-6 text-center text-sm">
-                    <span className="auth-text-secondary">¿No tienes una cuenta?</span>{' '}
-                    <Link href="/sign-up" className="auth-link">
-                        Regístrate ahora
-                    </Link>
-                 </div>
-               )}
+              <div className="auth-form-switch-link">
+                {settings?.allowPublicRegistration && (
+                    <span className="auth-text-secondary">
+                        ¿No tienes una cuenta?{' '}
+                        <Link href="/sign-up" className="auth-link">
+                            Regístrate ahora
+                        </Link>
+                    </span>
+                )}
+              </div>
           </>
         ) : (
           <>

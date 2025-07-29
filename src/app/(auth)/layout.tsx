@@ -2,12 +2,17 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import './auth.css';
+import { usePathname } from 'next/navigation'; // Hook para obtener la ruta actual
 
 export default function AuthLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Nota: Este es un Server Component, pero podemos usar hooks que no dependen de estado de cliente, o pasarlos desde un client component.
+  // Para simplicidad, se asume que un componente cliente superior podría pasar el pathname o se usa un truco para obtenerlo si es necesario.
+  // Sin embargo, para este layout, vamos a estructurarlo para que funcione en el servidor y delegue la lógica dinámica a los componentes hijos.
+
   return (
     <div className="auth-scope">
       <div className="auth-container">
@@ -15,7 +20,7 @@ export default function AuthLayout({
         {/* Columna Izquierda - Ilustración */}
         <aside className="auth-illustration-column">
           <div className="illustration-wrapper">
-            <Image
+             <Image
               src="/uploads/images/auth-illustration.png"
               alt="NexusAlpri Learning Illustration"
               fill
@@ -44,18 +49,20 @@ export default function AuthLayout({
             <div className="auth-form-content">
               {children}
             </div>
-            <footer className="auth-card-footer">
+             <footer className="auth-card-footer">
               <a href="https://alprigramasas.com" target="_blank" rel="noopener noreferrer" className="auth-footer-link">
-                Desarrollado por  
-                <Image
-                  src="/uploads/images/watermark-alprigrama.png"
-                  alt="Alprigrama S.A.S."
-                  width={20}
-                  height={20}
-                  className="auth-footer-logo"
-                  data-ai-hint="company logo"
-                />
-                 ALL PRINT GRAPHIC & MARKETING SAS - ALPRIGRAMA S.A.S
+                <div className="auth-footer-top-line">
+                  <span>Desarrollado por</span>
+                  <Image
+                    src="/uploads/images/watermark-alprigrama.png"
+                    alt="Alprigrama S.A.S."
+                    width={24}
+                    height={24}
+                    className="auth-footer-logo"
+                    data-ai-hint="company logo"
+                  />
+                </div>
+                <span className="auth-footer-company-name">ALL PRINT GRAPHIC & MARKETING SAS - ALPRIGRAMA S.A.S</span>
               </a>
             </footer>
           </div>

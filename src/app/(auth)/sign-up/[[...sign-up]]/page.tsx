@@ -164,9 +164,9 @@ export default function SignUpPage() {
           Registrarse
         </button>
       </form>
-       <div className="mt-6 text-center text-sm">
+      <div className="auth-form-switch-link">
          <span className="auth-text-secondary">¿Ya tienes una cuenta?</span>{' '}
-        <Link href="/sign-in" className="auth-link">Inicia sesión</Link>
+         <Link href="/sign-in" className="auth-link">Inicia sesión</Link>
       </div>
     </div>
   );
