@@ -154,7 +154,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             </Sidebar>
             
             <div className={cn(
-                "transition-[margin-left] duration-300 ease-in-out",
+                "main-content",
                 state === 'collapsed' ? "md:ml-[var(--sidebar-width-icon)]" : "md:ml-[var(--sidebar-width)]"
             )}>
                 <TopBar />

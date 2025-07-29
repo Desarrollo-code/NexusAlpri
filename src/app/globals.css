@@ -182,6 +182,10 @@
     background: var(--topbar-background); /* Ahora esto funcionará correctamente en ambos temas */
     color: hsl(var(--primary-foreground));
   }
+  
+  .main-content {
+      transition: margin-left .3s ease-in-out;
+  }
 
   .watermark-img {
     @apply opacity-40;
