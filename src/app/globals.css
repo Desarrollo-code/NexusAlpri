@@ -181,7 +181,7 @@
   .sidebar-gradient .sidebar-menu-button span,
   .sidebar-gradient .sidebar-header > a > span,
   .sidebar-gradient .nav-section-title span {
-      transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+      transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
   }
 
   .sidebar-gradient[data-state="collapsed"] .sidebar-menu-button span,
@@ -189,7 +189,6 @@
   .sidebar-gradient[data-state="collapsed"] .sidebar-header > a > span {
     opacity: 0;
     visibility: hidden;
-    transition-delay: 0s;
   }
   
   .sidebar-gradient[data-state="expanded"] .sidebar-menu-button span,
@@ -197,7 +196,6 @@
   .sidebar-gradient[data-state="expanded"] .sidebar-header > a > span {
     opacity: 1;
     visibility: visible;
-    transition-delay: 0.1s;
   }
   
   .sidebar-gradient[data-state="collapsed"] .sidebar-menu-button {

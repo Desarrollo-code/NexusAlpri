@@ -198,8 +198,7 @@ export function TopBar() {
   
   return (
       <header className={cn(
-          "topbar-gradient sticky top-0 z-30 flex h-16 items-center justify-between border-b border-black/10 px-4 text-primary-foreground md:px-6 transition-[padding-left] duration-300 ease-in-out",
-          state === 'collapsed' ? "md:pl-[var(--sidebar-width-icon)]" : "md:pl-[var(--sidebar-width)]"
+          "topbar-gradient sticky top-0 z-30 flex h-16 items-center justify-between border-b border-black/10 px-4 text-primary-foreground md:px-6"
       )}>
         <div className="flex items-center gap-2">
           <SidebarTrigger className="md:hidden text-primary-foreground hover:bg-white/10" />
