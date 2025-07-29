@@ -153,15 +153,15 @@ export default function SignInPage() {
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   {isLoading ? 'Ingresando...' : 'Ingresar'}
                 </button>
-                 {settings?.allowPublicRegistration && (
-                   <div className="mt-4 text-center text-sm">
-                      <span className="auth-text-secondary">¿No tienes una cuenta?</span>{' '}
-                      <Link href="/sign-up" className="auth-link">
-                          Regístrate ahora
-                      </Link>
-                   </div>
-                 )}
               </form>
+               {settings?.allowPublicRegistration && (
+                 <div className="mt-6 text-center text-sm">
+                    <span className="auth-text-secondary">¿No tienes una cuenta?</span>{' '}
+                    <Link href="/sign-up" className="auth-link">
+                        Regístrate ahora
+                    </Link>
+                 </div>
+               )}
           </>
         ) : (
           <>

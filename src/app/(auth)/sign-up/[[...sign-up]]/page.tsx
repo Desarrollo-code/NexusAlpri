@@ -163,11 +163,11 @@ export default function SignUpPage() {
           {isLoading && <Loader2 className="animate-spin mr-2" />}
           Registrarse
         </button>
-        <div className="mt-4 text-center text-sm">
-           <span className="auth-text-secondary">¿Ya tienes una cuenta?</span>{' '}
-          <Link href="/sign-in" className="auth-link">Inicia sesión</Link>
-        </div>
       </form>
+       <div className="mt-6 text-center text-sm">
+         <span className="auth-text-secondary">¿Ya tienes una cuenta?</span>{' '}
+        <Link href="/sign-in" className="auth-link">Inicia sesión</Link>
+      </div>
     </div>
   );
 }
