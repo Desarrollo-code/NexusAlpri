@@ -36,7 +36,7 @@
 
 /* --- Columna de la Ilustración (Izquierda) --- */
 .auth-illustration-column {
-  width: 45%; /* Reducido para dar más espacio al formulario */
+  width: 55%; /* Aumentado para dar más espacio al video */
   padding: 0;
   display: none; /* Oculto en móvil por defecto */
   flex-direction: column;
@@ -77,7 +77,7 @@
 
 @media (min-width: 1024px) {
   .auth-form-column {
-    width: 55%; /* Aumentado para ocupar más espacio */
+    width: 45%; /* Reducido para dar más espacio al video */
   }
 }
 
