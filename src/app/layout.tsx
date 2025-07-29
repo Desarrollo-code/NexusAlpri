@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Inter, Space_Grotesk, Source_Code_Pro } from 'next/font/google';
+import { Inter, Dancing_Script, Source_Code_Pro } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/auth-context';
@@ -14,7 +14,7 @@ const inter = Inter({
   variable: '--font-body',
 });
 
-const spaceGrotesk = Space_Grotesk({
+const dancingScript = Dancing_Script({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-headline',
@@ -32,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${inter.variable} ${spaceGrotesk.variable} ${sourceCodePro.variable}`} suppressHydrationWarning>
+    <html lang="es" className={`${inter.variable} ${dancingScript.variable} ${sourceCodePro.variable}`} suppressHydrationWarning>
       <head>
           <title>NexusAlpri</title>
           <meta name="description" content="Plataforma E-learning Corporativa" />

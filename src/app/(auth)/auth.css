@@ -269,9 +269,3 @@
     flex-direction: column;
     gap: 1.5rem; /* Aumentamos el espacio entre los dos elementos del footer */
 }
-
-.watermark-img {
-    opacity: 0.4;
-    width: auto;
-    height: auto;
-}

@@ -19,7 +19,7 @@ export default {
     extend: {
       fontFamily: {
         body: ['var(--font-body)', 'Inter', 'sans-serif'],
-        headline: ['var(--font-headline)', 'Space Grotesk', 'sans-serif'],
+        headline: ['var(--font-headline)', 'Dancing Script', 'cursive'],
         code: ['var(--font-code)', 'Source Code Pro', 'monospace'],
       },
       colors: {
