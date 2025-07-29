@@ -149,11 +149,6 @@ export default function SignInPage() {
                     </button>
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                    {/* Checkbox Placeholder */}
-                    <div></div> 
-                    <Link href="#" className="auth-link">¿Olvidaste tu contraseña?</Link>
-                </div>
                 <button type="submit" className="auth-button" disabled={isLoading}>
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   {isLoading ? 'Ingresando...' : 'Ingresar'}
