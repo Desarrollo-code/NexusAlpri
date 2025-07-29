@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { Loader2, ShieldAlert, Eye, EyeOff, UserPlus, LockKeyhole, UserCircle, Mail } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, EyeOff, UserPlus, LockKeyhole, UserCircle, Mail, Languages } from 'lucide-react';
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -111,7 +112,7 @@ export default function SignUpPage() {
 
   return (
     <div className="w-full h-full flex flex-col">
-       <div className="text-left mb-6">
+       <div className="text-left mb-4">
         <h1 className="text-2xl font-bold">Crear una Cuenta</h1>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -163,8 +164,8 @@ export default function SignUpPage() {
           Registrarse
         </button>
       </form>
-       <div className="auth-page-footer">
-          <div className="auth-form-switch-link">
+        <div className="auth-page-footer">
+            <div className="auth-form-switch-link">
              <span className="auth-text-secondary">¿Ya tienes una cuenta?</span>{' '}
              <Link href="/sign-in" className="auth-link">Inicia sesión</Link>
           </div>
@@ -175,8 +176,8 @@ export default function SignUpPage() {
                   <Image
                     src="/uploads/images/watermark-alprigrama.png"
                     alt="Alprigrama S.A.S."
-                    width={32}
-                    height={32}
+                    width={28}
+                    height={28}
                     className="auth-footer-logo"
                     data-ai-hint="company logo"
                   />
@@ -184,7 +185,7 @@ export default function SignUpPage() {
                 <span className="auth-footer-company-name">ALL PRINT GRAPHIC & MARKETING SAS - ALPRIGRAMA S.A.S</span>
               </a>
           </div>
-      </div>
+        </div>
     </div>
   );
 }

@@ -5,16 +5,18 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { Loader2, ShieldCheck, Eye, EyeOff, UserCircle, LockKeyhole } from 'lucide-react';
+import { Loader2, ShieldCheck, Eye, EyeOff, UserCircle, LockKeyhole, Languages } from 'lucide-react';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 
 export default function SignInPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, login, settings } = useAuth();
   const { toast } = useToast();
   
@@ -109,7 +111,7 @@ export default function SignInPage() {
       <div className="w-full h-full flex flex-col">
         {!show2fa ? (
           <>
-              <div className="text-left mb-6">
+              <div className="text-left mb-4">
                 <h1 className="text-2xl font-bold">Iniciar Sesión</h1>
               </div>
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
@@ -153,7 +155,7 @@ export default function SignInPage() {
                   {isLoading ? 'Ingresando...' : 'Ingresar'}
                 </button>
               </form>
-               <div className="auth-page-footer">
+              <div className="auth-page-footer">
                   {settings?.allowPublicRegistration && (
                     <div className="auth-form-switch-link">
                         <span className="auth-text-secondary">
@@ -171,8 +173,8 @@ export default function SignInPage() {
                           <Image
                             src="/uploads/images/watermark-alprigrama.png"
                             alt="Alprigrama S.A.S."
-                            width={32}
-                            height={32}
+                            width={28}
+                            height={28}
                             className="auth-footer-logo"
                             data-ai-hint="company logo"
                           />

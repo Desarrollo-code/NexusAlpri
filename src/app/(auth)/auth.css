@@ -44,7 +44,7 @@
   justify-content: center;
   text-align: center;
   position: relative;
-  background: linear-gradient(160deg, #1A1A1A 0%, #000000 100%);
+  background-color: #f0fdfa; /* Teal claro para el fondo del panel */
 }
 
 @media (min-width: 1024px) {
@@ -100,7 +100,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.5rem; /* Reducido para acercar el logo al form */
+  margin-bottom: 2rem;
 }
 
 .auth-logo-link {
@@ -114,7 +114,7 @@
 }
 
 .auth-logo {
-  height: 50px; /* Agrandamos el logo */
+  height: 60px; /* Agrandamos el logo */
   width: auto;
 }
 
@@ -199,37 +199,19 @@
   color: var(--auth-primary-color-hover);
 }
 
-.otp-group > div {
-    border-color: #D1D5DB;
-}
-.otp-group > div:focus-within {
-    border-color: var(--auth-primary-color);
-    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2);
-}
-
-.auth-page-footer {
-    margin-top: auto;
-    padding-top: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem; 
-}
-
-.auth-form-switch-link {
-  text-align: center;
-  font-size: 0.875rem;
-}
-
 .auth-card-footer {
+  margin-top: auto;
+  padding-top: 1.5rem;
   text-align: center;
   flex-shrink: 0;
+  border-top: 1px solid #e5e7eb; /* gray-200 */
 }
 
 .auth-footer-link {
   font-size: 0.8rem;
   color: var(--auth-text-secondary);
   text-decoration: none;
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
@@ -242,7 +224,7 @@
 }
 
 .auth-footer-logo {
-  height: 32px;
+  height: 28px;
   width: auto;
 }
 
@@ -251,16 +233,24 @@
   color: #9CA3AF;
 }
 
-.auth-watermark-fixed {
-    position: fixed;
-    bottom: 1rem;
-    right: 1rem;
-    z-index: 50;
-    pointer-events: none;
+.otp-group > div {
+    border-color: #D1D5DB;
+}
+.otp-group > div:focus-within {
+    border-color: var(--auth-primary-color);
+    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2);
 }
 
-.watermark-img {
-    opacity: 0.4;
-    width: auto;
-    height: auto;
+.auth-form-switch-link {
+  padding: 1rem 0;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.auth-page-footer {
+    margin-top: auto;
+    padding-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; /* Aumentamos el espacio entre los dos elementos del footer */
 }
