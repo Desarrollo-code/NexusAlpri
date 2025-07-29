@@ -5,9 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { Loader2, ShieldAlert, Eye, EyeOff, UserPlus, LockKeyhole, UserCircle, Mail, Languages } from 'lucide-react';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
+import { Loader2, ShieldAlert, Eye, EyeOff, LockKeyhole, UserCircle, Mail } from 'lucide-react';
 
 export default function SignUpPage() {
   const router = useRouter();

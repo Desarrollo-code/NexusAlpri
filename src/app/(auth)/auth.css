@@ -11,17 +11,31 @@
   /* Esquema de Color Teal */
   --auth-primary-color: #14b8a6; /* teal-500 */
   --auth-primary-color-hover: #10a392; /* Un poco más oscuro */
-  --auth-illustration-panel-bg: #f0fdfa; /* Un teal muy claro y suave */
   
   min-height: 100vh;
-  background-color: var(--auth-bg-color);
-  background-size: cover;
-  background-position: center;
+  /* Fondo de gradiente animado */
+  background: linear-gradient(300deg, hsl(var(--primary)), hsl(270, 50%, 15%), hsl(221, 83%, 25%));
+  background-size: 180% 180%;
+  animation: moveGradient 18s ease infinite;
+
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
 }
+
+@keyframes moveGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 
 .auth-container {
   display: flex;
@@ -36,7 +50,7 @@
 
 /* --- Columna de la Ilustración (Izquierda) --- */
 .auth-illustration-column {
-  width: 55%; /* Aumentado para dar más espacio al video */
+  width: 55%;
   padding: 0;
   display: none; /* Oculto en móvil por defecto */
   flex-direction: column;
@@ -44,7 +58,9 @@
   justify-content: center;
   text-align: center;
   position: relative;
-  background-color: #f0fdfa; /* Teal claro para el fondo del panel */
+  /* Fondo semi-transparente para que se vea el gradiente */
+  background-color: rgba(240, 253, 250, 0.85); 
+  backdrop-filter: blur(4px);
 }
 
 @media (min-width: 1024px) {
@@ -77,7 +93,7 @@
 
 @media (min-width: 1024px) {
   .auth-form-column {
-    width: 45%; /* Reducido para dar más espacio al video */
+    width: 45%; 
   }
 }
 
@@ -204,7 +220,6 @@
   padding-top: 1.5rem;
   text-align: center;
   flex-shrink: 0;
-  border-top: 1px solid #e5e7eb; /* gray-200 */
 }
 
 .auth-footer-link {

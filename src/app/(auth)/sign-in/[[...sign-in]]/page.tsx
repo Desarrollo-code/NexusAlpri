@@ -5,18 +5,15 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { Loader2, ShieldCheck, Eye, EyeOff, UserCircle, LockKeyhole, Languages } from 'lucide-react';
+import { Loader2, ShieldCheck, Eye, EyeOff, UserCircle, LockKeyhole } from 'lucide-react';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
 
 export default function SignInPage() {
   const router = useRouter();
-  const pathname = usePathname();
   const { user, login, settings } = useAuth();
   const { toast } = useToast();
   
