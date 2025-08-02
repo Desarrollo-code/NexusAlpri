@@ -1,8 +1,7 @@
 
 'use client';
 
-import * as React from "react"
-import { useState, useCallback, useEffect, useMemo, createContext, useContext } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, createContext, useContext } from 'react';
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { Menu } from "lucide-react"
@@ -161,7 +160,7 @@ const Sidebar = React.forwardRef<
           <aside
             ref={ref}
             className={cn(
-              "fixed left-0 top-0 h-full z-50 bg-gray-900 border-r border-gray-700 transition-transform duration-300 flex flex-col",
+              "fixed left-0 top-0 h-full z-50 bg-sidebar border-r border-sidebar-border transition-transform duration-300 flex flex-col",
               openMobile ? 'translate-x-0' : '-translate-x-full',
               'w-72',
               className
@@ -178,7 +177,7 @@ const Sidebar = React.forwardRef<
       <aside
         ref={ref}
         className={cn(
-          "group/sidebar-wrapper fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out bg-gray-900 border-r border-gray-700",
+          "group/sidebar-wrapper fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out bg-sidebar border-r border-sidebar-border",
           state === 'expanded' ? "w-72" : "w-20",
           className
         )}
@@ -226,7 +225,7 @@ const SidebarHeader = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex shrink-0 items-center justify-between h-16 px-4 border-b border-gray-700", className)}
+      className={cn("flex shrink-0 items-center justify-between h-16 px-4 border-b border-sidebar-border", className)}
       {...props}
     />
   )
@@ -240,7 +239,7 @@ const SidebarFooter = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex flex-col p-4 mt-auto border-t border-gray-700", className)}
+      className={cn("flex flex-col p-4 mt-auto border-t border-sidebar-border", className)}
       {...props}
     />
   )
@@ -307,8 +306,8 @@ const sidebarMenuButtonVariants = cva(
         lg: "h-12 text-base",
       },
       isActive: {
-        true: "bg-blue-600 text-white shadow-lg",
-        false: "text-gray-300",
+        true: "bg-sidebar-accent text-sidebar-accent-foreground shadow-lg",
+        false: "text-sidebar-foreground",
       },
     },
     defaultVariants: {
