@@ -1,7 +1,7 @@
 // src/app/(app)/layout.tsx
 'use client';
 
-import React, { useCallback, useMemo, useEffect } from 'react';
+import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { useIdleTimeout } from '@/hooks/useIdleTimeout';
