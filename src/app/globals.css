@@ -15,7 +15,7 @@
     --popover-foreground: 224 71.4% 4.1%;
 
     /* Paleta de Azul Eléctrico */
-    --primary: 221 83% 53%; /* Azul Intenso: #2563eb */
+    --primary: 262 84% 59%; /* Electric Indigo */
     --primary-foreground: 210 20% 98%;
 
     --secondary: 220 14.3% 95.9%;
@@ -24,15 +24,15 @@
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
 
-    --accent: 220 14.3% 95.9%;
-    --accent-foreground: 220.9 39.3% 11%;
+    --accent: 262 84% 59%;
+    --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 221 83% 53%;
+    --ring: 262 84% 59%;
 
     --radius: 0.75rem;
 
@@ -40,16 +40,16 @@
     --sidebar-collapsed-width: 3.75rem;
 
     /* Barra Lateral - Gradiente "Nebulosa de Grafito" */
-    --sidebar-background: linear-gradient(180deg, hsl(215, 18%, 22%) 0%, hsl(222, 24%, 16%) 100%);
+    --sidebar-background: linear-gradient(180deg, hsl(222, 24%, 16%) 0%, hsl(215, 18%, 22%) 100%);
     --sidebar-foreground: 210 20% 98%;
-    --sidebar-accent: 355 79% 51%; /* Rojo Cereza Vibrante */
+    --sidebar-accent: 262 84% 70%; /* Lighter Indigo for accent */
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: hsl(var(--sidebar-accent) / 0.1);
-    --sidebar-ring: 355 79% 51%;
+    --sidebar-ring: 262 84% 70%;
 
-    /* Barra Superior - Degradado (para tema claro) */
-    --topbar-background: linear-gradient(180deg, hsl(221, 83%, 25%) 0%, hsl(270, 50%, 15%) 100%);
-    --topbar-foreground: 210 20% 98%; /* Texto blanco para la barra superior */
+    /* Barra Superior */
+    --topbar-background: hsl(0 0% 100%);
+    --topbar-foreground: 224 71.4% 4.1%;
 
 
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
@@ -71,67 +71,45 @@
 
   /* --- TEMA OSCURO --- */
   .dark {
-    --background: 0 0% 0%; /* Negro Puro */
+    --background: 240 6% 10%; /* Gris oscuro profundo */
     --foreground: 210 20% 98%;
 
-    --card: 240 4% 6%; /* Gris casi negro para tarjetas */
+    --card: 240 4% 14%; /* Un poco más claro que el fondo */
     --card-foreground: 210 20% 98%;
 
-    --popover: 240 4% 4%; /* Aún más oscuro para popovers */
+    --popover: 240 4% 10%;
     --popover-foreground: 210 20% 98%;
 
-    --primary: 221 83% 63%; /* Azul Eléctrico para el tema oscuro */
+    --primary: 262 84% 69%;
     --primary-foreground: 210 20% 98%;
 
-    --secondary: 240 4% 10%;
+    --secondary: 240 4% 18%;
     --secondary-foreground: 210 20% 98%;
 
-    --muted: 240 4% 10%;
+    --muted: 240 4% 18%;
     --muted-foreground: 210 5% 64%;
 
-    --accent: 240 4% 10%;
+    --accent: 262 84% 69%;
     --accent-foreground: 210 20% 98%;
 
-    --destructive: 0 63% 51%; /* Rojo más brillante para el tema oscuro */
+    --destructive: 0 63% 51%;
     --destructive-foreground: 210 20% 98%;
 
-    --border: 240 4% 15%;
-    --input: 240 4% 15%;
-    --ring: 221 83% 63%;
+    --border: 240 4% 20%;
+    --input: 240 4% 20%;
+    --ring: 262 84% 69%;
 
-    --radius: 0.75rem;
-
-    --sidebar-expanded-width: 16rem;
-    --sidebar-collapsed-width: 3.75rem;
-
-    /* Barra Lateral - Gradiente "Nebulosa de Grafito" (idéntico al tema claro para cohesión) */
-    --sidebar-background: linear-gradient(180deg, hsl(215, 18%, 22%) 0%, hsl(222, 24%, 16%) 100%);
+    /* Barra Lateral */
+    --sidebar-background: linear-gradient(180deg, hsl(222, 24%, 12%) 0%, hsl(222, 24%, 10%) 100%);
     --sidebar-foreground: 210 20% 98%;
-    --sidebar-accent: 355 79% 51%; /* Rojo Cereza Vibrante */
+    --sidebar-accent: 262 84% 70%;
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: hsl(var(--sidebar-accent) / 0.1);
-    --sidebar-ring: 355 79% 51%;
-
-    /* Barra Superior - Degradado (para tema oscuro) */
-    --topbar-background: linear-gradient(180deg, hsl(221, 83%, 25%) 0%, hsl(270, 50%, 15%) 100%);
-    --topbar-foreground: 210 20% 98%; /* Texto blanco para la barra superior */
-
-
-    /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
-    --chart-1: 210 90% 65%; /* Azul Vibrante */
-    --chart-2: 150 75% 55%; /* Verde Menta */
-    --chart-3: 330 90% 70%; /* Rosa Intenso */
-    --chart-4: 30 100% 65%; /* Naranja */
-    --chart-5: 270 90% 70%; /* Púrpura */
-
-    --event-blue: 200 81% 56%;
-    --event-green: 139 51% 51%;
-    --event-red: 356 91% 68%;
-    --event-orange: 24 97% 63%;
-
-    --gauge-green: 120 70% 55%;
-    --gauge-yellow: 45 90% 60%;
-    --gauge-red: 0 85% 65%;
+    --sidebar-ring: 262 84% 70%;
+    
+    /* Barra Superior */
+    --topbar-background: hsl(240 4% 14%);
+    --topbar-foreground: 210 20% 98%;
   }
 
   * {
@@ -144,9 +122,8 @@
 }
 
 @layer components {
-  /* Reglas para la transición suave de la barra lateral */
   .sidebar-gradient {
-    box-shadow: 2px 0 15px -3px hsl(var(--foreground) / 0.1);
+    box-shadow: 2px 0 15px -3px hsl(var(--foreground) / 0.05);
   }
   
   .sidebar-gradient .sidebar-menu-button span, .sidebar-gradient .sidebar-header span {
@@ -175,9 +152,8 @@
       @apply justify-center;
   }
 
-  .topbar-gradient {
-    background: var(--topbar-background);
-    color: hsl(var(--primary-foreground));
+  .main-content {
+      @apply transition-[padding-left] duration-300 ease-in-out;
   }
   
   .watermark-img {

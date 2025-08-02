@@ -71,7 +71,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     }
     
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-muted/30">
             <Sidebar>
                 <SidebarHeader>
                     <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-foreground">
@@ -154,7 +154,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             </Sidebar>
             
             <div 
-              className="main-content transition-[padding-left] duration-300 ease-in-out"
+              className="main-content"
               style={{
                 paddingLeft: `var(--sidebar-${state}-width, var(--sidebar-width))`
               }}

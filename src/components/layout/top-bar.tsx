@@ -107,7 +107,7 @@ const NotificationPopover = () => {
         if(open) handleMarkAsRead();
     }}>
       <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="relative h-9 w-9 text-primary-foreground hover:bg-white/10">
+          <Button variant="ghost" size="icon" className="relative h-9 w-9 text-topbar-foreground hover:bg-black/10 dark:hover:bg-white/10">
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && (
               <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
@@ -198,10 +198,10 @@ export function TopBar() {
   
   return (
       <header className={cn(
-          "topbar-gradient sticky top-0 z-30 flex h-16 items-center justify-between border-b border-black/10 px-4 text-primary-foreground md:px-6"
+          "bg-topbar-background text-topbar-foreground sticky top-0 z-30 flex h-16 items-center justify-between border-b px-4 md:px-6"
       )}>
         <div className="flex items-center gap-2">
-          <SidebarTrigger className="md:hidden text-primary-foreground hover:bg-white/10" />
+          <SidebarTrigger className="md:hidden text-topbar-foreground hover:bg-black/10 dark:hover:bg-white/10" />
           <h1 className="hidden sm:block text-xl font-semibold font-headline truncate">{pageTitle}</h1>
         </div>
         <div className="flex items-center gap-3">
