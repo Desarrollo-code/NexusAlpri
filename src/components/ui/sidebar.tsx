@@ -188,7 +188,7 @@ const Sidebar = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "sidebar-gradient group fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out",
+          "sidebar-gradient group/sidebar-wrapper fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out",
           state === 'expanded' ? "w-[var(--sidebar-expanded-width)]" : "w-[var(--sidebar-collapsed-width)]",
           className
         )}
@@ -356,7 +356,7 @@ const SidebarMenuButton = React.forwardRef<
       <Comp
         ref={ref}
         data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size, isActive }), state === "collapsed" && "justify-center", className)}
+        className={cn(sidebarMenuButtonVariants({ variant, size, isActive }), className)}
         {...props}
       >
         {children}
