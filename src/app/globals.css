@@ -47,21 +47,6 @@
     --sidebar-border: hsl(var(--sidebar-accent) / 0.1);
     --sidebar-ring: 355 79% 51%;
 
-    /* Colores para el estado activo, hover y títulos de sección de la barra lateral */
-    --sidebar-active-background: 221 83% 63%; /* Azul Eléctrico Vibrante (para elemento activo) */
-    --sidebar-active-foreground: 210 20% 98%; /* Texto blanco para elemento activo */
-    --sidebar-active-ring: 221 83% 70%;
-
-    --sidebar-hover-background: 240 4% 10%; /* Un gris muy oscuro para hover */
-    --sidebar-section-title-foreground: 210 5% 75%; /* Gris claro sutil para títulos de sección */
-    --sidebar-subitem-foreground: 210 5% 64%; /* Muted foreground para texto de sub-items */
-
-    /* **AÑADIDO**: Colores para los iconos de la barra lateral (tema claro) */
-    --sidebar-icon-color: 210 20% 98%; /* Blanco por defecto */
-    --sidebar-active-icon-color: 210 20% 98%; /* Blanco para iconos activos */
-    --sidebar-hover-icon-color: 221 83% 63%; /* Azul eléctrico para iconos en hover */
-
-
     /* **AÑADIDO**: Barra Superior - Degradado (para tema claro) */
     --topbar-background: linear-gradient(180deg, hsl(221, 83%, 25%) 0%, hsl(270, 50%, 15%) 100%);
     --topbar-foreground: 210 20% 98%; /* Texto blanco para la barra superior */
@@ -127,21 +112,6 @@
     --sidebar-border: hsl(var(--sidebar-accent) / 0.1);
     --sidebar-ring: 355 79% 51%;
 
-    /* Colores para el estado activo, hover y títulos de sección de la barra lateral */
-    --sidebar-active-background: 221 83% 63%; /* Azul Eléctrico Vibrante (para elemento activo) */
-    --sidebar-active-foreground: 210 20% 98%; /* Texto blanco para elemento activo */
-    --sidebar-active-ring: 221 83% 70%;
-
-    --sidebar-hover-background: 240 4% 10%; /* Un gris muy oscuro para hover */
-    --sidebar-section-title-foreground: 210 5% 75%; /* Gris claro sutil para títulos de sección */
-    --sidebar-subitem-foreground: 210 5% 64%; /* Muted foreground para texto de sub-items */
-
-    /* **AÑADIDO**: Colores para los iconos de la barra lateral (tema oscuro) */
-    --sidebar-icon-color: 210 20% 98%; /* Blanco por defecto */
-    --sidebar-active-icon-color: 210 20% 98%; /* Blanco para iconos activos */
-    --sidebar-hover-icon-color: 221 83% 63%; /* Azul eléctrico para iconos en hover */
-
-
     /* **YA EXISTÍA**: Barra Superior - Degradado (para tema oscuro) */
     --topbar-background: linear-gradient(180deg, hsl(221, 83%, 25%) 0%, hsl(270, 50%, 15%) 100%);
     --topbar-foreground: 210 20% 98%; /* Texto blanco para la barra superior */
@@ -179,17 +149,21 @@
     @apply shadow-lg;
     box-shadow: 2px 0 15px -3px hsl(var(--foreground) / 0.1);
   }
-  .sidebar-gradient span {
-      transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+  
+  .sidebar-gradient .sidebar-menu-button span, .sidebar-gradient .sidebar-header span {
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+    white-space: nowrap;
   }
-
+  
   /* Oculta el texto suavemente cuando la barra está colapsada */
-  .sidebar-gradient[data-state="collapsed"] span {
+  .sidebar-gradient[data-state="collapsed"] .sidebar-menu-button span,
+  .sidebar-gradient[data-state="collapsed"] .sidebar-header span {
     opacity: 0;
     visibility: hidden;
   }
   
-  .sidebar-gradient[data-state="expanded"] span {
+  .sidebar-gradient[data-state="expanded"] .sidebar-menu-button span,
+  .sidebar-gradient[data-state="expanded"] .sidebar-header span {
     opacity: 1;
     visibility: visible;
   }
@@ -324,55 +298,5 @@
   .animated-underline:hover::after {
     transform: scaleX(1);
     transform-origin: bottom center;
-  }
-
-  .nav-item {
-    @apply flex items-center gap-3 px-4 py-2 rounded-lg text-sidebar-foreground transition-colors duration-200;
-    @apply hover:bg-[hsl(var(--sidebar-hover-background))] hover:text-sidebar-foreground;
-  }
-
-  .nav-item svg {
-    color: hsl(var(--sidebar-icon-color));
-  }
-
-  .nav-item.active {
-    @apply bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-active-foreground))];
-    @apply ring-2 ring-[hsl(var(--sidebar-active-ring))];
-  }
-
-  .nav-item.active svg {
-    color: hsl(var(--sidebar-active-icon-color));
-  }
-
-  .nav-section-title {
-    @apply px-4 py-3 text-[hsl(var(--sidebar-section-title-foreground))] text-sm font-semibold uppercase tracking-wider;
-  }
-
-  .nav-subitem {
-    @apply flex items-center gap-3 pl-8 py-2 rounded-lg text-[hsl(var(--sidebar-subitem-foreground))] transition-colors duration-200;
-    @apply hover:bg-[hsl(var(--sidebar-hover-background))] hover:text-sidebar-foreground;
-    font-size: 0.95rem;
-  }
-
-  .nav-subitem svg {
-    color: hsl(var(--sidebar-icon-color));
-  }
-
-  .nav-subitem.active {
-    @apply bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-active-foreground))];
-    @apply ring-2 ring-[hsl(var(--sidebar-active-ring))];
-  }
-
-  .nav-subitem.active svg {
-    color: hsl(var(--sidebar-active-icon-color));
-  }
-
-  .group[data-state=collapsed] .sidebar-menu-button span,
-  .group[data-state=collapsed] .nav-section-title span {
-      @apply opacity-0 invisible transition-opacity duration-300;
-  }
-  .group[data-state=expanded] .sidebar-menu-button span,
-  .group[data-state=expanded] .nav-section-title span {
-      @apply opacity-100 visible transition-opacity duration-300;
   }
 }

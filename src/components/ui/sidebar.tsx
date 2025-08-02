@@ -193,7 +193,7 @@ const Sidebar = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "sidebar-gradient group fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out shadow-lg",
+          "sidebar-gradient group fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out",
           state === 'expanded' ? "w-[var(--sidebar-width)]" : "w-[var(--sidebar-width-icon)]",
           className
         )}
