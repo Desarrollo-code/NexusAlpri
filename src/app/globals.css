@@ -5,7 +5,7 @@
 @layer base {
   /* --- TEMA CLARO (POR DEFECTO) --- */
   :root {
-    --background: 210 20% 98%;
+    --background: 220 20% 96%; /* Gris azulado muy claro */
     --foreground: 224 71.4% 4.1%;
 
     --card: 0 0% 100%;
@@ -13,9 +13,8 @@
 
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
-
-    /* Paleta de Rojo Cereza y Azul */
-    --primary: 345 80% 50%; /* Rojo Cereza */
+    
+    --primary: 220 90% 55%; /* Azul principal */
     --primary-foreground: 210 20% 98%;
 
     --secondary: 220 14.3% 95.9%;
@@ -32,26 +31,18 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 345 80% 50%;
+    --ring: 220 90% 55%;
 
     --radius: 0.75rem;
 
-    --sidebar-expanded-width: 16rem;
-    --sidebar-collapsed-width: 4.5rem; /* Ajustado para más espacio para íconos */
-
-    /* Barra Lateral - Gradiente "Nebulosa de Grafito" */
-    --sidebar-background: linear-gradient(180deg, hsl(222, 24%, 16%) 0%, hsl(215, 18%, 22%) 100%);
-    --sidebar-foreground: 210 20% 98%;
-    --sidebar-accent: hsl(var(--primary) / 0.1); /* Rojo Cereza claro para acento */
-    --sidebar-accent-foreground: hsl(var(--primary));
-    --sidebar-border: hsl(var(--primary) / 0.2);
-    --sidebar-ring: 345 80% 70%;
-
-    /* Barra Superior */
-    --topbar-background: hsl(0 0% 100%);
-    --topbar-foreground: 224 71.4% 4.1%;
-
-
+    /* Nuevas variables para la barra lateral */
+    --sidebar-background: 225 15% 15%; /* Gris oscuro azulado */
+    --sidebar-foreground: 210 20% 94%; /* Texto casi blanco */
+    --sidebar-accent: 220 90% 55%; /* Azul para el elemento activo */
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 225 15% 25%;
+    --sidebar-ring: 220 90% 65%;
+    
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
     --chart-1: 210 90% 55%; /* Azul Vibrante */
     --chart-2: 150 75% 45%; /* Verde Menta */
@@ -71,45 +62,33 @@
 
   /* --- TEMA OSCURO --- */
   .dark {
-    --background: 240 6% 10%; /* Gris oscuro profundo */
+    --background: 225 10% 12%; /* Un fondo aún más oscuro */
     --foreground: 210 20% 98%;
 
-    --card: 240 4% 14%; /* Un poco más claro que el fondo */
+    --card: 225 10% 17%; /* Ligeramente más claro que el fondo */
     --card-foreground: 210 20% 98%;
 
-    --popover: 240 4% 10%;
+    --popover: 225 10% 12%;
     --popover-foreground: 210 20% 98%;
 
-    --primary: 345 80% 60%;
+    --primary: 220 90% 60%;
     --primary-foreground: 210 20% 98%;
 
-    --secondary: 240 4% 18%;
+    --secondary: 225 10% 22%;
     --secondary-foreground: 210 20% 98%;
 
-    --muted: 240 4% 18%;
+    --muted: 225 10% 22%;
     --muted-foreground: 210 5% 64%;
 
-    --accent: hsl(var(--primary) / 0.1);
-    --accent-foreground: hsl(var(--primary));
+    --accent: 225 10% 22%;
+    --accent-foreground: 210 20% 98%;
 
     --destructive: 0 63% 51%;
     --destructive-foreground: 210 20% 98%;
 
-    --border: 240 4% 20%;
-    --input: 240 4% 20%;
-    --ring: 345 80% 60%;
-
-    /* Barra Lateral */
-    --sidebar-background: linear-gradient(180deg, hsl(222, 24%, 12%) 0%, hsl(222, 24%, 10%) 100%);
-    --sidebar-foreground: 210 20% 98%;
-    --sidebar-accent: hsl(var(--primary) / 0.1);
-    --sidebar-accent-foreground: hsl(var(--primary));
-    --sidebar-border: hsl(var(--primary) / 0.2);
-    --sidebar-ring: 345 80% 70%;
-    
-    /* Barra Superior */
-    --topbar-background: hsl(240 4% 14%);
-    --topbar-foreground: 210 20% 98%;
+    --border: 225 10% 25%;
+    --input: 225 10% 25%;
+    --ring: 220 90% 60%;
   }
 
   * {
@@ -122,40 +101,9 @@
 }
 
 @layer components {
-  /*
-   * Estilos para la barra lateral y la transición de contenido.
-   */
-  .sidebar-gradient {
-    box-shadow: 2px 0 15px -3px hsl(var(--foreground) / 0.05);
-  }
-  
-  /* Oculta el texto suavemente cuando la barra está colapsada */
-  [data-state="collapsed"] .sidebar-menu-button span,
-  [data-state="collapsed"] .sidebar-header > a > span,
-  [data-state="collapsed"] .sidebar-footer span {
-    opacity: 0;
-    visibility: hidden;
-    width: 0;
-    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out, width 0.2s ease-in-out;
-  }
-  
-  /* Muestra el texto cuando está expandida */
-  [data-state="expanded"] .sidebar-menu-button span,
-  [data-state="expanded"] .sidebar-header > a > span,
-  [data-state="expanded"] .sidebar-footer span {
-    opacity: 1;
-    visibility: visible;
-    width: auto;
-    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out, width 0.2s ease-in-out;
-  }
-  
-  /* Centra el icono y el logo cuando la barra está colapsada */
-  [data-state="collapsed"] .sidebar-menu-button {
-      @apply justify-center px-0 py-3;
-  }
-  
-  [data-state="collapsed"] .sidebar-header {
-      @apply justify-center;
+  /* Estilos para la barra lateral y la transición de contenido. */
+  .main-content {
+    transition: padding-left 0.3s ease-in-out;
   }
 
   .watermark-img {
@@ -165,7 +113,7 @@
   }
 
   .card-border-animated {
-    @apply border-t-4 border-transparent shadow-lg shadow-black/20;
+    @apply border-t-4 border-transparent shadow-lg shadow-black/5 dark:shadow-black/20;
     @apply transition-all duration-300;
     background-clip: padding-box;
     animation: throw-in 0.5s ease-out forwards;
@@ -201,79 +149,5 @@
   }
   .thin-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--muted-foreground));
-  }
-
-  .profile-card {
-    --main-color: hsl(var(--foreground));
-    --submain-color: hsl(var(--muted-foreground));
-    --bg-color: hsl(var(--card));
-    font-family: var(--font-body);
-    position: relative;
-    width: 100%;
-    max-width: 420px;
-    height: 384px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-radius: 20px;
-    background: var(--bg-color);
-  }
-
-  .card__img {
-    position: absolute;
-    width: 100%;
-    height: 160px;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    overflow: hidden;
-  }
-  .card__img svg {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .card__avatar {
-    position: absolute;
-    width: 110px;
-    height: 110px;
-    background: var(--bg-color);
-    border-radius: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    top: calc(160px - 55px);
-    box-shadow: 0 0 0 5px var(--bg-color);
-  }
-  .card__title {
-    margin-top: 210px;
-    font-weight: 700;
-    font-size: 1.5rem;
-    color: var(--main-color);
-  }
-  .card__subtitle {
-    margin-top: 10px;
-    font-weight: 500;
-    font-size: 1rem;
-    color: var(--submain-color);
-  }
-
-  .animated-underline {
-    @apply relative;
-  }
-  .animated-underline::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    transform: scaleX(0);
-    height: 1px;
-    bottom: -2px;
-    left: 0;
-    background-color: hsl(var(--primary));
-    transform-origin: bottom center;
-    transition: transform 0.25s ease-out;
-  }
-  .animated-underline:hover::after {
-    transform: scaleX(1);
-    transform-origin: bottom center;
   }
 }

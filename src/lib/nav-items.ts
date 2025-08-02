@@ -1,4 +1,3 @@
-
 import type { NavItem, UserRole } from '@/types';
 import {
   LayoutDashboard,
@@ -18,72 +17,113 @@ import {
   GitCommitHorizontal,
 } from 'lucide-react';
 
-
-const navItems: NavItem[] = [
+const NAVIGATION_ITEMS: NavItem[] = [
+  {
+    id: 'dashboard',
+    label: 'Panel Principal',
+    icon: LayoutDashboard,
+    path: '/dashboard',
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+  },
+  {
+    id: 'courses',
+    label: 'Catálogo de Cursos',
+    icon: BookOpen,
+    path: '/courses',
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
+    badge: 'Nuevo'
+  },
+  {
+    id: 'my-courses',
+    label: 'Mis Cursos',
+    icon: GraduationCap,
+    path: '/my-courses',
+    roles: ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR']
+  },
+  {
+    id: 'resources',
+    label: 'Biblioteca',
+    icon: Folder,
+    path: '/resources',
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+  },
+  {
+    id: 'announcements',
+    label: 'Anuncios',
+    icon: Megaphone,
+    path: '/announcements',
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+  },
+  {
+    id: 'calendar',
+    label: 'Calendario',
+    icon: CalendarDays,
+    path: '/calendar',
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+  },
+  {
+    id: 'admin',
+    label: 'Administración',
+    icon: Shield,
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
+    children: [
       {
-        href: '/dashboard',
-        label: 'Panel Principal',
-        icon: LayoutDashboard,
-        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
+        id: 'manage-courses',
+        label: 'Gestionar Cursos',
+        icon: BookMarked,
+        path: '/manage-courses',
+        roles: ['ADMINISTRATOR', 'INSTRUCTOR']
       },
       {
-        href: '/courses',
-        label: 'Catálogo de Cursos',
-        icon: BookOpen,
-        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
+        id: 'enrollments',
+        label: 'Inscripciones',
+        icon: TrendingUp,
+        path: '/enrollments',
+        roles: ['ADMINISTRATOR', 'INSTRUCTOR']
       },
       {
-        href: '/my-courses',
-        label: 'Mis Cursos',
-        icon: GraduationCap,
-        roles: ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'],
+        id: 'analytics',
+        label: 'Analíticas',
+        icon: BarChart3,
+        path: '/analytics',
+        roles: ['ADMINISTRATOR']
       },
       {
-        href: '/resources',
-        label: 'Biblioteca',
-        icon: Folder,
-        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
+        id: 'users',
+        label: 'Usuarios',
+        icon: Users,
+        path: '/users',
+        roles: ['ADMINISTRATOR']
       },
       {
-        href: '/announcements',
-        label: 'Anuncios',
-        icon: Megaphone,
-        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
+        id: 'security-audit',
+        label: 'Seguridad',
+        icon: ShieldAlert,
+        path: '/security-audit',
+        roles: ['ADMINISTRATOR']
       },
       {
-        href: '/calendar',
-        label: 'Calendario',
-        icon: CalendarDays,
-        roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
-      },
-      {
-        label: 'Administración',
-        href: '#', // Required for key, not used for navigation
-        icon: Shield,
-        roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
-        subItems: [
-            { href: '/manage-courses', label: 'Gestionar Cursos', icon: BookMarked, roles: ['ADMINISTRATOR', 'INSTRUCTOR'] },
-            { href: '/enrollments', label: 'Inscritos y Progreso', icon: TrendingUp, roles: ['ADMINISTRATOR', 'INSTRUCTOR'] },
-            { href: '/analytics', label: 'Analíticas', icon: BarChart3, roles: ['ADMINISTRATOR'] },
-            { href: '/users', label: 'Gestión de Usuarios', icon: Users, roles: ['ADMINISTRATOR'] },
-            { href: '/security-audit', label: 'Auditoría de Seguridad', icon: ShieldAlert, roles: ['ADMINISTRATOR'] },
-            { href: '/settings', label: 'Configuración', icon: Settings, roles: ['ADMINISTRATOR'] },
-        ]
-    }
+        id: 'settings',
+        label: 'Configuración',
+        icon: Settings,
+        path: '/settings',
+        roles: ['ADMINISTRATOR']
+      }
+    ]
+  }
 ];
 
-
 export const getNavItemsForRole = (role: UserRole): NavItem[] => {
-  return navItems
+  return NAVIGATION_ITEMS
     .filter(item => item.roles.includes(role))
     .map(item => {
-        if (item.subItems) {
+        if (item.children) {
             return {
                 ...item,
-                subItems: item.subItems.filter(sub => sub.roles.includes(role))
+                children: item.children.filter(sub => sub.roles.includes(role))
             }
         }
         return item;
     })
-    .filter(item => !item.subItems || item.subItems.length > 0);
+    .filter(item => !item.children || item.children.length > 0);
 };

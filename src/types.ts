@@ -31,16 +31,14 @@ export interface PlatformSettings {
 
 // --- NAVIGATION ---
 export interface NavItem {
+    id: string;
     label: string;
-    href?: string;
     icon: React.ElementType;
     roles: UserRole[];
-    disabled?: boolean;
-    subItems?: NavSubItem[];
-    tooltip?: any;
+    path?: string;
+    badge?: string;
+    children?: NavItem[];
 }
-
-export interface NavSubItem extends Omit<NavItem, 'subItems'> {}
 
 
 // --- COURSE CONTENT ---

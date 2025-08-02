@@ -1,212 +1,113 @@
 
 'use client';
 
-import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
-import { UserAvatarDropdown } from './user-avatar-dropdown';
-import { usePathname } from 'next/navigation';
-import { getNavItemsForRole } from '@/lib/nav-items';
+import { useSidebar } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/auth-context';
-import type { UserRole, NavItem } from '@/types'; 
-import { Bell, ArrowRight } from 'lucide-react';
+import type { UserRole } from '@/types'; 
+import { Bell, ChevronDown, Menu, User as UserIcon, Settings, LogOut } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
-import type { Notification as AppNotification } from '@/types'; 
-import { cn } from '@/lib/utils';
-
-
-const timeSince = (dateString: string): string => {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "Fecha inválida";
-
-    const now = new Date();
-    const seconds = Math.round((now.getTime() - date.getTime()) / 1000);
-    
-    if (seconds < 0) return "En el futuro";
-    if (seconds < 5) return "Ahora mismo";
-    if (seconds < 60) return `Hace ${seconds} seg.`;
-
-    const minutes = Math.round(seconds / 60);
-    if (minutes < 60) return `Hace ${minutes} min.`;
-
-    const hours = Math.round(minutes / 60);
-    if (hours < 24) return `Hace ${hours} hr${hours > 1 ? 's' : ''}.`;
-    
-    const days = Math.round(hours / 24);
-    if (days < 7) return `Hace ${days} día${days > 1 ? 's' : ''}`;
-
-    const weeks = Math.round(days / 7);
-    if (weeks < 5) return `Hace ${weeks} sem.`;
-
-    const months = Math.round(days / 30.44); // Average days in month
-    if (months < 12) return `Hace ${months} mes${months > 1 ? 'es' : ''}`;
-
-    const years = Math.round(days / 365.25);
-    return `Hace ${years} año${years > 1 ? 's' : ''}`;
-};
-
-
-const NotificationPopover = () => {
-  const { user } = useAuth();
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const fetchNotifications = useCallback(async () => {
-    if (!user?.id) { 
-        setIsLoading(false);
-        setNotifications([]);
-        return;
-    }
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/notifications', { cache: 'no-store' }); 
-      if (!response.ok) throw new Error('Falló la carga de notificaciones');
-      const data: AppNotification[] = await response.json();
-      setNotifications(data.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-    } catch (err) {
-      setNotifications([]); 
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.id]); 
-
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
-
-  const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
-  
-  const recentNotifications = useMemo(() => notifications.slice(0, 5), [notifications]);
-  
-  const handleMarkAsRead = useCallback(async () => {
-    if (unreadCount === 0) return;
-
-    const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
-    
-    // Optimistic UI update
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-
-    try {
-      await fetch('/api/notifications', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: unreadIds, read: true }),
-      });
-    } catch (error) {
-      // Revert on error
-      setNotifications(prev => prev.map(n => unreadIds.includes(n.id) ? { ...n, read: false } : n));
-      console.error("Failed to mark notifications as read", error);
-    }
-  }, [notifications, unreadCount]);
-
-  return (
-    <Popover onOpenChange={(open) => {
-        if(open) handleMarkAsRead();
-    }}>
-      <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="relative h-9 w-9 text-topbar-foreground hover:bg-black/10 dark:hover:bg-white/10">
-            <Bell className="h-5 w-5" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-destructive"></span>
-              </span>
-            )}
-            <span className="sr-only">Notificaciones</span>
-          </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <Card className="border-none shadow-none">
-          <CardHeader className="p-4 border-b">
-            <CardTitle className="text-base">Notificaciones</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 max-h-80 overflow-y-auto">
-            {isLoading ? (
-                <div className="p-4 text-center text-sm text-muted-foreground">Cargando...</div>
-            ) : recentNotifications.length > 0 ? (
-              <ul className="divide-y divide-border">
-                {recentNotifications.map(notif => (
-                  <li key={notif.id}>
-                    <Link href={notif.link || '#'} className={cn(
-                      "block p-3 hover:bg-muted/50 transition-colors",
-                      !notif.read && "bg-primary/5"
-                    )}>
-                      <div className="flex items-start gap-3">
-                        {!notif.read && <div className="mt-1 h-2 w-2 rounded-full bg-primary flex-shrink-0" />}
-                        <div className="flex-grow">
-                            <p className="text-sm font-medium">{notif.title}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">{timeSince(notif.date)}</p>
-                        </div>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-                <div className="p-4 text-center text-sm text-muted-foreground">No hay notificaciones.</div>
-            )}
-          </CardContent>
-          <CardFooter className="p-2 border-t">
-              <Button asChild variant="link" size="sm" className="w-full text-primary">
-                <Link href="/notifications">
-                    Ver todas las notificaciones <ArrowRight className="ml-2 h-4 w-4"/>
-                </Link>
-              </Button>
-          </CardFooter>
-        </Card>
-      </PopoverContent>
-    </Popover>
-  );
-};
+import { getNavItemsForRole } from '@/lib/nav-items';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 export function TopBar() {
-  const pathname = usePathname();
   const { user } = useAuth();
-  const { state } = useSidebar();
-
-  const userAppRole = user?.role;
-  const navItemsRaw = user ? getNavItemsForRole(userAppRole || 'STUDENT') : [];
+  const { setIsMobileOpen, activeItem } = useSidebar();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   
-  const getPageDetails = () => {
-    const allNavItems = navItemsRaw.flatMap(item => (item.subItems ? [item, ...item.subItems] : [item]));
-    
-    const currentNavItem = allNavItems
-      .slice()
-      .sort((a, b) => (b.href?.length ?? 0) - (a.href?.length ?? 0))
-      .find(item => item.href && item.href !== '#' && pathname.startsWith(item.href));
+  const navItems = useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
 
-    let title = currentNavItem?.label || '';
-    
-    if (pathname.startsWith('/dashboard')) {
-        title = 'Panel Principal';
-    } else if (pathname.startsWith('/courses/') && !pathname.endsWith('/courses')) {
-        title = 'Detalle del Curso';
-    } else if (pathname.startsWith('/manage-courses/') && !pathname.endsWith('/manage-courses')) {
-        title = 'Gestión de Curso';
-    } else if (pathname.startsWith('/profile')) {
-        title = 'Mi Perfil';
-    }
-    
-    return title;
+  const getPageTitle = () => {
+    const allNavItems = navItems.flatMap(item => (item.children ? [item, ...item.children] : [item]));
+    const currentItem = allNavItems.find(item => item.path === activeItem);
+    return currentItem?.label || 'Panel Principal';
   };
-  
-  const pageTitle = getPageDetails();
-  
+
   return (
-      <header className={cn(
-          "bg-topbar-background text-topbar-foreground sticky top-0 z-30 flex h-16 items-center justify-between border-b px-4 md:px-6"
-      )}>
-        <div className="flex items-center gap-2">
-          <SidebarTrigger className="text-topbar-foreground hover:bg-black/10 dark:hover:bg-white/10 md:hidden" />
-          <h1 className="hidden sm:block text-xl font-semibold font-headline truncate">{pageTitle}</h1>
+    <div className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6">
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => setIsMobileOpen(true)}
+          className="lg:hidden p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
+        
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">{getPageTitle()}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Bienvenido de vuelta, {user?.name}</p>
         </div>
-        <div className="flex items-center gap-3">
-          <NotificationPopover />
-          <UserAvatarDropdown />
+      </div>
+
+      <div className="flex items-center gap-4">
+        {/* Notificaciones */}
+        <div className="relative">
+          <button
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+          >
+            <Bell className="h-6 w-6" />
+            {/* Aquí puedes añadir la lógica para mostrar el número de notificaciones */}
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                3
+            </span>
+          </button>
+
+          {showNotifications && (
+            <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-600">
+                <h3 className="font-semibold text-gray-900 dark:text-white">Notificaciones</h3>
+              </div>
+              <div className="max-h-64 overflow-y-auto">
+                <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <p className="font-medium text-gray-900 dark:text-white">Nuevo curso disponible</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">React Avanzado ya está listo</p>
+                  <p className="text-xs text-gray-400 mt-1">Hace 2 minutos</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </header>
+
+        {/* Usuario */}
+        <div className="relative">
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="flex items-center gap-3 p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+          >
+             <Avatar className="h-8 w-8">
+                <AvatarImage src={user?.avatar || undefined} />
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                    {user?.name.split(' ').map(n => n[0]).join('')}
+                </AvatarFallback>
+            </Avatar>
+            <ChevronDown className="h-4 w-4" />
+          </button>
+
+          {showUserMenu && (
+            <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+              <div className="p-2">
+                <Link href="/profile" className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                  <UserIcon className="h-4 w-4" />
+                  <span>Mi Perfil</span>
+                </Link>
+                <Link href="/settings" className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                  <Settings className="h-4 w-4" />
+                  <span>Configuración</span>
+                </Link>
+                <hr className="my-2 border-gray-200 dark:border-gray-600" />
+                <button className="w-full flex items-center gap-3 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:text-red-400 rounded-lg">
+                  <LogOut className="h-4 w-4" />
+                  <span>Cerrar Sesión</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -131,7 +131,7 @@ export function UserAvatarDropdown() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={user.avatar || `https://placehold.co/100x100.png?text=${getInitials(user.name)}`} alt={userDisplayName} data-ai-hint="user avatar" />
+            <AvatarImage src={user.avatar || undefined} alt={userDisplayName} data-ai-hint="user avatar" />
             <AvatarFallback>{getInitials(userDisplayName)}</AvatarFallback>
           </Avatar>
         </Button>

@@ -4,7 +4,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, ChevronLeft } from "lucide-react"
+import { ChevronsRight, Menu } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -35,6 +35,8 @@ type SidebarContext = {
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
   toggleSidebar: () => void
+  activeItem: string;
+  setActiveItem: (path: string) => void;
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null)
@@ -70,6 +72,7 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
+    const [activeItem, setActiveItem] = React.useState('/dashboard');
 
     const [_open, _setOpen] = React.useState(() => {
         if (typeof document === 'undefined') return defaultOpen;
@@ -123,8 +126,10 @@ const SidebarProvider = React.forwardRef<
         openMobile,
         setOpenMobile,
         toggleSidebar,
+        activeItem,
+        setActiveItem,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, activeItem, setActiveItem]
     )
 
     return (
@@ -161,35 +166,39 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile, toggleSidebar } = useSidebar()
+    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
     if (isMobile) {
       return (
-        <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
-          <SheetContent
-            className="w-[var(--sidebar-width)] p-0 text-sidebar-foreground sidebar-gradient [&>button]:hidden"
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              } as React.CSSProperties
-            }
-            side="left"
+        <>
+          {openMobile && (
+            <div 
+              className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+              onClick={() => setOpenMobile(false)}
+            />
+          )}
+          <aside
+            ref={ref}
+            className={cn(
+              "fixed left-0 top-0 h-full z-50 bg-gray-900 border-r border-gray-700 transition-transform duration-300 flex flex-col",
+              openMobile ? 'translate-x-0' : '-translate-x-full',
+              'w-72',
+              className
+            )}
+            {...props}
           >
-            <SheetHeader className="sr-only">
-              <SheetTitle>Navegación Principal</SheetTitle>
-            </SheetHeader>
-            <div className="flex h-full w-full flex-col">{children}</div>
-          </SheetContent>
-        </Sheet>
+            {children}
+          </aside>
+        </>
       )
     }
 
     return (
-      <div
+      <aside
         ref={ref}
         className={cn(
-          "sidebar-gradient group/sidebar-wrapper fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out",
-          state === 'expanded' ? "w-[var(--sidebar-expanded-width)]" : "w-[var(--sidebar-collapsed-width)]",
+          "group/sidebar-wrapper fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-all duration-300 ease-in-out bg-gray-900 border-r border-gray-700",
+          state === 'expanded' ? "w-72" : "w-20",
           className
         )}
         data-state={state}
@@ -198,7 +207,7 @@ const Sidebar = React.forwardRef<
         <div className="flex h-full flex-col overflow-hidden">
           {children}
         </div>
-      </div>
+      </aside>
     )
   }
 )
@@ -222,7 +231,7 @@ const SidebarTrigger = React.forwardRef<
       }}
       {...props}
     >
-      <PanelLeft />
+      <Menu />
       <span className="sr-only">Alternar Barra Lateral</span>
     </Button>
   )
@@ -236,7 +245,7 @@ const SidebarHeader = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex shrink-0 items-center h-16 px-4", className)}
+      className={cn("flex shrink-0 items-center justify-between h-16 px-4 border-b border-gray-700", className)}
       {...props}
     />
   )
@@ -250,7 +259,7 @@ const SidebarFooter = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex flex-col p-2 mt-auto", className)}
+      className={cn("flex flex-col p-4 mt-auto border-t border-gray-700", className)}
       {...props}
     />
   )
@@ -264,7 +273,7 @@ const SidebarContent = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex min-h-0 flex-1 flex-col overflow-auto", className)}
+      className={cn("flex min-h-0 flex-1 flex-col overflow-auto px-4 py-2 space-y-2", className)}
       {...props}
     />
   )
@@ -309,7 +318,7 @@ const sidebarMenuButtonVariants = cva(
     variants: {
       variant: {
         default: "",
-        ghost: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+        ghost: "hover:bg-gray-700 hover:text-white",
       },
       size: {
         default: "h-11 text-base",
@@ -317,8 +326,8 @@ const sidebarMenuButtonVariants = cva(
         lg: "h-12 text-base",
       },
       isActive: {
-        true: "bg-sidebar-accent text-sidebar-accent-foreground font-semibold border-l-4 border-l-primary",
-        false: "text-sidebar-foreground",
+        true: "bg-blue-600 text-white shadow-lg",
+        false: "text-gray-300",
       },
     },
     defaultVariants: {
