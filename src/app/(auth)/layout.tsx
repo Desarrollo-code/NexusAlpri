@@ -51,11 +51,11 @@ export default function AuthLayout({
             </div>
             
             <footer className="auth-card-footer">
-                <a href="https://alprigrama.com" target="_blank" rel="noopener noreferrer" className="auth-footer-link">
+                <a href="https://alprigramasas.com" target="_blank" rel="noopener noreferrer" className="auth-footer-link">
                     <div className="auth-footer-top-line">
                          <span className="text-xs">Desarrollado por</span>
                          <Image
-                            src="/uploads/images/logo-alprigrama.png"
+                            src="/uploads/images/watermark-alprigrama.png"
                             alt="Alprigrama Logo"
                             width={100}
                             height={28}
