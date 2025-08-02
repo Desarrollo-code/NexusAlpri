@@ -4,17 +4,11 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { ChevronsRight, Menu } from "lucide-react"
+import { Menu } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
 import {
   Tooltip,
   TooltipContent,
@@ -24,7 +18,6 @@ import {
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContext = {
@@ -313,7 +306,7 @@ const SidebarMenuSeparator = React.forwardRef<
 SidebarMenuSeparator.displayName = "SidebarMenuSeparator";
 
 const sidebarMenuButtonVariants = cva(
-  "flex w-full items-center gap-3 overflow-hidden rounded-lg p-2 text-left text-sm outline-none ring-sidebar-ring transition-colors duration-200 focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+  "flex w-full items-center gap-3 overflow-hidden rounded-lg p-3 text-left text-sm outline-none ring-sidebar-ring transition-all duration-200 focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
@@ -332,7 +325,7 @@ const sidebarMenuButtonVariants = cva(
     },
     defaultVariants: {
       variant: "ghost",
-      size: "default",
+      size: "sm",
       isActive: false,
     },
   }

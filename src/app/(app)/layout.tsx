@@ -1,7 +1,7 @@
 // src/app/(app)/layout.tsx
 'use client';
 
-import React, { useCallback, useMemo, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { useIdleTimeout } from '@/hooks/useIdleTimeout';
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { getNavItemsForRole } from '@/lib/nav-items';
-import type { UserRole, NavItem } from '@/types';
+import type { NavItem } from '@/types';
 import Link from 'next/link';
 import { LogOut, Loader2, ChevronsRight, Search, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
@@ -29,6 +29,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
@@ -36,7 +37,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
     const { toast } = useToast();
-    const { state, toggleSidebar, activeItem, setActiveItem, isMobileOpen, setIsMobileOpen } = useSidebar();
+    const isMobile = useIsMobile();
+    const { state, toggleSidebar, activeItem, setActiveItem, openMobile, setOpenMobile } = useSidebar();
 
     // --- Idle Timeout Logic ---
     const handleIdleLogout = useCallback(() => {
@@ -83,34 +85,33 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const handleItemClick = (item: NavItem) => {
         if (item.path) {
           setActiveItem(item.path);
-          setIsMobileOpen(false); 
+          if (isMobile) {
+            setOpenMobile(false); 
+          }
         }
     };
     
     return (
-        <div className="flex h-screen bg-gray-50 dark:bg-gray-900/80">
+        <div className="flex h-screen bg-muted/30 dark:bg-gray-900/80">
             <Sidebar>
                 <SidebarHeader>
                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                          <span className="text-white font-bold text-lg">N</span>
+                        <div className="w-10 h-10 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                           <Image src="/uploads/images/logo-letter.png" alt="NexusAlpri Logo" width={24} height={24} data-ai-hint="logo letter" />
                         </div>
-                        {state === 'expanded' && (
-                          <span className="text-white text-xl font-bold">NexusAlpri</span>
-                        )}
+                        <span className="sidebar-text text-white text-xl font-bold">NexusAlpri</span>
                       </div>
                      <Button
                       variant="ghost"
                       size="icon"
-                      className="h-9 w-9 text-gray-400 hover:text-white"
+                      className="sidebar-text h-9 w-9 text-gray-400 hover:text-white"
                       onClick={toggleSidebar}
                     >
                       <ChevronsRight className={cn("h-5 w-5 transition-transform", state === "expanded" && "rotate-180")} />
                     </Button>
                 </SidebarHeader>
 
-                {state === 'expanded' && (
-                  <div className="p-4">
+                 <div className="p-4 sidebar-text">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                       <Input
@@ -120,7 +121,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                       />
                     </div>
                   </div>
-                )}
                 
                 <SidebarContent>
                      <SidebarMenu>
@@ -129,7 +129,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                              {item.children ? (
                                <NavGroup
                                  item={item}
-                                 isCollapsed={state === 'collapsed'}
                                  activeItem={activeItem}
                                  onItemClick={handleItemClick}
                                />
@@ -138,7 +137,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                  item={item}
                                  isActive={item.path === activeItem}
                                  onClick={handleItemClick}
-                                 isCollapsed={state === 'collapsed'}
                                />
                              )}
                            </SidebarMenuItem>
@@ -147,32 +145,30 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarContent>
                 
                 <SidebarFooter>
-                    {state === 'expanded' && user && (
-                        <div className="flex items-center gap-3 mb-4 p-3 bg-gray-800 rounded-lg">
-                             <Avatar className="h-10 w-10">
-                                <AvatarImage src={user.avatar || undefined} />
-                                <AvatarFallback className="bg-gradient-to-br from-green-400 to-blue-500 text-white font-semibold">
-                                    {user.name.split(' ').map(n => n[0]).join('')}
-                                </AvatarFallback>
-                            </Avatar>
-                          <div className="flex-1 overflow-hidden">
-                            <p className="text-white text-sm font-medium truncate">{user.name}</p>
-                            <p className="text-gray-400 text-xs truncate">{user.role}</p>
-                          </div>
-                        </div>
-                     )}
-                    <button
+                    <div className="sidebar-text flex items-center gap-3 mb-4 p-3 bg-gray-800 rounded-lg">
+                         <Avatar className="h-10 w-10">
+                            <AvatarImage src={user.avatar || undefined} />
+                            <AvatarFallback className="bg-gradient-to-br from-green-400 to-blue-500 text-white font-semibold">
+                                {user.name.split(' ').map(n => n[0]).join('')}
+                            </AvatarFallback>
+                        </Avatar>
+                      <div className="flex-1 overflow-hidden">
+                        <p className="text-white text-sm font-medium truncate">{user.name}</p>
+                        <p className="text-gray-400 text-xs capitalize truncate">{user.role.toLowerCase()}</p>
+                      </div>
+                    </div>
+                    <SidebarMenuButton
                         onClick={logout}
-                        className={cn(`w-full flex items-center gap-3 px-4 py-3 text-red-300 hover:text-red-200 hover:bg-red-900/20 rounded-lg transition-colors`,
-                        state === 'collapsed' && 'justify-center')}
+                        className="w-full text-red-300 hover:text-red-200 hover:bg-red-900/20"
+                        tooltip={{ children: 'Cerrar Sesión' }}
                     >
                         <LogOut className="h-5 w-5" />
-                        {state === 'expanded' && <span className="font-medium">Cerrar Sesión</span>}
-                    </button>
+                        <span className="sidebar-text font-medium">Cerrar Sesión</span>
+                    </SidebarMenuButton>
                 </SidebarFooter>
             </Sidebar>
             
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="main-content flex-1 flex flex-col overflow-hidden">
                 <TopBar />
                 <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
                   {children}
@@ -182,40 +178,29 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     )
 }
 
-const NavItem = ({ item, isActive, onClick, isCollapsed }: { item: NavItem, isActive: boolean, onClick: (item: NavItem) => void, isCollapsed: boolean }) => {
-  const Icon = item.icon;
+const NavItem = ({ item, isActive, onClick }: { item: NavItem, isActive: boolean, onClick: (item: NavItem) => void }) => {
   return (
-    <Button
-      onClick={() => onClick(item)}
-      variant={isActive ? 'default' : 'ghost'}
-      className={cn(
-        "w-full flex items-center gap-3 py-3 h-auto transition-all duration-200",
-        isActive 
-          ? 'bg-blue-600 text-white shadow-lg' 
-          : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-        isCollapsed ? 'justify-center px-2' : 'justify-start px-4'
-      )}
-    >
-      <Icon className="h-5 w-5 flex-shrink-0" />
-      {!isCollapsed && (
-        <>
-          <span className="flex-1 text-left font-medium">{item.label}</span>
-          {item.badge && <Badge className="bg-blue-500 text-white">{item.badge}</Badge>}
-        </>
-      )}
-    </Button>
+     <SidebarMenuButton
+        onClick={() => onClick(item)}
+        isActive={isActive}
+        tooltip={{ children: item.label }}
+      >
+        <item.icon className="h-5 w-5 flex-shrink-0" />
+        <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
+        {item.badge && <Badge className="sidebar-text bg-blue-500 text-white">{item.badge}</Badge>}
+      </SidebarMenuButton>
   );
 };
 
 
-const NavGroup = ({ item, isCollapsed, activeItem, onItemClick }: { item: NavItem, isCollapsed: boolean, activeItem: string, onItemClick: (item: NavItem) => void }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const Icon = item.icon;
+const NavGroup = ({ item, activeItem, onItemClick }: { item: NavItem, activeItem: string, onItemClick: (item: NavItem) => void }) => {
   const { user } = useAuth();
-  
+  const { state: sidebarState } = useSidebar();
+  const [isExpanded, setIsExpanded] = useState(true);
+
   const hasActiveChild = useMemo(() => item.children?.some(child => child.path === activeItem), [item.children, activeItem]);
 
-  if (isCollapsed) {
+  if (sidebarState === 'collapsed') {
     return (
       <div className="space-y-1">
         {item.children?.filter(child => child.roles.includes(user?.role || 'STUDENT')).map(child => (
@@ -224,7 +209,6 @@ const NavGroup = ({ item, isCollapsed, activeItem, onItemClick }: { item: NavIte
             item={child}
             isActive={child.path === activeItem}
             onClick={onItemClick}
-            isCollapsed={true}
           />
         ))}
       </div>
@@ -240,7 +224,7 @@ const NavGroup = ({ item, isCollapsed, activeItem, onItemClick }: { item: NavIte
           hasActiveChild ? 'bg-gray-700 text-blue-300' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
         )}
       >
-        <Icon className="h-5 w-5" />
+        <item.icon className="h-5 w-5" />
         <span className="flex-1 text-left font-medium">{item.label}</span>
         <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
       </button>
@@ -253,7 +237,6 @@ const NavGroup = ({ item, isCollapsed, activeItem, onItemClick }: { item: NavIte
               item={child}
               isActive={child.path === activeItem}
               onClick={onItemClick}
-              isCollapsed={false}
             />
           ))}
         </div>
