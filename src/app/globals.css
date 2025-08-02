@@ -37,7 +37,7 @@
     --radius: 0.75rem;
 
     --sidebar-expanded-width: 16rem;
-    --sidebar-collapsed-width: 3.75rem;
+    --sidebar-collapsed-width: 4.5rem; /* Ajustado para más espacio para íconos */
 
     /* Barra Lateral - Gradiente "Nebulosa de Grafito" */
     --sidebar-background: linear-gradient(180deg, hsl(222, 24%, 16%) 0%, hsl(215, 18%, 22%) 100%);
@@ -129,33 +129,32 @@
     box-shadow: 2px 0 15px -3px hsl(var(--foreground) / 0.05);
   }
   
-  /* Los spans de texto en la barra lateral */
-  .sidebar-gradient .sidebar-menu-button span, 
-  .sidebar-gradient .sidebar-header span {
-    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
-    white-space: nowrap;
-  }
-  
   /* Oculta el texto suavemente cuando la barra está colapsada */
-  .sidebar-gradient[data-state="collapsed"] .sidebar-menu-button span,
-  .sidebar-gradient[data-state="collapsed"] .sidebar-header span {
+  [data-state="collapsed"] .sidebar-menu-button span,
+  [data-state="collapsed"] .sidebar-header > a > span,
+  [data-state="collapsed"] .sidebar-footer span {
     opacity: 0;
     visibility: hidden;
+    width: 0;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out, width 0.2s ease-in-out;
   }
   
   /* Muestra el texto cuando está expandida */
-  .sidebar-gradient[data-state="expanded"] .sidebar-menu-button span,
-  .sidebar-gradient[data-state="expanded"] .sidebar-header span {
+  [data-state="expanded"] .sidebar-menu-button span,
+  [data-state="expanded"] .sidebar-header > a > span,
+  [data-state="expanded"] .sidebar-footer span {
     opacity: 1;
     visibility: visible;
+    width: auto;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out, width 0.2s ease-in-out;
   }
   
-  /* Centra el icono cuando la barra está colapsada */
-  .sidebar-gradient[data-state="collapsed"] .sidebar-menu-button {
+  /* Centra el icono y el logo cuando la barra está colapsada */
+  [data-state="collapsed"] .sidebar-menu-button {
       @apply justify-center px-0 py-3;
   }
   
-  .sidebar-gradient[data-state="collapsed"] .sidebar-header {
+  [data-state="collapsed"] .sidebar-header {
       @apply justify-center;
   }
 
