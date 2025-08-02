@@ -2,6 +2,7 @@
 'use client';
 
 import * as React from "react"
+import { useState, useCallback, useEffect, useMemo, createContext, useContext } from 'react';
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { Menu } from "lucide-react"
@@ -32,10 +33,10 @@ type SidebarContext = {
   setActiveItem: (path: string) => void;
 }
 
-const SidebarContext = React.createContext<SidebarContext | null>(null)
+const SidebarContext = createContext<SidebarContext | null>(null)
 
 function useSidebar() {
-  const context = React.useContext(SidebarContext)
+  const context = useContext(SidebarContext)
   if (!context) {
     throw new Error("useSidebar must be used within a SidebarProvider.")
   }
@@ -57,16 +58,16 @@ const SidebarProvider = React.forwardRef<
     ref
   ) => {
     const isMobile = useIsMobile()
-    const [openMobile, setOpenMobile] = React.useState(false)
-    const [activeItem, setActiveItem] = React.useState('/dashboard');
+    const [openMobile, setOpenMobile] = useState(false)
+    const [activeItem, setActiveItem] = useState('/dashboard');
 
-    const [_open, _setOpen] = React.useState(() => {
+    const [_open, _setOpen] = useState(() => {
         if (typeof document === 'undefined') return true;
         const cookie = document.cookie.split('; ').find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`));
         return cookie ? cookie.split('=')[1] === 'true' : true;
     });
 
-    const setOpen = React.useCallback(
+    const setOpen = useCallback(
       (value: boolean) => {
         _setOpen(value);
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${value}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
@@ -74,13 +75,13 @@ const SidebarProvider = React.forwardRef<
       []
     );
 
-    const toggleSidebar = React.useCallback(() => {
+    const toggleSidebar = useCallback(() => {
       return isMobile
         ? setOpenMobile((current) => !current)
         : setOpen(!_open);
     }, [isMobile, _open, setOpen, setOpenMobile]);
 
-    React.useEffect(() => {
+    useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
         if (
           event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
@@ -97,7 +98,7 @@ const SidebarProvider = React.forwardRef<
 
     const state = _open ? "expanded" : "collapsed"
 
-    const contextValue = React.useMemo<SidebarContext>(
+    const contextValue = useMemo<SidebarContext>(
       () => ({
         state,
         open: _open,
