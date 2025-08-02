@@ -47,7 +47,7 @@
     --sidebar-border: hsl(var(--sidebar-accent) / 0.1);
     --sidebar-ring: 355 79% 51%;
 
-    /* **AÑADIDO**: Barra Superior - Degradado (para tema claro) */
+    /* Barra Superior - Degradado (para tema claro) */
     --topbar-background: linear-gradient(180deg, hsl(221, 83%, 25%) 0%, hsl(270, 50%, 15%) 100%);
     --topbar-foreground: 210 20% 98%; /* Texto blanco para la barra superior */
 
@@ -112,7 +112,7 @@
     --sidebar-border: hsl(var(--sidebar-accent) / 0.1);
     --sidebar-ring: 355 79% 51%;
 
-    /* **YA EXISTÍA**: Barra Superior - Degradado (para tema oscuro) */
+    /* Barra Superior - Degradado (para tema oscuro) */
     --topbar-background: linear-gradient(180deg, hsl(221, 83%, 25%) 0%, hsl(270, 50%, 15%) 100%);
     --topbar-foreground: 210 20% 98%; /* Texto blanco para la barra superior */
 
@@ -146,7 +146,6 @@
 @layer components {
   /* Reglas para la transición suave de la barra lateral */
   .sidebar-gradient {
-    @apply shadow-lg;
     box-shadow: 2px 0 15px -3px hsl(var(--foreground) / 0.1);
   }
   
