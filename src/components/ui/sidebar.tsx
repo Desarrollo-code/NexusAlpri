@@ -200,7 +200,7 @@ const Sidebar = React.forwardRef<
         data-state={state}
         {...props}
       >
-        <div className="flex h-full flex-col">
+        <div className="flex h-full flex-col overflow-hidden">
           {children}
         </div>
         <Button
