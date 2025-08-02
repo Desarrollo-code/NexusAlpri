@@ -103,26 +103,20 @@
 @layer components {
   /* Estilos para la barra lateral y la transición de contenido. */
   .main-content {
-    @apply transition-all duration-300 ease-in-out;
-  }
-  
-  .group\/sidebar-wrapper[data-state='expanded'] ~ .main-content {
-    @apply lg:pl-72;
-  }
-
-  .group\/sidebar-wrapper[data-state='collapsed'] ~ .main-content {
-    @apply lg:pl-20;
+    transition: padding-left 0.3s ease-in-out;
   }
   
   .sidebar-text {
-    @apply transition-opacity duration-200;
+    @apply transition-opacity duration-200 whitespace-nowrap;
   }
   
-  .group\/sidebar-wrapper[data-state='collapsed'] .sidebar-text {
+  /* Estilos específicos para cuando la barra lateral está colapsada */
+  [data-state='collapsed'] .sidebar-text {
     @apply opacity-0 pointer-events-none;
   }
   
-  .group\/sidebar-wrapper[data-state='collapsed'] .group\/menu-item button {
+  [data-state='collapsed'] .group\/menu-item button,
+  [data-state='collapsed'] .group\/menu-item a {
     @apply justify-center;
   }
 

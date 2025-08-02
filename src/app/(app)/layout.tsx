@@ -15,7 +15,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarMenuSeparator,
   useSidebar
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
@@ -168,7 +167,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
             
-            <div className="main-content flex-1 flex flex-col overflow-hidden">
+            <div className={cn("main-content flex-1 flex flex-col overflow-hidden",
+              "lg:transition-[padding-left] lg:duration-300 lg:ease-in-out",
+              state === 'expanded' ? "lg:pl-72" : "lg:pl-20"
+            )}>
                 <TopBar />
                 <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
                   {children}
@@ -181,13 +183,24 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 const NavItem = ({ item, isActive, onClick }: { item: NavItem, isActive: boolean, onClick: (item: NavItem) => void }) => {
   return (
      <SidebarMenuButton
+        asChild={!!item.path}
         onClick={() => onClick(item)}
         isActive={isActive}
         tooltip={{ children: item.label }}
       >
-        <item.icon className="h-5 w-5 flex-shrink-0" />
-        <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
-        {item.badge && <Badge className="sidebar-text bg-blue-500 text-white">{item.badge}</Badge>}
+        {item.path ? (
+          <Link href={item.path}>
+            <item.icon className="h-5 w-5 flex-shrink-0" />
+            <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
+            {item.badge && <Badge className="sidebar-text bg-blue-500 text-white">{item.badge}</Badge>}
+          </Link>
+        ) : (
+          <>
+            <item.icon className="h-5 w-5 flex-shrink-0" />
+            <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
+            {item.badge && <Badge className="sidebar-text bg-blue-500 text-white">{item.badge}</Badge>}
+          </>
+        )}
       </SidebarMenuButton>
   );
 };

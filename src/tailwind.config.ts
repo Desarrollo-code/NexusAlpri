@@ -55,10 +55,6 @@ export default {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
-        topbar: {
-            DEFAULT: 'hsl(var(--topbar-background))',
-            foreground: 'hsl(var(--topbar-foreground))',
-        },
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',
@@ -117,12 +113,6 @@ export default {
             '0%': { transform: 'translateY(20px) scale(0.95)', opacity: '0' },
             '100%': { transform: 'translateY(0) scale(1)', opacity: '1' }
         },
-        'ping': {
-          '75%, 100%': {
-            transform: 'scale(2)',
-            opacity: '0',
-          },
-        },
         'caret-blink': {
           '0%, 70%, 100%': { opacity: '1' },
           '20%, 50%': { opacity: '0' },
@@ -133,7 +123,6 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'press': 'press 0.2s 1 linear',
         'throw': 'throw 0.4s ease-out forwards',
-        'ping': 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite',
         'caret-blink': 'caret-blink 1.25s ease-out infinite',
       },
     },

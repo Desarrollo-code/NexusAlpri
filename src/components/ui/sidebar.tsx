@@ -45,17 +45,10 @@ function useSidebar() {
 
 const SidebarProvider = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div"> & {
-    defaultOpen?: boolean
-    open?: boolean
-    onOpenChange?: (open: boolean) => void
-  }
+  React.ComponentProps<"div">
 >(
   (
     {
-      defaultOpen = true,
-      open: openProp,
-      onOpenChange: setOpenProp,
       className,
       style,
       children,
@@ -68,30 +61,24 @@ const SidebarProvider = React.forwardRef<
     const [activeItem, setActiveItem] = React.useState('/dashboard');
 
     const [_open, _setOpen] = React.useState(() => {
-        if (typeof document === 'undefined') return defaultOpen;
+        if (typeof document === 'undefined') return true;
         const cookie = document.cookie.split('; ').find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`));
-        return cookie ? cookie.split('=')[1] === 'true' : defaultOpen;
+        return cookie ? cookie.split('=')[1] === 'true' : true;
     });
 
-    const open = openProp ?? _open
     const setOpen = React.useCallback(
-      (value: boolean | ((value: boolean) => boolean)) => {
-        const openState = typeof value === "function" ? value(open) : value
-        if (setOpenProp) {
-          setOpenProp(openState)
-        } else {
-          _setOpen(openState)
-        }
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+      (value: boolean) => {
+        _setOpen(value);
+        document.cookie = `${SIDEBAR_COOKIE_NAME}=${value}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
       },
-      [setOpenProp, open]
-    )
+      []
+    );
 
     const toggleSidebar = React.useCallback(() => {
       return isMobile
-        ? setOpenMobile((open) => !open)
-        : setOpen((open) => !open)
-    }, [isMobile, setOpen, setOpenMobile])
+        ? setOpenMobile((current) => !current)
+        : setOpen(!_open);
+    }, [isMobile, _open, setOpen, setOpenMobile]);
 
     React.useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -108,12 +95,12 @@ const SidebarProvider = React.forwardRef<
       return () => window.removeEventListener("keydown", handleKeyDown)
     }, [toggleSidebar])
 
-    const state = open ? "expanded" : "collapsed"
+    const state = _open ? "expanded" : "collapsed"
 
     const contextValue = React.useMemo<SidebarContext>(
       () => ({
         state,
-        open,
+        open: _open,
         setOpen,
         isMobile,
         openMobile,
@@ -122,7 +109,7 @@ const SidebarProvider = React.forwardRef<
         activeItem,
         setActiveItem,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, activeItem, setActiveItem]
+      [state, _open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, activeItem, setActiveItem]
     )
 
     return (
@@ -190,7 +177,7 @@ const Sidebar = React.forwardRef<
       <aside
         ref={ref}
         className={cn(
-          "group/sidebar-wrapper fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-all duration-300 ease-in-out bg-gray-900 border-r border-gray-700",
+          "group/sidebar-wrapper fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out bg-gray-900 border-r border-gray-700",
           state === 'expanded' ? "w-72" : "w-20",
           className
         )}
@@ -365,7 +352,7 @@ const SidebarMenuButton = React.forwardRef<
       </Comp>
     )
 
-    if (!tooltip) {
+    if (!tooltip || isMobile) {
       return button
     }
 
@@ -375,7 +362,7 @@ const SidebarMenuButton = React.forwardRef<
         <TooltipContent
           side="right"
           align="center"
-          hidden={state !== "collapsed" || isMobile}
+          hidden={state !== "collapsed"}
           {...tooltip}
         >
           {tooltip.children}
