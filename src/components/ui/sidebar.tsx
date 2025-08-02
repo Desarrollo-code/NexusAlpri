@@ -25,9 +25,9 @@ import {
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16rem"
-const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3.75rem"
+const SIDEBAR_WIDTH_EXPANDED = "16rem";
+const SIDEBAR_WIDTH_MOBILE = "18rem";
+const SIDEBAR_WIDTH_COLLAPSED = "3.75rem"; // The width of the icon-only sidebar
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContext = {
@@ -136,8 +136,9 @@ const SidebarProvider = React.forwardRef<
           <div
             style={
               {
-                "--sidebar-width": SIDEBAR_WIDTH,
-                "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
+                "--sidebar-width": SIDEBAR_WIDTH_EXPANDED,
+                "--sidebar-collapsed-width": SIDEBAR_WIDTH_COLLAPSED,
+                "--sidebar-expanded-width": SIDEBAR_WIDTH_EXPANDED,
                 ...style,
               } as React.CSSProperties
             }
@@ -194,7 +195,7 @@ const Sidebar = React.forwardRef<
         ref={ref}
         className={cn(
           "sidebar-gradient group fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out",
-          state === 'expanded' ? "w-[var(--sidebar-width)]" : "w-[var(--sidebar-width-icon)]",
+          state === 'expanded' ? "w-[var(--sidebar-width)]" : "w-[var(--sidebar-collapsed-width)]",
           className
         )}
         data-state={state}

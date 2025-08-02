@@ -36,8 +36,8 @@
 
     --radius: 0.75rem;
 
-    --sidebar-width: 16rem;
-    --sidebar-width-icon: 3.75rem;
+    --sidebar-expanded-width: 16rem;
+    --sidebar-collapsed-width: 3.75rem;
 
     /* Barra Lateral - Gradiente "Nebulosa de Grafito" */
     --sidebar-background: linear-gradient(180deg, hsl(215, 18%, 22%) 0%, hsl(222, 24%, 16%) 100%);
@@ -101,8 +101,8 @@
 
     --radius: 0.75rem;
 
-    --sidebar-width: 16rem;
-    --sidebar-width-icon: 3.75rem;
+    --sidebar-expanded-width: 16rem;
+    --sidebar-collapsed-width: 3.75rem;
 
     /* Barra Lateral - Gradiente "Nebulosa de Grafito" (idéntico al tema claro para cohesión) */
     --sidebar-background: linear-gradient(180deg, hsl(215, 18%, 22%) 0%, hsl(222, 24%, 16%) 100%);
