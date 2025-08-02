@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from "react"
@@ -132,8 +133,6 @@ const SidebarProvider = React.forwardRef<
           <div
             style={
               {
-                "--sidebar-collapsed-width": "3.75rem",
-                "--sidebar-expanded-width": "16rem",
                 ...style,
               } as React.CSSProperties
             }
