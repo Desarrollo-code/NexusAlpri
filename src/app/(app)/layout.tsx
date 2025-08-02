@@ -26,6 +26,7 @@ import { LogOut, Loader2, ChevronsRight } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { GradientIcon } from '@/components/ui/gradient-icon';
+import { Button } from '@/components/ui/button';
 
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
