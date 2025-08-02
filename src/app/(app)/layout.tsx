@@ -22,7 +22,7 @@ import { TopBar } from '@/components/layout/top-bar';
 import { getNavItemsForRole } from '@/lib/nav-items';
 import type { UserRole, NavItem } from '@/types';
 import Link from 'next/link';
-import { LogOut, Loader2 } from 'lucide-react';
+import { LogOut, Loader2, ChevronsRight } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { GradientIcon } from '@/components/ui/gradient-icon';
@@ -33,7 +33,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
     const { toast } = useToast();
-    const { state } = useSidebar();
+    const { state, toggleSidebar } = useSidebar();
 
     // --- Idle Timeout Logic ---
     const handleIdleLogout = useCallback(() => {
@@ -78,14 +78,22 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                         <Image
                             src="/uploads/images/logo-nexusalpri.png"
                             alt="NexusAlpri Logo"
-                            width={120}
-                            height={97.5}
-                            className="w-auto h-10"
+                            width={40}
+                            height={40}
+                            className="w-10 h-10"
                             priority
                             data-ai-hint="logo education"
                         />
                         <span className="text-xl font-headline whitespace-nowrap">{settings?.platformName || 'NexusAlpri'}</span>
                     </Link>
+                     <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent/10 ml-auto"
+                      onClick={toggleSidebar}
+                    >
+                      <ChevronsRight className={cn("h-5 w-5 transition-transform", state === "expanded" && "rotate-180")} />
+                    </Button>
                 </SidebarHeader>
                 
                 <SidebarMenuSeparator />
@@ -101,7 +109,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                         {isSubMenu ? (
                                             <div className="flex flex-col gap-1">
                                                 <div className="px-4 py-2 text-sm font-semibold text-sidebar-foreground/70 flex items-center gap-3">
-                                                    {item.icon && <item.icon className="h-5 w-5 shrink-0" />}
+                                                    <GradientIcon icon={item.icon} size="sm" />
                                                     <span className="whitespace-nowrap">{item.label}</span>
                                                 </div>
                                                 <SidebarMenu className="pl-4">
@@ -111,8 +119,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                                             <SidebarMenuItem key={subItem.href}>
                                                                 <SidebarMenuButton asChild isActive={isActive} disabled={subItem.disabled} className="justify-start gap-3" tooltip={{ children: subItem.label }}>
                                                                     <Link href={subItem.href || '#'}>
-                                                                        <GradientIcon icon={subItem.icon} isActive={isActive} />
-                                                                        <span className="font-medium text-base whitespace-nowrap">{subItem.label}</span>
+                                                                        <GradientIcon icon={subItem.icon} isActive={isActive} size="sm" />
+                                                                        <span className="font-medium text-sm whitespace-nowrap">{subItem.label}</span>
                                                                     </Link>
                                                                 </SidebarMenuButton>
                                                             </SidebarMenuItem>
@@ -124,8 +132,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                                             <SidebarMenuItem>
                                                 <SidebarMenuButton asChild isActive={pathname === item.href} disabled={item.disabled} className="justify-start gap-3" tooltip={{ children: item.label }}>
                                                     <Link href={item.href || '#'}>
-                                                        <GradientIcon icon={item.icon} isActive={pathname === item.href} />
-                                                        <span className="font-medium text-base whitespace-nowrap">{item.label}</span>
+                                                        <GradientIcon icon={item.icon} isActive={pathname === item.href} size="sm" />
+                                                        <span className="font-medium text-sm whitespace-nowrap">{item.label}</span>
                                                     </Link>
                                                 </SidebarMenuButton>
                                             </SidebarMenuItem>

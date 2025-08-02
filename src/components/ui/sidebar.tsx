@@ -199,14 +199,6 @@ const Sidebar = React.forwardRef<
         <div className="flex h-full flex-col overflow-hidden">
           {children}
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute -right-4 top-8 z-50 hidden h-8 w-8 rounded-full border border-border bg-background/80 text-foreground backdrop-blur-sm transition-colors hover:bg-primary hover:text-primary-foreground md:flex"
-          onClick={toggleSidebar}
-        >
-          <ChevronLeft className={cn("h-5 w-5 transition-transform", state === "collapsed" && "rotate-180")} />
-        </Button>
       </div>
     )
   }
@@ -318,7 +310,7 @@ const sidebarMenuButtonVariants = cva(
     variants: {
       variant: {
         default: "",
-        ghost: "hover:bg-sidebar-accent/10 hover:text-sidebar-accent",
+        ghost: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
       },
       size: {
         default: "h-11 text-base",
@@ -326,7 +318,7 @@ const sidebarMenuButtonVariants = cva(
         lg: "h-12 text-base",
       },
       isActive: {
-        true: "bg-sidebar-accent/10 text-sidebar-accent font-semibold",
+        true: "bg-sidebar-accent text-sidebar-accent-foreground font-semibold border-l-4 border-l-primary",
         false: "text-sidebar-foreground",
       },
     },
@@ -365,7 +357,7 @@ const SidebarMenuButton = React.forwardRef<
       <Comp
         ref={ref}
         data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size, isActive }), className)}
+        className={cn(sidebarMenuButtonVariants({ variant, size, isActive }), state === "collapsed" && "justify-center", className)}
         {...props}
       >
         {children}
