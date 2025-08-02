@@ -156,7 +156,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             <div 
                 className={cn(
                     "main-content transition-[padding-left] duration-300 ease-in-out",
-                    state === 'expanded' ? "pl-[var(--sidebar-expanded-width)]" : "pl-[var(--sidebar-collapsed-width)]"
+                    state === 'expanded' ? "pl-0 md:pl-[var(--sidebar-expanded-width)]" : "pl-0 md:pl-[var(--sidebar-collapsed-width)]"
                 )}
             >
                 <TopBar />

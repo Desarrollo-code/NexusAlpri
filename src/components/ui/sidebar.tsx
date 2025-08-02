@@ -202,7 +202,7 @@ const Sidebar = React.forwardRef<
         <Button
           variant="ghost"
           size="icon"
-          className="absolute -right-4 top-8 z-50 h-8 w-8 rounded-full border border-border bg-background/80 text-foreground backdrop-blur-sm transition-colors hover:bg-primary hover:text-primary-foreground"
+          className="absolute -right-4 top-8 z-50 hidden h-8 w-8 rounded-full border border-border bg-background/80 text-foreground backdrop-blur-sm transition-colors hover:bg-primary hover:text-primary-foreground md:flex"
           onClick={toggleSidebar}
         >
           <ChevronLeft className={cn("h-5 w-5 transition-transform", state === "collapsed" && "rotate-180")} />

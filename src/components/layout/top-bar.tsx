@@ -199,7 +199,7 @@ export function TopBar() {
           "bg-topbar-background text-topbar-foreground sticky top-0 z-30 flex h-16 items-center justify-between border-b px-4 md:px-6"
       )}>
         <div className="flex items-center gap-2">
-          <SidebarTrigger className="md:hidden text-topbar-foreground hover:bg-black/10 dark:hover:bg-white/10" />
+          <SidebarTrigger className="text-topbar-foreground hover:bg-black/10 dark:hover:bg-white/10 md:hidden" />
           <h1 className="hidden sm:block text-xl font-semibold font-headline truncate">{pageTitle}</h1>
         </div>
         <div className="flex items-center gap-3">
