@@ -5,8 +5,8 @@
 .auth-scope {
   --auth-bg-color: hsl(var(--background));
   --auth-card-bg: hsl(var(--card));
-  --auth-text-primary: hsl(var(--foreground));
-  --auth-text-secondary: hsl(var(--muted-foreground));
+  --auth-text-primary: 224 71.4% 4.1%;
+  --auth-text-secondary: 220 8.9% 46.1%;
   --auth-primary-color: hsl(var(--primary));
   --auth-primary-color-hover: hsl(var(--primary) / 0.9);
   
@@ -56,10 +56,14 @@
 
 .auth-logo-text-light {
   font-family: var(--font-headline);
-  font-size: 1.75rem;
-  font-weight: 500;
-  color: hsl(var(--primary-foreground));
+  font-size: 2.5rem; /* Ajustado para la nueva fuente */
+  font-weight: 400; /* Dancing Script es naturalmente más audaz */
+  background-image: linear-gradient(to right, #ffffff, #e0e7ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
+
 
 .auth-branding-content {
   flex-grow: 1;
@@ -111,7 +115,7 @@
 .auth-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--auth-text-secondary);
+  color: hsl(var(--muted-foreground));
 }
 
 .auth-input-container {
@@ -129,7 +133,7 @@
   background-color: hsl(var(--background));
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  color: var(--auth-text-primary);
+  color: hsl(var(--foreground));
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -201,7 +205,7 @@
   padding-top: 1rem;
   text-align: center;
   font-size: 0.875rem;
-  color: var(--auth-text-secondary);
+  color: hsl(var(--muted-foreground));
 }
 
 

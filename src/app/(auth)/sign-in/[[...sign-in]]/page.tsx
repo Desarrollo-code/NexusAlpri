@@ -109,13 +109,7 @@ export default function SignInPage() {
         {!show2fa ? (
           <>
               <div className="text-left mb-8">
-                <h1 className="text-2xl font-bold text-auth-text-primary">Iniciar Sesión</h1>
-                 <p className="auth-form-switch-link text-left p-0">
-                    o{' '}
-                    <Link href="/sign-up" className="auth-link">
-                        crea una cuenta
-                    </Link>
-                </p>
+                <h1 className="text-2xl font-bold text-foreground">Iniciar Sesión</h1>
               </div>
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -158,6 +152,12 @@ export default function SignInPage() {
                   {isLoading ? 'Ingresando...' : 'Ingresar'}
                 </button>
               </form>
+               <p className="auth-form-switch-link">
+                    ¿No tienes una cuenta?{' '}
+                    <Link href="/sign-up" className="auth-link">
+                        Crea una cuenta
+                    </Link>
+                </p>
           </>
         ) : (
           <>
@@ -165,7 +165,7 @@ export default function SignInPage() {
                 <ShieldCheck className="mx-auto h-12 w-12 text-teal-500" />
                 <div className="space-y-1">
                   <h1 className="text-2xl font-bold">Verificación de Dos Factores</h1>
-                  <p className="auth-text-secondary">Ingresa el código de 6 dígitos de tu aplicación de autenticación.</p>
+                  <p className="text-muted-foreground">Ingresa el código de 6 dígitos de tu aplicación de autenticación.</p>
                 </div>
               </div>
               <form onSubmit={handle2faSubmit} className="space-y-4">
