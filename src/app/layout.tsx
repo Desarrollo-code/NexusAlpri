@@ -5,7 +5,8 @@ import { Inter, Space_Grotesk, Dancing_Script, Source_Code_Pro } from 'next/font
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider, useAuth } from '@/contexts/auth-context';
-import { ThemeProvider, useTheme } from '@/components/theme-provider';
+import { ThemeProvider } from '@/components/theme-provider';
+import { useTheme } from "next-themes";
 import React, { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
