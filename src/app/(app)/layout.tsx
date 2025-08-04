@@ -1,3 +1,4 @@
+
 // src/app/(app)/layout.tsx
 'use client';
 
@@ -28,7 +29,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     const { user, settings, logout, isLoading } = useAuth();
     const { toast } = useToast();
     // useSidebar debe ser llamado dentro de un componente que es hijo de SidebarProvider
-    const sidebarContext = useSidebar(); 
+    const { state, toggleSidebar } = useSidebar(); 
 
     const handleIdleLogout = React.useCallback(() => {
         if (user) {
@@ -64,9 +65,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                         </div>
                         <span className="sidebar-text text-white text-xl font-bold">NexusAlpri</span>
                       </div>
-                      {/* El botón para colapsar/expandir la barra lateral */}
-                     <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-white" onClick={sidebarContext.toggleSidebar} aria-label="Alternar barra lateral">
-                        <ChevronsRight className={cn("h-5 w-5 transition-transform", sidebarContext.state === "expanded" && "rotate-180")} />
+                     <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-white" onClick={toggleSidebar} aria-label="Alternar barra lateral">
+                        <ChevronsRight className={cn("h-5 w-5 transition-transform", state === "expanded" && "rotate-180")} />
                     </Button>
                 </SidebarHeader>
 
@@ -101,7 +101,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             
             <div className={cn(
               "flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
-              sidebarContext.state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
+              state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
             )}>
               <TopBar />
               <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">

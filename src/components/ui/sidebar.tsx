@@ -23,7 +23,6 @@ import { useAuth } from "@/contexts/auth-context";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 days in seconds
-const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContextValue = {
   state: "expanded" | "collapsed"
@@ -93,21 +92,6 @@ const SidebarProvider = React.forwardRef<
     React.useEffect(() => {
         if(pathname) setActiveItem(pathname);
     }, [pathname]);
-
-    React.useEffect(() => {
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (
-          event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
-          (event.metaKey || event.ctrlKey)
-        ) {
-          event.preventDefault()
-          toggleSidebar()
-        }
-      }
-
-      window.addEventListener("keydown", handleKeyDown)
-      return () => window.removeEventListener("keydown", handleKeyDown)
-    }, [toggleSidebar])
 
     const state = isOpen ? "expanded" : "collapsed"
 
