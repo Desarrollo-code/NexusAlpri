@@ -7,6 +7,12 @@ import {
   Sidebar,
   SidebarProvider,
   useSidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarFooter,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { cn } from '@/lib/utils';
