@@ -35,7 +35,7 @@ export default function AuthLayout({
               <Link href="/" className="auth-logo-link">
                   <span className="auth-logo-text">NexusAlpri</span>
                   <Image
-                      src="/uploads/images/logo-letter.png"
+                      src="/uploads/images/logo-nexusalpri.png"
                       alt="NexusAlpri Letter Logo"
                       width={40}
                       height={40}
