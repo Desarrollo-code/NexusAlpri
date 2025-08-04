@@ -2,7 +2,6 @@ import { Inter, Space_Grotesk, Dancing_Script, Source_Code_Pro } from 'next/font
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/auth-context';
-import { PublicLayoutWrapper } from '@/components/layout/public-layout-wrapper';
 import React from 'react';
 
 const inter = Inter({
@@ -43,9 +42,7 @@ export default function RootLayout({
       </head>
       <body className="font-body flex flex-col min-h-screen bg-background">
         <AuthProvider>
-            <PublicLayoutWrapper>
-                {children}
-            </PublicLayoutWrapper>
+            {children}
             <Toaster />
         </AuthProvider>
       </body>

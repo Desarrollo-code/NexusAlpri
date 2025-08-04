@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PublicTopBar } from '@/components/layout/public-top-bar';
 
 export default function SignInPage() {
   const router = useRouter();
@@ -110,103 +111,106 @@ export default function SignInPage() {
 
 
   return (
-    <div className="flex-1 flex items-center justify-center py-12 md:py-24">
-      <Card className="w-full max-w-md">
-        {!show2fa ? (
-          <>
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl font-headline">Iniciar Sesión</CardTitle>
-                <CardDescription>Ingresa a tu cuenta para continuar</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Correo Electrónico</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="tu@email.com"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Contraseña</Label>
-                    <div className="relative">
+    <div className="w-full flex-1 flex flex-col">
+      <PublicTopBar />
+      <div className="flex-1 flex items-center justify-center py-12 md:py-24">
+        <Card className="w-full max-w-md">
+          {!show2fa ? (
+            <>
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl font-headline">Iniciar Sesión</CardTitle>
+                  <CardDescription>Ingresa a tu cuenta para continuar</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Correo Electrónico</Label>
                       <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
+                        id="email"
+                        type="email"
+                        placeholder="tu@email.com"
                         required
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         disabled={isLoading}
-                        className="pr-10"
                       />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
-                          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                      </button>
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Contraseña</Label>
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          required
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          disabled={isLoading}
+                          className="pr-10"
+                        />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
+                      </div>
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      {isLoading ? 'Ingresando...' : 'Ingresar'}
+                    </Button>
+                  </form>
+                </CardContent>
+                 <CardFooter>
+                   <p className="text-center text-sm w-full">
+                      ¿No tienes una cuenta?{' '}
+                      <Link href="/sign-up" className="underline text-primary">
+                          Crea una cuenta
+                      </Link>
+                    </p>
+                  </CardFooter>
+            </>
+          ) : (
+            <>
+              <CardHeader className="text-center">
+                  <ShieldCheck className="mx-auto h-12 w-12 text-primary" />
+                  <CardTitle className="text-2xl font-bold">Verificación Requerida</CardTitle>
+                  <CardDescription>Ingresa el código de 6 dígitos de tu aplicación de autenticación.</CardDescription>
+              </CardHeader>
+               <CardContent>
+                <form onSubmit={handle2faSubmit} className="space-y-4">
+                  <div className="flex justify-center">
+                    <InputOTP
+                      maxLength={6}
+                      value={token}
+                      onChange={(value) => setToken(value)}
+                      disabled={isLoading}
+                    >
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                      </InputOTPGroup>
+                    </InputOTP>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full" disabled={isLoading || token.length < 6}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    {isLoading ? 'Ingresando...' : 'Ingresar'}
+                    {isLoading ? 'Verificando...' : 'Verificar y Entrar'}
                   </Button>
                 </form>
-              </CardContent>
-               <CardFooter>
-                 <p className="text-center text-sm w-full">
-                    ¿No tienes una cuenta?{' '}
-                    <Link href="/sign-up" className="underline text-primary">
-                        Crea una cuenta
-                    </Link>
-                  </p>
+               </CardContent>
+                 <CardFooter>
+                    <p className="text-center text-sm w-full">
+                      <button onClick={() => { setShow2fa(false); setUserIdFor2fa(null); setPassword(''); }} className="underline text-primary">
+                        Volver al inicio de sesión
+                      </button>
+                    </p>
                 </CardFooter>
-          </>
-        ) : (
-          <>
-            <CardHeader className="text-center">
-                <ShieldCheck className="mx-auto h-12 w-12 text-primary" />
-                <CardTitle className="text-2xl font-bold">Verificación Requerida</CardTitle>
-                <CardDescription>Ingresa el código de 6 dígitos de tu aplicación de autenticación.</CardDescription>
-            </CardHeader>
-             <CardContent>
-              <form onSubmit={handle2faSubmit} className="space-y-4">
-                <div className="flex justify-center">
-                  <InputOTP
-                    maxLength={6}
-                    value={token}
-                    onChange={(value) => setToken(value)}
-                    disabled={isLoading}
-                  >
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading || token.length < 6}>
-                  {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  {isLoading ? 'Verificando...' : 'Verificar y Entrar'}
-                </Button>
-              </form>
-             </CardContent>
-               <CardFooter>
-                  <p className="text-center text-sm w-full">
-                    <button onClick={() => { setShow2fa(false); setUserIdFor2fa(null); setPassword(''); }} className="underline text-primary">
-                      Volver al inicio de sesión
-                    </button>
-                  </p>
-              </CardFooter>
-          </>
-        )}
-      </Card>
+            </>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { RocketIcon } from '@/components/icons/icon-rocket';
 import Link from 'next/link';
 import Image from 'next/image';
+import { PublicTopBar } from '@/components/layout/public-top-bar';
 
 export default function LandingPage() {
   return (
-    <div className="flex-1 w-full">
+    <div className="flex flex-col w-full flex-1">
+      <PublicTopBar />
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
           <div className="container px-4 md:px-6">
@@ -15,19 +17,27 @@ export default function LandingPage() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                    NexusAlpri: El Futuro del Aprendizaje Corporativo.
+                    Aprende. Fórmate. Domina.
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Una plataforma integral diseñada para transformar la formación en tu organización. Crea, gestiona y mide el impacto de tu contenido con facilidad.
+                    La plataforma donde tu potencial cobra vida.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Link
-                    href="/about"
-                    className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                  >
-                    Leer Más
-                  </Link>
+                  <Button asChild>
+                    <Link
+                      href="/sign-in"
+                    >
+                      Empezar ahora
+                    </Link>
+                  </Button>
+                  <Button variant="secondary" asChild>
+                    <Link
+                      href="/about"
+                    >
+                      Saber más
+                    </Link>
+                  </Button>
                 </div>
               </div>
               <Image

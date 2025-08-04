@@ -1,6 +1,7 @@
 
 // src/app/about/page.tsx
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PublicTopBar } from '@/components/layout/public-top-bar';
 import { CheckCircle, Code, Database, Wind } from 'lucide-react';
 import Image from 'next/image';
 
@@ -14,7 +15,8 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="flex-1 w-full">
+    <div className="flex-1 w-full flex flex-col">
+      <PublicTopBar />
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32 bg-muted">
           <div className="container px-4 md:px-6">
