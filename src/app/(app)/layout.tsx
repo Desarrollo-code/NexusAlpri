@@ -5,14 +5,7 @@ import React from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarProvider,
-  useSidebar
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { cn } from '@/lib/utils';
@@ -68,7 +61,6 @@ const NavItemComponent = ({ item, activeItem, onItemClick }: { item: NavItem, ac
     );
 };
 
-// Componente Sidebar real
 function AppSidebar({ user, logout }: { user: any, logout: () => void }) {
     const { state, toggleSidebar, activeItem, setActiveItem, setOpenMobile } = useSidebar();
     const navItems = React.useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
@@ -155,8 +147,7 @@ function AppSidebar({ user, logout }: { user: any, logout: () => void }) {
     );
 }
 
-// Componente que envuelve el contenido principal
-function AppContent({ children }: { children: React.ReactNode }) {
+function MainContent({ children }: { children: React.ReactNode }) {
     const { state } = useSidebar();
     const isMobile = useIsMobile();
     return (
@@ -171,7 +162,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
 }
 
-// Layout principal del área privada
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   
@@ -179,9 +169,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <div className="flex h-screen bg-muted/30 dark:bg-gray-900/80">
         <AppSidebar user={user} logout={logout} />
-        <AppContent>
+        <MainContent>
           {children}
-        </AppContent>
+        </MainContent>
       </div>
     </SidebarProvider>
   );
