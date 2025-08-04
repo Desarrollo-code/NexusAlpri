@@ -1,20 +1,20 @@
 // src/app/about/page.tsx
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Code, Database, Wind } from 'lucide-react';
+import { Database, Code, Wind, Feather } from 'lucide-react';
 import Image from 'next/image';
 
 export default function AboutPage() {
   const techStack = [
-    { name: 'Next.js', description: 'Framework de React para producción.', icon: <Code /> },
-    { name: 'TypeScript', description: 'Superset de JavaScript que añade tipos estáticos.', icon: <Code /> },
-    { name: 'Prisma', description: 'ORM de nueva generación para Node.js y TypeScript.', icon: <Database /> },
-    { name: 'Tailwind CSS', description: 'Framework de CSS "utility-first".', icon: <Wind /> },
-    { name: 'ShadCN UI', description: 'Componentes reutilizables para React.', icon: <Code /> },
+    { name: 'Next.js', description: 'Framework de React para producción.', icon: <Code />, color: "text-blue-400" },
+    { name: 'TypeScript', description: 'Superset de JavaScript con tipos.', icon: <Code />, color: "text-sky-400" },
+    { name: 'Prisma', description: 'ORM de nueva generación para Node.js.', icon: <Database />, color: "text-emerald-400" },
+    { name: 'Tailwind CSS', description: 'Framework de CSS "utility-first".', icon: <Wind />, color: "text-teal-400" },
+    { name: 'ShadCN UI', description: 'Componentes UI reutilizables.', icon: <Feather />, color: "text-rose-400" },
   ];
 
   return (
     <>
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-muted">
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-background via-purple-900/10 to-background">
           <div className="container px-4 md:px-6">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
               <div className="space-y-4">
@@ -57,7 +57,9 @@ export default function AboutPage() {
               {techStack.map((tech) => (
                 <Card key={tech.name} className="card-border-animated">
                   <CardHeader className="flex flex-row items-center gap-4">
-                    <div className="bg-primary/10 p-3 rounded-full">{tech.icon}</div>
+                    <div className={`bg-primary/10 p-3 rounded-full ${tech.color}`}>
+                        {React.cloneElement(tech.icon, { className: "h-6 w-6" })}
+                    </div>
                     <CardTitle>{tech.name}</CardTitle>
                   </CardHeader>
                   <CardContent>

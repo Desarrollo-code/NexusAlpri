@@ -10,23 +10,27 @@ export default function LandingPage() {
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
               <div className="flex flex-col justify-center space-y-4">
-                <div className="space-y-2">
-                  <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                    Despierta tu Potencial. El Futuro es Ahora.
+                <div className="space-y-4">
+                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
+                    <span className="bg-gradient-to-r from-primary via-purple-500 to-pink-500 text-transparent bg-clip-text">
+                        Despierta tu Potencial.
+                    </span>
+                    <br />
+                    El Futuro es Ahora.
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
                     Una plataforma para mentes curiosas, donde cada lección es un paso hacia tu mejor versión.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button asChild>
+                  <Button asChild size="lg">
                     <Link
                       href="/sign-in"
                     >
                       Empezar ahora
                     </Link>
                   </Button>
-                  <Button variant="secondary" asChild>
+                  <Button variant="secondary" asChild size="lg">
                     <Link
                       href="/about"
                     >
