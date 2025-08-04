@@ -1,4 +1,3 @@
-
 // src/app/(app)/layout.tsx
 'use client';
 
@@ -37,7 +36,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const isMobile = useIsMobile();
-    const { state, toggleSidebar, activeItem, setActiveItem, openMobile, setOpenMobile } = useSidebar();
+    const { state, toggleSidebar, activeItem, setActiveItem, setOpenMobile } = useSidebar();
 
     const handleIdleLogout = React.useCallback(() => {
         if (user) {
@@ -152,7 +151,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             </Sidebar>
             
             <div className={cn("flex flex-col flex-1 overflow-hidden transition-[margin-left] duration-300", 
-                 isMobile ? "ml-0" : state === 'expanded' ? "ml-72" : "ml-20"
+                 isMobile ? "ml-0" : state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
             )}>
               <TopBar />
               <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
