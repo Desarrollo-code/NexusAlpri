@@ -11,10 +11,8 @@ export default function PublicLayout({
   return (
     <div className="flex flex-col w-full flex-1">
       <PublicTopBar />
-      <main className="flex-1 flex flex-col items-center justify-center">
-        <div className="w-full">
+      <main className="flex-1">
           {children}
-        </div>
       </main>
     </div>
   );

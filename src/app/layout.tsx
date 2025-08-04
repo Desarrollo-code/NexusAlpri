@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/auth-context';
 import React from 'react';
+import { ThemeProvider } from 'next-themes';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -35,15 +36,23 @@ export default function RootLayout({
 }>) {
 
   return (
-    <html lang="es" className={`${inter.variable} ${spaceGrotesk.variable} ${dancingScript.variable} ${sourceCodePro.variable} dark`} style={{ colorScheme: 'dark' }} suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <head>
           <title>NexusAlpri</title>
           <meta name="description" content="Plataforma E-learning Corporativa" />
+          <link rel="icon" href="/uploads/images/logo-letter.png" sizes="any" />
       </head>
-      <body className="font-body flex flex-col min-h-screen bg-background">
+      <body className={`${inter.variable} ${spaceGrotesk.variable} ${dancingScript.variable} ${sourceCodePro.variable} font-body flex flex-col min-h-screen bg-background`}>
         <AuthProvider>
-            {children}
-            <Toaster />
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <Toaster />
+            </ThemeProvider>
         </AuthProvider>
       </body>
     </html>
