@@ -1,4 +1,4 @@
-
+// src/components/layout/footer.tsx
 'use client';
 
 import Image from 'next/image';
