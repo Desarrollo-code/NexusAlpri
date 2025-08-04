@@ -300,7 +300,7 @@ export default function ProfilePage() {
             <ProfileCardBackground />
             <div className="card__avatar">
                  <Avatar className="w-24 h-24">
-                  <AvatarImage src={avatarPreview || `https://placehold.co/100x100.png?text=${getInitials(user.name)}`} alt={user.name || ''} data-ai-hint="user avatar" />
+                  <AvatarImage src={avatarPreview || `https://placehold.co/100x100.png?text=${getInitials(user.name)}`} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
                   <AvatarFallback className="text-4xl">{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
                 <Button 
@@ -319,6 +319,8 @@ export default function ProfilePage() {
                     onChange={handleFileChange} 
                     accept="image/png, image/jpeg, image/gif, image/webp" 
                     className="hidden"
+                    id="mobile-avatar-upload"
+                    name="mobile-avatar-upload"
                 />
             </div>
             <div className="card__title">{user.name}</div>
@@ -346,7 +348,7 @@ export default function ProfilePage() {
                 <Card className="card-border-animated">
                     <CardHeader><CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-primary"/>Información Personal</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
-                      <div><Label htmlFor="fullNameMobile">Nombre Completo</Label><Input id="fullNameMobile" value={editableName} onChange={(e) => setEditableName(e.target.value)} disabled={isSaving || isUploadingAvatar}/></div>
+                      <div><Label htmlFor="fullNameMobile">Nombre Completo</Label><Input id="fullNameMobile" name="fullNameMobile" value={editableName} onChange={(e) => setEditableName(e.target.value)} disabled={isSaving || isUploadingAvatar}/></div>
                       <Button onClick={handleSaveChanges} disabled={isSaving || isUploadingAvatar} className="w-full">
                           {isSaving || isUploadingAvatar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                           {isSaving ? 'Guardando...' : (isUploadingAvatar ? 'Subiendo...' : 'Guardar Información')}
@@ -381,7 +383,7 @@ export default function ProfilePage() {
                 <CardHeader>
                   <div className="relative mx-auto w-32 h-32 mb-4">
                     <Avatar className="w-32 h-32 border-4 border-primary/20 shadow-md">
-                      <AvatarImage src={avatarPreview || `https://placehold.co/128x128.png?text=${getInitials(user.name)}`} alt={user.name || ''} data-ai-hint="user avatar" />
+                      <AvatarImage src={avatarPreview || `https://placehold.co/128x128.png?text=${getInitials(user.name)}`} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
                       <AvatarFallback className="text-4xl">{getInitials(user.name)}</AvatarFallback>
                     </Avatar>
                     <Button 
@@ -400,6 +402,8 @@ export default function ProfilePage() {
                         onChange={handleFileChange} 
                         accept="image/png, image/jpeg, image/gif, image/webp" 
                         className="hidden"
+                        id="desktop-avatar-upload"
+                        name="desktop-avatar-upload"
                     />
                   </div>
                   {isUploadingAvatar && (
@@ -430,6 +434,7 @@ export default function ProfilePage() {
                     <Label htmlFor="fullName">Nombre Completo</Label>
                     <Input 
                       id="fullName" 
+                      name="fullName"
                       value={editableName} 
                       onChange={(e) => setEditableName(e.target.value)}
                       disabled={isSaving || isUploadingAvatar}
@@ -437,7 +442,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <Label htmlFor="email">Correo Electrónico</Label>
-                    <Input id="email" type="email" value={user.email} disabled />
+                    <Input id="email" name="email" type="email" value={user.email} disabled />
                     <p className="text-xs text-muted-foreground mt-1">El correo electrónico no se puede cambiar desde aquí.</p>
                   </div>
                    <div className="pt-2">
@@ -537,6 +542,7 @@ export default function ProfilePage() {
               <Label htmlFor="disable-password">Contraseña</Label>
               <Input
                 id="disable-password"
+                name="disable-password"
                 type="password"
                 value={disablePassword}
                 onChange={(e) => setDisablePassword(e.target.value)}
@@ -571,6 +577,7 @@ export default function ProfilePage() {
                     <div className="relative">
                       <Input 
                           id="current-password"
+                          name="current-password"
                           type={showCurrentPassword ? "text" : "password"}
                           value={currentPassword}
                           onChange={(e) => setCurrentPassword(e.target.value)}
@@ -578,7 +585,7 @@ export default function ProfilePage() {
                           disabled={isChangingPassword}
                           className="pr-10"
                       />
-                      <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                      <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground" aria-label={showCurrentPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
                           {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
@@ -588,6 +595,7 @@ export default function ProfilePage() {
                     <div className="relative">
                       <Input 
                           id="new-password"
+                          name="new-password"
                           type={showNewPassword ? "text" : "password"}
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
@@ -595,7 +603,7 @@ export default function ProfilePage() {
                           disabled={isChangingPassword}
                           className="pr-10"
                       />
-                      <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                      <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground" aria-label={showNewPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
                           {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
@@ -605,6 +613,7 @@ export default function ProfilePage() {
                     <div className="relative">
                       <Input 
                           id="confirm-password"
+                          name="confirm-password"
                           type={showConfirmNewPassword ? "text" : "password"}
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
@@ -612,7 +621,7 @@ export default function ProfilePage() {
                           disabled={isChangingPassword}
                           className="pr-10"
                       />
-                       <button type="button" onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                       <button type="button" onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground" aria-label={showConfirmNewPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
                           {showConfirmNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>

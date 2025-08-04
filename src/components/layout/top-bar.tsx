@@ -86,6 +86,7 @@ export function TopBar() {
           size="icon"
           onClick={() => setOpenMobile(true)}
           className="lg:hidden p-2 text-muted-foreground"
+          aria-label="Abrir menú de navegación"
         >
           <Menu className="h-6 w-6" />
         </Button>
@@ -99,7 +100,7 @@ export function TopBar() {
         {/* Notificaciones */}
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative h-9 w-9">
+                <Button variant="ghost" size="icon" className="relative h-9 w-9" aria-label="Ver notificaciones">
                     <Bell className="h-5 w-5" />
                     <span className="absolute top-1 right-1 flex h-3 w-3">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -119,9 +120,9 @@ export function TopBar() {
         {/* Usuario */}
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" className="flex items-center gap-2 h-10">
+                 <Button variant="ghost" className="flex items-center gap-2 h-10" aria-label="Abrir menú de usuario">
                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.avatar || undefined} />
+                        <AvatarImage src={user?.avatar || undefined} alt={user?.name || 'Avatar de usuario'} />
                         <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
                             {getInitials(user?.name || '')}
                         </AvatarFallback>

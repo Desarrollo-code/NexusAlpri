@@ -65,7 +65,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                         <span className="sidebar-text text-white text-xl font-bold">NexusAlpri</span>
                       </div>
                       {/* El botón para colapsar/expandir la barra lateral */}
-                     <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-white" onClick={sidebarContext.toggleSidebar}>
+                     <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-white" onClick={sidebarContext.toggleSidebar} aria-label="Alternar barra lateral">
                         <ChevronsRight className={cn("h-5 w-5 transition-transform", sidebarContext.state === "expanded" && "rotate-180")} />
                     </Button>
                 </SidebarHeader>
@@ -73,7 +73,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                  <div className="p-4 sidebar-text">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input type="text" placeholder="Buscar..." className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 h-9" />
+                      <Input type="text" id="sidebar-search" name="sidebar-search" placeholder="Buscar..." className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 h-9" />
                     </div>
                   </div>
                 
@@ -82,7 +82,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarFooter>
                     <div className="sidebar-text flex items-center gap-3 mb-4 p-3 bg-gray-800 rounded-lg">
                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={user.avatar || undefined} />
+                            <AvatarImage src={user.avatar || undefined} alt={user.name || 'Avatar de usuario'} />
                             <AvatarFallback className="bg-gradient-to-br from-green-400 to-blue-500 text-white font-semibold">
                                 {user.name.split(' ').map(n => n[0]).join('')}
                             </AvatarFallback>

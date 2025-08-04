@@ -373,7 +373,7 @@ export default function UsersPage() {
               <TableCell>
                 <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
-                        <AvatarImage src={u.avatar || undefined} alt={u.name} data-ai-hint="user avatar" />
+                        <AvatarImage src={u.avatar || undefined} alt={u.name} />
                         <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
                     </Avatar>
                     <div className="font-medium">{u.name}</div>
@@ -387,7 +387,7 @@ export default function UsersPage() {
               <TableCell>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                    <Button aria-haspopup="true" size="icon" variant="ghost" aria-label={`Acciones para ${u.name}`}>
                         <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">Toggle menu</span>
                     </Button>
@@ -458,7 +458,7 @@ export default function UsersPage() {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2" aria-label={`Acciones para ${u.name}`}>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -508,16 +508,16 @@ export default function UsersPage() {
                     <form onSubmit={handleAddEditUser} className="grid gap-4 py-4">
                         <div className="space-y-2">
                             <Label htmlFor="name">Nombre</Label>
-                            <Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nombre completo" required disabled={isProcessing} />
+                            <Input id="name" name="name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nombre completo" required disabled={isProcessing} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="usuario@ejemplo.com" required disabled={isProcessing}/>
+                            <Input id="email" name="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="usuario@ejemplo.com" required disabled={isProcessing}/>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="role">Rol</Label>
                             <Select name="role" value={editRole} onValueChange={(value) => setEditRole(value as UserRole)} required disabled={isProcessing}>
-                                <SelectTrigger>
+                                <SelectTrigger id="role">
                                     <SelectValue placeholder="Seleccionar rol" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -533,6 +533,7 @@ export default function UsersPage() {
                               <div className="relative">
                                 <Input 
                                   id="password" 
+                                  name="password"
                                   type={showPassword ? "text" : "password"}
                                   value={editPassword} 
                                   onChange={(e) => setEditPassword(e.target.value)} 
@@ -541,7 +542,7 @@ export default function UsersPage() {
                                   disabled={isProcessing}
                                   className="pr-10"
                                 />
-                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
                                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                   </button>
                               </div>
@@ -574,6 +575,8 @@ export default function UsersPage() {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input 
                     type="search" 
+                    id="user-search"
+                    name="user-search"
                     placeholder="Buscar usuarios..." 
                     className="pl-8 w-full sm:w-[300px]" 
                     value={searchTerm}
@@ -669,7 +672,7 @@ export default function UsersPage() {
                   <div className="space-y-2">
                       <Label htmlFor="new-role">Nuevo Rol</Label>
                       <Select name="new-role" value={selectedNewRole} onValueChange={(value) => setSelectedNewRole(value as UserRole)} required disabled={isProcessing}>
-                          <SelectTrigger>
+                          <SelectTrigger id="new-role">
                               <SelectValue placeholder="Seleccionar nuevo rol" />
                           </SelectTrigger>
                           <SelectContent>
