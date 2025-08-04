@@ -50,10 +50,12 @@ function RootLayoutContent({ children }: { children: React.ReactNode }) {
         );
     }
     
+    // If the user is on a protected route and is logged in, show the app layout
     if (isAppRoute && user) {
         return <AppLayout>{children}</AppLayout>;
     }
 
+    // Otherwise, show the public layout (top bar + page content)
     return (
         <>
             <PublicTopBar />
