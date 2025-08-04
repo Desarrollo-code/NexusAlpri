@@ -1,3 +1,4 @@
+
 // src/app/(app)/layout.tsx
 'use client';
 
@@ -14,13 +15,12 @@ import {
   SidebarHeader
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { LogOut, Loader2, ChevronsRight, Search, ChevronsLeft } from 'lucide-react';
+import { LogOut, Loader2, ChevronsLeft, Search } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { TopBar } from '@/components/layout/top-bar';
 
 // Este componente envuelve toda la lógica del layout autenticado.
@@ -57,8 +57,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex h-screen bg-muted/30 dark:bg-gray-900/80">
             <Sidebar>
                 <SidebarHeader>
-                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                     <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="w-10 h-10 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
                            <Image src="/uploads/images/logo-letter.png" alt="NexusAlpri Logo" width={24} height={24} data-ai-hint="logo letter" />
                         </div>
                         <span className="sidebar-text text-white text-xl font-bold">NexusAlpri</span>
@@ -75,8 +75,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarContent />
                 
                 <SidebarFooter>
-                    <div className="flex items-center gap-3 mb-4 p-3 bg-gray-800 rounded-lg">
-                         <Avatar className="h-10 w-10">
+                    <div className="flex items-center gap-3 mb-4 p-3 bg-gray-800 rounded-lg overflow-hidden">
+                         <Avatar className="h-10 w-10 flex-shrink-0">
                             <AvatarImage src={user.avatar || undefined} alt={user.name || 'Avatar de usuario'} />
                             <AvatarFallback className="bg-gradient-to-br from-green-400 to-blue-500 text-white font-semibold">
                                 {user.name.split(' ').map(n => n[0]).join('')}
@@ -88,16 +88,15 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                       </div>
                     </div>
                     <Button onClick={logout} className="w-full text-red-300 hover:text-red-200 hover:bg-red-900/20 justify-start gap-3 p-3 h-auto">
-                        <LogOut className="h-5 w-5" />
+                        <LogOut className="h-5 w-5 flex-shrink-0" />
                         <span className="sidebar-text font-medium">Cerrar Sesión</span>
                     </Button>
                 </SidebarFooter>
             </Sidebar>
 
-            {/* Botón de control reposicionado */}
             <div className="hidden lg:block">
                 <Button
-                    variant="ghost"
+                    variant="outline"
                     size="icon"
                     className={cn(
                         "fixed top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-background/70 backdrop-blur-sm text-foreground/80 hover:bg-background hover:text-foreground border transition-all duration-300 ease-in-out z-50",
@@ -113,7 +112,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             
             <div className={cn(
                   "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
-                  "lg:ml-72", // Default state
+                  "lg:ml-72",
                   state === 'collapsed' && "lg:ml-20"
                 )}>
                   <TopBar/>

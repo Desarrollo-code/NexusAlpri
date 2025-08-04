@@ -60,18 +60,22 @@ const SidebarProvider = React.forwardRef<
     const [openMobile, setOpenMobile] = React.useState(false)
     const pathname = usePathname();
     const [activeItem, setActiveItem] = React.useState(pathname);
-    
-    const [isOpen, setIsOpen] = React.useState(true); 
 
+    // Default to expanded, will be updated by client-side effect
+    const [isOpen, setIsOpen] = React.useState(true);
+
+    // Read cookie only on client-side to avoid SSR issues
     React.useEffect(() => {
         const cookieValue = document.cookie
             .split('; ')
             .find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
             ?.split('=')[1];
+
+        // Explicitly set state based on cookie or default to true
         if (cookieValue !== undefined) {
             setIsOpen(cookieValue === 'true');
         } else {
-            setIsOpen(true);
+            setIsOpen(true); // Default to expanded if no cookie
         }
     }, []);
 
@@ -84,7 +88,7 @@ const SidebarProvider = React.forwardRef<
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${newState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
       }
     }, [isMobile, isOpen]);
-    
+
     React.useEffect(() => {
         if(pathname) setActiveItem(pathname);
     }, [pathname]);
@@ -143,7 +147,7 @@ const Sidebar = React.forwardRef<
       return (
         <>
           {openMobile && (
-            <div 
+            <div
               className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
               onClick={() => setOpenMobile(false)}
             />
@@ -250,10 +254,10 @@ const SidebarContent = React.forwardRef<
       className={cn("flex min-h-0 flex-1 flex-col overflow-auto px-4 py-2 space-y-2", className)}
       {...props}
     >
-       <SidebarMenu>
+        <SidebarMenu>
           {navItems.map((item) => (
-             <SidebarMenuItem key={item.id} item={item} />
-           ))}
+              <SidebarMenuItem key={item.id} item={item} />
+            ))}
       </SidebarMenu>
     </div>
   )
@@ -276,21 +280,19 @@ const SidebarMenuItem = React.forwardRef<
   HTMLLIElement,
   { item: NavItem } & React.ComponentProps<"li">
 >(({ className, item, ...props }, ref) => {
-  const { activeItem } = useSidebar();
+  const { state } = useSidebar();
   const hasChildren = item.children && item.children.length > 0;
-  
+
   if (hasChildren) {
     return (
       <li ref={ref} className={cn("group/menu-item relative", className)} {...props}>
-        <SidebarMenuButton 
-            isActive={item.path ? activeItem.startsWith(item.path) : false} 
+        <SidebarMenuButton
             tooltip={{ children: item.label }}
         >
             <item.icon className="h-5 w-5 flex-shrink-0" />
             <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
             <ChevronsRight className="sidebar-text h-4 w-4 transition-transform group-data-[state=open]:rotate-90" />
         </SidebarMenuButton>
-        {/* You would need a collapsible component here to show/hide children */}
       </li>
     )
   }
@@ -369,7 +371,7 @@ const SidebarMenuButton = React.forwardRef<
     const Comp = asChild ? Slot : "button"
     const { isMobile, state, activeItem, setOpenMobile } = useSidebar();
     const href = asChild && (children as React.ReactElement)?.props.href;
-    
+
     const finalIsActive = isActive ?? (href ? (href === '/' ? activeItem === '/' : activeItem.startsWith(href)) : false);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -383,7 +385,7 @@ const SidebarMenuButton = React.forwardRef<
       <Comp
         ref={ref}
         data-active={finalIsActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size, isActive: finalIsActive }), className)}
+        className={cn(sidebarMenuButtonVariants({ variant, size, isActive: finalIsActive }), state === 'collapsed' && 'justify-center', className)}
         onClick={handleClick}
         {...props}
       >
