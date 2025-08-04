@@ -15,19 +15,6 @@ export default function AuthLayout({
     <div className="auth-scope auth-split-layout">
       {/* Columna Izquierda - Branding */}
       <div className="auth-branding-panel">
-        <header className="auth-branding-header">
-           <Link href="/" className="auth-logo-link">
-              <span className="auth-logo-text-light">NexusAlpri</span>
-              <Image
-                  src="/uploads/images/logo-nexusalpri.png"
-                  alt="NexusAlpri Letter Logo"
-                  width={32}
-                  height={32}
-                  className="auth-logo"
-                  data-ai-hint="logo letter"
-              />
-          </Link>
-        </header>
         <div className="auth-branding-content">
             <h1 className="auth-headline">
               Aprende. Fórmate. Domina.

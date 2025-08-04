@@ -34,7 +34,7 @@ const sourceCodePro = Source_Code_Pro({
     variable: '--font-code',
 });
 
-const publicPages = ['/', '/about'];
+const publicPages = ['/', '/about', '/sign-in', '/sign-up'];
 
 export default function RootLayout({
   children,
@@ -42,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isPublicPage = publicPages.includes(pathname);
+  const isPublicPage = publicPages.some(p => pathname.startsWith(p));
 
   return (
     <html lang="es" className={`${inter.variable} ${spaceGrotesk.variable} ${dancingScript.variable} ${sourceCodePro.variable}`} suppressHydrationWarning>
