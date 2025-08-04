@@ -154,14 +154,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
             
-            <div className={cn("flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
+            <main className={cn("flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
               state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
             )}>
-              <TopBar />
-              <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-                {children}
-              </main>
-            </div>
+              {children}
+            </main>
         </div>
     )
 }
