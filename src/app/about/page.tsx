@@ -1,7 +1,9 @@
+
 // src/app/about/page.tsx
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Database, Code, Wind, Feather } from 'lucide-react';
 import Image from 'next/image';
+import React from 'react';
 
 export default function AboutPage() {
   const techStack = [
