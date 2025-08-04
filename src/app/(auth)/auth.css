@@ -1,122 +1,113 @@
 /* 
-  Estilos para la nueva página de autenticación inspirada en Casdoor.
+  Estilos para la nueva página de autenticación.
 */
 
 .auth-scope {
-  --auth-bg-color: #0a192f;
-  --auth-card-bg: rgba(255, 255, 255, 0.9); /* Ligeramente translúcido */
-  --auth-text-primary: #1a202c; /* Un negro más suave */
-  --auth-text-secondary: #4a5568; /* Un gris más oscuro */
-  --auth-primary-color: #14b8a6;
-  --auth-primary-color-hover: #0f766e;
+  --auth-bg-color: hsl(var(--background));
+  --auth-card-bg: hsl(var(--card));
+  --auth-text-primary: hsl(var(--foreground));
+  --auth-text-secondary: hsl(var(--muted-foreground));
+  --auth-primary-color: hsl(var(--primary));
+  --auth-primary-color-hover: hsl(var(--primary) / 0.9);
   
   min-height: 100vh;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
-  overflow: hidden; /* Para contener el video */
-}
-
-/* --- Contenedor del video de fondo --- */
-.auth-video-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-}
-
-.auth-video-background::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(10, 25, 47, 0.5); /* Superposición oscura para contraste */
-}
-
-.auth-main-illustration {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* --- Contenedor del Formulario (Ahora centrado) --- */
-.auth-form-container {
-  width: 100%;
-  max-width: 420px; /* Ancho típico para un formulario de login */
-  min-height: 600px;
-  background-color: var(--auth-card-bg);
-  border-radius: 1.5rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  padding: 0;
   overflow: hidden;
-  z-index: 2; /* Para que esté por encima del video */
-  
-  /* Efecto de desenfoque de fondo */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  
-  display: flex;
-  flex-direction: column;
+  background-color: var(--auth-bg-color);
 }
 
-.auth-card {
+
+/* --- Layout de Pantalla Dividida --- */
+.auth-split-layout {
+  display: flex;
   width: 100%;
-  max-width: 384px;
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 2rem;
-  color: var(--auth-text-primary);
+  height: 100vh;
 }
 
-.auth-form-content {
-  flex-grow: 1;
+.auth-branding-panel {
+  width: 55%;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  padding: 3rem;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  position: relative;
 }
 
-.auth-logo-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 2rem;
+.auth-branding-header {
   flex-shrink: 0;
 }
 
 .auth-logo-link {
   display: flex;
   align-items: center;
-  gap: 0.5rem; /* Espacio reducido entre logo y texto */
+  gap: 0.75rem;
   text-decoration: none;
 }
 
 .auth-logo {
-  height: 48px; /* Un poco más grande */
-  width: 48px;
+  height: 32px;
+  width: 32px;
 }
 
-.auth-logo-text {
+.auth-logo-text-light {
   font-family: var(--font-headline);
-  font-size: 2.5rem; /* Tamaño más grande para la fuente cursiva */
+  font-size: 1.75rem;
   font-weight: 500;
-  letter-spacing: -0.5px;
-  /* Efecto de texto en gradiente */
-  background: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--chart-5)));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: hsl(var(--primary-foreground));
 }
 
+.auth-branding-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 
+.auth-headline {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-family: var(--font-body);
+  margin-bottom: 1.5rem;
+  max-width: 12ch;
+}
+
+.auth-subheadline {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  max-width: 40ch;
+  opacity: 0.9;
+}
+
+.auth-down-arrow {
+  position: absolute;
+  bottom: 3rem;
+  left: 3rem;
+  width: 2rem;
+  height: 2rem;
+  opacity: 0.7;
+}
+
+.auth-form-panel {
+  width: 45%;
+  background-color: var(--auth-card-bg);
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-form-panel-content {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* --- Controles de Formulario --- */
 .auth-label {
   font-size: 0.875rem;
   font-weight: 500;
@@ -134,8 +125,8 @@
   height: 44px;
   width: 100%;
   border-radius: 0.5rem;
-  border: 1px solid #D1D5DB;
-  background-color: #F9FAFB;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   color: var(--auth-text-primary);
@@ -145,7 +136,7 @@
 .auth-input:focus-visible {
   outline: none;
   border-color: var(--auth-primary-color);
-  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2);
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
 }
 
 .auth-input-icon {
@@ -173,7 +164,7 @@
   height: 44px;
   padding: 0 1rem;
   width: 100%;
-  color: white;
+  color: hsl(var(--primary-foreground));
   background-color: var(--auth-primary-color);
   border: none;
 }
@@ -198,39 +189,6 @@
   color: var(--auth-primary-color-hover);
 }
 
-.auth-card-footer {
-  margin-top: auto;
-  padding-top: 1.5rem;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.auth-footer-link {
-  font-size: 0.8rem;
-  color: var(--auth-text-secondary);
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.auth-footer-top-line {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.auth-footer-logo {
-  height: 28px;
-  width: auto;
-}
-
-.auth-footer-company-name {
-  font-size: 0.7rem;
-  color: #9CA3AF;
-}
-
 .otp-group > div {
     border-color: #D1D5DB;
 }
@@ -240,66 +198,40 @@
 }
 
 .auth-form-switch-link {
-  padding: 1rem 0;
+  padding-top: 1rem;
   text-align: center;
   font-size: 0.875rem;
   color: var(--auth-text-secondary);
 }
 
-.auth-page-footer {
-    margin-top: auto;
-    padding-top: 1.5rem;
-    display: flex;
+
+/* Media Queries for Responsiveness */
+@media (max-width: 900px) {
+  .auth-split-layout {
     flex-direction: column;
-    gap: 1.5rem;
-}
-
-
-/* Estilos para la tarjeta de perfil en /profile */
-.profile-card {
-  position: relative;
-  width: 100%;
-  max-width: 360px;
-  aspect-ratio: 1/1.2;
-  margin: 0 auto;
-  border-radius: 1rem;
-  overflow: hidden;
-  box-shadow: 0 10px 20px rgba(0,0,0,.2);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: hsl(var(--card-foreground));
-}
-
-.card__img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-}
-
-.card__avatar {
-  position: relative;
-  z-index: 2;
-  margin-bottom: 1rem;
-}
-
-.card__title {
-  position: relative;
-  z-index: 2;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #ffffff;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-}
-
-.card__subtitle {
-  position: relative;
-  z-index: 2;
-  font-size: 0.875rem;
-  color: hsl(var(--muted-foreground));
-  opacity: 0.8;
+  }
+  .auth-branding-panel {
+    width: 100%;
+    height: 40vh;
+    padding: 2rem;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
+  .auth-headline {
+    font-size: 2.5rem;
+    text-align: center;
+  }
+  .auth-subheadline {
+    text-align: center;
+    font-size: 1rem;
+  }
+  .auth-down-arrow {
+    display: none;
+  }
+  .auth-form-panel {
+    width: 100%;
+    height: 60vh;
+    padding: 2rem 1.5rem;
+  }
 }

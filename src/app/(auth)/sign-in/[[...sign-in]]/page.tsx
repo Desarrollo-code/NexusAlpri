@@ -109,7 +109,13 @@ export default function SignInPage() {
         {!show2fa ? (
           <>
               <div className="text-left mb-8">
-                <h1 className="text-2xl font-bold">Iniciar Sesión</h1>
+                <h1 className="text-2xl font-bold text-auth-text-primary">Iniciar Sesión</h1>
+                 <p className="auth-form-switch-link text-left p-0">
+                    o{' '}
+                    <Link href="/sign-up" className="auth-link">
+                        crea una cuenta
+                    </Link>
+                </p>
               </div>
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -152,18 +158,6 @@ export default function SignInPage() {
                   {isLoading ? 'Ingresando...' : 'Ingresar'}
                 </button>
               </form>
-              <div className="auth-page-footer">
-                  {settings?.allowPublicRegistration && (
-                    <div className="auth-form-switch-link">
-                        <span>
-                            ¿No tienes una cuenta?{' '}
-                            <Link href="/sign-up" className="auth-link">
-                                Regístrate ahora
-                            </Link>
-                        </span>
-                    </div>
-                  )}
-              </div>
           </>
         ) : (
           <>

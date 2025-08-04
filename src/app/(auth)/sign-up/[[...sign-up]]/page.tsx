@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -82,13 +81,13 @@ export default function SignUpPage() {
       if (policy.passwordRequireUppercase && !/[A-Z]/.test(pass)) return "La contraseña debe contener al menos una letra mayúscula.";
       if (policy.passwordRequireLowercase && !/[a-z]/.test(pass)) return "La contraseña debe contener al menos una letra minúscula.";
       if (policy.passwordRequireNumber && !/\d/.test(pass)) return "La contraseña debe contener al menos un número.";
-      if (policy.passwordRequireSpecialChar && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pass)) return "La contraseña debe contener al menos un carácter especial.";
+      if (policy.passwordRequireSpecialChar && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(pass)) return "La contraseña debe contener al menos un carácter especial.";
       return null;
   }
 
   if (isAuthLoading || !settings) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center">
+      <div className="flex h-full w-full items-center justify-center">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
@@ -96,7 +95,7 @@ export default function SignUpPage() {
   
   if (!settings.allowPublicRegistration) {
       return (
-        <div className="auth-card text-center">
+        <div className="text-center">
             <h1 className="text-2xl font-bold">Registro Deshabilitado</h1>
             <div className="mt-4 p-4 border border-yellow-400/30 bg-yellow-500/10 rounded-md">
               <ShieldAlert className="h-6 w-6 mx-auto mb-2 text-yellow-600" />
@@ -112,7 +111,11 @@ export default function SignUpPage() {
   return (
     <div className="w-full h-full flex flex-col">
        <div className="text-left mb-8">
-        <h1 className="text-2xl font-bold">Crear una Cuenta</h1>
+        <h1 className="text-2xl font-bold text-auth-text-primary">Crear una Cuenta</h1>
+        <p className="auth-form-switch-link text-left p-0">
+          ¿Ya tienes una cuenta?{' '}
+          <Link href="/sign-in" className="auth-link">Inicia sesión</Link>
+        </p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
@@ -163,12 +166,6 @@ export default function SignUpPage() {
           Registrarse
         </button>
       </form>
-        <div className="auth-page-footer">
-            <div className="auth-form-switch-link">
-             <span>¿Ya tienes una cuenta?</span>{' '}
-             <Link href="/sign-in" className="auth-link">Inicia sesión</Link>
-          </div>
-        </div>
     </div>
   );
 }
