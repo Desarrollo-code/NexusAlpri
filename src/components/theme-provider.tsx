@@ -1,7 +1,9 @@
 
 "use client"
 
-// This file is intentionally left empty.
-// The ThemeProvider from next-themes is now used directly in the root layout.
-// This was done to solve a context initialization order issue.
+import { ThemeProvider as NextThemesProvider } from "next-themes"
+import type { ThemeProviderProps } from "next-themes/dist/types"
 
+export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+}

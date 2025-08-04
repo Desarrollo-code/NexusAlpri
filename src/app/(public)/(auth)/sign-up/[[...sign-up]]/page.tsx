@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -104,6 +103,8 @@ export default function SignUpPage() {
   
   if (!settings.allowPublicRegistration) {
       return (
+        <div className="flex flex-1 items-center justify-center py-12 md:py-24">
+          <div className="w-full max-w-md mx-auto p-4 md:p-0">
             <Card>
                 <CardHeader className="text-center">
                     <CardTitle className="text-2xl font-headline">Registro Deshabilitado</CardTitle>
@@ -121,67 +122,71 @@ export default function SignUpPage() {
                     </div>
                 </CardContent>
             </Card>
+           </div>
+        </div>
       );
   }
 
   return (
-    
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
-          <CardDescription>Regístrate para empezar a aprender</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="grid gap-4">
-            {error && (
-              <Alert variant="destructive" className="text-xs">
-                <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Error de Registro</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            <div className="grid gap-2">
-              <Label htmlFor="registerName">Nombre Completo</Label>
-              <Input type="text" id="registerName" placeholder="Tu nombre completo" required 
-                        value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="registerEmail">Correo Electrónico</Label>
-              <Input type="email" id="registerEmail" placeholder="tu@email.com" required 
-                        value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="registerPassword">Contraseña</Label>
-              <div className="relative">
-                <Input type={showPassword ? "text" : "password"} id="registerPassword" placeholder="••••••••" required
-                          value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} className="pr-10" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
+    <div className="flex flex-1 items-center justify-center py-12 md:py-24">
+      <div className="w-full max-w-md mx-auto p-4 md:p-0">
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
+            <CardDescription>Regístrate para empezar a aprender</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              {error && (
+                <Alert variant="destructive" className="text-xs">
+                  <ShieldAlert className="h-4 w-4" />
+                  <AlertTitle>Error de Registro</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              <div className="grid gap-2">
+                <Label htmlFor="registerName">Nombre Completo</Label>
+                <Input type="text" id="registerName" placeholder="Tu nombre completo" required 
+                          value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
               </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-              <div className="relative">
-                <Input type={showConfirmPassword ? "text" : "password"} id="confirmPassword" placeholder="••••••••" required
-                          value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} className="pr-10" />
-                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
-                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
+              <div className="grid gap-2">
+                <Label htmlFor="registerEmail">Correo Electrónico</Label>
+                <Input type="email" id="registerEmail" placeholder="tu@email.com" required 
+                          value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
               </div>
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading && <Loader2 className="animate-spin mr-2" />}
-              Registrarse
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter>
-                <p className="w-full text-center text-sm">
-                  ¿Ya tienes una cuenta? <Link href="/sign-in" className="underline text-primary">Inicia sesión</Link>
-                </p>
-        </CardFooter>
-      </Card>
-    
+              <div className="grid gap-2">
+                <Label htmlFor="registerPassword">Contraseña</Label>
+                <div className="relative">
+                  <Input type={showPassword ? "text" : "password"} id="registerPassword" placeholder="••••••••" required
+                            value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} className="pr-10" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+                <div className="relative">
+                  <Input type={showConfirmPassword ? "text" : "password"} id="confirmPassword" placeholder="••••••••" required
+                            value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} className="pr-10" />
+                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading && <Loader2 className="animate-spin mr-2" />}
+                Registrarse
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter>
+                  <p className="w-full text-center text-sm">
+                    ¿Ya tienes una cuenta? <Link href="/sign-in" className="underline text-primary">Inicia sesión</Link>
+                  </p>
+          </CardFooter>
+        </Card>
+      </div>
+    </div>
   );
 }

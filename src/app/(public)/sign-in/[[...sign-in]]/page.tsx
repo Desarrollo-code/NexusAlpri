@@ -111,7 +111,7 @@ export default function SignInPage() {
 
 
   return (
-      <div className="w-full max-w-md mx-auto">
+      
         <Card>
           {!show2fa ? (
             <>
@@ -208,6 +208,6 @@ export default function SignInPage() {
             </>
           )}
         </Card>
-      </div>
+      
   );
 }
