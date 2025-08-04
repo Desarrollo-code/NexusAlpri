@@ -14,7 +14,7 @@ import {
   SidebarHeader
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { LogOut, Loader2, ChevronsLeft, Search } from 'lucide-react';
+import { LogOut, Loader2, ChevronsRight, Search, ChevronsLeft } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -27,7 +27,7 @@ import { TopBar } from '@/components/layout/top-bar';
 function AppLayout({ children }: { children: React.ReactNode }) {
     const { user, settings, logout, isLoading } = useAuth();
     const { toast } = useToast();
-    const { state } = useSidebar();
+    const { state, toggleSidebar } = useSidebar();
 
     const handleIdleLogout = React.useCallback(() => {
         if (user) {
@@ -93,10 +93,28 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                     </Button>
                 </SidebarFooter>
             </Sidebar>
+
+            {/* Botón de control reposicionado */}
+            <div className="hidden lg:block">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                        "fixed top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-background/70 backdrop-blur-sm text-foreground/80 hover:bg-background hover:text-foreground border transition-all duration-300 ease-in-out z-50",
+                        "hover:scale-110 active:scale-95",
+                         state === "expanded" ? "left-[calc(theme(width.72)-1.125rem)]" : "left-[calc(theme(width.20)-1.125rem)]"
+                    )}
+                    onClick={toggleSidebar}
+                    aria-label="Alternar barra lateral"
+                >
+                    <ChevronsLeft className={cn("h-5 w-5 transition-transform", state === "collapsed" && "rotate-180")} />
+                </Button>
+            </div>
             
             <div className={cn(
                   "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
-                  state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
+                  "lg:ml-72", // Default state
+                  state === 'collapsed' && "lg:ml-20"
                 )}>
                   <TopBar/>
                   <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
