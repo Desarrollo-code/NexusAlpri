@@ -27,7 +27,7 @@ import { TopBar } from '@/components/layout/top-bar';
 function AppLayout({ children }: { children: React.ReactNode }) {
     const { user, settings, logout, isLoading } = useAuth();
     const { toast } = useToast();
-    const { state, toggleSidebar } = useSidebar();
+    const { state } = useSidebar();
 
     const handleIdleLogout = React.useCallback(() => {
         if (user) {
@@ -75,14 +75,14 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarContent />
                 
                 <SidebarFooter>
-                    <div className="sidebar-text flex items-center gap-3 mb-4 p-3 bg-gray-800 rounded-lg">
+                    <div className="flex items-center gap-3 mb-4 p-3 bg-gray-800 rounded-lg">
                          <Avatar className="h-10 w-10">
                             <AvatarImage src={user.avatar || undefined} alt={user.name || 'Avatar de usuario'} />
                             <AvatarFallback className="bg-gradient-to-br from-green-400 to-blue-500 text-white font-semibold">
                                 {user.name.split(' ').map(n => n[0]).join('')}
                             </AvatarFallback>
                         </Avatar>
-                      <div className="flex-1 overflow-hidden">
+                      <div className="sidebar-text flex-1 overflow-hidden">
                         <p className="text-white text-sm font-medium truncate">{user.name}</p>
                         <p className="text-gray-400 text-xs capitalize truncate">{user.role.toLowerCase()}</p>
                       </div>
@@ -94,26 +94,14 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
             
-            <div className="relative flex-1 flex flex-col overflow-hidden">
-                 <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="hidden lg:flex absolute top-1/2 -translate-y-1/2 z-50 h-8 w-8 rounded-full bg-background border hover:bg-muted transition-all duration-300 ease-in-out group-data-[state=expanded]/sidebar-wrapper:left-72 group-data-[state=collapsed]/sidebar-wrapper:left-20 -translate-x-1/2" 
-                    onClick={toggleSidebar} 
-                    aria-label="Alternar barra lateral"
-                  >
-                    <ChevronsLeft className={cn("h-5 w-5 text-muted-foreground transition-transform", state === "collapsed" && "rotate-180")} />
-                  </Button>
-
-                <div className={cn(
-                  "flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
+            <div className={cn(
+                  "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
                   state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
                 )}>
                   <TopBar/>
                   <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
                     {children}
                   </main>
-                </div>
             </div>
         </div>
     )
