@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -34,7 +35,6 @@ export default function AuthLayout({
             <p className="auth-subheadline">
               La plataforma donde tu potencial cobra vida.
             </p>
-            <ArrowDown className="auth-down-arrow" />
         </div>
       </div>
 
