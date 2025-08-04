@@ -29,10 +29,10 @@ export default function AuthLayout({
         </header>
         <div className="auth-branding-content">
             <h1 className="auth-headline">
-              Potencia el Talento <br /> de tu Equipo
+              El Futuro del Aprendizaje Corporativo, Hoy.
             </h1>
             <p className="auth-subheadline">
-              NexusAlpri es un espacio de trabajo moderno diseñado para alivar el trabajo pesado, de modo que puedas hacer hincapié en lo que realmente importa.
+              Una plataforma de e-learning integral diseñada para transformar la formación en tu organización. Crea, gestiona y mide el impacto de tu contenido con facilidad.
             </p>
             <ArrowDown className="auth-down-arrow" />
         </div>
