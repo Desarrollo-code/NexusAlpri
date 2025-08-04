@@ -2,10 +2,8 @@ import { Inter, Space_Grotesk, Dancing_Script, Source_Code_Pro } from 'next/font
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/auth-context';
-import { ThemeProvider } from 'next-themes';
-import React from 'react';
 import { PublicLayoutWrapper } from '@/components/layout/public-layout-wrapper';
-import { cn } from '@/lib/utils';
+import React from 'react';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -38,25 +36,18 @@ export default function RootLayout({
 }>) {
 
   return (
-    <html lang="es" className={`${inter.variable} ${spaceGrotesk.variable} ${dancingScript.variable} ${sourceCodePro.variable}`} suppressHydrationWarning>
+    <html lang="es" className={`${inter.variable} ${spaceGrotesk.variable} ${dancingScript.variable} ${sourceCodePro.variable} dark`} style={{ colorScheme: 'dark' }} suppressHydrationWarning>
       <head>
           <title>NexusAlpri</title>
           <meta name="description" content="Plataforma E-learning Corporativa" />
       </head>
       <body className="font-body flex flex-col min-h-screen bg-background">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-            <AuthProvider>
-                <PublicLayoutWrapper>
-                    {children}
-                </PublicLayoutWrapper>
-                <Toaster />
-            </AuthProvider>
-        </ThemeProvider>
+        <AuthProvider>
+            <PublicLayoutWrapper>
+                {children}
+            </PublicLayoutWrapper>
+            <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

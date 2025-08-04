@@ -29,6 +29,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useRouter, usePathname } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { ThemeProvider } from 'next-themes';
 
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
@@ -195,8 +196,15 @@ const NavItem = ({ item, activeItem, onItemClick }: { item: NavItem, activeItem:
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
     return (
+      <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+      >
         <SidebarProvider>
             <AppLayoutContent>{children}</AppLayoutContent>
         </SidebarProvider>
+      </ThemeProvider>
     );
 }
