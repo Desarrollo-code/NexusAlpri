@@ -17,8 +17,6 @@ import {
   SidebarMenuButton,
   useSidebar
 } from '@/components/ui/sidebar';
-import { TopBar } from '@/components/layout/top-bar';
-import { getNavItemsForRole } from '@/lib/nav-items';
 import type { NavItem } from '@/types';
 import Link from 'next/link';
 import { LogOut, Loader2, ChevronsRight, Search } from 'lucide-react';
@@ -30,6 +28,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useRouter, usePathname } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { getNavItemsForRole } from '@/lib/nav-items';
+import { TopBar } from '@/components/layout/top-bar';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const { user, settings, logout, isLoading } = useAuth();
@@ -158,7 +158,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             <div className={cn("flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
               state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
             )}>
-                <TopBar />
                 <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
                   {children}
                 </main>

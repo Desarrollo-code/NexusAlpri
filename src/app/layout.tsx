@@ -12,6 +12,9 @@ import { PublicTopBar } from '@/components/layout/public-top-bar';
 import AppLayout from '@/app/(app)/layout';
 import { Loader2 } from 'lucide-react';
 import { Footer } from '@/components/layout/footer';
+import { TopBar } from '@/components/layout/top-bar';
+import { cn } from '@/lib/utils';
+import { useSidebar } from '@/components/ui/sidebar';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -43,6 +46,8 @@ const IS_APP_ROUTE_REGEX = /^\/(dashboard|courses|my-courses|profile|manage-cour
 function RootLayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { user, isLoading } = useAuth();
+    // We need to get sidebar state here to adjust the main content margin
+    const { state } = useSidebar(); 
 
     const isAppRoute = IS_APP_ROUTE_REGEX.test(pathname);
 
@@ -56,7 +61,18 @@ function RootLayoutContent({ children }: { children: React.ReactNode }) {
     
     // If the user is on a protected route and is logged in, show the app layout
     if (isAppRoute && user) {
-        return <AppLayout>{children}</AppLayout>;
+        return (
+            <AppLayout>
+                <div className={cn("flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
+                  state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
+                )}>
+                  <TopBar />
+                  <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+                     {children}
+                  </div>
+                </div>
+            </AppLayout>
+        );
     }
 
     // Otherwise, show the public layout (top bar + page content)
@@ -91,7 +107,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
+            <AppLayout>
               <RootLayoutContent>{children}</RootLayoutContent>
+            </AppLayout>
               <Toaster />
           </AuthProvider>
         </ThemeProvider>
