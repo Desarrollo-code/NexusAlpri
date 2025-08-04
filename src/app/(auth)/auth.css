@@ -3,76 +3,40 @@
 */
 
 .auth-scope {
-  --auth-bg-color: #0a192f; /* Azul Marino Oscuro */
-  --auth-card-bg: #ffffff;
-  --auth-text-primary: #111827; /* gray-900 (más oscuro) */
-  --auth-text-secondary: #4b5563; /* gray-600 (más oscuro) */
-  
-  /* Esquema de Color Teal */
-  --auth-primary-color: #14b8a6; /* teal-500 */
-  --auth-primary-color-hover: #10a392; /* Un poco más oscuro */
+  --auth-bg-color: #0a192f;
+  --auth-card-bg: rgba(255, 255, 255, 0.9); /* Ligeramente translúcido */
+  --auth-text-primary: #1a202c; /* Un negro más suave */
+  --auth-text-secondary: #4a5568; /* Un gris más oscuro */
+  --auth-primary-color: #14b8a6;
+  --auth-primary-color-hover: #0f766e;
   
   min-height: 100vh;
-  /* Fondo de gradiente animado */
-  background: linear-gradient(300deg, hsl(var(--primary)), hsl(270, 50%, 15%), hsl(221, 83%, 25%));
-  background-size: 180% 180%;
-  animation: moveGradient 18s ease infinite;
-
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  overflow: hidden; /* Para contener el video */
 }
 
-@keyframes moveGradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-
-.auth-container {
-  display: flex;
-  width: 100%;
-  max-width: 1024px; /* Ancho total de la tarjeta aumentado */
-  min-height: 600px;
-  background-color: var(--auth-card-bg);
-  border-radius: 1.5rem; /* Bordes bien redondeados */
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
-}
-
-/* --- Columna de la Ilustración (Izquierda) --- */
-.auth-illustration-column {
-  width: 55%;
-  padding: 0;
-  display: none; /* Oculto en móvil por defecto */
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  position: relative;
-  /* Fondo semi-transparente para que se vea el gradiente */
-  background-color: rgba(240, 253, 250, 0.85); 
-  backdrop-filter: blur(4px);
-}
-
-@media (min-width: 1024px) {
-  .auth-illustration-column {
-    display: flex;
-  }
-}
-
-.illustration-wrapper {
+/* --- Contenedor del video de fondo --- */
+.auth-video-background {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  position: relative;
+  z-index: 1;
+}
+
+.auth-video-background::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(10, 25, 47, 0.5); /* Superposición oscura para contraste */
 }
 
 .auth-main-illustration {
@@ -81,29 +45,36 @@
     object-fit: cover;
 }
 
-
-/* --- Columna del Formulario (Derecha) --- */
-.auth-form-column {
+/* --- Contenedor del Formulario (Ahora centrado) --- */
+.auth-form-container {
   width: 100%;
+  max-width: 420px; /* Ancho típico para un formulario de login */
+  min-height: 600px;
+  background-color: var(--auth-card-bg);
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  z-index: 2; /* Para que esté por encima del video */
+  
+  /* Efecto de desenfoque de fondo */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-}
-
-@media (min-width: 1024px) {
-  .auth-form-column {
-    width: 45%; 
-  }
+  flex-direction: column;
 }
 
 .auth-card {
   width: 100%;
   max-width: 384px;
+  margin: auto;
   display: flex;
   flex-direction: column;
   height: 100%;
-  color: var(--auth-text-primary); /* Hacemos que todo el texto herede el color primario */
+  padding: 2rem;
+  color: var(--auth-text-primary);
 }
 
 .auth-form-content {
@@ -118,6 +89,7 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 2rem;
+  flex-shrink: 0;
 }
 
 .auth-logo-link {
@@ -149,11 +121,11 @@
 
 .auth-input {
   display: flex;
-  height: 44px; /* Un poco más alto */
+  height: 44px;
   width: 100%;
   border-radius: 0.5rem;
-  border: 1px solid #D1D5DB; /* gray-300 */
-  background-color: #F9FAFB; /* gray-50 */
+  border: 1px solid #D1D5DB;
+  background-color: #F9FAFB;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   color: var(--auth-text-primary);
@@ -173,7 +145,7 @@
     transform: translateY(-50%);
     height: 1.25rem;
     width: 1.25rem;
-    color: #9CA3AF; /* gray-400 */
+    color: #9CA3AF;
 }
 
 .auth-input-with-icon {
@@ -261,7 +233,7 @@
   padding: 1rem 0;
   text-align: center;
   font-size: 0.875rem;
-  color: var(--auth-text-secondary); /* Aplicamos el color secundario aquí */
+  color: var(--auth-text-secondary);
 }
 
 .auth-page-footer {
@@ -269,7 +241,7 @@
     padding-top: 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem; /* Aumentamos el espacio entre los dos elementos del footer */
+    gap: 1.5rem;
 }
 
 
