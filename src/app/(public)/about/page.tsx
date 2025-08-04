@@ -1,5 +1,4 @@
-
-// src/app/about/page.tsx
+// src/app/(public)/about/page.tsx
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Code, Database, Wind } from 'lucide-react';
 import Image from 'next/image';
