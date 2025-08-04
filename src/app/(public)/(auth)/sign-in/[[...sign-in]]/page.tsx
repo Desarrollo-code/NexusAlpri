@@ -111,7 +111,7 @@ export default function SignInPage() {
 
 
   return (
-      <div className="w-full max-w-md mx-auto py-12 md:py-24">
+      <div className="w-full max-w-md mx-auto">
         <Card>
           {!show2fa ? (
             <>
@@ -211,5 +211,3 @@ export default function SignInPage() {
       </div>
   );
 }
-
-    

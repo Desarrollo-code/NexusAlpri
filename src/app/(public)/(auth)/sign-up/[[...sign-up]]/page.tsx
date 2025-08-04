@@ -104,30 +104,28 @@ export default function SignUpPage() {
   
   if (!settings.allowPublicRegistration) {
       return (
-            <div className="w-full max-w-md mx-auto py-12 md:py-24">
-                <Card>
-                    <CardHeader className="text-center">
-                        <CardTitle className="text-2xl font-headline">Registro Deshabilitado</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Alert variant="destructive">
-                          <ShieldAlert className="h-4 w-4" />
-                          <AlertTitle>Acción no permitida</AlertTitle>
-                          <AlertDescription>
-                            El registro de nuevas cuentas está deshabilitado. Contacta a un administrador para que cree una cuenta para ti.
-                          </AlertDescription>
-                        </Alert>
-                        <div className="mt-4 text-center text-sm">
-                            <Link href="/sign-in" className="underline text-primary hover:text-primary/80">Volver a Inicio de Sesión</Link>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+            <Card className="w-full max-w-md">
+                <CardHeader className="text-center">
+                    <CardTitle className="text-2xl font-headline">Registro Deshabilitado</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Alert variant="destructive">
+                      <ShieldAlert className="h-4 w-4" />
+                      <AlertTitle>Acción no permitida</AlertTitle>
+                      <AlertDescription>
+                        El registro de nuevas cuentas está deshabilitado. Contacta a un administrador para que cree una cuenta para ti.
+                      </AlertDescription>
+                    </Alert>
+                    <div className="mt-4 text-center text-sm">
+                        <Link href="/sign-in" className="underline text-primary hover:text-primary/80">Volver a Inicio de Sesión</Link>
+                    </div>
+                </CardContent>
+            </Card>
       );
   }
 
   return (
-    <div className="w-full max-w-md mx-auto py-12 md:py-24">
+    <div className="w-full max-w-md mx-auto">
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
@@ -187,5 +185,3 @@ export default function SignUpPage() {
     </div>
   );
 }
-
-    
