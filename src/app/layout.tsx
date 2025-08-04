@@ -35,18 +35,26 @@ const sourceCodePro = Source_Code_Pro({
     variable: '--font-code',
 });
 
-const publicPages = ['/', '/about', '/sign-in', '/sign-up'];
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  // Check if the current path starts with any of the public paths.
-  // This handles nested routes like /sign-in/[[...sign-in]]
-  const isPublicPage = publicPages.some(p => pathname.startsWith(p));
-  const isAuthPage = pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up');
+  const isPublicPage = !pathname.startsWith('/dashboard') && 
+                       !pathname.startsWith('/courses/') && // Excluir páginas de detalle de cursos
+                       !pathname.startsWith('/manage-courses') &&
+                       !pathname.startsWith('/my-courses') &&
+                       !pathname.startsWith('/resources') &&
+                       !pathname.startsWith('/announcements') &&
+                       !pathname.startsWith('/calendar') &&
+                       !pathname.startsWith('/profile') &&
+                       !pathname.startsWith('/settings') &&
+                       !pathname.startsWith('/users') &&
+                       !pathname.startsWith('/analytics') &&
+                       !pathname.startsWith('/security-audit') &&
+                       !pathname.startsWith('/enrollments') &&
+                       !pathname.startsWith('/notifications');
 
   return (
     <html lang="es" className={`${inter.variable} ${spaceGrotesk.variable} ${dancingScript.variable} ${sourceCodePro.variable}`} suppressHydrationWarning>
@@ -54,7 +62,7 @@ export default function RootLayout({
           <title>NexusAlpri</title>
           <meta name="description" content="Plataforma E-learning Corporativa" />
       </head>
-      <body className="font-body flex flex-col min-h-screen">
+      <body className="font-body flex flex-col min-h-screen bg-background">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -63,9 +71,9 @@ export default function RootLayout({
         >
             <AuthProvider>
                 {isPublicPage && <PublicTopBar />}
-                <main className={cn("flex-1 flex flex-col", isAuthPage ? "items-center justify-center" : "")}>
+                <div className={cn("flex-1 flex flex-col w-full", !isPublicPage && "h-screen")}>
                   {children}
-                </main>
+                </div>
                 <Toaster />
             </AuthProvider>
         </ThemeProvider>

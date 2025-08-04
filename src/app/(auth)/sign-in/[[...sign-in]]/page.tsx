@@ -12,7 +12,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -109,7 +109,7 @@ export default function SignInPage() {
 
 
   return (
-      <Card className="w-full max-w-md mx-auto">
+      <Card className="w-full">
         {!show2fa ? (
           <>
               <CardHeader className="text-center">
@@ -154,12 +154,14 @@ export default function SignInPage() {
                   </Button>
                 </form>
               </CardContent>
-               <div className="p-6 pt-0 text-center text-sm">
+               <CardFooter>
+                 <p className="text-center text-sm w-full">
                     ¿No tienes una cuenta?{' '}
                     <Link href="/sign-up" className="underline text-primary">
                         Crea una cuenta
                     </Link>
-                </div>
+                  </p>
+                </CardFooter>
           </>
         ) : (
           <>
@@ -193,11 +195,13 @@ export default function SignInPage() {
                 </Button>
               </form>
              </CardContent>
-               <div className="p-6 pt-0 text-center text-sm">
-                <button onClick={() => { setShow2fa(false); setUserIdFor2fa(null); setPassword(''); }} className="underline text-primary">
-                  Volver al inicio de sesión
-                </button>
-              </div>
+               <CardFooter>
+                  <p className="text-center text-sm w-full">
+                    <button onClick={() => { setShow2fa(false); setUserIdFor2fa(null); setPassword(''); }} className="underline text-primary">
+                      Volver al inicio de sesión
+                    </button>
+                  </p>
+              </CardFooter>
           </>
         )}
       </Card>

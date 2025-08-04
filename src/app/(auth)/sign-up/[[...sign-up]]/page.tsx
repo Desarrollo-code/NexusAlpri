@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import { Loader2, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -102,7 +102,7 @@ export default function SignUpPage() {
   
   if (!settings.allowPublicRegistration) {
       return (
-        <Card className="w-full max-w-md">
+        <Card className="w-full">
             <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-headline">Registro Deshabilitado</CardTitle>
             </CardHeader>
@@ -115,7 +115,7 @@ export default function SignUpPage() {
                   </AlertDescription>
                 </Alert>
                 <div className="mt-4 text-center text-sm">
-                    <Link href="/sign-in" className="underline text-accent-foreground hover:text-primary">Volver a Inicio de Sesión</Link>
+                    <Link href="/sign-in" className="underline text-primary hover:text-primary/80">Volver a Inicio de Sesión</Link>
                 </div>
             </CardContent>
         </Card>
@@ -123,7 +123,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
         <CardDescription>Regístrate para empezar a aprender</CardDescription>
@@ -171,11 +171,13 @@ export default function SignUpPage() {
             {isLoading && <Loader2 className="animate-spin mr-2" />}
             Registrarse
           </Button>
-          <div className="mt-4 text-center text-sm">
-            ¿Ya tienes una cuenta? <Link href="/sign-in" className="underline text-accent-foreground hover:text-primary">Inicia sesión</Link>
-          </div>
         </form>
       </CardContent>
+      <CardFooter>
+          <p className="w-full text-center text-sm">
+            ¿Ya tienes una cuenta? <Link href="/sign-in" className="underline text-primary">Inicia sesión</Link>
+          </p>
+      </CardFooter>
     </Card>
   );
 }
