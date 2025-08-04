@@ -28,6 +28,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useRouter, usePathname } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
 
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
