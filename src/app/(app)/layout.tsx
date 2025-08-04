@@ -33,12 +33,11 @@ import { TopBar } from '@/components/layout/top-bar';
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const { user, settings, logout, isLoading } = useAuth();
     const { toast } = useToast();
-    const router = useRouter(); // Needed for redirects
-    const pathname = usePathname(); // Needed for active item state
+    const router = useRouter();
+    const pathname = usePathname();
     const isMobile = useIsMobile();
     const { state, toggleSidebar, activeItem, setActiveItem, setOpenMobile } = useSidebar();
 
-    // --- Idle Timeout Logic ---
     const handleIdleLogout = React.useCallback(() => {
         if (user) {
             logout();
@@ -55,7 +54,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
     useIdleTimeout(handleIdleLogout, idleTimeoutMinutes, isIdleTimeoutEnabled);
 
-    // --- Navigation Logic ---
     const navItems = React.useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
 
     React.useEffect(() => {
@@ -64,9 +62,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         }
     }, [pathname, setActiveItem]);
 
-
-    // --- Loading and Auth Check ---
-     React.useEffect(() => {
+    React.useEffect(() => {
         if (!isLoading && !user) {
             router.replace('/sign-in');
         }
@@ -154,13 +150,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
             
-<<<<<<< HEAD
             <div className={cn("flex flex-col flex-1 overflow-hidden transition-[margin-left] duration-300", 
                  isMobile ? "ml-0" : state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
-=======
-            <div className={cn("flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
-              state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
->>>>>>> c242179 (.)
             )}>
               <TopBar />
               <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
@@ -176,7 +167,6 @@ const NavItem = ({ item, activeItem, onItemClick }: { item: NavItem, activeItem:
   
   if (hasChildren) {
     return (
-        // This is a placeholder for a more complex collapsible menu item
         <SidebarMenuButton
             onClick={() => onItemClick(item)}
             isActive={activeItem.startsWith(item.path || '---')}
