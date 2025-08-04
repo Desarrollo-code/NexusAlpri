@@ -27,13 +27,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useRouter, usePathname } from 'next/navigation';
 
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const { user, settings, logout, isLoading } = useAuth();
-    const pathname = React.usePathname();
-    const router = useRouter();
     const { toast } = useToast();
+    const router = useRouter(); // Needed for redirects
+    const pathname = usePathname(); // Needed for active item state
     const isMobile = useIsMobile();
     const { state, toggleSidebar, activeItem, setActiveItem, openMobile, setOpenMobile } = useSidebar();
 
@@ -198,4 +199,3 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarProvider>
     );
 }
-

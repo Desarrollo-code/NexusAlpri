@@ -1,14 +1,10 @@
-
-'use client';
-
 import { Inter, Space_Grotesk, Dancing_Script, Source_Code_Pro } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from 'next-themes';
 import React from 'react';
-import { usePathname } from 'next/navigation';
-import { PublicTopBar } from '@/components/layout/public-top-bar';
+import { PublicLayoutWrapper } from '@/components/layout/public-layout-wrapper';
 import { cn } from '@/lib/utils';
 
 const inter = Inter({
@@ -40,21 +36,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  const isPublicPage = !pathname.startsWith('/dashboard') && 
-                       !pathname.startsWith('/courses/') && // Excluir páginas de detalle de cursos
-                       !pathname.startsWith('/manage-courses') &&
-                       !pathname.startsWith('/my-courses') &&
-                       !pathname.startsWith('/resources') &&
-                       !pathname.startsWith('/announcements') &&
-                       !pathname.startsWith('/calendar') &&
-                       !pathname.startsWith('/profile') &&
-                       !pathname.startsWith('/settings') &&
-                       !pathname.startsWith('/users') &&
-                       !pathname.startsWith('/analytics') &&
-                       !pathname.startsWith('/security-audit') &&
-                       !pathname.startsWith('/enrollments') &&
-                       !pathname.startsWith('/notifications');
 
   return (
     <html lang="es" className={`${inter.variable} ${spaceGrotesk.variable} ${dancingScript.variable} ${sourceCodePro.variable}`} suppressHydrationWarning>
@@ -70,10 +51,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
             <AuthProvider>
-                {isPublicPage && <PublicTopBar />}
-                <div className={cn("flex-1 flex flex-col w-full", !isPublicPage && "h-screen")}>
-                  {children}
-                </div>
+                <PublicLayoutWrapper>
+                    {children}
+                </PublicLayoutWrapper>
                 <Toaster />
             </AuthProvider>
         </ThemeProvider>
