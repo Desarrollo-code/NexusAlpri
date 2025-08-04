@@ -1,3 +1,4 @@
+
 // src/app/layout.tsx
 'use client';
 
@@ -7,7 +8,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider, useAuth } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
 import React, { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
 import { Footer } from '@/components/layout/footer';
 import { Loader2 } from 'lucide-react';
@@ -33,6 +34,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { NavItem } from '@/types';
+import { Input } from '@/components/ui/input';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -257,5 +259,5 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
-  );
-}
+
+    
