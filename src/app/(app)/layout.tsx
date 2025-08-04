@@ -10,13 +10,10 @@ import { useToast } from '@/hooks/use-toast';
 import {
   SidebarProvider,
   Sidebar,
-  SidebarHeader,
   SidebarContent,
   SidebarFooter,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  useSidebar
+  useSidebar,
+  SidebarHeader
 } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
 import Link from 'next/link';
@@ -99,10 +96,10 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                         <p className="text-gray-400 text-xs capitalize truncate">{user.role.toLowerCase()}</p>
                       </div>
                     </div>
-                    <SidebarMenuButton onClick={logout} className="w-full text-red-300 hover:text-red-200 hover:bg-red-900/20" tooltip={{ children: 'Cerrar Sesión' }}>
+                    <Button onClick={logout} className="w-full text-red-300 hover:text-red-200 hover:bg-red-900/20 justify-start gap-3 p-3 h-auto">
                         <LogOut className="h-5 w-5" />
                         <span className="sidebar-text font-medium">Cerrar Sesión</span>
-                    </SidebarMenuButton>
+                    </Button>
                 </SidebarFooter>
             </Sidebar>
             

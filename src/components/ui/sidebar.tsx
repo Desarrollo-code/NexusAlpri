@@ -167,7 +167,7 @@ const Sidebar = React.forwardRef<
           <aside
             ref={ref}
             className={cn(
-              "fixed left-0 top-0 h-full z-50 bg-sidebar border-r border-sidebar-border transition-transform duration-300 flex flex-col",
+              "fixed left-0 top-0 h-full z-50 bg-sidebar border-r border-sidebar-border transition-transform duration-300 ease-in-out flex flex-col",
               openMobile ? 'translate-x-0' : '-translate-x-full',
               'w-72',
               className
@@ -346,10 +346,15 @@ const sidebarMenuButtonVariants = cva(
         sm: "h-9 text-sm",
         lg: "h-12 text-base",
       },
+      isActive: {
+        true: "bg-sidebar-accent text-sidebar-accent-foreground shadow-lg",
+        false: "",
+      }
     },
     defaultVariants: {
       variant: "ghost",
-      size: "sm",
+      size: "default",
+      isActive: false,
     },
   }
 )
@@ -369,6 +374,7 @@ const SidebarMenuButton = React.forwardRef<
       asChild = false,
       variant,
       size,
+      isActive,
       className,
       children,
       tooltip,
@@ -381,7 +387,7 @@ const SidebarMenuButton = React.forwardRef<
     const href = asChild && (children as React.ReactElement)?.props.href;
     
     // Determine if the item is active
-    const isActive = href === activeItem || (href !== '/' && activeItem.startsWith(href));
+    const finalIsActive = isActive ?? (href ? (href === '/' ? activeItem === '/' : activeItem.startsWith(href)) : false);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         if (href) {
@@ -393,8 +399,8 @@ const SidebarMenuButton = React.forwardRef<
     const button = (
       <Comp
         ref={ref}
-        data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size }), isActive && 'bg-sidebar-accent text-sidebar-accent-foreground shadow-lg', className)}
+        data-active={finalIsActive}
+        className={cn(sidebarMenuButtonVariants({ variant, size, isActive: finalIsActive }), className)}
         onClick={handleClick}
         {...props}
       >
