@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { Loader2, ShieldAlert, Eye, EyeOff } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, EyeOff, UserPlus, UserCircle, LockKeyhole } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -96,7 +96,7 @@ export default function SignUpPage() {
 
   if (isAuthLoading || !settings) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center">
+      <div className="flex h-full w-full items-center justify-center">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
@@ -104,7 +104,7 @@ export default function SignUpPage() {
   
   if (!settings.allowPublicRegistration) {
       return (
-            <Card>
+            <Card className="shadow-lg">
                 <CardHeader className="text-center">
                     <CardTitle className="text-2xl font-headline">Registro Deshabilitado</CardTitle>
                 </CardHeader>
@@ -126,8 +126,11 @@ export default function SignUpPage() {
 
   return (
     
-      <Card>
+      <Card className="shadow-lg">
         <CardHeader className="text-center">
+          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+              <UserPlus className="w-8 h-8 text-white" />
+          </div>
           <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
           <CardDescription>Regístrate para empezar a aprender</CardDescription>
         </CardHeader>
@@ -142,19 +145,26 @@ export default function SignUpPage() {
             )}
             <div className="grid gap-2">
               <Label htmlFor="registerName">Nombre Completo</Label>
-              <Input type="text" id="registerName" placeholder="Tu nombre completo" required 
-                        value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
+              <div className="relative">
+                <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input type="text" id="registerName" placeholder="Tu nombre completo" required 
+                          value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} className="pl-10" />
+              </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="registerEmail">Correo Electrónico</Label>
-              <Input type="email" id="registerEmail" placeholder="tu@email.com" required 
-                        value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
+               <div className="relative">
+                <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input type="email" id="registerEmail" placeholder="tu@email.com" required 
+                          value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="pl-10"/>
+               </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="registerPassword">Contraseña</Label>
               <div className="relative">
+                <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input type={showPassword ? "text" : "password"} id="registerPassword" placeholder="••••••••" required
-                          value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} className="pr-10" />
+                          value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} className="pl-10 pr-10" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -163,8 +173,9 @@ export default function SignUpPage() {
             <div className="grid gap-2">
               <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
               <div className="relative">
+                <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input type={showConfirmPassword ? "text" : "password"} id="confirmPassword" placeholder="••••••••" required
-                          value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} className="pr-10" />
+                          value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} className="pl-10 pr-10" />
                 <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                     {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>

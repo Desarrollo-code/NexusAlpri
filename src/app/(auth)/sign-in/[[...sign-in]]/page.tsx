@@ -7,7 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { Loader2, ShieldCheck, Eye, EyeOff, UserCircle, LockKeyhole } from 'lucide-react';
+import { Loader2, ShieldCheck, Eye, EyeOff, UserCircle, LockKeyhole, LogIn } from 'lucide-react';
 import {
   InputOTP,
   InputOTPGroup,
@@ -111,10 +111,13 @@ export default function SignInPage() {
 
 
   return (
-        <Card>
+        <Card className="shadow-lg">
           {!show2fa ? (
             <>
                 <CardHeader className="text-center">
+                  <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                      <LogIn className="w-8 h-8 text-white" />
+                  </div>
                   <CardTitle className="text-2xl font-headline">Iniciar Sesión</CardTitle>
                   <CardDescription>Ingresa a tu cuenta para continuar</CardDescription>
                 </CardHeader>
@@ -122,19 +125,24 @@ export default function SignInPage() {
                   <form onSubmit={handlePasswordSubmit} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="email">Correo Electrónico</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="tu@email.com"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={isLoading}
-                      />
+                      <div className="relative">
+                        <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="tu@email.com"
+                          required
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          disabled={isLoading}
+                          className="pl-10"
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="password">Contraseña</Label>
                       <div className="relative">
+                        <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input
                           id="password"
                           type={showPassword ? "text" : "password"}
@@ -143,7 +151,7 @@ export default function SignInPage() {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           disabled={isLoading}
-                          className="pr-10"
+                          className="pl-10 pr-10"
                         />
                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                             {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
