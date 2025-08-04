@@ -155,7 +155,7 @@ export default function SignInPage() {
               <div className="auth-page-footer">
                   {settings?.allowPublicRegistration && (
                     <div className="auth-form-switch-link">
-                        <span className="auth-text-secondary">
+                        <span>
                             ¿No tienes una cuenta?{' '}
                             <Link href="/sign-up" className="auth-link">
                                 Regístrate ahora

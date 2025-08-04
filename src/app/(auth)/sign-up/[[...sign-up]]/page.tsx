@@ -81,7 +81,7 @@ export default function SignUpPage() {
       if (policy.passwordRequireUppercase && !/[A-Z]/.test(pass)) return "La contraseña debe contener al menos una letra mayúscula.";
       if (policy.passwordRequireLowercase && !/[a-z]/.test(pass)) return "La contraseña debe contener al menos una letra minúscula.";
       if (policy.passwordRequireNumber && !/\d/.test(pass)) return "La contraseña debe contener al menos un número.";
-      if (policy.passwordRequireSpecialChar && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pass)) return "La contraseña debe contener al menos un carácter especial.";
+      if (policy.passwordRequireSpecialChar && !/[!@#$%^&*()_+\-=\\[\\]{};':"\\|,.<>\\/?]/.test(pass)) return "La contraseña debe contener al menos un carácter especial.";
       return null;
   }
 
@@ -164,7 +164,7 @@ export default function SignUpPage() {
       </form>
         <div className="auth-page-footer">
             <div className="auth-form-switch-link">
-             <span className="auth-text-secondary">¿Ya tienes una cuenta?</span>{' '}
+             <span>¿Ya tienes una cuenta?</span>{' '}
              <Link href="/sign-in" className="auth-link">Inicia sesión</Link>
           </div>
         </div>
