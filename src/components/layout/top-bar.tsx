@@ -57,7 +57,7 @@ function ThemeToggle() {
 }
 
 
-export function TopBar({ children }: { children?: React.ReactNode }) {
+export function TopBar() {
   const { user, logout } = useAuth();
   const { setOpenMobile, activeItem } = useSidebar();
   
@@ -90,8 +90,6 @@ export function TopBar({ children }: { children?: React.ReactNode }) {
         >
           <Menu className="h-6 w-6" />
         </Button>
-        
-        {children}
 
         <div>
           <h1 className="text-xl font-semibold text-foreground">{getPageTitle()}</h1>

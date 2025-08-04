@@ -14,7 +14,7 @@ import {
   SidebarHeader
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { LogOut, Loader2, ChevronsRight, Search } from 'lucide-react';
+import { LogOut, Loader2, ChevronsLeft, Search } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -27,8 +27,7 @@ import { TopBar } from '@/components/layout/top-bar';
 function AppLayout({ children }: { children: React.ReactNode }) {
     const { user, settings, logout, isLoading } = useAuth();
     const { toast } = useToast();
-    // useSidebar debe ser llamado dentro de un componente que es hijo de SidebarProvider
-    const { state, toggleSidebar } = useSidebar(); 
+    const { state, toggleSidebar } = useSidebar();
 
     const handleIdleLogout = React.useCallback(() => {
         if (user) {
@@ -64,9 +63,6 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                         </div>
                         <span className="sidebar-text text-white text-xl font-bold">NexusAlpri</span>
                       </div>
-                      <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-white sidebar-text" onClick={toggleSidebar} aria-label="Alternar barra lateral">
-                           <ChevronsRight className={cn("h-5 w-5 transition-transform", state === "expanded" && "rotate-180")} />
-                       </Button>
                 </SidebarHeader>
 
                  <div className="p-4 sidebar-text">
@@ -98,24 +94,31 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
             
-            <div className={cn(
-              "flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
-              state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
-            )}>
-              <TopBar>
-                <Button variant="ghost" size="icon" className="h-9 w-9 hidden lg:flex text-muted-foreground hover:text-foreground" onClick={toggleSidebar} aria-label="Alternar barra lateral">
-                    <ChevronsRight className={cn("h-5 w-5 transition-transform", state === "expanded" && "rotate-180")} />
-                </Button>
-              </TopBar>
-              <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-                {children}
-              </main>
+            <div className="relative flex-1 flex flex-col overflow-hidden">
+                 <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="hidden lg:flex absolute top-1/2 -translate-y-1/2 z-50 h-8 w-8 rounded-full bg-background border hover:bg-muted transition-all duration-300 ease-in-out group-data-[state=expanded]/sidebar-wrapper:left-72 group-data-[state=collapsed]/sidebar-wrapper:left-20 -translate-x-1/2" 
+                    onClick={toggleSidebar} 
+                    aria-label="Alternar barra lateral"
+                  >
+                    <ChevronsLeft className={cn("h-5 w-5 text-muted-foreground transition-transform", state === "collapsed" && "rotate-180")} />
+                  </Button>
+
+                <div className={cn(
+                  "flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
+                  state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
+                )}>
+                  <TopBar/>
+                  <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+                    {children}
+                  </main>
+                </div>
             </div>
         </div>
     )
 }
 
-// Este componente Wrapper es crucial para que useSidebar() funcione correctamente.
 const AppLayoutWrapper = ({ children }: { children: React.ReactNode }) => (
     <SidebarProvider>
         <AppLayout>{children}</AppLayout>
