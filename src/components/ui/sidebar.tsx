@@ -61,21 +61,17 @@ const SidebarProvider = React.forwardRef<
     const pathname = usePathname();
     const [activeItem, setActiveItem] = React.useState(pathname);
     
-    // Default to expanded, will be updated by client-side effect
     const [isOpen, setIsOpen] = React.useState(true); 
 
-    // Read cookie only on client-side to avoid SSR issues
     React.useEffect(() => {
         const cookieValue = document.cookie
             .split('; ')
             .find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
             ?.split('=')[1];
-
-        // Explicitly set state based on cookie or default to true
         if (cookieValue !== undefined) {
             setIsOpen(cookieValue === 'true');
         } else {
-            setIsOpen(true); // Default to expanded if no cookie
+            setIsOpen(true);
         }
     }, []);
 
@@ -374,7 +370,6 @@ const SidebarMenuButton = React.forwardRef<
     const { isMobile, state, activeItem, setOpenMobile } = useSidebar();
     const href = asChild && (children as React.ReactElement)?.props.href;
     
-    // Determine if the item is active
     const finalIsActive = isActive ?? (href ? (href === '/' ? activeItem === '/' : activeItem.startsWith(href)) : false);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

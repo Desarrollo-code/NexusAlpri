@@ -64,6 +64,9 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                         </div>
                         <span className="sidebar-text text-white text-xl font-bold">NexusAlpri</span>
                       </div>
+                      <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-white sidebar-text" onClick={toggleSidebar} aria-label="Alternar barra lateral">
+                           <ChevronsRight className={cn("h-5 w-5 transition-transform", state === "expanded" && "rotate-180")} />
+                       </Button>
                 </SidebarHeader>
 
                  <div className="p-4 sidebar-text">

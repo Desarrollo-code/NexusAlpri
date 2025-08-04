@@ -99,7 +99,6 @@ export function TopBar({ children }: { children?: React.ReactNode }) {
       </div>
 
       <div className="flex items-center gap-2">
-        {/* Notificaciones */}
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative h-9 w-9" aria-label="Ver notificaciones">
@@ -119,7 +118,6 @@ export function TopBar({ children }: { children?: React.ReactNode }) {
             </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Usuario */}
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                  <Button variant="ghost" className="flex items-center gap-2 h-10" aria-label="Abrir menú de usuario">
