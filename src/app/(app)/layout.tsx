@@ -154,11 +154,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
             
-            <main className={cn("flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
-              state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
+            <div className={cn("flex flex-col flex-1 overflow-hidden transition-[margin-left] duration-300 ease-in-out",
+                isMobile ? "ml-0" : state === 'expanded' ? "ml-72" : "ml-20"
             )}>
               {children}
-            </main>
+            </div>
         </div>
     )
 }
@@ -167,8 +167,9 @@ const NavItem = ({ item, activeItem, onItemClick }: { item: NavItem, activeItem:
   const hasChildren = item.children && item.children.length > 0;
   
   if (hasChildren) {
+    // This is a placeholder for a more complex collapsible menu item
+    // For now, we'll just render a non-clickable button
     return (
-        // This is a placeholder for a more complex collapsible menu item
         <SidebarMenuButton
             onClick={() => onItemClick(item)}
             isActive={activeItem.startsWith(item.path || '---')}

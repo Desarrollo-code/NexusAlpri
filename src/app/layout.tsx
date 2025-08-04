@@ -13,9 +13,7 @@ import { PublicTopBar } from '@/components/layout/public-top-bar';
 import AppLayout from '@/app/(app)/layout';
 import { Loader2 } from 'lucide-react';
 import { Footer } from '@/components/layout/footer';
-import { SidebarProvider } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
-import { cn } from '@/lib/utils';
 
 
 const inter = Inter({
@@ -114,9 +112,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <SidebarProvider>
               <RootLayoutContent>{children}</RootLayoutContent>
-            </SidebarProvider>
             <Toaster />
           </AuthProvider>
         </ThemeProvider>

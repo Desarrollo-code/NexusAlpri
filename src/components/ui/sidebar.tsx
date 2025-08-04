@@ -352,7 +352,7 @@ const SidebarMenuButton = React.forwardRef<
       </Comp>
     )
 
-    if (!tooltip || isMobile) {
+    if (!tooltip || isMobile || state === 'expanded') {
       return button
     }
 
