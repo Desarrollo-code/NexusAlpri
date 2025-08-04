@@ -3,7 +3,7 @@
 // src/app/(app)/layout.tsx
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { useToast } from '@/hooks/use-toast';
@@ -15,7 +15,6 @@ import {
   useSidebar,
   SidebarHeader
 } from '@/components/ui/sidebar';
-import type { NavItem } from '@/types';
 import Link from 'next/link';
 import { LogOut, Loader2, ChevronsRight, Search } from 'lucide-react';
 import Image from 'next/image';
@@ -24,15 +23,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useRouter, usePathname } from 'next/navigation';
-import { getNavItemsForRole } from '@/lib/nav-items';
 import { TopBar } from '@/components/layout/top-bar';
 
 // Este componente envuelve toda la lógica del layout autenticado.
 function AppLayout({ children }: { children: React.ReactNode }) {
     const { user, settings, logout, isLoading } = useAuth();
     const { toast } = useToast();
-    const router = useRouter();
     const { state, toggleSidebar } = useSidebar();
 
     const handleIdleLogout = React.useCallback(() => {
@@ -69,7 +65,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                         </div>
                         <span className="sidebar-text text-white text-xl font-bold">NexusAlpri</span>
                       </div>
-                     <Button variant="ghost" size="icon" className="sidebar-text h-9 w-9 text-gray-400 hover:text-white" onClick={toggleSidebar}>
+                     <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-white" onClick={toggleSidebar}>
                       <ChevronsRight className={cn("h-5 w-5 transition-transform", state === "expanded" && "rotate-180")} />
                     </Button>
                 </SidebarHeader>
