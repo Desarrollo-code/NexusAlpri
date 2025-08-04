@@ -1,7 +1,8 @@
+
 // src/app/(app)/layout.tsx
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { useToast } from '@/hooks/use-toast';
@@ -30,15 +31,15 @@ import { Badge } from '@/components/ui/badge';
 import { getNavItemsForRole } from '@/lib/nav-items';
 import { TopBar } from '@/components/layout/top-bar';
 
+// Este componente envuelve toda la lógica del layout autenticado.
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const { user, settings, logout, isLoading } = useAuth();
     const { toast } = useToast();
-    const router = useRouter(); // Needed for redirects
-    const pathname = usePathname(); // Needed for active item state
+    const router = useRouter();
+    const pathname = usePathname();
     const isMobile = useIsMobile();
-    const { state, toggleSidebar, activeItem, setActiveItem, openMobile, setOpenMobile } = useSidebar();
+    const { state, toggleSidebar, activeItem, setActiveItem, setOpenMobile } = useSidebar();
 
-    // --- Idle Timeout Logic ---
     const handleIdleLogout = React.useCallback(() => {
         if (user) {
             logout();
@@ -55,21 +56,14 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
     useIdleTimeout(handleIdleLogout, idleTimeoutMinutes, isIdleTimeoutEnabled);
 
-    // --- Navigation Logic ---
     const navItems = React.useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
 
-    React.useEffect(() => {
-        if (pathname) {
-            setActiveItem(pathname);
-        }
+    useEffect(() => {
+        if (pathname) setActiveItem(pathname);
     }, [pathname, setActiveItem]);
-
-
-    // --- Loading and Auth Check ---
-     React.useEffect(() => {
-        if (!isLoading && !user) {
-            router.replace('/sign-in');
-        }
+    
+    useEffect(() => {
+        if (!isLoading && !user) router.replace('/sign-in');
     }, [isLoading, user, router]);
 
     if (isLoading || !user) {
@@ -83,9 +77,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const handleItemClick = (item: NavItem) => {
         if (item.path) {
           setActiveItem(item.path);
-          if (isMobile) {
-            setOpenMobile(false); 
-          }
+          if (isMobile) setOpenMobile(false); 
         }
     };
     
@@ -99,12 +91,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                         </div>
                         <span className="sidebar-text text-white text-xl font-bold">NexusAlpri</span>
                       </div>
-                     <Button
-                      variant="ghost"
-                      size="icon"
-                      className="sidebar-text h-9 w-9 text-gray-400 hover:text-white"
-                      onClick={toggleSidebar}
-                    >
+                     <Button variant="ghost" size="icon" className="sidebar-text h-9 w-9 text-gray-400 hover:text-white" onClick={toggleSidebar}>
                       <ChevronsRight className={cn("h-5 w-5 transition-transform", state === "expanded" && "rotate-180")} />
                     </Button>
                 </SidebarHeader>
@@ -112,11 +99,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                  <div className="p-4 sidebar-text">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        type="text"
-                        placeholder="Buscar..."
-                        className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 h-9"
-                      />
+                      <Input type="text" placeholder="Buscar..." className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 h-9" />
                     </div>
                   </div>
                 
@@ -124,7 +107,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                      <SidebarMenu>
                         {navItems.map((item) => (
                            <SidebarMenuItem key={item.id}>
-                             <NavItem item={item} activeItem={activeItem} onItemClick={handleItemClick}/>
+                             <NavItemComponent item={item} activeItem={activeItem} onItemClick={handleItemClick}/>
                            </SidebarMenuItem>
                          ))}
                     </SidebarMenu>
@@ -143,20 +126,14 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                         <p className="text-gray-400 text-xs capitalize truncate">{user.role.toLowerCase()}</p>
                       </div>
                     </div>
-                    <SidebarMenuButton
-                        onClick={logout}
-                        className="w-full text-red-300 hover:text-red-200 hover:bg-red-900/20"
-                        tooltip={{ children: 'Cerrar Sesión' }}
-                    >
+                    <SidebarMenuButton onClick={logout} className="w-full text-red-300 hover:text-red-200 hover:bg-red-900/20" tooltip={{ children: 'Cerrar Sesión' }}>
                         <LogOut className="h-5 w-5" />
                         <span className="sidebar-text font-medium">Cerrar Sesión</span>
                     </SidebarMenuButton>
                 </SidebarFooter>
             </Sidebar>
             
-            <div className={cn("flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
-              state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
-            )}>
+            <div className={cn("flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out", state === 'expanded' ? "lg:ml-72" : "lg:ml-20")}>
               <TopBar />
               <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
                 {children}
@@ -166,17 +143,12 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     )
 }
 
-const NavItem = ({ item, activeItem, onItemClick }: { item: NavItem, activeItem: string, onItemClick: (item: NavItem) => void }) => {
+const NavItemComponent = ({ item, activeItem, onItemClick }: { item: NavItem, activeItem: string, onItemClick: (item: NavItem) => void }) => {
   const hasChildren = item.children && item.children.length > 0;
   
   if (hasChildren) {
     return (
-        // This is a placeholder for a more complex collapsible menu item
-        <SidebarMenuButton
-            onClick={() => onItemClick(item)}
-            isActive={activeItem.startsWith(item.path || '---')}
-            tooltip={{ children: item.label }}
-        >
+        <SidebarMenuButton onClick={() => onItemClick(item)} isActive={activeItem.startsWith(item.path || '---')} tooltip={{ children: item.label }}>
             <item.icon className="h-5 w-5 flex-shrink-0" />
             <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
         </SidebarMenuButton>
@@ -184,12 +156,7 @@ const NavItem = ({ item, activeItem, onItemClick }: { item: NavItem, activeItem:
   }
 
   return (
-     <SidebarMenuButton
-        asChild={!!item.path}
-        onClick={() => onItemClick(item)}
-        isActive={activeItem.startsWith(item.path || '---')}
-        tooltip={{ children: item.label }}
-      >
+     <SidebarMenuButton asChild={!!item.path} onClick={() => onItemClick(item)} isActive={activeItem.startsWith(item.path || '---')} tooltip={{ children: item.label }}>
         {item.path ? (
           <Link href={item.path}>
             <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -206,7 +173,6 @@ const NavItem = ({ item, activeItem, onItemClick }: { item: NavItem, activeItem:
       </SidebarMenuButton>
   );
 };
-
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
     return (
