@@ -24,7 +24,7 @@ import { ChevronsRight, LogOut, Search } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { NavItem } from '@/types';
+import type { NavItem } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Input } from '@/components/ui/input';
 
@@ -68,28 +68,13 @@ const NavItemComponent = ({ item, activeItem, onItemClick }: { item: NavItem, ac
     );
 };
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-    const { user, logout } = useAuth();
-    const router = useRouter();
+// Componente Sidebar real
+function AppSidebar({ user, logout }: { user: any, logout: () => void }) {
+    const { state, toggleSidebar, activeItem, setActiveItem, setOpenMobile } = useSidebar();
+    const navItems = React.useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
     const pathname = usePathname();
     const isMobile = useIsMobile();
     
-    return (
-        <SidebarProvider>
-            <div className="flex h-screen bg-muted/30 dark:bg-gray-900/80">
-                <AppSidebar user={user} logout={logout} isMobile={isMobile} pathname={pathname} />
-                <AppContent isMobile={isMobile}>
-                    {children}
-                </AppContent>
-            </div>
-        </SidebarProvider>
-    );
-}
-
-function AppSidebar({ user, logout, isMobile, pathname }: { user: any, logout: () => void, isMobile: boolean, pathname: string }) {
-    const { state, toggleSidebar, activeItem, setActiveItem, setOpenMobile } = useSidebar();
-    const navItems = React.useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
-
     React.useEffect(() => {
         if (pathname) {
             setActiveItem(pathname);
@@ -123,8 +108,7 @@ function AppSidebar({ user, logout, isMobile, pathname }: { user: any, logout: (
                  <ChevronsRight className={cn("h-5 w-5 transition-transform", state === "expanded" && "rotate-180")} />
                </Button>
             </SidebarHeader>
-
-              <div className="p-4 sidebar-text">
+             <div className="p-4 sidebar-text">
                  <div className="relative">
                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                    <Input
@@ -150,7 +134,7 @@ function AppSidebar({ user, logout, isMobile, pathname }: { user: any, logout: (
                      <Avatar className="h-10 w-10">
                         <AvatarImage src={user?.avatar || undefined} />
                         <AvatarFallback className="bg-gradient-to-br from-green-400 to-blue-500 text-white font-semibold">
-                            {user?.name.split(' ').map(n => n[0]).join('')}
+                            {user?.name.split(' ').map((n: string) => n[0]).join('')}
                         </AvatarFallback>
                      </Avatar>
                   <div className="flex-1 overflow-hidden">
@@ -171,8 +155,10 @@ function AppSidebar({ user, logout, isMobile, pathname }: { user: any, logout: (
     );
 }
 
-function AppContent({ children, isMobile }: { children: React.ReactNode, isMobile: boolean }) {
+// Componente que envuelve el contenido principal
+function AppContent({ children }: { children: React.ReactNode }) {
     const { state } = useSidebar();
+    const isMobile = useIsMobile();
     return (
         <div className={cn("flex flex-col flex-1 overflow-hidden transition-[margin-left] duration-300", 
              isMobile ? "ml-0" : state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
@@ -183,4 +169,20 @@ function AppContent({ children, isMobile }: { children: React.ReactNode, isMobil
           </main>
         </div>
     );
+}
+
+// Layout principal del área privada
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const { user, logout } = useAuth();
+  
+  return (
+    <SidebarProvider>
+      <div className="flex h-screen bg-muted/30 dark:bg-gray-900/80">
+        <AppSidebar user={user} logout={logout} />
+        <AppContent>
+          {children}
+        </AppContent>
+      </div>
+    </SidebarProvider>
+  );
 }
