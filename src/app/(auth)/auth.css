@@ -95,16 +95,21 @@
 .auth-logo-link {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: var(--auth-text-primary);
+  gap: 0.75rem; /* Espacio entre logo y texto */
+  font-family: var(--font-headline);
   text-decoration: none;
 }
 
 .auth-logo {
   height: 40px;
-  width: auto;
+  width: 40px;
+}
+
+.auth-logo-text {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--auth-text-primary);
+  letter-spacing: -0.5px;
 }
 
 .auth-label {

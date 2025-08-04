@@ -34,13 +34,14 @@ export default function AuthLayout({
            <header className="auth-logo-header">
               <Link href="/" className="auth-logo-link">
                   <Image
-                      src="/uploads/images/logo-nexusalpri.png"
-                      alt="NexusAlpri Logo"
-                      width={180}
+                      src="/uploads/images/logo-letter.png"
+                      alt="NexusAlpri Letter Logo"
+                      width={40}
                       height={40}
                       className="auth-logo"
-                      data-ai-hint="logo"
+                      data-ai-hint="logo letter"
                   />
+                  <span className="auth-logo-text">NexusAlpri</span>
               </Link>
           </header>
           <div className="auth-form-content">
