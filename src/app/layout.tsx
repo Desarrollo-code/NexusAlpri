@@ -14,6 +14,8 @@ import AppLayout from '@/app/(app)/layout';
 import { Loader2 } from 'lucide-react';
 import { Footer } from '@/components/layout/footer';
 import { TopBar } from '@/components/layout/top-bar';
+import { useSidebar } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 
 
 const inter = Inter({
@@ -70,25 +72,18 @@ function RootLayoutContent({ children }: { children: React.ReactNode }) {
     
     // If the user is on a protected route and is logged in, show the app layout
     if (isAppRoute && user) {
-        return (
-            <AppLayout>
-                <TopBar />
-                <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-                    {children}
-                </main>
-            </AppLayout>
-        );
+        return <AppLayout>{children}</AppLayout>;
     }
 
     // Otherwise, show the public layout (top bar + page content)
     return (
-        <>
-            <PublicTopBar />
-            <main className="flex-1">
-                {children}
-            </main>
-            <Footer />
-        </>
+        <div className="flex flex-col min-h-screen">
+          <PublicTopBar />
+          <main className="flex-1">
+              {children}
+          </main>
+          <Footer />
+        </div>
     );
 }
 
