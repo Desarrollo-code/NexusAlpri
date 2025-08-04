@@ -5,8 +5,8 @@ import { Inter, Space_Grotesk, Dancing_Script, Source_Code_Pro } from 'next/font
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider, useAuth } from '@/contexts/auth-context';
-import { ThemeProvider } from '@/components/theme-provider';
-import React from 'react';
+import { ThemeProvider, useTheme } from '@/components/theme-provider';
+import React, { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
 import AppLayout from '@/app/(app)/layout';
@@ -44,8 +44,19 @@ const IS_APP_ROUTE_REGEX = /^\/(dashboard|courses|my-courses|profile|manage-cour
 function RootLayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { user, isLoading } = useAuth();
+    const { setTheme } = useTheme();
 
     const isAppRoute = IS_APP_ROUTE_REGEX.test(pathname);
+
+    useEffect(() => {
+        if (!isAppRoute) {
+            setTheme('light');
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
+        } else {
+             document.documentElement.classList.remove('light');
+        }
+    }, [isAppRoute, setTheme]);
 
     if (isLoading) {
         return (
