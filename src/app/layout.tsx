@@ -11,6 +11,7 @@ import { usePathname } from 'next/navigation';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
 import AppLayout from '@/app/(app)/layout';
 import { Loader2 } from 'lucide-react';
+import { Footer } from '@/components/layout/footer';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -65,6 +66,7 @@ function RootLayoutContent({ children }: { children: React.ReactNode }) {
             <main className="flex-1">
                 {children}
             </main>
+            <Footer />
         </>
     );
 }
