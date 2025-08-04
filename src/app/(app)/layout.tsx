@@ -1,4 +1,3 @@
-
 // src/app/(app)/layout.tsx
 'use client';
 
@@ -158,7 +157,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             <main className={cn("flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300", 
                  isMobile ? "ml-0" : state === 'expanded' ? "ml-72" : "ml-20"
             )}>
-              {children}
+              <TopBar />
+              <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+                {children}
+              </div>
             </main>
         </div>
     )
