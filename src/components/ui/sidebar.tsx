@@ -4,7 +4,9 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { Menu } from "lucide-react"
+import { ChevronsRight, Menu } from "lucide-react"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -15,6 +17,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import type { NavItem, UserRole } from "@/types";
+import { getNavItemsForRole } from "@/lib/nav-items";
+import { useAuth } from "@/contexts/auth-context";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -58,13 +63,15 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
-    const [activeItem, setActiveItem] = React.useState('/dashboard');
+    const pathname = usePathname();
+    const [activeItem, setActiveItem] = React.useState(pathname);
+    const [_open, _setOpen] = React.useState(true);
 
-    const [_open, _setOpen] = React.useState(() => {
-        if (typeof document === 'undefined') return true;
+    React.useEffect(() => {
+        // Set initial state from cookie only on the client
         const cookie = document.cookie.split('; ').find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`));
-        return cookie ? cookie.split('=')[1] === 'true' : true;
-    });
+        _setOpen(cookie ? cookie.split('=')[1] === 'true' : true);
+    }, []);
 
     const setOpen = React.useCallback(
       (value: boolean) => {
@@ -79,6 +86,11 @@ const SidebarProvider = React.forwardRef<
         ? setOpenMobile((current) => !current)
         : setOpen(!_open);
     }, [isMobile, _open, setOpen, setOpenMobile]);
+    
+    // Set active item on path change
+    React.useEffect(() => {
+        if(pathname) setActiveItem(pathname);
+    }, [pathname]);
 
     React.useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -109,7 +121,7 @@ const SidebarProvider = React.forwardRef<
         activeItem,
         setActiveItem,
       }),
-      [state, _open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, activeItem, setActiveItem]
+      [state, _open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, activeItem]
     )
 
     return (
@@ -250,12 +262,21 @@ const SidebarContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div">
 >(({ className, ...props }, ref) => {
+  const { user } = useAuth();
+  const navItems = React.useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
+
   return (
     <div
       ref={ref}
       className={cn("flex min-h-0 flex-1 flex-col overflow-auto px-4 py-2 space-y-2", className)}
       {...props}
-    />
+    >
+       <SidebarMenu>
+          {navItems.map((item) => (
+             <SidebarMenuItem key={item.id} item={item} />
+           ))}
+      </SidebarMenu>
+    </div>
   )
 })
 SidebarContent.displayName = "SidebarContent"
@@ -274,15 +295,40 @@ SidebarMenu.displayName = "SidebarMenu"
 
 const SidebarMenuItem = React.forwardRef<
   HTMLLIElement,
-  React.ComponentProps<"li">
->(({ className, ...props }, ref) => (
-  <li
-    ref={ref}
-    className={cn("group/menu-item relative", className)}
-    {...props}
-  />
-))
+  { item: NavItem } & React.ComponentProps<"li">
+>(({ className, item, ...props }, ref) => {
+  const { activeItem } = useSidebar();
+  const hasChildren = item.children && item.children.length > 0;
+  
+  if (hasChildren) {
+    return (
+      <li ref={ref} className={cn("group/menu-item relative", className)} {...props}>
+        <SidebarMenuButton 
+            isActive={item.path ? activeItem.startsWith(item.path) : false} 
+            tooltip={{ children: item.label }}
+        >
+            <item.icon className="h-5 w-5 flex-shrink-0" />
+            <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
+            <ChevronsRight className="sidebar-text h-4 w-4 transition-transform group-data-[state=open]:rotate-90" />
+        </SidebarMenuButton>
+        {/* You would need a collapsible component here to show/hide children */}
+      </li>
+    )
+  }
+
+  return (
+    <li ref={ref} className={cn("group/menu-item relative", className)} {...props}>
+        <SidebarMenuButton asChild tooltip={{ children: item.label }}>
+            <Link href={item.path || '#'}>
+                <item.icon className="h-5 w-5 flex-shrink-0" />
+                <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
+            </Link>
+        </SidebarMenuButton>
+    </li>
+  )
+})
 SidebarMenuItem.displayName = "SidebarMenuItem"
+
 
 const SidebarMenuSeparator = React.forwardRef<
   HTMLDivElement,
@@ -305,47 +351,57 @@ const sidebarMenuButtonVariants = cva(
         sm: "h-9 text-sm",
         lg: "h-12 text-base",
       },
-      isActive: {
-        true: "bg-sidebar-accent text-sidebar-accent-foreground shadow-lg",
-        false: "text-sidebar-foreground",
-      },
     },
     defaultVariants: {
       variant: "ghost",
       size: "sm",
-      isActive: false,
     },
   }
 )
 
+type SidebarMenuButtonProps = React.ComponentProps<"button"> & {
+  asChild?: boolean
+  tooltip?: React.ComponentProps<typeof TooltipContent>
+} & VariantProps<typeof sidebarMenuButtonVariants>
+
+
 const SidebarMenuButton = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<"button"> & {
-    asChild?: boolean
-    tooltip?: React.ComponentProps<typeof TooltipContent>
-  } & VariantProps<typeof sidebarMenuButtonVariants>
+  SidebarMenuButtonProps
 >(
   (
     {
       asChild = false,
       variant,
       size,
-      isActive,
-      tooltip,
       className,
       children,
+      tooltip,
       ...props
     },
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
-    const { isMobile, state } = useSidebar()
+    const { isMobile, state, activeItem, setActiveItem, setOpenMobile } = useSidebar();
+    const href = asChild && (children as React.ReactElement)?.props.href;
+    
+    // Determine if the item is active
+    const isActive = href === '/' ? activeItem === href : activeItem.startsWith(href);
+
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        if (href) {
+            setActiveItem(href);
+            if (isMobile) setOpenMobile(false);
+        }
+        if (props.onClick) props.onClick(event);
+    }
 
     const button = (
       <Comp
         ref={ref}
         data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size, isActive }), className)}
+        className={cn(sidebarMenuButtonVariants({ variant, size }), isActive && 'bg-sidebar-accent text-sidebar-accent-foreground shadow-lg', className)}
+        onClick={handleClick}
         {...props}
       >
         {children}

@@ -1,4 +1,5 @@
 
+
 // src/app/(app)/layout.tsx
 'use client';
 
@@ -27,18 +28,15 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useRouter, usePathname } from 'next/navigation';
-import { Badge } from '@/components/ui/badge';
 import { getNavItemsForRole } from '@/lib/nav-items';
 import { TopBar } from '@/components/layout/top-bar';
 
 // Este componente envuelve toda la lógica del layout autenticado.
-function AppLayoutContent({ children }: { children: React.ReactNode }) {
+function AppLayout({ children }: { children: React.ReactNode }) {
     const { user, settings, logout, isLoading } = useAuth();
     const { toast } = useToast();
     const router = useRouter();
-    const pathname = usePathname();
-    const isMobile = useIsMobile();
-    const { state, toggleSidebar, activeItem, setActiveItem, setOpenMobile } = useSidebar();
+    const { state, toggleSidebar } = useSidebar();
 
     const handleIdleLogout = React.useCallback(() => {
         if (user) {
@@ -56,16 +54,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
     useIdleTimeout(handleIdleLogout, idleTimeoutMinutes, isIdleTimeoutEnabled);
 
-    const navItems = React.useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
-
-    useEffect(() => {
-        if (pathname) setActiveItem(pathname);
-    }, [pathname, setActiveItem]);
-    
-    useEffect(() => {
-        if (!isLoading && !user) router.replace('/sign-in');
-    }, [isLoading, user, router]);
-
     if (isLoading || !user) {
         return (
             <div className="flex h-screen w-screen items-center justify-center bg-background">
@@ -73,13 +61,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             </div>
         );
     }
-    
-    const handleItemClick = (item: NavItem) => {
-        if (item.path) {
-          setActiveItem(item.path);
-          if (isMobile) setOpenMobile(false); 
-        }
-    };
     
     return (
         <div className="flex h-screen bg-muted/30 dark:bg-gray-900/80">
@@ -103,15 +84,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                     </div>
                   </div>
                 
-                <SidebarContent>
-                     <SidebarMenu>
-                        {navItems.map((item) => (
-                           <SidebarMenuItem key={item.id}>
-                             <NavItemComponent item={item} activeItem={activeItem} onItemClick={handleItemClick}/>
-                           </SidebarMenuItem>
-                         ))}
-                    </SidebarMenu>
-                </SidebarContent>
+                <SidebarContent />
                 
                 <SidebarFooter>
                     <div className="sidebar-text flex items-center gap-3 mb-4 p-3 bg-gray-800 rounded-lg">
@@ -133,7 +106,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
             
-            <div className={cn("flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out", state === 'expanded' ? "lg:ml-72" : "lg:ml-20")}>
+            <div className={cn(
+              "flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
+              state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
+            )}>
               <TopBar />
               <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
                 {children}
@@ -143,41 +119,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     )
 }
 
-const NavItemComponent = ({ item, activeItem, onItemClick }: { item: NavItem, activeItem: string, onItemClick: (item: NavItem) => void }) => {
-  const hasChildren = item.children && item.children.length > 0;
-  
-  if (hasChildren) {
-    return (
-        <SidebarMenuButton onClick={() => onItemClick(item)} isActive={activeItem.startsWith(item.path || '---')} tooltip={{ children: item.label }}>
-            <item.icon className="h-5 w-5 flex-shrink-0" />
-            <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
-        </SidebarMenuButton>
-    )
-  }
-
-  return (
-     <SidebarMenuButton asChild={!!item.path} onClick={() => onItemClick(item)} isActive={activeItem.startsWith(item.path || '---')} tooltip={{ children: item.label }}>
-        {item.path ? (
-          <Link href={item.path}>
-            <item.icon className="h-5 w-5 flex-shrink-0" />
-            <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
-            {item.badge && <Badge className="sidebar-text bg-blue-500 text-white">{item.badge}</Badge>}
-          </Link>
-        ) : (
-          <>
-            <item.icon className="h-5 w-5 flex-shrink-0" />
-            <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
-            {item.badge && <Badge className="sidebar-text bg-blue-500 text-white">{item.badge}</Badge>}
-          </>
-        )}
-      </SidebarMenuButton>
-  );
-};
-
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
     return (
         <SidebarProvider>
-            <AppLayoutContent>{children}</AppLayoutContent>
+            <AppLayout>{children}</AppLayout>
         </SidebarProvider>
     );
 }
