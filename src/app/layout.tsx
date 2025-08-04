@@ -1,13 +1,12 @@
 // src/app/layout.tsx
 'use client';
-
+import { useRouter, usePathname } from 'next/navigation';
 import { Inter, Space_Grotesk, Dancing_Script, Source_Code_Pro } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider, useAuth } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
 import React, { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
 import { Footer } from '@/components/layout/footer';
 import { Loader2 } from 'lucide-react';
