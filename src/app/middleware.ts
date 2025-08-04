@@ -1,18 +1,17 @@
-
 // src/middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getSession } from '@/lib/auth';
 
+const IS_APP_ROUTE_REGEX = /^\/(dashboard|courses|my-courses|profile|manage-courses|users|settings|analytics|security-audit|enrollments|notifications|calendar|resources)/;
 const PUBLIC_PATHS = ['/', '/about', '/sign-in', '/sign-up'];
-const PROTECTED_ROUTE_PREFIX = '/dashboard';
 const API_AUTH_PREFIX = '/api/auth';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const session = await getSession(request);
 
-  // Allow static files and image optimization to pass through
+  // Allow static files, image optimization, and uploads to pass through
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/static') ||
@@ -22,31 +21,31 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const isPublicRoute = PUBLIC_PATHS.some(p => pathname.startsWith(p) && (p === '/' ? pathname.length === 1 : true));
-  const isApiAuthRoute = pathname.startsWith(API_AUTH_PREFIX);
-  const isAppRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/courses') || pathname.startsWith('/profile');
+  const isAppRoute = IS_APP_ROUTE_REGEX.test(pathname);
+  const isAuthRoute = pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up');
 
-
+  // If user is logged in
   if (session) {
-    // If logged in, redirect from public auth pages to dashboard
-    if (pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up')) {
-      return NextResponse.redirect(new URL(PROTECTED_ROUTE_PREFIX, request.url));
+    // If they are on an auth page, redirect to dashboard
+    if (isAuthRoute) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
+    // Otherwise, allow the request to proceed
     return NextResponse.next();
   }
 
-  // If not logged in and trying to access a protected route
-  if (!session && !isPublicRoute && !isApiAuthRoute) {
-    if (pathname.startsWith('/api/')) {
-        return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+  // If user is not logged in
+  if (!session) {
+    // And they are trying to access a protected app route
+    if (isAppRoute) {
+      // Redirect to sign-in page, preserving the intended destination
+      const signInUrl = new URL('/sign-in', request.url);
+      signInUrl.searchParams.set('redirectedFrom', pathname);
+      return NextResponse.redirect(signInUrl);
     }
-    
-    // Redirect to sign-in page, preserving the intended destination
-    const signInUrl = new URL('/sign-in', request.url);
-    signInUrl.searchParams.set('redirectedFrom', pathname);
-    return NextResponse.redirect(signInUrl);
   }
 
+  // Allow all other requests (public pages, public API routes, etc.)
   return NextResponse.next();
 }
 

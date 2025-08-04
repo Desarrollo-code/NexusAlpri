@@ -36,11 +36,14 @@ const sourceCodePro = Source_Code_Pro({
     variable: '--font-code',
 });
 
+// Regex to identify routes that belong to the private part of the application
+const IS_APP_ROUTE_REGEX = /^\/(dashboard|courses|my-courses|profile|manage-courses|users|settings|analytics|security-audit|enrollments|notifications|calendar|resources)/;
+
 function RootLayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { user, isLoading } = useAuth();
 
-    const isAppRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/courses') || pathname.startsWith('/profile') || pathname.startsWith('/manage-courses') || pathname.startsWith('/users') || pathname.startsWith('/settings') || pathname.startsWith('/analytics') || pathname.startsWith('/security-audit') || pathname.startsWith('/enrollments') || pathname.startsWith('/my-courses') || pathname.startsWith('/announcements') || pathname.startsWith('/calendar') || pathname.startsWith('/resources') || pathname.startsWith('/notifications');
+    const isAppRoute = IS_APP_ROUTE_REGEX.test(pathname);
 
     if (isLoading) {
         return (

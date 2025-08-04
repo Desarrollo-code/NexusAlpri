@@ -1,12 +1,11 @@
-
 // src/middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getSession } from '@/lib/auth';
 
-const APP_PATHS = ['/dashboard', '/courses', '/my-courses', '/profile', '/manage-courses', '/users', '/settings', '/analytics', '/security-audit', '/enrollments', '/notifications', '/calendar', '/resources'];
-const AUTH_PATHS = ['/sign-in', '/sign-up'];
-const API_AUTH_PREFIX = '/api/auth';
+const APP_ROUTE_PREFIX = '/dashboard'; // A simple prefix for most app routes
+const IS_APP_ROUTE_REGEX = /^\/(dashboard|courses|my-courses|profile|manage-courses|users|settings|analytics|security-audit|enrollments|notifications|calendar|resources)/;
+const PUBLIC_PATHS = ['/', '/about', '/sign-in', '/sign-up'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -22,16 +21,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const isAppRoute = APP_PATHS.some(path => pathname.startsWith(path));
-  const isAuthRoute = AUTH_PATHS.some(path => pathname.startsWith(path));
+  const isAppRoute = IS_APP_ROUTE_REGEX.test(pathname);
+  const isAuthRoute = pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up');
 
   // If user is logged in
   if (session) {
     // If they are on an auth page, redirect to dashboard
     if (isAuthRoute) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      return NextResponse.redirect(new URL(APP_ROUTE_PREFIX, request.url));
     }
-    // Otherwise, allow the request
+    // Otherwise, allow the request to proceed
     return NextResponse.next();
   }
 
@@ -39,10 +38,6 @@ export async function middleware(request: NextRequest) {
   if (!session) {
     // And they are trying to access a protected app route
     if (isAppRoute) {
-      // If it's an API call, return 401
-      if (pathname.startsWith('/api/')) {
-        return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
-      }
       // For page visits, redirect to sign-in, preserving the intended destination
       const signInUrl = new URL('/sign-in', request.url);
       signInUrl.searchParams.set('redirectedFrom', pathname);
@@ -50,7 +45,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Allow all other requests (public pages, public API routes)
+  // Allow all other requests (public pages, public API routes, etc.)
   return NextResponse.next();
 }
 
