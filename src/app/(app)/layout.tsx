@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import {
   Sidebar,
   SidebarProvider,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { cn } from '@/lib/utils';
