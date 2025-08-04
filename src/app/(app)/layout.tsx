@@ -171,8 +171,6 @@ function MainContent({ children }: { children: React.ReactNode }) {
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
-  
   return (
     <SidebarProvider>
       <div className="flex h-screen bg-muted/30 dark:bg-gray-900/80">
