@@ -33,6 +33,7 @@ export default function AuthLayout({
         <div className="auth-card">
            <header className="auth-logo-header">
               <Link href="/" className="auth-logo-link">
+                  <span className="auth-logo-text">NexusAlpri</span>
                   <Image
                       src="/uploads/images/logo-letter.png"
                       alt="NexusAlpri Letter Logo"
@@ -41,7 +42,6 @@ export default function AuthLayout({
                       className="auth-logo"
                       data-ai-hint="logo letter"
                   />
-                  <span className="auth-logo-text">NexusAlpri</span>
               </Link>
           </header>
           <div className="auth-form-content">
