@@ -32,7 +32,7 @@ export default function AuthLayout({
               Conectando Talento. Creando Futuro.
             </h1>
             <p className="auth-subheadline">
-              Una plataforma de e-learning integral diseñada para transformar la formación en tu organización. Crea, gestiona y mide el impacto de tu contenido con facilidad.
+              El epicentro de tu ecosistema de aprendizaje. Organiza, comparte y potencia el conocimiento con herramientas intuitivas y una experiencia de usuario sin igual.
             </p>
             <ArrowDown className="auth-down-arrow" />
         </div>
