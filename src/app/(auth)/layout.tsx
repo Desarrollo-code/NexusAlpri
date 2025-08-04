@@ -29,7 +29,7 @@ export default function AuthLayout({
         </header>
         <div className="auth-branding-content">
             <h1 className="auth-headline">
-              El Futuro del Aprendizaje Corporativo, Hoy.
+              Conectando Talento. Creando Futuro.
             </h1>
             <p className="auth-subheadline">
               Una plataforma de e-learning integral diseñada para transformar la formación en tu organización. Crea, gestiona y mide el impacto de tu contenido con facilidad.
