@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -9,24 +8,24 @@ import Image from 'next/image';
 
 export function PublicTopBar() {
   return (
-    <header className="px-4 lg:px-6 h-20 flex items-center bg-background/80 backdrop-blur-sm sticky top-0 z-50 border-b">
+    <header className="px-4 lg:px-6 h-24 flex items-center bg-background/80 backdrop-blur-sm sticky top-0 z-50 border-b">
       <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
-        <Image src="/uploads/images/logo-nexusalpri.png" alt="NexusAlpri Logo" width={40} height={40} data-ai-hint="logo" />
-        <span className="text-2xl font-semibold font-headline-alt bg-gradient-to-r from-primary to-purple-500 text-transparent bg-clip-text">
+        <Image src="/uploads/images/logo-nexusalpri.png" alt="NexusAlpri Logo" width={48} height={48} data-ai-hint="logo" />
+        <span className="text-3xl font-semibold font-headline-alt bg-gradient-to-r from-primary to-purple-500 text-transparent bg-clip-text">
           NexusAlpri
         </span>
       </Link>
       <nav className="ml-auto hidden items-center gap-6 sm:gap-8 lg:flex">
         <Link
           href="/"
-          className="text-base font-medium hover:text-primary transition-colors underline-offset-4 hover:underline"
+          className="text-lg font-medium hover:text-primary transition-colors underline-offset-4 hover:underline"
           prefetch={false}
         >
           Inicio
         </Link>
         <Link
           href="/about"
-          className="text-base font-medium hover:text-primary transition-colors underline-offset-4 hover:underline"
+          className="text-lg font-medium hover:text-primary transition-colors underline-offset-4 hover:underline"
           prefetch={false}
         >
           Nosotros
