@@ -12,7 +12,7 @@ export function PublicTopBar() {
   return (
     <header className={cn(
         "px-4 lg:px-6 h-20 flex items-center sticky top-0 z-50",
-        "bg-black/80 backdrop-blur-lg border-b border-gray-800 shadow-lg"
+        "bg-background/80 backdrop-blur-lg border-b"
     )}>
       <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
         <Image src="/uploads/images/logo-nexusalpri.png" alt="NexusAlpri Logo" width={48} height={48} data-ai-hint="logo"/>
@@ -23,14 +23,14 @@ export function PublicTopBar() {
       <nav className="ml-auto hidden items-center gap-6 sm:gap-8 lg:flex">
         <Link
           href="/"
-          className="text-lg font-medium text-gray-300 hover:text-white transition-colors"
+          className="text-lg font-medium text-foreground/80 hover:text-foreground transition-colors"
           prefetch={false}
         >
           Inicio
         </Link>
         <Link
           href="/about"
-          className="text-lg font-medium text-gray-300 hover:text-white transition-colors"
+          className="text-lg font-medium text-foreground/80 hover:text-foreground transition-colors"
           prefetch={false}
         >
           Nosotros
@@ -41,13 +41,13 @@ export function PublicTopBar() {
       </nav>
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="lg:hidden ml-auto h-10 w-10 text-white hover:bg-gray-800">
+          <Button variant="ghost" size="icon" className="lg:hidden ml-auto h-10 w-10 text-foreground hover:bg-muted">
             <Menu className="h-6 w-6" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="bg-black border-r-gray-800 text-white p-0">
-            <div className="flex items-center justify-between border-b border-gray-800 p-4 h-20">
+        <SheetContent side="left" className="bg-background border-r p-0">
+            <div className="flex items-center justify-between border-b p-4 h-20">
                 <Link href="/" className="flex items-center justify-center gap-2" prefetch={false}>
                     <Image src="/uploads/images/logo-nexusalpri.png" alt="NexusAlpri Logo" width={32} height={32} data-ai-hint="logo" />
                      <span className="text-xl font-semibold font-headline-alt bg-gradient-to-r from-primary to-purple-500 text-transparent bg-clip-text">
@@ -55,19 +55,19 @@ export function PublicTopBar() {
                     </span>
                 </Link>
                  <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-white">
+                    <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
                         <X className="h-5 w-5" />
                     </Button>
                 </SheetTrigger>
             </div>
             <div className="p-4">
               <nav className="grid gap-4 text-lg font-medium">
-                <Link href="/" className="p-3 rounded-md hover:bg-gray-800 transition-colors" prefetch={false}>
+                <Link href="/" className="p-3 rounded-md hover:bg-muted transition-colors" prefetch={false}>
                   Inicio
                 </Link>
                 <Link
                   href="/about"
-                  className="p-3 rounded-md hover:bg-gray-800 transition-colors"
+                  className="p-3 rounded-md hover:bg-muted transition-colors"
                   prefetch={false}
                 >
                   Nosotros
