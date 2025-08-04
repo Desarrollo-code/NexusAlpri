@@ -8,7 +8,7 @@ import Image from 'next/image';
 
 export function PublicTopBar() {
   return (
-    <header className="px-4 lg:px-6 h-24 flex items-center bg-background/80 backdrop-blur-sm sticky top-0 z-50 border-b">
+    <header className="px-4 lg:px-6 h-24 flex items-center bg-sidebar backdrop-blur-sm sticky top-0 z-50 border-b border-sidebar-border shadow-md">
       <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
         <Image src="/uploads/images/logo-nexusalpri.png" alt="NexusAlpri Logo" width={48} height={48} data-ai-hint="logo" />
         <span className="text-3xl font-semibold font-headline-alt bg-gradient-to-r from-primary to-purple-500 text-transparent bg-clip-text">
@@ -18,19 +18,19 @@ export function PublicTopBar() {
       <nav className="ml-auto hidden items-center gap-6 sm:gap-8 lg:flex">
         <Link
           href="/"
-          className="text-lg font-medium hover:text-primary transition-colors underline-offset-4 hover:underline"
+          className="text-lg font-medium text-sidebar-foreground/80 hover:text-sidebar-foreground transition-colors"
           prefetch={false}
         >
           Inicio
         </Link>
         <Link
           href="/about"
-          className="text-lg font-medium hover:text-primary transition-colors underline-offset-4 hover:underline"
+          className="text-lg font-medium text-sidebar-foreground/80 hover:text-sidebar-foreground transition-colors"
           prefetch={false}
         >
           Nosotros
         </Link>
-        <Button asChild size="lg">
+        <Button asChild size="lg" className="bg-sidebar-accent hover:bg-sidebar-accent/90 text-sidebar-accent-foreground shadow-lg">
           <Link href="/sign-in">Acceder</Link>
         </Button>
       </nav>
