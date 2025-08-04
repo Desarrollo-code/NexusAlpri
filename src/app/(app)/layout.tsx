@@ -1,9 +1,7 @@
-
-// src/app/(app)/layout.tsx
 'use client';
 
-import React from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import React, { useEffect } from 'react'; // Importamos useEffect
+import { useRouter, usePathname } from 'next/navigation'; // <-- Nueva importación añadida
 import {
   Sidebar,
   SidebarContent,
@@ -29,6 +27,7 @@ import { NavItem } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Input } from '@/components/ui/input';
 
+// Componente NavItemComponent movido fuera de AppLayoutContent para mejor organización
 const NavItemComponent = ({ item, activeItem, onItemClick }: { item: NavItem, activeItem: string, onItemClick: (item: NavItem) => void }) => {
     const hasChildren = item.children && item.children.length > 0;
     
@@ -46,38 +45,76 @@ const NavItemComponent = ({ item, activeItem, onItemClick }: { item: NavItem, ac
     }
   
     return (
-       <SidebarMenuButton
-          asChild={!!item.path}
-          onClick={() => onItemClick(item)}
-          isActive={activeItem.startsWith(item.path || '---')}
-          tooltip={{ children: item.label }}
-        >
-          {item.path ? (
-            <Link href={item.path}>
-              <item.icon className="h-5 w-5 flex-shrink-0" />
-              <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
-              {item.badge && <Badge className="sidebar-text bg-blue-500 text-white">{item.badge}</Badge>}
-            </Link>
-          ) : (
-            <>
-              <item.icon className="h-5 w-5 flex-shrink-0" />
-              <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
-              {item.badge && <Badge className="sidebar-text bg-blue-500 text-white">{item.badge}</Badge>}
-            </>
-          )}
-        </SidebarMenuButton>
+         <SidebarMenuButton
+           asChild={!!item.path}
+           onClick={() => onItemClick(item)}
+           isActive={activeItem.startsWith(item.path || '---')}
+           tooltip={{ children: item.label }}
+         >
+           {item.path ? (
+             <Link href={item.path}>
+               <item.icon className="h-5 w-5 flex-shrink-0" />
+               <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
+               {item.badge && <Badge className="sidebar-text bg-blue-500 text-white">{item.badge}</Badge>}
+             </Link>
+           ) : (
+             <>
+               <item.icon className="h-5 w-5 flex-shrink-0" />
+               <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
+               {item.badge && <Badge className="sidebar-text bg-blue-500 text-white">{item.badge}</Badge>}
+             </>
+           )}
+         </SidebarMenuButton>
     );
 };
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
-    const { user, logout } = useAuth();
+    const { user, logout, isLoading } = useAuth(); // Mantener isLoading si se usa para algo más
     const router = useRouter();
     const pathname = usePathname();
     const isMobile = useIsMobile();
     const { state, toggleSidebar, activeItem, setActiveItem, setOpenMobile } = useSidebar();
-  
+    // No se usa useToast ni useIdleTimeout en este componente, así que los he omitido en la desestructuración de useAuth.
+    // Si se necesitan, asegúrate de importarlos y usarlos correctamente.
+
+    // Eliminar el useEffect que fuerza el tema a 'dark'.
+    // Esta lógica debe ser manejada por ThemeProvider en el layout raíz.
+    // Si lo necesitas, asegúrate de que useTheme esté importado.
+    /*
+    import { useTheme } from 'next-themes';
+    const { setTheme } = useTheme();
+    useEffect(() => {
+      setTheme('dark');
+      document.documentElement.classList.remove('light');
+    }, [setTheme]);
+    */
+
+    // Se asume que la lógica de redirección por carga o usuario no autenticado
+    // ya se maneja en el RootLayout (src/app/layout.tsx).
+    // Si AppLayoutContent se renderiza, user debería estar disponible y no isLoading.
+    // Por lo tanto, se puede eliminar este bloque para evitar re-renders innecesarios
+    // y asegurar que la lógica de autenticación se centralice en el RootLayout.
+    /*
+    React.useEffect(() => {
+        if (!isLoading && !user) {
+            router.replace('/sign-in');
+        }
+    }, [isLoading, user, router]);
+
+    if (isLoading || !user) {
+        return (
+            <div className="flex h-screen w-screen items-center justify-center bg-background">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </div>
+        );
+    }
+    */
+    // Si necesitas un loader o redirección aquí por alguna razón específica
+    // (ej. si el usuario se desautentica mientras está en una ruta protegida),
+    // asegúrate de que sea un caso de uso válido y no una duplicación de lógica.
+
     const navItems = React.useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
-  
+    
     React.useEffect(() => {
       if (pathname) {
         setActiveItem(pathname);
@@ -99,53 +136,53 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 <SidebarHeader>
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-                            <Image src="/uploads/images/logo-letter.png" alt="NexusAlpri Logo" width={24} height={24} data-ai-hint="logo letter" />
+                           <Image src="/uploads/images/logo-letter.png" alt="NexusAlpri Logo" width={24} height={24} data-ai-hint="logo letter" />
                         </div>
                         <span className="sidebar-text text-white text-xl font-bold">NexusAlpri</span>
                     </div>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="sidebar-text h-9 w-9 text-gray-400 hover:text-white"
-                        onClick={toggleSidebar}
-                    >
-                        <ChevronsRight className={cn("h-5 w-5 transition-transform", state === "expanded" && "rotate-180")} />
-                    </Button>
+                   <Button
+                    variant="ghost"
+                    size="icon"
+                    className="sidebar-text h-9 w-9 text-gray-400 hover:text-white"
+                    onClick={toggleSidebar}
+                   >
+                     <ChevronsRight className={cn("h-5 w-5 transition-transform", state === "expanded" && "rotate-180")} />
+                   </Button>
                 </SidebarHeader>
 
-                <div className="p-4 sidebar-text">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                            type="text"
-                            placeholder="Buscar..."
-                            className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 h-9"
-                        />
-                    </div>
-                </div>
+                  <div className="p-4 sidebar-text">
+                     <div className="relative">
+                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                       <Input
+                         type="text"
+                         placeholder="Buscar..."
+                         className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 h-9"
+                       />
+                     </div>
+                  </div>
                 
                 <SidebarContent>
                     <SidebarMenu>
                         {navItems.map((item) => (
-                            <SidebarMenuItem key={item.id}>
-                                <NavItemComponent item={item} activeItem={activeItem} onItemClick={handleItemClick}/>
-                            </SidebarMenuItem>
-                        ))}
-                    </SidebarMenu>
+                           <SidebarMenuItem key={item.id}>
+                              <NavItemComponent item={item} activeItem={activeItem} onItemClick={handleItemClick}/>
+                           </SidebarMenuItem>
+                         ))}
+                     </SidebarMenu>
                 </SidebarContent>
                 
                 <SidebarFooter>
                     <div className="sidebar-text flex items-center gap-3 mb-4 p-3 bg-gray-800 rounded-lg">
-                        <Avatar className="h-10 w-10">
+                         <Avatar className="h-10 w-10">
                             <AvatarImage src={user?.avatar || undefined} />
                             <AvatarFallback className="bg-gradient-to-br from-green-400 to-blue-500 text-white font-semibold">
                                 {user?.name.split(' ').map(n => n[0]).join('')}
                             </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 overflow-hidden">
-                            <p className="text-white text-sm font-medium truncate">{user?.name}</p>
-                            <p className="text-gray-400 text-xs capitalize truncate">{user?.role.toLowerCase()}</p>
-                        </div>
+                         </Avatar>
+                      <div className="flex-1 overflow-hidden">
+                        <p className="text-white text-sm font-medium truncate">{user?.name}</p>
+                        <p className="text-gray-400 text-xs capitalize truncate">{user?.role.toLowerCase()}</p>
+                      </div>
                     </div>
                     <SidebarMenuButton
                         onClick={logout}
@@ -157,14 +194,14 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                     </SidebarMenuButton>
                 </SidebarFooter>
             </Sidebar>
-
+            
             <div className={cn("flex flex-col flex-1 overflow-hidden transition-[margin-left] duration-300", 
-                isMobile ? "ml-0" : state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
+                 isMobile ? "ml-0" : state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
             )}>
-                <TopBar />
-                <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-                    {children}
-                </main>
+              <TopBar />
+              <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+                {children}
+              </main>
             </div>
         </div>
     )
