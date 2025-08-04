@@ -12,10 +12,10 @@ export default function LandingPage() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                    El Conocimiento que Impulsa. La Formación que Transforma.
+                    Despierta tu Potencial. El Futuro es Ahora.
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Tu ecosistema de aprendizaje diseñado para llevar a tu equipo al siguiente nivel.
+                    Una plataforma para mentes curiosas, donde cada lección es un paso hacia tu mejor versión.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
