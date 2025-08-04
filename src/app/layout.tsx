@@ -6,9 +6,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
 import React from 'react';
-import { getCurrentUser } from '@/lib/auth';
-import AppLayout from './(app)/layout';
-import PublicLayout from './(public)/layout';
 
 const inter = Inter({
   subsets: ['latin'],
