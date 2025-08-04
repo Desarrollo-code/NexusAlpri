@@ -18,7 +18,8 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 ### 2.1. Estructura de Carpetas
 
 *   `src/app/(app)/`: Contiene las rutas y páginas protegidas de la aplicación (Dashboard, Cursos, etc.).
-*   `src/app/(auth)/`: Contiene las páginas públicas de autenticación (sign-in, sign-up).
+*   `src/app/(public)/`: Contiene las páginas públicas de la aplicación (landing, about, etc.).
+*   `src/app/(public)/(auth)/`: Contiene las páginas públicas de autenticación (sign-in, sign-up).
 *   `src/app/api/`: Define todos los endpoints de la API del backend. Sigue la estructura de enrutamiento de Next.js.
 *   `src/components/`: Componentes de React reutilizables.
     *   `src/components/ui/`: Componentes base de ShadCN.
@@ -82,10 +83,10 @@ El esquema se define en `prisma/schema.prisma`. Los modelos principales son:
 Cada vez que modificas el archivo `schema.prisma`, la estructura de tu base de datos debe ser actualizada para reflejar esos cambios. Este proceso se gestiona con **Prisma Migrate**.
 
 Para crear y aplicar una nueva migración, ejecuta el siguiente comando en tu terminal:
-
 ```bash
 npm run prisma:migrate -- --name "un_nombre_descriptivo_para_la_migracion"
 ```
+
 **Ejemplo Práctico:**
 
 Supongamos que quieres añadir un campo `phoneNumber` a la tabla `User`.
@@ -153,3 +154,5 @@ La autenticación se realiza a través de un token JWT en una cookie http-only. 
 *   **Formularios:** Utilizar `react-hook-form` para la gestión de formularios complejos.
 *   **Código Asíncrono:** Utilizar `async/await` para operaciones asíncronas.
 *   **Comentarios:** Añadir comentarios JSDoc a funciones complejas y a las props de los componentes para clarificar su propósito.
+
+    

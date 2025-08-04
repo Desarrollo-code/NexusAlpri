@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -110,7 +111,8 @@ export default function SignInPage() {
 
 
   return (
-        <Card className="w-full max-w-md">
+      <div className="w-full max-w-md mx-auto py-12 md:py-24">
+        <Card>
           {!show2fa ? (
             <>
                 <CardHeader className="text-center">
@@ -206,5 +208,8 @@ export default function SignInPage() {
             </>
           )}
         </Card>
+      </div>
   );
 }
+
+    
