@@ -19,7 +19,8 @@ export default {
     extend: {
       fontFamily: {
         body: ['var(--font-body)', 'Inter', 'sans-serif'],
-        headline: ['var(--font-headline)', 'Dancing Script', 'cursive'],
+        headline: ['var(--font-headline)', 'Space Grotesk', 'sans-serif'],
+        'headline-alt': ['var(--font-headline-alt)', 'Dancing Script', 'cursive'],
         code: ['var(--font-code)', 'Source Code Pro', 'monospace'],
       },
       colors: {
@@ -114,12 +115,17 @@ export default {
             '0%': { transform: 'translateY(20px) scale(0.95)', opacity: '0' },
             '100%': { transform: 'translateY(0) scale(1)', opacity: '1' }
         },
+        'caret-blink': {
+          '0%, 70%, 100%': { opacity: '1' },
+          '20%, 50%': { opacity: '0' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'press': 'press 0.2s 1 linear',
         'throw': 'throw 0.4s ease-out forwards',
+        'caret-blink': 'caret-blink 1.25s ease-out infinite',
       },
     },
   },
