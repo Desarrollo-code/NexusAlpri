@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Inter, Space_Grotesk, Dancing_Script } from 'next/font/google';
+import { Inter, Space_Grotesk, Dancing_Script, Source_Code_Pro } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/auth-context';
