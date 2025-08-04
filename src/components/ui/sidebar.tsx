@@ -17,34 +17,30 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import type { NavItem, UserRole } from "@/types";
+import type { NavItem } from "@/types";
 import { getNavItemsForRole } from "@/lib/nav-items";
 import { useAuth } from "@/contexts/auth-context";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 days in seconds
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-type SidebarContext = {
+type SidebarContextValue = {
   state: "expanded" | "collapsed"
-  open: boolean
-  setOpen: (open: boolean) => void
+  isMobile: boolean
   openMobile: boolean
   setOpenMobile: (open: boolean) => void
-  isMobile: boolean
   toggleSidebar: () => void
   activeItem: string;
-  setActiveItem: (path: string) => void;
 }
 
-const SidebarContext = React.createContext<SidebarContext | null>(null)
+const SidebarContext = React.createContext<SidebarContextValue | null>(null)
 
 function useSidebar() {
   const context = React.useContext(SidebarContext)
   if (!context) {
     throw new Error("useSidebar must be used within a SidebarProvider.")
   }
-
   return context
 }
 
@@ -65,29 +61,31 @@ const SidebarProvider = React.forwardRef<
     const [openMobile, setOpenMobile] = React.useState(false)
     const pathname = usePathname();
     const [activeItem, setActiveItem] = React.useState(pathname);
-    const [_open, _setOpen] = React.useState(true);
+    
+    // Default to expanded, will be checked on client-side
+    const [isOpen, setIsOpen] = React.useState(true); 
 
+    // Read cookie only on client-side to avoid SSR issues
     React.useEffect(() => {
-        // Set initial state from cookie only on the client
-        const cookie = document.cookie.split('; ').find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`));
-        _setOpen(cookie ? cookie.split('=')[1] === 'true' : true);
+        const cookieValue = document.cookie
+            .split('; ')
+            .find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
+            ?.split('=')[1];
+        if (cookieValue !== undefined) {
+            setIsOpen(cookieValue === 'true');
+        }
     }, []);
 
-    const setOpen = React.useCallback(
-      (value: boolean) => {
-        _setOpen(value);
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${value}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
-      },
-      []
-    );
-
     const toggleSidebar = React.useCallback(() => {
-      return isMobile
-        ? setOpenMobile((current) => !current)
-        : setOpen(!_open);
-    }, [isMobile, _open, setOpen, setOpenMobile]);
+      if (isMobile) {
+        setOpenMobile(current => !current);
+      } else {
+        const newState = !isOpen;
+        setIsOpen(newState);
+        document.cookie = `${SIDEBAR_COOKIE_NAME}=${newState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+      }
+    }, [isMobile, isOpen]);
     
-    // Set active item on path change
     React.useEffect(() => {
         if(pathname) setActiveItem(pathname);
     }, [pathname]);
@@ -107,21 +105,18 @@ const SidebarProvider = React.forwardRef<
       return () => window.removeEventListener("keydown", handleKeyDown)
     }, [toggleSidebar])
 
-    const state = _open ? "expanded" : "collapsed"
+    const state = isOpen ? "expanded" : "collapsed"
 
-    const contextValue = React.useMemo<SidebarContext>(
+    const contextValue = React.useMemo<SidebarContextValue>(
       () => ({
         state,
-        open: _open,
-        setOpen,
         isMobile,
         openMobile,
         setOpenMobile,
         toggleSidebar,
         activeItem,
-        setActiveItem,
       }),
-      [state, _open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, activeItem]
+      [state, isMobile, openMobile, toggleSidebar, activeItem]
     )
 
     return (
@@ -382,15 +377,14 @@ const SidebarMenuButton = React.forwardRef<
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
-    const { isMobile, state, activeItem, setActiveItem, setOpenMobile } = useSidebar();
+    const { isMobile, state, activeItem, setOpenMobile } = useSidebar();
     const href = asChild && (children as React.ReactElement)?.props.href;
     
     // Determine if the item is active
-    const isActive = href === '/' ? activeItem === href : activeItem.startsWith(href);
+    const isActive = href === activeItem || (href !== '/' && activeItem.startsWith(href));
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         if (href) {
-            setActiveItem(href);
             if (isMobile) setOpenMobile(false);
         }
         if (props.onClick) props.onClick(event);
