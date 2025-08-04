@@ -11,10 +11,14 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function SignInPage() {
   const router = useRouter();
-  const { user, login, settings } = useAuth();
+  const { user, login } = useAuth();
   const { toast } = useToast();
   
   const [email, setEmail] = useState('');
@@ -105,69 +109,66 @@ export default function SignInPage() {
 
 
   return (
-      <div className="w-full h-full flex flex-col">
+      <Card className="w-full max-w-md mx-auto">
         {!show2fa ? (
           <>
-              <div className="text-left mb-8">
-                <h1 className="text-2xl font-bold text-foreground">Iniciar Sesión</h1>
-              </div>
-              <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="email" className="auth-label">Correo Electrónico</label>
-                   <div className="auth-input-container">
-                      <UserCircle className="auth-input-icon" />
-                      <input
-                        id="email"
-                        type="email"
-                        placeholder="tu@email.com"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={isLoading}
-                        className="auth-input auth-input-with-icon"
-                      />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="password" className="auth-label">Contraseña</label>
-                  <div className="auth-input-container">
-                    <LockKeyhole className="auth-input-icon" />
-                    <input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl font-headline">Iniciar Sesión</CardTitle>
+                <CardDescription>Ingresa a tu cuenta para continuar</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Correo Electrónico</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="tu@email.com"
                       required
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       disabled={isLoading}
-                      className="auth-input auth-input-with-icon auth-input-password"
                     />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
                   </div>
-                </div>
-                <button type="submit" className="auth-button" disabled={isLoading}>
-                  {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  {isLoading ? 'Ingresando...' : 'Ingresar'}
-                </button>
-              </form>
-               <p className="auth-form-switch-link">
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Contraseña</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        required
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={isLoading}
+                        className="pr-10"
+                      />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    {isLoading ? 'Ingresando...' : 'Ingresar'}
+                  </Button>
+                </form>
+              </CardContent>
+               <div className="p-6 pt-0 text-center text-sm">
                     ¿No tienes una cuenta?{' '}
-                    <Link href="/sign-up" className="auth-link">
+                    <Link href="/sign-up" className="underline text-primary">
                         Crea una cuenta
                     </Link>
-                </p>
+                </div>
           </>
         ) : (
           <>
-              <div className="text-center mb-6 space-y-4">
-                <ShieldCheck className="mx-auto h-12 w-12 text-teal-500" />
-                <div className="space-y-1">
-                  <h1 className="text-2xl font-bold">Verificación de Dos Factores</h1>
-                  <p className="text-muted-foreground">Ingresa el código de 6 dígitos de tu aplicación de autenticación.</p>
-                </div>
-              </div>
+            <CardHeader className="text-center">
+                <ShieldCheck className="mx-auto h-12 w-12 text-primary" />
+                <CardTitle className="text-2xl font-bold">Verificación Requerida</CardTitle>
+                <CardDescription>Ingresa el código de 6 dígitos de tu aplicación de autenticación.</CardDescription>
+            </CardHeader>
+             <CardContent>
               <form onSubmit={handle2faSubmit} className="space-y-4">
                 <div className="flex justify-center">
                   <InputOTP
@@ -175,7 +176,6 @@ export default function SignInPage() {
                     value={token}
                     onChange={(value) => setToken(value)}
                     disabled={isLoading}
-                    containerClassName="otp-group"
                   >
                     <InputOTPGroup>
                       <InputOTPSlot index={0} />
@@ -187,18 +187,19 @@ export default function SignInPage() {
                     </InputOTPGroup>
                   </InputOTP>
                 </div>
-                <button type="submit" className="auth-button" disabled={isLoading || token.length < 6}>
+                <Button type="submit" className="w-full" disabled={isLoading || token.length < 6}>
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   {isLoading ? 'Verificando...' : 'Verificar y Entrar'}
-                </button>
+                </Button>
               </form>
-               <div className="mt-4 text-center text-sm">
-                <button onClick={() => { setShow2fa(false); setUserIdFor2fa(null); setPassword(''); }} className="auth-link">
+             </CardContent>
+               <div className="p-6 pt-0 text-center text-sm">
+                <button onClick={() => { setShow2fa(false); setUserIdFor2fa(null); setPassword(''); }} className="underline text-primary">
                   Volver al inicio de sesión
                 </button>
               </div>
           </>
         )}
-      </div>
+      </Card>
   );
 }

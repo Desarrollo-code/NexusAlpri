@@ -9,6 +9,7 @@ import { ThemeProvider } from 'next-themes';
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
+import { cn } from '@/lib/utils';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -42,7 +43,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
+  // Check if the current path starts with any of the public paths.
+  // This handles nested routes like /sign-in/[[...sign-in]]
   const isPublicPage = publicPages.some(p => pathname.startsWith(p));
+  const isAuthPage = pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up');
 
   return (
     <html lang="es" className={`${inter.variable} ${spaceGrotesk.variable} ${dancingScript.variable} ${sourceCodePro.variable}`} suppressHydrationWarning>
@@ -50,7 +54,7 @@ export default function RootLayout({
           <title>NexusAlpri</title>
           <meta name="description" content="Plataforma E-learning Corporativa" />
       </head>
-      <body className="font-body">
+      <body className="font-body flex flex-col min-h-screen">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -59,7 +63,9 @@ export default function RootLayout({
         >
             <AuthProvider>
                 {isPublicPage && <PublicTopBar />}
-                {children}
+                <main className={cn("flex-1 flex flex-col", isAuthPage ? "items-center justify-center" : "")}>
+                  {children}
+                </main>
                 <Toaster />
             </AuthProvider>
         </ThemeProvider>

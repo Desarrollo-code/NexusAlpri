@@ -5,7 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import { Loader2, ShieldAlert, Eye, EyeOff, LockKeyhole, UserCircle, Mail } from 'lucide-react';
+import { Loader2, ShieldAlert, Eye, EyeOff } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -48,6 +54,7 @@ export default function SignUpPage() {
         }
     }
 
+
     setIsLoading(true);
 
     try {
@@ -80,14 +87,14 @@ export default function SignUpPage() {
       if (pass.length < policy.passwordMinLength) return `La contraseña debe tener al menos ${policy.passwordMinLength} caracteres.`;
       if (policy.passwordRequireUppercase && !/[A-Z]/.test(pass)) return "La contraseña debe contener al menos una letra mayúscula.";
       if (policy.passwordRequireLowercase && !/[a-z]/.test(pass)) return "La contraseña debe contener al menos una letra minúscula.";
-      if (policy.passwordRequireNumber && !/\d/.test(pass)) return "La contraseña debe contener al menos un número.";
-      if (policy.passwordRequireSpecialChar && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pass)) return "La contraseña debe contener al menos un carácter especial.";
+      if (policy.passwordRequireNumber && !/\\d/.test(pass)) return "La contraseña debe contener al menos un número.";
+      if (policy.passwordRequireSpecialChar && !/[!@#$%^&*()_+\-=\\[\\]{};':"\\\\|,.<>\\/?]/.test(pass)) return "La contraseña debe contener al menos un carácter especial.";
       return null;
   }
 
   if (isAuthLoading || !settings) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
+      <div className="flex h-screen w-screen items-center justify-center">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
@@ -95,77 +102,80 @@ export default function SignUpPage() {
   
   if (!settings.allowPublicRegistration) {
       return (
-        <div className="text-center">
-            <h1 className="text-2xl font-bold">Registro Deshabilitado</h1>
-            <div className="mt-4 p-4 border border-yellow-400/30 bg-yellow-500/10 rounded-md">
-              <ShieldAlert className="h-6 w-6 mx-auto mb-2 text-yellow-600" />
-              <p className="text-sm text-yellow-800">El registro de nuevas cuentas está deshabilitado. Contacta a un administrador.</p>
-            </div>
-            <div className="mt-4 text-center text-sm">
-                <Link href="/sign-in" className="auth-link">Volver a Inicio de Sesión</Link>
-            </div>
-        </div>
+        <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+                <CardTitle className="text-2xl font-headline">Registro Deshabilitado</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Alert variant="destructive">
+                  <ShieldAlert className="h-4 w-4" />
+                  <AlertTitle>Acción no permitida</AlertTitle>
+                  <AlertDescription>
+                    El registro de nuevas cuentas está deshabilitado. Contacta a un administrador para que cree una cuenta para ti.
+                  </AlertDescription>
+                </Alert>
+                <div className="mt-4 text-center text-sm">
+                    <Link href="/sign-in" className="underline text-accent-foreground hover:text-primary">Volver a Inicio de Sesión</Link>
+                </div>
+            </CardContent>
+        </Card>
       );
   }
 
   return (
-    <div className="w-full h-full flex flex-col">
-       <div className="text-left mb-8">
-        <h1 className="text-2xl font-bold text-foreground">Crear una Cuenta</h1>
-      </div>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="p-3 border border-red-500/30 bg-red-500/10 rounded-md text-xs text-red-700 text-center">
-            {error}
+    <Card className="w-full max-w-md">
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
+        <CardDescription>Regístrate para empezar a aprender</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="grid gap-4">
+          {error && (
+            <Alert variant="destructive" className="text-xs">
+              <ShieldAlert className="h-4 w-4" />
+              <AlertTitle>Error de Registro</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <div className="grid gap-2">
+            <Label htmlFor="registerName">Nombre Completo</Label>
+            <Input type="text" id="registerName" placeholder="Tu nombre completo" required 
+                   value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
           </div>
-        )}
-        <div className="space-y-2">
-          <label htmlFor="registerName" className="auth-label">Nombre Completo</label>
-           <div className="auth-input-container">
-              <UserCircle className="auth-input-icon" />
-              <input type="text" id="registerName" placeholder="Tu nombre completo" required 
-                     value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} className="auth-input auth-input-with-icon"/>
-           </div>
-        </div>
-        <div className="space-y-2">
-          <label htmlFor="registerEmail" className="auth-label">Correo Electrónico</label>
-           <div className="auth-input-container">
-              <Mail className="auth-input-icon" />
-              <input type="email" id="registerEmail" placeholder="tu@email.com" required 
-                     value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="auth-input auth-input-with-icon"/>
-           </div>
-        </div>
-        <div className="space-y-2">
-          <label htmlFor="registerPassword" className="auth-label">Contraseña</label>
-          <div className="auth-input-container">
-            <LockKeyhole className="auth-input-icon" />
-            <input type={showPassword ? "text" : "password"} id="registerPassword" placeholder="••••••••" required
-                   value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} className="auth-input auth-input-with-icon auth-input-password" />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </button>
+          <div className="grid gap-2">
+            <Label htmlFor="registerEmail">Correo Electrónico</Label>
+            <Input type="email" id="registerEmail" placeholder="tu@email.com" required 
+                   value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
           </div>
-        </div>
-        <div className="space-y-2">
-          <label htmlFor="confirmPassword" className="auth-label">Confirmar Contraseña</label>
-          <div className="auth-input-container">
-             <LockKeyhole className="auth-input-icon" />
-            <input type={showConfirmPassword ? "text" : "password"} id="confirmPassword" placeholder="••••••••" required
-                   value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} className="auth-input auth-input-with-icon auth-input-password" />
-            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
-                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </button>
+          <div className="grid gap-2">
+            <Label htmlFor="registerPassword">Contraseña</Label>
+            <div className="relative">
+              <Input type={showPassword ? "text" : "password"} id="registerPassword" placeholder="••••••••" required
+                     value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} className="pr-10" />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
           </div>
-        </div>
-        <button type="submit" className="auth-button" disabled={isLoading}>
-          {isLoading && <Loader2 className="animate-spin mr-2" />}
-          Registrarse
-        </button>
-      </form>
-        <p className="auth-form-switch-link">
-          ¿Ya tienes una cuenta?{' '}
-          <Link href="/sign-in" className="auth-link">Inicia sesión</Link>
-        </p>
-    </div>
+          <div className="grid gap-2">
+            <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+            <div className="relative">
+              <Input type={showConfirmPassword ? "text" : "password"} id="confirmPassword" placeholder="••••••••" required
+                     value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} className="pr-10" />
+              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="animate-spin mr-2" />}
+            Registrarse
+          </Button>
+          <div className="mt-4 text-center text-sm">
+            ¿Ya tienes una cuenta? <Link href="/sign-in" className="underline text-accent-foreground hover:text-primary">Inicia sesión</Link>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
