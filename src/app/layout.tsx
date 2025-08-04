@@ -73,13 +73,13 @@ function RootLayoutContent({ children }: { children: React.ReactNode }) {
 
     // Otherwise, show the public layout (top bar + page content)
     return (
-        <div className="flex flex-col min-h-screen">
-          <PublicTopBar />
-          <main className="flex-1">
-              {children}
-          </main>
-          <Footer />
-        </div>
+      <div className="flex flex-col min-h-screen">
+        <PublicTopBar />
+        <main className="flex-1">
+            {children}
+        </main>
+        <Footer />
+      </div>
     );
 }
 

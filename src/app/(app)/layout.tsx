@@ -1,3 +1,4 @@
+
 // src/app/(app)/layout.tsx
 'use client';
 
@@ -33,12 +34,11 @@ import { TopBar } from '@/components/layout/top-bar';
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const { user, settings, logout, isLoading } = useAuth();
     const { toast } = useToast();
-    const router = useRouter(); // Needed for redirects
-    const pathname = usePathname(); // Needed for active item state
+    const router = useRouter();
+    const pathname = usePathname();
     const isMobile = useIsMobile();
     const { state, toggleSidebar, activeItem, setActiveItem, openMobile, setOpenMobile } = useSidebar();
 
-    // --- Idle Timeout Logic ---
     const handleIdleLogout = React.useCallback(() => {
         if (user) {
             logout();
@@ -55,7 +55,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
     useIdleTimeout(handleIdleLogout, idleTimeoutMinutes, isIdleTimeoutEnabled);
 
-    // --- Navigation Logic ---
     const navItems = React.useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
 
     React.useEffect(() => {
@@ -64,9 +63,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         }
     }, [pathname, setActiveItem]);
 
-
-    // --- Loading and Auth Check ---
-     React.useEffect(() => {
+    React.useEffect(() => {
         if (!isLoading && !user) {
             router.replace('/sign-in');
         }
@@ -154,14 +151,14 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
             
-            <main className={cn("flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300", 
+            <div className={cn("flex flex-col flex-1 overflow-hidden transition-[margin-left] duration-300", 
                  isMobile ? "ml-0" : state === 'expanded' ? "ml-72" : "ml-20"
             )}>
               <TopBar />
-              <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+              <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
                 {children}
-              </div>
-            </main>
+              </main>
+            </div>
         </div>
     )
 }
@@ -170,8 +167,6 @@ const NavItem = ({ item, activeItem, onItemClick }: { item: NavItem, activeItem:
   const hasChildren = item.children && item.children.length > 0;
   
   if (hasChildren) {
-    // This is a placeholder for a more complex collapsible menu item
-    // For now, we'll just render a non-clickable button
     return (
         <SidebarMenuButton
             onClick={() => onItemClick(item)}
