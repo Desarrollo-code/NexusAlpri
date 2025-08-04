@@ -1,3 +1,4 @@
+
 // src/app/(auth)/layout.tsx
 import Image from 'next/image';
 
