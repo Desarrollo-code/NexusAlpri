@@ -1,4 +1,3 @@
-
 // src/app/(app)/layout.tsx
 'use client';
 
@@ -65,9 +64,6 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                         </div>
                         <span className="sidebar-text text-white text-xl font-bold">NexusAlpri</span>
                       </div>
-                     <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-white" onClick={toggleSidebar} aria-label="Alternar barra lateral">
-                        <ChevronsRight className={cn("h-5 w-5 transition-transform", state === "expanded" && "rotate-180")} />
-                    </Button>
                 </SidebarHeader>
 
                  <div className="p-4 sidebar-text">
@@ -103,7 +99,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
               "flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
               state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
             )}>
-              <TopBar />
+              <TopBar>
+                <Button variant="ghost" size="icon" className="h-9 w-9 hidden lg:flex text-muted-foreground hover:text-foreground" onClick={toggleSidebar} aria-label="Alternar barra lateral">
+                    <ChevronsRight className={cn("h-5 w-5 transition-transform", state === "expanded" && "rotate-180")} />
+                </Button>
+              </TopBar>
               <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
                 {children}
               </main>
