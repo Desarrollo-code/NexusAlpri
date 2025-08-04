@@ -157,15 +157,32 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             <div className={cn("flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
               state === 'expanded' ? "lg:ml-72" : "lg:ml-20"
             )}>
-                <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-                  {children}
-                </main>
+              <TopBar />
+              <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+                {children}
+              </main>
             </div>
         </div>
     )
 }
 
 const NavItem = ({ item, activeItem, onItemClick }: { item: NavItem, activeItem: string, onItemClick: (item: NavItem) => void }) => {
+  const hasChildren = item.children && item.children.length > 0;
+  
+  if (hasChildren) {
+    return (
+        // This is a placeholder for a more complex collapsible menu item
+        <SidebarMenuButton
+            onClick={() => onItemClick(item)}
+            isActive={activeItem.startsWith(item.path || '---')}
+            tooltip={{ children: item.label }}
+        >
+            <item.icon className="h-5 w-5 flex-shrink-0" />
+            <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
+        </SidebarMenuButton>
+    )
+  }
+
   return (
      <SidebarMenuButton
         asChild={!!item.path}
