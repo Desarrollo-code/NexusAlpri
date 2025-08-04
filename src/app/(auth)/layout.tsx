@@ -29,10 +29,10 @@ export default function AuthLayout({
         </header>
         <div className="auth-branding-content">
             <h1 className="auth-headline">
-              Conectando Talento. Creando Futuro.
+              Aprende. Fórmate. Domina.
             </h1>
             <p className="auth-subheadline">
-              El epicentro de tu ecosistema de aprendizaje. Organiza, comparte y potencia el conocimiento con herramientas intuitivas y una experiencia de usuario sin igual.
+              La plataforma donde tu potencial cobra vida.
             </p>
             <ArrowDown className="auth-down-arrow" />
         </div>
