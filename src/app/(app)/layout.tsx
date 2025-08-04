@@ -68,7 +68,8 @@ const NavItemComponent = ({ item, activeItem, onItemClick }: { item: NavItem, ac
     );
 };
 
-function AppSidebar({ user, logout }: { user: any, logout: () => void }) {
+function AppSidebar() {
+    const { user, logout } = useAuth();
     const { state, toggleSidebar, activeItem, setActiveItem, setOpenMobile } = useSidebar();
     const navItems = React.useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
     const pathname = usePathname();
@@ -175,7 +176,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <div className="flex h-screen bg-muted/30 dark:bg-gray-900/80">
-        <AppSidebar user={user} logout={logout} />
+        <AppSidebar />
         <MainContent>
           {children}
         </MainContent>
