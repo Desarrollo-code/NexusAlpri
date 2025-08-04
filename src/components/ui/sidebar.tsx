@@ -62,7 +62,7 @@ const SidebarProvider = React.forwardRef<
     const pathname = usePathname();
     const [activeItem, setActiveItem] = React.useState(pathname);
     
-    // Default to expanded
+    // Default to expanded, will be updated by client-side effect
     const [isOpen, setIsOpen] = React.useState(true); 
 
     // Read cookie only on client-side to avoid SSR issues
