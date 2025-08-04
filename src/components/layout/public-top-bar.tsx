@@ -8,7 +8,7 @@ import Image from 'next/image';
 
 export function PublicTopBar() {
   return (
-    <header className="px-4 lg:px-6 h-24 flex items-center bg-sidebar backdrop-blur-sm sticky top-0 z-50 border-b border-sidebar-border shadow-md">
+    <header className="px-4 lg:px-6 h-24 flex items-center bg-black backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800 shadow-lg">
       <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
         <Image src="/uploads/images/logo-nexusalpri.png" alt="NexusAlpri Logo" width={48} height={48} data-ai-hint="logo" />
         <span className="text-3xl font-semibold font-headline-alt bg-gradient-to-r from-primary to-purple-500 text-transparent bg-clip-text">
