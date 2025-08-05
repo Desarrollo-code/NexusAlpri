@@ -27,7 +27,7 @@
     --ring: 217.2 91.2% 59.8%;
     --radius: 0.75rem;
 
-    /* Barra Lateral - Paleta "Aurora Cósmica" (Fija) */
+    /* Barra Lateral - Paleta "Aurora Cósmica" (Fija e Independiente del tema) */
     --sidebar-gradient-from: 260 100% 12%; /* Morado oscuro profundo */
     --sidebar-gradient-to: 300 100% 20%;   /* Magenta espacial */
     --sidebar-foreground: 0 0% 100%;       /* Blanco puro */

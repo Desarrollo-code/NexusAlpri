@@ -265,7 +265,7 @@ const sidebarMenuButtonVariants = cva(
       size: { default: "h-11 text-base", sm: "h-9 text-sm", lg: "h-12 text-base" },
       isActive: { true: "bg-sidebar-active-background text-sidebar-accent-foreground", false: "" }
     },
-    defaultVariants: { variant: "ghost", size: "sm", isActive: false },
+    defaultVariants: { variant: "ghost", size: "sm" },
   }
 )
 
