@@ -32,7 +32,6 @@ const NAVIGATION_ITEMS: NavItem[] = [
     icon: BookOpen,
     path: '/courses',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
-    badge: 'Nuevo'
   },
   {
     id: 'my-courses',
