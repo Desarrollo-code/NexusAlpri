@@ -14,10 +14,9 @@ import {
   SidebarHeader
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { LogOut, Loader2, ChevronsLeft, Search } from 'lucide-react';
+import { LogOut, Loader2, ChevronsLeft } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TopBar } from '@/components/layout/top-bar';
@@ -51,6 +50,15 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         );
     }
     
+    const getInitials = (name: string) => {
+        if (!name) return '??';
+        const names = name.split(' ');
+        if (names.length > 1 && names[0] && names[names.length - 1]) {
+            return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    };
+
     return (
         <div className="flex h-screen bg-muted/30 dark:bg-gray-900/80">
             <Sidebar>
@@ -70,7 +78,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                          <Avatar className="h-10 w-10 flex-shrink-0">
                             <AvatarImage src={user.avatar || undefined} alt={user.name || 'Avatar de usuario'} />
                             <AvatarFallback className="bg-gradient-to-br from-green-400 to-blue-500 text-white font-semibold">
-                                {user.name.split(' ').map(n => n[0]).join('')}
+                                {getInitials(user.name)}
                             </AvatarFallback>
                         </Avatar>
                         <div className="sidebar-text flex-1 overflow-hidden">
