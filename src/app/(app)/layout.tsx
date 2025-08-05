@@ -42,8 +42,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (isLoading || !user) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
-        <Loader2 className="h-12 w-12 animate-spin text-[hsl(var(--primary))]" />
+      <div className="flex h-screen w-screen items-center justify-center bg-background text-foreground">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
@@ -58,61 +58,48 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+    <>
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 bg-gradient-to-br from-[hsl(var(--primary))] to-black rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
+            <div className="w-10 h-10 bg-black/20 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
               <Image
-                src="/uploads/images/logo-nexusalpri.png"
+                src="/uploads/images/logo-letter.png"
                 alt="NexusAlpri Logo"
-                width={40}
-                height={40}
+                width={28}
+                height={28}
                 className="w-auto h-auto"
               />
             </div>
-            <span className="sidebar-text text-[hsl(var(--sidebar-foreground))] text-xl font-bold">NexusAlpri</span>
+            <span className="sidebar-text text-sidebar-foreground text-xl font-bold font-headline">NexusAlpri</span>
           </div>
         </SidebarHeader>
 
         <SidebarContent />
 
         <SidebarFooter>
-          <div className="flex items-center gap-3 mb-4 p-3 bg-[hsl(var(--sidebar-accent)/0.2)] rounded-lg overflow-hidden">
+          <div className="flex items-center gap-3 mb-4 p-3 bg-black/20 rounded-lg overflow-hidden">
             <Avatar className="h-10 w-10 flex-shrink-0">
               <AvatarImage src={user.avatar || undefined} alt={user.name || 'Avatar de usuario'} />
-              <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--chart-2))] to-[hsl(var(--chart-1))] text-white font-semibold">
+              <AvatarFallback className="bg-gradient-to-br from-chart-2 to-chart-1 text-white font-semibold">
                 {getInitials(user.name)}
               </AvatarFallback>
             </Avatar>
             <div className="sidebar-text flex-1 overflow-hidden">
-              <p className="text-[hsl(var(--sidebar-foreground))] text-sm font-medium truncate">{user.name}</p>
-              <p className="text-[hsl(var(--muted-foreground))] text-xs capitalize truncate">{user.role.toLowerCase()}</p>
+              <p className="text-sidebar-foreground text-sm font-medium truncate">{user.name}</p>
+              <p className="text-muted-foreground text-xs capitalize truncate">{user.role.toLowerCase()}</p>
             </div>
           </div>
           <Button
             onClick={logout}
-            className="w-full text-[hsl(var(--destructive-foreground))] hover:text-[hsl(var(--destructive-foreground))] hover:bg-[hsl(var(--destructive)/0.2)] justify-start gap-3 p-3 h-auto"
+            variant="ghost"
+            className="w-full text-sidebar-foreground hover:text-sidebar-foreground hover:bg-black/20 justify-start gap-3 p-3 h-auto"
           >
             <LogOut className="h-5 w-5 flex-shrink-0" />
             <span className="sidebar-text font-medium">Cerrar Sesión</span>
           </Button>
         </SidebarFooter>
       </Sidebar>
-
-      <Button
-        variant="outline"
-        size="icon"
-        className={cn(
-          "fixed top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-[hsl(var(--background)/0.7)] backdrop-blur-sm text-[hsl(var(--foreground)/0.8)] hover:bg-[hsl(var(--background))] hover:text-[hsl(var(--foreground))] border border-[hsl(var(--border))] transition-all duration-300 ease-in-out z-50",
-          "hover:scale-110 active:scale-95 hidden lg:flex",
-          state === "expanded" ? "left-[calc(theme(width.72)-1.125rem)]" : "left-[calc(theme(width.20)-1.125rem)]"
-        )}
-        onClick={toggleSidebar}
-        aria-label="Alternar barra lateral"
-      >
-        <ChevronsLeft className={cn("h-5 w-5 transition-transform", state === "collapsed" && "rotate-180")} />
-      </Button>
 
       <div
         className={cn(
@@ -126,13 +113,15 @@ function AppLayout({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
-    </div>
+    </>
   );
 }
 
 const AppLayoutWrapper = ({ children }: { children: React.ReactNode }) => (
   <SidebarProvider>
-    <AppLayout>{children}</AppLayout>
+    <div className="flex h-screen bg-background text-foreground">
+      <AppLayout>{children}</AppLayout>
+    </div>
   </SidebarProvider>
 );
 

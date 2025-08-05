@@ -1,4 +1,3 @@
-
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -24,16 +23,11 @@ export default {
         code: ['var(--font-code)', 'Source Code Pro', 'monospace'],
       },
       colors: {
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
-        },
-        popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
-        },
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
@@ -41,6 +35,10 @@ export default {
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
         },
         muted: {
           DEFAULT: 'hsl(var(--muted))',
@@ -50,13 +48,14 @@ export default {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
         },
-        destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
         },
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',
@@ -64,13 +63,20 @@ export default {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+        event: {
+          blue: 'hsl(var(--event-blue))',
+          green: 'hsl(var(--event-green))',
+          red: 'hsl(var(--event-red))',
+          orange: 'hsl(var(--event-orange))',
+        },
         sidebar: {
+          'gradient-from': 'hsl(var(--sidebar-gradient-from))',
+          'gradient-to': 'hsl(var(--sidebar-gradient-to))',
           foreground: 'hsl(var(--sidebar-foreground))',
           'active-background': 'hsl(var(--sidebar-active-background))',
           'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
           border: 'hsl(var(--sidebar-border))',
-          'gradient-from': 'hsl(var(--sidebar-gradient-from))',
-          'gradient-to': 'hsl(var(--sidebar-gradient-to))',
+          ring: 'hsl(var(--sidebar-ring))',
         },
       },
       borderRadius: {
@@ -95,15 +101,6 @@ export default {
             height: '0',
           },
         },
-        'press': {
-          '0%': { transform: 'scale(1)' },
-          '50%': { transform: 'scale(0.92)' },
-          'to': { transform: 'scale(1)' },
-        },
-        'throw': {
-            '0%': { transform: 'translateY(20px) scale(0.95)', opacity: '0' },
-            '100%': { transform: 'translateY(0) scale(1)', opacity: '1' }
-        },
         'caret-blink': {
           '0%, 70%, 100%': { opacity: '1' },
           '20%, 50%': { opacity: '0' },
@@ -112,8 +109,6 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'press': 'press 0.2s 1 linear',
-        'throw': 'throw 0.4s ease-out forwards',
         'caret-blink': 'caret-blink 1.25s ease-out infinite',
       },
     },

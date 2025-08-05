@@ -3,101 +3,76 @@
 @tailwind utilities;
 
 @layer base {
-  /* --- TEMA CLARO (POR DEFECTO) --- */
+  /* --- TEMA CYBER-MODERNO (INDEPENDIENTE) --- */
   :root {
-    --background: 220 20% 96%;
+    /* Tema General Claro */
+    --background: 0 0% 100%;
     --foreground: 224 71.4% 4.1%;
-
     --card: 0 0% 100%;
     --card-foreground: 224 71.4% 4.1%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
-
-    --primary: 220 90% 55%;
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 210 20% 98%;
-
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 220.9 39.3% 11%;
-
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
-
     --accent: 220 14.3% 95.9%;
     --accent-foreground: 220.9 39.3% 11%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
-
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 220 90% 55%;
-
+    --ring: 217.2 91.2% 59.8%;
     --radius: 0.75rem;
 
-    /* Sidebar */
-    --sidebar-background: 225 15% 15%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-accent: hsl(225 15% 25%);
-    --sidebar-accent-foreground: hsl(0 0% 100%);
-    --sidebar-border: hsl(225 15% 25%);
-    --sidebar-ring: hsl(var(--primary));
+    /* Barra Lateral - Paleta "Aurora Cósmica" (Fija) */
+    --sidebar-gradient-from: 260 100% 12%; /* Morado oscuro profundo */
+    --sidebar-gradient-to: 300 100% 20%;   /* Magenta espacial */
+    --sidebar-foreground: 0 0% 100%;       /* Blanco puro */
+    --sidebar-active-background: 185 90% 45% / 0.1; /* Cian neón translúcido */
+    --sidebar-accent-foreground: 185 100% 80%;      /* Cian eléctrico brillante para texto/icono activo */
+    --sidebar-border: 0 0% 100% / 0.1;      /* Borde efecto cristal */
+    --sidebar-ring: 185 90% 50%;
 
-    /* Paleta gráfica */
-    --chart-1: 210 90% 55%;
-    --chart-2: 150 75% 45%;
-    --chart-3: 330 90% 65%;
+     /* Paleta Gráfica Vibrante */
+    --chart-1: 185 90% 50%;
+    --chart-2: 260 95% 60%;
+    --chart-3: 310 90% 65%;
     --chart-4: 30 100% 60%;
-    --chart-5: 270 90% 65%;
+    --chart-5: 220 85% 65%;
 
-    --event-blue: 200 81% 56%;
-    --event-green: 139 51% 51%;
-    --event-red: 356 91% 68%;
+    /* Colores para Eventos del Calendario */
+    --event-blue: 190 81% 56%;
+    --event-green: 140 55% 55%;
+    --event-red: 0 91% 70%;
     --event-orange: 24 97% 63%;
-
-    --gauge-green: 120 70% 45%;
-    --gauge-yellow: 45 90% 55%;
-    --gauge-red: 0 85% 60%;
   }
 
-  /* --- TEMA OSCURO --- */
   .dark {
-    --background: 225 10% 12%;
+    /* Tema General Oscuro */
+    --background: 225 15% 12%;
     --foreground: 210 20% 98%;
-
-    --card: 225 10% 17%;
+    --card: 225 15% 17%;
     --card-foreground: 210 20% 98%;
-
-    --popover: 225 10% 12%;
+    --popover: 225 15% 12%;
     --popover-foreground: 210 20% 98%;
-
-    --primary: 220 90% 60%;
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 210 20% 98%;
-
-    --secondary: 225 10% 22%;
+    --secondary: 225 15% 22%;
     --secondary-foreground: 210 20% 98%;
-
-    --muted: 225 10% 22%;
+    --muted: 225 15% 22%;
     --muted-foreground: 210 5% 64%;
-
-    --accent: 225 10% 22%;
+    --accent: 225 15% 22%;
     --accent-foreground: 210 20% 98%;
-
-    --destructive: 0 63% 51%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 210 20% 98%;
-
-    --border: 225 10% 18%; /* más suave */
-    --input: 225 10% 18%;
-    --ring: 220 90% 60%;
-
-    --sidebar-background: 225 10% 15%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-accent: hsl(225 10% 25%);
-    --sidebar-accent-foreground: hsl(0 0% 100%);
-    --sidebar-border: hsl(225 10% 25%);
+    --border: 225 15% 25%;
+    --input: 225 15% 25%;
+    --ring: 217.2 91.2% 59.8%;
   }
 
-  /* Evitamos borde innecesario global */
   * {
     border-color: hsl(var(--border));
   }
@@ -109,28 +84,7 @@
 }
 
 @layer components {
-  .main-content {
-    transition: padding-left 0.3s ease-in-out;
-  }
-
-  .sidebar-text {
-    @apply transition-opacity duration-200 whitespace-nowrap;
-  }
-
-  .group\/sidebar-wrapper[data-state='collapsed'] .sidebar-text {
-    @apply opacity-0 pointer-events-none;
-  }
-
-  .group\/sidebar-wrapper[data-state='collapsed'] .group\/menu-item .justify-start {
-    @apply justify-center;
-  }
-
-  .watermark-img {
-    @apply opacity-40;
-    width: auto;
-    height: auto;
-  }
-
+  /* Estilos para animaciones y otros componentes personalizados */
   .card-border-animated {
     @apply border-t-4 border-transparent shadow-lg shadow-black/5 dark:shadow-black/20;
     @apply transition-all duration-300;
