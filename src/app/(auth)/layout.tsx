@@ -1,5 +1,6 @@
 // src/app/(auth)/layout.tsx
-import Image from 'next/image';
+// Este layout ahora hereda del layout público para mantener la consistencia.
+import PublicLayout from '@/app/(public)/layout';
 
 export default function AuthLayout({
   children,
@@ -7,10 +8,10 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/40 p-4">
-      <div className="w-full max-w-md">
-        {children}
-      </div>
-    </div>
+    <PublicLayout>
+        <div className="w-full max-w-md">
+            {children}
+        </div>
+    </PublicLayout>
   );
 }
