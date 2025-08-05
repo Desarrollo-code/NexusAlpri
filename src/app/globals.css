@@ -36,7 +36,7 @@
 
     --radius: 0.75rem;
 
-    /* --- PALETA FIJA "AURORA NOCTURNA" PARA LA BARRA LATERAL --- */
+    /* --- PALETA FIJA "AURORA NOCTURNA" PARA LA BARRA LATERAL (INDEPENDIENTE DEL TEMA) --- */
     --sidebar-gradient-from: 160 50% 18%; /* Verde Esmeralda Oscuro */
     --sidebar-gradient-to: 230 40% 22%; /* Azul Noche Intenso */
     --sidebar-foreground: 210 20% 98%; /* Blanco casi puro */
