@@ -58,8 +58,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             <Sidebar>
                 <SidebarHeader>
                      <div className="flex items-center gap-3 overflow-hidden">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
-                           <Image src="/uploads/images/logo-letter.png" alt="NexusAlpri Logo" width={24} height={24} data-ai-hint="logo letter" />
+                        <div className="w-10 h-10 bg-gradient-to-br from-primary to-black-600 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
+                           <Image src="/uploads/images/logo-nexusalpri.png" alt="NexusAlpri Logo" width={40} height={40} data-ai-hint="logo letter" />
                         </div>
                         <span className="sidebar-text text-white text-xl font-bold">NexusAlpri</span>
                       </div>
