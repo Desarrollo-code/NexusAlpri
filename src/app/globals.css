@@ -115,11 +115,6 @@
   .group\/sidebar-wrapper[data-state='collapsed'] .sidebar-text {
     @apply opacity-0 pointer-events-none;
   }
-  
-  .group\/sidebar-wrapper[data-state='collapsed'] .group\/menu-item button,
-  .group\/sidebar-wrapper[data-state='collapsed'] .group\/menu-item a {
-    @apply justify-center;
-  }
 
   .watermark-img {
     @apply opacity-40;
