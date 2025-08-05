@@ -90,8 +90,8 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out backdrop-blur-xl shadow-xl",
-          "bg-gradient-to-b from-sidebar-gradient-from to-sidebar-gradient-to",
-          "border-r border-sidebar-border rounded-r-2xl", // Bordes redondeados
+          "bg-gradient-to-b from-sidebar-gradient-from to-sidebar-gradient-to text-sidebar-foreground", // Estilo unificado
+          "border-r border-sidebar-border rounded-r-2xl",
           isMobile ?
             `w-72 ${openMobile ? 'translate-x-0' : '-translate-x-full'}` :
             `${state === 'expanded' ? 'w-72' : 'w-20'}`
@@ -241,7 +241,7 @@ export const SidebarToggle = () => {
       variant="ghost" 
       size="icon" 
       className={cn(
-          "text-sidebar-foreground/80 hover:text-sidebar-accent-foreground",
+          "text-sidebar-foreground/80 hover:text-sidebar-accent-foreground hover:bg-sidebar-active-background",
           state === 'collapsed' && 'w-full'
       )}>
       {state === 'expanded' ? <ChevronsLeft /> : <ChevronsRight />}

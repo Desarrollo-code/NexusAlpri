@@ -3,80 +3,79 @@
 @tailwind utilities;
 
 @layer base {
+  /* 🎨 Paleta de colores unificada y vibrante para toda la app */
   :root {
+    /* 🎨 Variables Globales de Estilo */
+    --radius: 0.75rem;
+
     /* 🌞 Tema Claro: "Amanecer Vibrante" */
     --background: 0 0% 100%;
     --foreground: 230 80% 10%;
-
     --card: 0 0% 100%;
     --card-foreground: 230 80% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 230 80% 10%;
-
-    --primary: 260 100% 60%; /* Violeta puro */
+    --primary: 262 83% 58%; /* Índigo */
     --primary-foreground: 0 0% 100%;
-    --secondary: 190 100% 85%; /* Cian pastel */
-    --secondary-foreground: 230 80% 10%;
-
-    --muted: 200 30% 90%;
-    --muted-foreground: 220 15% 40%;
-
-    --accent: 320 100% 65%; /* Fucsia vibrante */
+    --secondary: 210 40% 96.1%; /* Gris azulado claro */
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 340 82% 61%; /* Rosa vibrante */
     --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 100% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 20% 85%;
-    --input: 220 20% 85%;
-    --ring: 260 100% 60%;
-    --radius: 0.75rem; /* Aumentado para bordes más redondeados */
-
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 262 83% 58%;
+    
     /* 📊 Gráficos y Eventos (Claro) */
-    --chart-1: 260 100% 58%;
-    --chart-2: 320 100% 60%;
-    --chart-3: 185 90% 50%;
+    --chart-1: 262 83% 58%;
+    --chart-2: 340 82% 61%;
+    --chart-3: 160 70% 50%;
     --chart-4: 35 100% 60%;
     --chart-5: 220 100% 65%;
     --event-blue: 210 100% 60%;
     --event-green: 140 100% 45%;
     --event-red: 0 100% 60%;
     --event-orange: 25 100% 55%;
+
+    /* 🌌 Barra Lateral y Superior FIJA "Aurora Cósmica" (para ambos temas) */
+    --sidebar-gradient-from: 260 100% 15%; /* Morado oscuro */
+    --sidebar-gradient-to: 330 100% 25%;   /* Magenta profundo */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-active-background: 330 100% 50% / 0.1; /* Fondo magenta sutil */
+    --sidebar-accent-foreground: 330 100% 80%; /* Rosa neón brillante para texto e iconos activos */
+    --sidebar-border: 0 0% 100% / 0.1;
+    --sidebar-ring: 330 100% 70%;
   }
 
   .dark {
-    /* 🌌 Tema Oscuro: "Aurora Cósmica EXTREMA" */
-    --background: 0 0% 0%; /* Negro total */
-    --foreground: 0 0% 100%; /* Blanco brillante */
-
-    --card: 0 0% 6%;
-    --card-foreground: 0 0% 100%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 100%;
-
-    --primary: 260 100% 70%; /* Violeta brillante */
+    /* 🌌 Tema Oscuro: "Aurora Cósmica" */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 262 83% 68%; /* Índigo Neón */
     --primary-foreground: 0 0% 100%;
-    --secondary: 190 100% 35%; /* Cian neón */
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 70%;
-
-    --accent: 320 100% 70%; /* Fucsia neón */
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 340 82% 71%; /* Rosa Neón */
     --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 100% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 25%;
-    --input: 0 0% 25%;
-    --ring: 260 100% 70%;
-    --radius: 0.75rem; /* Aumentado para bordes más redondeados */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 262 83% 68%;
 
     /* 📊 Gráficos y Eventos (Oscuro) */
-    --chart-1: 260 100% 70%;
-    --chart-2: 320 100% 75%;
-    --chart-3: 185 100% 55%;
+    --chart-1: 262 83% 68%;
+    --chart-2: 340 82% 71%;
+    --chart-3: 160 80% 55%;
     --chart-4: 35 100% 65%;
     --chart-5: 220 100% 70%;
     --event-blue: 210 100% 70%;
@@ -84,22 +83,12 @@
     --event-red: 0 100% 65%;
     --event-orange: 25 100% 60%;
   }
+}
 
-  /* 🌌 Barra Lateral FIJA "Nebulosa Esmeralda" (para ambos temas) */
-  :root {
-    --sidebar-gradient-from: 180 100% 15%; /* Verde esmeralda oscuro */
-    --sidebar-gradient-to: 210 100% 25%;   /* Azul cian profundo */
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-active-background: 175 100% 50% / 0.1; /* Fondo turquesa sutil */
-    --sidebar-accent-foreground: 175 100% 80%; /* Turquesa brillante para texto e iconos activos */
-    --sidebar-border: 0 0% 100% / 0.1;
-    --sidebar-ring: 175 100% 70%;
-  }
-
+@layer base {
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -107,7 +96,6 @@
 }
 
 @layer components {
-  /* ... (otras clases de componentes si las hubiera) ... */
   .card-border-animated {
     @apply relative border-0;
   }

@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useTheme } from 'next-themes';
 import { Monitor, Sun, Moon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 
 function ThemeToggle() {
@@ -79,13 +80,17 @@ export function TopBar() {
   };
 
   return (
-   <div className="h-16 bg-gradient-to-r from-orange-500 via-yellow-400 to-red-500 text-white backdrop-blur-md shadow-md border-b border-white/20 flex items-center justify-between px-4 lg:px-6 flex-shrink-0 transition-all duration-500">
+   <div className={cn(
+       "h-16 bg-gradient-to-r from-sidebar-gradient-from to-sidebar-gradient-to text-sidebar-foreground",
+       "backdrop-blur-md shadow-md border-b border-sidebar-border",
+       "flex items-center justify-between px-4 lg:px-6 flex-shrink-0 transition-all duration-500"
+    )}>
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          className="lg:hidden p-2"
+          className="lg:hidden p-2 text-sidebar-foreground hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground"
           aria-label="Abrir menú de navegación"
         >
           <Menu className="h-6 w-6" />
@@ -99,7 +104,7 @@ export function TopBar() {
       <div className="flex items-center gap-2">
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative h-9 w-9" aria-label="Ver notificaciones">
+                <Button variant="ghost" size="icon" className="relative h-9 w-9 text-sidebar-foreground hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground" aria-label="Ver notificaciones">
                     <Bell className="h-5 w-5" />
                     <span className="absolute top-1 right-1 flex h-3 w-3">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
@@ -118,7 +123,7 @@ export function TopBar() {
 
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" className="flex items-center gap-2 h-10 px-2" aria-label="Abrir menú de usuario">
+                 <Button variant="ghost" className="flex items-center gap-2 h-10 px-2 text-sidebar-foreground hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground" aria-label="Abrir menú de usuario">
                      <Avatar className="h-8 w-8 border-2 border-primary/20">
                         <AvatarImage src={user?.avatar || undefined} alt={user?.name || 'Avatar de usuario'} />
                         <AvatarFallback>
