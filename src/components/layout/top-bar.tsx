@@ -79,31 +79,31 @@ export function TopBar() {
   };
 
   return (
-    <div className="h-16 bg-gradient-to-r from-primary to-purple-600 text-primary-foreground border-b border-primary/20 shadow-md flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
+    <div className="h-16 bg-card border-b flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setOpenMobile(true)}
-          className="lg:hidden p-2 text-primary-foreground hover:bg-white/10"
+          className="lg:hidden p-2"
           aria-label="Abrir menú de navegación"
         >
           <Menu className="h-6 w-6" />
         </Button>
 
         <div>
-          <h1 className="text-xl font-semibold text-primary-foreground">{getPageTitle()}</h1>
+          <h1 className="text-xl font-semibold">{getPageTitle()}</h1>
         </div>
       </div>
 
       <div className="flex items-center gap-2">
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative h-9 w-9 text-primary-foreground hover:bg-white/10" aria-label="Ver notificaciones">
+                <Button variant="ghost" size="icon" className="relative h-9 w-9" aria-label="Ver notificaciones">
                     <Bell className="h-5 w-5" />
                     <span className="absolute top-1 right-1 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
                     </span>
                 </Button>
             </DropdownMenuTrigger>
@@ -118,10 +118,10 @@ export function TopBar() {
 
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" className="flex items-center gap-2 h-10 text-primary-foreground hover:bg-white/10" aria-label="Abrir menú de usuario">
-                     <Avatar className="h-8 w-8 border-2 border-white/50">
+                 <Button variant="ghost" className="flex items-center gap-2 h-10" aria-label="Abrir menú de usuario">
+                     <Avatar className="h-8 w-8">
                         <AvatarImage src={user?.avatar || undefined} alt={user?.name || 'Avatar de usuario'} />
-                        <AvatarFallback className="bg-transparent text-primary-foreground font-semibold">
+                        <AvatarFallback>
                             {getInitials(user?.name || '')}
                         </AvatarFallback>
                     </Avatar>
