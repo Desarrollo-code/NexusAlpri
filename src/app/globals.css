@@ -31,8 +31,6 @@
     --input: 220 20% 85%;
     --ring: 260 100% 60%;
 
-    --radius: 0.75rem;
-
     /* 🌌 Barra Lateral FIJA "Aurora Cósmica" (para ambos temas) */
     --sidebar-gradient-from: 280 100% 25%; /* Violeta intenso */
     --sidebar-gradient-to: 320 100% 35%; /* Magenta brillante */

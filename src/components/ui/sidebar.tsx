@@ -141,25 +141,33 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
     const isActive = useMemo(() => {
         if (!activeItem || !item.path) return false;
+        if (hasChildren) {
+          return item.children?.some(child => child.path && activeItem.startsWith(child.path)) || false;
+        }
         return activeItem.startsWith(item.path);
-    }, [activeItem, item.path]);
+    }, [activeItem, item.path, hasChildren, item.children]);
     
     if (hasChildren) {
         return (
-            <div className="pt-4">
-                <div className={cn(
-                    "flex items-center gap-3 px-4 py-2 text-sm font-semibold text-sidebar-foreground/60",
-                    state === 'collapsed' && 'justify-center px-0'
-                )}>
-                    <GradientIcon icon={item.icon || Shield} />
-                    {state === 'expanded' && <span className="whitespace-nowrap">{item.label}</span>}
-                </div>
-                 <div className="space-y-1 mt-1">
-                    {item.children.map(child => (
-                        <SidebarMenuItem key={child.id} item={child} />
-                    ))}
-                 </div>
-            </div>
+            <Collapsible 
+              defaultOpen={isActive}
+              className="pt-2"
+            >
+              <CollapsibleTrigger className={cn(
+                "w-full flex items-center gap-3 px-4 py-2 text-sm font-semibold rounded-lg",
+                "text-sidebar-foreground/60 hover:text-sidebar-foreground/80",
+                state === 'collapsed' && 'justify-center px-0'
+              )}>
+                  <GradientIcon icon={item.icon || Shield} />
+                  {state === 'expanded' && <span className="flex-1 text-left whitespace-nowrap">{item.label}</span>}
+                  {state === 'expanded' && <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 [&[data-state=open]]:rotate-180" />}
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-1 mt-1 data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden">
+                  {item.children?.map(child => (
+                      <SidebarMenuItem key={child.id} item={child} />
+                  ))}
+              </CollapsibleContent>
+            </Collapsible>
         );
     }
     

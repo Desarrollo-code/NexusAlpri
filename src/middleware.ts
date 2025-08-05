@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getSession } from '@/lib/auth';
 
-const APP_ROUTE_PREFIX = '/dashboard'; // A simple prefix for most app routes
 const IS_APP_ROUTE_REGEX = /^\/(dashboard|courses|my-courses|profile|manage-courses|users|settings|analytics|security-audit|enrollments|notifications|calendar|resources)/;
 const PUBLIC_PATHS = ['/', '/about', '/sign-in', '/sign-up'];
+const API_AUTH_PREFIX = '/api/auth';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -28,7 +28,7 @@ export async function middleware(request: NextRequest) {
   if (session) {
     // If they are on an auth page, redirect to dashboard
     if (isAuthRoute) {
-      return NextResponse.redirect(new URL(APP_ROUTE_PREFIX, request.url));
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     // Otherwise, allow the request to proceed
     return NextResponse.next();
@@ -38,7 +38,7 @@ export async function middleware(request: NextRequest) {
   if (!session) {
     // And they are trying to access a protected app route
     if (isAppRoute) {
-      // For page visits, redirect to sign-in, preserving the intended destination
+      // Redirect to sign-in page, preserving the intended destination
       const signInUrl = new URL('/sign-in', request.url);
       signInUrl.searchParams.set('redirectedFrom', pathname);
       return NextResponse.redirect(signInUrl);

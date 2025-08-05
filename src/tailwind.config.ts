@@ -70,6 +70,11 @@ export default {
           red: 'hsl(var(--event-red))',
           orange: 'hsl(var(--event-orange))',
         },
+        gauge: {
+          green: 'hsl(var(--gauge-green))',
+          yellow: 'hsl(var(--gauge-yellow))',
+          red: 'hsl(var(--gauge-red))',
+        },
         sidebar: {
           'gradient-from': 'hsl(var(--sidebar-gradient-from))',
           'gradient-to': 'hsl(var(--sidebar-gradient-to))',
