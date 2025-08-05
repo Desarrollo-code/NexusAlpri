@@ -33,14 +33,14 @@
 
     --radius: 0.75rem;
 
-    /* 🌈 Gradiente Barra Lateral (Claro) */
-    --sidebar-gradient-from: 260 100% 60%;
-    --sidebar-gradient-to: 320 100% 60%;
+    /* 🌌 Barra Lateral FIJA "Aurora Cósmica" (para ambos temas) */
+    --sidebar-gradient-from: 280 100% 25%; /* Violeta intenso */
+    --sidebar-gradient-to: 320 100% 35%; /* Magenta brillante */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-active-background: 0 0% 100% / 0.15;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 100% / 0.2;
-    --sidebar-ring: 0 0% 100%;
+    --sidebar-active-background: 185 100% 50% / 0.1;
+    --sidebar-accent-foreground: 185 100% 90%;
+    --sidebar-border: 0 0% 100% / 0.1;
+    --sidebar-ring: 260 100% 70%;
 
     /* 📊 Gráficos y Eventos (Claro) */
     --chart-1: 260 100% 58%;
@@ -81,15 +81,6 @@
     --border: 0 0% 25%;
     --input: 0 0% 25%;
     --ring: 260 100% 70%;
-
-    /* 🌌 Gradiente Barra Lateral (Oscuro) */
-    --sidebar-gradient-from: 280 100% 25%; /* Violeta intenso */
-    --sidebar-gradient-to: 320 100% 35%; /* Magenta brillante */
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-active-background: 185 100% 50% / 0.1;
-    --sidebar-accent-foreground: 185 100% 90%;
-    --sidebar-border: 0 0% 100% / 0.1;
-    --sidebar-ring: 260 100% 70%;
 
     /* 📊 Gráficos y Eventos (Oscuro) */
     --chart-1: 260 100% 70%;
