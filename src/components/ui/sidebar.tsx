@@ -1,11 +1,10 @@
-// Fragmento corregido de Sidebar completo con estilos adecuados para colapsado
 
 'use client';
 
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { ChevronsRight, Menu, ChevronDown } from "lucide-react"
+import { ChevronsRight, Menu, ChevronDown, type LucideProps } from "lucide-react"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -21,6 +20,7 @@ import {
 import type { NavItem } from "@/types";
 import { getNavItemsForRole } from "@/lib/nav-items";
 import { useAuth } from "@/contexts/auth-context";
+import { GradientIcon } from "./gradient-icon";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -157,8 +157,12 @@ const SidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<"di
     return (
       <div ref={ref} className={cn("flex min-h-0 flex-1 flex-col overflow-auto px-4 py-2 space-y-1", className)} {...props}>
         <SidebarMenu>
-          {navItems.map((item) => (
-            <SidebarMenuItem key={item.id} item={item} />
+          {navItems.map((item, index) => (
+            <React.Fragment key={item.id}>
+              <SidebarMenuItem item={item} />
+              {/* Add separator after specific items */}
+              {(item.id === 'calendar' || item.id === 'admin') && <SidebarMenuSeparator />}
+            </React.Fragment>
           ))}
         </SidebarMenu>
       </div>
@@ -187,7 +191,7 @@ const SidebarMenuItem = React.forwardRef<HTMLLIElement, { item: NavItem } & Reac
       return (
         <li ref={ref} className={cn("group/menu-item relative space-y-1 pt-2", className)} {...props}>
             <div className="flex items-center gap-3 px-3">
-                <item.icon className={cn("h-5 w-5", state === 'collapsed' && "mx-auto")} />
+                <GradientIcon icon={item.icon} className={cn(state === 'collapsed' && "mx-auto")} isActive={isActive} />
                 <span className={cn("sidebar-text text-sm font-semibold text-sidebar-foreground/70", state === 'collapsed' && 'hidden')}>
                     {item.label}
                 </span>
@@ -205,7 +209,7 @@ const SidebarMenuItem = React.forwardRef<HTMLLIElement, { item: NavItem } & Reac
       <li ref={ref} className={cn("group/menu-item relative", className)} {...props}>
         <SidebarMenuButton asChild tooltip={{ children: item.label }}>
           <Link href={item.path || '#'}>
-            <item.icon className="h-5 w-5" />
+            <GradientIcon icon={item.icon} isActive={isActive} />
             <span className={cn("sidebar-text flex-1 text-left font-medium transition-all duration-300", state === 'collapsed' && 'hidden')}>{item.label}</span>
           </Link>
         </SidebarMenuButton>
@@ -225,10 +229,10 @@ SidebarMenuSeparator.displayName = "SidebarMenuSeparator"
 const sidebarMenuButtonVariants = cva(
   "flex w-full items-center gap-3 overflow-hidden rounded-lg p-3 text-left text-sm outline-none ring-sidebar-ring transition-all duration-200 focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50",
   {
-    variants: {
+    variants: { 
       variant: { 
-          default: "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground", 
-          ghost: "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground" 
+          default: "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground", 
+          ghost: "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" 
       },
       size: { default: "h-11 text-base", sm: "h-9 text-sm", lg: "h-12 text-base" },
       isActive: { true: "bg-sidebar-accent text-sidebar-accent-foreground shadow-inner", false: "" }

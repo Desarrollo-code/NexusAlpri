@@ -37,11 +37,11 @@
     --radius: 0.75rem;
 
     /* Nuevas variables para la barra lateral */
-    --sidebar-background: 221 83% 49%; /* Azul intenso */
-    --sidebar-foreground: 0 0% 100%; /* Texto blanco */
-    --sidebar-accent: hsl(221 83% 59%); /* Azul más claro para el activo */
+    --sidebar-background: 225 10% 17%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-accent: hsl(225 10% 25%);
     --sidebar-accent-foreground: hsl(0 0% 100%);
-    --sidebar-border: hsl(221 83% 44%);
+    --sidebar-border: hsl(225 10% 25%);
     --sidebar-ring: hsl(var(--primary));
     
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
@@ -92,11 +92,11 @@
     --ring: 220 90% 60%;
     
     /* Sobrescribir colores de la barra lateral para el tema oscuro */
-    --sidebar-background: 221 83% 49%;
+    --sidebar-background: 225 10% 17%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-accent: hsl(221 83% 59%);
+    --sidebar-accent: hsl(225 10% 25%);
     --sidebar-accent-foreground: hsl(0 0% 100%);
-    --sidebar-border: hsl(221 83% 44%);
+    --sidebar-border: hsl(225 10% 25%);
   }
 
   * {
