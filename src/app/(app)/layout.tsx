@@ -74,7 +74,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarContent />
                 
                 <SidebarFooter>
-                    <div className="flex items-center gap-3 mb-4 p-3 bg-gray-800 rounded-lg overflow-hidden">
+                    <div className="flex items-center gap-3 mb-4 p-3 bg-black/20 rounded-lg overflow-hidden">
                         <Avatar className="h-10 w-10 flex-shrink-0">
                             <AvatarImage src={user.avatar || undefined} alt={user.name || 'Avatar de usuario'} />
                             <AvatarFallback className="bg-gradient-to-br from-green-400 to-blue-500 text-white font-semibold">
@@ -83,7 +83,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                         </Avatar>
                         <div className="sidebar-text flex-1 overflow-hidden">
                             <p className="text-white text-sm font-medium truncate">{user.name}</p>
-                            <p className="text-gray-400 text-xs capitalize truncate">{user.role.toLowerCase()}</p>
+                            <p className="text-gray-300 text-xs capitalize truncate">{user.role.toLowerCase()}</p>
                         </div>
                     </div>
                     <Button onClick={logout} className="w-full text-red-300 hover:text-red-200 hover:bg-red-900/20 justify-start gap-3 p-3 h-auto">

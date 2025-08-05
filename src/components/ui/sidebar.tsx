@@ -21,7 +21,6 @@ import {
 import type { NavItem } from "@/types";
 import { getNavItemsForRole } from "@/lib/nav-items";
 import { useAuth } from "@/contexts/auth-context";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -179,31 +178,26 @@ const SidebarMenuItem = React.forwardRef<HTMLLIElement, { item: NavItem } & Reac
   ({ className, item, ...props }, ref) => {
     const { state, activeItem } = useSidebar();
     const hasChildren = item.children && item.children.length > 0;
-    const isActive = hasChildren ? item.children.some(child => child.path && activeItem.startsWith(child.path)) : (item.path ? (item.path === '/' ? activeItem === '/' : activeItem.startsWith(item.path)) : false);
-    const [isOpen, setIsOpen] = React.useState(isActive);
-    React.useEffect(() => { if (state === 'collapsed') setIsOpen(false); }, [state]);
+    const isActive = hasChildren 
+        ? item.children.some(child => child.path && activeItem.startsWith(child.path)) 
+        : (item.path ? (item.path === '/' ? activeItem === '/' : activeItem.startsWith(item.path)) : false);
 
+    // This is the new logic for a section header instead of a collapsible
     if (hasChildren) {
       return (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-1">
-          <li ref={ref} className={cn("group/menu-item relative", className)} {...props}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton isActive={isActive}>
-                    <item.icon className="h-5 w-5 mx-auto" />
-                    <span className={cn("sidebar-text flex-1 text-left font-medium transition-all duration-300", state === 'collapsed' && 'hidden')}>{item.label}</span>
-                    <ChevronDown className={cn("sidebar-text h-4 w-4 transition-transform", isOpen && "rotate-180", state === 'collapsed' && 'hidden')} />
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-              </TooltipTrigger>
-              {state === 'collapsed' && <TooltipContent side="right">{item.label}</TooltipContent>}
-            </Tooltip>
-          </li>
-          <CollapsibleContent className="sidebar-text space-y-1 ml-4 pl-4 border-l border-sidebar-border/20">
-            {item.children?.map(child => (<SidebarMenuItem key={child.id} item={child} />))}
-          </CollapsibleContent>
-        </Collapsible>
+        <li ref={ref} className={cn("group/menu-item relative space-y-1 pt-2", className)} {...props}>
+            <div className="flex items-center gap-3 px-3">
+                <item.icon className={cn("h-5 w-5", state === 'collapsed' && "mx-auto")} />
+                <span className={cn("sidebar-text text-sm font-semibold text-sidebar-foreground/70", state === 'collapsed' && 'hidden')}>
+                    {item.label}
+                </span>
+            </div>
+            <ul className={cn("space-y-1", state === 'expanded' && "ml-4 pl-4 border-l border-sidebar-border/20")}>
+                {item.children.map(child => (
+                    <SidebarMenuItem key={child.id} item={child} />
+                ))}
+            </ul>
+        </li>
       )
     }
 
@@ -211,7 +205,7 @@ const SidebarMenuItem = React.forwardRef<HTMLLIElement, { item: NavItem } & Reac
       <li ref={ref} className={cn("group/menu-item relative", className)} {...props}>
         <SidebarMenuButton asChild tooltip={{ children: item.label }}>
           <Link href={item.path || '#'}>
-            <item.icon className="h-5 w-5 mx-auto" />
+            <item.icon className="h-5 w-5" />
             <span className={cn("sidebar-text flex-1 text-left font-medium transition-all duration-300", state === 'collapsed' && 'hidden')}>{item.label}</span>
           </Link>
         </SidebarMenuButton>
@@ -232,9 +226,12 @@ const sidebarMenuButtonVariants = cva(
   "flex w-full items-center gap-3 overflow-hidden rounded-lg p-3 text-left text-sm outline-none ring-sidebar-ring transition-all duration-200 focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
-      variant: { default: "", ghost: "hover:bg-gray-700 hover:text-white" },
+      variant: { 
+          default: "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground", 
+          ghost: "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground" 
+      },
       size: { default: "h-11 text-base", sm: "h-9 text-sm", lg: "h-12 text-base" },
-      isActive: { true: "bg-sidebar-accent text-sidebar-accent-foreground shadow-lg", false: "" }
+      isActive: { true: "bg-sidebar-accent text-sidebar-accent-foreground shadow-inner", false: "" }
     },
     defaultVariants: { variant: "ghost", size: "sm", isActive: false },
   }
@@ -257,7 +254,7 @@ const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonP
     }
 
     const button = (
-      <Comp ref={ref} data-active={finalIsActive} className={cn(sidebarMenuButtonVariants({ variant, size, isActive: finalIsActive }), state === 'collapsed' && 'justify-center', className)} onClick={handleClick} {...props}>
+      <Comp ref={ref} data-active={finalIsActive} className={cn(sidebarMenuButtonVariants({ variant, size, isActive: finalIsActive }), state === 'collapsed' && 'justify-center', 'justify-start', className)} onClick={handleClick} {...props}>
         {children}
       </Comp>
     )

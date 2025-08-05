@@ -37,11 +37,11 @@
     --radius: 0.75rem;
 
     /* Nuevas variables para la barra lateral */
-    --sidebar-background: 225 15% 15%; /* Gris oscuro azulado */
-    --sidebar-foreground: 210 20% 94%; /* Texto casi blanco */
-    --sidebar-accent: hsl(var(--primary)); /* Azul para el elemento activo */
-    --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: 225 15% 25%;
+    --sidebar-background: 221 83% 49%; /* Azul intenso */
+    --sidebar-foreground: 0 0% 100%; /* Texto blanco */
+    --sidebar-accent: hsl(221 83% 59%); /* Azul más claro para el activo */
+    --sidebar-accent-foreground: hsl(0 0% 100%);
+    --sidebar-border: hsl(221 83% 44%);
     --sidebar-ring: hsl(var(--primary));
     
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
@@ -90,6 +90,13 @@
     --border: 225 10% 25%;
     --input: 225 10% 25%;
     --ring: 220 90% 60%;
+    
+    /* Sobrescribir colores de la barra lateral para el tema oscuro */
+    --sidebar-background: 221 83% 49%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-accent: hsl(221 83% 59%);
+    --sidebar-accent-foreground: hsl(0 0% 100%);
+    --sidebar-border: hsl(221 83% 44%);
   }
 
   * {
@@ -115,6 +122,11 @@
   .group\/sidebar-wrapper[data-state='collapsed'] .sidebar-text {
     @apply opacity-0 pointer-events-none;
   }
+  
+  .group\/sidebar-wrapper[data-state='collapsed'] .group\/menu-item .justify-start {
+      @apply justify-center;
+  }
+
 
   .watermark-img {
     @apply opacity-40;
