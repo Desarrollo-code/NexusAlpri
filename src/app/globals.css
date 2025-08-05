@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,7 +6,7 @@
 @layer base {
   /* --- TEMA CLARO (POR DEFECTO) --- */
   :root {
-    --background: 220 20% 96%;
+    --background: 220 20% 96%; /* Gris azulado muy claro */
     --foreground: 224 71.4% 4.1%;
 
     --card: 0 0% 100%;
@@ -13,8 +14,8 @@
 
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
-
-    --primary: 220 90% 55%;
+    
+    --primary: 220 90% 55%; /* Azul principal */
     --primary-foreground: 210 20% 98%;
 
     --secondary: 220 14.3% 95.9%;
@@ -35,20 +36,20 @@
 
     --radius: 0.75rem;
 
-    /* 🎨 Colores vivos para la barra lateral */
-    --sidebar-background: 230 15% 12%; /* Azul oscuro moderno */
-    --sidebar-foreground: 220 20% 98%;
-    --sidebar-accent: 10 80% 60%;    /* Púrpura vibrante */
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 230 10% 20%;
-    --sidebar-ring: 260 80% 60%;
-
-    /* Paleta de Colores para Gráficos y Eventos */
-    --chart-1: 210 90% 55%;
-    --chart-2: 150 75% 45%;
-    --chart-3: 330 90% 65%;
-    --chart-4: 30 100% 60%;
-    --chart-5: 270 90% 65%;
+    /* Nuevas variables para la barra lateral */
+    --sidebar-background: 225 15% 15%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-accent: hsl(225 15% 25%);
+    --sidebar-accent-foreground: hsl(0 0% 100%);
+    --sidebar-border: hsl(225 15% 25%);
+    --sidebar-ring: hsl(var(--primary));
+    
+    /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
+    --chart-1: 210 90% 55%; /* Azul Vibrante */
+    --chart-2: 150 75% 45%; /* Verde Menta */
+    --chart-3: 330 90% 65%; /* Rosa Intenso */
+    --chart-4: 30 100% 60%; /* Naranja */
+    --chart-5: 270 90% 65%; /* Púrpura */
 
     --event-blue: 200 81% 56%;
     --event-green: 139 51% 51%;
@@ -62,10 +63,10 @@
 
   /* --- TEMA OSCURO --- */
   .dark {
-    --background: 225 10% 12%;
+    --background: 225 10% 12%; /* Un fondo aún más oscuro */
     --foreground: 210 20% 98%;
 
-    --card: 225 10% 17%;
+    --card: 225 10% 17%; /* Ligeramente más claro que el fondo */
     --card-foreground: 210 20% 98%;
 
     --popover: 225 10% 12%;
@@ -89,18 +90,18 @@
     --border: 225 10% 25%;
     --input: 225 10% 25%;
     --ring: 220 90% 60%;
-
-    --sidebar-background: 230 15% 10%;
-    --sidebar-foreground: 220 20% 98%;
-    --sidebar-accent: 260 80% 60%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 230 10% 18%;
+    
+    /* Sobrescribir colores de la barra lateral para el tema oscuro */
+    --sidebar-background: 225 10% 15%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-accent: hsl(225 10% 25%);
+    --sidebar-accent-foreground: hsl(0 0% 100%);
+    --sidebar-border: hsl(225 10% 25%);
   }
 
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -108,21 +109,24 @@
 }
 
 @layer components {
+  /* Estilos para la barra lateral y la transición de contenido. */
   .main-content {
     transition: padding-left 0.3s ease-in-out;
   }
-
+  
   .sidebar-text {
     @apply transition-opacity duration-200 whitespace-nowrap;
   }
-
+  
+  /* Estilos específicos para cuando la barra lateral está colapsada */
   .group\/sidebar-wrapper[data-state='collapsed'] .sidebar-text {
     @apply opacity-0 pointer-events-none;
   }
-
+  
   .group\/sidebar-wrapper[data-state='collapsed'] .group\/menu-item .justify-start {
-    @apply justify-center;
+      @apply justify-center;
   }
+
 
   .watermark-img {
     @apply opacity-40;
@@ -158,16 +162,13 @@
     width: 6px;
     height: 6px;
   }
-
   .thin-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
-
   .thin-scrollbar::-webkit-scrollbar-thumb {
     background-color: hsl(var(--border));
     border-radius: 20px;
   }
-
   .thin-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--muted-foreground));
   }
