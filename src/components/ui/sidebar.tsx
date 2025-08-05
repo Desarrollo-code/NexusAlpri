@@ -4,7 +4,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { ChevronsRight, Menu, ChevronDown, type LucideProps } from "lucide-react"
+import { ChevronsRight, Menu, ChevronDown, type LucideProps, Shield } from "lucide-react"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -21,7 +21,6 @@ import type { NavItem } from "@/types";
 import { getNavItemsForRole } from "@/lib/nav-items";
 import { useAuth } from "@/contexts/auth-context";
 import { GradientIcon } from "./gradient-icon";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsible";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -106,7 +105,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
       return (
         <>
           {openMobile && <div className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setOpenMobile(false)} />}
-          <aside ref={ref} className={cn("fixed left-0 top-0 h-full z-50 bg-sidebar border-r border-sidebar-border transition-transform duration-300 flex flex-col", openMobile ? 'translate-x-0' : '-translate-x-full', 'w-72', className)} {...props}>
+          <aside ref={ref} className={cn("fixed left-0 top-0 h-full z-50 bg-gradient-to-b from-sidebar-gradient-from to-sidebar-gradient-to border-r border-sidebar-border transition-transform duration-300 flex flex-col", openMobile ? 'translate-x-0' : '-translate-x-full', 'w-72', className)} {...props}>
             {children}
           </aside>
         </>
@@ -114,7 +113,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
     }
 
     return (
-      <aside ref={ref} className={cn("group/sidebar-wrapper fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out bg-sidebar border-r border-sidebar-border", state === 'expanded' ? "w-72" : "w-20", className)} data-state={state} {...props}>
+      <aside ref={ref} className={cn("group/sidebar-wrapper fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out bg-gradient-to-b from-sidebar-gradient-from to-sidebar-gradient-to border-r border-sidebar-border", state === 'expanded' ? "w-72" : "w-20", className)} data-state={state} {...props}>
         <div className="flex h-full flex-col overflow-hidden">
           {children}
         </div>
@@ -161,7 +160,7 @@ const SidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<"di
           {navItems.map((item, index) => (
             <React.Fragment key={item.id}>
               <SidebarMenuItem item={item} />
-              {(item.id === 'calendar' || (item.id === 'admin' && navItems[index + 1])) && <SidebarMenuSeparator />}
+              {(item.id === 'calendar' || item.id === 'admin') && <SidebarMenuSeparator />}
             </React.Fragment>
           ))}
         </SidebarMenu>
@@ -193,14 +192,14 @@ const SidebarMenuItem = React.forwardRef<HTMLLIElement, { item: NavItem } & Reac
         <li ref={ref} className={cn("group/menu-item relative space-y-1 pt-2", className)} {...props}>
           {state === 'expanded' && (
              <h4 className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-sidebar-foreground/70">
-                 <GradientIcon icon={item.icon} isActive={isActive} color={item.color} />
+                 <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
                  {item.label}
              </h4>
           )}
           {state === 'collapsed' && (
-             <div className="my-2 h-px bg-sidebar-border/20" />
+             <div className="my-2 h-px bg-white/10" />
           )}
-            <ul className={cn("space-y-1", state === 'expanded' && "ml-4 pl-3")}>
+            <ul className={cn("space-y-1", state === 'expanded' && "ml-4 pl-3 border-l border-white/10")}>
                 {item.children.map(child => (
                     <SidebarMenuItem key={child.id} item={child} />
                 ))}
@@ -227,21 +226,21 @@ const SidebarMenuSeparator = React.forwardRef<HTMLDivElement, React.ComponentPro
   ({ className, ...props }, ref) => {
     const { state } = useSidebar();
     if (state === 'collapsed') return null;
-    return <div ref={ref} className={cn("my-2 h-px bg-sidebar-border/20", className)} {...props} />;
+    return <div ref={ref} className={cn("my-2 h-px bg-white/10", className)} {...props} />;
   }
 )
 SidebarMenuSeparator.displayName = "SidebarMenuSeparator"
 
 const sidebarMenuButtonVariants = cva(
-  "flex w-full items-center gap-3 overflow-hidden rounded-lg p-3 text-left text-sm outline-none ring-sidebar-ring transition-all duration-200 focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+  "flex w-full items-center gap-3 overflow-hidden rounded-lg p-3 text-left text-sm outline-none ring-sidebar-ring transition-all duration-200 focus-visible:ring-2 active:bg-sidebar-active-background disabled:pointer-events-none disabled:opacity-50",
   {
     variants: { 
       variant: { 
-          default: "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground", 
-          ghost: "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" 
+          default: "text-sidebar-foreground hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground", 
+          ghost: "text-sidebar-foreground hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground" 
       },
       size: { default: "h-11 text-base", sm: "h-9 text-sm", lg: "h-12 text-base" },
-      isActive: { true: "bg-sidebar-accent text-sidebar-accent-foreground shadow-inner", false: "" }
+      isActive: { true: "bg-sidebar-active-background text-sidebar-accent-foreground", false: "" }
     },
     defaultVariants: { variant: "ghost", size: "sm", isActive: false },
   }

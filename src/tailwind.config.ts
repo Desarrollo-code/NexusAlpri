@@ -80,8 +80,11 @@ export default {
           foreground: 'hsl(var(--sidebar-foreground))',
           accent: 'hsl(var(--sidebar-accent))',
           'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+          'active-background': 'hsl(var(--sidebar-active-background))',
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
+          'gradient-from': 'hsl(var(--sidebar-gradient-from))',
+          'gradient-to': 'hsl(var(--sidebar-gradient-to))',
         },
       },
       borderRadius: {
