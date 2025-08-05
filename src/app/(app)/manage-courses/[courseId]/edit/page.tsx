@@ -665,9 +665,12 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                     {previewQuizDetails?.lessonIndex === lessonIndex && (
                         <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setPreviewQuizDetails(null)}>
                           <DialogContent className="max-w-3xl">
-                            <DialogHeader>
+                             <DialogHeader>
                                 <DialogTitle>Vista Previa del Quiz</DialogTitle>
-                            </DialogHeader>
+                                <DialogDescription>
+                                    Así es como los estudiantes verán este quiz.
+                                </DialogDescription>
+                             </DialogHeader>
                             <QuizViewer
                                 quiz={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.contentBlocks.${previewQuizDetails.blockIndex}.quiz`)}
                                 lessonId={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}

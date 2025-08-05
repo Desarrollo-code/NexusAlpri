@@ -479,14 +479,20 @@ export default function ResourcesPage() {
       
       <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => !open && setResourceToDelete(null)}>
           <AlertDialogContent>
-            <AlertDialogHeader><AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle><AlertDialogDescription>El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. {resourceToDelete?.type === 'FOLDER' && 'Todos los archivos dentro también serán eliminados.'}</AlertDialogDescription></AlertDialogHeader>
+            <AlertDialogHeader>
+                <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
+                <AlertDialogDescription>El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. {resourceToDelete?.type === 'FOLDER' && 'Todos los archivos dentro también serán eliminados.'}</AlertDialogDescription>
+            </AlertDialogHeader>
             <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteResource} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction></AlertDialogFooter>
           </AlertDialogContent>
       </AlertDialog>
       
        <Dialog open={showCreateFileModal} onOpenChange={(isOpen) => { if (!isOpen) resetCreateForm(); setShowCreateFileModal(isOpen); }}>
           <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
-              <DialogHeader><DialogTitle>Subir Nuevo Recurso</DialogTitle><DialogDescription>Completa los detalles para añadir un nuevo recurso a la biblioteca.</DialogDescription></DialogHeader>
+              <DialogHeader>
+                  <DialogTitle>Subir Nuevo Recurso</DialogTitle>
+                  <DialogDescription>Completa los detalles para añadir un nuevo recurso a la biblioteca.</DialogDescription>
+              </DialogHeader>
               <form onSubmit={handleCreateFile} className="grid gap-4 py-4">
                   <div className="space-y-1"><Label htmlFor="title">Título <span className="text-destructive">*</span></Label><Input id="title" name="title" value={newResourceTitle} onChange={(e) => setNewResourceTitle(e.target.value)} required disabled={isSubmittingResource} /></div>
                   <div className="space-y-1"><Label htmlFor="type">Tipo <span className="text-destructive">*</span></Label><Select name="type" required value={newResourceType} onValueChange={(v) => setNewResourceType(v as any)} disabled={isSubmittingResource}><SelectTrigger id="new-resource-type"><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent><SelectItem value="DOCUMENT">Documento</SelectItem><SelectItem value="GUIDE">Guía</SelectItem><SelectItem value="VIDEO">Video</SelectItem><SelectItem value="EXTERNAL_LINK">Enlace Externo</SelectItem></SelectContent></Select></div>
