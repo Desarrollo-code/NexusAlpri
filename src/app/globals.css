@@ -30,15 +30,7 @@
     --border: 220 20% 85%;
     --input: 220 20% 85%;
     --ring: 260 100% 60%;
-
-    /* 🌌 Barra Lateral FIJA "Nebulosa Esmeralda" (para ambos temas) */
-    --sidebar-gradient-from: 180 100% 15%; /* Verde esmeralda oscuro */
-    --sidebar-gradient-to: 210 100% 25%;   /* Azul cian profundo */
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-active-background: 175 100% 50% / 0.1; /* Fondo turquesa sutil */
-    --sidebar-accent-foreground: 175 100% 80%; /* Turquesa brillante para texto e iconos activos */
-    --sidebar-border: 0 0% 100% / 0.1;
-    --sidebar-ring: 175 100% 70%;
+    --radius: 0.75rem; /* Aumentado para bordes más redondeados */
 
     /* 📊 Gráficos y Eventos (Claro) */
     --chart-1: 260 100% 58%;
@@ -79,6 +71,7 @@
     --border: 0 0% 25%;
     --input: 0 0% 25%;
     --ring: 260 100% 70%;
+    --radius: 0.75rem; /* Aumentado para bordes más redondeados */
 
     /* 📊 Gráficos y Eventos (Oscuro) */
     --chart-1: 260 100% 70%;
@@ -90,6 +83,17 @@
     --event-green: 140 100% 50%;
     --event-red: 0 100% 65%;
     --event-orange: 25 100% 60%;
+  }
+
+  /* 🌌 Barra Lateral FIJA "Nebulosa Esmeralda" (para ambos temas) */
+  :root {
+    --sidebar-gradient-from: 180 100% 15%; /* Verde esmeralda oscuro */
+    --sidebar-gradient-to: 210 100% 25%;   /* Azul cian profundo */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-active-background: 175 100% 50% / 0.1; /* Fondo turquesa sutil */
+    --sidebar-accent-foreground: 175 100% 80%; /* Turquesa brillante para texto e iconos activos */
+    --sidebar-border: 0 0% 100% / 0.1;
+    --sidebar-ring: 175 100% 70%;
   }
 
   * {
