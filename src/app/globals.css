@@ -31,14 +31,14 @@
     --input: 220 20% 85%;
     --ring: 260 100% 60%;
 
-    /* 🌌 Barra Lateral FIJA "Aurora Cósmica" (para ambos temas) */
-    --sidebar-gradient-from: 280 100% 25%; /* Violeta intenso */
-    --sidebar-gradient-to: 320 100% 35%; /* Magenta brillante */
+    /* 🌌 Barra Lateral FIJA "Nebulosa Esmeralda" (para ambos temas) */
+    --sidebar-gradient-from: 180 100% 15%; /* Verde esmeralda oscuro */
+    --sidebar-gradient-to: 210 100% 25%;   /* Azul cian profundo */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-active-background: 185 100% 50% / 0.1;
-    --sidebar-accent-foreground: 185 100% 90%;
+    --sidebar-active-background: 175 100% 50% / 0.1; /* Fondo turquesa sutil */
+    --sidebar-accent-foreground: 175 100% 80%; /* Turquesa brillante para texto e iconos activos */
     --sidebar-border: 0 0% 100% / 0.1;
-    --sidebar-ring: 260 100% 70%;
+    --sidebar-ring: 175 100% 70%;
 
     /* 📊 Gráficos y Eventos (Claro) */
     --chart-1: 260 100% 58%;

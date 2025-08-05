@@ -8,7 +8,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ChevronsLeft, ChevronsRight, Shield, ChevronDown } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, Shield } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
 import { getNavItemsForRole } from "@/lib/nav-items";
@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { GradientIcon } from "./gradient-icon";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import type { NavItem } from '@/types';
 
 
@@ -90,8 +89,9 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       )}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out border-r border-sidebar-border backdrop-blur-xl shadow-xl",
+          "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out backdrop-blur-xl shadow-xl",
           "bg-gradient-to-b from-sidebar-gradient-from to-sidebar-gradient-to text-sidebar-foreground",
+          "border-r border-sidebar-border rounded-r-2xl", // Bordes redondeados
           isMobile ?
             `w-72 ${openMobile ? 'translate-x-0' : '-translate-x-full'}` :
             `${state === 'expanded' ? 'w-72' : 'w-20'}`
@@ -157,7 +157,8 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
     
     const isActive = useMemo(() => {
         if (!activeItem || !item.path) return false;
-        return activeItem.startsWith(item.path);
+        // Check for exact match or if it's a parent route
+        return activeItem === item.path || (activeItem.startsWith(item.path) && item.path !== '/');
     }, [activeItem, item.path]);
     
     const menuItemContent = (
@@ -166,7 +167,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
             isActive ? "bg-sidebar-active-background text-sidebar-accent-foreground shadow-md" : "hover:bg-sidebar-active-background text-sidebar-foreground/90",
             state === 'collapsed' && 'justify-center'
         )}>
-            <GradientIcon icon={item.icon || Shield} isActive={isActive} />
+            <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color}/>
             {state === 'expanded' && <span className="whitespace-nowrap">{item.label}</span>}
         </div>
     );
@@ -205,7 +206,7 @@ export const SidebarFooter = () => {
     <div className="p-4 border-t border-sidebar-border mt-auto bg-black/20">
       <div className={cn("flex items-center", state === 'expanded' ? 'gap-3' : 'justify-center')}>
         <Avatar className="h-10 w-10 flex-shrink-0">
-          <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar" />
+          <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar"/>
           <AvatarFallback className="bg-primary text-primary-foreground font-bold">
             {getInitials(user?.name)}
           </AvatarFallback>
