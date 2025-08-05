@@ -4,6 +4,7 @@
 'use client';
 
 import * as React from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -138,12 +139,12 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   const hasChildren = item.children && item.children.length > 0;
   
   const isActive = useMemo(() => {
-    if (!activeItem || !item.path) return false;
+    if (!activeItem || !item.path && !hasChildren) return false;
     if (hasChildren) {
         // Parent is active if any child is active
         return item.children.some(child => child.path && activeItem.startsWith(child.path));
     }
-    return activeItem.startsWith(item.path);
+    return activeItem.startsWith(item.path!);
   }, [activeItem, item, hasChildren]);
 
   if (hasChildren) {
@@ -157,7 +158,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         )}>
            <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color}/>
            {state === 'expanded' && <span className="flex-1 text-left">{item.label}</span>}
-           {state === 'expanded' && <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 [&[data-state=open]]:-rotate-180" />}
+           {state === 'expanded' && <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 data-[state=open]:-rotate-180" />}
         </CollapsibleTrigger>
         <CollapsibleContent className="py-1 pl-8 pr-2 space-y-1">
           {item.children.map(child => {
