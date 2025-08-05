@@ -51,12 +51,12 @@
   }
 
   .dark {
-    /* 🌌 Tema Oscuro: "Nebulosa Esmeralda" */
-    --background: 222.2 84% 4.9%;
+    /* 🌌 Tema Oscuro: "Nebulosa Esmeralda" con fondo negro puro */
+    --background: 0 0% 0%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 0 0% 0%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 0 0% 0%;
     --popover-foreground: 210 40% 98%;
     --primary: 170 85% 65%; /* Turquesa Neón */
     --primary-foreground: 0 0% 100%;
