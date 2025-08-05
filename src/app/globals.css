@@ -47,9 +47,9 @@
     --sidebar-border: 0 0% 100% / 0.12;
     --sidebar-ring: 170 100% 65%;
     
-    /* 🌊 Barra Superior Privada - Atardecer Neón */
-    --topbar-gradient-from: 270 90% 60%; /* Púrpura */
-    --topbar-gradient-to: 330 84% 54%;   /* Rosa (Accent) */
+    /* 🌅 Barra Superior Privada - Amanecer Ardiente */
+    --topbar-gradient-from: 30 95% 58%;    /* Naranja Vibrante */
+    --topbar-gradient-to: 0 84.2% 60.2%;  /* Rojo Intenso */
   }
 
   .dark {
