@@ -6,37 +6,37 @@
   :root {
     --radius: 0.75rem;
 
-    /* 🌞 Tema Claro Mejorado */
+    /* 🌞 Tema Claro Vibrante */
     --background: 0 0% 100%;
-    --foreground: 230 85% 12%;
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 230 85% 12%;
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 230 85% 12%;
-    --primary: 265 100% 60%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 100% 50%; /* Azul */
     --primary-foreground: 0 0% 100%;
-    --secondary: 200 100% 94%;
-    --secondary-foreground: 230 85% 12%;
-    --muted: 210 40% 95%;
-    --muted-foreground: 230 15% 40%;
-    --accent: 340 90% 60%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 10% 3.9%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 330 100% 50%; /* Rosa */
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 80% 50%;
+    --destructive: 0 100% 50%; /* Rojo */
     --destructive-foreground: 0 0% 100%;
-    --border: 220 30% 85%;
-    --input: 220 30% 90%;
-    --ring: 265 100% 60%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 240 100% 50%;
 
     /* 📊 Gráficos y Eventos (Claro) */
-    --chart-1: 265 100% 60%;
-    --chart-2: 340 90% 60%;
-    --chart-3: 160 90% 45%;
-    --chart-4: 40 100% 55%;
-    --chart-5: 220 100% 65%;
-    --event-blue: 210 100% 60%;
-    --event-green: 145 100% 40%;
-    --event-red: 0 100% 58%;
-    --event-orange: 25 100% 50%;
+    --chart-1: 30 100% 50%;  /* Naranja */
+    --chart-2: 60 100% 50%;  /* Amarillo */
+    --chart-3: 90 100% 50%;   /* Verde Lima */
+    --chart-4: 180 100% 50%; /* Cian */
+    --chart-5: 270 100% 50%; /* Púrpura */
+    --event-blue: 240 100% 50%;
+    --event-green: 120 100% 45%;
+    --event-red: 0 100% 50%;
+    --event-orange: 30 100% 50%;
 
     /* 🌌 Barra lateral fija (siempre oscura) */
     --sidebar-gradient-from: 158 95% 15%;
@@ -47,44 +47,43 @@
     --sidebar-border: 0 0% 100% / 0.12;
     --sidebar-ring: 170 100% 65%;
     
-    /* 🌊 Barra Superior Privada (siempre oscura) */
+    /* 🌊 Barra Superior Privada */
     --topbar-gradient-from: 210 95% 20%;
     --topbar-gradient-to: 230 95% 30%;
-
   }
 
   .dark {
-    /* 🌚 Tema Oscuro "Aurora Cósmica" (Vibrante) */
-    --background: 223 30% 10%; /* Azul noche oscuro */
-    --foreground: 210 40% 98%;
-    --card: 220 20% 10%; /* Un tono ligeramente diferente para profundidad */
-    --card-foreground: 210 40% 98%;
-    --popover: 223 30% 10%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 170 100% 65%; /* Turquesa neón vibrante */
-    --primary-foreground: 0 0% 0%;
-    --secondary: 223 25% 18%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 223 25% 18%;
-    --muted-foreground: 215 20.2% 70%;
-    --accent: 160 100% 60%; /* Verde esmeralda */
-    --accent-foreground: 0 0% 0%;
-    --destructive: 0 70% 40%;
+    /* 🌚 Tema Oscuro "Arcoiris Neón" */
+    --background: 220 20% 8%; /* Azul muy oscuro */
+    --foreground: 0 0% 98%;
+    --card: 220 20% 12%;
+    --card-foreground: 0 0% 98%;
+    --popover: 220 20% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 180 100% 50%; /* Cian */
+    --primary-foreground: 220 20% 8%;
+    --secondary: 220 20% 18%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 220 20% 18%;
+    --muted-foreground: 240 4% 65%;
+    --accent: 330 100% 50%; /* Rosa */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 80% 55%; /* Rojo */
     --destructive-foreground: 0 0% 100%;
-    --border: 223 25% 20%;
-    --input: 223 25% 20%;
-    --ring: 170 100% 65%;
+    --border: 220 20% 20%;
+    --input: 220 20% 20%;
+    --ring: 180 100% 50%;
 
     /* 📊 Gráficos y Eventos (Oscuro Vibrante) */
-    --chart-1: 170 100% 65%; /* Turquesa (Primario) */
-    --chart-2: 265 100% 75%; /* Púrpura */
-    --chart-3: 160 100% 60%; /* Verde */
-    --chart-4: 340 90% 70%; /* Rosa */
-    --chart-5: 220 100% 70%; /* Azul Eléctrico */
-    --event-blue: 210 100% 75%;
-    --event-green: 145 100% 50%;
-    --event-red: 0 100% 65%;
-    --event-orange: 30 100% 60%;
+    --chart-1: 30 100% 50%;  /* Naranja */
+    --chart-2: 60 100% 50%;  /* Amarillo */
+    --chart-3: 90 100% 50%;   /* Verde Lima */
+    --chart-4: 240 100% 60%; /* Azul */
+    --chart-5: 270 100% 60%; /* Púrpura */
+    --event-blue: 240 100% 60%;
+    --event-green: 120 100% 45%;
+    --event-red: 0 80% 55%;
+    --event-orange: 30 100% 50%;
   }
 
   * {
