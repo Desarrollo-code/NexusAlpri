@@ -1,4 +1,3 @@
-
 // src/app/layout.tsx
 import { Inter, Space_Grotesk, Dancing_Script, Source_Code_Pro } from 'next/font/google';
 import './globals.css';
@@ -6,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
 import React from 'react';
+import Image from 'next/image';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -55,6 +55,16 @@ export default function RootLayout({
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
+         <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
+            <Image
+                src="/uploads/images/logo-nexusalpri.png"
+                alt="NexusAlpri Watermark"
+                width={64}
+                height={64}
+                className="opacity-40 animate-spin-slow"
+                data-ai-hint="logo"
+            />
+        </div>
       </body>
     </html>
   );
