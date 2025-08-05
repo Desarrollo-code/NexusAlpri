@@ -20,56 +20,10 @@ import { LogOut, User, Settings, Monitor, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { UserRole } from '@/types';
-import type { MouseEvent } from 'react';
 
 
 function ThemeToggle() {
     const { setTheme } = useTheme();
-
-    const switchTheme = (theme: 'light' | 'dark' | 'system', event: MouseEvent<HTMLDivElement>) => {
-        // @ts-ignore
-        if (!document.startViewTransition) {
-            setTheme(theme);
-            return;
-        }
-
-        const x = event.clientX;
-        const y = event.clientY;
-        const endRadius = Math.hypot(
-            Math.max(x, window.innerWidth - x),
-            Math.max(y, window.innerHeight - y)
-        );
-
-        // @ts-ignore
-        const transition = document.startViewTransition(() => {
-            const root = document.documentElement;
-            root.classList.remove('light', 'dark');
-            if (theme === 'system') {
-                const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                root.classList.add(systemTheme);
-            } else {
-                root.classList.add(theme);
-            }
-            setTheme(theme);
-        });
-
-        transition.ready.then(() => {
-            const clipPath = [
-                `circle(0px at ${x}px ${y}px)`,
-                `circle(${endRadius}px at ${x}px ${y}px)`,
-            ];
-            document.documentElement.animate(
-                {
-                    clipPath: clipPath,
-                },
-                {
-                    duration: 500,
-                    easing: 'ease-in-out',
-                    pseudoElement: '::view-transition-new(root)',
-                }
-            );
-        });
-    };
 
     return (
         <DropdownMenuSub>
@@ -80,15 +34,15 @@ function ThemeToggle() {
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={(e) => switchTheme('light', e)}>
+                    <DropdownMenuItem onClick={() => setTheme('light')}>
                         <Sun className="mr-2 h-4 w-4" />
                         <span>Claro</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={(e) => switchTheme('dark', e)}>
+                    <DropdownMenuItem onClick={() => setTheme('dark')}>
                         <Moon className="mr-2 h-4 w-4" />
                         <span>Oscuro</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={(e) => switchTheme('system', e)}>
+                    <DropdownMenuItem onClick={() => setTheme('system')}>
                         <Monitor className="mr-2 h-4 w-4" />
                         <span>Sistema</span>
                     </DropdownMenuItem>

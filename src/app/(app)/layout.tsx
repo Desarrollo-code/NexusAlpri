@@ -25,7 +25,7 @@ import { Separator } from '@/components/ui/separator';
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
   const { toast } = useToast();
-  const { state, toggleSidebar } = useSidebar();
+  const { state } = useSidebar();
 
   const handleIdleLogout = React.useCallback(() => {
     if (user) {
@@ -65,14 +65,14 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 bg-black/20 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
-              <Image
-                src="/uploads/images/logo-letter.png"
-                alt="NexusAlpri Logo"
-                width={28}
-                height={28}
-                className="w-auto h-auto"
-              />
+             <div className="w-10 h-10 bg-black/20 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
+                <Image
+                    src="/uploads/images/logo-letter.png"
+                    alt="NexusAlpri Logo"
+                    width={28}
+                    height={28}
+                    className="w-auto h-auto"
+                />
             </div>
             <span className="sidebar-text text-sidebar-foreground text-xl font-bold font-headline">NexusAlpri</span>
           </div>
@@ -116,7 +116,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         )}
       >
         <TopBar />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-muted/20">
           {children}
         </main>
       </div>

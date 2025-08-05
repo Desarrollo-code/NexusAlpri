@@ -144,7 +144,7 @@ const SidebarToggle = React.forwardRef<React.ElementRef<typeof Button>, React.Co
             ref={ref}
             variant="ghost"
             size="icon"
-            className={cn("h-9 w-9 text-sidebar-foreground hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground", className)}
+            className={cn("h-9 w-9 text-sidebar-foreground hover:bg-black/20 hover:text-sidebar-accent-foreground", className)}
             onClick={(e) => {
                 onClick?.(e);
                 toggleSidebar();
