@@ -15,14 +15,14 @@ import {
   BarChart3,
   Bell,
   GitCommitHorizontal,
-  LayoutGrid, // Importar el nuevo icono
+  LayoutGrid,
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
   {
     id: 'dashboard',
     label: 'Panel Principal',
-    icon: LayoutGrid, // Cambiado de LayoutDashboard a LayoutGrid
+    icon: LayoutGrid,
     path: '/dashboard',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
@@ -67,6 +67,7 @@ const NAVIGATION_ITEMS: NavItem[] = [
     label: 'Administración',
     icon: Shield,
     roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
+    color: 'hsl(var(--destructive))', // Color rojo para el icono
     children: [
       {
         id: 'manage-courses',

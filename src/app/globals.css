@@ -37,11 +37,11 @@
     --radius: 0.75rem;
 
     /* Nuevas variables para la barra lateral */
-    --sidebar-background: 225 10% 17%;
+    --sidebar-background: 225 15% 15%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-accent: hsl(225 10% 25%);
+    --sidebar-accent: hsl(225 15% 25%);
     --sidebar-accent-foreground: hsl(0 0% 100%);
-    --sidebar-border: hsl(225 10% 25%);
+    --sidebar-border: hsl(225 15% 25%);
     --sidebar-ring: hsl(var(--primary));
     
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
@@ -92,7 +92,7 @@
     --ring: 220 90% 60%;
     
     /* Sobrescribir colores de la barra lateral para el tema oscuro */
-    --sidebar-background: 225 10% 17%;
+    --sidebar-background: 225 10% 15%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-accent: hsl(225 10% 25%);
     --sidebar-accent-foreground: hsl(0 0% 100%);

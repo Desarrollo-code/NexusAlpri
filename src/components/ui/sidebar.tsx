@@ -21,6 +21,7 @@ import type { NavItem } from "@/types";
 import { getNavItemsForRole } from "@/lib/nav-items";
 import { useAuth } from "@/contexts/auth-context";
 import { GradientIcon } from "./gradient-icon";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsible";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -160,8 +161,7 @@ const SidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<"di
           {navItems.map((item, index) => (
             <React.Fragment key={item.id}>
               <SidebarMenuItem item={item} />
-              {/* Add separator after specific items */}
-              {(item.id === 'calendar' || item.id === 'admin') && <SidebarMenuSeparator />}
+              {(item.id === 'calendar' || (item.id === 'admin' && navItems[index + 1])) && <SidebarMenuSeparator />}
             </React.Fragment>
           ))}
         </SidebarMenu>
@@ -182,21 +182,25 @@ const SidebarMenuItem = React.forwardRef<HTMLLIElement, { item: NavItem } & Reac
   ({ className, item, ...props }, ref) => {
     const { state, activeItem } = useSidebar();
     const hasChildren = item.children && item.children.length > 0;
+    
+    // Check if the main item or any of its children is active
     const isActive = hasChildren 
         ? item.children.some(child => child.path && activeItem.startsWith(child.path)) 
         : (item.path ? (item.path === '/' ? activeItem === '/' : activeItem.startsWith(item.path)) : false);
 
-    // This is the new logic for a section header instead of a collapsible
     if (hasChildren) {
       return (
         <li ref={ref} className={cn("group/menu-item relative space-y-1 pt-2", className)} {...props}>
-            <div className="flex items-center gap-3 px-3">
-                <GradientIcon icon={item.icon} className={cn(state === 'collapsed' && "mx-auto")} isActive={isActive} />
-                <span className={cn("sidebar-text text-sm font-semibold text-sidebar-foreground/70", state === 'collapsed' && 'hidden')}>
-                    {item.label}
-                </span>
-            </div>
-            <ul className={cn("space-y-1", state === 'expanded' && "ml-4 pl-4 border-l border-sidebar-border/20")}>
+          {state === 'expanded' && (
+             <h4 className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-sidebar-foreground/70">
+                 <GradientIcon icon={item.icon} isActive={isActive} color={item.color} />
+                 {item.label}
+             </h4>
+          )}
+          {state === 'collapsed' && (
+             <div className="my-2 h-px bg-sidebar-border/20" />
+          )}
+            <ul className={cn("space-y-1", state === 'expanded' && "ml-4 pl-3")}>
                 {item.children.map(child => (
                     <SidebarMenuItem key={child.id} item={child} />
                 ))}
@@ -220,9 +224,11 @@ const SidebarMenuItem = React.forwardRef<HTMLLIElement, { item: NavItem } & Reac
 SidebarMenuItem.displayName = "SidebarMenuItem"
 
 const SidebarMenuSeparator = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("my-2 h-px bg-sidebar-border/20", className)} {...props} />
-  )
+  ({ className, ...props }, ref) => {
+    const { state } = useSidebar();
+    if (state === 'collapsed') return null;
+    return <div ref={ref} className={cn("my-2 h-px bg-sidebar-border/20", className)} {...props} />;
+  }
 )
 SidebarMenuSeparator.displayName = "SidebarMenuSeparator"
 

@@ -37,6 +37,7 @@ export interface NavItem {
     roles: UserRole[];
     path?: string;
     badge?: string;
+    color?: string; // Propiedad opcional para el color del ícono
     children?: NavItem[];
 }
 
