@@ -4,7 +4,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { ChevronsRight, Menu } from "lucide-react"
+import { ChevronsRight, Menu, ChevronDown } from "lucide-react"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -305,7 +305,7 @@ const SidebarMenuItem = React.forwardRef<
                     >
                         <item.icon className="h-5 w-5 flex-shrink-0" />
                         <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
-                        <ChevronsRight className={cn("sidebar-text h-4 w-4 transition-transform", isOpen && "rotate-90")} />
+                        <ChevronDown className={cn("sidebar-text h-4 w-4 transition-transform", isOpen && "rotate-180")} />
                     </SidebarMenuButton>
                 </CollapsibleTrigger>
             </TooltipTrigger>
