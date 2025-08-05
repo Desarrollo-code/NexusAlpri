@@ -76,7 +76,6 @@ export default {
           red: 'hsl(var(--gauge-red))',
         },
         sidebar: {
-          DEFAULT: 'hsl(var(--sidebar-background))',
           foreground: 'hsl(var(--sidebar-foreground))',
           accent: 'hsl(var(--sidebar-accent))',
           'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',

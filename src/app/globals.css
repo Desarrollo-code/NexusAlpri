@@ -35,12 +35,14 @@
 
     --radius: 0.75rem;
 
-    /* Barra lateral - Colores vivos */
-    --sidebar-background: 225 10% 12%;
+    /* Paleta de la barra lateral mejorada */
+    --sidebar-gradient-from: 240 10% 15%; /* Azul noche oscuro */
+    --sidebar-gradient-to: 260 12% 20%;   /* Morado oscuro */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-accent: 255 100% 67%;
-    --sidebar-accent-foreground: 255 100% 100%;
-    --sidebar-border: 225 10% 20%;
+    --sidebar-active-background: hsl(255 100% 67% / 0.1);
+    --sidebar-accent: hsl(255 100% 75%); /* Magenta/Púrpura neón */
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 225 10% 25%;
     --sidebar-ring: hsl(var(--primary));
 
     /* Paleta vibrante */
@@ -88,12 +90,15 @@
     --border: 225 10% 25%;
     --input: 225 10% 25%;
     --ring: 220 90% 60%;
-
-    --sidebar-background: 225 10% 12%;
+    
+    /* Paleta de la barra lateral mejorada para modo oscuro */
+    --sidebar-gradient-from: 240 10% 15%; /* Azul noche oscuro */
+    --sidebar-gradient-to: 260 12% 20%;   /* Morado oscuro */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-accent: 255 100% 67%;
-    --sidebar-accent-foreground: 255 100% 100%;
-    --sidebar-border: 225 10% 20%;
+    --sidebar-active-background: hsl(255 100% 67% / 0.1);
+    --sidebar-accent: hsl(255 100% 75%); /* Magenta/Púrpura neón */
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 225 10% 25%;
   }
 
   * {
@@ -116,10 +121,7 @@
   .group\/sidebar-wrapper[data-state='collapsed'] .sidebar-text {
     @apply opacity-0 pointer-events-none;
   }
-  .group\/sidebar-wrapper[data-state='collapsed'] .group\/menu-item .justify-start {
-    @apply justify-center;
-  }
-
+  
   .sidebar-footer {
     @apply flex flex-col items-center justify-center gap-4 p-4;
     height: 120px;

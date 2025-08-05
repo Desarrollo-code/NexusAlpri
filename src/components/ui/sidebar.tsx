@@ -104,7 +104,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
     if (isMobile) {
       return (
         <>
-          {openMobile && <div className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setOpenMobile(false)} />}
+          {openMobile && <div className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40" onClick={() => setOpenMobile(false)} />}
           <aside ref={ref} className={cn("fixed left-0 top-0 h-full z-50 bg-gradient-to-b from-sidebar-gradient-from to-sidebar-gradient-to border-r border-sidebar-border transition-transform duration-300 flex flex-col", openMobile ? 'translate-x-0' : '-translate-x-full', 'w-72', className)} {...props}>
             {children}
           </aside>
@@ -234,11 +234,11 @@ const sidebarMenuButtonVariants = cva(
   {
     variants: { 
       variant: { 
-          default: "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground", 
-          ghost: "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" 
+          default: "text-sidebar-foreground hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground", 
+          ghost: "text-sidebar-foreground hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground" 
       },
       size: { default: "h-11 text-base", sm: "h-9 text-sm", lg: "h-12 text-base" },
-      isActive: { true: "bg-sidebar-accent text-sidebar-accent-foreground", false: "" }
+      isActive: { true: "bg-sidebar-active-background text-sidebar-accent-foreground", false: "" }
     },
     defaultVariants: { variant: "ghost", size: "sm", isActive: false },
   }
