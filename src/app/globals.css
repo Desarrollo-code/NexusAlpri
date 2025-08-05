@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -36,14 +35,24 @@
 
     --radius: 0.75rem;
 
-    /* --- PALETA FIJA "AURORA NOCTURNA" PARA LA BARRA LATERAL (INDEPENDIENTE DEL TEMA) --- */
-    --sidebar-gradient-from: 160 50% 18%; /* Verde Esmeralda Oscuro */
-    --sidebar-gradient-to: 230 40% 22%; /* Azul Noche Intenso */
-    --sidebar-foreground: 210 20% 98%; /* Blanco casi puro */
-    --sidebar-active-background: hsl(185 90% 70% / 0.1); /* Resplandor Cian */
-    --sidebar-accent-foreground: 185 90% 70%; /* Cian Eléctrico */
-    --sidebar-border: hsl(0 0% 100% / 0.1); /* Borde tipo cristal */
-    --sidebar-ring: hsl(185 90% 70%);
+    /* --- PALETA MEJORADA "AURORA NOCTURNA" PARA LA BARRA LATERAL --- */
+    --sidebar-gradient-from: 160 55% 15%; /* Verde Esmeralda más profundo */
+    --sidebar-gradient-to: 230 45% 18%; /* Azul Noche más intenso */
+    --sidebar-gradient-via: 200 50% 20%; /* Punto medio azul-verde */
+    --sidebar-foreground: 210 25% 98%; /* Blanco más puro */
+    --sidebar-foreground-muted: 210 15% 75%; /* Texto secundario */
+    --sidebar-active-background: hsl(185 95% 65% / 0.15); /* Resplandor Cian más intenso */
+    --sidebar-hover-background: hsl(185 80% 60% / 0.08); /* Hover sutil */
+    --sidebar-accent: 185 95% 65%; /* Cian Eléctrico más vibrante */
+    --sidebar-accent-foreground: 185 95% 95%; /* Texto en acento */
+    --sidebar-border: hsl(185 30% 40% / 0.2); /* Borde con tinte cian */
+    --sidebar-border-bright: hsl(185 80% 60% / 0.3); /* Borde activo */
+    --sidebar-ring: 185 95% 65%;
+    --sidebar-shadow: hsl(160 60% 10% / 0.4); /* Sombra verde profunda */
+    
+    /* Efectos especiales para la barra lateral */
+    --sidebar-glow: hsl(185 95% 65% / 0.2); /* Resplandor exterior */
+    --sidebar-particle: hsl(185 90% 80% / 0.6); /* Partículas flotantes */
     
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
     --chart-1: 210 90% 55%; /* Azul Vibrante */
@@ -92,12 +101,13 @@
     --input: 225 10% 25%;
     --ring: 220 90% 60%;
     
-    /* Las variables de la barra lateral no se redefinen aquí, por lo que se mantienen fijas. */
+    /* Las variables de la barra lateral se mantienen fijas para efecto "Aurora Nocturna" */
   }
 
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -105,25 +115,206 @@
 }
 
 @layer components {
-  /* Estilos para la barra lateral y la transición de contenido. */
-  .main-content {
-    transition: padding-left 0.3s ease-in-out;
+  /* === ESTILOS MEJORADOS PARA LA BARRA LATERAL === */
+  
+  /* Contenedor principal de la barra lateral */
+  .sidebar-container {
+    position: relative;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--sidebar-gradient-from)) 0%,
+      hsl(var(--sidebar-gradient-via)) 50%,
+      hsl(var(--sidebar-gradient-to)) 100%
+    );
+    border-right: 1px solid hsl(var(--sidebar-border));
+    box-shadow: 
+      inset -1px 0 0 hsl(var(--sidebar-border-bright)),
+      4px 0 24px hsl(var(--sidebar-shadow)),
+      0 0 40px hsl(var(--sidebar-glow));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
   }
   
+  /* Efecto de partículas flotantes (opcional) */
+  .sidebar-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      radial-gradient(circle at 20% 20%, hsl(var(--sidebar-particle)) 1px, transparent 1px),
+      radial-gradient(circle at 80% 40%, hsl(var(--sidebar-particle)) 1px, transparent 1px),
+      radial-gradient(circle at 40% 80%, hsl(var(--sidebar-particle)) 1px, transparent 1px);
+    background-size: 100px 100px, 120px 120px, 90px 90px;
+    animation: particles-float 20s infinite linear;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  
+  @keyframes particles-float {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(180deg); }
+    100% { transform: translateY(0px) rotate(360deg); }
+  }
+  
+  /* Elementos de navegación */
+  .sidebar-nav-item {
+    position: relative;
+    margin: 4px 8px;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: hsl(var(--sidebar-foreground));
+    overflow: hidden;
+  }
+  
+  /* Estado hover */
+  .sidebar-nav-item:hover {
+    background: hsl(var(--sidebar-hover-background));
+    transform: translateX(4px) scale(1.02);
+    box-shadow: 
+      0 4px 20px hsl(var(--sidebar-shadow)),
+      inset 0 1px 0 hsl(var(--sidebar-border-bright));
+  }
+  
+  /* Estado activo/seleccionado */
+  .sidebar-nav-item.active {
+    background: hsl(var(--sidebar-active-background));
+    color: hsl(var(--sidebar-accent));
+    border: 1px solid hsl(var(--sidebar-border-bright));
+    box-shadow: 
+      0 0 20px hsl(var(--sidebar-glow)),
+      inset 0 1px 0 hsl(var(--sidebar-border-bright));
+    transform: translateX(6px) scale(1.03);
+  }
+  
+  /* Efecto de resplandor en elemento activo */
+  .sidebar-nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--sidebar-accent) / 0.1) 50%,
+      transparent 100%
+    );
+    animation: shimmer 2s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  
+  /* Iconos en la barra lateral */
+  .sidebar-icon {
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 4px hsl(var(--sidebar-accent) / 0.3));
+  }
+  
+  .sidebar-nav-item:hover .sidebar-icon {
+    transform: scale(1.1) rotate(5deg);
+    filter: drop-shadow(0 0 8px hsl(var(--sidebar-accent) / 0.5));
+  }
+  
+  .sidebar-nav-item.active .sidebar-icon {
+    color: hsl(var(--sidebar-accent));
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 12px hsl(var(--sidebar-accent) / 0.7));
+  }
+  
+  /* Texto de la barra lateral */
   .sidebar-text {
-    @apply transition-opacity duration-200 whitespace-nowrap;
+    @apply transition-all duration-300 whitespace-nowrap;
+    text-shadow: 0 0 8px hsl(var(--sidebar-accent) / 0.2);
   }
   
-  /* Estilos específicos para cuando la barra lateral está colapsada */
+  .sidebar-nav-item:hover .sidebar-text {
+    color: hsl(var(--sidebar-foreground));
+    text-shadow: 0 0 12px hsl(var(--sidebar-accent) / 0.4);
+  }
+  
+  .sidebar-nav-item.active .sidebar-text {
+    color: hsl(var(--sidebar-accent));
+    font-weight: 600;
+    text-shadow: 0 0 16px hsl(var(--sidebar-accent) / 0.6);
+  }
+  
+  /* Badge/indicadores */
+  .sidebar-badge {
+    background: hsl(var(--sidebar-accent));
+    color: hsl(var(--sidebar-accent-foreground));
+    box-shadow: 
+      0 0 12px hsl(var(--sidebar-accent) / 0.5),
+      inset 0 1px 0 hsl(var(--sidebar-accent) / 0.8);
+    animation: pulse-glow 2s infinite alternate;
+  }
+  
+  @keyframes pulse-glow {
+    0% { 
+      transform: scale(1);
+      box-shadow: 0 0 12px hsl(var(--sidebar-accent) / 0.5);
+    }
+    100% { 
+      transform: scale(1.05);
+      box-shadow: 0 0 20px hsl(var(--sidebar-accent) / 0.8);
+    }
+  }
+  
+  /* Separadores */
+  .sidebar-separator {
+    height: 1px;
+    margin: 12px 16px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--sidebar-border)) 20%,
+      hsl(var(--sidebar-border-bright)) 50%,
+      hsl(var(--sidebar-border)) 80%,
+      transparent 100%
+    );
+  }
+  
+  /* Título de sección */
+  .sidebar-section-title {
+    color: hsl(var(--sidebar-foreground-muted));
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 16px 16px 8px;
+    text-shadow: 0 0 8px hsl(var(--sidebar-accent) / 0.3);
+  }
+  
+  /* === ESTILOS PARA ESTADO COLAPSADO === */
   .group\/sidebar-wrapper[data-state='collapsed'] .sidebar-text {
     @apply opacity-0 pointer-events-none;
   }
   
   .group\/sidebar-wrapper[data-state='collapsed'] .group\/menu-item .justify-start {
-      @apply justify-center;
+    @apply justify-center;
   }
-
-
+  
+  .group\/sidebar-wrapper[data-state='collapsed'] .sidebar-nav-item {
+    margin: 6px;
+    padding: 12px;
+  }
+  
+  .group\/sidebar-wrapper[data-state='collapsed'] .sidebar-nav-item:hover {
+    transform: scale(1.1);
+  }
+  
+  /* === ESTILOS PARA TRANSICIÓN DE CONTENIDO === */
+  .main-content {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* === OTROS ESTILOS EXISTENTES === */
   .watermark-img {
     @apply opacity-40;
     width: auto;
@@ -158,13 +349,16 @@
     width: 6px;
     height: 6px;
   }
+  
   .thin-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
+  
   .thin-scrollbar::-webkit-scrollbar-thumb {
     background-color: hsl(var(--border));
     border-radius: 20px;
   }
+  
   .thin-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--muted-foreground));
   }
