@@ -57,7 +57,7 @@ export default function RootLayout({
         </ThemeProvider>
          <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
             <Image
-                src="/uploads/images/logo-nexusalpri.png"
+                src="/uploads/images/watermark-alprigrama.png"
                 alt="NexusAlpri Watermark"
                 width={64}
                 height={64}
