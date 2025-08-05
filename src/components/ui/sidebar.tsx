@@ -406,16 +406,17 @@ const SidebarMenuButton = React.forwardRef<
     }
 
     const button = (
-      <Comp
-        ref={ref}
-        data-active={finalIsActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size, isActive: finalIsActive }), state === 'collapsed' && 'justify-center', className)}
-        onClick={handleClick}
-        {...props}
-      >
-        {children}
-      </Comp>
-    )
+          <Comp
+            ref={ref}
+            data-active={finalIsActive}
+            className={cn(sidebarMenuButtonVariants({ variant, size, isActive: finalIsActive }), state === 'collapsed' && 'justify-center', className)}
+            onClick={handleClick}
+            {...props}
+          >
+            {children}
+          </Comp>
+        )
+
 
     if (!tooltip || isMobile || state === 'expanded') {
       return button
