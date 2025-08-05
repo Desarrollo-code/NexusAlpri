@@ -35,7 +35,8 @@
 
     --radius: 0.75rem;
 
-    /* --- PALETA MEJORADA "AURORA NOCTURNA" PARA LA BARRA LATERAL --- */
+    /* --- PALETA MEJORADA "AURORA CÓSMICA" PARA LA BARRA LATERAL --- */
+    /* Esta sección es independiente de los temas .light y .dark */
     --sidebar-gradient-from: 160 55% 15%; /* Verde Esmeralda más profundo */
     --sidebar-gradient-to: 230 45% 18%; /* Azul Noche más intenso */
     --sidebar-gradient-via: 200 50% 20%; /* Punto medio azul-verde */
@@ -101,7 +102,7 @@
     --input: 225 10% 25%;
     --ring: 220 90% 60%;
     
-    /* Las variables de la barra lateral se mantienen fijas para efecto "Aurora Nocturna" */
+    /* Las variables de la barra lateral se definen en :root y son independientes */
   }
 
   * {
