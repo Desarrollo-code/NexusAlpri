@@ -54,20 +54,20 @@
   }
 
   .dark {
-    /* 🌚 Tema Oscuro Mejorado */
-    --background: 0 0% 0%; /* Negro puro */
+    /* 🌚 Tema Oscuro "Aurora Cósmica" (Vibrante) */
+    --background: 223 30% 10%; /* Azul noche oscuro */
     --foreground: 210 40% 98%;
-    --card: 220 20% 10%;
+    --card: 220 20% 10%; /* Un tono ligeramente diferente para profundidad */
     --card-foreground: 210 40% 98%;
     --popover: 223 30% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 170 100% 65%;
+    --primary: 170 100% 65%; /* Turquesa neón vibrante */
     --primary-foreground: 0 0% 0%;
     --secondary: 223 25% 18%;
     --secondary-foreground: 210 40% 98%;
     --muted: 223 25% 18%;
     --muted-foreground: 215 20.2% 70%;
-    --accent: 160 100% 60%;
+    --accent: 160 100% 60%; /* Verde esmeralda */
     --accent-foreground: 0 0% 0%;
     --destructive: 0 70% 40%;
     --destructive-foreground: 0 0% 100%;
@@ -75,12 +75,12 @@
     --input: 223 25% 20%;
     --ring: 170 100% 65%;
 
-    /* 📊 Gráficos y Eventos (Oscuro) */
-    --chart-1: 170 100% 65%;
-    --chart-2: 160 100% 60%;
-    --chart-3: 195 90% 55%;
-    --chart-4: 35 100% 65%;
-    --chart-5: 220 100% 70%;
+    /* 📊 Gráficos y Eventos (Oscuro Vibrante) */
+    --chart-1: 170 100% 65%; /* Turquesa (Primario) */
+    --chart-2: 265 100% 75%; /* Púrpura */
+    --chart-3: 160 100% 60%; /* Verde */
+    --chart-4: 340 90% 70%; /* Rosa */
+    --chart-5: 220 100% 70%; /* Azul Eléctrico */
     --event-blue: 210 100% 75%;
     --event-green: 145 100% 50%;
     --event-red: 0 100% 65%;

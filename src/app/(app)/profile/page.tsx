@@ -41,13 +41,12 @@ import type { UserRole } from '@/types';
 
 const ProfileCardBackground = () => (
     <div className="card__img">
-      <svg xmlns="http://www.w3.org/2000/svg" width="100%">
-        <rect fill="hsl(var(--card))" width={540} height={450}></rect>
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
         <defs>
           <linearGradient id="a" gradientUnits="userSpaceOnUse" x1={0} x2={0} y1={0} y2="100%" gradientTransform="rotate(222,648,379)">
-            <stop offset={0} stopColor="hsl(var(--primary))"></stop>
-            <stop offset={0.5} stopColor="hsl(var(--chart-5))"></stop>
-            <stop offset={1} stopColor="hsl(var(--chart-1))"></stop>
+            <stop offset={0} stopColor="hsl(var(--chart-1))"></stop>
+            <stop offset={0.5} stopColor="hsl(var(--chart-2))"></stop>
+            <stop offset={1} stopColor="hsl(var(--chart-3))"></stop>
           </linearGradient>
           <pattern patternUnits="userSpaceOnUse" id="b" width={300} height={250} x={0} y={0} viewBox="0 0 1080 900">
             <g fillOpacity="0.15">
@@ -381,8 +380,9 @@ export default function ProfilePage() {
             <div className="lg:col-span-1 space-y-8">
               <Card className="text-center card-border-animated">
                 <CardHeader>
-                  <div className="relative mx-auto w-32 h-32 mb-4">
-                    <Avatar className="w-32 h-32 border-4 border-primary/20 shadow-md">
+                  <ProfileCardBackground />
+                  <div className="relative mx-auto w-32 h-32 mb-4 mt-[-64px] z-10">
+                    <Avatar className="w-32 h-32 border-4 border-card shadow-md">
                       <AvatarImage src={avatarPreview || `https://placehold.co/128x128.png?text=${getInitials(user.name)}`} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
                       <AvatarFallback className="text-4xl">{getInitials(user.name)}</AvatarFallback>
                     </Avatar>
