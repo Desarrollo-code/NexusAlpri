@@ -1,7 +1,7 @@
+'use client';
+
 // Sidebar-layout-enhanced 🌈 Creativo & juvenil
 // Estilo visual mejorado: colores vivos, tipografía amigable, gradientes y transiciones suaves
-
-'use client';
 
 import * as React from "react";
 import { useMemo } from "react";
@@ -20,11 +20,9 @@ import { Separator } from "@/components/ui/separator";
 import { GradientIcon } from "./gradient-icon";
 import type { NavItem } from '@/types';
 
-
 const SidebarContext = React.createContext<any>(null);
-
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 días
 
 export function useSidebar() {
   const context = React.useContext(SidebarContext);
@@ -90,10 +88,9 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out backdrop-blur-xl shadow-xl",
-          "bg-gradient-to-b from-sidebar-gradient-from to-sidebar-gradient-to text-sidebar-foreground",
-          "border-r border-sidebar-border rounded-r-2xl",
-          isMobile ?
-            `w-72 ${openMobile ? 'translate-x-0' : '-translate-x-full'}` :
+          "bg-[linear-gradient(to_bottom,hsl(var(--sidebar-gradient-from)),hsl(var(--sidebar-gradient-to)))]",
+          "text-[hsl(var(--sidebar-foreground))] border-r border-[hsl(var(--sidebar-border))] rounded-r-2xl",
+          isMobile ? `w-72 ${openMobile ? 'translate-x-0' : '-translate-x-full'}` :
             `${state === 'expanded' ? 'w-72' : 'w-20'}`
         )}
       >
@@ -107,15 +104,17 @@ export const SidebarHeader = () => {
   const { state } = useSidebar();
   return (
     <div className={cn(
-        "flex items-center h-16 px-4 border-b border-sidebar-border",
-        state === 'expanded' ? 'justify-between' : 'justify-center'
+      "flex items-center h-16 px-4 border-b border-[hsl(var(--sidebar-border))]",
+      state === 'expanded' ? 'justify-between' : 'justify-center'
     )}>
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden", state === 'collapsed' && 'w-10')}>
         <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center shadow-inner flex-shrink-0">
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo" />
         </div>
         {state === 'expanded' && (
-          <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-sidebar-foreground">NexusAlpri</span>
+          <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-[hsl(var(--sidebar-foreground))]">
+            NexusAlpri
+          </span>
         )}
       </Link>
     </div>
@@ -146,50 +145,47 @@ export const SidebarContent = () => {
 };
 
 const SidebarSectionHeader = ({ label }: { label: string }) => {
-    const { state } = useSidebar();
-    if (state === 'collapsed') return <Separator className="my-3 bg-sidebar-border" />;
-    return <h2 className="px-4 text-xs font-semibold uppercase text-sidebar-foreground/60 tracking-wider">{label}</h2>
-}
-
-
-const SidebarMenuItem = ({ item }: { item: NavItem }) => {
-    const { state, activeItem } = useSidebar();
-    
-    const isActive = useMemo(() => {
-        if (!activeItem || !item.path) return false;
-        // Check for exact match or if it's a parent route
-        return activeItem === item.path || (activeItem.startsWith(item.path) && item.path !== '/');
-    }, [activeItem, item.path]);
-    
-    const menuItemContent = (
-        <div className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item",
-            isActive
-              ? "bg-sidebar-active-background text-sidebar-accent-foreground shadow-md"
-              : "text-sidebar-foreground/90 hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground",
-            state === 'collapsed' && 'justify-center'
-        )}>
-            <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color}/>
-            {state === 'expanded' && <span className="whitespace-nowrap">{item.label}</span>}
-        </div>
-    );
-
-    if (!item.path) {
-        return <div className="cursor-not-allowed">{menuItemContent}</div>
-    }
-
-    return (
-        <Link href={item.path}>
-            {state === 'collapsed' ? (
-                <Tooltip>
-                    <TooltipTrigger asChild>{menuItemContent}</TooltipTrigger>
-                    <TooltipContent side="right" sideOffset={8}>{item.label}</TooltipContent>
-                </Tooltip>
-            ) : menuItemContent}
-        </Link>
-    );
+  const { state } = useSidebar();
+  if (state === 'collapsed') return <Separator className="my-3 bg-[hsl(var(--sidebar-border))]" />;
+  return <h2 className="px-4 text-xs font-semibold uppercase text-[hsl(var(--sidebar-foreground))]/60 tracking-wider">{label}</h2>;
 };
 
+const SidebarMenuItem = ({ item }: { item: NavItem }) => {
+  const { state, activeItem } = useSidebar();
+
+  const isActive = useMemo(() => {
+    if (!activeItem || !item.path) return false;
+    return activeItem === item.path || (activeItem.startsWith(item.path) && item.path !== '/');
+  }, [activeItem, item.path]);
+
+  const menuItemContent = (
+    <div className={cn(
+      "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item",
+      isActive
+        ? "bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-accent-foreground))] shadow-md"
+        : "text-[hsl(var(--sidebar-foreground))]/90 hover:bg-[hsl(var(--sidebar-active-background))] hover:text-[hsl(var(--sidebar-accent-foreground))]",
+      state === 'collapsed' && 'justify-center'
+    )}>
+      <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
+      {state === 'expanded' && <span className="whitespace-nowrap">{item.label}</span>}
+    </div>
+  );
+
+  if (!item.path) {
+    return <div className="cursor-not-allowed">{menuItemContent}</div>;
+  }
+
+  return (
+    <Link href={item.path}>
+      {state === 'collapsed' ? (
+        <Tooltip>
+          <TooltipTrigger asChild>{menuItemContent}</TooltipTrigger>
+          <TooltipContent side="right" sideOffset={8}>{item.label}</TooltipContent>
+        </Tooltip>
+      ) : menuItemContent}
+    </Link>
+  );
+};
 
 export const SidebarFooter = () => {
   const { user, logout } = useAuth();
@@ -205,25 +201,29 @@ export const SidebarFooter = () => {
   };
 
   return (
-    <div className="p-4 border-t border-sidebar-border mt-auto bg-black/20 text-sidebar-foreground">
+    <div className="p-4 border-t border-[hsl(var(--sidebar-border))] mt-auto bg-black/20 text-[hsl(var(--sidebar-foreground))]">
       <div className={cn("flex items-center", state === 'expanded' ? 'gap-3' : 'justify-center')}>
         <Avatar className="h-10 w-10 flex-shrink-0">
-          <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar"/>
-          <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+          <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar" />
+          <AvatarFallback className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold">
             {getInitials(user?.name)}
           </AvatarFallback>
         </Avatar>
         {state === 'expanded' && (
           <div className="flex-1 overflow-hidden">
             <p className="text-sm truncate font-semibold">{user?.name}</p>
-            <p className="text-xs text-sidebar-foreground/80 capitalize truncate">{user?.role?.toLowerCase()}</p>
+            <p className="text-xs text-[hsl(var(--sidebar-foreground))]/80 capitalize truncate">{user?.role?.toLowerCase()}</p>
           </div>
         )}
       </div>
-      <Separator className="my-3 bg-sidebar-border" />
+      <Separator className="my-3 bg-[hsl(var(--sidebar-border))]" />
       <div className="flex justify-between items-center">
         {state === 'expanded' && (
-          <Button onClick={logout} variant="ghost" className="text-sidebar-foreground/80 hover:text-destructive w-full justify-start p-2 h-auto text-sm">
+          <Button
+            onClick={logout}
+            variant="ghost"
+            className="text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--destructive))] w-full justify-start p-2 h-auto text-sm"
+          >
             Cerrar sesión
           </Button>
         )}
@@ -236,14 +236,15 @@ export const SidebarFooter = () => {
 export const SidebarToggle = () => {
   const { state, toggleSidebar } = useSidebar();
   return (
-    <Button 
-      onClick={toggleSidebar} 
-      variant="ghost" 
-      size="icon" 
+    <Button
+      onClick={toggleSidebar}
+      variant="ghost"
+      size="icon"
       className={cn(
-          "text-sidebar-foreground/80 hover:text-sidebar-accent-foreground hover:bg-sidebar-active-background",
-          state === 'collapsed' && 'w-full'
-      )}>
+        "text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--sidebar-accent-foreground))] hover:bg-[hsl(var(--sidebar-active-background))]",
+        state === 'collapsed' && 'w-full'
+      )}
+    >
       {state === 'expanded' ? <ChevronsLeft /> : <ChevronsRight />}
     </Button>
   );

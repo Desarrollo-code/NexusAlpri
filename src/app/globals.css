@@ -3,92 +3,89 @@
 @tailwind utilities;
 
 @layer base {
-  /* 🎨 Paleta de colores unificada y vibrante para toda la app */
   :root {
-    /* 🎨 Variables Globales de Estilo */
     --radius: 0.75rem;
 
-    /* 🌞 Tema Claro: "Amanecer Vibrante" */
+    /* 🌞 Tema Claro Mejorado */
     --background: 0 0% 100%;
-    --foreground: 230 80% 10%;
+    --foreground: 230 85% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 230 80% 10%;
+    --card-foreground: 230 85% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 230 80% 10%;
-    --primary: 262 83% 58%; /* Índigo */
+    --popover-foreground: 230 85% 12%;
+    --primary: 265 100% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%; /* Gris azulado claro */
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 340 82% 61%; /* Rosa vibrante */
+    --secondary: 200 100% 94%;
+    --secondary-foreground: 230 85% 12%;
+    --muted: 210 40% 95%;
+    --muted-foreground: 230 15% 40%;
+    --accent: 340 90% 60%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 262 83% 58%;
-    
+    --destructive: 0 80% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 30% 85%;
+    --input: 220 30% 90%;
+    --ring: 265 100% 60%;
+
     /* 📊 Gráficos y Eventos (Claro) */
-    --chart-1: 262 83% 58%;
-    --chart-2: 340 82% 61%;
-    --chart-3: 160 70% 50%;
-    --chart-4: 35 100% 60%;
+    --chart-1: 265 100% 60%;
+    --chart-2: 340 90% 60%;
+    --chart-3: 160 90% 45%;
+    --chart-4: 40 100% 55%;
     --chart-5: 220 100% 65%;
     --event-blue: 210 100% 60%;
-    --event-green: 140 100% 45%;
-    --event-red: 0 100% 60%;
-    --event-orange: 25 100% 55%;
+    --event-green: 145 100% 40%;
+    --event-red: 0 100% 58%;
+    --event-orange: 25 100% 50%;
 
-    /* 🌌 Barra Lateral FIJA "Nebulosa Esmeralda" (para ambos temas) */
-    --sidebar-gradient-from: 158 95% 10%; /* Verde Esmeralda Oscuro */
-    --sidebar-gradient-to: 184 95% 20%;   /* Cian Profundo */
+    /* 🌌 Barra lateral fija */
+    --sidebar-gradient-from: 158 95% 15%;
+    --sidebar-gradient-to: 190 95% 25%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-active-background: 170 100% 45% / 0.1; /* Fondo turquesa sutil */
-    --sidebar-accent-foreground: 170 100% 75%; /* Turquesa brillante para texto e iconos activos */
-    --sidebar-border: 0 0% 100% / 0.1;
+    --sidebar-active-background: 170 100% 45% / 0.12;
+    --sidebar-accent-foreground: 170 100% 75%;
+    --sidebar-border: 0 0% 100% / 0.12;
     --sidebar-ring: 170 100% 65%;
   }
 
   .dark {
-    /* 🌌 Tema Oscuro: "Nebulosa Esmeralda" con fondo negro puro */
-    --background: 0 0% 0%;
+    /* 🌚 Tema Oscuro Mejorado */
+    --background: 0 0% 0%; /* Negro puro */
     --foreground: 210 40% 98%;
-    --card: 0 0% 0%;
+    --card: 220 20% 10%;
     --card-foreground: 210 40% 98%;
-    --popover: 0 0% 0%;
+    --popover: 223 30% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 170 85% 65%; /* Turquesa Neón */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 217.2 32.6% 17.5%;
+    --primary: 170 100% 65%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 223 25% 18%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 150 82% 71%; /* Verde Neón */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 170 85% 65%;
+    --muted: 223 25% 18%;
+    --muted-foreground: 215 20.2% 70%;
+    --accent: 160 100% 60%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 70% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 223 25% 20%;
+    --input: 223 25% 20%;
+    --ring: 170 100% 65%;
 
     /* 📊 Gráficos y Eventos (Oscuro) */
-    --chart-1: 170 85% 65%;
-    --chart-2: 150 82% 71%;
-    --chart-3: 190 80% 55%;
+    --chart-1: 170 100% 65%;
+    --chart-2: 160 100% 60%;
+    --chart-3: 195 90% 55%;
     --chart-4: 35 100% 65%;
     --chart-5: 220 100% 70%;
-    --event-blue: 210 100% 70%;
-    --event-green: 140 100% 50%;
+    --event-blue: 210 100% 75%;
+    --event-green: 145 100% 50%;
     --event-red: 0 100% 65%;
-    --event-orange: 25 100% 60%;
+    --event-orange: 30 100% 60%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -105,14 +102,22 @@
     content: '';
     position: absolute;
     inset: -2px;
-    background: conic-gradient(from var(--angle, 0deg), hsl(var(--chart-1)), hsl(var(--chart-2)), hsl(var(--chart-3)), hsl(var(--chart-4)), hsl(var(--chart-5)), hsl(var(--chart-1)));
+    background: conic-gradient(
+      from var(--angle, 0deg),
+      hsl(var(--chart-1)),
+      hsl(var(--chart-2)),
+      hsl(var(--chart-3)),
+      hsl(var(--chart-4)),
+      hsl(var(--chart-5)),
+      hsl(var(--chart-1))
+    );
     z-index: -1;
     border-radius: calc(var(--radius) + 4px);
     animation: 5s rotate linear infinite;
     transition: opacity 0.5s;
     opacity: 0;
   }
-  
+
   .card-border-animated:hover::before,
   .card-border-animated:hover::after {
     opacity: 1;
@@ -123,7 +128,7 @@
     background-clip: text;
     -webkit-background-clip: text;
   }
-  
+
   .animated-underline::after {
     content: '';
     position: absolute;
@@ -134,7 +139,7 @@
     background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
     transition: width 0.3s ease-in-out;
   }
-  
+
   .animated-underline:hover::after {
     width: 100%;
   }
@@ -158,57 +163,58 @@
     border-radius: 10px;
     border: 3px solid transparent;
   }
+
   .thin-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--primary));
   }
 
   .profile-card {
-      position: relative;
-      width: 100%;
-      height: 250px;
-      background: hsl(var(--card));
-      border-radius: var(--radius);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 100px; /* Space for avatar */
-      box-shadow: 0 4px 15px hsl(var(--foreground) / 0.1);
+    position: relative;
+    width: 100%;
+    height: 250px;
+    background: hsl(var(--card));
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 100px;
+    box-shadow: 0 4px 15px hsl(var(--foreground) / 0.1);
   }
 
   .card__img {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 120px;
-      z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 120px;
+    z-index: 1;
   }
 
   .card__avatar {
-      position: relative;
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      border: 4px solid hsl(var(--card));
-      z-index: 2;
-      transform: translateY(-50%);
-      box-shadow: 0 4px 10px hsl(var(--foreground) / 0.2);
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid hsl(var(--card));
+    z-index: 2;
+    transform: translateY(-50%);
+    box-shadow: 0 4px 10px hsl(var(--foreground) / 0.2);
   }
 
   .card__title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: hsl(var(--card-foreground));
-      transform: translateY(-50%);
-      margin-top: -10px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: hsl(var(--card-foreground));
+    transform: translateY(-50%);
+    margin-top: -10px;
   }
-  
+
   .card__subtitle {
-      font-size: 0.875rem;
-      color: hsl(var(--muted-foreground));
-      transform: translateY(-50%);
-      margin-top: -8px;
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    transform: translateY(-50%);
+    margin-top: -8px;
   }
 }
 
