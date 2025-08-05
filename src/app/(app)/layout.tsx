@@ -1,22 +1,24 @@
+// AppLayout-enhanced.tsx 🌈 Visual creativo & juvenil
 
 'use client';
+
 import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { LogOut, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 import {
   SidebarProvider,
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  useSidebar,
   SidebarHeader,
-  SidebarToggle
+  SidebarToggle,
+  useSidebar,
 } from '@/components/ui/sidebar';
-import Link from 'next/link';
-import { LogOut, Loader2, ChevronsLeft } from 'lucide-react';
-import Image from 'next/image';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TopBar } from '@/components/layout/top-bar';
@@ -33,7 +35,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       toast({
         title: "Sesión Expirada",
         description: "Tu sesión se ha cerrado por inactividad. Por favor, inicia sesión de nuevo.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   }, [logout, toast, user]);
@@ -51,62 +53,12 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const getInitials = (name: string) => {
-    if (!name) return '??';
-    const names = name.split(' ');
-    if (names.length > 1 && names[0] && names[names.length - 1]) {
-      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-  };
-
   return (
     <>
       <Sidebar>
-        <SidebarHeader>
-          <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
-             <div className="w-10 h-10 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
-                <Image
-                    src="/uploads/images/logo-letter.png"
-                    alt="NexusAlpri Logo"
-                    width={28}
-                    height={28}
-                    className="w-auto h-auto"
-                    data-ai-hint="logo"
-                />
-            </div>
-            <span className={cn("sidebar-text text-xl font-bold font-headline transition-opacity duration-200", state === 'collapsed' ? 'opacity-0' : 'opacity-100')}>NexusAlpri</span>
-          </Link>
-        </SidebarHeader>
-
+        <SidebarHeader />
         <SidebarContent />
-
-        <SidebarFooter>
-          <div className="flex items-center gap-3 mb-4 p-3 bg-muted rounded-lg overflow-hidden">
-            <Avatar className="h-10 w-10 flex-shrink-0">
-              <AvatarImage src={user.avatar || undefined} alt={user.name || 'Avatar de usuario'} />
-              <AvatarFallback className="bg-gradient-to-br from-chart-2 to-chart-1 text-white font-semibold">
-                {getInitials(user.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className={cn("sidebar-text flex-1 overflow-hidden transition-opacity duration-200", state === 'collapsed' ? 'opacity-0' : 'opacity-100')}>
-              <p className="text-sm font-medium truncate">{user.name}</p>
-              <p className="text-muted-foreground text-xs capitalize truncate">{user.role.toLowerCase()}</p>
-            </div>
-          </div>
-           <Separator className="my-2" />
-           <div className={cn("flex items-center", state === 'expanded' ? 'justify-between' : 'justify-center')}>
-              <Button
-                onClick={logout}
-                variant="ghost"
-                className={cn("flex-grow justify-start gap-3 p-3 h-auto", state === 'collapsed' && 'hidden')}
-              >
-                <LogOut className="h-5 w-5 flex-shrink-0" />
-                <span className="sidebar-text font-medium">Cerrar Sesión</span>
-              </Button>
-              <SidebarToggle className="hidden lg:flex" />
-           </div>
-        </SidebarFooter>
+        <SidebarFooter />
       </Sidebar>
 
       <div

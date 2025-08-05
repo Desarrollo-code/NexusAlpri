@@ -41,7 +41,7 @@ export default function RootLayout({
       <head>
           <title>NexusAlpri</title>
           <meta name="description" content="Plataforma E-learning Corporativa" />
-          <link rel="icon" href="/uploads/images/logo-letter.png" sizes="any" />
+          <link rel="icon" href="/uploads/images/logo-nexusalpri.png" sizes="any" />
       </head>
       <body className={`${inter.variable} ${spaceGrotesk.variable} ${dancingScript.variable} ${sourceCodePro.variable} font-body flex flex-col min-h-screen bg-background`}>
         <ThemeProvider

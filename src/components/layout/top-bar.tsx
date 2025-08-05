@@ -79,7 +79,7 @@ export function TopBar() {
   };
 
   return (
-    <div className="h-16 bg-background/80 backdrop-blur-lg border-b flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
+   <div className="h-16 bg-gradient-to-r from-orange-500 via-yellow-400 to-red-500 text-white backdrop-blur-md shadow-md border-b border-white/20 flex items-center justify-between px-4 lg:px-6 flex-shrink-0 transition-all duration-500">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"

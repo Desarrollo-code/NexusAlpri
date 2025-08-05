@@ -1,329 +1,205 @@
+// Sidebar-layout-enhanced 🌈 Creativo & juvenil
+// Estilo visual mejorado: colores vivos, tipografía amigable, gradientes y transiciones suaves
 
 'use client';
 
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { VariantProps, cva } from "class-variance-authority"
-import { ChevronsRight, Menu, ChevronDown, type LucideProps, Shield, ChevronsLeft } from "lucide-react"
+import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-
-import { useIsMobile } from "@/hooks/use-mobile"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import type { NavItem } from "@/types";
-import { getNavItemsForRole } from "@/lib/nav-items";
+import { ChevronsLeft, ChevronsRight, Shield } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
+import { getNavItemsForRole } from "@/lib/nav-items";
+import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import { GradientIcon } from "./gradient-icon";
 
-const SIDEBAR_COOKIE_NAME = "sidebar_state"
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-
-type SidebarContextValue = {
-  state: "expanded" | "collapsed"
-  isMobile: boolean
-  openMobile: boolean
-  setOpenMobile: (open: boolean) => void
-  toggleSidebar: () => void
-  activeItem: string;
-}
-
-const SidebarContext = React.createContext<SidebarContextValue | null>(null)
+const SidebarContext = React.createContext(null);
+const SIDEBAR_COOKIE_NAME = "sidebar_state";
+const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 
 function useSidebar() {
-  const context = React.useContext(SidebarContext)
-  if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider.")
-  }
-  return context
+  const context = React.useContext(SidebarContext);
+  if (!context) throw new Error("useSidebar must be used within a SidebarProvider.");
+  return context;
 }
 
-const SidebarProvider = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, style, children, ...props }, ref) => {
-    const isMobile = useIsMobile()
-    const [openMobile, setOpenMobile] = React.useState(false)
-    const pathname = usePathname();
-    const [activeItem, setActiveItem] = React.useState(pathname);
-    const [isOpen, setIsOpen] = React.useState(true);
+const SidebarProvider = ({ children }) => {
+  const isMobile = useIsMobile();
+  const pathname = usePathname();
+  const [activeItem, setActiveItem] = React.useState(pathname);
+  const [isOpen, setIsOpen] = React.useState(true);
+  const [openMobile, setOpenMobile] = React.useState(false);
 
-    React.useEffect(() => {
-      const cookieValue = document.cookie
-        .split('; ')
-        .find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
-        ?.split('=')[1];
-      if (cookieValue !== undefined) {
-        setIsOpen(cookieValue === 'true');
-      } else {
-        setIsOpen(true);
-      }
-    }, []);
+  React.useEffect(() => {
+    const cookieValue = document.cookie
+      .split('; ')
+      .find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
+      ?.split('=')[1];
+    setIsOpen(cookieValue !== undefined ? cookieValue === 'true' : true);
+  }, []);
 
-    const toggleSidebar = React.useCallback(() => {
-      if (isMobile) {
-        setOpenMobile(current => !current);
-      } else {
-        const newState = !isOpen;
-        setIsOpen(newState);
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${newState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
-      }
-    }, [isMobile, isOpen]);
-
-    React.useEffect(() => {
-      if (pathname) setActiveItem(pathname);
-    }, [pathname]);
-
-    const state = isOpen ? "expanded" : "collapsed"
-
-    const contextValue = React.useMemo<SidebarContextValue>(
-      () => ({ state, isMobile, openMobile, setOpenMobile, toggleSidebar, activeItem }),
-      [state, isMobile, openMobile, toggleSidebar, activeItem]
-    )
-
-    return (
-      <SidebarContext.Provider value={contextValue}>
-        <TooltipProvider delayDuration={0}>
-          <div style={{ ...style } as React.CSSProperties} className={className} ref={ref} {...props}>
-            {children}
-          </div>
-        </TooltipProvider>
-      </SidebarContext.Provider>
-    )
-  }
-)
-SidebarProvider.displayName = "SidebarProvider"
-
-const Sidebar = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, children, ...props }, ref) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+  const toggleSidebar = () => {
     if (isMobile) {
-      return (
-        <>
-          {openMobile && <div className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40" onClick={() => setOpenMobile(false)} />}
-          <aside ref={ref} className={cn("fixed left-0 top-0 h-full z-50 bg-background border-r transition-transform duration-300 flex flex-col", openMobile ? 'translate-x-0' : '-translate-x-full', 'w-72', className)} {...props}>
-            {children}
-          </aside>
-        </>
-      )
+      setOpenMobile(prev => !prev);
+    } else {
+      const newState = !isOpen;
+      setIsOpen(newState);
+      document.cookie = `${SIDEBAR_COOKIE_NAME}=${newState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
     }
+  };
 
-    return (
-      <aside ref={ref} className={cn("group/sidebar-wrapper fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out bg-background border-r", state === 'expanded' ? "w-72" : "w-20", className)} data-state={state} {...props}>
-        <div className="flex h-full flex-col overflow-hidden">
-          {children}
-        </div>
-      </aside>
-    )
-  }
-)
-Sidebar.displayName = "Sidebar"
+  React.useEffect(() => {
+    if (pathname) setActiveItem(pathname);
+  }, [pathname]);
 
-const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, React.ComponentProps<typeof Button>>(
-  ({ className, onClick, ...props }, ref) => {
-    const { toggleSidebar } = useSidebar()
-    return (
-      <Button ref={ref} variant="ghost" size="icon" className={cn("h-9 w-9", className)} onClick={(e) => { onClick?.(e); toggleSidebar(); }} {...props}>
-        <Menu />
-        <span className="sr-only">Alternar Barra Lateral</span>
-      </Button>
-    )
-  }
-)
-SidebarTrigger.displayName = "SidebarTrigger"
+  const value = {
+    state: isOpen ? 'expanded' : 'collapsed',
+    isMobile,
+    openMobile,
+    setOpenMobile,
+    toggleSidebar,
+    activeItem,
+  };
 
-const SidebarToggle = React.forwardRef<React.ElementRef<typeof Button>, React.ComponentProps<typeof Button>>(
-  ({ className, onClick, ...props }, ref) => {
-    const { toggleSidebar, state } = useSidebar();
-    return (
-        <Button
-            ref={ref}
-            variant="ghost"
-            size="icon"
-            className={cn("h-9 w-9", className)}
-            onClick={(e) => {
-                onClick?.(e);
-                toggleSidebar();
-            }}
-            {...props}
-        >
-            {state === 'expanded' ? <ChevronsLeft /> : <ChevronsRight />}
-            <span className="sr-only">
-                {state === 'expanded' ? "Colapsar Barra Lateral" : "Expandir Barra Lateral"}
-            </span>
-        </Button>
-    );
-});
-SidebarToggle.displayName = "SidebarToggle";
+  return (
+    <SidebarContext.Provider value={value}>
+      <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
+    </SidebarContext.Provider>
+  );
+};
 
-
-const SidebarHeader = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex shrink-0 items-center justify-between h-16 px-4 border-b", className)} {...props} />
-  )
-)
-SidebarHeader.displayName = "SidebarHeader"
-
-const SidebarFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex flex-col p-4 mt-auto border-t", className)} {...props} />
-  )
-)
-SidebarFooter.displayName = "SidebarFooter"
-
-const SidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, ...props }, ref) => {
-    const { user } = useAuth();
-    const navItems = React.useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
-    return (
-      <div ref={ref} className={cn("flex min-h-0 flex-1 flex-col overflow-auto px-4 py-2 space-y-1", className)} {...props}>
-        <SidebarMenu>
-          {navItems.map((item, index) => (
-            <React.Fragment key={item.id}>
-              <SidebarMenuItem item={item} />
-              {(item.id === 'calendar' || (item.id === 'admin' && item.children && item.children.length > 0)) && <SidebarMenuSeparator />}
-            </React.Fragment>
-          ))}
-        </SidebarMenu>
-      </div>
-    )
-  }
-)
-SidebarContent.displayName = "SidebarContent"
-
-const SidebarMenu = React.forwardRef<HTMLUListElement, React.ComponentProps<"ul">>(
-  ({ className, ...props }, ref) => (
-    <ul ref={ref} className={cn("flex w-full min-w-0 flex-col gap-1", className)} {...props} />
-  )
-)
-SidebarMenu.displayName = "SidebarMenu"
-
-const SidebarMenuItem = React.forwardRef<HTMLLIElement, { item: NavItem } & React.ComponentProps<"li">>(
-  ({ className, item, ...props }, ref) => {
-    const { state, activeItem } = useSidebar();
-    const hasChildren = item.children && item.children.length > 0;
-    
-    const isActive = hasChildren 
-        ? item.children.some(child => child.path && activeItem.startsWith(child.path)) 
-        : (item.path ? (item.path === '/' ? activeItem === '/' : activeItem.startsWith(item.path)) : false);
-
-    if (hasChildren) {
-      return (
-        <li ref={ref} className={cn("group/menu-item relative space-y-1 pt-2", className)} {...props}>
-          {state === 'expanded' ? (
-             <h4 className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-muted-foreground uppercase">
-                 <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
-                 {item.label}
-             </h4>
-          ) : (
-             <div className="my-2 h-px bg-border" />
-          )}
-            <ul className={cn("space-y-1", state === 'expanded' && "ml-4 pl-3 border-l-2 border-border/30")}>
-                {item.children.map(child => (
-                    <SidebarMenuItem key={child.id} item={child} />
-                ))}
-            </ul>
-        </li>
-      )
-    }
-
-    return (
-      <li ref={ref} className={cn("group/menu-item relative", className)} {...props}>
-        <SidebarMenuButton asChild tooltip={{ children: item.label }}>
-          <Link href={item.path || '#'}>
-            <GradientIcon icon={item.icon} isActive={isActive} />
-            <span className={cn("sidebar-text flex-1 text-left font-medium transition-all duration-300", state === 'collapsed' && 'opacity-0 hidden')}>{item.label}</span>
-          </Link>
-        </SidebarMenuButton>
-      </li>
-    )
-  }
-)
-SidebarMenuItem.displayName = "SidebarMenuItem"
-
-const SidebarMenuSeparator = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, ...props }, ref) => {
-    const { state } = useSidebar();
-    if (state === 'collapsed') return null;
-    return <div ref={ref} className={cn("my-2 h-px bg-border", className)} {...props} />;
-  }
-)
-SidebarMenuSeparator.displayName = "SidebarMenuSeparator"
-
-const sidebarMenuButtonVariants = cva(
-  "relative flex w-full items-center gap-3 overflow-hidden rounded-lg p-3 text-left text-sm outline-none ring-ring transition-all duration-200 focus-visible:ring-2 active:bg-accent/50 disabled:pointer-events-none disabled:opacity-50",
-  {
-    variants: { 
-      variant: { 
-          default: "text-foreground hover:bg-muted hover:text-foreground", 
-          ghost: "text-muted-foreground hover:bg-muted hover:text-foreground" 
-      },
-      size: { default: "h-11 text-base", sm: "h-9 text-sm", lg: "h-12 text-base" },
-      isActive: { true: "bg-primary/10 text-primary-foreground", false: "" }
-    },
-    defaultVariants: { variant: "ghost", size: "default" },
-  }
-)
-
-type SidebarMenuButtonProps = React.ComponentProps<"button"> & {
-  asChild?: boolean
-  tooltip?: React.ComponentProps<typeof TooltipContent>
-} & VariantProps<typeof sidebarMenuButtonVariants>
-
-const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
-  ({ asChild = false, variant, size, className, children, tooltip, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button"
-    const { isMobile, state, activeItem, setOpenMobile } = useSidebar();
-    const href = asChild && (children as React.ReactElement)?.props.href;
-    const isActive = href ? (href === '/' ? activeItem === '/' : activeItem.startsWith(href)) : false;
-    
-    const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-      if (href && isMobile) setOpenMobile(false);
-      if (props.onClick) props.onClick(event);
-    }
-
-    const buttonContent = (
-      <>
-        {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-primary rounded-r-full" />}
+const Sidebar = ({ children }) => {
+  const { isMobile, openMobile, setOpenMobile, state } = useSidebar();
+  return (
+    <>
+      {isMobile && openMobile && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+          onClick={() => setOpenMobile(false)}
+        />
+      )}
+      <aside
+        className={cn(
+          "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out border-r backdrop-blur-xl shadow-xl",
+          isMobile ?
+            `w-72 bg-bg-gradient-to-br from-emerald-400 via-teal-500 to-indigo-600
+ text-white ${openMobile ? 'translate-x-0' : '-translate-x-full'}` :
+            `text-white bg-gradient-to-br  from-emerald-400 via-teal-500 to-indigo-600
+ ${state === 'expanded' ? 'w-72' : 'w-20'}`
+        )}
+      >
         {children}
-      </>
-    );
+      </aside>
+    </>
+  );
+};
 
-    const button = (
-      <Comp ref={ref} className={cn(sidebarMenuButtonVariants({ variant, size, isActive }), state === 'collapsed' && 'justify-center', 'justify-start', className)} onClick={handleClick} {...props}>
-        {buttonContent}
-      </Comp>
-    )
+const SidebarHeader = () => {
+  const { state } = useSidebar();
+  return (
+    <div className="flex items-center justify-between h-16 px-4 border-b border-white/20 bg-white/10 backdrop-blur-sm">
+      <Link href="/dashboard" className="flex items-center gap-1">
+        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shadow-inner">
+          <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} />
+        </div>
+        {state === 'expanded' && (
+          <span className="text-xl font-bold font-sans tracking-wide">NexusAlpri</span>
+        )}
+      </Link>
+    </div>
+  );
+};
 
-    if (!tooltip || isMobile || state === 'expanded') return button;
+const SidebarContent = () => {
+  const { user } = useAuth();
+  const navItems = getNavItemsForRole(user?.role || 'STUDENT');
+  const { state, activeItem } = useSidebar();
 
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{button}</TooltipTrigger>
-        <TooltipContent side="right" align="center" hidden={state !== "collapsed"} {...tooltip}>
-          {tooltip.children}
-        </TooltipContent>
-      </Tooltip>
-    )
-  }
-)
-SidebarMenuButton.displayName = "SidebarMenuButton"
+  return (
+    <div className="flex-1 overflow-auto py-4 px-3 space-y-2">
+      {navItems.map((item) => (
+        <SidebarMenuItem key={item.id} item={item} isActive={activeItem.startsWith(item.path || '')} />
+      ))}
+    </div>
+  );
+};
+
+const SidebarMenuItem = ({ item, isActive }) => {
+  const { state } = useSidebar();
+  return (
+    <Link
+      href={item.path || '#'}
+      className={cn(
+        "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium",
+        isActive ? "bg-white/20 text-white shadow-md" : "hover:bg-white/10 text-white/90",
+        state === 'collapsed' && 'justify-center'
+      )}
+    >
+      <GradientIcon icon={item.icon || Shield} isActive={isActive} />
+      {state === 'expanded' && <span>{item.label}</span>}
+    </Link>
+  );
+};
+
+const SidebarFooter = () => {
+  const { user, logout } = useAuth();
+  const { state } = useSidebar();
+
+  const getInitials = (name) => {
+    if (!name) return '??';
+    const [first, last] = name.split(' ');
+    return `${first?.[0] || ''}${last?.[0] || ''}`.toUpperCase();
+  };
+
+  return (
+    <div className="p-4 border-t border-white/20 mt-auto bg-white/10 backdrop-blur-sm">
+      <div className="flex items-center gap-3">
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={user.avatar || ''} alt={user.name} />
+          <AvatarFallback className="bg-orange-600 text-white font-bold">
+            {getInitials(user.name)}
+          </AvatarFallback>
+        </Avatar>
+        {state === 'expanded' && (
+          <div className="flex-1 overflow-hidden">
+            <p className="text-sm truncate font-semibold">{user.name}</p>
+            <p className="text-xs text-white/80 capitalize truncate">{user.role.toLowerCase()}</p>
+          </div>
+        )}
+      </div>
+      <Separator className="my-3 bg-white/30" />
+      <div className="flex justify-between items-center">
+        {state === 'expanded' && (
+          <Button onClick={logout} variant="ghost" className="text-white hover:text-red-300">
+            Cerrar sesión
+          </Button>
+        )}
+        <SidebarToggle />
+      </div>
+    </div>
+  );
+};
+
+const SidebarToggle = () => {
+  const { state, toggleSidebar } = useSidebar();
+  return (
+    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="text-white hover:text-yellow-200">
+      {state === 'expanded' ? <ChevronsLeft /> : <ChevronsRight />}
+    </Button>
+  );
+};
 
 export {
+  SidebarProvider,
   Sidebar,
+  SidebarHeader,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSeparator,
-  SidebarProvider,
-  SidebarTrigger,
   SidebarToggle,
   useSidebar,
-}
+};
