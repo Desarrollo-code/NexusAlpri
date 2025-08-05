@@ -36,14 +36,11 @@
     --radius: 0.75rem;
 
     /* Barra lateral - Colores vivos */
-    --sidebar-background: 225 10% 12%; /* Fallback */
-    --sidebar-gradient-from: hsl(225, 15%, 15%);
-    --sidebar-gradient-to: hsl(260, 20%, 18%);
-    --sidebar-foreground: hsl(0, 0%, 100% / 0.8);
-    --sidebar-accent: hsl(255, 100%, 67%);
-    --sidebar-accent-foreground: hsl(0, 0%, 100%);
-    --sidebar-active-background: hsl(255, 100%, 67% / 0.1);
-    --sidebar-border: hsl(225, 10%, 25%);
+    --sidebar-background: 225 10% 12%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-accent: 255 100% 67%;
+    --sidebar-accent-foreground: 255 100% 100%;
+    --sidebar-border: 225 10% 20%;
     --sidebar-ring: hsl(var(--primary));
 
     /* Paleta vibrante */
@@ -92,16 +89,11 @@
     --input: 225 10% 25%;
     --ring: 220 90% 60%;
 
-    /* Barra lateral - Colores vivos */
-    --sidebar-background: 225 10% 12%; /* Fallback */
-    --sidebar-gradient-from: hsl(225, 15%, 15%);
-    --sidebar-gradient-to: hsl(260, 20%, 18%);
-    --sidebar-foreground: hsl(0, 0%, 100% / 0.8);
-    --sidebar-accent: hsl(190, 80%, 70%); /* Cian brillante para hover/accent */
-    --sidebar-accent-foreground: hsl(0, 0%, 100%);
-    --sidebar-active-background: hsl(190, 80%, 70% / 0.1);
-    --sidebar-border: hsl(225, 10% 25%);
-    --sidebar-ring: hsl(var(--primary));
+    --sidebar-background: 225 10% 12%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-accent: 255 100% 67%;
+    --sidebar-accent-foreground: 255 100% 100%;
+    --sidebar-border: 225 10% 20%;
   }
 
   * {
@@ -123,6 +115,9 @@
   }
   .group\/sidebar-wrapper[data-state='collapsed'] .sidebar-text {
     @apply opacity-0 pointer-events-none;
+  }
+  .group\/sidebar-wrapper[data-state='collapsed'] .group\/menu-item .justify-start {
+    @apply justify-center;
   }
 
   .sidebar-footer {
