@@ -105,7 +105,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
       return (
         <>
           {openMobile && <div className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40" onClick={() => setOpenMobile(false)} />}
-          <aside ref={ref} className={cn("fixed left-0 top-0 h-full z-50 bg-gradient-to-b from-sidebar-gradient-from to-sidebar-gradient-to border-r border-sidebar-border transition-transform duration-300 flex flex-col", openMobile ? 'translate-x-0' : '-translate-x-full', 'w-72', className)} {...props}>
+          <aside ref={ref} className={cn("fixed left-0 top-0 h-full z-50 bg-background border-r transition-transform duration-300 flex flex-col", openMobile ? 'translate-x-0' : '-translate-x-full', 'w-72', className)} {...props}>
             {children}
           </aside>
         </>
@@ -113,7 +113,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
     }
 
     return (
-      <aside ref={ref} className={cn("group/sidebar-wrapper fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out bg-gradient-to-b from-sidebar-gradient-from to-sidebar-gradient-to border-r border-sidebar-border", state === 'expanded' ? "w-72" : "w-20", className)} data-state={state} {...props}>
+      <aside ref={ref} className={cn("group/sidebar-wrapper fixed inset-y-0 left-0 z-40 flex h-screen flex-col text-sidebar-foreground transition-[width] duration-300 ease-in-out bg-background border-r", state === 'expanded' ? "w-72" : "w-20", className)} data-state={state} {...props}>
         <div className="flex h-full flex-col overflow-hidden">
           {children}
         </div>
@@ -144,7 +144,7 @@ const SidebarToggle = React.forwardRef<React.ElementRef<typeof Button>, React.Co
             ref={ref}
             variant="ghost"
             size="icon"
-            className={cn("h-9 w-9 text-sidebar-foreground hover:bg-black/20 hover:text-sidebar-accent-foreground", className)}
+            className={cn("h-9 w-9", className)}
             onClick={(e) => {
                 onClick?.(e);
                 toggleSidebar();
@@ -163,14 +163,14 @@ SidebarToggle.displayName = "SidebarToggle";
 
 const SidebarHeader = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex shrink-0 items-center justify-between h-16 px-4 border-b border-sidebar-border", className)} {...props} />
+    <div ref={ref} className={cn("flex shrink-0 items-center justify-between h-16 px-4 border-b", className)} {...props} />
   )
 )
 SidebarHeader.displayName = "SidebarHeader"
 
 const SidebarFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex flex-col p-4 mt-auto border-t border-sidebar-border", className)} {...props} />
+    <div ref={ref} className={cn("flex flex-col p-4 mt-auto border-t", className)} {...props} />
   )
 )
 SidebarFooter.displayName = "SidebarFooter"
@@ -215,14 +215,14 @@ const SidebarMenuItem = React.forwardRef<HTMLLIElement, { item: NavItem } & Reac
       return (
         <li ref={ref} className={cn("group/menu-item relative space-y-1 pt-2", className)} {...props}>
           {state === 'expanded' ? (
-             <h4 className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-sidebar-foreground/70 uppercase">
+             <h4 className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-muted-foreground uppercase">
                  <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
                  {item.label}
              </h4>
           ) : (
-             <div className="my-2 h-px bg-white/10" />
+             <div className="my-2 h-px bg-border" />
           )}
-            <ul className={cn("space-y-1", state === 'expanded' && "ml-4 pl-3 border-l-2 border-sidebar-border/30")}>
+            <ul className={cn("space-y-1", state === 'expanded' && "ml-4 pl-3 border-l-2 border-border/30")}>
                 {item.children.map(child => (
                     <SidebarMenuItem key={child.id} item={child} />
                 ))}
@@ -249,23 +249,23 @@ const SidebarMenuSeparator = React.forwardRef<HTMLDivElement, React.ComponentPro
   ({ className, ...props }, ref) => {
     const { state } = useSidebar();
     if (state === 'collapsed') return null;
-    return <div ref={ref} className={cn("my-2 h-px bg-sidebar-border", className)} {...props} />;
+    return <div ref={ref} className={cn("my-2 h-px bg-border", className)} {...props} />;
   }
 )
 SidebarMenuSeparator.displayName = "SidebarMenuSeparator"
 
 const sidebarMenuButtonVariants = cva(
-  "relative flex w-full items-center gap-3 overflow-hidden rounded-lg p-3 text-left text-sm outline-none ring-sidebar-ring transition-all duration-200 focus-visible:ring-2 active:bg-sidebar-active-background disabled:pointer-events-none disabled:opacity-50",
+  "relative flex w-full items-center gap-3 overflow-hidden rounded-lg p-3 text-left text-sm outline-none ring-ring transition-all duration-200 focus-visible:ring-2 active:bg-accent/50 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: { 
       variant: { 
-          default: "text-sidebar-foreground hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground", 
-          ghost: "text-sidebar-foreground hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground" 
+          default: "text-foreground hover:bg-muted hover:text-foreground", 
+          ghost: "text-muted-foreground hover:bg-muted hover:text-foreground" 
       },
       size: { default: "h-11 text-base", sm: "h-9 text-sm", lg: "h-12 text-base" },
-      isActive: { true: "bg-sidebar-active-background text-sidebar-accent-foreground", false: "" }
+      isActive: { true: "bg-primary/10 text-primary-foreground", false: "" }
     },
-    defaultVariants: { variant: "ghost", size: "sm" },
+    defaultVariants: { variant: "ghost", size: "default" },
   }
 )
 
@@ -275,11 +275,12 @@ type SidebarMenuButtonProps = React.ComponentProps<"button"> & {
 } & VariantProps<typeof sidebarMenuButtonVariants>
 
 const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
-  ({ asChild = false, variant, size, isActive, className, children, tooltip, ...props }, ref) => {
+  ({ asChild = false, variant, size, className, children, tooltip, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     const { isMobile, state, activeItem, setOpenMobile } = useSidebar();
     const href = asChild && (children as React.ReactElement)?.props.href;
-    const finalIsActive = isActive ?? (href ? (href === '/' ? activeItem === '/' : activeItem.startsWith(href)) : false);
+    const isActive = href ? (href === '/' ? activeItem === '/' : activeItem.startsWith(href)) : false;
+    
     const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
       if (href && isMobile) setOpenMobile(false);
       if (props.onClick) props.onClick(event);
@@ -287,13 +288,13 @@ const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonP
 
     const buttonContent = (
       <>
-        {finalIsActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-sidebar-accent-foreground rounded-r-full" />}
+        {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-primary rounded-r-full" />}
         {children}
       </>
     );
 
     const button = (
-      <Comp ref={ref} className={cn(sidebarMenuButtonVariants({ variant, size, isActive: finalIsActive }), state === 'collapsed' && 'justify-center', 'justify-start', className)} onClick={handleClick} {...props}>
+      <Comp ref={ref} className={cn(sidebarMenuButtonVariants({ variant, size, isActive }), state === 'collapsed' && 'justify-center', 'justify-start', className)} onClick={handleClick} {...props}>
         {buttonContent}
       </Comp>
     )

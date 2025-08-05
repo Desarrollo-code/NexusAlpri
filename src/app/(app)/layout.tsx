@@ -65,7 +65,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar>
         <SidebarHeader>
           <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
-             <div className="w-10 h-10 bg-black/20 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
+             <div className="w-10 h-10 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
                 <Image
                     src="/uploads/images/logo-letter.png"
                     alt="NexusAlpri Logo"
@@ -75,31 +75,31 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                     data-ai-hint="logo"
                 />
             </div>
-            <span className="sidebar-text text-sidebar-foreground text-xl font-bold font-headline">NexusAlpri</span>
+            <span className={cn("sidebar-text text-xl font-bold font-headline transition-opacity duration-200", state === 'collapsed' ? 'opacity-0' : 'opacity-100')}>NexusAlpri</span>
           </Link>
         </SidebarHeader>
 
         <SidebarContent />
 
         <SidebarFooter>
-          <div className="flex items-center gap-3 mb-4 p-3 bg-black/20 rounded-lg overflow-hidden">
+          <div className="flex items-center gap-3 mb-4 p-3 bg-muted rounded-lg overflow-hidden">
             <Avatar className="h-10 w-10 flex-shrink-0">
               <AvatarImage src={user.avatar || undefined} alt={user.name || 'Avatar de usuario'} />
               <AvatarFallback className="bg-gradient-to-br from-chart-2 to-chart-1 text-white font-semibold">
                 {getInitials(user.name)}
               </AvatarFallback>
             </Avatar>
-            <div className="sidebar-text flex-1 overflow-hidden">
-              <p className="text-sidebar-foreground text-sm font-medium truncate">{user.name}</p>
+            <div className={cn("sidebar-text flex-1 overflow-hidden transition-opacity duration-200", state === 'collapsed' ? 'opacity-0' : 'opacity-100')}>
+              <p className="text-sm font-medium truncate">{user.name}</p>
               <p className="text-muted-foreground text-xs capitalize truncate">{user.role.toLowerCase()}</p>
             </div>
           </div>
-           <Separator className="my-2 bg-sidebar-border" />
-           <div className="flex items-center justify-between">
+           <Separator className="my-2" />
+           <div className={cn("flex items-center", state === 'expanded' ? 'justify-between' : 'justify-center')}>
               <Button
                 onClick={logout}
                 variant="ghost"
-                className="flex-grow text-sidebar-foreground hover:text-sidebar-foreground hover:bg-black/20 justify-start gap-3 p-3 h-auto"
+                className={cn("flex-grow justify-start gap-3 p-3 h-auto", state === 'collapsed' && 'hidden')}
               >
                 <LogOut className="h-5 w-5 flex-shrink-0" />
                 <span className="sidebar-text font-medium">Cerrar Sesión</span>
