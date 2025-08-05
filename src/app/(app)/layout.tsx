@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
@@ -9,7 +10,8 @@ import {
   SidebarContent,
   SidebarFooter,
   useSidebar,
-  SidebarHeader
+  SidebarHeader,
+  SidebarToggle
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { LogOut, Loader2, ChevronsLeft } from 'lucide-react';
@@ -18,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TopBar } from '@/components/layout/top-bar';
+import { Separator } from '@/components/ui/separator';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
@@ -90,14 +93,18 @@ function AppLayout({ children }: { children: React.ReactNode }) {
               <p className="text-muted-foreground text-xs capitalize truncate">{user.role.toLowerCase()}</p>
             </div>
           </div>
-          <Button
-            onClick={logout}
-            variant="ghost"
-            className="w-full text-sidebar-foreground hover:text-sidebar-foreground hover:bg-black/20 justify-start gap-3 p-3 h-auto"
-          >
-            <LogOut className="h-5 w-5 flex-shrink-0" />
-            <span className="sidebar-text font-medium">Cerrar Sesión</span>
-          </Button>
+           <Separator className="my-2 bg-sidebar-border" />
+           <div className="flex items-center justify-between">
+              <Button
+                onClick={logout}
+                variant="ghost"
+                className="flex-grow text-sidebar-foreground hover:text-sidebar-foreground hover:bg-black/20 justify-start gap-3 p-3 h-auto"
+              >
+                <LogOut className="h-5 w-5 flex-shrink-0" />
+                <span className="sidebar-text font-medium">Cerrar Sesión</span>
+              </Button>
+              <SidebarToggle className="hidden lg:flex" />
+           </div>
         </SidebarFooter>
       </Sidebar>
 

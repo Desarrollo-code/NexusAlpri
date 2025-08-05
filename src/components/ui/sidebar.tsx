@@ -4,7 +4,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { ChevronsRight, Menu, ChevronDown, type LucideProps, Shield } from "lucide-react"
+import { ChevronsRight, Menu, ChevronDown, type LucideProps, Shield, ChevronsLeft } from "lucide-react"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -136,6 +136,31 @@ const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, React.C
 )
 SidebarTrigger.displayName = "SidebarTrigger"
 
+const SidebarToggle = React.forwardRef<React.ElementRef<typeof Button>, React.ComponentProps<typeof Button>>(
+  ({ className, onClick, ...props }, ref) => {
+    const { toggleSidebar, state } = useSidebar();
+    return (
+        <Button
+            ref={ref}
+            variant="ghost"
+            size="icon"
+            className={cn("h-9 w-9 text-sidebar-foreground hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground", className)}
+            onClick={(e) => {
+                onClick?.(e);
+                toggleSidebar();
+            }}
+            {...props}
+        >
+            {state === 'expanded' ? <ChevronsLeft /> : <ChevronsRight />}
+            <span className="sr-only">
+                {state === 'expanded' ? "Colapsar Barra Lateral" : "Expandir Barra Lateral"}
+            </span>
+        </Button>
+    );
+});
+SidebarToggle.displayName = "SidebarToggle";
+
+
 const SidebarHeader = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
   ({ className, ...props }, ref) => (
     <div ref={ref} className={cn("flex shrink-0 items-center justify-between h-16 px-4 border-b border-sidebar-border", className)} {...props} />
@@ -190,14 +215,14 @@ const SidebarMenuItem = React.forwardRef<HTMLLIElement, { item: NavItem } & Reac
       return (
         <li ref={ref} className={cn("group/menu-item relative space-y-1 pt-2", className)} {...props}>
           {state === 'expanded' ? (
-             <h4 className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-sidebar-foreground/70">
+             <h4 className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-sidebar-foreground/70 uppercase">
                  <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
                  {item.label}
              </h4>
           ) : (
              <div className="my-2 h-px bg-white/10" />
           )}
-            <ul className={cn("space-y-1", state === 'expanded' && "ml-4 pl-3 border-l border-white/10")}>
+            <ul className={cn("space-y-1", state === 'expanded' && "ml-4 pl-3 border-l-2 border-sidebar-border/30")}>
                 {item.children.map(child => (
                     <SidebarMenuItem key={child.id} item={child} />
                 ))}
@@ -211,7 +236,7 @@ const SidebarMenuItem = React.forwardRef<HTMLLIElement, { item: NavItem } & Reac
         <SidebarMenuButton asChild tooltip={{ children: item.label }}>
           <Link href={item.path || '#'}>
             <GradientIcon icon={item.icon} isActive={isActive} />
-            <span className={cn("sidebar-text flex-1 text-left font-medium transition-all duration-300", state === 'collapsed' && 'hidden')}>{item.label}</span>
+            <span className={cn("sidebar-text flex-1 text-left font-medium transition-all duration-300", state === 'collapsed' && 'opacity-0 hidden')}>{item.label}</span>
           </Link>
         </SidebarMenuButton>
       </li>
@@ -230,7 +255,7 @@ const SidebarMenuSeparator = React.forwardRef<HTMLDivElement, React.ComponentPro
 SidebarMenuSeparator.displayName = "SidebarMenuSeparator"
 
 const sidebarMenuButtonVariants = cva(
-  "flex w-full items-center gap-3 overflow-hidden rounded-lg p-3 text-left text-sm outline-none ring-sidebar-ring transition-all duration-200 focus-visible:ring-2 active:bg-sidebar-active-background disabled:pointer-events-none disabled:opacity-50",
+  "relative flex w-full items-center gap-3 overflow-hidden rounded-lg p-3 text-left text-sm outline-none ring-sidebar-ring transition-all duration-200 focus-visible:ring-2 active:bg-sidebar-active-background disabled:pointer-events-none disabled:opacity-50",
   {
     variants: { 
       variant: { 
@@ -260,9 +285,16 @@ const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonP
       if (props.onClick) props.onClick(event);
     }
 
+    const buttonContent = (
+      <>
+        {finalIsActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-sidebar-accent-foreground rounded-r-full" />}
+        {children}
+      </>
+    );
+
     const button = (
       <Comp ref={ref} data-active={finalIsActive} className={cn(sidebarMenuButtonVariants({ variant, size, isActive: finalIsActive }), state === 'collapsed' && 'justify-center', 'justify-start', className)} onClick={handleClick} {...props}>
-        {children}
+        {buttonContent}
       </Comp>
     )
 
@@ -291,5 +323,6 @@ export {
   SidebarMenuSeparator,
   SidebarProvider,
   SidebarTrigger,
+  SidebarToggle,
   useSidebar,
 }
