@@ -160,7 +160,7 @@ const SidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<"di
           {navItems.map((item, index) => (
             <React.Fragment key={item.id}>
               <SidebarMenuItem item={item} />
-              {(item.id === 'calendar' || item.id === 'admin') && <SidebarMenuSeparator />}
+              {(item.id === 'calendar' || (item.id === 'admin' && item.children && item.children.length > 0)) && <SidebarMenuSeparator />}
             </React.Fragment>
           ))}
         </SidebarMenu>
@@ -182,7 +182,6 @@ const SidebarMenuItem = React.forwardRef<HTMLLIElement, { item: NavItem } & Reac
     const { state, activeItem } = useSidebar();
     const hasChildren = item.children && item.children.length > 0;
     
-    // Check if the main item or any of its children is active
     const isActive = hasChildren 
         ? item.children.some(child => child.path && activeItem.startsWith(child.path)) 
         : (item.path ? (item.path === '/' ? activeItem === '/' : activeItem.startsWith(item.path)) : false);
@@ -190,13 +189,12 @@ const SidebarMenuItem = React.forwardRef<HTMLLIElement, { item: NavItem } & Reac
     if (hasChildren) {
       return (
         <li ref={ref} className={cn("group/menu-item relative space-y-1 pt-2", className)} {...props}>
-          {state === 'expanded' && (
+          {state === 'expanded' ? (
              <h4 className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-sidebar-foreground/70">
                  <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
                  {item.label}
              </h4>
-          )}
-          {state === 'collapsed' && (
+          ) : (
              <div className="my-2 h-px bg-white/10" />
           )}
             <ul className={cn("space-y-1", state === 'expanded' && "ml-4 pl-3 border-l border-white/10")}>
@@ -236,11 +234,11 @@ const sidebarMenuButtonVariants = cva(
   {
     variants: { 
       variant: { 
-          default: "text-sidebar-foreground hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground", 
-          ghost: "text-sidebar-foreground hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground" 
+          default: "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground", 
+          ghost: "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" 
       },
       size: { default: "h-11 text-base", sm: "h-9 text-sm", lg: "h-12 text-base" },
-      isActive: { true: "bg-sidebar-active-background text-sidebar-accent-foreground", false: "" }
+      isActive: { true: "bg-sidebar-accent text-sidebar-accent-foreground", false: "" }
     },
     defaultVariants: { variant: "ghost", size: "sm", isActive: false },
   }
@@ -295,3 +293,5 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
+    
