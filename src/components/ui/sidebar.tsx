@@ -90,8 +90,8 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       )}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out border-r backdrop-blur-xl shadow-xl",
-          "bg-sidebar-gradient-from text-sidebar-foreground",
+          "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out border-r border-sidebar-border backdrop-blur-xl shadow-xl",
+          "bg-gradient-to-b from-sidebar-gradient-from to-sidebar-gradient-to text-sidebar-foreground",
           isMobile ?
             `w-72 ${openMobile ? 'translate-x-0' : '-translate-x-full'}` :
             `${state === 'expanded' ? 'w-72' : 'w-20'}`
@@ -128,48 +128,37 @@ export const SidebarContent = () => {
 
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1">
-      {navItems.map((item) => (
-        <SidebarMenuItem key={item.id} item={item} />
-      ))}
+      {navItems.map((item) => {
+        if (item.children && item.children.length > 0) {
+          return (
+            <div key={item.id} className="pt-4">
+              <SidebarSectionHeader label={item.label} />
+              <div className="space-y-1 mt-2">
+                {item.children.map(child => <SidebarMenuItem key={child.id} item={child} />)}
+              </div>
+            </div>
+          );
+        }
+        return <SidebarMenuItem key={item.id} item={item} />;
+      })}
     </div>
   );
 };
 
+const SidebarSectionHeader = ({ label }: { label: string }) => {
+    const { state } = useSidebar();
+    if (state === 'collapsed') return <Separator className="my-3 bg-sidebar-border" />;
+    return <h2 className="px-4 text-xs font-semibold uppercase text-sidebar-foreground/60 tracking-wider">{label}</h2>
+}
+
+
 const SidebarMenuItem = ({ item }: { item: NavItem }) => {
     const { state, activeItem } = useSidebar();
-    const hasChildren = item.children && item.children.length > 0;
-
+    
     const isActive = useMemo(() => {
         if (!activeItem || !item.path) return false;
-        if (hasChildren) {
-          return item.children?.some(child => child.path && activeItem.startsWith(child.path)) || false;
-        }
         return activeItem.startsWith(item.path);
-    }, [activeItem, item.path, hasChildren, item.children]);
-    
-    if (hasChildren) {
-        return (
-            <Collapsible 
-              defaultOpen={isActive}
-              className="pt-2"
-            >
-              <CollapsibleTrigger className={cn(
-                "w-full flex items-center gap-3 px-4 py-2 text-sm font-semibold rounded-lg",
-                "text-sidebar-foreground/60 hover:text-sidebar-foreground/80",
-                state === 'collapsed' && 'justify-center px-0'
-              )}>
-                  <GradientIcon icon={item.icon || Shield} />
-                  {state === 'expanded' && <span className="flex-1 text-left whitespace-nowrap">{item.label}</span>}
-                  {state === 'expanded' && <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 [&[data-state=open]]:rotate-180" />}
-              </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-1 mt-1 data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden">
-                  {item.children?.map(child => (
-                      <SidebarMenuItem key={child.id} item={child} />
-                  ))}
-              </CollapsibleContent>
-            </Collapsible>
-        );
-    }
+    }, [activeItem, item.path]);
     
     const menuItemContent = (
         <div className={cn(
@@ -182,8 +171,12 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         </div>
     );
 
+    if (!item.path) {
+        return <div className="cursor-not-allowed">{menuItemContent}</div>
+    }
+
     return (
-        <Link href={item.path || '#'}>
+        <Link href={item.path}>
             {state === 'collapsed' ? (
                 <Tooltip>
                     <TooltipTrigger asChild>{menuItemContent}</TooltipTrigger>
