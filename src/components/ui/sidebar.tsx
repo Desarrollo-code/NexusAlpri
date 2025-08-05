@@ -62,21 +62,18 @@ const SidebarProvider = React.forwardRef<
     const pathname = usePathname();
     const [activeItem, setActiveItem] = React.useState(pathname);
 
-    // Default to expanded, will be updated by client-side effect
     const [isOpen, setIsOpen] = React.useState(true);
 
-    // Read cookie only on client-side to avoid SSR issues
     React.useEffect(() => {
         const cookieValue = document.cookie
             .split('; ')
             .find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
             ?.split('=')[1];
 
-        // Explicitly set state based on cookie or default to true
         if (cookieValue !== undefined) {
             setIsOpen(cookieValue === 'true');
         } else {
-            setIsOpen(true); // Default to expanded if no cookie
+            setIsOpen(true); 
         }
     }, []);
 
@@ -300,16 +297,20 @@ const SidebarMenuItem = React.forwardRef<
     return (
       <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-1">
         <li ref={ref} className={cn("group/menu-item relative", className)} {...props}>
-          <CollapsibleTrigger asChild>
-            <SidebarMenuButton
-                isActive={isActive}
-                tooltip={{ children: item.label }}
-            >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
-                <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
-                <ChevronsRight className={cn("sidebar-text h-4 w-4 transition-transform", isOpen && "rotate-90")} />
-            </SidebarMenuButton>
-          </CollapsibleTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+                <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                        isActive={isActive}
+                    >
+                        <item.icon className="h-5 w-5 flex-shrink-0" />
+                        <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
+                        <ChevronsRight className={cn("sidebar-text h-4 w-4 transition-transform", isOpen && "rotate-90")} />
+                    </SidebarMenuButton>
+                </CollapsibleTrigger>
+            </TooltipTrigger>
+            {state === 'collapsed' && <TooltipContent side="right">{item.label}</TooltipContent>}
+          </Tooltip>
         </li>
         <CollapsibleContent className="sidebar-text space-y-1 ml-4 pl-4 border-l border-sidebar-border/20">
             {item.children?.map(child => (
@@ -395,7 +396,6 @@ const SidebarMenuButton = React.forwardRef<
     const { isMobile, state, activeItem, setOpenMobile } = useSidebar();
     const href = asChild && (children as React.ReactElement)?.props.href;
     
-    // Determine if the item is active
     const finalIsActive = isActive ?? (href ? (href === '/' ? activeItem === '/' : activeItem.startsWith(href)) : false);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

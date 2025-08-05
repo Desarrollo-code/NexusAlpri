@@ -22,7 +22,6 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TopBar } from '@/components/layout/top-bar';
 
-// Este componente envuelve toda la lógica del layout autenticado.
 function AppLayout({ children }: { children: React.ReactNode }) {
     const { user, settings, logout, isLoading } = useAuth();
     const { toast } = useToast();
@@ -64,10 +63,10 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                       </div>
                 </SidebarHeader>
 
-                 <div className="p-4 sidebar-text">
+                 <div className="p-4">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input type="text" id="sidebar-search" name="sidebar-search" placeholder="Buscar..." className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 h-9" />
+                      <Input type="text" id="sidebar-search" name="sidebar-search" placeholder="Buscar..." className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 h-9 sidebar-text" />
                     </div>
                   </div>
                 
@@ -81,10 +80,10 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                                 {user.name.split(' ').map(n => n[0]).join('')}
                             </AvatarFallback>
                         </Avatar>
-                      <div className="sidebar-text flex-1 overflow-hidden">
-                        <p className="text-white text-sm font-medium truncate">{user.name}</p>
-                        <p className="text-gray-400 text-xs capitalize truncate">{user.role.toLowerCase()}</p>
-                      </div>
+                        <div className="sidebar-text flex-1 overflow-hidden">
+                            <p className="text-white text-sm font-medium truncate">{user.name}</p>
+                            <p className="text-gray-400 text-xs capitalize truncate">{user.role.toLowerCase()}</p>
+                        </div>
                     </div>
                     <Button onClick={logout} className="w-full text-red-300 hover:text-red-200 hover:bg-red-900/20 justify-start gap-3 p-3 h-auto">
                         <LogOut className="h-5 w-5 flex-shrink-0" />
@@ -93,21 +92,19 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarFooter>
             </Sidebar>
 
-            <div className="hidden lg:block">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    className={cn(
-                        "fixed top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-background/70 backdrop-blur-sm text-foreground/80 hover:bg-background hover:text-foreground border transition-all duration-300 ease-in-out z-50",
-                        "hover:scale-110 active:scale-95",
-                         state === "expanded" ? "left-[calc(theme(width.72)-1.125rem)]" : "left-[calc(theme(width.20)-1.125rem)]"
-                    )}
-                    onClick={toggleSidebar}
-                    aria-label="Alternar barra lateral"
-                >
-                    <ChevronsLeft className={cn("h-5 w-5 transition-transform", state === "collapsed" && "rotate-180")} />
-                </Button>
-            </div>
+            <Button
+                variant="outline"
+                size="icon"
+                className={cn(
+                    "fixed top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-background/70 backdrop-blur-sm text-foreground/80 hover:bg-background hover:text-foreground border transition-all duration-300 ease-in-out z-50",
+                    "hover:scale-110 active:scale-95 hidden lg:flex", // Oculto en móvil
+                    state === "expanded" ? "left-[calc(theme(width.72)-1.125rem)]" : "left-[calc(theme(width.20)-1.125rem)]"
+                )}
+                onClick={toggleSidebar}
+                aria-label="Alternar barra lateral"
+            >
+                <ChevronsLeft className={cn("h-5 w-5 transition-transform", state === "collapsed" && "rotate-180")} />
+            </Button>
             
             <div className={cn(
                   "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
