@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 @layer base {
+  /* --- TEMA CLARO (POR DEFECTO) --- */
   :root {
-    /* Fondo y texto principal */
     --background: 220 20% 96%;
     --foreground: 224 71.4% 4.1%;
 
@@ -35,22 +35,20 @@
 
     --radius: 0.75rem;
 
-    /* Paleta de la barra lateral mejorada */
-    --sidebar-gradient-from: 240 10% 15%; /* Azul noche oscuro */
-    --sidebar-gradient-to: 260 12% 20%;   /* Morado oscuro */
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-active-background: hsl(255 100% 67% / 0.1);
-    --sidebar-accent: hsl(255 100% 75%); /* Magenta/Púrpura neón */
+    /* 🎨 Colores vivos para la barra lateral */
+    --sidebar-background: 230 15% 12%; /* Azul oscuro moderno */
+    --sidebar-foreground: 220 20% 98%;
+    --sidebar-accent: 10 80% 60%;    /* Púrpura vibrante */
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 225 10% 25%;
-    --sidebar-ring: hsl(var(--primary));
+    --sidebar-border: 230 10% 20%;
+    --sidebar-ring: 260 80% 60%;
 
-    /* Paleta vibrante */
+    /* Paleta de Colores para Gráficos y Eventos */
     --chart-1: 210 90% 55%;
     --chart-2: 150 75% 45%;
     --chart-3: 330 90% 65%;
     --chart-4: 30 100% 60%;
-    --chart-5: 200 100% 50%;
+    --chart-5: 270 90% 65%;
 
     --event-blue: 200 81% 56%;
     --event-green: 139 51% 51%;
@@ -62,6 +60,7 @@
     --gauge-red: 0 85% 60%;
   }
 
+  /* --- TEMA OSCURO --- */
   .dark {
     --background: 225 10% 12%;
     --foreground: 210 20% 98%;
@@ -90,20 +89,18 @@
     --border: 225 10% 25%;
     --input: 225 10% 25%;
     --ring: 220 90% 60%;
-    
-    /* Paleta de la barra lateral mejorada para modo oscuro */
-    --sidebar-gradient-from: 240 10% 15%; /* Azul noche oscuro */
-    --sidebar-gradient-to: 260 12% 20%;   /* Morado oscuro */
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-active-background: hsl(255 100% 67% / 0.1);
-    --sidebar-accent: hsl(255 100% 75%); /* Magenta/Púrpura neón */
+
+    --sidebar-background: 230 15% 10%;
+    --sidebar-foreground: 220 20% 98%;
+    --sidebar-accent: 260 80% 60%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 225 10% 25%;
+    --sidebar-border: 230 10% 18%;
   }
 
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -118,13 +115,13 @@
   .sidebar-text {
     @apply transition-opacity duration-200 whitespace-nowrap;
   }
+
   .group\/sidebar-wrapper[data-state='collapsed'] .sidebar-text {
     @apply opacity-0 pointer-events-none;
   }
-  
-  .sidebar-footer {
-    @apply flex flex-col items-center justify-center gap-4 p-4;
-    height: 120px;
+
+  .group\/sidebar-wrapper[data-state='collapsed'] .group\/menu-item .justify-start {
+    @apply justify-center;
   }
 
   .watermark-img {
@@ -161,13 +158,16 @@
     width: 6px;
     height: 6px;
   }
+
   .thin-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
+
   .thin-scrollbar::-webkit-scrollbar-thumb {
     background-color: hsl(var(--border));
     border-radius: 20px;
   }
+
   .thin-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--muted-foreground));
   }
