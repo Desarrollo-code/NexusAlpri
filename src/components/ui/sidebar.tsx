@@ -20,6 +20,7 @@ import {
 import type { NavItem } from "@/types";
 import { getNavItemsForRole } from "@/lib/nav-items";
 import { useAuth } from "@/contexts/auth-context";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 days in seconds
@@ -251,7 +252,7 @@ const SidebarContent = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex min-h-0 flex-1 flex-col overflow-auto px-4 py-2 space-y-2", className)}
+      className={cn("flex min-h-0 flex-1 flex-col overflow-auto px-4 py-2 space-y-1", className)}
       {...props}
     >
         <SidebarMenu>
@@ -280,20 +281,42 @@ const SidebarMenuItem = React.forwardRef<
   HTMLLIElement,
   { item: NavItem } & React.ComponentProps<"li">
 >(({ className, item, ...props }, ref) => {
-  const { state } = useSidebar();
+  const { state, activeItem } = useSidebar();
   const hasChildren = item.children && item.children.length > 0;
+  
+  const isActive = hasChildren 
+    ? item.children.some(child => child.path && activeItem.startsWith(child.path))
+    : (item.path ? (item.path === '/' ? activeItem === '/' : activeItem.startsWith(item.path)) : false);
+
+  const [isOpen, setIsOpen] = React.useState(isActive);
+
+  React.useEffect(() => {
+    if (state === 'collapsed') {
+      setIsOpen(false);
+    }
+  }, [state]);
 
   if (hasChildren) {
     return (
-      <li ref={ref} className={cn("group/menu-item relative", className)} {...props}>
-        <SidebarMenuButton
-            tooltip={{ children: item.label }}
-        >
-            <item.icon className="h-5 w-5 flex-shrink-0" />
-            <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
-            <ChevronsRight className="sidebar-text h-4 w-4 transition-transform group-data-[state=open]:rotate-90" />
-        </SidebarMenuButton>
-      </li>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-1">
+        <li ref={ref} className={cn("group/menu-item relative", className)} {...props}>
+          <CollapsibleTrigger asChild>
+            <SidebarMenuButton
+                isActive={isActive}
+                tooltip={{ children: item.label }}
+            >
+                <item.icon className="h-5 w-5 flex-shrink-0" />
+                <span className="sidebar-text flex-1 text-left font-medium">{item.label}</span>
+                <ChevronsRight className={cn("sidebar-text h-4 w-4 transition-transform", isOpen && "rotate-90")} />
+            </SidebarMenuButton>
+          </CollapsibleTrigger>
+        </li>
+        <CollapsibleContent className="sidebar-text space-y-1 ml-4 pl-4 border-l border-sidebar-border/20">
+            {item.children?.map(child => (
+                <SidebarMenuItem key={child.id} item={child} />
+            ))}
+        </CollapsibleContent>
+      </Collapsible>
     )
   }
 
@@ -371,7 +394,8 @@ const SidebarMenuButton = React.forwardRef<
     const Comp = asChild ? Slot : "button"
     const { isMobile, state, activeItem, setOpenMobile } = useSidebar();
     const href = asChild && (children as React.ReactElement)?.props.href;
-
+    
+    // Determine if the item is active
     const finalIsActive = isActive ?? (href ? (href === '/' ? activeItem === '/' : activeItem.startsWith(href)) : false);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
