@@ -54,11 +54,6 @@ export function PublicTopBar() {
                         NexusAlpri
                     </span>
                 </Link>
-                 <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
-                        <X className="h-5 w-5" />
-                    </Button>
-                </SheetTrigger>
             </div>
             <div className="p-4">
               <nav className="grid gap-4 text-lg font-medium">
