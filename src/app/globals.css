@@ -40,42 +40,42 @@
     --event-red: 0 100% 60%;
     --event-orange: 25 100% 55%;
 
-    /* 🌌 Barra Lateral y Superior FIJA "Aurora Cósmica" (para ambos temas) */
-    --sidebar-gradient-from: 260 100% 15%; /* Morado oscuro */
-    --sidebar-gradient-to: 330 100% 25%;   /* Magenta profundo */
+    /* 🌌 Barra Lateral FIJA "Nebulosa Esmeralda" (para ambos temas) */
+    --sidebar-gradient-from: 158 95% 10%; /* Verde Esmeralda Oscuro */
+    --sidebar-gradient-to: 184 95% 20%;   /* Cian Profundo */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-active-background: 330 100% 50% / 0.1; /* Fondo magenta sutil */
-    --sidebar-accent-foreground: 330 100% 80%; /* Rosa neón brillante para texto e iconos activos */
+    --sidebar-active-background: 170 100% 45% / 0.1; /* Fondo turquesa sutil */
+    --sidebar-accent-foreground: 170 100% 75%; /* Turquesa brillante para texto e iconos activos */
     --sidebar-border: 0 0% 100% / 0.1;
-    --sidebar-ring: 330 100% 70%;
+    --sidebar-ring: 170 100% 65%;
   }
 
   .dark {
-    /* 🌌 Tema Oscuro: "Aurora Cósmica" */
+    /* 🌌 Tema Oscuro: "Nebulosa Esmeralda" */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 262 83% 68%; /* Índigo Neón */
+    --primary: 170 85% 65%; /* Turquesa Neón */
     --primary-foreground: 0 0% 100%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 340 82% 71%; /* Rosa Neón */
+    --accent: 150 82% 71%; /* Verde Neón */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 262 83% 68%;
+    --ring: 170 85% 65%;
 
     /* 📊 Gráficos y Eventos (Oscuro) */
-    --chart-1: 262 83% 68%;
-    --chart-2: 340 82% 71%;
-    --chart-3: 160 80% 55%;
+    --chart-1: 170 85% 65%;
+    --chart-2: 150 82% 71%;
+    --chart-3: 190 80% 55%;
     --chart-4: 35 100% 65%;
     --chart-5: 220 100% 70%;
     --event-blue: 210 100% 70%;

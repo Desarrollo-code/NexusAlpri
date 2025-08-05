@@ -90,7 +90,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out backdrop-blur-xl shadow-xl",
-          "bg-gradient-to-b from-sidebar-gradient-from to-sidebar-gradient-to text-sidebar-foreground", // Estilo unificado
+          "bg-gradient-to-b from-sidebar-gradient-from to-sidebar-gradient-to text-sidebar-foreground",
           "border-r border-sidebar-border rounded-r-2xl",
           isMobile ?
             `w-72 ${openMobile ? 'translate-x-0' : '-translate-x-full'}` :
@@ -166,7 +166,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
             "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item",
             isActive
               ? "bg-sidebar-active-background text-sidebar-accent-foreground shadow-md"
-              : "text-sidebar-foreground/90 hover:bg-sidebar-active-background",
+              : "text-sidebar-foreground/90 hover:bg-sidebar-active-background hover:text-sidebar-accent-foreground",
             state === 'collapsed' && 'justify-center'
         )}>
             <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color}/>
