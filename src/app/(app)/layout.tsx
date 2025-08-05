@@ -65,7 +65,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarHeader>
                      <div className="flex items-center gap-3 overflow-hidden">
                         <div className="w-10 h-10 bg-gradient-to-br from-primary to-black-600 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
-                           <Image src="/uploads/images/logo-nexusalpri.png" alt="NexusAlpri Logo" width={40} height={40} data-ai-hint="logo letter" />
+                           <Image src="/uploads/images/logo-nexusalpri.png" alt="NexusAlpri Logo" width={40} height={40} className="w-auto h-auto" data-ai-hint="logo letter" />
                         </div>
                         <span className="sidebar-text text-white text-xl font-bold">NexusAlpri</span>
                       </div>
@@ -98,7 +98,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 size="icon"
                 className={cn(
                     "fixed top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-background/70 backdrop-blur-sm text-foreground/80 hover:bg-background hover:text-foreground border transition-all duration-300 ease-in-out z-50",
-                    "hover:scale-110 active:scale-95 hidden lg:flex", // Oculto en móvil
+                    "hover:scale-110 active:scale-95 hidden lg:flex",
                     state === "expanded" ? "left-[calc(theme(width.72)-1.125rem)]" : "left-[calc(theme(width.20)-1.125rem)]"
                 )}
                 onClick={toggleSidebar}

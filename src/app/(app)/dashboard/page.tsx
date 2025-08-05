@@ -149,7 +149,6 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
               </CardHeader>
               <CardContent className="h-[350px] p-0 pr-4">
                   <ChartContainer config={activityChartConfig} className="w-full h-full">
-                    <ResponsiveContainer>
                       <ComposedChart data={stats.courseActivity} margin={{ top: 20, right: 20, bottom: 40, left: 0 }}>
                           <CartesianGrid vertical={false} strokeDasharray="3 3"/>
                           <XAxis 
@@ -174,7 +173,6 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                           <Bar dataKey="publishedCourses" name="Cursos Publicados" fill="var(--color-publishedCourses)" radius={[4, 4, 0, 0]} barSize={20} />
                           <Bar dataKey="newEnrollments" name="Nuevas Inscripciones" fill="var(--color-newEnrollments)" radius={[4, 4, 0, 0]} barSize={20} />
                       </ComposedChart>
-                    </ResponsiveContainer>
                   </ChartContainer>
               </CardContent>
             </Card>
