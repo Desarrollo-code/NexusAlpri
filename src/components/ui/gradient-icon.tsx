@@ -1,4 +1,3 @@
-
 'use client';
 
 import { cn } from "@/lib/utils";
@@ -39,12 +38,11 @@ export const GradientIcon = ({
       className={cn(
         sizeClasses[size],
         "transition-colors duration-200",
-        // El hover solo aplica si no hay un color personalizado
         !color && "group-hover/menu-item:text-sidebar-accent-foreground",
         isActive && !color && "text-sidebar-accent-foreground",
         className
       )}
-      stroke={iconColor}
+      style={{ color: iconColor }} // ✅ Aquí el cambio clave
       {...props}
     />
   );
