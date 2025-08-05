@@ -224,7 +224,7 @@ const SidebarMenuSeparator = React.forwardRef<HTMLDivElement, React.ComponentPro
   ({ className, ...props }, ref) => {
     const { state } = useSidebar();
     if (state === 'collapsed') return null;
-    return <div ref={ref} className={cn("my-2 h-px bg-white/10", className)} {...props} />;
+    return <div ref={ref} className={cn("my-2 h-px bg-sidebar-border", className)} {...props} />;
   }
 )
 SidebarMenuSeparator.displayName = "SidebarMenuSeparator"

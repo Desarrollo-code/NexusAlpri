@@ -77,9 +77,8 @@ export default {
         },
         sidebar: {
           foreground: 'hsl(var(--sidebar-foreground))',
-          accent: 'hsl(var(--sidebar-accent))',
-          'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
           'active-background': 'hsl(var(--sidebar-active-background))',
+          'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
           'gradient-from': 'hsl(var(--sidebar-gradient-from))',

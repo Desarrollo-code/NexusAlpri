@@ -36,13 +36,14 @@
 
     --radius: 0.75rem;
 
-    /* Nuevas variables para la barra lateral */
-    --sidebar-background: 225 15% 15%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-accent: hsl(225 15% 25%);
-    --sidebar-accent-foreground: hsl(0 0% 100%);
-    --sidebar-border: hsl(225 15% 25%);
-    --sidebar-ring: hsl(var(--primary));
+    /* --- PALETA FIJA "AURORA NOCTURNA" PARA LA BARRA LATERAL --- */
+    --sidebar-gradient-from: 160 50% 18%; /* Verde Esmeralda Oscuro */
+    --sidebar-gradient-to: 230 40% 22%; /* Azul Noche Intenso */
+    --sidebar-foreground: 210 20% 98%; /* Blanco casi puro */
+    --sidebar-active-background: hsl(185 90% 70% / 0.1); /* Resplandor Cian */
+    --sidebar-accent-foreground: 185 90% 70%; /* Cian Eléctrico */
+    --sidebar-border: hsl(0 0% 100% / 0.1); /* Borde tipo cristal */
+    --sidebar-ring: hsl(185 90% 70%);
     
     /* Paleta de Colores para Gráficos y Eventos (Vibrante) */
     --chart-1: 210 90% 55%; /* Azul Vibrante */
@@ -91,12 +92,7 @@
     --input: 225 10% 25%;
     --ring: 220 90% 60%;
     
-    /* Sobrescribir colores de la barra lateral para el tema oscuro */
-    --sidebar-background: 225 10% 15%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-accent: hsl(225 10% 25%);
-    --sidebar-accent-foreground: hsl(0 0% 100%);
-    --sidebar-border: hsl(225 10% 25%);
+    /* Las variables de la barra lateral no se redefinen aquí, por lo que se mantienen fijas. */
   }
 
   * {
