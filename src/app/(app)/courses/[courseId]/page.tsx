@@ -190,7 +190,7 @@ export default function CourseDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [courseId, user]);
+  }, [courseId, user, isCreatorViewingCourse, recordInteraction]);
 
   useEffect(() => {
     fetchCourseAndProgress();
@@ -529,3 +529,5 @@ export default function CourseDetailPage() {
     </div>
   );
 }
+
+    

@@ -1,3 +1,4 @@
+
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -168,7 +169,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                                     <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 -mr-2 text-muted-foreground" aria-label={`Opciones para ${resource.title}`}><MoreVertical className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                    {!isFolder && <DropdownMenuItem onClick={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>}
+                                    {!isFolder && <DropdownMenuItem onClick={()=> onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>}
                                     <DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -249,7 +250,7 @@ export default function ResourcesPage() {
   useEffect(() => {
     const newBreadcrumbs = currentFolderId === null ? [] : breadcrumbs;
     setBreadcrumbs(newBreadcrumbs);
-  }, [currentFolderId]);
+  }, [currentFolderId, breadcrumbs]);
 
 
   // --- Event Handlers ---
@@ -419,11 +420,11 @@ export default function ResourcesPage() {
         </Card>
 
         <div className="flex items-center text-sm text-muted-foreground mb-4">
-            <button onClick={() => handleBreadcrumbClick(null, -1)} className="hover:text-primary flex items-center gap-1 shrink-0"><Home className="h-4 w-4"/> Biblioteca</button>
+            <button onClick={() => handleBreadcrumbClick(null, -1)} className="hover:text-primary flex items-center gap-1"><Home className="h-4 w-4"/> Biblioteca</button>
             {breadcrumbs.map((crumb, index) => (
             <React.Fragment key={crumb.id || 'root'}>
-                <ChevronRight className="h-4 w-4 mx-1 shrink-0" />
-                <button onClick={() => handleBreadcrumbClick(crumb.id, index)} className="hover:text-primary shrink-0 truncate">{crumb.title}</button>
+                <ChevronRight className="h-4 w-4 mx-1" />
+                <button onClick={() => handleBreadcrumbClick(crumb.id, index)} className="hover:text-primary truncate">{crumb.title}</button>
             </React.Fragment>
             ))}
         </div>
@@ -483,7 +484,10 @@ export default function ResourcesPage() {
                 <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
                 <AlertDialogDescription>El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. {resourceToDelete?.type === 'FOLDER' && 'Todos los archivos dentro también serán eliminados.'}</AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteResource} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction></AlertDialogFooter>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteResource} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
+            </AlertDialogFooter>
           </AlertDialogContent>
       </AlertDialog>
       
@@ -519,3 +523,5 @@ export default function ResourcesPage() {
     </div>
   );
 }
+
+    

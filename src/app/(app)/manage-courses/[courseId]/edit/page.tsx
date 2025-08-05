@@ -610,19 +610,19 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                                 <button type="button" onClick={() => setIsExpanded(!isExpanded)} className="flex items-center justify-between w-full text-left">
                                   <div className="flex items-center gap-2">
                                      <BookOpenText className="h-4 w-4 text-primary" />
-                                     <Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.title` as const)} className="text-sm font-medium h-9 w-full border-none p-0 focus-visible:ring-0" placeholder="Título de la lección" disabled={isSaving} />
+                                     <Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.title` as const)} className="text-sm font-medium h-9 w-full border-none p-0 focus-visible:ring-0" placeholder="Título de la lección" disabled={isSaving} onClick={(e) => e.stopPropagation()} />
                                   </div>
                                   <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isExpanded && "rotate-180")} />
                                 </button>
                             </div>
                         </div>
                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
                                     <MoreVertical className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                 <DropdownMenuItem onClick={() => { setTemplateName(getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.title`)); setShowSaveTemplateModal(true); }}>
                                     <Copy className="mr-2 h-4 w-4" /> Guardar como Plantilla
                                 </DropdownMenuItem>
@@ -1414,13 +1414,24 @@ export default function EditCoursePage() {
                 </Dialog>
                 <AlertDialog open={itemToDeleteDetails !== null} onOpenChange={setItemToDeleteDetails as any}>
                     <AlertDialogContent>
-                        <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro de que quieres eliminar {itemToDeleteDetails?.type} "<strong>{itemToDeleteDetails?.name}</strong>"? Se eliminará al guardar los cambios del curso.</AlertDialogDescription></AlertDialogHeader>
-                        <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel onClick={() => setItemToDeleteDetails(null)}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={confirmDeleteItemAction} className={buttonVariants({ variant: "destructive" })}><Trash2 className="mr-2 h-4 w-4" /> Sí, eliminar</AlertDialogAction></AlertDialogFooter>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
+                            <AlertDialogDescription>¿Estás seguro de que quieres eliminar {itemToDeleteDetails?.type} "<strong>{itemToDeleteDetails?.name}</strong>"? Se eliminará al guardar los cambios del curso.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+                            <AlertDialogCancel onClick={() => setItemToDeleteDetails(null)}>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={confirmDeleteItemAction} className={buttonVariants({ variant: "destructive" })}>
+                                <Trash2 className="mr-2 h-4 w-4" /> Sí, eliminar
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
                 <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                     <AlertDialogContent>
-                        <AlertDialogHeader><AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle><AlertDialogDescription>Esta acción no se puede deshacer. Se eliminará permanentemente el curso "<strong>{methods.getValues('title' as 'title')}</strong>" y todos sus datos (módulos, lecciones, inscripciones, progreso).</AlertDialogDescription></AlertDialogHeader>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                            <AlertDialogDescription>Esta acción no se puede deshacer. Se eliminará permanentemente el curso "<strong>{methods.getValues('title' as 'title')}</strong>" y todos sus datos (módulos, lecciones, inscripciones, progreso).</AlertDialogDescription>
+                        </AlertDialogHeader>
                         <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
                             <AlertDialogCancel onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>Cancelar</AlertDialogCancel>
                             <AlertDialogAction onClick={handleDeleteCourse} disabled={isDeleting} className={buttonVariants({ variant: "destructive" })}>{isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar permanentemente</AlertDialogAction>
@@ -1438,3 +1449,5 @@ export default function EditCoursePage() {
         </FormProvider>
     );
 }
+
+    
