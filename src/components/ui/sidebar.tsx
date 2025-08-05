@@ -90,7 +90,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out backdrop-blur-xl shadow-xl",
-          "bg-gradient-to-b from-sidebar-gradient-from to-sidebar-gradient-to text-sidebar-foreground",
+          "bg-gradient-to-b from-sidebar-gradient-from to-sidebar-gradient-to",
           "border-r border-sidebar-border rounded-r-2xl", // Bordes redondeados
           isMobile ?
             `w-72 ${openMobile ? 'translate-x-0' : '-translate-x-full'}` :
@@ -115,7 +115,7 @@ export const SidebarHeader = () => {
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo" />
         </div>
         {state === 'expanded' && (
-          <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap">NexusAlpri</span>
+          <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-sidebar-foreground">NexusAlpri</span>
         )}
       </Link>
     </div>
@@ -164,7 +164,9 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
     const menuItemContent = (
         <div className={cn(
             "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item",
-            isActive ? "bg-sidebar-active-background text-sidebar-accent-foreground shadow-md" : "hover:bg-sidebar-active-background text-sidebar-foreground/90",
+            isActive
+              ? "bg-sidebar-active-background text-sidebar-accent-foreground shadow-md"
+              : "text-sidebar-foreground/90 hover:bg-sidebar-active-background",
             state === 'collapsed' && 'justify-center'
         )}>
             <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color}/>
@@ -203,7 +205,7 @@ export const SidebarFooter = () => {
   };
 
   return (
-    <div className="p-4 border-t border-sidebar-border mt-auto bg-black/20">
+    <div className="p-4 border-t border-sidebar-border mt-auto bg-black/20 text-sidebar-foreground">
       <div className={cn("flex items-center", state === 'expanded' ? 'gap-3' : 'justify-center')}>
         <Avatar className="h-10 w-10 flex-shrink-0">
           <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar"/>
