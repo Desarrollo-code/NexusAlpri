@@ -64,7 +64,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     <>
       <Sidebar>
         <SidebarHeader>
-          <div className="flex items-center gap-3 overflow-hidden">
+          <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
              <div className="w-10 h-10 bg-black/20 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
                 <Image
                     src="/uploads/images/logo-letter.png"
@@ -72,10 +72,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                     width={28}
                     height={28}
                     className="w-auto h-auto"
+                    data-ai-hint="logo"
                 />
             </div>
             <span className="sidebar-text text-sidebar-foreground text-xl font-bold font-headline">NexusAlpri</span>
-          </div>
+          </Link>
         </SidebarHeader>
 
         <SidebarContent />
