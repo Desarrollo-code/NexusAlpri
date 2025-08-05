@@ -12,7 +12,7 @@ export default function LandingPage() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
                   <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                    <span className="bg-gradient-to-r from-primary via-purple-500 to-pink-500 text-transparent bg-clip-text">
+                    <span className="bg-gradient-to-r from-primary via-orange-500 to-red-500 text-transparent bg-clip-text">
                         Despierta tu Potencial.
                     </span>
                     <br />

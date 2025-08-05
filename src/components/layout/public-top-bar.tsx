@@ -16,7 +16,7 @@ export function PublicTopBar() {
     )}>
       <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
         <Image src="/uploads/images/logo-nexusalpri.png" alt="NexusAlpri Logo" width={48} height={48} data-ai-hint="logo"/>
-        <span className="text-3xl font-semibold font-headline-alt bg-gradient-to-r from-primary to-purple-500 text-transparent bg-clip-text">
+        <span className="text-3xl font-semibold font-headline-alt bg-gradient-to-r from-primary to-blue-500 text-transparent bg-clip-text">
           NexusAlpri
         </span>
       </Link>

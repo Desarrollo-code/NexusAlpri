@@ -128,7 +128,7 @@ export default function SignUpPage() {
     
       <Card className="shadow-lg">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-primary to-orange-600 rounded-lg flex items-center justify-center shadow-lg">
               <UserPlus className="w-8 h-8 text-white" />
           </div>
           <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
