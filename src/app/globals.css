@@ -38,7 +38,7 @@
     --event-red: 0 100% 58%;
     --event-orange: 25 100% 50%;
 
-    /* 🌌 Barra lateral fija */
+    /* 🌌 Barra lateral fija (siempre oscura) */
     --sidebar-gradient-from: 158 95% 15%;
     --sidebar-gradient-to: 190 95% 25%;
     --sidebar-foreground: 0 0% 100%;
@@ -46,6 +46,11 @@
     --sidebar-accent-foreground: 170 100% 75%;
     --sidebar-border: 0 0% 100% / 0.12;
     --sidebar-ring: 170 100% 65%;
+    
+    /* 🌊 Barra Superior Privada (siempre oscura) */
+    --topbar-gradient-from: 210 95% 20%;
+    --topbar-gradient-to: 230 95% 30%;
+
   }
 
   .dark {

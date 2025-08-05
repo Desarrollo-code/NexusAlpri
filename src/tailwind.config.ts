@@ -84,6 +84,10 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+         topbar: {
+          'gradient-from': 'hsl(var(--topbar-gradient-from))',
+          'gradient-to': 'hsl(var(--topbar-gradient-to))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
