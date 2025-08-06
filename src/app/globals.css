@@ -7,84 +7,74 @@
   :root {
     --radius: 0.75rem;
 
-    /* 🎨 Paleta de Colores Vibrantes (Claro) */
+    /* 🎨 Paleta "Océano Esmeralda" (Claro) */
     --background: 0 0% 100%;
     --foreground: 224 71.4% 4.1%;
     --card: 0 0% 100%;
     --card-foreground: 224 71.4% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
-    --primary: 217 91.2% 59.8%; /* Azul Vibrante */
+    --primary: 180 90% 40%; /* Cian/Turquesa Intenso */
     --primary-foreground: 0 0% 100%;
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
-    --accent: 330 84.2% 54.1%; /* Rosa Intenso */
+    --accent: 158 80% 45%; /* Verde Esmeralda */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 217 91.2% 59.8%;
+    --ring: 180 90% 45%;
     
     /* 📊 Gráficos y Eventos (Claro) */
-    --chart-1: 30 95% 58%;    /* Naranja */
-    --chart-2: 60 95% 55%;    /* Amarillo */
-    --chart-3: 150 75% 45%;   /* Verde */
-    --chart-4: 180 90% 45%;   /* Cian */
+    --chart-1: 180 90% 40%;   /* Cian Principal */
+    --chart-2: 158 80% 45%;   /* Verde Esmeralda */
+    --chart-3: 217 91% 59%;   /* Azul */
+    --chart-4: 30 95% 58%;    /* Naranja */
     --chart-5: 270 90% 60%;   /* Púrpura */
-    --event-blue: 240 100% 50%;
-    --event-green: 120 100% 45%;
-    --event-red: 0 100% 50%;
-    --event-orange: 30 100% 50%;
 
-    /* 🌌 Barra lateral fija (siempre oscura) */
-    --sidebar-gradient-from: 158 95% 15%;
-    --sidebar-gradient-to: 190 95% 25%;
+    /* 🌌 Barra lateral y superior */
+    --sidebar-gradient-from: 180 95% 20%;
+    --sidebar-gradient-to: 158 95% 30%;
+    --topbar-gradient-from: 158 80% 45%;
+    --topbar-gradient-to: 180 90% 40%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-active-background: 170 100% 45% / 0.12;
     --sidebar-accent-foreground: 170 100% 75%;
     --sidebar-border: 0 0% 100% / 0.12;
     --sidebar-ring: 170 100% 65%;
-    
-    /* 🌌 Barra Superior Privada - Cielo Galáctico */
-    --topbar-gradient-from: 270 90% 60%;   /* Púrpura */
-    --topbar-gradient-to: 217 91.2% 59.8%; /* Azul Vibrante */
   }
 
   .dark {
-    /* 🌚 Tema Oscuro "Aurora Cósmica" */
-    --background: 220 20% 8%; /* Azul muy oscuro */
+    /* 🌚 Tema Oscuro "Océano Esmeralda" */
+    --background: 210 20% 10%; /* Azul noche oscuro */
     --foreground: 0 0% 98%;
-    --card: 220 20% 12%;
+    --card: 210 20% 14%;
     --card-foreground: 0 0% 98%;
-    --popover: 220 20% 8%;
+    --popover: 210 20% 10%;
     --popover-foreground: 0 0% 98%;
     --primary: 180 100% 50%; /* Cian Neón */
-    --primary-foreground: 220 20% 8%;
-    --secondary: 220 20% 18%;
+    --primary-foreground: 210 20% 10%;
+    --secondary: 210 20% 20%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 220 20% 18%;
-    --muted-foreground: 240 4% 65%;
-    --accent: 330 100% 50%; /* Rosa Neón */
+    --muted: 210 20% 20%;
+    --muted-foreground: 210 5% 65%;
+    --accent: 158 80% 45%; /* Verde Esmeralda */
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 80% 55%;
+    --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 20% 20%;
-    --input: 220 20% 20%;
+    --border: 210 20% 25%;
+    --input: 210 20% 25%;
     --ring: 180 100% 50%;
 
     /* 📊 Gráficos y Eventos (Oscuro Vibrante) */
-    --chart-1: 270 90% 60%;   /* Púrpura */
-    --chart-2: 240 100% 60%;  /* Azul */
-    --chart-3: 180 90% 45%;   /* Cian */
-    --chart-4: 150 75% 45%;   /* Verde */
-    --chart-5: 60 95% 55%;    /* Amarillo */
-    --event-blue: 240 100% 60%;
-    --event-green: 120 100% 45%;
-    --event-red: 0 80% 55%;
-    --event-orange: 30 100% 50%;
+    --chart-1: 180 100% 50%; /* Cian Neón */
+    --chart-2: 158 80% 45%;  /* Verde Esmeralda */
+    --chart-3: 217 91% 60%;  /* Azul Eléctrico */
+    --chart-4: 30 100% 55%;  /* Naranja Vívido */
+    --chart-5: 270 90% 65%;  /* Púrpura */
   }
 
   * {
