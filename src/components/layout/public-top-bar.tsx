@@ -11,8 +11,9 @@ import { cn } from '@/lib/utils';
 export function PublicTopBar() {
   return (
     <header className={cn(
-        "px-4 lg:px-6 h-20 flex items-center sticky top-0 z-50",
-        "bg-background/80 backdrop-blur-lg border-b"
+        "px-4 lg:px-6 h-20 items-center sticky top-0 z-50",
+        "bg-background/80 backdrop-blur-lg border-b",
+        "hidden md:flex" // Oculto en móvil, visible como flex en mediano y superior
     )}>
       <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
         <Image src="/uploads/images/logo-nexusalpri.png" alt="NexusAlpri Logo" width={48} height={48} data-ai-hint="logo"/>
