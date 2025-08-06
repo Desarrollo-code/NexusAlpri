@@ -14,7 +14,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
 import { getNavItemsForRole } from "@/lib/nav-items";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -33,19 +32,13 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const [activeItem, setActiveItem] = React.useState(pathname);
-  const [isCollapsed, setIsCollapsed] = React.useState(isMobile);
   const [openMobile, setOpenMobile] = React.useState(false);
-
-  React.useEffect(() => {
-      setIsCollapsed(isMobile);
-  }, [isMobile]);
 
   const toggleSidebar = () => {
     if (isMobile) {
       setOpenMobile(prev => !prev);
-    } else {
-      setIsCollapsed(prev => !prev);
     }
+    // No action on desktop as it's always expanded
   };
 
   React.useEffect(() => {
@@ -59,7 +52,6 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
   }, [pathname, isMobile]);
   
   const value = {
-    isCollapsed,
     isMobile,
     openMobile,
     setOpenMobile,
@@ -68,14 +60,12 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
   };
 
   return (
-    <SidebarContext.Provider value={value}>
-      <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
-    </SidebarContext.Provider>
+    <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>
   );
 };
 
 export const Sidebar = ({ children }: { children: React.ReactNode }) => {
-  const { isMobile, openMobile, setOpenMobile, isCollapsed } = useSidebar();
+  const { isMobile, openMobile, setOpenMobile } = useSidebar();
   return (
     <>
       {isMobile && openMobile && (
@@ -86,11 +76,11 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       )}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out backdrop-blur-xl shadow-xl",
+          "fixed top-0 left-0 z-50 h-full transition-transform duration-300 ease-in-out backdrop-blur-xl shadow-xl",
           "bg-[linear-gradient(to_bottom,hsl(var(--sidebar-gradient-from)),hsl(var(--sidebar-gradient-to)))]",
           "text-[hsl(var(--sidebar-foreground))] border-r border-[hsl(var(--sidebar-border))]",
           isMobile ? `w-72 ${openMobile ? 'translate-x-0' : '-translate-x-full'}` :
-            `transition-[width] ${isCollapsed ? 'w-20' : 'w-72'}`
+            `w-72` // Always expanded on desktop
         )}
       >
         {children}
@@ -100,27 +90,19 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const SidebarHeader = () => {
-  const { isCollapsed, toggleSidebar } = useSidebar();
   return (
     <div className={cn(
       "flex items-center h-20 px-4 border-b border-[hsl(var(--sidebar-border))]",
-      isCollapsed ? 'justify-center' : 'justify-between'
+      'justify-between'
     )}>
-      <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden", isCollapsed && "w-full justify-center")}>
+      <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
         <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center shadow-inner flex-shrink-0">
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo" />
         </div>
-        {!isCollapsed && (
-          <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-[hsl(var(--sidebar-foreground))]">
+        <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-[hsl(var(--sidebar-foreground))]">
             NexusAlpri
-          </span>
-        )}
+        </span>
       </Link>
-       {!isCollapsed && (
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-white/80 hover:text-white" onClick={toggleSidebar}>
-          <ChevronsLeft className="h-5 w-5 transition-transform" />
-        </Button>
-      )}
     </div>
   );
 };
@@ -149,13 +131,11 @@ export const SidebarContent = () => {
 };
 
 const SidebarSectionHeader = ({ label }: { label: string }) => {
-  const { isCollapsed } = useSidebar();
-  if (isCollapsed) return <Separator className="my-4 bg-[hsl(var(--sidebar-border))]" />;
   return <h2 className="px-4 text-xs font-semibold uppercase text-[hsl(var(--sidebar-foreground))]/60 tracking-wider">{label}</h2>;
 };
 
 const SidebarMenuItem = ({ item }: { item: NavItem }) => {
-  const { activeItem, isCollapsed } = useSidebar();
+  const { activeItem } = useSidebar();
 
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
@@ -167,29 +147,15 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
       "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item",
       isActive
         ? "bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-accent-foreground))] shadow-md"
-        : "text-[hsl(var(--sidebar-foreground))]/90 hover:bg-[hsl(var(--sidebar-active-background))] hover:text-[hsl(var(--sidebar-accent-foreground))]",
-      isCollapsed && "justify-center"
+        : "text-[hsl(var(--sidebar-foreground))]/90 hover:bg-[hsl(var(--sidebar-active-background))] hover:text-[hsl(var(--sidebar-accent-foreground))]"
     )}>
       <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
-      {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
+      <span className="whitespace-nowrap">{item.label}</span>
     </div>
   );
 
   if (!item.path) {
     return <div className="cursor-not-allowed">{menuItemContent}</div>;
-  }
-
-  if (isCollapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Link href={item.path}>{menuItemContent}</Link>
-        </TooltipTrigger>
-        <TooltipContent side="right" sideOffset={10}>
-          <p>{item.label}</p>
-        </TooltipContent>
-      </Tooltip>
-    );
   }
 
   return (
@@ -201,7 +167,6 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
 export const SidebarFooter = () => {
   const { user, logout } = useAuth();
-  const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
 
   const getInitials = (name?: string | null) => {
     if (!name) return '??';
@@ -214,39 +179,28 @@ export const SidebarFooter = () => {
 
   return (
     <div className="p-4 border-t border-[hsl(var(--sidebar-border))] mt-auto bg-black/20 text-[hsl(var(--sidebar-foreground))]">
-      <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
+      <div className={cn("flex items-center gap-3")}>
         <Avatar className="h-10 w-10 flex-shrink-0">
           <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar" />
           <AvatarFallback className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold">
             {getInitials(user?.name)}
           </AvatarFallback>
         </Avatar>
-        {!isCollapsed && (
-            <div className="flex-1 overflow-hidden">
-                <p className="text-sm truncate font-semibold">{user?.name}</p>
-                <p className="text-xs text-[hsl(var(--sidebar-foreground))]/80 capitalize truncate">{user?.role?.toLowerCase()}</p>
-            </div>
-        )}
+        <div className="flex-1 overflow-hidden">
+            <p className="text-sm truncate font-semibold">{user?.name}</p>
+            <p className="text-xs text-[hsl(var(--sidebar-foreground))]/80 capitalize truncate">{user?.role?.toLowerCase()}</p>
+        </div>
       </div>
-      {!isCollapsed && (
-          <>
-            <Separator className="my-3 bg-[hsl(var(--sidebar-border))]" />
-            <Button
-              onClick={logout}
-              variant="ghost"
-              className="text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--destructive))] w-full justify-start p-2 h-auto text-sm"
-            >
-              Cerrar sesión
-            </Button>
-          </>
-      )}
-       {isCollapsed && !isMobile && (
-          <div className={cn("mt-4 text-center")}>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-white/80 hover:text-white" onClick={toggleSidebar}>
-                <ChevronsLeft className="h-5 w-5 rotate-180" />
-            </Button>
-          </div>
-       )}
+      <>
+        <Separator className="my-3 bg-[hsl(var(--sidebar-border))]" />
+        <Button
+          onClick={logout}
+          variant="ghost"
+          className="text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--destructive))] w-full justify-start p-2 h-auto text-sm"
+        >
+          Cerrar sesión
+        </Button>
+      </>
     </div>
   );
 };

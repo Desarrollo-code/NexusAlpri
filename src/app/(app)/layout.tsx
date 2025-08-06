@@ -1,4 +1,3 @@
-
 // AppLayout-enhanced.tsx 🌈 Visual creativo & juvenil
 
 'use client';
@@ -27,7 +26,7 @@ import { Separator } from '@/components/ui/separator';
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
   const { toast } = useToast();
-  const { isMobile, isCollapsed } = useSidebar();
+  const { isMobile } = useSidebar();
 
   const handleIdleLogout = React.useCallback(() => {
     if (user) {
@@ -64,7 +63,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       <div
         className={cn(
           "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
-          !isMobile && (isCollapsed ? "lg:ml-20" : "lg:ml-72")
+          !isMobile && "lg:ml-72" // Apply margin only on desktop
         )}
       >
         <TopBar />
