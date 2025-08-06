@@ -77,7 +77,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
 const AppLayoutWrapper = ({ children }: { children: React.ReactNode }) => (
   <SidebarProvider>
-    <div className="flex h-screen bg-background text-foreground">
+    <div className="flex h-screen bg-background text-foreground private-theme">
       <AppLayout>{children}</AppLayout>
     </div>
   </SidebarProvider>
