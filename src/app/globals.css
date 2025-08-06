@@ -7,75 +7,74 @@
   :root {
     --radius: 0.75rem;
 
-    /* 🎨 Paleta "Aurora Cósmica" (Claro) - Mantenemos una opción clara coherente */
-    --background: 0 0% 100%;
+    /* 🎨 Paleta "Acero y Carmesí" (Claro) - Variante de día */
+    --background: 220 10% 98%;
     --foreground: 224 71.4% 4.1%;
     --card: 0 0% 100%;
     --card-foreground: 224 71.4% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
-    --primary: 217 91.2% 59.8%; /* Azul Eléctrico */
+    --primary: 0 72% 51%; /* Rojo Carmesí */
     --primary-foreground: 0 0% 100%;
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
-    --accent: 330 80% 55%; /* Magenta/Fucsia */
+    --accent: 0 80% 60%; /* Rojo Vibrante */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 217 91.2% 59.8%;
+    --ring: 0 72% 51%;
     
     /* 📊 Gráficos y Eventos (Claro) */
-    --chart-1: 217 91% 59%;   /* Azul Principal */
-    --chart-2: 330 80% 55%;   /* Magenta */
-    --chart-3: 158 80% 45%;   /* Verde Esmeralda */
-    --chart-4: 45 95% 58%;    /* Naranja */
-    --chart-5: 270 90% 60%;   /* Púrpura */
+    --chart-1: 0 72% 51%;   /* Rojo Carmesí */
+    --chart-2: 0 80% 60%;   /* Rojo Vibrante */
+    --chart-3: 220 50% 55%; /* Azul Acero */
+    --chart-4: 220 10% 40%; /* Gris Acero Oscuro */
+    --chart-5: 0 0% 50%;    /* Gris Medio */
 
     /* 🌌 Barra lateral y superior */
-    --sidebar-gradient-from: 220 90% 25%;
-    --sidebar-gradient-to: 270 90% 40%;
-    --topbar-gradient-from: 270 90% 55%;
-    --topbar-gradient-to: 217 91.2% 59.8%;
-
+    --sidebar-gradient-from: 220 10% 25%;
+    --sidebar-gradient-to: 220 15% 40%;
+    --topbar-gradient-from: 0 72% 51%;
+    --topbar-gradient-to: 0 80% 60%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-active-background: 217 100% 50% / 0.15;
-    --sidebar-accent-foreground: 217 100% 80%;
+    --sidebar-active-background: 0 100% 50% / 0.15;
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 0 0% 100% / 0.1;
-    --sidebar-ring: 217 100% 70%;
+    --sidebar-ring: 0 100% 70%;
   }
 
   .dark {
-    /* 🌚 Tema Oscuro "Aurora Cósmica" */
-    --background: 222 47% 11%; /* Azul noche oscuro */
+    /* 🌚 Tema Oscuro "Acero y Carmesí" */
+    --background: 220 6% 10%; /* Gris Acero muy oscuro */
     --foreground: 0 0% 98%;
-    --card: 222 47% 14%;
+    --card: 220 6% 13%;
     --card-foreground: 0 0% 98%;
-    --popover: 222 47% 11%;
+    --popover: 220 6% 10%;
     --popover-foreground: 0 0% 98%;
-    --primary: 217 91.2% 59.8%; /* Azul Eléctrico */
+    --primary: 0 72% 51%; /* Rojo Carmesí */
     --primary-foreground: 0 0% 100%;
     --secondary: 217 32.6% 17.5%;
     --secondary-foreground: 0 0% 98%;
     --muted: 217 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 330 80% 55%; /* Magenta/Fucsia */
+    --accent: 0 80% 60%; /* Rojo Vibrante */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 217 32.6% 17.5%;
     --input: 217 32.6% 17.5%;
-    --ring: 217 91.2% 59.8%;
+    --ring: 0 72% 51%;
 
     /* 📊 Gráficos y Eventos (Oscuro Vibrante) */
-    --chart-1: 217 91% 60%;  /* Azul Eléctrico */
-    --chart-2: 330 80% 55%;  /* Magenta */
-    --chart-3: 158 80% 45%;  /* Verde Esmeralda */
-    --chart-4: 45 100% 55%;  /* Naranja Vívido */
-    --chart-5: 270 90% 65%;  /* Púrpura */
+    --chart-1: 0 72% 51%;   /* Rojo Carmesí */
+    --chart-2: 0 80% 60%;   /* Rojo Vibrante */
+    --chart-3: 210 90% 60%; /* Azul Eléctrico */
+    --chart-4: 0 0% 70%;    /* Gris Claro */
+    --chart-5: 220 15% 50%; /* Gris Acero */
   }
 
   * {
@@ -100,12 +99,10 @@
     inset: -2px;
     background: conic-gradient(
       from var(--angle, 0deg),
-      hsl(var(--chart-1)),
-      hsl(var(--chart-2)),
-      hsl(var(--chart-3)),
-      hsl(var(--chart-4)),
-      hsl(var(--chart-5)),
-      hsl(var(--chart-1))
+      hsl(var(--muted-foreground)),
+      hsl(var(--primary)),
+      hsl(var(--accent)),
+      hsl(var(--muted-foreground))
     );
     z-index: -1;
     border-radius: calc(var(--radius) + 4px);

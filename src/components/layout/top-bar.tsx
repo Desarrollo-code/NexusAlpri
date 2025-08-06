@@ -81,7 +81,7 @@ export function TopBar() {
 
   return (
    <div className={cn(
-       "h-20 bg-gradient-to-b from-[hsl(var(--topbar-gradient-from))] to-[hsl(var(--topbar-gradient-to))] text-primary-foreground shadow-lg",
+       "h-20 bg-card/50 backdrop-blur-lg border-b",
        "flex items-center justify-between px-4 lg:px-6 flex-shrink-0"
     )}>
       <div className="flex items-center gap-4">
@@ -89,21 +89,21 @@ export function TopBar() {
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          className="lg:hidden p-2 text-primary-foreground hover:bg-white/10"
+          className="lg:hidden p-2 text-foreground hover:bg-muted"
           aria-label="Abrir menú de navegación"
         >
           <Menu className="h-6 w-6" />
         </Button>
 
         <div>
-          <h1 className="text-xl font-semibold text-primary-foreground/90">{getPageTitle()}</h1>
+          <h1 className="text-xl font-semibold text-foreground">{getPageTitle()}</h1>
         </div>
       </div>
 
       <div className="flex items-center gap-4">
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative h-10 w-10 text-primary-foreground hover:bg-white/10" aria-label="Ver notificaciones">
+                <Button variant="ghost" size="icon" className="relative h-10 w-10 text-foreground hover:bg-muted" aria-label="Ver notificaciones">
                     <Bell className="h-6 w-6" />
                     <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
@@ -122,8 +122,8 @@ export function TopBar() {
 
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" className="flex items-center gap-3 h-auto p-1.5 rounded-full text-primary-foreground hover:bg-white/10" aria-label="Abrir menú de usuario">
-                     <Avatar className="h-9 w-9 border-2 border-primary-foreground/50">
+                 <Button variant="ghost" className="flex items-center gap-3 h-auto p-1.5 rounded-full text-foreground hover:bg-muted" aria-label="Abrir menú de usuario">
+                     <Avatar className="h-9 w-9 border-2 border-border">
                         <AvatarImage src={user?.avatar || undefined} alt={user?.name || 'Avatar de usuario'} />
                         <AvatarFallback>
                             {getInitials(user?.name || '')}

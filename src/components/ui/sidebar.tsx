@@ -87,8 +87,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out backdrop-blur-xl shadow-xl",
-          "bg-[linear-gradient(to_bottom,hsl(var(--sidebar-gradient-from)),hsl(var(--sidebar-gradient-to)))]",
-          "text-[hsl(var(--sidebar-foreground))] border-r border-[hsl(var(--sidebar-border))]",
+          "bg-card border-r",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -102,14 +101,14 @@ export const SidebarHeader = () => {
   const { isCollapsed } = useSidebar();
   return (
     <div className={cn(
-      "flex items-center h-20 px-4 border-b border-[hsl(var(--sidebar-border))]",
+      "flex items-center h-20 px-4 border-b",
       isCollapsed ? 'justify-center' : 'justify-between'
     )}>
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
-        <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center shadow-inner flex-shrink-0">
+        <div className="w-10 h-10 bg-primary/10 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg">
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo" />
         </div>
-        <span className={cn("text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-[hsl(var(--sidebar-foreground))] transition-opacity duration-300", isCollapsed ? 'opacity-0 w-0' : 'opacity-100')}>
+        <span className={cn("text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-foreground transition-opacity duration-300", isCollapsed ? 'opacity-0 w-0' : 'opacity-100')}>
             NexusAlpri
         </span>
       </Link>
@@ -148,7 +147,7 @@ const SidebarSectionHeader = ({ label }: { label: string }) => {
     if (isCollapsed) return null;
     return (
         <h2 className={cn(
-            "px-4 text-xs font-semibold uppercase text-[hsl(var(--sidebar-foreground))]/60 tracking-wider transition-all duration-300"
+            "px-4 text-xs font-semibold uppercase text-muted-foreground tracking-wider transition-all duration-300"
         )}>
             {label}
         </h2>
@@ -169,10 +168,10 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   const content = (
       <div className={cn(
         "flex items-center gap-3 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item",
-        isCollapsed && !isMobile ? "justify-center" : "px-4",
+        isCollapsed && !isMobile ? "justify-center px-0" : "px-4",
         isActive
-          ? "bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-accent-foreground))] shadow-md"
-          : "text-[hsl(var(--sidebar-foreground))]/90 hover:bg-[hsl(var(--sidebar-active-background))] hover:text-[hsl(var(--sidebar-accent-foreground))]"
+          ? "bg-primary/10 text-primary shadow-sm"
+          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
       )}>
         <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
         {showText && <span className="whitespace-nowrap">{item.label}</span>}
@@ -214,24 +213,24 @@ export const SidebarFooter = () => {
   };
 
   return (
-    <div className="p-4 border-t border-[hsl(var(--sidebar-border))] mt-auto bg-black/20 text-[hsl(var(--sidebar-foreground))]">
+    <div className="p-4 border-t mt-auto bg-background">
       <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
         <Avatar className="h-10 w-10 flex-shrink-0">
           <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar" />
-          <AvatarFallback className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold">
+          <AvatarFallback className="bg-primary text-primary-foreground font-bold">
             {getInitials(user?.name)}
           </AvatarFallback>
         </Avatar>
         <div className={cn("flex-1 overflow-hidden transition-all duration-200", isCollapsed && "w-0 opacity-0")}>
             <p className="text-sm truncate font-semibold">{user?.name}</p>
-            <p className="text-xs text-[hsl(var(--sidebar-foreground))]/80 capitalize truncate">{user?.role?.toLowerCase()}</p>
+            <p className="text-xs text-muted-foreground capitalize truncate">{user?.role?.toLowerCase()}</p>
         </div>
         <Button
           onClick={toggleSidebar}
           variant="ghost"
           size="icon"
           className={cn(
-              "h-9 w-9 text-[hsl(var(--sidebar-foreground))]/80 hover:bg-white/10 hover:text-white transition-transform duration-300",
+              "h-9 w-9 text-muted-foreground hover:bg-muted hover:text-foreground transition-transform duration-300",
               isCollapsed && "rotate-180"
           )}
         >
