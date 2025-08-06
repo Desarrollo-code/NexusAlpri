@@ -44,7 +44,6 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
     }
   };
   
-  // En móvil, la barra nunca está colapsada, solo abierta o cerrada.
   const finalIsCollapsed = !isMobile && isCollapsed;
 
   React.useEffect(() => {
@@ -63,7 +62,7 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
     setOpenMobile,
     toggleSidebar,
     activeItem,
-    isCollapsed: finalIsCollapsed, // Usar el estado final calculado
+    isCollapsed: finalIsCollapsed,
   };
 
   return (
@@ -149,8 +148,7 @@ const SidebarSectionHeader = ({ label }: { label: string }) => {
     if (isCollapsed) return null;
     return (
         <h2 className={cn(
-            "px-4 text-xs font-semibold uppercase text-[hsl(var(--sidebar-foreground))]/60 tracking-wider transition-all duration-300",
-            isCollapsed && "text-center"
+            "px-4 text-xs font-semibold uppercase text-[hsl(var(--sidebar-foreground))]/60 tracking-wider transition-all duration-300"
         )}>
             {label}
         </h2>
@@ -166,7 +164,6 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
     return activeItem === item.path || (activeItem.startsWith(item.path) && item.path !== '/');
   }, [activeItem, item.path]);
 
-  // En móvil, la barra nunca está colapsada.
   const showText = !isCollapsed || isMobile;
   
   const content = (
@@ -204,7 +201,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
 
 export const SidebarFooter = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { isCollapsed, toggleSidebar } = useSidebar();
 
   const getInitials = (name?: string | null) => {
@@ -233,9 +230,12 @@ export const SidebarFooter = () => {
           onClick={toggleSidebar}
           variant="ghost"
           size="icon"
-          className={cn("text-[hsl(var(--sidebar-foreground))]/80 hover:bg-white/10", isCollapsed && "rotate-180")}
+          className={cn(
+              "h-9 w-9 text-[hsl(var(--sidebar-foreground))]/80 hover:bg-white/10 hover:text-white transition-transform duration-300",
+              isCollapsed && "rotate-180"
+          )}
         >
-          <ChevronsLeft />
+          <ChevronsLeft className="h-5 w-5" />
         </Button>
       </div>
     </div>
