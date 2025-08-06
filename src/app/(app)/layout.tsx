@@ -18,7 +18,6 @@ import {
 import { TopBar } from '@/components/layout/top-bar';
 import { Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import PlexusBackground from '@/components/plexus-background';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
@@ -66,7 +65,6 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       >
         <TopBar />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
-           <PlexusBackground />
           <div className="relative z-10">
             {children}
           </div>
