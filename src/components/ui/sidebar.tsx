@@ -9,7 +9,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ChevronsLeft, ChevronsRight, Shield } from "lucide-react";
+import { ChevronsLeft, Shield } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
 import { getNavItemsForRole } from "@/lib/nav-items";
@@ -33,18 +33,18 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const [activeItem, setActiveItem] = React.useState(pathname);
-  const [isOpen, setIsOpen] = React.useState(!isMobile);
+  const [isCollapsed, setIsCollapsed] = React.useState(isMobile);
   const [openMobile, setOpenMobile] = React.useState(false);
 
   React.useEffect(() => {
-      setIsOpen(!isMobile);
+      setIsCollapsed(isMobile);
   }, [isMobile]);
 
   const toggleSidebar = () => {
     if (isMobile) {
       setOpenMobile(prev => !prev);
     } else {
-      setIsOpen(prev => !prev);
+      setIsCollapsed(prev => !prev);
     }
   };
 
@@ -57,9 +57,9 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
           setOpenMobile(false);
       }
   }, [pathname, isMobile]);
-
+  
   const value = {
-    state: isOpen ? 'expanded' : 'collapsed',
+    isCollapsed,
     isMobile,
     openMobile,
     setOpenMobile,
@@ -75,7 +75,7 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
 };
 
 export const Sidebar = ({ children }: { children: React.ReactNode }) => {
-  const { isMobile, openMobile, setOpenMobile, state } = useSidebar();
+  const { isMobile, openMobile, setOpenMobile, isCollapsed } = useSidebar();
   return (
     <>
       {isMobile && openMobile && (
@@ -90,7 +90,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
           "bg-[linear-gradient(to_bottom,hsl(var(--sidebar-gradient-from)),hsl(var(--sidebar-gradient-to)))]",
           "text-[hsl(var(--sidebar-foreground))] border-r border-[hsl(var(--sidebar-border))] rounded-r-2xl",
           isMobile ? `w-72 ${openMobile ? 'translate-x-0' : '-translate-x-full'}` :
-            `w-72` // Always expanded on desktop
+            `transition-[width] ${isCollapsed ? 'w-20' : 'w-72'}`
         )}
       >
         {children}
@@ -100,19 +100,27 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const SidebarHeader = () => {
+  const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
   return (
     <div className={cn(
       "flex items-center h-16 px-4 border-b border-[hsl(var(--sidebar-border))]",
-      'justify-between'
+      isCollapsed ? 'justify-center' : 'justify-between'
     )}>
       <Link href="/dashboard" className="flex items-center gap-2 overflow-hidden">
         <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center shadow-inner flex-shrink-0">
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo" />
         </div>
-        <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-[hsl(var(--sidebar-foreground))]">
-          NexusAlpri
-        </span>
+        {!isCollapsed && (
+          <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-[hsl(var(--sidebar-foreground))]">
+            NexusAlpri
+          </span>
+        )}
       </Link>
+      {!isMobile && (
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-white/80 hover:text-white" onClick={toggleSidebar}>
+            <ChevronsLeft className={cn("h-5 w-5 transition-transform", isCollapsed && "rotate-180")} />
+        </Button>
+      )}
     </div>
   );
 };
@@ -141,11 +149,13 @@ export const SidebarContent = () => {
 };
 
 const SidebarSectionHeader = ({ label }: { label: string }) => {
+  const { isCollapsed } = useSidebar();
+  if (isCollapsed) return <Separator className="my-4 bg-[hsl(var(--sidebar-border))]" />;
   return <h2 className="px-4 text-xs font-semibold uppercase text-[hsl(var(--sidebar-foreground))]/60 tracking-wider">{label}</h2>;
 };
 
 const SidebarMenuItem = ({ item }: { item: NavItem }) => {
-  const { activeItem } = useSidebar();
+  const { activeItem, isCollapsed } = useSidebar();
 
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
@@ -158,14 +168,28 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
       isActive
         ? "bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-accent-foreground))] shadow-md"
         : "text-[hsl(var(--sidebar-foreground))]/90 hover:bg-[hsl(var(--sidebar-active-background))] hover:text-[hsl(var(--sidebar-accent-foreground))]",
+      isCollapsed && "justify-center"
     )}>
       <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
-      <span className="whitespace-nowrap">{item.label}</span>
+      {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
     </div>
   );
 
   if (!item.path) {
     return <div className="cursor-not-allowed">{menuItemContent}</div>;
+  }
+
+  if (isCollapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link href={item.path}>{menuItemContent}</Link>
+        </TooltipTrigger>
+        <TooltipContent side="right" sideOffset={10}>
+          <p>{item.label}</p>
+        </TooltipContent>
+      </Tooltip>
+    );
   }
 
   return (
@@ -177,6 +201,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
 export const SidebarFooter = () => {
   const { user, logout } = useAuth();
+  const { isCollapsed } = useSidebar();
 
   const getInitials = (name?: string | null) => {
     if (!name) return '??';
@@ -196,25 +221,32 @@ export const SidebarFooter = () => {
             {getInitials(user?.name)}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 overflow-hidden">
-          <p className="text-sm truncate font-semibold">{user?.name}</p>
-          <p className="text-xs text-[hsl(var(--sidebar-foreground))]/80 capitalize truncate">{user?.role?.toLowerCase()}</p>
-        </div>
+        {!isCollapsed && (
+            <div className="flex-1 overflow-hidden">
+                <p className="text-sm truncate font-semibold">{user?.name}</p>
+                <p className="text-xs text-[hsl(var(--sidebar-foreground))]/80 capitalize truncate">{user?.role?.toLowerCase()}</p>
+            </div>
+        )}
       </div>
-      <Separator className="my-3 bg-[hsl(var(--sidebar-border))]" />
-      <div className="flex justify-between items-center">
-        <Button
-          onClick={logout}
-          variant="ghost"
-          className="text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--destructive))] w-full justify-start p-2 h-auto text-sm"
-        >
-          Cerrar sesión
-        </Button>
-      </div>
+      {!isCollapsed && (
+          <>
+            <Separator className="my-3 bg-[hsl(var(--sidebar-border))]" />
+            <div className="flex justify-between items-center">
+                <Button
+                onClick={logout}
+                variant="ghost"
+                className="text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--destructive))] w-full justify-start p-2 h-auto text-sm"
+                >
+                Cerrar sesión
+                </Button>
+            </div>
+          </>
+      )}
     </div>
   );
 };
 
+// This component is no longer used directly in the sidebar, but can be kept for other uses if needed.
 export const SidebarToggle = () => {
   const { toggleSidebar } = useSidebar();
   return (
