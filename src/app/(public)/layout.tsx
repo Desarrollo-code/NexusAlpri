@@ -1,6 +1,7 @@
 // src/app/(public)/layout.tsx
 import { Footer } from '@/components/layout/footer';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
+import { BottomNav } from '@/components/layout/bottom-nav';
 
 export default function PublicLayout({
   children,
@@ -10,10 +11,13 @@ export default function PublicLayout({
   return (
     <div className="flex flex-col min-h-screen">
       <PublicTopBar />
-      <main className="flex-1 flex flex-col items-center justify-center">
+      <main className="flex-1 flex flex-col items-center justify-center pb-20 md:pb-0">
         {children}
       </main>
-      <Footer />
+      <div className="hidden md:block">
+        <Footer />
+      </div>
+      <BottomNav />
     </div>
   );
 }
