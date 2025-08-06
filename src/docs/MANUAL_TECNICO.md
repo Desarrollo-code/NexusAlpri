@@ -19,7 +19,7 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 
 *   `src/app/(app)/`: Contiene las rutas y páginas protegidas de la aplicación (Dashboard, Cursos, etc.).
 *   `src/app/(public)/`: Contiene las páginas públicas de la aplicación (landing, about, etc.).
-*   `src/app/(public)/(auth)/`: Contiene las páginas públicas de autenticación (sign-in, sign-up).
+*   `src/app/(auth)/`: Contiene las páginas públicas de autenticación (sign-in, sign-up).
 *   `src/app/api/`: Define todos los endpoints de la API del backend. Sigue la estructura de enrutamiento de Next.js.
 *   `src/components/`: Componentes de React reutilizables.
     *   `src/components/ui/`: Componentes base de ShadCN.
@@ -39,32 +39,62 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 4.  La lógica de la API utiliza el cliente de **Prisma** (`@/lib/prisma`) para interactuar con la base de datos MySQL.
 5.  Los datos se devuelven como JSON al componente o al cliente.
 
-### 2.3. Lógica de Progreso del Estudiante
+## 3. Lógicas de Negocio Clave
+
+### 3.1. Lógica de Progreso del Estudiante
 
 El seguimiento del progreso es un sistema automático y robusto diseñado para reflejar la interacción real del usuario.
 
-1.  **Interacciones en el Frontend:** La página de detalle del curso (`/courses/[courseId]`) detecta diferentes tipos de interacción sin necesidad de que el usuario haga clic en un botón:
-    *   **Lecciones de Texto/Video/Archivo:** Se marca como completada automáticamente cuando el usuario **selecciona la lección** en la barra lateral.
-    *   **Quices:** El componente `QuizViewer` gestiona el envío del quiz y su puntuación.
+1.  **Registro de Interacciones (Frontend):** La página de detalle del curso (`/courses/[courseId]`) detecta diferentes tipos de interacción sin necesidad de que el usuario haga clic en un botón:
+    *   **Lecciones Pasivas (Texto/Video/Archivo):** Se marca como completada automáticamente cuando el usuario **selecciona la lección** en la barra lateral. Esto dispara una llamada a `POST /api/progress/[userId]/[courseId]/lesson`.
+    *   **Lecciones Activas (Quices):** El componente `QuizViewer` gestiona el envío del quiz y su puntuación. Al finalizar, llama a `POST /api/progress/[userId]/[courseId]/quiz` con la nota obtenida.
 
-2.  **Registro de Interacciones (API):** Cada una de estas interacciones desencadena una llamada a la API (`POST /api/progress/[userId]/[courseId]/...`) de forma asíncrona. Esta API no calcula el progreso final, simplemente almacena la interacción en el modelo `LessonCompletionRecord`.
+2.  **Almacenamiento de Datos (Backend):**
+    *   Cada una de estas interacciones se guarda como un registro individual en la tabla `LessonCompletionRecord`. Esta tabla almacena el ID de la lección, el tipo de interacción ('view' o 'quiz') y la puntuación si aplica.
+    *   Estos registros están vinculados a un `CourseProgress`, que agrupa todas las interacciones de un usuario para un curso específico.
 
-3.  **Almacenamiento en Base de Datos:**
-    *   El modelo `CourseProgress` tiene una relación uno a muchos con el modelo `LessonCompletionRecord`.
-    *   `LessonCompletionRecord` almacena cada interacción individual (`lessonId`, `type`, `score`).
-
-4.  **Consolidación y Cálculo Final:**
-    *   La UI activa el botón "Calcular Mi Puntuación Final" solo cuando todas las lecciones del curso tienen un registro de interacción.
+3.  **Consolidación y Cálculo Final:**
+    *   La UI activa el botón **"Calcular Mi Puntuación Final"** solo cuando el sistema verifica que existen registros en `LessonCompletionRecord` para **todas** las lecciones del curso.
     *   Al hacer clic, se llama a la API `POST /api/progress/[userId]/[courseId]/consolidate`.
-    *   Esta ruta de API ejecuta la lógica de negocio en `src/lib/progress.ts`, que:
-        *   Lee todos los registros de `LessonCompletionRecord` asociados a ese progreso.
-        *   Calcula una **puntuación final ponderada**. Las lecciones de 'view' aportan un valor fijo (ej. 100 puntos), mientras que las de 'quiz' aportan un valor basado en la nota (`score`).
+    *   Esta ruta ejecuta la lógica de negocio principal (`src/lib/progress.ts`), que:
+        *   Lee todos los `LessonCompletionRecord` asociados a ese progreso.
+        *   Calcula una **puntuación final ponderada**. Las lecciones de 'view' aportan 100 puntos, mientras que las de 'quiz' aportan su nota (`score`). Se promedia el total.
         *   Guarda este porcentaje final en el campo `progressPercentage` del modelo `CourseProgress`.
     *   La UI recibe este porcentaje final y lo muestra en el indicador circular de progreso.
 
-## 3. Base de Datos
+### 3.2. Lógica de Notificaciones
 
-### 3.1. Esquema (Prisma)
+El sistema de notificaciones es proactivo y está automatizado para mantener a los usuarios informados.
+
+1.  **Creación Automática:** Las notificaciones se generan por eventos del sistema, no manualmente.
+    *   **Nuevo Anuncio:** Al publicarse un anuncio (`POST /api/announcements`), se crean notificaciones para todos los usuarios de la audiencia objetivo (ej. "Todos los Estudiantes").
+    *   **Curso Publicado:** Al cambiar el estado de un curso a `PUBLISHED` (`PATCH /api/courses/[id]/status`), se generan notificaciones para todos los usuarios de la plataforma.
+
+2.  **Personalización y Gestión:**
+    *   Cada notificación está vinculada a un `userId`, creando una bandeja de entrada personal.
+    *   Desde `/notifications`, un usuario puede ver todas sus notificaciones, marcarlas como leídas (individualmente o en masa) o eliminarlas. Estas acciones se gestionan en `GET`, `PATCH` y `DELETE` de `/api/notifications`.
+
+### 3.3. Lógica de Eventos del Calendario
+
+El calendario está diseñado para ser flexible y mostrar solo la información relevante para cada usuario.
+
+1.  **Creación y Audiencia (Roles `ADMINISTRATOR` e `INSTRUCTOR`):**
+    *   Al crear un evento (`POST /api/events`), se define una audiencia:
+        *   `ALL`: Visible para todos.
+        *   `ADMINISTRATOR`, `INSTRUCTOR`, `STUDENT`: Visible solo para usuarios con ese rol.
+        *   `SPECIFIC`: Visible solo para los usuarios seleccionados en la lista de `attendees`.
+
+2.  **Visualización Inteligente (Todos los roles):**
+    *   Cuando un usuario carga el calendario (`GET /api/events`), la API no devuelve todos los eventos.
+    *   Realiza una consulta a la base de datos que filtra los eventos donde el usuario actual cumpla una de las siguientes condiciones:
+        1.  El tipo de audiencia es `ALL`.
+        2.  El tipo de audiencia coincide con el `role` del usuario.
+        3.  El `id` del usuario está presente en la lista de `attendees` del evento.
+    *   Esto asegura que el calendario de cada usuario esté limpio y sea relevante para él.
+
+## 4. Base de Datos
+
+### 4.1. Esquema (Prisma)
 
 El esquema se define en `prisma/schema.prisma`. Los modelos principales son:
 *   `User`: Almacena usuarios, roles y credenciales.
@@ -78,7 +108,7 @@ El esquema se define en `prisma/schema.prisma`. Los modelos principales son:
 *   **`SecurityLog`**: Registra eventos importantes de seguridad, como inicios de sesión (exitosos y fallidos), cambios de contraseña y cambios de rol.
 *   **`LessonTemplate`, `TemplateBlock`**: Almacenan las estructuras de las lecciones reutilizables.
 
-### 3.2. Migraciones con Prisma
+### 4.2. Migraciones con Prisma
 
 Cada vez que modificas el archivo `schema.prisma`, la estructura de tu base de datos debe ser actualizada para reflejar esos cambios. Este proceso se gestiona con **Prisma Migrate**.
 
@@ -109,7 +139,7 @@ Supongamos que quieres añadir un campo `phoneNumber` a la tabla `User`.
 2.  **Genera un Archivo SQL:** Crea un nuevo archivo de migración dentro de la carpeta `prisma/migrations/`. Este archivo contiene las instrucciones SQL necesarias para actualizar la base de datos (ej. `CREATE TABLE`, `ALTER TABLE ... ADD COLUMN ...`, etc.). Darle un nombre descriptivo es una excelente práctica.
 3.  **Aplica la Migración:** Ejecuta el archivo SQL contra la base de datos, actualizando su estructura.
 
-## 4. Documentación de API Endpoints
+## 5. Documentación de API Endpoints
 
 Las rutas de la API se encuentran en `src/app/api/`. Algunos endpoints clave son:
 *   `/api/auth/login`, `/api/auth/register`, `/api/auth/logout`, `/api/auth/me`: Manejan todo el ciclo de vida de la autenticación.
@@ -122,7 +152,7 @@ Las rutas de la API se encuentran en `src/app/api/`. Algunos endpoints clave son
 
 La autenticación se realiza a través de un token JWT en una cookie http-only. El `middleware.ts` protege las rutas.
 
-## 5. Configuración del Entorno de Desarrollo
+## 6. Configuración del Entorno de Desarrollo
 
 1.  **Requisitos:** Node.js, npm, y una base de datos MySQL en ejecución.
 2.  **Instalación:**
@@ -146,7 +176,7 @@ La autenticación se realiza a través de un token JWT en una cookie http-only. 
     ```
     La aplicación estará disponible en `http://localhost:9002`.
 
-## 6. Estándares de Codificación
+## 7. Estándares de Codificación
 
 *   **TypeScript:** Utilizar tipado estricto siempre que sea posible.
 *   **Componentes:** Favorecer el uso de componentes de ShadCN (`@/components/ui`) y crear componentes reutilizables en `@/components/`.
@@ -154,5 +184,3 @@ La autenticación se realiza a través de un token JWT en una cookie http-only. 
 *   **Formularios:** Utilizar `react-hook-form` para la gestión de formularios complejos.
 *   **Código Asíncrono:** Utilizar `async/await` para operaciones asíncronas.
 *   **Comentarios:** Añadir comentarios JSDoc a funciones complejas y a las props de los componentes para clarificar su propósito.
-
-    
