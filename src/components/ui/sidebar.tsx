@@ -43,6 +43,9 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
       setIsCollapsed(prev => !prev);
     }
   };
+  
+  // En móvil, la barra nunca está colapsada, solo abierta o cerrada.
+  const finalIsCollapsed = !isMobile && isCollapsed;
 
   React.useEffect(() => {
     if (pathname) setActiveItem(pathname);
@@ -60,7 +63,7 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
     setOpenMobile,
     toggleSidebar,
     activeItem,
-    isCollapsed,
+    isCollapsed: finalIsCollapsed, // Usar el estado final calculado
   };
 
   return (
@@ -199,7 +202,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
 export const SidebarFooter = () => {
   const { user, logout } = useAuth();
-  const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
+  const { isCollapsed, toggleSidebar } = useSidebar();
 
   const getInitials = (name?: string | null) => {
     if (!name) return '??';
@@ -223,30 +226,15 @@ export const SidebarFooter = () => {
             <p className="text-sm truncate font-semibold">{user?.name}</p>
             <p className="text-xs text-[hsl(var(--sidebar-foreground))]/80 capitalize truncate">{user?.role?.toLowerCase()}</p>
         </div>
+        <Button
+          onClick={toggleSidebar}
+          variant="ghost"
+          size="icon"
+          className={cn("text-[hsl(var(--sidebar-foreground))]/80 hover:bg-white/10", isCollapsed && "rotate-180")}
+        >
+          <ChevronsLeft />
+        </Button>
       </div>
-      <>
-        <Separator className="my-3 bg-[hsl(var(--sidebar-border))]" />
-         <Button
-            onClick={logout}
-            variant="ghost"
-            className={cn(
-              "text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--destructive))] w-full justify-start p-2 h-auto text-sm",
-              isCollapsed && "justify-center"
-            )}
-          >
-             <span className={cn(isCollapsed ? 'sr-only' : '')}>Cerrar sesión</span>
-          </Button>
-          {!isMobile && (
-              <Button
-                  onClick={toggleSidebar}
-                  variant="ghost"
-                  size="icon"
-                  className="w-full h-auto p-2 mt-2 text-[hsl(var(--sidebar-foreground))]/80 hover:bg-white/10"
-              >
-                  <ChevronsLeft className={cn("transition-transform", isCollapsed && "rotate-180")} />
-              </Button>
-          )}
-      </>
     </div>
   );
 };
