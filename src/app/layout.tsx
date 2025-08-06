@@ -55,7 +55,7 @@ export default function RootLayout({
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
-         <div className="fixed bottom-8 right-8 z-50 pointer-events-none">
+         <div className="fixed bottom-8 right-4 z-50 pointer-events-none">
             <Image
                 src="/uploads/images/watermark-alprigrama.png"
                 alt="NexusAlpri Watermark"
