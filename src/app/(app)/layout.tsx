@@ -1,3 +1,4 @@
+
 // AppLayout-enhanced.tsx 🌈 Visual creativo & juvenil
 
 'use client';
@@ -16,7 +17,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarToggle,
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,7 @@ import { Separator } from '@/components/ui/separator';
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
   const { toast } = useToast();
-  const { state } = useSidebar();
+  const { isMobile } = useSidebar();
 
   const handleIdleLogout = React.useCallback(() => {
     if (user) {
@@ -64,8 +64,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       <div
         className={cn(
           "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
-          "lg:ml-72",
-          state === 'collapsed' && "lg:ml-20"
+          !isMobile && "lg:ml-72", // Apply margin only on desktop
         )}
       >
         <TopBar />

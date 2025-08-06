@@ -1,3 +1,4 @@
+
 'use client';
 
 // Sidebar-layout-enhanced 🌈 Creativo & juvenil
@@ -21,8 +22,6 @@ import { GradientIcon } from "./gradient-icon";
 import type { NavItem } from '@/types';
 
 const SidebarContext = React.createContext<any>(null);
-const SIDEBAR_COOKIE_NAME = "sidebar_state";
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 días
 
 export function useSidebar() {
   const context = React.useContext(SidebarContext);
@@ -34,30 +33,30 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const [activeItem, setActiveItem] = React.useState(pathname);
-  const [isOpen, setIsOpen] = React.useState(true);
+  const [isOpen, setIsOpen] = React.useState(!isMobile);
   const [openMobile, setOpenMobile] = React.useState(false);
 
   React.useEffect(() => {
-    const cookieValue = document.cookie
-      .split('; ')
-      .find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
-      ?.split('=')[1];
-    setIsOpen(cookieValue !== undefined ? cookieValue === 'true' : true);
-  }, []);
+      setIsOpen(!isMobile);
+  }, [isMobile]);
 
   const toggleSidebar = () => {
     if (isMobile) {
       setOpenMobile(prev => !prev);
     } else {
-      const newState = !isOpen;
-      setIsOpen(newState);
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${newState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+      setIsOpen(prev => !prev);
     }
   };
 
   React.useEffect(() => {
     if (pathname) setActiveItem(pathname);
   }, [pathname]);
+
+  React.useEffect(() => {
+      if (isMobile) {
+          setOpenMobile(false);
+      }
+  }, [pathname, isMobile]);
 
   const value = {
     state: isOpen ? 'expanded' : 'collapsed',
@@ -91,7 +90,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
           "bg-[linear-gradient(to_bottom,hsl(var(--sidebar-gradient-from)),hsl(var(--sidebar-gradient-to)))]",
           "text-[hsl(var(--sidebar-foreground))] border-r border-[hsl(var(--sidebar-border))] rounded-r-2xl",
           isMobile ? `w-72 ${openMobile ? 'translate-x-0' : '-translate-x-full'}` :
-            `${state === 'expanded' ? 'w-72' : 'w-20'}`
+            `w-72` // Always expanded on desktop
         )}
       >
         {children}
@@ -101,21 +100,18 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const SidebarHeader = () => {
-  const { state } = useSidebar();
   return (
     <div className={cn(
       "flex items-center h-16 px-4 border-b border-[hsl(var(--sidebar-border))]",
-      state === 'expanded' ? 'justify-between' : 'justify-center'
+      'justify-between'
     )}>
-      <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden", state === 'collapsed' && 'w-10')}>
+      <Link href="/dashboard" className="flex items-center gap-2 overflow-hidden">
         <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center shadow-inner flex-shrink-0">
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo" />
         </div>
-        {state === 'expanded' && (
-          <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-[hsl(var(--sidebar-foreground))]">
-            NexusAlpri
-          </span>
-        )}
+        <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-[hsl(var(--sidebar-foreground))]">
+          NexusAlpri
+        </span>
       </Link>
     </div>
   );
@@ -145,13 +141,11 @@ export const SidebarContent = () => {
 };
 
 const SidebarSectionHeader = ({ label }: { label: string }) => {
-  const { state } = useSidebar();
-  if (state === 'collapsed') return <Separator className="my-3 bg-[hsl(var(--sidebar-border))]" />;
   return <h2 className="px-4 text-xs font-semibold uppercase text-[hsl(var(--sidebar-foreground))]/60 tracking-wider">{label}</h2>;
 };
 
 const SidebarMenuItem = ({ item }: { item: NavItem }) => {
-  const { state, activeItem } = useSidebar();
+  const { activeItem } = useSidebar();
 
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
@@ -164,10 +158,9 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
       isActive
         ? "bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-accent-foreground))] shadow-md"
         : "text-[hsl(var(--sidebar-foreground))]/90 hover:bg-[hsl(var(--sidebar-active-background))] hover:text-[hsl(var(--sidebar-accent-foreground))]",
-      state === 'collapsed' && 'justify-center'
     )}>
       <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
-      {state === 'expanded' && <span className="whitespace-nowrap">{item.label}</span>}
+      <span className="whitespace-nowrap">{item.label}</span>
     </div>
   );
 
@@ -177,19 +170,13 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
   return (
     <Link href={item.path}>
-      {state === 'collapsed' ? (
-        <Tooltip>
-          <TooltipTrigger asChild>{menuItemContent}</TooltipTrigger>
-          <TooltipContent side="right" sideOffset={8}>{item.label}</TooltipContent>
-        </Tooltip>
-      ) : menuItemContent}
+        {menuItemContent}
     </Link>
   );
 };
 
 export const SidebarFooter = () => {
   const { user, logout } = useAuth();
-  const { state } = useSidebar();
 
   const getInitials = (name?: string | null) => {
     if (!name) return '??';
@@ -202,50 +189,42 @@ export const SidebarFooter = () => {
 
   return (
     <div className="p-4 border-t border-[hsl(var(--sidebar-border))] mt-auto bg-black/20 text-[hsl(var(--sidebar-foreground))]">
-      <div className={cn("flex items-center", state === 'expanded' ? 'gap-3' : 'justify-center')}>
+      <div className="flex items-center gap-3">
         <Avatar className="h-10 w-10 flex-shrink-0">
           <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar" />
           <AvatarFallback className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold">
             {getInitials(user?.name)}
           </AvatarFallback>
         </Avatar>
-        {state === 'expanded' && (
-          <div className="flex-1 overflow-hidden">
-            <p className="text-sm truncate font-semibold">{user?.name}</p>
-            <p className="text-xs text-[hsl(var(--sidebar-foreground))]/80 capitalize truncate">{user?.role?.toLowerCase()}</p>
-          </div>
-        )}
+        <div className="flex-1 overflow-hidden">
+          <p className="text-sm truncate font-semibold">{user?.name}</p>
+          <p className="text-xs text-[hsl(var(--sidebar-foreground))]/80 capitalize truncate">{user?.role?.toLowerCase()}</p>
+        </div>
       </div>
       <Separator className="my-3 bg-[hsl(var(--sidebar-border))]" />
       <div className="flex justify-between items-center">
-        {state === 'expanded' && (
-          <Button
-            onClick={logout}
-            variant="ghost"
-            className="text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--destructive))] w-full justify-start p-2 h-auto text-sm"
-          >
-            Cerrar sesión
-          </Button>
-        )}
-        <SidebarToggle />
+        <Button
+          onClick={logout}
+          variant="ghost"
+          className="text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--destructive))] w-full justify-start p-2 h-auto text-sm"
+        >
+          Cerrar sesión
+        </Button>
       </div>
     </div>
   );
 };
 
 export const SidebarToggle = () => {
-  const { state, toggleSidebar } = useSidebar();
+  const { toggleSidebar } = useSidebar();
   return (
     <Button
       onClick={toggleSidebar}
       variant="ghost"
       size="icon"
-      className={cn(
-        "text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--sidebar-accent-foreground))] hover:bg-[hsl(var(--sidebar-active-background))]",
-        state === 'collapsed' && 'w-full'
-      )}
+      className="text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--sidebar-accent-foreground))] hover:bg-[hsl(var(--sidebar-active-background))]"
     >
-      {state === 'expanded' ? <ChevronsLeft /> : <ChevronsRight />}
+      <ChevronsLeft />
     </Button>
   );
 };
