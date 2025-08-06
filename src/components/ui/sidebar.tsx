@@ -106,7 +106,7 @@ export const SidebarHeader = () => {
       "flex items-center h-16 px-4 border-b border-[hsl(var(--sidebar-border))]",
       isCollapsed ? 'justify-center' : 'justify-between'
     )}>
-      <Link href="/dashboard" className="flex items-center gap-2 overflow-hidden">
+      <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden", isCollapsed && "w-full justify-center")}>
         <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center shadow-inner flex-shrink-0">
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo" />
         </div>
