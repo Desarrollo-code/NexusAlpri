@@ -97,7 +97,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const SidebarHeader = () => {
-  const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
+  const { isCollapsed } = useSidebar();
   return (
     <div className={cn(
       "flex items-center h-20 px-4 border-b border-[hsl(var(--sidebar-border))]",
@@ -165,8 +165,8 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   
   const content = (
       <div className={cn(
-        "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item",
-        isCollapsed && "justify-center",
+        "flex items-center gap-3 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item",
+        isCollapsed ? "justify-center px-0" : "px-4",
         isActive
           ? "bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-accent-foreground))] shadow-md"
           : "text-[hsl(var(--sidebar-foreground))]/90 hover:bg-[hsl(var(--sidebar-active-background))] hover:text-[hsl(var(--sidebar-accent-foreground))]"
