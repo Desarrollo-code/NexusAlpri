@@ -4,29 +4,25 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Zap, Users, BarChart, BookOpen, UserCheck, ShieldCheck, Heart, ArrowRight, Star } from 'lucide-react';
-import { RocketIcon } from '@/components/icons/icon-rocket';
 
 const features = [
   {
-    icon: <RocketIcon className="h-8 w-8 text-cyan-400" />,
-    title: 'Upscale.media',
-    by: 'by PixelBin.io',
-    description: 'Upscale.media is an AI image upscaling tool that lets you enlarge & enhance your images for FREE.',
-    buttonClass: 'from-green-400 to-cyan-500',
-  },
-  {
     icon: <Zap className="h-8 w-8 text-amber-400" />,
-    title: 'WatermarkRemover.io',
-    by: 'by PixelBin.io',
-    description: 'Watermarkremover.io is an AI watermark-remover tool that lets you remove watermarks from images for FREE.',
-    buttonClass: 'from-amber-500 to-red-500',
+    title: 'Gestión de Cursos Intuitiva',
+    description: 'Crea, organiza y publica cursos con una interfaz drag & drop. Ideal para instructores y administradores.',
+    buttonText: 'Explorar Gestión',
   },
   {
     icon: <ShieldCheck className="h-8 w-8 text-purple-400" />,
-    title: 'Shrink.media',
-    by: 'by PixelBin.io',
-    description: 'Shrink.media reduces the size of your images using intelligent compression technique for FREE.',
-    buttonClass: 'from-purple-500 to-pink-500',
+    title: 'Aprendizaje Interactivo',
+    description: 'Incorpora quizzes, videos y recursos descargables para mantener a tus estudiantes enganchados y motivados.',
+    buttonText: 'Ver Funcionalidades',
+  },
+  {
+    icon: <BarChart className="h-8 w-8 text-cyan-400" />,
+    title: 'Analíticas de Crecimiento',
+    description: 'Visualiza el progreso, identifica brechas de conocimiento y toma decisiones basadas en datos reales.',
+    buttonText: 'Descubrir Analíticas',
   },
 ];
 
@@ -100,7 +96,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <Image
-                src="/uploads/images/imagen 600x600.png"
+                src="/uploads/images/imagen-600x600.png"
                 width="600"
                 height="600"
                 alt="Hero"
@@ -132,14 +128,13 @@ export default function LandingPage() {
                             {feature.icon}
                          </div>
                          <CardTitle className="text-xl font-bold">{feature.title}</CardTitle>
-                         <p className="text-sm text-muted-foreground">{feature.by}</p>
                        </CardHeader>
                        <CardContent className="flex-grow">
                          <p className="text-muted-foreground">{feature.description}</p>
                        </CardContent>
                        <CardFooter>
-                         <Button className={`w-full bg-gradient-to-r ${feature.buttonClass} text-white shadow-lg hover:opacity-90 transition-opacity`}>
-                            Try now for free
+                         <Button className="w-full btn-primary-gradient">
+                            {feature.buttonText}
                          </Button>
                        </CardFooter>
                      </Card>
@@ -152,7 +147,7 @@ export default function LandingPage() {
             <div className="container px-4 md:px-6">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                         <Image
-                        src="/uploads/images/imagen 600x400.png"
+                        src="/uploads/images/imagen-600x400-2.png"
                         width="600"
                         height="400"
                         alt="Benefits"
