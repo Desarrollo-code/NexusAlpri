@@ -48,9 +48,9 @@
 
   .dark {
     /* 🌚 Tema Oscuro "Neón Cósmico" */
-    --background: 224 70% 8%;       /* Azul-negro muy oscuro */
+    --background: 240 50% 8%;        /* Azul-negro muy profundo */
     --foreground: 210 40% 98%;
-    --card: 222 47% 11%;           /* Azul noche profundo */
+    --card: 240 25% 12%;           /* Gris-azulado oscuro */
     --card-foreground: 210 40% 98%;
     --popover: 222 47% 8%;
     --popover-foreground: 210 40% 98%;
@@ -102,7 +102,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: radial-gradient(ellipse 80% 80% at 10% 10%, hsl(var(--accent) / 0.30), transparent 50%);
+    background: radial-gradient(ellipse 80% 80% at 50% 0%, hsl(var(--accent) / 0.30), transparent 50%);
     z-index: -1;
     pointer-events: none;
   }
