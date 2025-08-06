@@ -1,8 +1,9 @@
+
 // src/app/(public)/page.tsx
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Zap, Users, BarChart, BookOpen, UserCheck, ShieldCheck, Heart } from 'lucide-react';
 
 const features = [
