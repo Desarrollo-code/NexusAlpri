@@ -7,79 +7,73 @@
   :root {
     --radius: 0.75rem;
 
-    /* 🎨 Paleta "Acero y Carmesí" (Claro) - Variante de día */
-    --background: 220 10% 98%;
-    --foreground: 224 71.4% 4.1%;
+    /* 🎨 Paleta Claro "Neón Cósmico" */
+    --background: 220 20% 98%;
+    --foreground: 220 15% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 224 71.4% 4.1%;
+    --card-foreground: 220 15% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
-    --primary: 0 72% 51%; /* Rojo Carmesí */
+    --popover-foreground: 220 15% 10%;
+    --primary: 221 83% 53%; /* Azul Eléctrico */
     --primary-foreground: 0 0% 100%;
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
-    --accent: 0 80% 60%; /* Rojo Vibrante */
+    --accent: 260 85% 60%; /* Púrpura Neón */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 0 72% 51%;
+    --ring: 221 83% 53%;
     
     /* 📊 Gráficos y Eventos (Claro) */
-    --chart-1: 0 72% 51%;   /* Rojo Carmesí */
-    --chart-2: 0 80% 60%;   /* Rojo Vibrante */
-    --chart-3: 220 50% 55%; /* Azul Acero */
-    --chart-4: 220 10% 40%; /* Gris Acero Oscuro */
-    --chart-5: 0 0% 50%;    /* Gris Medio */
+    --chart-1: 221 83% 53%;   /* Azul Eléctrico */
+    --chart-2: 260 85% 60%;   /* Púrpura Neón */
+    --chart-3: 190 70% 50%;   /* Cian */
+    --chart-4: 220 10% 40%;   /* Gris Acero Oscuro */
+    --chart-5: 0 0% 50%;      /* Gris Medio */
     
     /* 🌌 Barra lateral y superior */
-    --sidebar-gradient-from: 220 10% 25%;
-    --sidebar-gradient-to: 220 15% 40%;
-    --topbar-gradient-from: 0 72% 51%;
-    --topbar-gradient-to: 0 80% 60%;
     --sidebar-foreground: 224 71.4% 4.1%; /* Iconos y texto visibles en claro */
-    --sidebar-active-background: 0 72% 51% / 0.1; /* Fondo rojo para item activo */
-    --sidebar-accent-foreground: 0 72% 51%; /* Icono y texto activo en rojo */
-    --sidebar-border: 0 0% 100% / 0.1;
-    --sidebar-ring: 0 100% 70%;
+    --sidebar-active-background: 221 83% 53% / 0.1; /* Fondo azul para item activo */
+    --sidebar-accent-foreground: 221 83% 53%; /* Icono y texto activo en azul */
   }
 
   .dark {
-    /* 🌚 Tema Oscuro "Acero y Carmesí" */
-    --background: 220 10% 10%; /* Gris Acero muy oscuro */
-    --foreground: 0 0% 98%;
-    --card: 220 6% 13%; /* Ligeramente más claro que el fondo */
-    --card-foreground: 0 0% 98%;
-    --popover: 220 6% 10%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 72% 51%; /* Rojo Carmesí */
-    --primary-foreground: 0 0% 100%;
+    /* 🌚 Tema Oscuro "Neón Cósmico" */
+    --background: 222 47% 11%;     /* Azul Noche Profundo */
+    --foreground: 210 40% 98%;
+    --card: 222 47% 14%;          /* Ligeramente más claro que el fondo */
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 221 83% 63%;       /* Azul Eléctrico */
+    --primary-foreground: 210 40% 98%;
     --secondary: 217 32.6% 17.5%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary-foreground: 210 40% 98%;
     --muted: 217 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 0 80% 60%; /* Rojo Vibrante */
-    --accent-foreground: 0 0% 100%;
+    --accent: 260 85% 65%;       /* Púrpura Neón */
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 50.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 217 32.6% 17.5%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 32.6% 22.5%;
     --input: 217 32.6% 17.5%;
-    --ring: 0 72% 51%;
+    --ring: 221 83% 63%;
 
     /* 📊 Gráficos y Eventos (Oscuro Vibrante) */
-    --chart-1: 0 72% 51%;   /* Rojo Carmesí */
-    --chart-2: 0 80% 60%;   /* Rojo Vibrante */
-    --chart-3: 210 90% 60%; /* Azul Eléctrico */
-    --chart-4: 0 0% 70%;    /* Gris Claro */
-    --chart-5: 220 15% 50%; /* Gris Acero */
+    --chart-1: 221 83% 63%;
+    --chart-2: 260 85% 65%;
+    --chart-3: 190 80% 60%;
+    --chart-4: 0 0% 70%;
+    --chart-5: 220 15% 50%;
     
     /* 🌌 Barra lateral y superior (Oscuro) */
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-active-background: 0 100% 50% / 0.15;
-    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-active-background: 221 83% 63% / 0.15;
+    --sidebar-accent-foreground: 210 40% 98%;
   }
 
   * {
@@ -93,6 +87,10 @@
 }
 
 @layer components {
+  .btn-primary-gradient {
+    @apply bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-primary/40 hover:from-primary/90 hover:to-accent/90;
+  }
+
   .card-border-animated {
     @apply relative border-0;
   }
