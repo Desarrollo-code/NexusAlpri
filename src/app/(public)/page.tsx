@@ -3,26 +3,23 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Zap, Users, BarChart, BookOpen, UserCheck, ShieldCheck, Heart, ArrowRight, Star } from 'lucide-react';
+import { CheckCircle, Zap, Users, BarChart, BookOpen, UserCheck, ShieldCheck, Heart } from 'lucide-react';
 
 const features = [
   {
-    icon: <Zap className="h-8 w-8 text-amber-400" />,
-    title: 'Gestión de Cursos Intuitiva',
-    description: 'Crea, organiza y publica cursos con una interfaz drag & drop. Ideal para instructores y administradores.',
-    buttonText: 'Explorar Gestión',
-  },
-  {
-    icon: <ShieldCheck className="h-8 w-8 text-purple-400" />,
+    icon: <Zap className="h-8 w-8 text-primary" />,
     title: 'Aprendizaje Interactivo',
-    description: 'Incorpora quizzes, videos y recursos descargables para mantener a tus estudiantes enganchados y motivados.',
-    buttonText: 'Ver Funcionalidades',
+    description: 'Crea cursos con videos, textos y quizzes dinámicos para mantener a tus equipos enganchados.',
   },
   {
-    icon: <BarChart className="h-8 w-8 text-cyan-400" />,
-    title: 'Analíticas de Crecimiento',
-    description: 'Visualiza el progreso, identifica brechas de conocimiento y toma decisiones basadas en datos reales.',
-    buttonText: 'Descubrir Analíticas',
+    icon: <BarChart className="h-8 w-8 text-primary" />,
+    title: 'Seguimiento Automatizado',
+    description: 'El progreso se registra automáticamente, permitiéndote enfocarte en el contenido y no en el papeleo.',
+  },
+  {
+    icon: <ShieldCheck className="h-8 w-8 text-primary" />,
+    title: 'Seguridad y Roles',
+    description: 'Gestiona permisos detallados por rol (Estudiante, Instructor, Admin) y protege tu contenido.',
   },
 ];
 
@@ -96,7 +93,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <Image
-                src="/uploads/images/imagen-600x600.png"
+                src="/uploads/images/imagen 600x600.png"
                 width="600"
                 height="600"
                 alt="Hero"
@@ -120,23 +117,18 @@ export default function LandingPage() {
                         </p>
                     </div>
                 </div>
-                <div className="mx-auto grid max-w-5xl items-stretch gap-8 py-12 lg:grid-cols-3 lg:gap-8">
+                <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3 lg:gap-8">
                    {features.map((feature, index) => (
-                     <Card key={index} className="card-border-animated text-center flex flex-col bg-card/50">
-                       <CardHeader className="items-center">
-                         <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center mb-4 border shadow-inner">
+                     <Card key={index} className="text-center card-border-animated h-full">
+                       <CardHeader>
+                         <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                             {feature.icon}
                          </div>
-                         <CardTitle className="text-xl font-bold">{feature.title}</CardTitle>
+                         <CardTitle>{feature.title}</CardTitle>
                        </CardHeader>
-                       <CardContent className="flex-grow">
+                       <CardContent>
                          <p className="text-muted-foreground">{feature.description}</p>
                        </CardContent>
-                       <CardFooter>
-                         <Button className="w-full btn-primary-gradient">
-                            {feature.buttonText}
-                         </Button>
-                       </CardFooter>
                      </Card>
                    ))}
                 </div>
@@ -147,7 +139,7 @@ export default function LandingPage() {
             <div className="container px-4 md:px-6">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                         <Image
-                        src="/uploads/images/imagen-600x400-2.png"
+                        src="/uploads/images/imagen 600x400.png"
                         width="600"
                         height="400"
                         alt="Benefits"
