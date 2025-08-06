@@ -7,55 +7,55 @@
   :root {
     --radius: 0.75rem;
 
-    /* 🎨 Paleta Claro "Neón Cósmico" */
+    /* 🎨 Paleta Claro "Neón Cósmico" (Adaptada) */
     --background: 220 20% 98%;
     --foreground: 220 15% 10%;
     --card: 0 0% 100%;
     --card-foreground: 220 15% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 10%;
-    --primary: 221 83% 53%; /* Azul Eléctrico */
+    --primary: 221 83% 53%;   /* Azul Eléctrico Intenso */
     --primary-foreground: 0 0% 100%;
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
-    --accent: 260 85% 60%; /* Púrpura Neón */
+    --accent: 260 85% 60%;     /* Púrpura Neón Intenso */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 221 83% 53%;
-    
+
     /* 📊 Gráficos y Eventos (Claro) */
-    --chart-1: 221 83% 53%;   /* Azul Eléctrico */
-    --chart-2: 260 85% 60%;   /* Púrpura Neón */
-    --chart-3: 190 70% 50%;   /* Cian */
-    --chart-4: 220 10% 40%;   /* Gris Acero Oscuro */
-    --chart-5: 0 0% 50%;      /* Gris Medio */
-    
+    --chart-1: 221 83% 53%;
+    --chart-2: 260 85% 60%;
+    --chart-3: 190 70% 50%;
+    --chart-4: 220 10% 40%;
+    --chart-5: 0 0% 50%;
+
     /* 🌌 Barra lateral y superior */
-    --sidebar-foreground: 224 71.4% 4.1%; /* Iconos y texto visibles en claro */
-    --sidebar-active-background: 221 83% 53% / 0.1; /* Fondo azul para item activo */
-    --sidebar-accent-foreground: 221 83% 53%; /* Icono y texto activo en azul */
+    --sidebar-foreground: hsl(var(--foreground));
+    --sidebar-active-background: hsl(var(--primary) / 0.1);
+    --sidebar-accent-foreground: hsl(var(--primary));
   }
 
   .dark {
     /* 🌚 Tema Oscuro "Neón Cósmico" */
-    --background: 222 47% 11%;     /* Azul Noche Profundo */
+    --background: 224 70% 8%;       /* Azul-negro muy oscuro */
     --foreground: 210 40% 98%;
-    --card: 222 47% 14%;          /* Ligeramente más claro que el fondo */
+    --card: 222 47% 14%;           /* Azul noche profundo */
     --card-foreground: 210 40% 98%;
     --popover: 222 47% 8%;
     --popover-foreground: 210 40% 98%;
-    --primary: 221 83% 63%;       /* Azul Eléctrico */
+    --primary: 221 83% 63%;        /* Azul Eléctrico Vibrante */
     --primary-foreground: 210 40% 98%;
     --secondary: 217 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 260 85% 65%;       /* Púrpura Neón */
+    --accent: 260 85% 70%;         /* Púrpura Neón Vibrante */
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 210 40% 98%;
@@ -69,11 +69,11 @@
     --chart-3: 190 80% 60%;
     --chart-4: 0 0% 70%;
     --chart-5: 220 15% 50%;
-    
+
     /* 🌌 Barra lateral y superior (Oscuro) */
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-active-background: 221 83% 63% / 0.15;
-    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-active-background: hsl(var(--primary) / 0.15);
+    --sidebar-accent-foreground: hsl(var(--primary-foreground));
   }
 
   * {
@@ -83,6 +83,18 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  .dark body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(ellipse 80% 80% at 10% 10%, hsl(var(--accent) / 0.15), transparent 50%);
+    z-index: -1;
+    pointer-events: none;
   }
 }
 
