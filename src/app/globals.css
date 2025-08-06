@@ -34,15 +34,15 @@
     --chart-3: 220 50% 55%; /* Azul Acero */
     --chart-4: 220 10% 40%; /* Gris Acero Oscuro */
     --chart-5: 0 0% 50%;    /* Gris Medio */
-
+    
     /* 🌌 Barra lateral y superior */
     --sidebar-gradient-from: 220 10% 25%;
     --sidebar-gradient-to: 220 15% 40%;
     --topbar-gradient-from: 0 72% 51%;
     --topbar-gradient-to: 0 80% 60%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-active-background: 0 100% 50% / 0.15;
-    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-foreground: 224 71.4% 4.1%; /* Iconos y texto visibles en claro */
+    --sidebar-active-background: 0 72% 51% / 0.1; /* Fondo rojo para item activo */
+    --sidebar-accent-foreground: 0 72% 51%; /* Icono y texto activo en rojo */
     --sidebar-border: 0 0% 100% / 0.1;
     --sidebar-ring: 0 100% 70%;
   }
@@ -75,6 +75,11 @@
     --chart-3: 210 90% 60%; /* Azul Eléctrico */
     --chart-4: 0 0% 70%;    /* Gris Claro */
     --chart-5: 220 15% 50%; /* Gris Acero */
+    
+    /* 🌌 Barra lateral y superior (Oscuro) */
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-active-background: 0 100% 50% / 0.15;
+    --sidebar-accent-foreground: 0 0% 98%;
   }
 
   * {
