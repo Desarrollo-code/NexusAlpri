@@ -175,55 +175,6 @@
   .thin-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--primary));
   }
-
-  .profile-card {
-    position: relative;
-    width: 100%;
-    height: 250px;
-    background: hsl(var(--card));
-    border-radius: var(--radius);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 100px;
-    box-shadow: 0 4px 15px hsl(var(--foreground) / 0.1);
-  }
-
-  .card__img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 120px;
-    z-index: 1;
-  }
-
-  .card__avatar {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    border: 4px solid hsl(var(--card));
-    z-index: 2;
-    transform: translateY(-50%);
-    box-shadow: 0 4px 10px hsl(var(--foreground) / 0.2);
-  }
-
-  .card__title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: hsl(var(--card-foreground));
-    transform: translateY(-50%);
-    margin-top: -10px;
-  }
-
-  .card__subtitle {
-    font-size: 0.875rem;
-    color: hsl(var(--muted-foreground));
-    transform: translateY(-50%);
-    margin-top: -8px;
-  }
 }
 
 @layer utilities {
