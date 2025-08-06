@@ -49,7 +49,7 @@
 
   .dark {
     /* 🌚 Tema Oscuro "Acero y Carmesí" */
-    --background: 0 0% 0%; /* Gris Acero muy oscuro */
+    --background: 220 10% 10%; /* Gris Acero muy oscuro */
     --foreground: 0 0% 98%;
     --card: 220 6% 13%; /* Ligeramente más claro que el fondo */
     --card-foreground: 0 0% 98%;

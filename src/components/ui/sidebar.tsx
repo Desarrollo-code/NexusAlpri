@@ -213,7 +213,7 @@ export const SidebarFooter = () => {
   };
 
   return (
-    <div className="p-4 border-t mt-auto bg-background/20">
+    <div className="p-4 border-t mt-auto bg-muted/20">
       <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
         <Avatar className="h-10 w-10 flex-shrink-0">
           <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar" />
