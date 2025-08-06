@@ -65,8 +65,6 @@ export default {
           '5': 'hsl(var(--chart-5))',
         },
         sidebar: {
-          'gradient-from': 'hsl(var(--sidebar-gradient-from))',
-          'gradient-to': 'hsl(var(--sidebar-gradient-to))',
           foreground: 'hsl(var(--sidebar-foreground))',
           'active-background': 'hsl(var(--sidebar-active-background))',
           'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
