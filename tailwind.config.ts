@@ -76,12 +76,9 @@ export default {
           red: 'hsl(var(--gauge-red))',
         },
         sidebar: {
-          DEFAULT: 'hsl(var(--sidebar-background))',
           foreground: 'hsl(var(--sidebar-foreground))',
-          accent: 'hsl(var(--sidebar-accent))',
+          'active-background': 'hsl(var(--sidebar-active-background))',
           'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-          border: 'hsl(var(--sidebar-border))',
-          ring: 'hsl(var(--sidebar-ring))',
         },
       },
       borderRadius: {
@@ -119,6 +116,10 @@ export default {
           '0%, 70%, 100%': { opacity: '1' },
           '20%, 50%': { opacity: '0' },
         },
+         'spin-slow': {
+            'from': { transform: 'rotate(0deg)' },
+            'to': { transform: 'rotate(360deg)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -126,6 +127,7 @@ export default {
         'press': 'press 0.2s 1 linear',
         'throw': 'throw 0.4s ease-out forwards',
         'caret-blink': 'caret-blink 1.25s ease-out infinite',
+        'spin-slow': 'spin-slow 20s linear infinite',
       },
     },
   },

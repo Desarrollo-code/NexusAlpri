@@ -7,20 +7,20 @@
   :root {
     --radius: 0.75rem;
 
-    /* 🎨 Paleta Claro "Neón Cósmico" (Adaptada) */
+    /* 🎨 Paleta Claro "Cielo Estrellado" */
     --background: 220 20% 98%;
     --foreground: 220 15% 10%;
     --card: 0 0% 100%;
     --card-foreground: 220 15% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 10%;
-    --primary: 221 83% 53%;   /* Azul Eléctrico Intenso */
+    --primary: 221 83% 53%;   /* Azul Intenso */
     --primary-foreground: 0 0% 100%;
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
-    --accent: 260 85% 60%;     /* Púrpura Neón Intenso */
+    --accent: 260 85% 60%;     /* Púrpura Neón */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
@@ -47,7 +47,7 @@
   }
 
   .dark {
-    /* 🌚 Tema Oscuro "Neón Cósmico" */
+    /* 🌚 Tema Oscuro "Cielo Estrellado" */
     --background: 240 50% 8%;        /* Azul-negro muy profundo */
     --foreground: 210 40% 98%;
     --card: 240 25% 12%;           /* Gris-azulado oscuro */
@@ -62,8 +62,8 @@
     --muted-foreground: 215 20.2% 65.1%;
     --accent: 260 85% 70%;         /* Púrpura Neón Vibrante */
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 72% 61%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 50.6%;
+    --destructive-foreground: 0 0% 100%;
     --border: 217 32.6% 22.5%;
     --input: 217 32.6% 17.5%;
     --ring: 221 83% 63%;
@@ -102,7 +102,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: radial-gradient(ellipse 80% 80% at 50% 0%, hsl(var(--accent) / 0.50), transparent 60%);
+    background: radial-gradient(ellipse 80% 80% at 50% 0%, hsl(var(--accent) / 0.30), transparent 60%);
     z-index: -1;
     pointer-events: none;
   }
@@ -116,7 +116,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: radial-gradient(ellipse 80% 80% at 90% 10%, hsl(var(--destructive) / 0.30), transparent 50%);
+    background: radial-gradient(ellipse 80% 80% at 90% 10%, hsl(var(--destructive) / 0.15), transparent 50%);
     z-index: 0;
     pointer-events: none;
   }
