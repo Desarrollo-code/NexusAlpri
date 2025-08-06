@@ -61,7 +61,7 @@ export default function RootLayout({
                 alt="NexusAlpri Watermark"
                 width={50}
                 height={50}
-                className="opacity-40 animate-spin-slow"
+                className="opacity-40"
                 data-ai-hint="logo"
             />
         </div>
