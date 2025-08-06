@@ -3,23 +3,30 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Zap, Users, BarChart, BookOpen, UserCheck, ShieldCheck, Heart } from 'lucide-react';
+import { CheckCircle, Zap, Users, BarChart, BookOpen, UserCheck, ShieldCheck, Heart, ArrowRight, Star } from 'lucide-react';
+import { RocketIcon } from '@/components/icons/icon-rocket';
 
 const features = [
   {
-    icon: <Zap className="h-8 w-8 text-primary" />,
-    title: 'Aprendizaje Interactivo',
-    description: 'Crea cursos con videos, textos y quizzes dinámicos para mantener a tus equipos enganchados.',
+    icon: <RocketIcon className="h-8 w-8 text-cyan-400" />,
+    title: 'Upscale.media',
+    by: 'by PixelBin.io',
+    description: 'Upscale.media is an AI image upscaling tool that lets you enlarge & enhance your images for FREE.',
+    buttonClass: 'from-green-400 to-cyan-500',
   },
   {
-    icon: <BarChart className="h-8 w-8 text-primary" />,
-    title: 'Seguimiento Automatizado',
-    description: 'El progreso se registra automáticamente, permitiéndote enfocarte en el contenido y no en el papeleo.',
+    icon: <Zap className="h-8 w-8 text-amber-400" />,
+    title: 'WatermarkRemover.io',
+    by: 'by PixelBin.io',
+    description: 'Watermarkremover.io is an AI watermark-remover tool that lets you remove watermarks from images for FREE.',
+    buttonClass: 'from-amber-500 to-red-500',
   },
   {
-    icon: <ShieldCheck className="h-8 w-8 text-primary" />,
-    title: 'Seguridad y Roles',
-    description: 'Gestiona permisos detallados por rol (Estudiante, Instructor, Admin) y protege tu contenido.',
+    icon: <ShieldCheck className="h-8 w-8 text-purple-400" />,
+    title: 'Shrink.media',
+    by: 'by PixelBin.io',
+    description: 'Shrink.media reduces the size of your images using intelligent compression technique for FREE.',
+    buttonClass: 'from-purple-500 to-pink-500',
   },
 ];
 
@@ -117,18 +124,24 @@ export default function LandingPage() {
                         </p>
                     </div>
                 </div>
-                <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3 lg:gap-8">
+                <div className="mx-auto grid max-w-5xl items-stretch gap-8 py-12 lg:grid-cols-3 lg:gap-8">
                    {features.map((feature, index) => (
-                     <Card key={index} className="text-center card-border-animated h-full">
-                       <CardHeader>
-                         <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                     <Card key={index} className="card-border-animated text-center flex flex-col bg-card/50">
+                       <CardHeader className="items-center">
+                         <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center mb-4 border shadow-inner">
                             {feature.icon}
                          </div>
-                         <CardTitle>{feature.title}</CardTitle>
+                         <CardTitle className="text-xl font-bold">{feature.title}</CardTitle>
+                         <p className="text-sm text-muted-foreground">{feature.by}</p>
                        </CardHeader>
-                       <CardContent>
+                       <CardContent className="flex-grow">
                          <p className="text-muted-foreground">{feature.description}</p>
                        </CardContent>
+                       <CardFooter>
+                         <Button className={`w-full bg-gradient-to-r ${feature.buttonClass} text-white shadow-lg hover:opacity-90 transition-opacity`}>
+                            Try now for free
+                         </Button>
+                       </CardFooter>
                      </Card>
                    ))}
                 </div>
