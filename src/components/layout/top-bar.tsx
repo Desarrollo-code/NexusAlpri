@@ -81,7 +81,7 @@ export function TopBar() {
 
   return (
    <div className={cn(
-       "h-20 bg-card/50 backdrop-blur-lg border-b",
+       "h-20 bg-card border-b",
        "flex items-center justify-between px-4 lg:px-6 flex-shrink-0"
     )}>
       <div className="flex items-center gap-4">

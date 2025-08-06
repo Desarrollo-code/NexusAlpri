@@ -51,7 +51,7 @@
     /* 🌚 Tema Oscuro "Acero y Carmesí" */
     --background: 220 6% 10%; /* Gris Acero muy oscuro */
     --foreground: 0 0% 98%;
-    --card: 220 6% 13%;
+    --card: 220 6% 13%; /* Ligeramente más claro que el fondo */
     --card-foreground: 0 0% 98%;
     --popover: 220 6% 10%;
     --popover-foreground: 0 0% 98%;

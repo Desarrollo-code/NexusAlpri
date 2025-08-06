@@ -86,7 +86,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       )}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out backdrop-blur-xl shadow-xl",
+          "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out shadow-xl",
           "bg-card border-r",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
@@ -213,7 +213,7 @@ export const SidebarFooter = () => {
   };
 
   return (
-    <div className="p-4 border-t mt-auto bg-background">
+    <div className="p-4 border-t mt-auto bg-background/20">
       <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
         <Avatar className="h-10 w-10 flex-shrink-0">
           <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar" />
