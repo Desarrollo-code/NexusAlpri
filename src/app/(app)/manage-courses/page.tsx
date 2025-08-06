@@ -46,7 +46,7 @@ interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' 
   status: CourseStatus;
 }
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 6;
 
 function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
   return {
@@ -232,8 +232,8 @@ export default function ManageCoursesPage() {
   }
 
   const CourseListSkeleton = () => (
-    <div className={isMobile ? "space-y-4" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"}>
-        {[...Array(4)].map((_, i) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(PAGE_SIZE)].map((_, i) => (
             <Card key={i} className="flex flex-col overflow-hidden">
             <Skeleton className="aspect-video w-full" />
             <CardHeader>
@@ -250,6 +250,36 @@ export default function ManageCoursesPage() {
             </Card>
         ))}
     </div>
+  );
+  
+  const MobileManagementList = () => (
+      <div className="space-y-4">
+          {allCourses.map(course => (
+              <CourseCard 
+                  key={course.id}
+                  course={course}
+                  userRole={user?.role || null}
+                  viewMode="management"
+                  onStatusChange={handleChangeStatus}
+                  onDelete={setCourseToDelete}
+              />
+          ))}
+      </div>
+  );
+  
+   const DesktopManagementGrid = () => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {allCourses.map(course => (
+              <CourseCard 
+                  key={course.id}
+                  course={course}
+                  userRole={user?.role || null}
+                  viewMode="management"
+                  onStatusChange={handleChangeStatus}
+                  onDelete={setCourseToDelete}
+              />
+          ))}
+      </div>
   );
 
   return (
@@ -299,18 +329,7 @@ export default function ManageCoursesPage() {
                 <Button onClick={fetchCourses} variant="outline" className="mt-4">Reintentar</Button>
               </div>
             ) : allCourses.length > 0 ? (
-                 <div className={isMobile ? "space-y-4" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"}>
-                    {allCourses.map(course => (
-                        <CourseCard 
-                            key={course.id}
-                            course={course}
-                            userRole={user?.role || null}
-                            viewMode="management"
-                            onStatusChange={handleChangeStatus}
-                            onDelete={setCourseToDelete}
-                        />
-                    ))}
-                </div>
+                 isMobile ? <MobileManagementList /> : <DesktopManagementGrid />
             ) : (
                 <div className="text-center py-12">
                     <ListPlus className="mx-auto h-12 w-12 text-primary mb-4" />

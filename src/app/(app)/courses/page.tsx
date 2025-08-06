@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -175,7 +176,7 @@ export default function CoursesPage() {
         <div className="space-y-8">
             <div className="space-y-4">
                 <Skeleton className="h-8 w-48" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {[...Array(4)].map((_, i) => <CourseCardSkeleton key={i} />)}
                 </div>
             </div>
@@ -195,7 +196,7 @@ export default function CoursesPage() {
                      {isMobile ? (
                         <CourseCarousel courses={courses} userRole={user?.role || null} onEnrollmentChange={handleEnrollmentChange} />
                      ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {courses.map((course: AppCourseType, index: number) => (
                                 <CourseCard 
                                     key={course.id} 

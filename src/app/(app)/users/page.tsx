@@ -57,7 +57,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { GradientIcon } from '@/components/ui/gradient-icon';
 import { useDebounce } from '@/hooks/use-debounce';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
