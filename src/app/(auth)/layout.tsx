@@ -9,7 +9,7 @@ export default function AuthLayout({
 }) {
   return (
     <PublicLayout>
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md px-4">
             {children}
         </div>
     </PublicLayout>
