@@ -185,7 +185,7 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                   ))}
                 </div>
               ) : (
-                <Card className="mt-4"><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
+                <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
               )}
             </section>
           </main>
