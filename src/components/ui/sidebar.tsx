@@ -245,18 +245,3 @@ export const SidebarFooter = () => {
     </div>
   );
 };
-
-// This component is no longer used directly in the sidebar, but can be kept for other uses if needed.
-export const SidebarToggle = () => {
-  const { toggleSidebar } = useSidebar();
-  return (
-    <Button
-      onClick={toggleSidebar}
-      variant="ghost"
-      size="icon"
-      className="text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--sidebar-accent-foreground))] hover:bg-[hsl(var(--sidebar-active-background))]"
-    >
-      <ChevronsLeft />
-    </Button>
-  );
-};
