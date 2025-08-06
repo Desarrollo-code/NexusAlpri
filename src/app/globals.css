@@ -7,26 +7,26 @@
   :root {
     --radius: 0.75rem;
 
-    /* 🎨 Paleta Claro "Cielo Estrellado" */
-    --background: 220 20% 98%;
-    --foreground: 220 15% 10%;
+    /* 🎨 Paleta Claro (Original) */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 10%;
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 10%;
-    --primary: 221 83% 53%;   /* Azul Intenso */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 14.3% 95.9%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 220 8.9% 46.1%;
-    --accent: 260 85% 60%;     /* Púrpura Neón */
-    --accent-foreground: 0 0% 100%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 221 83% 53%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
 
     /* 📊 Gráficos y Eventos (Claro) */
     --chart-1: 221 83% 53%;
@@ -48,19 +48,19 @@
 
   .dark {
     /* 🌚 Tema Oscuro "Cielo Estrellado" */
-    --background: 240 50% 8%;        /* Azul-negro muy profundo */
+    --background: 240 50% 8%;
     --foreground: 210 40% 98%;
-    --card: 240 25% 12%;           /* Gris-azulado oscuro */
+    --card: 240 25% 10%; /* Ligeramente más oscuro */
     --card-foreground: 210 40% 98%;
     --popover: 222 47% 8%;
     --popover-foreground: 210 40% 98%;
-    --primary: 221 83% 63%;        /* Azul Eléctrico Vibrante */
+    --primary: 221 83% 63%;
     --primary-foreground: 210 40% 98%;
     --secondary: 217 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 260 85% 70%;         /* Púrpura Neón Vibrante */
+    --accent: 260 85% 70%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 0 0% 100%;
@@ -122,7 +122,7 @@
     border-radius: calc(var(--radius) + 2.5px);
     animation: 10s rotate linear infinite;
     transition: opacity 0.5s, animation-duration 0.5s;
-    opacity: 0.7;
+    opacity: 0.7; /* Borde visible por defecto */
   }
   
   .dark .card-border-animated::before,
@@ -138,8 +138,8 @@
 
   .card-border-animated:hover::before,
   .card-border-animated:hover::after {
-    opacity: 1;
-    animation-duration: 3s;
+    opacity: 1; /* Intensifica el borde en hover */
+    animation-duration: 3s; /* Acelera la animación en hover */
   }
 
   .animated-underline {

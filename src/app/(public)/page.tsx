@@ -121,7 +121,7 @@ export default function LandingPage() {
                    {features.map((feature, index) => (
                      <Card key={index} className="text-center card-border-animated h-full">
                        <CardHeader>
-                         <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                         <div className="mx-auto w-16 h-16 bg-card rounded-full flex items-center justify-center mb-4">
                             {feature.icon}
                          </div>
                          <CardTitle>{feature.title}</CardTitle>
