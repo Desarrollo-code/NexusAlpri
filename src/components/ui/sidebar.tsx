@@ -88,7 +88,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
         className={cn(
           "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out backdrop-blur-xl shadow-xl",
           "bg-[linear-gradient(to_bottom,hsl(var(--sidebar-gradient-from)),hsl(var(--sidebar-gradient-to)))]",
-          "text-[hsl(var(--sidebar-foreground))] border-r border-[hsl(var(--sidebar-border))] rounded-r-2xl",
+          "text-[hsl(var(--sidebar-foreground))] border-r border-[hsl(var(--sidebar-border))]",
           isMobile ? `w-72 ${openMobile ? 'translate-x-0' : '-translate-x-full'}` :
             `transition-[width] ${isCollapsed ? 'w-20' : 'w-72'}`
         )}
@@ -100,7 +100,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const SidebarHeader = () => {
-  const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
+  const { isCollapsed } = useSidebar();
   return (
     <div className={cn(
       "flex items-center h-16 px-4 border-b border-[hsl(var(--sidebar-border))]",
@@ -116,11 +116,6 @@ export const SidebarHeader = () => {
           </span>
         )}
       </Link>
-      {!isMobile && (
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-white/80 hover:text-white" onClick={toggleSidebar}>
-            <ChevronsLeft className={cn("h-5 w-5 transition-transform", isCollapsed && "rotate-180")} />
-        </Button>
-      )}
     </div>
   );
 };
@@ -201,20 +196,20 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
 export const SidebarFooter = () => {
   const { user, logout } = useAuth();
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
 
   const getInitials = (name?: string | null) => {
     if (!name) return '??';
     const names = name.split(' ');
     if (names.length > 1 && names[0] && names[names.length - 1]) {
-      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+      return `\${names[0][0]}\${names[names.length - 1][0]}`.toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
   };
 
   return (
     <div className="p-4 border-t border-[hsl(var(--sidebar-border))] mt-auto bg-black/20 text-[hsl(var(--sidebar-foreground))]">
-      <div className="flex items-center gap-3">
+      <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
         <Avatar className="h-10 w-10 flex-shrink-0">
           <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar" />
           <AvatarFallback className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold">
@@ -231,17 +226,22 @@ export const SidebarFooter = () => {
       {!isCollapsed && (
           <>
             <Separator className="my-3 bg-[hsl(var(--sidebar-border))]" />
-            <div className="flex justify-between items-center">
-                <Button
-                onClick={logout}
-                variant="ghost"
-                className="text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--destructive))] w-full justify-start p-2 h-auto text-sm"
-                >
-                Cerrar sesión
-                </Button>
-            </div>
+            <Button
+              onClick={logout}
+              variant="ghost"
+              className="text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--destructive))] w-full justify-start p-2 h-auto text-sm"
+            >
+              Cerrar sesión
+            </Button>
           </>
       )}
+       {!isMobile && (
+          <div className={cn("mt-4", isCollapsed ? "text-center" : "text-right")}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-white/80 hover:text-white" onClick={toggleSidebar}>
+                <ChevronsLeft className={cn("h-5 w-5 transition-transform", isCollapsed && "rotate-180")} />
+            </Button>
+          </div>
+       )}
     </div>
   );
 };
