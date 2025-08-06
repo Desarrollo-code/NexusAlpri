@@ -106,7 +106,7 @@ export const SidebarHeader = () => {
     )}>
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
         <div className="w-10 h-10 bg-primary/10 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg">
-          <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo" />
+          <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo"/>
         </div>
         <span className={cn("text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-foreground transition-opacity duration-300", isCollapsed ? 'opacity-0 w-0' : 'opacity-100')}>
             NexusAlpri
@@ -170,8 +170,8 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item",
         isCollapsed && !isMobile ? "justify-center px-0" : "px-4",
         isActive
-          ? "bg-primary/10 text-primary shadow-sm"
-          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+          ? "bg-sidebar-active-background text-sidebar-accent-foreground shadow-sm"
+          : "text-sidebar-foreground hover:bg-muted/50 hover:text-foreground"
       )}>
         <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
         {showText && <span className="whitespace-nowrap">{item.label}</span>}
@@ -213,10 +213,10 @@ export const SidebarFooter = () => {
   };
 
   return (
-    <div className="p-4 border-t mt-auto bg-muted/20">
+    <div className="p-4 border-t mt-auto bg-card">
       <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
         <Avatar className="h-10 w-10 flex-shrink-0">
-          <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar" />
+          <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar"/>
           <AvatarFallback className="bg-primary text-primary-foreground font-bold">
             {getInitials(user?.name)}
           </AvatarFallback>
