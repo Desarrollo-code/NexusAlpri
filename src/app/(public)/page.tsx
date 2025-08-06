@@ -139,12 +139,12 @@ export default function LandingPage() {
             <div className="container px-4 md:px-6">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                      <Image
-                        src="https://placehold.co/600x400.png"
+                        src="/uploads/images/benefits-image.png"
                         width="600"
                         height="400"
                         alt="Benefits"
                         className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full"
-                        data-ai-hint="team diverse learning"
+                        data-ai-hint="diverse team"
                       />
                     <div className="space-y-8">
                        {benefits.map((benefit, index) => (
