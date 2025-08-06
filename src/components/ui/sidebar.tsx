@@ -143,12 +143,13 @@ export const SidebarContent = () => {
 
 const SidebarSectionHeader = ({ label }: { label: string }) => {
     const { isCollapsed } = useSidebar();
+    if (isCollapsed) return null;
     return (
         <h2 className={cn(
             "px-4 text-xs font-semibold uppercase text-[hsl(var(--sidebar-foreground))]/60 tracking-wider transition-all duration-300",
             isCollapsed && "text-center"
         )}>
-            {isCollapsed ? label.charAt(0) : label}
+            {label}
         </h2>
     );
 };
