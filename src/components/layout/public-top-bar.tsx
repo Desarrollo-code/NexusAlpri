@@ -39,43 +39,6 @@ export function PublicTopBar() {
           <Link href="/sign-in">Acceder</Link>
         </Button>
       </nav>
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="lg:hidden ml-auto h-10 w-10 text-foreground hover:bg-muted">
-            <Menu className="h-6 w-6" />
-            <span className="sr-only">Toggle navigation menu</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="bg-background border-r p-0">
-            <div className="flex items-center justify-between border-b p-4 h-20">
-                <Link href="/" className="flex items-center justify-center gap-2" prefetch={false}>
-                    <Image src="/uploads/images/logo-nexusalpri.png" alt="NexusAlpri Logo" width={32} height={32} data-ai-hint="logo" />
-                     <span className="text-xl font-semibold font-headline-alt bg-gradient-to-r from-primary to-purple-500 text-transparent bg-clip-text">
-                        NexusAlpri
-                    </span>
-                </Link>
-            </div>
-            <div className="p-4">
-              <nav className="grid gap-4 text-lg font-medium">
-                <Link href="/" className="p-3 rounded-md hover:bg-muted transition-colors" prefetch={false}>
-                  Inicio
-                </Link>
-                <Link
-                  href="/about"
-                  className="p-3 rounded-md hover:bg-muted transition-colors"
-                  prefetch={false}
-                >
-                  Nosotros
-                </Link>
-              </nav>
-               <div className="mt-8">
-                 <Button asChild size="lg" className="w-full rounded-full shadow-lg shadow-primary/20">
-                    <Link href="/sign-in">Acceder</Link>
-                </Button>
-               </div>
-            </div>
-        </SheetContent>
-      </Sheet>
     </header>
   );
 }
