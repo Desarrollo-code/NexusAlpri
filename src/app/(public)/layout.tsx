@@ -17,7 +17,7 @@ export default function PublicLayout({
           muted
           playsInline
           className="w-full h-full object-cover"
-          poster="/uploads/images/video_poster.jpg" 
+          poster="/uploads/images/video_poster.jpg"
         >
           <source src="/uploads/videos/public-background.mp4" type="video/mp4" />
           Tu navegador no soporta la etiqueta de video.

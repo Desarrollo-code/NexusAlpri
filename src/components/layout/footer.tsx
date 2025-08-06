@@ -8,7 +8,7 @@ import { Separator } from '../ui/separator';
 
 export function Footer() {
   return (
-    <footer className="bg-muted/30 text-foreground/80 hidden md:block">
+    <footer className="bg-transparent text-foreground/80 hidden md:block">
       <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-center items-center gap-4 text-center">
             <p className="text-sm">&copy; {new Date().getFullYear()} NexusAlpri. Todos los derechos reservados.</p>
