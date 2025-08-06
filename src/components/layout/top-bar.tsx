@@ -81,7 +81,7 @@ export function TopBar() {
 
   return (
    <div className={cn(
-       "h-20 bg-gradient-to-r from-[hsl(var(--topbar-gradient-from))] to-[hsl(var(--topbar-gradient-to))] text-primary-foreground shadow-lg",
+       "h-20 bg-gradient-to-b from-[hsl(var(--topbar-gradient-from))] to-[hsl(var(--topbar-gradient-to))] text-primary-foreground shadow-lg",
        "flex items-center justify-between px-4 lg:px-6 flex-shrink-0"
     )}>
       <div className="flex items-center gap-4">

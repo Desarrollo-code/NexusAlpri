@@ -100,10 +100,10 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const SidebarHeader = () => {
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, toggleSidebar } = useSidebar();
   return (
     <div className={cn(
-      "flex items-center h-16 px-4 border-b border-[hsl(var(--sidebar-border))]",
+      "flex items-center h-20 px-4 border-b border-[hsl(var(--sidebar-border))]",
       isCollapsed ? 'justify-center' : 'justify-between'
     )}>
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden", isCollapsed && "w-full justify-center")}>
@@ -116,6 +116,11 @@ export const SidebarHeader = () => {
           </span>
         )}
       </Link>
+       {!isCollapsed && (
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-white/80 hover:text-white" onClick={toggleSidebar}>
+          <ChevronsLeft className="h-5 w-5 transition-transform" />
+        </Button>
+      )}
     </div>
   );
 };
@@ -202,7 +207,7 @@ export const SidebarFooter = () => {
     if (!name) return '??';
     const names = name.split(' ');
     if (names.length > 1 && names[0] && names[names.length - 1]) {
-      return `\${names[0][0]}\${names[names.length - 1][0]}`.toUpperCase();
+      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
   };
@@ -235,10 +240,10 @@ export const SidebarFooter = () => {
             </Button>
           </>
       )}
-       {!isMobile && (
-          <div className={cn("mt-4", isCollapsed ? "text-center" : "text-right")}>
+       {isCollapsed && !isMobile && (
+          <div className={cn("mt-4 text-center")}>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-white/80 hover:text-white" onClick={toggleSidebar}>
-                <ChevronsLeft className={cn("h-5 w-5 transition-transform", isCollapsed && "rotate-180")} />
+                <ChevronsLeft className="h-5 w-5 rotate-180" />
             </Button>
           </div>
        )}
