@@ -97,7 +97,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const SidebarHeader = () => {
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
   return (
     <div className={cn(
       "flex items-center h-20 px-4 border-b border-[hsl(var(--sidebar-border))]",

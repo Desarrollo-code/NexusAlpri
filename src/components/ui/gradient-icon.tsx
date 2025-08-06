@@ -22,8 +22,8 @@ export const GradientIcon = ({
 
   const sizeClasses = {
     'sm': 'w-5 h-5',
-    'default': 'w-5 h-5',
-    'lg': 'w-6 h-6',
+    'default': 'w-6 h-6', // Increased default size
+    'lg': 'w-7 h-7',
     'xl': 'w-8 h-8',
   };
   
@@ -37,13 +37,14 @@ export const GradientIcon = ({
   return (
     <Icon
       className={cn(
+        "shrink-0", // Prevent icon from shrinking
         sizeClasses[size],
         "transition-colors duration-200",
         !color && "group-hover/menu-item:text-sidebar-accent-foreground",
         isActive && !color && "text-sidebar-accent-foreground",
         className
       )}
-      style={{ color: iconColor }} // ✅ Aquí el cambio clave
+      style={{ color: iconColor }}
       {...props}
     />
   );
