@@ -1,4 +1,3 @@
-
 // src/app/(public)/page.tsx
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -94,12 +93,12 @@ export default function LandingPage() {
                 </div>
               </div>
               <Image
-                src="https://placehold.co/600x600.png"
+                src="/uploads/images/hero-image-landing.png"
                 width="600"
                 height="600"
                 alt="Hero"
                 className="mx-auto aspect-square overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
-                data-ai-hint="startup launch rocket"
+                data-ai-hint="team collaboration"
               />
             </div>
           </div>
