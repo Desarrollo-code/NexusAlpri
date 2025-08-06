@@ -30,7 +30,7 @@ export default function AboutPage() {
                 </p>
               </div>
               <Image
-                src="https://placehold.co/600x400.png"
+                src="/uploads/images/image 600x400-about.png"
                 width="600"
                 height="400"
                 alt="About Us"
