@@ -18,6 +18,7 @@ import {
 import { TopBar } from '@/components/layout/top-bar';
 import { Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import PlexusBackground from '@/components/plexus-background';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
@@ -65,7 +66,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       >
         <TopBar />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
-           {theme === 'dark' && <div className="private-aura-background" />}
+           <PlexusBackground />
           <div className="relative z-10">
             {children}
           </div>
@@ -77,7 +78,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
 const AppLayoutWrapper = ({ children }: { children: React.ReactNode }) => (
   <SidebarProvider>
-    <div className="flex h-screen bg-background text-foreground private-theme">
+    <div className="flex h-screen bg-background text-foreground">
       <AppLayout>{children}</AppLayout>
     </div>
   </SidebarProvider>

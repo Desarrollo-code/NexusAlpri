@@ -122,31 +122,18 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-  
-  .dark body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: radial-gradient(ellipse 80% 80% at 50% -10%, hsl(var(--accent) / 0.50), transparent 60%);
-    z-index: -1;
-    pointer-events: none;
-  }
 }
 
 @layer components {
-  .private-aura-background::before {
-    content: '';
+  /* Estilos para el canvas del fondo de Plexo */
+  .plexus-background {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: radial-gradient(ellipse 80% 80% at 90% 10%, hsl(var(--destructive) / 0.15), transparent 50%);
-    z-index: 0;
-    pointer-events: none;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Detrás de todo */
+    pointer-events: none; /* No interfiere con clics */
   }
 
   .btn-primary-gradient {
