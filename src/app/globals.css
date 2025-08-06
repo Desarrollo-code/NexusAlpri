@@ -151,19 +151,19 @@
   .card-border-animated::after {
     content: '';
     position: absolute;
-    inset: -1.5px;
+    inset: -2px;
     background: conic-gradient(
       from var(--angle, 0deg),
-      hsl(var(--muted-foreground)/0.4),
-      hsl(var(--primary)/0.7),
-      hsl(var(--accent)/0.7),
-      hsl(var(--muted-foreground)/0.4)
+      hsl(var(--muted-foreground)/0.3),
+      hsl(var(--primary)/0.6),
+      hsl(var(--accent)/0.6),
+      hsl(var(--muted-foreground)/0.3)
     );
     z-index: -1;
-    border-radius: calc(var(--radius) + 2px);
-    animation: 5s rotate linear infinite;
-    transition: opacity 0.5s;
-    opacity: 0;
+    border-radius: calc(var(--radius) + 2.5px);
+    animation: 10s rotate linear infinite;
+    transition: opacity 0.5s, animation-duration 0.5s;
+    opacity: 0.7;
   }
   
   .dark .card-border-animated::before,
@@ -171,16 +171,16 @@
      background: conic-gradient(
       from var(--angle, 0deg),
       hsl(var(--muted-foreground)/0.2),
-      hsl(var(--primary)/0.5),
-      hsl(var(--accent)/0.5),
+      hsl(var(--primary)/0.4),
+      hsl(var(--accent)/0.4),
       hsl(var(--muted-foreground)/0.2)
     );
   }
 
-
   .card-border-animated:hover::before,
   .card-border-animated:hover::after {
     opacity: 1;
+    animation-duration: 3s;
   }
 
   .animated-underline {
