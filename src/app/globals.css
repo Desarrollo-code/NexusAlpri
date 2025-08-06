@@ -102,7 +102,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: radial-gradient(ellipse 80% 80% at 10% 10%, hsl(var(--accent) / 0.15), transparent 50%);
+    background: radial-gradient(ellipse 80% 80% at 10% 10%, hsl(var(--accent) / 0.30), transparent 50%);
     z-index: -1;
     pointer-events: none;
   }
