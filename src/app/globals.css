@@ -109,6 +109,18 @@
 }
 
 @layer components {
+  .private-aura-background::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(ellipse 80% 80% at 90% 10%, hsl(var(--destructive) / 0.15), transparent 50%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
   .btn-primary-gradient {
     @apply bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-primary/40 hover:from-primary/90 hover:to-accent/90;
   }

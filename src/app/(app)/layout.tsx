@@ -17,11 +17,13 @@ import {
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { Loader2 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
   const { toast } = useToast();
   const { isMobile, isCollapsed } = useSidebar();
+  const { theme } = useTheme();
 
   const handleIdleLogout = React.useCallback(() => {
     if (user) {
@@ -62,8 +64,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         )}
       >
         <TopBar />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-muted/20">
-          {children}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
+           {theme === 'dark' && <div className="private-aura-background" />}
+          <div className="relative z-10">
+            {children}
+          </div>
         </main>
       </div>
     </>
