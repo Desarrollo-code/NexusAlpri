@@ -9,7 +9,7 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="dark flex flex-col min-h-screen">
       <div className="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden">
         <video
           autoPlay

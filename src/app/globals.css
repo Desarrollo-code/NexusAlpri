@@ -85,34 +85,6 @@
     --sidebar-active-background: hsl(var(--primary) / 0.15);
     --sidebar-accent-foreground: hsl(var(--primary));
   }
-  
-  .dark .private-theme {
-      /* 🌚 Tema Oscuro "Cielo Estrellado" para MUNDO PRIVADO */
-    --background: 240 50% 8%;        /* Azul-negro muy profundo */
-    --foreground: 210 40% 98%;
-    --card: 240 25% 12%;           /* Gris-azulado oscuro */
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 221 83% 63%;        /* Azul Eléctrico Vibrante */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 260 85% 70%;         /* Púrpura Neón Vibrante */
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 50.6%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 217 32.6% 22.5%;
-    --input: 217 32.6% 17.5%;
-    --ring: 221 83% 63%;
-    
-    /* 🌌 Barra lateral y superior (Oscuro) */
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-active-background: hsl(var(--primary) / 0.15);
-    --sidebar-accent-foreground: hsl(var(--primary));
-  }
 
   * {
     @apply border-border;
