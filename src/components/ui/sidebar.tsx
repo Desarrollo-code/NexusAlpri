@@ -120,7 +120,7 @@ export const SidebarHeader = () => {
 
 export const SidebarContent = () => {
   const { user } = useAuth();
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, isMobile } = useSidebar();
   const navItems = getNavItemsForRole(user?.role || 'STUDENT');
 
   return (
@@ -159,23 +159,26 @@ const SidebarSectionHeader = ({ label }: { label: string }) => {
 
 
 const SidebarMenuItem = ({ item }: { item: NavItem }) => {
-  const { activeItem, isCollapsed } = useSidebar();
+  const { activeItem, isCollapsed, isMobile } = useSidebar();
 
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
     return activeItem === item.path || (activeItem.startsWith(item.path) && item.path !== '/');
   }, [activeItem, item.path]);
+
+  // En móvil, la barra nunca está colapsada.
+  const showText = !isCollapsed || isMobile;
   
   const content = (
       <div className={cn(
         "flex items-center gap-3 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item",
-        isCollapsed ? "justify-center px-0" : "px-4",
+        isCollapsed && !isMobile ? "justify-center" : "px-4",
         isActive
           ? "bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-accent-foreground))] shadow-md"
           : "text-[hsl(var(--sidebar-foreground))]/90 hover:bg-[hsl(var(--sidebar-active-background))] hover:text-[hsl(var(--sidebar-accent-foreground))]"
       )}>
         <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
-        <span className={cn("whitespace-nowrap transition-opacity duration-200", isCollapsed && "opacity-0 w-0 h-0")}>{item.label}</span>
+        {showText && <span className="whitespace-nowrap">{item.label}</span>}
       </div>
   );
 
@@ -185,7 +188,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
     </Link>
   );
 
-  if (isCollapsed) {
+  if (isCollapsed && !isMobile) {
     return (
         <Tooltip>
             <TooltipTrigger asChild>{linkWrapper}</TooltipTrigger>
