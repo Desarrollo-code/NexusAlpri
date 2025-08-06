@@ -93,7 +93,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <Image
-                src="/uploads/images/hero-image-landing.png"
+                src="/uploads/images/imagen 600x600.png"
                 width="600"
                 height="600"
                 alt="Hero"
