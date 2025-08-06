@@ -7,19 +7,22 @@ import { CheckCircle, Zap, Users, BarChart, BookOpen, UserCheck, ShieldCheck, He
 
 const features = [
   {
-    icon: <Zap className="h-8 w-8 text-primary" />,
+    icon: <Zap className="h-8 w-8" />,
     title: 'Aprendizaje Interactivo',
     description: 'Crea cursos con videos, textos y quizzes dinámicos para mantener a tus equipos enganchados.',
+    color: 'hsl(221, 83%, 63%)', // --primary
   },
   {
-    icon: <BarChart className="h-8 w-8 text-primary" />,
+    icon: <BarChart className="h-8 w-8" />,
     title: 'Seguimiento Automatizado',
     description: 'El progreso se registra automáticamente, permitiéndote enfocarte en el contenido y no en el papeleo.',
+    color: 'hsl(260, 85%, 65%)', // --chart-2
   },
   {
-    icon: <ShieldCheck className="h-8 w-8 text-primary" />,
+    icon: <ShieldCheck className="h-8 w-8" />,
     title: 'Seguridad y Roles',
     description: 'Gestiona permisos detallados por rol (Estudiante, Instructor, Admin) y protege tu contenido.',
+    color: 'hsl(190, 80%, 60%)', // --chart-3
   },
 ];
 
@@ -119,9 +122,19 @@ export default function LandingPage() {
                 </div>
                 <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3 lg:gap-8">
                    {features.map((feature, index) => (
-                     <Card key={index} className="text-center card-border-animated h-full">
+                     <Card 
+                        key={index} 
+                        className="text-center h-full border-2 transition-all hover:shadow-2xl hover:-translate-y-2"
+                        style={{ 
+                          borderColor: feature.color,
+                          boxShadow: `0 0 15px ${feature.color}33`,
+                        }}
+                      >
                        <CardHeader>
-                         <div className="mx-auto w-16 h-16 bg-card rounded-full flex items-center justify-center mb-4">
+                         <div 
+                           className="mx-auto w-16 h-16 bg-card rounded-full flex items-center justify-center mb-4"
+                           style={{ color: feature.color }}
+                          >
                             {feature.icon}
                          </div>
                          <CardTitle>{feature.title}</CardTitle>
