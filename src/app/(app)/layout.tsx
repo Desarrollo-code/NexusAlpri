@@ -3,9 +3,6 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { LogOut, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { useToast } from '@/hooks/use-toast';
@@ -18,15 +15,13 @@ import {
   SidebarHeader,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TopBar } from '@/components/layout/top-bar';
-import { Separator } from '@/components/ui/separator';
+import { Loader2 } from 'lucide-react';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
   const { toast } = useToast();
-  const { isMobile } = useSidebar();
+  const { isMobile, isCollapsed } = useSidebar();
 
   const handleIdleLogout = React.useCallback(() => {
     if (user) {
@@ -63,7 +58,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       <div
         className={cn(
           "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
-          !isMobile && "lg:ml-72" // Apply margin only on desktop
+          !isMobile && (isCollapsed ? "ml-20" : "ml-72")
         )}
       >
         <TopBar />

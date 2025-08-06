@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { GradientIcon } from "./gradient-icon";
 import type { NavItem } from '@/types';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
 
 const SidebarContext = React.createContext<any>(null);
 
@@ -33,12 +34,14 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
   const pathname = usePathname();
   const [activeItem, setActiveItem] = React.useState(pathname);
   const [openMobile, setOpenMobile] = React.useState(false);
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   const toggleSidebar = () => {
     if (isMobile) {
       setOpenMobile(prev => !prev);
+    } else {
+      setIsCollapsed(prev => !prev);
     }
-    // No action on desktop as it's always expanded
   };
 
   React.useEffect(() => {
@@ -57,6 +60,7 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
     setOpenMobile,
     toggleSidebar,
     activeItem,
+    isCollapsed,
   };
 
   return (
@@ -65,7 +69,11 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
 };
 
 export const Sidebar = ({ children }: { children: React.ReactNode }) => {
-  const { isMobile, openMobile, setOpenMobile } = useSidebar();
+  const { isMobile, openMobile, setOpenMobile, isCollapsed } = useSidebar();
+  
+  const desktopClasses = isCollapsed ? "w-20" : "w-72";
+  const mobileClasses = openMobile ? 'translate-x-0' : '-translate-x-full';
+
   return (
     <>
       {isMobile && openMobile && (
@@ -76,11 +84,10 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       )}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full transition-transform duration-300 ease-in-out backdrop-blur-xl shadow-xl",
+          "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out backdrop-blur-xl shadow-xl",
           "bg-[linear-gradient(to_bottom,hsl(var(--sidebar-gradient-from)),hsl(var(--sidebar-gradient-to)))]",
           "text-[hsl(var(--sidebar-foreground))] border-r border-[hsl(var(--sidebar-border))]",
-          isMobile ? `w-72 ${openMobile ? 'translate-x-0' : '-translate-x-full'}` :
-            `w-72` // Always expanded on desktop
+          isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
         {children}
@@ -90,16 +97,17 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const SidebarHeader = () => {
+  const { isCollapsed } = useSidebar();
   return (
     <div className={cn(
       "flex items-center h-20 px-4 border-b border-[hsl(var(--sidebar-border))]",
-      'justify-between'
+      isCollapsed ? 'justify-center' : 'justify-between'
     )}>
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
         <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center shadow-inner flex-shrink-0">
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo" />
         </div>
-        <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-[hsl(var(--sidebar-foreground))]">
+        <span className={cn("text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-[hsl(var(--sidebar-foreground))] transition-opacity duration-300", isCollapsed ? 'opacity-0 w-0' : 'opacity-100')}>
             NexusAlpri
         </span>
       </Link>
@@ -109,64 +117,88 @@ export const SidebarHeader = () => {
 
 export const SidebarContent = () => {
   const { user } = useAuth();
+  const { isCollapsed } = useSidebar();
   const navItems = getNavItemsForRole(user?.role || 'STUDENT');
 
   return (
-    <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1">
-      {navItems.map((item) => {
-        if (item.children && item.children.length > 0) {
-          return (
-            <div key={item.id} className="pt-4">
-              <SidebarSectionHeader label={item.label} />
-              <div className="space-y-1 mt-2">
-                {item.children.map(child => <SidebarMenuItem key={child.id} item={child} />)}
+    <TooltipProvider delayDuration={100}>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1">
+        {navItems.map((item) => {
+          if (item.children && item.children.length > 0) {
+            return (
+              <div key={item.id} className="pt-4">
+                <SidebarSectionHeader label={item.label} />
+                <div className="space-y-1 mt-2">
+                  {item.children.map(child => <SidebarMenuItem key={child.id} item={child} />)}
+                </div>
               </div>
-            </div>
-          );
-        }
-        return <SidebarMenuItem key={item.id} item={item} />;
-      })}
-    </div>
+            );
+          }
+          return <SidebarMenuItem key={item.id} item={item} />;
+        })}
+      </div>
+    </TooltipProvider>
   );
 };
 
 const SidebarSectionHeader = ({ label }: { label: string }) => {
-  return <h2 className="px-4 text-xs font-semibold uppercase text-[hsl(var(--sidebar-foreground))]/60 tracking-wider">{label}</h2>;
+    const { isCollapsed } = useSidebar();
+    return (
+        <h2 className={cn(
+            "px-4 text-xs font-semibold uppercase text-[hsl(var(--sidebar-foreground))]/60 tracking-wider transition-all duration-300",
+            isCollapsed && "text-center"
+        )}>
+            {isCollapsed ? label.charAt(0) : label}
+        </h2>
+    );
 };
 
+
 const SidebarMenuItem = ({ item }: { item: NavItem }) => {
-  const { activeItem } = useSidebar();
+  const { activeItem, isCollapsed } = useSidebar();
 
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
     return activeItem === item.path || (activeItem.startsWith(item.path) && item.path !== '/');
   }, [activeItem, item.path]);
-
-  const menuItemContent = (
-    <div className={cn(
-      "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item",
-      isActive
-        ? "bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-accent-foreground))] shadow-md"
-        : "text-[hsl(var(--sidebar-foreground))]/90 hover:bg-[hsl(var(--sidebar-active-background))] hover:text-[hsl(var(--sidebar-accent-foreground))]"
-    )}>
-      <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
-      <span className="whitespace-nowrap">{item.label}</span>
-    </div>
+  
+  const content = (
+      <div className={cn(
+        "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item",
+        isCollapsed && "justify-center",
+        isActive
+          ? "bg-[hsl(var(--sidebar-active-background))] text-[hsl(var(--sidebar-accent-foreground))] shadow-md"
+          : "text-[hsl(var(--sidebar-foreground))]/90 hover:bg-[hsl(var(--sidebar-active-background))] hover:text-[hsl(var(--sidebar-accent-foreground))]"
+      )}>
+        <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
+        <span className={cn("whitespace-nowrap transition-opacity duration-200", isCollapsed && "opacity-0 w-0 h-0")}>{item.label}</span>
+      </div>
   );
 
-  if (!item.path) {
-    return <div className="cursor-not-allowed">{menuItemContent}</div>;
-  }
-
-  return (
-    <Link href={item.path}>
-        {menuItemContent}
+  const linkWrapper = (
+    <Link href={item.path || '#'}>
+      {content}
     </Link>
   );
+
+  if (isCollapsed) {
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>{linkWrapper}</TooltipTrigger>
+            <TooltipContent side="right" align="center" sideOffset={10}>
+                <p>{item.label}</p>
+            </TooltipContent>
+        </Tooltip>
+    );
+  }
+  
+  return linkWrapper;
 };
+
 
 export const SidebarFooter = () => {
   const { user, logout } = useAuth();
+  const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
 
   const getInitials = (name?: string | null) => {
     if (!name) return '??';
@@ -179,27 +211,40 @@ export const SidebarFooter = () => {
 
   return (
     <div className="p-4 border-t border-[hsl(var(--sidebar-border))] mt-auto bg-black/20 text-[hsl(var(--sidebar-foreground))]">
-      <div className={cn("flex items-center gap-3")}>
+      <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
         <Avatar className="h-10 w-10 flex-shrink-0">
           <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar" />
           <AvatarFallback className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-bold">
             {getInitials(user?.name)}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 overflow-hidden">
+        <div className={cn("flex-1 overflow-hidden transition-all duration-200", isCollapsed && "w-0 opacity-0")}>
             <p className="text-sm truncate font-semibold">{user?.name}</p>
             <p className="text-xs text-[hsl(var(--sidebar-foreground))]/80 capitalize truncate">{user?.role?.toLowerCase()}</p>
         </div>
       </div>
       <>
         <Separator className="my-3 bg-[hsl(var(--sidebar-border))]" />
-        <Button
-          onClick={logout}
-          variant="ghost"
-          className="text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--destructive))] w-full justify-start p-2 h-auto text-sm"
-        >
-          Cerrar sesión
-        </Button>
+         <Button
+            onClick={logout}
+            variant="ghost"
+            className={cn(
+              "text-[hsl(var(--sidebar-foreground))]/80 hover:text-[hsl(var(--destructive))] w-full justify-start p-2 h-auto text-sm",
+              isCollapsed && "justify-center"
+            )}
+          >
+             <span className={cn(isCollapsed ? 'sr-only' : '')}>Cerrar sesión</span>
+          </Button>
+          {!isMobile && (
+              <Button
+                  onClick={toggleSidebar}
+                  variant="ghost"
+                  size="icon"
+                  className="w-full h-auto p-2 mt-2 text-[hsl(var(--sidebar-foreground))]/80 hover:bg-white/10"
+              >
+                  <ChevronsLeft className={cn("transition-transform", isCollapsed && "rotate-180")} />
+              </Button>
+          )}
       </>
     </div>
   );
