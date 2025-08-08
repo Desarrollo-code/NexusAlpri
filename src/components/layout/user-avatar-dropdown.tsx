@@ -13,39 +13,36 @@ import {
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuPortal,
-  DropdownMenuSubContent
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Settings, Monitor, Sun, Moon } from 'lucide-react';
+import { LogOut, User, Settings, Palette, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { UserRole } from '@/types';
+import { AVAILABLE_THEMES } from '../theme-provider';
 
 
 function ThemeToggle() {
-    const { setTheme } = useTheme();
+    const { theme, setTheme } = useTheme();
 
     return (
         <DropdownMenuSub>
             <DropdownMenuSubTrigger>
-                <Sun className="mr-2 h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute mr-2 h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <Palette className="mr-2 h-4 w-4" />
                 <span>Cambiar Tema</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={() => setTheme('light')}>
-                        <Sun className="mr-2 h-4 w-4" />
-                        <span>Claro</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTheme('dark')}>
-                        <Moon className="mr-2 h-4 w-4" />
-                        <span>Oscuro</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTheme('system')}>
-                        <Monitor className="mr-2 h-4 w-4" />
-                        <span>Sistema</span>
-                    </DropdownMenuItem>
+                    <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+                        {AVAILABLE_THEMES.map((t) => (
+                           <DropdownMenuRadioItem key={t.value} value={t.value}>
+                             {t.label}
+                           </DropdownMenuRadioItem>
+                        ))}
+                    </DropdownMenuRadioGroup>
                 </DropdownMenuSubContent>
             </DropdownMenuPortal>
         </DropdownMenuSub>

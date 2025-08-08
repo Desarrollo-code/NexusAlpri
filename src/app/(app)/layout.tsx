@@ -24,6 +24,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
   const { toast } = useToast();
   const { isMobile, isCollapsed } = useSidebar();
+  const { theme } = useTheme();
 
   const handleIdleLogout = React.useCallback(() => {
     logout();
@@ -49,12 +50,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <TitleProvider>
-      <Sidebar>
-        <SidebarHeader />
-        <SidebarContent />
-        <SidebarFooter />
-      </Sidebar>
-
+      <Sidebar />
       <div
         className={cn(
           "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
@@ -72,12 +68,15 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-const AppLayoutWrapper = ({ children }: { children: React.ReactNode }) => (
-  <SidebarProvider>
-    <div className="flex h-screen bg-background text-foreground">
-      <AppLayout>{children}</AppLayout>
-    </div>
-  </SidebarProvider>
-);
+const AppLayoutWrapper = ({ children }: { children: React.ReactNode }) => {
+    const { theme } = useTheme();
+    return (
+        <SidebarProvider>
+            <div className={cn("flex h-screen bg-background text-foreground", theme)}>
+                <AppLayout>{children}</AppLayout>
+            </div>
+        </SidebarProvider>
+    );
+};
 
 export default AppLayoutWrapper;

@@ -6,82 +6,126 @@
   :root {
     --radius: 0.75rem; /* Esquinas más redondeadas */
 
-    /* 🎨 Paleta Claro (Tema Naranja) */
-    --background: 240 10% 97%;
+    /* ☀️ TEMA CLARO POR DEFECTO */
+    --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 27.5 100% 63.1%; /* Naranja Vibrante #FF8C42 */
+    --primary: 262.1 83.3% 57.8%; /* Violeta por defecto */
     --primary-foreground: 0 0% 100%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 27.5 100% 63.1%; /* Naranja como acento */
-    --accent-foreground: 0 0% 100%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%; /* Rojo */
     --destructive-foreground: 0 0% 100%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 27.5 100% 63.1%;
+    --ring: 262.1 83.3% 57.8%;
 
     /* 📊 Gráficos y Eventos (Claro) */
-    --chart-1: 27.5 100% 63.1%; /* Naranja */
-    --chart-2: 142 76% 36%; /* Verde */
-    --chart-3: 221 83% 53%;  /* Azul */
-    --chart-4: 240 5% 65%; /* Gris */
-    --chart-5: 240 10% 3.9%; /* Negro */
+    --chart-1: 262 80% 50%;
+    --chart-2: 173 80% 40%;
+    --chart-3: 350 80% 60%;
+    --chart-4: 25 85% 60%;
+    --chart-5: 210 80% 55%;
     
-    --event-blue: 210 100% 50%;
-    --event-green: 145 63% 49%;
-    --event-red: 0 72% 51%;
-    --event-orange: 25 95% 53%;
-
-    /* 🌌 Barra lateral y superior (Claro - texto por defecto) */
     --sidebar-foreground: hsl(240 3.8% 46.1%);
     --sidebar-active-background: hsl(var(--primary) / 0.1);
     --sidebar-accent-foreground: hsl(var(--primary));
   }
 
   .dark {
-    /* 🌚 Tema Oscuro (Vibrante y Colorido) */
-    --background: 240 10% 4%;      /* Casi negro */
-    --foreground: 240 5% 95%;      /* Blanco suave */
-    --card: 240 5% 10%;         /* Gris muy oscuro */
-    --card-foreground: 240 5% 95%;
+    /* 🌚 TEMA OSCURO POR DEFECTO (NEBULA) */
+    --background: 240 10% 4%;
+    --foreground: 210 20% 98%;
+    --card: 240 5% 10%;
+    --card-foreground: 210 20% 98%;
     --popover: 240 10% 4%;
-    --popover-foreground: 240 5% 95%;
-    --primary: 300 100% 65%;   /* Magenta/Fucsia vibrante */
-    --primary-foreground: 240 5% 95%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 252 88% 66%; /* Azul/Violeta brillante */
+    --primary-foreground: 210 20% 98%;
     --secondary: 240 5% 15%;
-    --secondary-foreground: 240 5% 95%;
+    --secondary-foreground: 210 20% 98%;
     --muted: 240 5% 15%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 260 100% 70%;      /* Azul/Violeta eléctrico */
-    --accent-foreground: 240 5% 95%;
+    --muted-foreground: 210 20% 65%;
+    --accent: 252 88% 66%;
+    --accent-foreground: 210 20% 98%;
     --destructive: 0 72% 51%;
-    --destructive-foreground: 240 5% 95%;
+    --destructive-foreground: 210 20% 98%;
     --border: 240 5% 15%;
     --input: 240 5% 15%;
-    --ring: 260 100% 70%;
-
-    /* 📊 Gráficos y Eventos (Oscuro - Vibrante) */
-    --chart-1: 300 100% 65%; /* Magenta */
-    --chart-2: 170 100% 45%; /* Verde neón */
-    --chart-3: 210 100% 60%; /* Azul cian */
-    --chart-4: 45 100% 55%;  /* Amarillo dorado */
-    --chart-5: 0 0% 80%;     /* Gris claro */
+    --ring: 252 88% 66%;
     
-    --event-blue: 210 100% 60%;
-    --event-green: 170 100% 45%;
-    --event-red: 0 72% 51%;
-    --event-orange: 45 100% 55%;
+    --chart-1: 252 88% 66%;
+    --chart-2: 173 80% 40%;
+    --chart-3: 350 80% 60%;
+    --chart-4: 25 85% 60%;
+    --chart-5: 210 80% 55%;
 
-    /* 🌌 Barra lateral y superior (Oscuro) */
-    --sidebar-foreground: hsl(240 5% 75%);
+    --sidebar-foreground: hsl(210 20% 75%);
     --sidebar-active-background: hsl(var(--primary) / 0.15);
+    --sidebar-accent-foreground: hsl(var(--primary));
+  }
+
+  /* --- TEMAS ADICIONALES --- */
+  .theme-sunset {
+    --background: 20 14% 4%;
+    --foreground: 20 5% 95%;
+    --card: 20 10% 8%;
+    --primary: 25 95% 58%; /* Naranja */
+    --primary-foreground: 20 5% 95%;
+    --secondary: 20 10% 12%;
+    --accent: 350 90% 65%; /* Rosa/Rojo */
+    --ring: 25 95% 58%;
+    --sidebar-foreground: hsl(20 5% 75%);
+    --sidebar-active-background: hsl(var(--primary) / 0.15);
+    --sidebar-accent-foreground: hsl(var(--primary));
+  }
+
+  .theme-forest {
+    --background: 120 20% 4%;
+    --foreground: 90 5% 95%;
+    --card: 120 15% 8%;
+    --primary: 145 70% 40%; /* Verde Esmeralda */
+    --primary-foreground: 90 5% 95%;
+    --secondary: 120 15% 12%;
+    --accent: 80 80% 50%;  /* Lima/Amarillo */
+    --ring: 145 70% 40%;
+    --sidebar-foreground: hsl(90 5% 75%);
+    --sidebar-active-background: hsl(var(--primary) / 0.15);
+    --sidebar-accent-foreground: hsl(var(--primary));
+  }
+
+  .theme-oceanic {
+    --background: 210 25% 5%;
+    --foreground: 190 10% 95%;
+    --card: 210 20% 9%;
+    --primary: 190 90% 55%; /* Cian */
+    --primary-foreground: 210 25% 5%;
+    --secondary: 210 20% 13%;
+    --accent: 230 80% 65%; /* Azul índigo */
+    --ring: 190 90% 55%;
+    --sidebar-foreground: hsl(190 10% 75%);
+    --sidebar-active-background: hsl(var(--primary) / 0.15);
+    --sidebar-accent-foreground: hsl(var(--primary));
+  }
+
+  .theme-rose-gold {
+    --background: 30 15% 97%;
+    --foreground: 25 20% 10%;
+    --card: 0 0% 100%;
+    --primary: 350 70% 60%; /* Rosa */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 15% 94%;
+    --accent: 30 90% 65%;  /* Oro */
+    --ring: 350 70% 60%;
+    --sidebar-foreground: hsl(25 20% 30%);
+    --sidebar-active-background: hsl(var(--primary) / 0.1);
     --sidebar-accent-foreground: hsl(var(--primary));
   }
 
@@ -96,7 +140,6 @@
 }
 
 @layer components {
-
   .btn-primary-gradient {
     @apply bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-primary/40 hover:from-primary/90 hover:to-accent/90;
   }
