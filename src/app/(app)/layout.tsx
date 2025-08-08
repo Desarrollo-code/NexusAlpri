@@ -26,19 +26,19 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
 
   const handleIdleLogout = React.useCallback(() => {
-    if (user) {
-      logout();
-      toast({
-        title: "Sesión Expirada",
-        description: "Tu sesión se ha cerrado por inactividad. Por favor, inicia sesión de nuevo.",
-        variant: "destructive",
-      });
-    }
-  }, [logout, toast, user]);
+    // No need to check for user here, logout function does nothing if no user.
+    logout();
+    toast({
+      title: "Sesión Expirada",
+      description: "Tu sesión se ha cerrado por inactividad. Por favor, inicia sesión de nuevo.",
+      variant: "destructive",
+    });
+  }, [logout, toast]);
 
-  const idleTimeoutMinutes = settings?.idleTimeoutMinutes || 20;
+  const idleTimeoutMinutes = settings?.idleTimeoutMinutes ?? 20;
   const isIdleTimeoutEnabled = settings?.enableIdleTimeout ?? true;
 
+  // Pass the logout function directly to the hook
   useIdleTimeout(handleIdleLogout, idleTimeoutMinutes, isIdleTimeoutEnabled);
 
   if (isLoading || !user) {
