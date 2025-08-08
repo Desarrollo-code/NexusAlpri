@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Home, Info, LogIn, BookOpenCheck } from 'lucide-react';
+import { Home, Info, LogIn } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
@@ -14,18 +14,19 @@ export function PublicTopBar() {
   const { settings, user } = useAuth();
 
   const navItems = [
-    { href: '/', label: 'Inicio' },
-    { href: '/courses', label: 'Cursos' },
-    { href: '/about', label: 'Nosotros' },
+    { href: '/', label: 'Inicio', icon: Home },
+    { href: '/about', label: 'Nosotros', icon: Info },
   ];
   
+  // No mostrar esta barra si el usuario está autenticado.
   if (user) {
       return null;
   }
 
+  // Ocultar esta barra en móvil, ya que BottomNav se encarga de ello.
   return (
     <header className={cn(
-        "px-4 lg:px-6 h-20 flex items-center justify-between sticky top-0 z-50",
+        "hidden md:flex items-center justify-between px-4 lg:px-6 h-20 sticky top-0 z-50",
         "bg-background/80 backdrop-blur-sm border-b"
     )}>
       <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
@@ -36,18 +37,26 @@ export function PublicTopBar() {
            {settings?.platformName || 'NexusAlpri'}
         </span>
       </Link>
+      
       <nav className="hidden items-center gap-2 sm:gap-4 lg:flex">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
              <Button key={item.href} variant={isActive ? "secondary" : "ghost"} asChild>
-                <Link href={item.href}>{item.label}</Link>
+                <Link href={item.href}>
+                    <item.icon className="mr-2 h-4 w-4" />
+                    {item.label}
+                </Link>
              </Button>
           )
         })}
       </nav>
+      
       <Button asChild>
-        <Link href="/sign-in">Acceder</Link>
+        <Link href="/sign-in">
+            <LogIn className="mr-2 h-4 w-4"/>
+            Acceder
+        </Link>
       </Button>
     </header>
   );
