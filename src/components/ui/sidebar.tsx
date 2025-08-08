@@ -200,31 +200,11 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
 
 export const SidebarFooter = () => {
-  const { user } = useAuth();
   const { isCollapsed, toggleSidebar } = useSidebar();
-
-  const getInitials = (name?: string | null) => {
-    if (!name) return '??';
-    const names = name.split(' ');
-    if (names.length > 1 && names[0] && names[names.length - 1]) {
-      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-  };
 
   return (
     <div className="p-4 border-t mt-auto bg-card">
-      <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
-        <Avatar className="h-10 w-10 flex-shrink-0">
-          <AvatarImage src={user?.avatar || ''} alt={user?.name || ''} data-ai-hint="user avatar"/>
-          <AvatarFallback className="bg-primary text-primary-foreground font-bold">
-            {getInitials(user?.name)}
-          </AvatarFallback>
-        </Avatar>
-        <div className={cn("flex-1 overflow-hidden transition-all duration-200", isCollapsed && "w-0 opacity-0")}>
-            <p className="text-sm truncate font-semibold">{user?.name}</p>
-            <p className="text-xs text-muted-foreground capitalize truncate">{user?.role?.toLowerCase()}</p>
-        </div>
+      <div className={cn("flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
         <Button
           onClick={toggleSidebar}
           variant="ghost"
