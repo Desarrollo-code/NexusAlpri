@@ -17,14 +17,12 @@ import {
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { Loader2 } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import { TitleProvider } from '@/contexts/title-context';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
   const { toast } = useToast();
   const { isMobile, isCollapsed } = useSidebar();
-  const { theme } = useTheme();
 
   const handleIdleLogout = React.useCallback(() => {
     logout();
@@ -73,10 +71,9 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 }
 
 const AppLayoutWrapper = ({ children }: { children: React.ReactNode }) => {
-    const { theme } = useTheme();
     return (
         <SidebarProvider>
-            <div className={cn("flex h-screen bg-background text-foreground", theme)}>
+            <div className="flex h-screen bg-background text-foreground">
                 <AppLayout>{children}</AppLayout>
             </div>
         </SidebarProvider>
