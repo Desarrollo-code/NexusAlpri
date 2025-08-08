@@ -272,85 +272,89 @@ export default function DashboardPage() {
     setPageTitle('Panel Principal');
   }, [setPageTitle]);
   
-  useEffect(() => {
+  const fetchDashboardData = useCallback(async () => {
     if (!user) return;
-
-    const fetchDashboardData = async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const promises: Promise<any>[] = [fetch('/api/announcements')];
-            
-            if (user.role === 'ADMINISTRATOR') {
-                promises.push(fetch('/api/dashboard/admin-stats'));
-                promises.push(fetch('/api/security/logs'));
-            }
-            if (user.role === 'INSTRUCTOR') {
-                const queryParams = new URLSearchParams({ manageView: 'true', userId: user.id, userRole: user.role });
-                promises.push(fetch(`/api/courses?${queryParams.toString()}`));
-            }
-            if (user.role === 'STUDENT') {
-                promises.push(fetch(`/api/enrollment/${user.id}`));
-            }
-
-            const responses = await Promise.all(promises);
-            
-            for (const res of responses) {
-                if (!res.ok) {
-                    const errorData = await res.json().catch(() => ({ message: `Error en la petición: ${res.statusText}` }));
-                    throw new Error(errorData.message || 'Una de las peticiones de datos falló');
-                }
-            }
-            
-            const [announcementsRes, ...roleSpecificRes] = responses;
-            const announcementsJson = await announcementsRes.json();
-            const announcementsData = Array.isArray(announcementsJson) ? announcementsJson : announcementsJson.announcements || [];
-
-            const dashboardPayload: DashboardData = {
-                adminStats: null,
-                studentStats: null,
-                instructorStats: null,
-                recentAnnouncements: announcementsData.map((ann: any) => ({
-                    ...ann,
-                    audience: ann.audience as any,
-                    author: ann.author ? { id: (ann.author as any).id, name: (ann.author as any).name } : null,
-                })),
-                taughtCourses: [],
-                myDashboardCourses: [],
-                securityLogs: [],
-            };
-
-            if (user.role === 'ADMINISTRATOR') {
-                dashboardPayload.adminStats = await roleSpecificRes[0].json();
-                const securityLogsJson = await roleSpecificRes[1].json();
-                dashboardPayload.securityLogs = securityLogsJson.logs || [];
-            } else if (user.role === 'INSTRUCTOR') {
-                const taughtCoursesResponse = await roleSpecificRes[0].json();
-                const taughtCoursesData = Array.isArray(taughtCoursesResponse) ? taughtCoursesResponse : (taughtCoursesResponse.courses || []);
-                dashboardPayload.instructorStats = { taught: taughtCoursesData.length };
-                dashboardPayload.taughtCourses = taughtCoursesData.map(mapApiCourseToAppCourse).slice(0, 4);
-            } else if (user.role === 'STUDENT') {
-                const enrolledData: any[] = await roleSpecificRes[0].json();
-                const mappedCourses: EnrolledCourse[] = enrolledData.map(item => ({
-                  id: item.id, title: item.title, description: item.description, instructor: item.instructorName || 'N/A',
-                  imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, enrolledAt: item.enrolledAt, isEnrolled: true, instructorId: item.instructorId, status: 'PUBLISHED', modules: [],
-                  progressPercentage: item.progressPercentage || 0,
-                }));
-                const completedCount = mappedCourses.filter(c => c.progressPercentage === 100).length;
-                dashboardPayload.studentStats = { enrolled: mappedCourses.length, completed: completedCount };
-                dashboardPayload.myDashboardCourses = mappedCourses.slice(0, 4);
-            }
-            
-            setData(dashboardPayload);
-        } catch (err) {
-          setError(err instanceof Error ? err.message : 'Unknown error fetching dashboard data');
-        } finally {
-          setIsLoading(false);
+    
+    setIsLoading(true);
+    setError(null);
+    try {
+        const promises: Promise<any>[] = [fetch('/api/announcements')];
+        
+        if (user.role === 'ADMINISTRATOR') {
+            promises.push(fetch('/api/dashboard/admin-stats'));
+            promises.push(fetch('/api/security/logs'));
         }
-    }
+        if (user.role === 'INSTRUCTOR') {
+            const queryParams = new URLSearchParams({ manageView: 'true', userId: user.id, userRole: user.role });
+            promises.push(fetch(`/api/courses?${queryParams.toString()}`));
+        }
+        if (user.role === 'STUDENT') {
+            promises.push(fetch(`/api/enrollment/${user.id}`));
+        }
 
-    fetchDashboardData();
+        const responses = await Promise.all(promises);
+        
+        for (const res of responses) {
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ message: `Error en la petición: ${res.statusText}` }));
+                throw new Error(errorData.message || 'Una de las peticiones de datos falló');
+            }
+        }
+        
+        const [announcementsRes, ...roleSpecificRes] = responses;
+        const announcementsJson = await announcementsRes.json();
+        const announcementsData = Array.isArray(announcementsJson) ? announcementsJson : announcementsJson.announcements || [];
+
+        const dashboardPayload: DashboardData = {
+            adminStats: null,
+            studentStats: null,
+            instructorStats: null,
+            recentAnnouncements: announcementsData.map((ann: any) => ({
+                ...ann,
+                audience: ann.audience as any,
+                author: ann.author ? { id: (ann.author as any).id, name: (ann.author as any).name } : null,
+            })),
+            taughtCourses: [],
+            myDashboardCourses: [],
+            securityLogs: [],
+        };
+
+        if (user.role === 'ADMINISTRATOR' && roleSpecificRes[0]) {
+            dashboardPayload.adminStats = await roleSpecificRes[0].json();
+        }
+        if (user.role === 'ADMINISTRATOR' && roleSpecificRes[1]) {
+            const securityLogsJson = await roleSpecificRes[1].json();
+            dashboardPayload.securityLogs = securityLogsJson.logs || [];
+        }
+        if (user.role === 'INSTRUCTOR' && roleSpecificRes[0]) {
+            const taughtCoursesResponse = await roleSpecificRes[0].json();
+            const taughtCoursesData = Array.isArray(taughtCoursesResponse) ? taughtCoursesResponse : (taughtCoursesResponse.courses || []);
+            dashboardPayload.instructorStats = { taught: taughtCoursesData.length };
+            dashboardPayload.taughtCourses = taughtCoursesData.map(mapApiCourseToAppCourse).slice(0, 4);
+        }
+        if (user.role === 'STUDENT' && roleSpecificRes[0]) {
+            const enrolledData: any[] = await roleSpecificRes[0].json();
+            const mappedCourses: EnrolledCourse[] = enrolledData.map(item => ({
+              id: item.id, title: item.title, description: item.description, instructor: item.instructorName || 'N/A',
+              imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, enrolledAt: item.enrolledAt, isEnrolled: true, instructorId: item.instructorId, status: 'PUBLISHED', modules: [],
+              progressPercentage: item.progressPercentage || 0,
+            }));
+            const completedCount = mappedCourses.filter(c => c.progressPercentage === 100).length;
+            dashboardPayload.studentStats = { enrolled: mappedCourses.length, completed: completedCount };
+            dashboardPayload.myDashboardCourses = mappedCourses.slice(0, 4);
+        }
+        
+        setData(dashboardPayload);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error fetching dashboard data');
+    } finally {
+      setIsLoading(false);
+    }
   }, [user]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   
   const filteredAnnouncements = useMemo(() => {

@@ -40,6 +40,7 @@ import { EventSidebar } from '@/components/calendar/event-sidebar';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { EventDetailsView } from '@/components/calendar/event-details-view';
+import { useTitle } from '@/contexts/title-context';
 
 
 const eventColors = [
@@ -54,6 +55,7 @@ export default function CalendarPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { setPageTitle } = useTitle();
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -94,6 +96,9 @@ export default function CalendarPage() {
     return false;
   }, [user, selectedEvent]);
 
+  useEffect(() => {
+    setPageTitle('Calendario');
+  }, [setPageTitle]);
 
   const fetchEvents = useCallback(async () => {
     setIsLoading(true);

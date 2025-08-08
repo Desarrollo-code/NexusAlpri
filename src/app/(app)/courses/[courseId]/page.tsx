@@ -229,6 +229,14 @@ export default function CourseDetailPage() {
     return course.modules.flatMap(m => m.lessons).find(l => l.id === selectedLessonId);
   }, [selectedLessonId, course]);
 
+  useEffect(() => {
+      if (selectedLesson) {
+          setPageTitle(selectedLesson.title);
+      } else if (course) {
+          setPageTitle(course.title);
+      }
+  }, [selectedLesson, course, setPageTitle]);
+
   const filteredModules = useMemo(() => {
     if (!course) return [];
     if (!sidebarSearch.trim()) return course.modules;

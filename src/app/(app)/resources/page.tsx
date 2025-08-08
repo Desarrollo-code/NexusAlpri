@@ -47,6 +47,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DownloadButton } from '@/components/ui/download-button';
 import { Badge } from '@/components/ui/badge';
 import { DecorativeFolder, getPattern } from '@/components/resources/decorative-folder';
+import { useTitle } from '@/contexts/title-context';
 
 
 // --- Types and Mappers ---
@@ -198,6 +199,7 @@ ResourceGridItem.displayName = 'ResourceGridItem';
 export default function ResourcesPage() {
   const { user, settings } = useAuth();
   const { toast } = useToast();
+  const { setPageTitle } = useTitle();
 
   const [allApiResources, setAllApiResources] = useState<AppResourceType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -232,6 +234,10 @@ export default function ResourcesPage() {
   const [isDeletingResource, setIsDeletingResource] = useState(false);
   
   const [selectedResource, setSelectedResource] = useState<AppResourceType | null>(null);
+
+  useEffect(() => {
+    setPageTitle(breadcrumbs[breadcrumbs.length - 1].title);
+  }, [breadcrumbs, setPageTitle]);
 
   // --- Data Fetching and Memoization ---
   const fetchResources = useCallback(async () => {

@@ -37,6 +37,7 @@ import { cn } from '@/lib/utils';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { UserRole } from '@/types';
+import { useTitle } from '@/contexts/title-context';
 
 
 const ProfileCardBackground = () => (
@@ -67,6 +68,7 @@ export default function ProfilePage() {
   const { user, updateUser } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { setPageTitle } = useTitle();
 
   const [editableName, setEditableName] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -94,6 +96,10 @@ export default function ProfilePage() {
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setPageTitle('Mi Perfil');
+  }, [setPageTitle]);
   
   useEffect(() => {
     if (user) {

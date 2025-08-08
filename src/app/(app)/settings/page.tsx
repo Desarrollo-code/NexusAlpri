@@ -26,11 +26,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTitle } from '@/contexts/title-context';
 
 export default function SettingsPage() {
   const { user, settings: globalSettings, updateSettings } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const { setPageTitle } = useTitle();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -40,6 +42,10 @@ export default function SettingsPage() {
   
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [isCheckingCategory, setIsCheckingCategory] = useState(false);
+
+  useEffect(() => {
+    setPageTitle('Configuración');
+  }, [setPageTitle]);
 
   useEffect(() => {
     if (globalSettings) {

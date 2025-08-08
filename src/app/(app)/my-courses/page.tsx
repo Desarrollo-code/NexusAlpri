@@ -13,15 +13,21 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
+import { useTitle } from '@/contexts/title-context';
 
 export default function MyCoursesPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const { toast } = useToast();
+  const { setPageTitle } = useTitle();
   
   const [myEnrolledCourses, setMyEnrolledCourses] = useState<EnrolledCourse[]>([]);
   const [isFetchingPageData, setIsFetchingPageData] = useState(true); 
   const [error, setError] = useState<string | null>(null);
   const [enrollmentUpdatedSignal, setEnrollmentUpdatedSignal] = useState(0);
+
+  useEffect(() => {
+    setPageTitle('Mis Cursos');
+  }, [setPageTitle]);
 
   useEffect(() => {
     if (isAuthLoading) return;

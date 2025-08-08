@@ -35,6 +35,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import type { Announcement as PrismaAnnouncement, User as PrismaUser } from '@prisma/client';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { useTitle } from '@/contexts/title-context';
 
 interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
   author: { id: string; name: string; email?: string } | null;
@@ -49,6 +50,7 @@ export default function AnnouncementsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { setPageTitle } = useTitle();
 
   const [allAnnouncements, setAllAnnouncements] = useState<DisplayAnnouncement[]>([]);
   const [totalAnnouncements, setTotalAnnouncements] = useState(0);
@@ -68,6 +70,10 @@ export default function AnnouncementsPage() {
   const [announcementToDelete, setAnnouncementToDelete] = useState<DisplayAnnouncement | null>(null);
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    setPageTitle('Anuncios');
+  }, [setPageTitle]);
 
   useEffect(() => {
     const fetchAnnouncements = async () => {

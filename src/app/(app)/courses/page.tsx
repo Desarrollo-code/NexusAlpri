@@ -15,6 +15,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourseCarousel } from '@/components/course-carousel';
+import { useTitle } from '@/contexts/title-context';
 
 interface ApiCourse extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
   instructor: { id: string; name: string } | null;
@@ -44,6 +45,7 @@ export default function CoursesPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { setPageTitle } = useTitle();
   
   const [allApiCourses, setAllApiCourses] = useState<ApiCourse[]>([]);
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
@@ -53,6 +55,10 @@ export default function CoursesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   
   const [enrollmentUpdatedSignal, setEnrollmentUpdatedSignal] = useState(0);
+
+  useEffect(() => {
+    setPageTitle('Catálogo de Cursos');
+  }, [setPageTitle]);
 
   const fetchCoursesAndEnrollments = useCallback(async () => {
     setIsLoading(true);
