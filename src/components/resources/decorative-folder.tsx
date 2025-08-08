@@ -55,19 +55,35 @@ const patterns = [
   ),
 ];
 
-export const getPattern = (id: number | string) => {
-    const numericId = typeof id === 'string' ? 
-        id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : id;
+const folderColors = [
+    'hsl(var(--chart-1) / 0.2)', // Turquesa
+    'hsl(var(--chart-2) / 0.2)', // Azulado
+    'hsl(var(--event-green) / 0.2)', // Verde
+    'hsl(var(--chart-3) / 0.2)', // Naranja
+    'hsl(var(--event-red) / 0.15)', // Rojo
+    'hsl(var(--event-blue) / 0.2)', // Azul
+];
+
+const getPatternAndColor = (id: number | string) => {
+    const numericId = typeof id === 'string' 
+        ? id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) 
+        : id;
+    
     const patternIndex = numericId % patterns.length;
-    return patterns[patternIndex];
+    const colorIndex = numericId % folderColors.length;
+
+    return {
+        pattern: patterns[patternIndex],
+        color: folderColors[colorIndex]
+    };
 };
 
 export const DecorativeFolder: React.FC<DecorativeFolderProps> = ({ patternId, className }) => {
-  const patternGenerator = getPattern(patternId);
+  const { pattern: patternGenerator, color } = getPatternAndColor(patternId);
 
   return (
     <div className={className}>
-      {patternGenerator('hsl(var(--primary) / 0.2)')}
+      {patternGenerator(color)}
     </div>
   );
 };
