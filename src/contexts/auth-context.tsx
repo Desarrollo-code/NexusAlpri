@@ -5,6 +5,7 @@ import type { User, PlatformSettings } from '@/types';
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 interface AuthContextType {
   user: User | null;
@@ -14,6 +15,7 @@ interface AuthContextType {
   isLoading: boolean;
   updateUser: (updatedData: Partial<User>) => void;
   updateSettings: (updatedData: Partial<PlatformSettings>) => void;
+  updateTheme: (newTheme: string) => Promise<void>;
 }
 
 const DEFAULT_SETTINGS: PlatformSettings = {
@@ -38,6 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const { setTheme } = useTheme();
 
   useEffect(() => {
     const fetchSessionData = async () => {
@@ -53,6 +56,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (userRes.ok) {
               const userData = await userRes.json();
               setUser(userData.user);
+              if (userData.user?.theme) {
+                setTheme(userData.user.theme);
+              }
             } else {
               setUser(null);
             }
@@ -66,14 +72,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
     
     fetchSessionData();
-  }, []);
+  }, [setTheme]);
 
   const login = useCallback((userData: User) => {
     setUser(userData);
+    if (userData.theme) {
+        setTheme(userData.theme);
+    }
     const params = new URLSearchParams(window.location.search);
     const redirectedFrom = params.get('redirectedFrom');
     router.replace(redirectedFrom || '/dashboard');
-  }, [router]);
+  }, [router, setTheme]);
 
   const logout = useCallback(async () => {
     try {
@@ -82,9 +91,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to call logout API", error);
     } finally {
       setUser(null);
+      setTheme('dark'); // Reset to default theme on logout
       router.push('/sign-in');
     }
-  }, [router]);
+  }, [router, setTheme]);
   
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser(prevUser => {
@@ -100,6 +110,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
+  const updateTheme = useCallback(async (newTheme: string) => {
+    if (!user) return;
+    // Optimistic UI update
+    setTheme(newTheme);
+    updateUser({ theme: newTheme });
+
+    try {
+      const res = await fetch(`/api/users/${user.id}/theme`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme: newTheme }),
+      });
+      if (!res.ok) {
+        // Revert on failure
+        setTheme(user.theme || 'dark');
+        updateUser({ theme: user.theme });
+        console.error('Failed to save theme to database');
+      }
+    } catch (error) {
+       // Revert on failure
+       setTheme(user.theme || 'dark');
+       updateUser({ theme: user.theme });
+       console.error('Error saving theme:', error);
+    }
+  }, [user, setTheme, updateUser]);
+
+
   const contextValue = useMemo(() => ({
     user,
     settings,
@@ -108,7 +145,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     updateUser,
     updateSettings,
-  }), [user, settings, login, logout, isLoading, updateUser, updateSettings]);
+    updateTheme,
+  }), [user, settings, login, logout, isLoading, updateUser, updateSettings, updateTheme]);
 
   if (isLoading) {
     return (

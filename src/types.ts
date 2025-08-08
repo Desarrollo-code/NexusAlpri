@@ -12,6 +12,7 @@ export interface User {
   role: UserRole;
   isTwoFactorEnabled?: boolean;
   registeredDate?: string | Date;
+  theme?: string | null;
 }
 
 export interface PlatformSettings {
