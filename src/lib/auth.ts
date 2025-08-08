@@ -53,20 +53,6 @@ export async function deleteSession() {
   (await cookies()).set('session', '', { expires: new Date(0), path: '/' });
 }
 
-// Used in middleware where the full request object is available
-export async function getSession(request: NextRequest): Promise<{ userId: string } | null> {
-    const sessionCookieValue = (await cookies()).get('session')?.value;
-    if (!sessionCookieValue) {
-        return null;
-    }
-    const decryptedSession = await decrypt(sessionCookieValue);
-    if (!decryptedSession?.userId) {
-        return null;
-    }
-    return { userId: decryptedSession.userId };
-}
-
-
 // Used in API routes and server components. `cache` ensures this only runs once per request.
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
   const sessionCookieValue = (await cookies()).get('session')?.value;

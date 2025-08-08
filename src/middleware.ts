@@ -1,7 +1,8 @@
+
 // src/middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 
 const IS_APP_ROUTE_REGEX = /^\/(dashboard|courses|my-courses|profile|manage-courses|users|settings|analytics|security-audit|enrollments|notifications|calendar|resources)/;
 const PUBLIC_PATHS = ['/', '/about', '/sign-in', '/sign-up'];
@@ -9,7 +10,11 @@ const API_AUTH_PREFIX = '/api/auth';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const session = await getSession(request);
+  
+  // Cloned headers are needed to avoid read-only errors.
+  const headers = new Headers(request.headers);
+  const requestWithHeaders = new NextRequest(request.url, { headers });
+  const session = await getCurrentUser();
 
   // Allow static files, image optimization, and uploads to pass through
   if (
