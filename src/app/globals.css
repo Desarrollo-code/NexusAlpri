@@ -4,10 +4,10 @@
 
 @layer base {
   :root {
-    --radius: 0.5rem;
+    --radius: 0.75rem; /* Esquinas más redondeadas */
 
     /* 🎨 Paleta Claro (Tema Naranja) */
-    --background: 0 0% 100%;
+    --background: 240 10% 97%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
@@ -39,7 +39,7 @@
     --event-red: 0 72% 51%;
     --event-orange: 25 95% 53%;
 
-    /* 🌌 Barra lateral y superior */
+    /* 🌌 Barra lateral y superior (Claro - texto por defecto) */
     --sidebar-foreground: hsl(240 3.8% 46.1%);
     --sidebar-active-background: hsl(var(--primary) / 0.1);
     --sidebar-accent-foreground: hsl(var(--primary));
@@ -80,9 +80,9 @@
     --event-orange: 25 95% 63%;
 
     /* 🌌 Barra lateral y superior (Oscuro) */
-    --sidebar-foreground: hsl(0 0% 47.8%); /* #7A7A7A */
-    --sidebar-active-background: hsl(var(--primary) / 0.1);
-    --sidebar-accent-foreground: hsl(var(--primary)); /* #FF8C42 */
+    --sidebar-foreground: hsl(0 0% 100% / 0.8);
+    --sidebar-active-background: hsl(0 0% 100% / 0.2);
+    --sidebar-accent-foreground: hsl(0 0% 100%);
   }
 
   * {
