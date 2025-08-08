@@ -2,9 +2,11 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 
 export const useIdleTimeout = (onTimeout: () => void, timeoutMinutes: number, enabled: boolean) => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pathname = usePathname();
 
   const resetTimer = useCallback(() => {
     if (timeoutRef.current) {
@@ -41,6 +43,13 @@ export const useIdleTimeout = (onTimeout: () => void, timeoutMinutes: number, en
       clearTimer();
     };
   }, [resetTimer, clearTimer, enabled]);
+
+  // Reset timer on route change as well
+  useEffect(() => {
+    if (enabled) {
+      resetTimer();
+    }
+  }, [pathname, resetTimer, enabled]);
 
   return clearTimer;
 };
