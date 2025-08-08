@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
-import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, List, MoreVertical, Folder, FileText, Video, Info, Notebook, Shield, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Filter, ArrowUp, ArrowDown, Lock, X, UploadCloud, Grid, Link as LinkIcon } from 'lucide-react';
+import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, List, MoreVertical, Folder, FileText, Video, Info, Notebook, Shield, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Filter, ArrowUp, ArrowDown, Lock, X, UploadCloud, Grid, Link as LinkIcon, FolderPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -200,10 +200,11 @@ export default function ResourcesPage() {
   
   // Folder navigation state
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-  const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([]);
+  const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([{ id: null, title: 'Biblioteca' }]);
 
   // Modals state
   const [showCreateFileModal, setShowCreateFileModal] = useState(false);
+  const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   
   const [isSubmittingResource, setIsSubmittingResource] = useState(false);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
@@ -215,6 +216,8 @@ export default function ResourcesPage() {
   const [newResourceCategory, setNewResourceCategory] = useState('');
   const [newResourceFile, setNewResourceFile] = useState<File | null>(null);
   const [newResourceUrl, setNewResourceUrl] = useState('');
+  const [newFolderName, setNewFolderName] = useState('');
+
 
   const [resourceToDelete, setResourceToDelete] = useState<AppResourceType | null>(null);
   const [isDeletingResource, setIsDeletingResource] = useState(false);
@@ -255,7 +258,38 @@ export default function ResourcesPage() {
     setNewResourceFile(null);
     setNewResourceUrl('');
     setUploadProgress(0);
+    setNewFolderName('');
   };
+
+  const handleCreateFolder = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!newFolderName.trim()) {
+        toast({ title: "Error", description: "El nombre de la carpeta es obligatorio.", variant: "destructive" });
+        return;
+    }
+    
+    setIsSubmittingResource(true);
+    try {
+        const payload = { 
+            title: newFolderName, 
+            type: 'FOLDER', 
+            category: 'General',
+            uploaderId: user?.id, 
+            parentId: currentFolderId 
+        };
+        const response = await fetch('/api/resources', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!response.ok) throw new Error((await response.json()).message || 'Failed to create folder');
+        toast({ title: "Carpeta Creada", description: `La carpeta "${newFolderName}" ha sido creada.` });
+        setShowCreateFolderModal(false);
+        resetCreateForm();
+        fetchResources();
+    } catch (err) {
+        toast({ title: "Error al crear carpeta", description: (err as Error).message, variant: "destructive" });
+    } finally {
+        setIsSubmittingResource(false);
+    }
+  };
+
 
   const handleCreateFile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -367,9 +401,14 @@ export default function ResourcesPage() {
                <p className="text-muted-foreground">Explora, busca y gestiona todos los archivos de la organización.</p>
            </div>
            {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-              <Button onClick={() => setShowCreateFileModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
-                  <UploadCloud className="mr-2 h-4 w-4"/> Subir Nuevo Recurso
-              </Button>
+            <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setShowCreateFolderModal(true)}>
+                    <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
+                </Button>
+                <Button onClick={() => setShowCreateFileModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
+                  <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
+                </Button>
+            </div>
            )}
         </header>
 
@@ -414,11 +453,18 @@ export default function ResourcesPage() {
         </Card>
 
         <div className="flex items-center text-sm text-muted-foreground mb-4">
-            <button onClick={() => handleBreadcrumbClick(null, -1)} className="hover:text-primary flex items-center gap-1"><Home className="h-4 w-4"/> Biblioteca</button>
             {breadcrumbs.map((crumb, index) => (
             <React.Fragment key={crumb.id || 'root'}>
-                <ChevronRight className="h-4 w-4 mx-1" />
-                <button onClick={() => handleBreadcrumbClick(crumb.id, index)} className="hover:text-primary truncate">{crumb.title}</button>
+                {index > 0 && <ChevronRight className="h-4 w-4 mx-1" />}
+                <button 
+                  onClick={() => handleBreadcrumbClick(crumb.id, index)} 
+                  className={cn(
+                      "hover:text-primary",
+                      index === breadcrumbs.length - 1 ? "font-semibold text-foreground" : ""
+                  )}
+                >
+                    {crumb.title}
+                </button>
             </React.Fragment>
             ))}
         </div>
@@ -511,6 +557,36 @@ export default function ResourcesPage() {
                   )}
 
                   <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4"><Button type="button" variant="outline" onClick={() => setShowCreateFileModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Guardar</Button></DialogFooter>
+              </form>
+          </DialogContent>
+       </Dialog>
+
+      <Dialog open={showCreateFolderModal} onOpenChange={(isOpen) => { if (!isOpen) resetCreateForm(); setShowCreateFolderModal(isOpen); }}>
+          <DialogContent className="w-[95vw] max-w-md rounded-lg">
+              <DialogHeader>
+                  <DialogTitle>Crear Nueva Carpeta</DialogTitle>
+                  <DialogDescription>Introduce el nombre para la nueva carpeta en la ubicación actual.</DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleCreateFolder} className="grid gap-4 py-4">
+                  <div className="space-y-1">
+                      <Label htmlFor="folder-name">Nombre de la Carpeta <span className="text-destructive">*</span></Label>
+                      <Input 
+                          id="folder-name" 
+                          name="folder-name" 
+                          value={newFolderName} 
+                          onChange={(e) => setNewFolderName(e.target.value)} 
+                          required 
+                          disabled={isSubmittingResource}
+                          placeholder="Ej: Documentos de Marketing"
+                      />
+                  </div>
+                  <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4">
+                      <Button type="button" variant="outline" onClick={() => setShowCreateFolderModal(false)} disabled={isSubmittingResource}>Cancelar</Button>
+                      <Button type="submit" disabled={isSubmittingResource || !newFolderName.trim()}>
+                          {isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FolderPlus className="mr-2 h-4 w-4" />}
+                          Crear Carpeta
+                      </Button>
+                  </DialogFooter>
               </form>
           </DialogContent>
        </Dialog>
