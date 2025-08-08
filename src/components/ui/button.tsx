@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -43,6 +44,20 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
+    
+    // Si asChild es true, no podemos añadir elementos extra.
+    // El componente padre se encargará de renderizar el contenido.
+    if (asChild) {
+      return (
+        <Comp
+          className={cn(buttonVariants({ variant, size, className }))}
+          ref={ref}
+          {...props}
+        />
+      )
+    }
+
+    // Si es un botón normal, añadimos el efecto de brillo.
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
@@ -53,7 +68,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/30 to-transparent opacity-80"
             aria-hidden="true"
         />
-        {props.children}
+        <span className="relative z-10">{props.children}</span>
       </Comp>
     )
   }
