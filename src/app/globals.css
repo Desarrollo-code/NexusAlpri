@@ -46,43 +46,43 @@
   }
 
   .dark {
-    /* 🌚 Tema Oscuro (Basado en la imagen de referencia - Azul/Violeta) */
-    --background: 224 71% 4%; /* Negro azulado muy oscuro */
-    --foreground: 210 40% 98%; /* Blanco */
-    --card: 224 71% 9%; /* Azul oscuro para tarjetas */
-    --card-foreground: 210 40% 98%;
-    --popover: 224 71% 4%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 262 88% 66%; /* Violeta vibrante */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 262 88% 66%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 41%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 262 88% 70%;
+    /* 🌚 Tema Oscuro (Vibrante y Colorido) */
+    --background: 240 10% 4%;      /* Casi negro */
+    --foreground: 240 5% 95%;      /* Blanco suave */
+    --card: 240 5% 10%;         /* Gris muy oscuro */
+    --card-foreground: 240 5% 95%;
+    --popover: 240 10% 4%;
+    --popover-foreground: 240 5% 95%;
+    --primary: 300 100% 65%;   /* Magenta/Fucsia vibrante */
+    --primary-foreground: 240 5% 95%;
+    --secondary: 240 5% 15%;
+    --secondary-foreground: 240 5% 95%;
+    --muted: 240 5% 15%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 260 100% 70%;      /* Azul/Violeta eléctrico */
+    --accent-foreground: 240 5% 95%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 240 5% 95%;
+    --border: 240 5% 15%;
+    --input: 240 5% 15%;
+    --ring: 260 100% 70%;
 
-    /* 📊 Gráficos y Eventos (Oscuro) */
-    --chart-1: 262 88% 66%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 210 100% 65%;
-    --chart-4: 0 0% 70%;
-    --chart-5: 0 0% 50%;
+    /* 📊 Gráficos y Eventos (Oscuro - Vibrante) */
+    --chart-1: 300 100% 65%; /* Magenta */
+    --chart-2: 170 100% 45%; /* Verde neón */
+    --chart-3: 210 100% 60%; /* Azul cian */
+    --chart-4: 45 100% 55%;  /* Amarillo dorado */
+    --chart-5: 0 0% 80%;     /* Gris claro */
     
-    --event-blue: 210 100% 65%;
-    --event-green: 145 63% 59%;
-    --event-red: 0 72% 61%;
-    --event-orange: 25 95% 63%;
+    --event-blue: 210 100% 60%;
+    --event-green: 170 100% 45%;
+    --event-red: 0 72% 51%;
+    --event-orange: 45 100% 55%;
 
     /* 🌌 Barra lateral y superior (Oscuro) */
-    --sidebar-foreground: hsla(0, 76%, 53%, 0.7);
-    --sidebar-active-background: hsl(61, 37%, 57%);
-    --sidebar-accent-foreground: hsl(0 0% 100%);
+    --sidebar-foreground: hsl(240 5% 75%);
+    --sidebar-active-background: hsl(var(--primary) / 0.15);
+    --sidebar-accent-foreground: hsl(var(--primary));
   }
 
   * {
@@ -243,25 +243,4 @@
     inherits: false;
     initial-value: 0deg;
   }
-
-  /* Clases para gradientes */
-  .dark\:bg-sidebar-gradient {
-    background: var(--sidebar-gradient);
-  }
-
-  .dark\:bg-topbar-gradient {
-    background: var(--topbar-gradient);
-  }
-}
-
-.dark .bg-primary\/10 {
-  background: var(--active-item-gradient) !important;
-}
-
-.dark .bg-primary\/10.text-primary, .dark .bg-primary\/10.dark\:bg-white\/20.dark\:text-white {
-  color: hsl(var(--primary-foreground)) !important;
-}
-
-.dark .group\/menu-item .bg-primary.dark\:bg-white {
-  background: hsl(var(--primary)) !important;
 }

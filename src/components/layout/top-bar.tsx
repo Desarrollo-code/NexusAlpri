@@ -84,7 +84,7 @@ export const TopBar = () => {
         <div className={cn(
             "flex items-center justify-between h-20 px-4 shrink-0",
             "bg-card border-b sticky top-0 z-40",
-            "dark:bg-[#1a202c] dark:border-border"
+            "dark:bg-gradient-to-r dark:from-gray-900/80 dark:via-blue-900/30 dark:to-purple-900/30 dark:border-border backdrop-blur-sm"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2">
