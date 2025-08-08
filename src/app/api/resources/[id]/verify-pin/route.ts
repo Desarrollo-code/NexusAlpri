@@ -1,9 +1,8 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
-import type { NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 

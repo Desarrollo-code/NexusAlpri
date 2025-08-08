@@ -1,3 +1,4 @@
+
 import 'server-only';
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
@@ -39,7 +40,7 @@ async function decrypt(input: string): Promise<any> {
 export async function createSession(userId: string) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
   const session = await encrypt({ userId, expires });
- (await cookies()).set('session', session, {
+  cookies().set('session', session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
@@ -49,12 +50,12 @@ export async function createSession(userId: string) {
 }
 
 export async function deleteSession() {
-  (await cookies()).set('session', '', { expires: new Date(0), path: '/' });
+  cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
 
 // Used in API routes and server components. `cache` ensures this only runs once per request.
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
-  const sessionCookieValue = (await cookies()).get('session')?.value;
+  const sessionCookieValue = cookies().get('session')?.value;
 
   if (!sessionCookieValue) {
     return null;
