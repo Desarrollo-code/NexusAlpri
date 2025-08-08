@@ -1,31 +1,33 @@
 // src/components/resources/decorative-folder.tsx
 'use client';
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface DecorativeFolderProps {
   patternId: number | string;
   className?: string;
 }
 
-// Paleta de colores para los FONDOS de las carpetas. Son colores muy suaves.
+// Paleta de colores sólidos y profesionales para el tema oscuro
 const backgroundColors = [
-    'hsl(210 40% 98%)',   // bg-slate-50
-    'hsl(30 54% 96%)',    // bg-orange-50
-    'hsl(142 71% 94%)',  // bg-green-50
-    'hsl(222 47% 96%)',  // bg-blue-50
-    'hsl(346 76% 96%)',  // bg-pink-50
-    'hsl(48 91% 95%)',   // bg-yellow-50
+    'hsl(150, 15%, 25%)', // Verde musgo oscuro
+    'hsl(30, 8%, 30%)',   // Gris cálido
+    'hsl(220, 10%, 32%)', // Azul pizarra
+    'hsl(210, 12%, 28%)', // Azul grisáceo
+    'hsl(180, 10%, 26%)', // Turquesa oscuro
+    'hsl(40, 10%, 30%)',  // Marrón suave
 ];
 
-// Paleta de colores para los PATRONES (líneas, puntos). Contrastan suavemente con el fondo.
+// Paleta de colores para los PATRONES. Contrastan sutilmente con el fondo.
 const patternColors = [
-    'hsl(210 40% 85%)',   // slate-300
-    'hsl(30 54% 80%)',    // orange-300
-    'hsl(142 71% 75%)',  // green-300
-    'hsl(222 47% 80%)',  // blue-300
-    'hsl(346 76% 85%)',  // pink-300
-    'hsl(48 91% 80%)',   // yellow-300
+    'hsl(150, 15%, 20%)', // Verde más oscuro
+    'hsl(30, 8%, 25%)',   // Gris más oscuro
+    'hsl(220, 10%, 27%)', // Azul más oscuro
+    'hsl(210, 12%, 23%)', // Azul grisáceo más oscuro
+    'hsl(180, 10%, 21%)', // Turquesa más oscuro
+    'hsl(40, 10%, 25%)',  // Marrón más oscuro
 ];
+
 
 // Definición de los patrones usando CSS background-image
 const patterns = [
@@ -51,6 +53,14 @@ const patterns = [
   (color: string) => ({
     backgroundImage: `radial-gradient(${color} 1px, transparent 1px)`,
     backgroundSize: '15px 15px',
+  }),
+   // Ondas (Waves)
+  (color: string) => ({
+    backgroundImage: `
+      radial-gradient(circle at 100% 50%, transparent 20%, ${color} 21%, ${color} 34%, transparent 35%, transparent),
+      radial-gradient(circle at 0% 50%, transparent 20%, ${color} 21%, ${color} 34%, transparent 35%, transparent)
+    `,
+    backgroundSize: '30px 40px',
   }),
 ];
 
@@ -81,6 +91,6 @@ export const DecorativeFolder: React.FC<DecorativeFolderProps> = ({ patternId, c
   const style = getUniqueFolderStyle(patternId);
 
   return (
-    <div className={className} style={style} />
+    <div className={cn(className)} style={style} />
   );
 };
