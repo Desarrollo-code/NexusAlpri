@@ -5,7 +5,6 @@ import { SignJWT, jwtVerify } from 'jose';
 import { cache } from 'react';
 import type { User as PrismaUser } from '@prisma/client';
 import prisma from './prisma';
-import type { NextRequest } from 'next/server';
 
 const secretKey = process.env.JWT_SECRET;
 if (!secretKey) {
@@ -31,8 +30,6 @@ async function decrypt(input: string): Promise<any> {
     const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
     return payload;
   } catch (error) {
-    // This can happen if the token is invalid, expired, etc.
-    // It's a normal part of the process, not necessarily an error.
     return null;
   }
 }
@@ -53,15 +50,14 @@ export async function deleteSession() {
   cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
 
-// Used in API routes and server components. `cache` ensures this only runs once per request.
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
-  const sessionCookieValue = cookies().get('session')?.value;
+  const sessionCookie = cookies().get('session');
 
-  if (!sessionCookieValue) {
+  if (!sessionCookie) {
     return null;
   }
 
-  const session = await decrypt(sessionCookieValue);
+  const session = await decrypt(sessionCookie.value);
   if (!session?.userId) {
     return null;
   }

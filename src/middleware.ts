@@ -1,16 +1,13 @@
-
 // src/middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getCurrentUser } from '@/lib/auth';
 
 const IS_APP_ROUTE_REGEX = /^\/(dashboard|courses|my-courses|profile|manage-courses|users|settings|analytics|security-audit|enrollments|notifications|calendar|resources)/;
-const PUBLIC_PATHS = ['/', '/about', '/sign-in', '/sign-up'];
-const API_AUTH_PREFIX = '/api/auth';
+const PUBLIC_PATHS = ['/', '/about']; // sign-in and sign-up are handled separately
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const session = await getCurrentUser();
+  const sessionCookie = request.cookies.get('session');
 
   // Allow static files, image optimization, and uploads to pass through
   if (
@@ -25,8 +22,8 @@ export async function middleware(request: NextRequest) {
   const isAppRoute = IS_APP_ROUTE_REGEX.test(pathname);
   const isAuthRoute = pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up');
 
-  // If user is logged in
-  if (session) {
+  // If user has a session cookie
+  if (sessionCookie) {
     // If they are on an auth page, redirect to dashboard
     if (isAuthRoute) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
@@ -35,8 +32,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // If user is not logged in
-  if (!session) {
+  // If user does not have a session cookie
+  if (!sessionCookie) {
     // And they are trying to access a protected app route
     if (isAppRoute) {
       // Redirect to sign-in page, preserving the intended destination
