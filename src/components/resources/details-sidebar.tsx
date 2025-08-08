@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users } from 'lucide-react';
+import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -121,7 +121,7 @@ export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: 
                     
                     {!resource.ispublic && resource.sharedWith && resource.sharedWith.length > 0 && (
                         <div>
-                             <h4 className="font-semibold mb-3 flex items-center gap-2"><Users className="h-4 w-4"/> Compartido Con</h4>
+                             <h4 className="font-semibold mb-3 flex items-center gap-2"><UsersIcon className="h-4 w-4"/> Compartido Con</h4>
                              <div className="flex flex-wrap gap-2">
                                 {resource.sharedWith.map(u => (
                                     <div key={u.id} className="flex items-center gap-2 p-1.5 pr-2.5 rounded-full bg-muted text-sm">
