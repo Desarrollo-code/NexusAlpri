@@ -3,7 +3,7 @@
 import React from 'react';
 
 interface DecorativeFolderProps {
-  patternId: number;
+  patternId: number | string;
   className?: string;
 }
 
@@ -12,9 +12,9 @@ const patterns = [
   (color: string) => (
     <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <pattern id="pattern1" patternUnits="userSpaceOnUse" width="40" height="40">
-          <path d="M-10 10 Q 10 0 30 10 T 70 10" stroke={color} strokeWidth="2" fill="none" />
-          <path d="M-10 30 Q 10 20 30 30 T 70 30" stroke={color} strokeWidth="2" fill="none" />
+        <pattern id="pattern1" patternUnits="userSpaceOnUse" width="40" height="40" patternTransform="rotate(45)">
+          <path d="M-10 10 Q 10 0 30 10 T 70 10" stroke={color} strokeWidth="1.5" fill="none" />
+          <path d="M-10 30 Q 10 20 30 30 T 70 30" stroke={color} strokeWidth="1.5" fill="none" />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#pattern1)" />
@@ -25,7 +25,7 @@ const patterns = [
     <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <pattern id="pattern2" patternUnits="userSpaceOnUse" width="20" height="20">
-          <circle cx="10" cy="10" r="2" fill={color} />
+          <circle cx="5" cy="5" r="1.5" fill={color} />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#pattern2)" />
@@ -36,7 +36,7 @@ const patterns = [
     <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <pattern id="pattern3" patternUnits="userSpaceOnUse" width="15" height="15">
-          <path d="M 0 0 L 0 15 M 0 0 L 15 0" stroke={color} strokeWidth="1" fill="none" />
+          <path d="M 0 0 L 0 15 M 0 0 L 15 0" stroke={color} strokeWidth="0.8" fill="none" />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#pattern3)" />
@@ -47,7 +47,7 @@ const patterns = [
     <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <pattern id="pattern4" patternUnits="userSpaceOnUse" width="10" height="10">
-          <path d="M-1,1 l2,-2 M0,10 l10,-10 M9,11 l2,-2" stroke={color} strokeWidth="1" />
+          <path d="M-1,1 l2,-2 M0,10 l10,-10 M9,11 l2,-2" stroke={color} strokeWidth="1.2" />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#pattern4)" />
