@@ -42,7 +42,7 @@
 
   .dark {
     /* 🌚 Tema Oscuro (Turquesa Educativo) */
-    --background: 204 20% 7%; /* Azul noche oscuro */
+    --background: 0 0% 0%; /* Azul noche oscuro */
     --foreground: 0 0% 98%;
     --card: 204 20% 11%;
     --card-foreground: 0 0% 98%;
