@@ -29,8 +29,11 @@ const timeSince = (date: Date): string => {
     return Math.floor(seconds) + "s";
 };
 
+interface TopBarProps {
+  pageTitle: string;
+}
 
-export const TopBar = () => {
+export const TopBar = ({ pageTitle }: TopBarProps) => {
     const { isMobile, toggleSidebar } = useSidebar();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -96,6 +99,7 @@ export const TopBar = () => {
                         <ChevronsLeft className="h-5 w-5" />
                     </Button>
                 )}
+                 <h1 className="text-xl font-semibold text-foreground">{pageTitle}</h1>
             </div>
 
             {/* Right side */}
