@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,14 +6,14 @@
   :root {
     --radius: 0.75rem;
 
-    /* 🎨 Paleta Claro (Original) */
-    --background: 0 0% 100%;
+    /* 🎨 Paleta Claro (Nuevo Estilo Dashboard) */
+    --background: 240 10% 97%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 221 83% 53%; /* Azul Vibrante */
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -22,35 +21,35 @@
     --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84.2% 60.2%; /* Rojo */
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 221 83% 53%;
 
     /* 📊 Gráficos y Eventos (Claro) */
-    --chart-1: 221 83% 53%;
-    --chart-2: 260 85% 60%;
-    --chart-3: 190 70% 50%;
+    --chart-1: 221 83% 53%; /* Azul */
+    --chart-2: 142 76% 36%; /* Verde */
+    --chart-3: 38 92% 50%;  /* Naranja */
     --chart-4: 220 10% 40%;
     --chart-5: 0 0% 50%;
-    
+
     --event-blue: 210 100% 50%;
     --event-green: 145 63% 49%;
     --event-red: 0 72% 51%;
     --event-orange: 25 95% 53%;
 
     /* 🌌 Barra lateral y superior */
-    --sidebar-foreground: hsl(var(--foreground));
-    --sidebar-active-background: hsl(var(--primary) / 0.1);
-    --sidebar-accent-foreground: hsl(var(--primary));
+    --sidebar-foreground: hsl(var(--muted-foreground));
+    --sidebar-active-background: hsl(var(--secondary));
+    --sidebar-accent-foreground: hsl(var(--foreground));
   }
 
   .dark {
-    /* 🌚 Tema Oscuro "Cielo Estrellado" */
+    /* 🌚 Tema Oscuro se mantiene como "Cielo Estrellado" */
     --background: 240 50% 8%;
     --foreground: 210 40% 98%;
-    --card: 240 25% 10%; /* Ligeramente más oscuro */
+    --card: 240 25% 10%;
     --card-foreground: 210 40% 98%;
     --popover: 222 47% 8%;
     --popover-foreground: 210 40% 98%;
@@ -68,10 +67,9 @@
     --input: 217 32.6% 17.5%;
     --ring: 221 83% 63%;
 
-    /* 📊 Gráficos y Eventos (Oscuro Vibrante) */
     --chart-1: 221 83% 63%;
-    --chart-2: 260 85% 65%;
-    --chart-3: 190 80% 60%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 38 92% 56%;
     --chart-4: 0 0% 70%;
     --chart-5: 220 15% 50%;
     
@@ -80,8 +78,7 @@
     --event-red: 0 72% 61%;
     --event-orange: 25 95% 63%;
 
-    /* 🌌 Barra lateral y superior (Oscuro) */
-    --sidebar-foreground: 210 40% 98%;
+    --sidebar-foreground: 210 40% 80%;
     --sidebar-active-background: hsl(var(--primary) / 0.15);
     --sidebar-accent-foreground: hsl(var(--primary));
   }
@@ -100,46 +97,6 @@
 
   .btn-primary-gradient {
     @apply bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-primary/40 hover:from-primary/90 hover:to-accent/90;
-  }
-
-  .card-border-animated {
-    @apply relative border-0;
-  }
-
-  .card-border-animated::before,
-  .card-border-animated::after {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    background: conic-gradient(
-      from var(--angle, 0deg),
-      hsl(var(--muted-foreground)/0.3),
-      hsl(var(--primary)/0.6),
-      hsl(var(--accent)/0.6),
-      hsl(var(--muted-foreground)/0.3)
-    );
-    z-index: -1;
-    border-radius: calc(var(--radius) + 2.5px);
-    animation: 10s rotate linear infinite;
-    transition: opacity 0.5s, animation-duration 0.5s;
-    opacity: 0.7; /* Borde visible por defecto */
-  }
-  
-  .dark .card-border-animated::before,
-  .dark .card-border-animated::after {
-     background: conic-gradient(
-      from var(--angle, 0deg),
-      hsl(var(--muted-foreground)/0.2),
-      hsl(var(--primary)/0.4),
-      hsl(var(--accent)/0.4),
-      hsl(var(--muted-foreground)/0.2)
-    );
-  }
-
-  .card-border-animated:hover::before,
-  .card-border-animated:hover::after {
-    opacity: 1; /* Intensifica el borde en hover */
-    animation-duration: 3s; /* Acelera la animación en hover */
   }
 
   .animated-underline {

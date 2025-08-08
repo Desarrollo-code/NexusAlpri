@@ -4,7 +4,7 @@
 import { useSidebar } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/auth-context';
 import type { UserRole } from '@/types'; 
-import { Bell, ChevronDown, Menu, User as UserIcon, Settings, LogOut } from 'lucide-react';
+import { Bell, ChevronDown, Menu, User as UserIcon, Settings, LogOut, Search } from 'lucide-react';
 import Link from 'next/link';
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ import {
 import { useTheme } from 'next-themes';
 import { Monitor, Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Input } from '../ui/input';
 
 
 function ThemeToggle() {
@@ -65,9 +66,7 @@ export function TopBar() {
   const navItems = useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
 
   const getPageTitle = () => {
-    const allNavItems = navItems.flatMap(item => (item.children ? [item, ...item.children] : [item]));
-    const currentItem = allNavItems.find(item => item.path && activeItem.startsWith(item.path));
-    return currentItem?.label || 'Panel Principal';
+    return `¡Hola, ${user?.name?.split(' ')[0] || 'Usuario'}! 👋`
   };
   
   const getInitials = (name: string) => {
@@ -81,7 +80,7 @@ export function TopBar() {
 
   return (
    <div className={cn(
-       "h-20 bg-card border-b",
+       "h-20 bg-background",
        "flex items-center justify-between px-4 lg:px-6 flex-shrink-0"
     )}>
       <div className="flex items-center gap-4">
@@ -101,13 +100,21 @@ export function TopBar() {
       </div>
 
       <div className="flex items-center gap-4">
+        <div className="relative hidden md:block">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+                type="search"
+                placeholder="Buscar..."
+                className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px] bg-secondary"
+            />
+        </div>
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative h-10 w-10 text-foreground hover:bg-muted" aria-label="Ver notificaciones">
-                    <Bell className="h-6 w-6" />
-                    <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-destructive border-2 border-background"></span>
+                    <Bell className="h-5 w-5" />
+                    <span className="absolute top-2 right-2 flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                     </span>
                 </Button>
             </DropdownMenuTrigger>
@@ -123,14 +130,16 @@ export function TopBar() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                  <Button variant="ghost" className="flex items-center gap-3 h-auto p-1.5 rounded-full text-foreground hover:bg-muted" aria-label="Abrir menú de usuario">
-                     <Avatar className="h-9 w-9 border-2 border-border">
+                     <Avatar className="h-9 w-9">
                         <AvatarImage src={user?.avatar || undefined} alt={user?.name || 'Avatar de usuario'} />
                         <AvatarFallback>
                             {getInitials(user?.name || '')}
                         </AvatarFallback>
                     </Avatar>
-                    <span className="hidden md:inline font-medium">{user?.name}</span>
-                    <ChevronDown className="h-4 w-4 hidden md:inline" />
+                    <div className="hidden md:flex flex-col items-start">
+                        <span className="font-medium text-sm">{user?.name}</span>
+                        <span className="text-xs text-muted-foreground capitalize">{user?.role.toLowerCase()}</span>
+                    </div>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
