@@ -91,10 +91,10 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
     return (
         <div className="w-full">
             <Card 
-                className={cn("group w-full h-full transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg", isFolder ? "hover:-translate-y-1" : "")}
+                className={cn("group w-full h-full transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg overflow-hidden", isFolder ? "hover:-translate-y-1" : "")}
                 onClick={handleClick}
             >
-                <div className="aspect-video w-full flex items-center justify-center relative border-b rounded-t-lg overflow-hidden">
+                <div className="aspect-video w-full flex items-center justify-center relative border-b rounded-t-lg">
                     <Thumbnail />
                      {resource.hasPin && !isFolder && (
                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
