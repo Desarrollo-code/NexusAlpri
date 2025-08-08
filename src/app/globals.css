@@ -43,7 +43,7 @@
   }
 
   .dark {
-    /* 🌚 Tema Oscuro (Violeta y Amarillo) */
+    /* 🌚 Tema Oscuro (Grafito y Dorado) */
     --background: 240 10% 3.9%;     /* Negro azulado */
     --foreground: 0 0% 98%;
     --card: 240 6% 10%;
@@ -73,10 +73,10 @@
     --event-red: 0 72% 61%;
     --event-orange: 45 96% 62%;
     
-    /* Sidebar Dark Theme */
-    --sidebar-foreground: hsl(240 5% 65%);
-    --sidebar-active-background: hsl(var(--primary) / 0.15);
-    --sidebar-accent-foreground: hsl(var(--primary));
+    /* Sidebar Dark Theme - Grafito y Dorado */
+    --sidebar-foreground: hsl(220, 10%, 80%);
+    --sidebar-active-background: hsl(45, 96%, 62%, 0.1);
+    --sidebar-accent-foreground: hsl(45, 96%, 75%);
   }
 
   * {
