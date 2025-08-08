@@ -10,35 +10,35 @@ const features = [
     icon: <Zap className="h-8 w-8" />,
     title: 'Aprendizaje Interactivo',
     description: 'Crea cursos con videos, textos y quizzes dinámicos para mantener a tus equipos enganchados.',
-    color: 'hsl(221, 83%, 63%)', // --primary
+    color: 'hsl(var(--primary))', 
   },
   {
     icon: <BarChart className="h-8 w-8" />,
     title: 'Seguimiento Automatizado',
     description: 'El progreso se registra automáticamente, permitiéndote enfocarte en el contenido y no en el papeleo.',
-    color: 'hsl(260, 85%, 65%)', // --chart-2
+    color: 'hsl(var(--primary) / 0.8)',
   },
   {
     icon: <ShieldCheck className="h-8 w-8" />,
     title: 'Seguridad y Roles',
     description: 'Gestiona permisos detallados por rol (Estudiante, Instructor, Admin) y protege tu contenido.',
-    color: 'hsl(190, 80%, 60%)', // --chart-3
+    color: 'hsl(var(--primary) / 0.7)',
   },
 ];
 
 const benefits = [
   {
-    icon: <BookOpen className="h-10 w-10 text-accent" />,
+    icon: <BookOpen className="h-10 w-10 text-primary" />,
     title: 'Para Estudiantes',
     description: 'Accede a tus cursos desde cualquier lugar, sigue tu progreso y obtén certificados al finalizar.',
   },
   {
-    icon: <UserCheck className="h-10 w-10 text-accent" />,
+    icon: <UserCheck className="h-10 w-10 text-primary" />,
     title: 'Para Instructores',
     description: 'Crea y gestiona tu contenido con una interfaz drag-and-drop y analiza el rendimiento de tus alumnos.',
   },
   {
-    icon: <Users className="h-10 w-10 text-accent" />,
+    icon: <Users className="h-10 w-10 text-primary" />,
     title: 'Para Administradores',
     description: 'Supervisa toda la actividad, gestiona usuarios y personaliza la plataforma a la medida de tu empresa.',
   },
@@ -67,19 +67,17 @@ export default function LandingPage() {
             <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
-                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                    <span className="bg-gradient-to-r from-primary via-orange-500 to-red-500 text-transparent bg-clip-text">
-                        Despierta el Potencial.
-                    </span>
+                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-foreground">
+                    Despierta el Potencial.
                     <br />
-                    Transforma tu Equipo.
+                    <span className="text-primary">Transforma tu Equipo.</span>
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
                     NexusAlpri es la plataforma de e-learning corporativa que se adapta a ti. Intuitiva, potente y segura.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button asChild size="lg" className="btn-primary-gradient">
+                  <Button asChild size="lg">
                     <Link
                       href="/sign-up"
                     >
@@ -107,7 +105,7 @@ export default function LandingPage() {
           </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 bg-muted/30">
+        <section className="w-full py-12 md:py-24 bg-muted/50">
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -124,16 +122,13 @@ export default function LandingPage() {
                    {features.map((feature, index) => (
                      <Card 
                         key={index} 
-                        className="text-center h-full border-2 transition-all hover:shadow-2xl hover:-translate-y-2"
-                        style={{ 
-                          borderColor: feature.color,
-                          boxShadow: `0 0 15px ${feature.color}33`,
-                        }}
+                        className="text-center h-full border-2 transition-all hover:shadow-xl hover:-translate-y-2 bg-card"
+                        style={{ borderColor: feature.color, boxShadow: `0 0 20px ${feature.color}33` }}
                       >
                        <CardHeader>
                          <div 
-                           className="mx-auto w-16 h-16 bg-card rounded-full flex items-center justify-center mb-4"
-                           style={{ color: feature.color }}
+                           className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                           style={{ color: feature.color, backgroundColor: `${feature.color}1A` }}
                           >
                             {feature.icon}
                          </div>
@@ -174,7 +169,7 @@ export default function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 bg-muted/30">
+        <section className="w-full py-12 md:py-24 bg-muted/50">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -186,7 +181,7 @@ export default function LandingPage() {
                 </div>
                  <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 py-12">
                     {testimonials.map((testimonial, index) => (
-                        <Card key={index} className="card-border-animated">
+                        <Card key={index} className="bg-card">
                            <CardContent className="pt-6">
                              <blockquote className="text-lg font-semibold leading-snug">
                                “{testimonial.testimony}”
@@ -207,13 +202,13 @@ export default function LandingPage() {
             </div>
         </section>
         
-         <section className="w-full py-20 md:py-32 text-center bg-gradient-to-t from-primary/10 to-background">
+         <section className="w-full py-20 md:py-32 text-center bg-primary/5">
             <div className="container px-4 md:px-6">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">¿Listo para Empezar?</h2>
                  <p className="max-w-2xl mx-auto mt-4 text-muted-foreground md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar.
                  </p>
-                  <Button asChild size="lg" className="mt-8 btn-primary-gradient">
+                  <Button asChild size="lg" className="mt-8">
                     <Link href="/sign-up">
                       Crear Mi Cuenta Gratis
                     </Link>
