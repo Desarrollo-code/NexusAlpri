@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --radius: 0.75rem; /* Esquinas más redondeadas */
+    --radius: 0.75rem;
 
     /* 🎨 Paleta Claro (Tema Naranja) */
     --background: 240 10% 97%;
@@ -13,33 +13,28 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 27.5 100% 63.1%; /* Naranja Vibrante #FF8C42 */
+    --primary: 27.5 100% 63.1%;
     --primary-foreground: 0 0% 100%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 27.5 100% 63.1%; /* Naranja como acento */
+    --accent: 27.5 100% 63.1%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%; /* Rojo */
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 27.5 100% 63.1%;
-
-    /* 📊 Gráficos y Eventos (Claro) */
-    --chart-1: 27.5 100% 63.1%; /* Naranja */
-    --chart-2: 142 76% 36%; /* Verde */
-    --chart-3: 221 83% 53%;  /* Azul */
-    --chart-4: 240 5% 65%; /* Gris */
-    --chart-5: 240 10% 3.9%; /* Negro */
-    
+    --chart-1: 27.5 100% 63.1%;
+    --chart-2: 142 76% 36%;
+    --chart-3: 221 83% 53%;
+    --chart-4: 240 5% 65%;
+    --chart-5: 240 10% 3.9%;
     --event-blue: 210 100% 50%;
     --event-green: 145 63% 49%;
     --event-red: 0 72% 51%;
     --event-orange: 25 95% 53%;
-
-    /* 🌌 Barra lateral y superior (Claro - texto por defecto) */
     --sidebar-foreground: hsl(240 3.8% 46.1%);
     --sidebar-active-background: hsl(var(--primary) / 0.1);
     --sidebar-accent-foreground: hsl(var(--primary));
@@ -47,18 +42,18 @@
 
   .dark {
     /* 🌚 Tema Oscuro (Tema Naranja) */
-    --background: 240 4% 9%;    /* Gris carbón casi negro #171719 */
-    --foreground: 0 0% 87.8%;   /* #E0E0E0 */
-    --card: 240 4% 11%;     /* #1A1A1C */
+    --background: 240 4% 9%;
+    --foreground: 0 0% 87.8%;
+    --card: 240 4% 11%;
     --card-foreground: 0 0% 87.8%;
     --popover: 240 4% 9%;
     --popover-foreground: 0 0% 87.8%;
-    --primary: 27.5 100% 63.1%; /* #FF8C42 - Naranja se mantiene vibrante */
+    --primary: 27.5 100% 63.1%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 4% 15%;    /* #242426 */
+    --secondary: 240 4% 15%;
     --secondary-foreground: 0 0% 95%;
     --muted: 240 4% 15%;
-    --muted-foreground: 0 0% 47.8%; /* #7A7A7A */
+    --muted-foreground: 0 0% 47.8%;
     --accent: 27.5 100% 63.1%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 50.6%;
@@ -66,20 +61,15 @@
     --border: 240 4% 15%;
     --input: 240 4% 15%;
     --ring: 27.5 100% 63.1%;
-
-    /* 📊 Gráficos y Eventos (Oscuro) */
     --chart-1: 27.5 100% 63.1%;
     --chart-2: 142 71% 45%;
     --chart-3: 221 83% 63%;
     --chart-4: 0 0% 70%;
     --chart-5: 0 0% 50%;
-    
     --event-blue: 210 100% 65%;
     --event-green: 145 63% 59%;
     --event-red: 0 72% 61%;
     --event-orange: 25 95% 63%;
-
-    /* 🌌 Barra lateral y superior (Oscuro) */
     --sidebar-foreground: hsl(0 0% 100% / 0.8);
     --sidebar-active-background: hsl(0 0% 100% / 0.1);
     --sidebar-accent-foreground: hsl(0 0% 100%);
@@ -190,6 +180,27 @@
       font-size: 0.9rem;
       color: hsl(var(--primary));
       font-weight: 500;
+  }
+  
+  /* Nuevas clases para los gradientes en el tema oscuro */
+  .dark .sidebar-gradient {
+    background: linear-gradient(135deg, hsl(240 4% 9%) 0%, hsl(240 4% 15%) 100%);
+  }
+
+  .dark .topbar-gradient {
+    background: linear-gradient(90deg, hsl(240 4% 15%) 0%, hsl(240 4% 11%) 100%);
+  }
+
+  .dark .active-item-gradient {
+    background: linear-gradient(90deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--primary) / 0.2) 100%) !important;
+  }
+  
+  .dark .active-item-text {
+    color: hsl(var(--primary-foreground)) !important;
+  }
+
+  .dark .active-item-border {
+    background: hsl(var(--primary)) !important;
   }
 }
 

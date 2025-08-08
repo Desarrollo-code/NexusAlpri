@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useSidebar } from '@/components/ui/sidebar';
@@ -33,9 +32,10 @@ export function TopBar() {
   };
 
   return (
-   <div className={cn(
-       "h-20 border-b bg-card dark:bg-topbar-gradient", 
-       "flex items-center justify-between px-4 lg:px-6 flex-shrink-0"
+    <div className={cn(
+        "h-20 border-b", 
+        "bg-card dark:topbar-gradient", 
+        "flex items-center justify-between px-4 lg:px-6 flex-shrink-0"
     )}>
       <div className="flex items-center gap-4">
         <Button
