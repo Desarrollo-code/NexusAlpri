@@ -1,3 +1,4 @@
+
 // src/app/api/resources/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -20,7 +21,7 @@ export async function GET(req: NextRequest) {
     // Base permissions: user can see resources that are public, they own, or are shared with them.
     const permissionsClause = {
         OR: [
-            { isPublic: true },
+            { ispublic: true },
             { uploaderId: session.id },
             { sharedWith: { some: { id: session.id } } }
         ]
@@ -106,7 +107,7 @@ export async function POST(req: NextRequest) {
             tags: Array.isArray(tags) ? tags.join(',') : '',
             uploaderId: session.id,
             parentId: parentId || null,
-            isPublic: isPublic === true,
+            ispublic: isPublic === true,
         };
         
         if (isPublic === false && sharedWithUserIds && Array.isArray(sharedWithUserIds)) {

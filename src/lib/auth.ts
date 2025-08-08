@@ -39,8 +39,7 @@ export async function createSession(userId: string) {
   const session = await encrypt({ userId, expires });
 
   // Use the cookie store to set the cookie
-  const cookieStore = cookies();
-  cookieStore.set('session', session, {
+  cookies().set('session', session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
@@ -50,19 +49,17 @@ export async function createSession(userId: string) {
 }
 
 export async function deleteSession() {
-  const cookieStore = cookies();
-  cookieStore.set('session', '', { expires: new Date(0), path: '/' });
+  cookies().set('session', '', { expires: new Date(0), path: '/' });
 }
 
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
-  const cookieStore = cookies();
-  const sessionCookie = cookieStore.get('session');
+  const sessionCookie = cookies().get('session')?.value;
 
   if (!sessionCookie) {
     return null;
   }
 
-  const session = await decrypt(sessionCookie.value);
+  const session = await decrypt(sessionCookie);
   if (!session?.userId) {
     return null;
   }

@@ -1,3 +1,4 @@
+
 // src/components/resources/details-sidebar.tsx
 'use client';
 
@@ -79,8 +80,8 @@ export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: 
                     <div className="space-y-4 text-sm">
                          <div className="flex justify-between items-center">
                             <span className="text-muted-foreground flex items-center gap-2"><Globe className="h-4 w-4"/> Visibilidad</span>
-                            <Badge variant={resource.isPublic ? 'secondary' : 'default'} className="bg-primary/10 text-primary">
-                                {resource.isPublic ? 'Público' : 'Privado'}
+                            <Badge variant={resource.ispublic ? 'secondary' : 'default'} className="bg-primary/10 text-primary">
+                                {resource.ispublic ? 'Público' : 'Privado'}
                             </Badge>
                         </div>
                         <div className="flex justify-between">
@@ -118,7 +119,7 @@ export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: 
                     
                     <Separator className="my-4" />
                     
-                    {!resource.isPublic && resource.sharedWith && resource.sharedWith.length > 0 && (
+                    {!resource.ispublic && resource.sharedWith && resource.sharedWith.length > 0 && (
                         <div>
                              <h4 className="font-semibold mb-3 flex items-center gap-2"><Users className="h-4 w-4"/> Compartido Con</h4>
                              <div className="flex flex-wrap gap-2">
