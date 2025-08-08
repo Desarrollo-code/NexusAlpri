@@ -1,3 +1,4 @@
+
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -53,6 +54,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/security-log-utils';
+import { Textarea } from '@/components/ui/textarea';
 
 
 // --- Types and Mappers ---
@@ -183,7 +185,10 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                                     <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 -mr-2 text-muted-foreground" aria-label={`Opciones para ${resource.title}`}><MoreVertical className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                    <DropdownMenuItem onClick={()=> onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={()=> onEdit(resource)}>
+                                        {isFolder ? <Users className="mr-2 h-4 w-4" /> : <Edit className="mr-2 h-4 w-4" />}
+                                        {isFolder ? 'Compartir' : 'Editar'}
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -617,7 +622,7 @@ export default function ResourcesPage() {
                   <DialogTitle>{editingResource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
                   <DialogDescription>Completa los detalles para {editingResource ? 'actualizar este recurso' : 'añadir un nuevo recurso a la biblioteca'}.</DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleCreateOrUpdateFile} className="grid gap-4 py-4 overflow-y-auto pr-3 -mr-6">
+              <form onSubmit={handleCreateOrUpdateFile} id="create-update-form" className="grid gap-4 py-4 overflow-y-auto pr-3 -mr-6">
                   <div className="space-y-1"><Label htmlFor="title">Título <span className="text-destructive">*</span></Label><Input id="title" name="title" value={newResourceTitle} onChange={(e) => setNewResourceTitle(e.target.value)} required disabled={isSubmittingResource} /></div>
                   <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" name="description" value={newResourceDescription} onChange={(e) => setNewResourceDescription(e.target.value)} disabled={isSubmittingResource} rows={3} /></div>
                   <div className="grid grid-cols-2 gap-4">
