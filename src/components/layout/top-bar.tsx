@@ -1,63 +1,48 @@
+// src/components/layout/public-top-bar.tsx
 'use client';
 
-import { useSidebar } from '@/components/ui/sidebar';
-import { useAuth } from '@/contexts/auth-context';
-import type { UserRole } from '@/types'; 
-import { Bell, ChevronDown, Menu } from 'lucide-react';
 import Link from 'next/link';
-import React, { useMemo } from 'react';
-import { UserAvatarDropdown } from './user-avatar-dropdown';
 import { Button } from '@/components/ui/button';
-import { getNavItemsForRole } from '@/lib/nav-items';
+import { Home, Info, LogIn } from 'lucide-react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
-export function TopBar() {
-  const { user } = useAuth();
-  const { toggleSidebar, activeItem } = useSidebar();
-  
-  const navItems = useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
-
-  const getPageTitle = () => {
-    const findItem = (items: typeof navItems, path: string): (typeof navItems[0]) | undefined => {
-      for (const item of items) {
-        if (item.path === path) return item;
-        if (item.children) {
-          const childMatch = findItem(item.children, path);
-          if (childMatch) return childMatch;
-        }
-      }
-    };
-    const active = findItem(navItems, activeItem);
-    return active ? active.label : 'Panel Principal';
-  };
-
+export function PublicTopBar() {
   return (
-    <div className={cn(
-        "h-20 border-b", 
-        "bg-card dark:topbar-gradient", 
-        "flex items-center justify-between px-4 lg:px-6 flex-shrink-0"
+    <header className={cn(
+        "px-4 lg:px-6 h-20 flex items-center sticky top-0 z-50",
+        "bg-background/95 backdrop-blur-sm border-b border-border/50" 
     )}>
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          className="lg:hidden p-2 text-muted-foreground dark:text-white/80 hover:bg-muted dark:hover:bg-white/10"
+      <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
+        <Image src="/uploads/images/logo-nexusalpri.png" alt="NexusAlpri Logo" width={48} height={48} data-ai-hint="logo"/>
+        <span className="text-3xl font-semibold font-headline-alt text-primary">
+          NexusAlpri
+        </span>
+      </Link>
+      <nav className="ml-auto hidden items-center gap-6 sm:gap-8 lg:flex">
+        <Link
+          href="/"
+          className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors flex items-center gap-2"
+          prefetch={false}
         >
-          <Menu className="h-6 w-6" />
+          <Home className="h-5 w-5" />
+          Inicio
+        </Link>
+        <Link
+          href="/about"
+          className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors flex items-center gap-2"
+          prefetch={false}
+        >
+          <Info className="h-5 w-5" />
+          Nosotros
+        </Link>
+        <Button asChild size="lg" className="rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow">
+          <Link href="/sign-in" className="flex items-center gap-2">
+            <LogIn className="h-5 w-5" />
+            Acceder
+          </Link>
         </Button>
-        <h1 className="text-xl font-semibold text-foreground dark:text-white">{getPageTitle()}</h1>
-      </div>
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="relative h-10 w-10 text-muted-foreground dark:text-white/80 hover:bg-muted dark:hover:bg-white/10">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-2 right-2 flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-        </Button>
-        <UserAvatarDropdown />
-      </div>
-    </div>
+      </nav>
+    </header>
   );
 }
