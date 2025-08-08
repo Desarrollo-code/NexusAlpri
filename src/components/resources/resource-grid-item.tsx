@@ -7,7 +7,7 @@ import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
 import { DecorativeFolder } from '@/components/resources/decorative-folder';
-import { Edit, FolderIcon, MoreVertical, Trash2, Video, FileText, Info, Notebook, Shield, FileQuestion, Link as LinkIcon, Lock, Share2 } from 'lucide-react';
+import { Edit, FolderIcon, MoreVertical, Trash2, Video, FileText, Info, Notebook, Shield, FileQuestion, Link as LinkIcon, Lock, Users as UsersIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -116,7 +116,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                     <DropdownMenuItem onClick={()=> onEdit(resource)}>
-                                        {isFolder ? <Share2 className="mr-2 h-4 w-4" /> : <Edit className="mr-2 h-4 w-4" />}
+                                        {isFolder ? <UsersIcon className="mr-2 h-4 w-4" /> : <Edit className="mr-2 h-4 w-4" />}
                                         {isFolder ? 'Compartir' : 'Editar'}
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>

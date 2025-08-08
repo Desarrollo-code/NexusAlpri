@@ -186,7 +186,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                     <DropdownMenuItem onClick={()=> onEdit(resource)}>
-                                        {isFolder ? <Users className="mr-2 h-4 w-4" /> : <Edit className="mr-2 h-4 w-4" />}
+                                        {isFolder ? <UsersIcon className="mr-2 h-4 w-4" /> : <Edit className="mr-2 h-4 w-4" />}
                                         {isFolder ? 'Compartir' : 'Editar'}
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
