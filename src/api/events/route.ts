@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import type { UserRole, EventAudienceType } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 // GET all events relevant to the user
 export async function GET(req: NextRequest) {
-  const session = await getSession(req);
+  const session = await getCurrentUser();
   if (!session) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
@@ -48,7 +50,7 @@ export async function GET(req: NextRequest) {
 
 // POST (create) a new event
 export async function POST(req: NextRequest) {
-  const session = await getSession(req);
+  const session = await getCurrentUser();
   // Only ADMINISTRATOR or INSTRUCTOR roles can create events
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
