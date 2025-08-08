@@ -21,11 +21,18 @@ export const useAnimatedCounter = (end: number, duration = 1500): string => {
       return;
     }
 
+    // Avoid division by zero
+    if (endValue === 0) {
+      setCount(0);
+      return;
+    }
+
     const incrementTime = (duration / endValue);
     const timer = setInterval(() => {
       start += 1;
       setCount(start);
-      if (start === endValue) {
+      if (start >= endValue) {
+        setCount(endValue);
         clearInterval(timer);
       }
     }, incrementTime);

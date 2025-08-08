@@ -19,7 +19,7 @@
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
+    --accent: 260 85% 70%; /* Púrpura/Rosa para acentos */
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%; /* Rojo */
     --destructive-foreground: 210 40% 98%;
@@ -33,7 +33,7 @@
     --chart-3: 38 92% 50%;  /* Naranja */
     --chart-4: 220 10% 40%;
     --chart-5: 0 0% 50%;
-
+    
     --event-blue: 210 100% 50%;
     --event-green: 145 63% 49%;
     --event-red: 0 72% 51%;
@@ -46,7 +46,7 @@
   }
 
   .dark {
-    /* 🌚 Tema Oscuro se mantiene como "Cielo Estrellado" */
+    /* 🌚 Tema Oscuro "Cielo Estrellado" */
     --background: 240 50% 8%;
     --foreground: 210 40% 98%;
     --card: 240 25% 10%;
