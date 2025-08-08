@@ -1,3 +1,4 @@
+
 // src/app/api/resources/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -57,7 +58,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
                 category, 
                 tags: Array.isArray(tags) ? tags.join(',') : '',
                 description,
-                ispublic: isPublic, // Corrected from isPublic
+                ispublic: isPublic,
                 sharedWith: isPublic ? { set: [] } : { set: sharedWithUserIds.map((id: string) => ({ id })) }
             },
         });
