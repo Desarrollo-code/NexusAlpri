@@ -8,15 +8,15 @@ interface DecorativeFolderProps {
   className?: string;
 }
 
-// Paletas de colores tonales inspiradas en la imagen.
+// Paletas de colores tonales vibrantes.
 // Cada objeto contiene un color de fondo y un color más oscuro para el patrón.
 const colorPalettes = [
-    { background: 'hsl(150, 15%, 30%)', pattern: 'hsl(150, 15%, 25%)' }, // Verde musgo
-    { background: 'hsl(30, 8%, 35%)',   pattern: 'hsl(30, 8%, 30%)' },   // Gris cálido
-    { background: 'hsl(220, 10%, 38%)', pattern: 'hsl(220, 10%, 32%)' }, // Azul pizarra
-    { background: 'hsl(210, 12%, 34%)', pattern: 'hsl(210, 12%, 28%)' }, // Azul grisáceo
-    { background: 'hsl(180, 10%, 32%)', pattern: 'hsl(180, 10%, 26%)' }, // Turquesa oscuro
-    { background: 'hsl(40, 10%, 36%)',  pattern: 'hsl(40, 10%, 30%)' },  // Marrón suave
+    { background: 'hsl(210, 50%, 45%)', pattern: 'hsl(210, 50%, 40%)' }, // Azul
+    { background: 'hsl(160, 50%, 40%)', pattern: 'hsl(160, 50%, 35%)' }, // Verde
+    { background: 'hsl(0, 55%, 50%)',   pattern: 'hsl(0, 55%, 45%)' },   // Rojo
+    { background: 'hsl(30, 80%, 55%)',  pattern: 'hsl(30, 80%, 50%)' },  // Naranja
+    { background: 'hsl(260, 45%, 50%)', pattern: 'hsl(260, 45%, 45%)' }, // Púrpura
+    { background: 'hsl(180, 60%, 40%)', pattern: 'hsl(180, 60%, 35%)' }, // Turquesa
 ];
 
 
