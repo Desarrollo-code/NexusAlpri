@@ -37,7 +37,10 @@ async function decrypt(input: string): Promise<any> {
 export async function createSession(userId: string) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
   const session = await encrypt({ userId, expires });
-  cookies().set('session', session, {
+
+  // Use the cookie store to set the cookie
+  const cookieStore = cookies();
+  cookieStore.set('session', session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
@@ -47,11 +50,13 @@ export async function createSession(userId: string) {
 }
 
 export async function deleteSession() {
-  cookies().set('session', '', { expires: new Date(0), path: '/' });
+  const cookieStore = cookies();
+  cookieStore.set('session', '', { expires: new Date(0), path: '/' });
 }
 
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
-  const sessionCookie = cookies().get('session');
+  const cookieStore = cookies();
+  const sessionCookie = cookieStore.get('session');
 
   if (!sessionCookie) {
     return null;
