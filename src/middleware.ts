@@ -10,10 +10,6 @@ const API_AUTH_PREFIX = '/api/auth';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
-  // Cloned headers are needed to avoid read-only errors.
-  const headers = new Headers(request.headers);
-  const requestWithHeaders = new NextRequest(request.url, { headers });
   const session = await getCurrentUser();
 
   // Allow static files, image optimization, and uploads to pass through
