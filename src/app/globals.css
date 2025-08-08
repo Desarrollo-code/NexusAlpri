@@ -13,22 +13,22 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 24.6 95% 53.1%; /* Naranja Vibrante */
+    --primary: 27.5 100% 63.1%; /* Naranja Vibrante #FF8C42 */
     --primary-foreground: 0 0% 100%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 24.6 95% 53.1%; /* Naranja como acento */
+    --accent: 27.5 100% 63.1%; /* Naranja como acento */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%; /* Rojo */
     --destructive-foreground: 0 0% 100%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 24.6 95% 53.1%;
+    --ring: 27.5 100% 63.1%;
 
     /* 📊 Gráficos y Eventos (Claro) */
-    --chart-1: 24.6 95% 53.1%; /* Naranja */
+    --chart-1: 27.5 100% 63.1%; /* Naranja */
     --chart-2: 142 76% 36%; /* Verde */
     --chart-3: 221 83% 53%;  /* Azul */
     --chart-4: 240 5% 65%; /* Gris */
@@ -40,35 +40,35 @@
     --event-orange: 25 95% 53%;
 
     /* 🌌 Barra lateral y superior */
-    --sidebar-foreground: hsl(var(--muted-foreground));
+    --sidebar-foreground: hsl(240 3.8% 46.1%);
     --sidebar-active-background: hsl(var(--primary) / 0.1);
     --sidebar-accent-foreground: hsl(var(--primary));
   }
 
   .dark {
     /* 🌚 Tema Oscuro (Tema Naranja) */
-    --background: 20 14.3% 4.1%;
-    --foreground: 0 0% 95%;
-    --card: 24 9.8% 10%;
-    --card-foreground: 0 0% 95%;
-    --popover: 20 14.3% 4.1%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 24.6 95% 53.1%;
+    --background: 0 0% 9.4%; /* #181818 */
+    --foreground: 0 0% 87.8%; /* #E0E0E0 */
+    --card: 0 0% 11.4%; /* #1D1D1D */
+    --card-foreground: 0 0% 87.8%;
+    --popover: 0 0% 9.4%;
+    --popover-foreground: 0 0% 87.8%;
+    --primary: 27.5 100% 63.1%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 12 6.5% 15.1%;
+    --secondary: 0 0% 15.1%;
     --secondary-foreground: 0 0% 95%;
-    --muted: 12 6.5% 15.1%;
-    --muted-foreground: 24 5.4% 63.9%;
-    --accent: 24.6 95% 53.1%;
+    --muted: 0 0% 15.1%;
+    --muted-foreground: 0 0% 47.8%; /* #7A7A7A */
+    --accent: 27.5 100% 63.1%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 0 0% 100%;
-    --border: 12 6.5% 15.1%;
-    --input: 12 6.5% 15.1%;
-    --ring: 24.6 95% 53.1%;
+    --border: 0 0% 15.1%;
+    --input: 0 0% 15.1%;
+    --ring: 27.5 100% 63.1%;
 
     /* 📊 Gráficos y Eventos (Oscuro) */
-    --chart-1: 24.6 95% 53.1%;
+    --chart-1: 27.5 100% 63.1%;
     --chart-2: 142 71% 45%;
     --chart-3: 221 83% 63%;
     --chart-4: 0 0% 70%;
@@ -80,9 +80,9 @@
     --event-orange: 25 95% 63%;
 
     /* 🌌 Barra lateral y superior (Oscuro) */
-    --sidebar-foreground: 24 5.4% 80%;
-    --sidebar-active-background: hsl(var(--primary) / 0.15);
-    --sidebar-accent-foreground: hsl(var(--primary));
+    --sidebar-foreground: 0 0% 47.8%; /* #7A7A7A */
+    --sidebar-active-background: hsl(var(--primary) / 0.1);
+    --sidebar-accent-foreground: hsl(var(--primary)); /* #FF8C42 */
   }
 
   * {
