@@ -16,27 +16,28 @@ datasource db {
 // ==================================
 
 model User {
-  id                  String           @id @default(cuid())
-  name                String
-  email               String           @unique
-  password            String
-  avatar              String?
-  role                UserRole         @default(STUDENT)
-  isTwoFactorEnabled  Boolean          @default(false)
-  twoFactorSecret     String?
-  registeredDate      DateTime?        @default(now())
-  theme               String?          @default("dark")
+  id                    String           @id @default(cuid())
+  name                  String
+  email                 String           @unique
+  password              String
+  avatar                String?
+  role                  UserRole         @default(STUDENT)
+  isTwoFactorEnabled    Boolean          @default(false)
+  twoFactorSecret       String?
+  registeredDate        DateTime?        @default(now())
+  theme                 String?          @default("dark")
 
-  courses             Course[]
-  enrollments         Enrollment[]
-  notifications       Notification[]
-  securityLogs        SecurityLog[]
-  resources           Resource[]       @relation("UploadedResources")
-  createdEvents       CalendarEvent[]  @relation("CreatedEvents")
-  attendedEvents      CalendarEvent[]  @relation("AttendedEvents")
-  createdTemplates    LessonTemplate[]
-  courseProgress      CourseProgress[]
-  sharedResources     Resource[]       @relation("SharedResources")
+  courses               Course[]
+  enrollments           Enrollment[]
+  notifications         Notification[]
+  securityLogs          SecurityLog[]
+  resources             Resource[]       @relation("UploadedResources")
+  createdEvents         CalendarEvent[]  @relation("CreatedEvents")
+  attendedEvents        CalendarEvent[]  @relation("AttendedEvents")
+  createdTemplates      LessonTemplate[]
+  courseProgress        CourseProgress[]
+  sharedResources       Resource[]       @relation("SharedResources")
+  authoredAnnouncements Announcement[] // Campo de relación añadido para completar la relación con Announcement
 
   @@index([email])
 }
@@ -53,22 +54,22 @@ enum UserRole {
 // ==================================
 
 model Course {
-  id             String         @id @default(cuid())
-  title          String
-  description    String         @db.Text
-  imageUrl       String?
-  category       String?
-  status         CourseStatus   @default(DRAFT)
+  id              String         @id @default(cuid())
+  title           String
+  description     String         @db.Text
+  imageUrl        String?
+  category        String?
+  status          CourseStatus   @default(DRAFT)
   publicationDate DateTime?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   
-  instructorId   String
-  instructor     User           @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  instructorId    String
+  instructor      User           @relation(fields: [instructorId], references: [id], onDelete: Cascade)
   
-  modules        Module[]
-  enrollments    Enrollment[]
-  courseProgress CourseProgress[]
+  modules         Module[]
+  enrollments     Enrollment[]
+  courseProgress  CourseProgress[]
 }
 
 model Module {
@@ -87,17 +88,17 @@ model Module {
 }
 
 model Lesson {
-  id            String               @id @default(cuid())
-  title         String
-  order         Int
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  id              String                 @id @default(cuid())
+  title           String
+  order           Int
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
   
-  moduleId      String
-  module        Module               @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId        String
+  module          Module                 @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   
-  contentBlocks ContentBlock[]
-  completedBy   LessonCompletionRecord[]
+  contentBlocks   ContentBlock[]
+  completedBy     LessonCompletionRecord[]
 
   @@index([moduleId])
 }
@@ -188,19 +189,19 @@ model Enrollment {
 }
 
 model CourseProgress {
-  id                 String               @id @default(cuid())
-  progressPercentage Float                @default(0)
+  id                 String                 @id @default(cuid())
+  progressPercentage Float                  @default(0)
   completedAt        DateTime?
   
   // Foreign keys
   userId             String
   courseId           String
-  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course             Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user               User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course             Course                 @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   // Relación con Enrollment (Correcta)
-  enrollmentId       String               @unique
-  enrollment         Enrollment           @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollmentId       String                 @unique
+  enrollment         Enrollment             @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 
   completedLessons   LessonCompletionRecord[]
   
