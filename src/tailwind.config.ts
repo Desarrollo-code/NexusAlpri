@@ -17,6 +17,7 @@ export default {
     },
     extend: {
       backgroundImage: {
+        'sidebar-gold-gradient': 'linear-gradient(to right, #bfa05b, #fce588, #bfa05b)',
         'topbar-gradient': 'linear-gradient(to bottom, #1D1D1D, #181818)',
       },
       fontFamily: {
