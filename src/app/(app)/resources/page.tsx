@@ -1,4 +1,3 @@
-
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -246,12 +245,6 @@ export default function ResourcesPage() {
   useEffect(() => {
     fetchResources();
   }, [fetchResources]);
-  
-  useEffect(() => {
-    const newBreadcrumbs = currentFolderId === null ? [] : breadcrumbs;
-    setBreadcrumbs(newBreadcrumbs);
-  }, [currentFolderId, breadcrumbs]);
-
 
   // --- Event Handlers ---
   const resetCreateForm = () => {
@@ -523,5 +516,3 @@ export default function ResourcesPage() {
     </div>
   );
 }
-
-    
