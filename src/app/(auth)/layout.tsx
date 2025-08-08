@@ -1,6 +1,6 @@
 // src/app/(auth)/layout.tsx
-// Este layout ahora hereda del layout público para mantener la consistencia.
-import PublicLayout from '@/app/(public)/layout';
+import { Footer } from '@/components/layout/footer';
+import { PublicTopBar } from '@/components/layout/public-top-bar';
 
 export default function AuthLayout({
   children,
@@ -8,10 +8,14 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <PublicLayout>
-        <div className="w-full max-w-md px-4">
-            {children}
-        </div>
-    </PublicLayout>
+    <div className="flex flex-col min-h-screen bg-background items-center justify-center p-4">
+        <PublicTopBar />
+        <main className="flex-1 flex w-full items-center justify-center">
+            <div className="w-full max-w-md">
+                {children}
+            </div>
+        </main>
+        <Footer />
+    </div>
   );
 }
