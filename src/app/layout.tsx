@@ -63,6 +63,8 @@ export default function RootLayout({
                 height={50}
                 className="opacity-40"
                 data-ai-hint="logo"
+                priority
+                style={{ width: 'auto', height: 'auto' }}
             />
         </div>
       </body>

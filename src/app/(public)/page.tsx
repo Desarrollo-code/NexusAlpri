@@ -100,6 +100,7 @@ export default function LandingPage() {
                 alt="Hero"
                 className="mx-auto aspect-square overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
                 data-ai-hint="team collaboration"
+                priority
               />
             </div>
           </div>
