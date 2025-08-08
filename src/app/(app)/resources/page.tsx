@@ -46,7 +46,7 @@ import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DownloadButton } from '@/components/ui/download-button';
 import { Badge } from '@/components/ui/badge';
-import { DecorativeFolder, getPattern } from '@/components/resources/decorative-folder';
+import { DecorativeFolder } from '@/components/resources/decorative-folder';
 import { useTitle } from '@/contexts/title-context';
 
 
@@ -135,7 +135,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
         
         if (isFolder) {
             return (
-                <div className="w-full h-full relative overflow-hidden bg-muted/30">
+                <div className="w-full h-full relative bg-muted/30">
                     <DecorativeFolder patternId={resource.id} className="absolute inset-0 opacity-50" />
                 </div>
             );
@@ -156,7 +156,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                 className={cn("group w-full h-full transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg", isFolder ? "hover:-translate-y-1" : "")}
                 onClick={handleClick}
             >
-                <div className="aspect-video w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg">
+                <div className="aspect-video w-full flex items-center justify-center relative border-b rounded-t-lg">
                     <Thumbnail />
                      {resource.hasPin && !isFolder && (
                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
@@ -407,11 +407,11 @@ export default function ResourcesPage() {
 
   const currentFolderBanner = useMemo(() => {
     if (!currentFolderId) return null;
-    const Pattern = getPattern(currentFolderId);
+
     return (
         <div className="relative h-24 md:h-32 rounded-lg overflow-hidden mb-6 bg-card flex justify-between items-end p-4 md:p-6">
             <div className="absolute inset-0 opacity-20">
-                {Pattern('hsl(var(--primary))')}
+                 <DecorativeFolder patternId={currentFolderId} className="absolute inset-0" />
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-card via-card/70 to-transparent" />
             <div className="relative">
