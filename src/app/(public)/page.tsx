@@ -1,3 +1,4 @@
+
 // src/app/(public)/page.tsx
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -16,49 +17,41 @@ export default function LandingPage() {
               <div className="flex flex-col justify-center space-y-6">
                 <div className="space-y-4">
                   <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-7xl/none font-headline text-foreground">
-                    Learn from
+                    Despierta el Potencial
                     <br />
-                    <span className="text-primary">your home.</span>
+                    <span className="text-primary">de tu Equipo.</span>
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                    La plataforma de e-learning corporativa que se adapta a ti.
+                    Crea, gestiona y mide el impacto de la formación en tu organización de manera sencilla y eficaz.
                   </p>
                 </div>
-                <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button asChild size="lg" variant="outline">
+                <div className="flex flex-col gap-4 min-[400px]:flex-row">
+                  <Button asChild size="lg">
+                    <Link
+                      href="/courses"
+                    >
+                      Explorar Cursos <BookOpen className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                   <Button asChild size="lg" variant="outline">
                     <Link
                       href="/about"
                     >
-                      Learn More <ArrowRight className="ml-2 h-4 w-4" />
+                      Ver Demo <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
                 </div>
               </div>
               <div className="flex items-center justify-center">
-                <Card className="w-full max-w-md border-2 border-foreground/80 shadow-2xl">
-                    <CardHeader className="text-left">
-                        <p className="font-semibold text-muted-foreground">No account yet?</p>
-                        <CardTitle className="text-3xl font-bold font-headline">
-                            Create your <br />
-                            <span className="text-primary">account today!</span>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="email-landing" className="sr-only">Email</Label>
-                                 <Input id="email-landing" type="email" placeholder="Type a valid email..." required className="bg-muted"/>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="password-landing" className="sr-only">Password</Label>
-                                <Input id="password-landing" type="password" placeholder="Type a strong password..." required className="bg-muted"/>
-                            </div>
-                            <Button type="submit" className="w-full" size="lg">
-                                Register Account
-                            </Button>
-                        </form>
-                    </CardContent>
-                </Card>
+                <Image
+                    src="https://placehold.co/600x600.png"
+                    width="600"
+                    height="600"
+                    alt="Hero"
+                    className="mx-auto aspect-square overflow-hidden rounded-xl object-cover"
+                    data-ai-hint="corporate training modern"
+                />
               </div>
             </div>
           </div>
