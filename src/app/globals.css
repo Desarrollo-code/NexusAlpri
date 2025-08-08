@@ -216,9 +216,11 @@
       border-radius: inherit;
       animation: spin-slow 10s linear infinite;
       transition: opacity 0.5s, --angle 0.5s;
+      opacity: 0;
   }
 
   .card-border-animated:hover::before {
+    opacity: 1;
     animation-duration: 3s;
   }
   
