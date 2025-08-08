@@ -46,31 +46,31 @@
   }
 
   .dark {
-    /* 🌚 Tema Oscuro (Tema Naranja) */
-    --background: 240 4% 9%;      /* Gris carbón casi negro #171719 */
-    --foreground: 0 0% 87.8%;     /* #E0E0E0 */
-    --card: 240 4% 11%;      /* #1A1A1C */
-    --card-foreground: 0 0% 87.8%;
-    --popover: 240 4% 9%;
-    --popover-foreground: 0 0% 87.8%;
-    --primary: 27.5 100% 63.1%; /* #FF8C42 - Naranja se mantiene vibrante */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 4% 15%;      /* #242426 */
-    --secondary-foreground: 0 0% 95%;
-    --muted: 240 4% 15%;
-    --muted-foreground: 0 0% 47.8%; /* #7A7A7A */
-    --accent: 27.5 100% 63.1%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 50.6%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 240 4% 15%;
-    --input: 240 4% 15%;
-    --ring: 27.5 100% 63.1%;
+    /* 🌚 Tema Oscuro (Basado en la imagen de referencia - Azul/Violeta) */
+    --background: 224 71% 4%; /* Negro azulado muy oscuro */
+    --foreground: 210 40% 98%; /* Blanco */
+    --card: 224 71% 9%; /* Azul oscuro para tarjetas */
+    --card-foreground: 210 40% 98%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 262 88% 66%; /* Violeta vibrante */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 262 88% 66%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 41%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 262 88% 70%;
 
     /* 📊 Gráficos y Eventos (Oscuro) */
-    --chart-1: 27.5 100% 63.1%;
+    --chart-1: 262 88% 66%;
     --chart-2: 142 71% 45%;
-    --chart-3: 221 83% 63%;
+    --chart-3: 210 100% 65%;
     --chart-4: 0 0% 70%;
     --chart-5: 0 0% 50%;
     
@@ -80,14 +80,9 @@
     --event-orange: 25 95% 63%;
 
     /* 🌌 Barra lateral y superior (Oscuro) */
-    --sidebar-foreground: hsl(0 0% 100% / 0.8);
+    --sidebar-foreground: hsl(0 0% 100% / 0.7);
     --sidebar-active-background: hsl(0 0% 100% / 0.1);
     --sidebar-accent-foreground: hsl(0 0% 100%);
-    
-    /* Variables de Gradientes Personalizadas */
-    --sidebar-gradient: linear-gradient(135deg, hsl(240 4% 9%) 0%, hsl(240 4% 15%) 100%);
-    --topbar-gradient: linear-gradient(90deg, hsl(240 4% 15%) 0%, hsl(240 4% 11%) 100%);
-    --active-item-gradient: linear-gradient(90deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--primary) / 0.2) 100%);
   }
 
   * {

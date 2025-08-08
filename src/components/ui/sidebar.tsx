@@ -87,7 +87,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out shadow-xl",
-          "bg-card dark:bg-gray-900", 
+          "bg-card dark:bg-[#1a202c]", 
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -101,11 +101,7 @@ export const SidebarHeader = () => {
   const { isCollapsed } = useSidebar();
   return (
     <div className={cn(
-<<<<<<< HEAD
       "flex items-center h-20 px-4", 
-=======
-      "flex items-center h-20 px-4 border-b border-border dark:border-white/20", 
->>>>>>> 134a4ab64d1913849bd71ceac7be08f10f0534fc
       isCollapsed ? 'justify-center' : 'justify-between'
     )}>
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
