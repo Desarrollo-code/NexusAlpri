@@ -1,3 +1,4 @@
+
 'use client';
 
 // Sidebar-layout-enhanced 🌈 Creativo & juvenil
@@ -100,15 +101,7 @@ export const SidebarHeader = () => {
   const { isCollapsed } = useSidebar();
   return (
     <div className={cn(
-<<<<<<< HEAD
-<<<<<<< HEAD
       "flex items-center h-20 px-4", 
-=======
-      "flex items-center h-20 px-4 border-b border-[--sidebar-border]", 
->>>>>>> fad6febb73daef9df69c3ef8ed7fbd789f250b50
-=======
-      "flex items-center h-20 px-4 border-b border-border dark:border-white/20", 
->>>>>>> 0b24635ca2d20649bc03c8a6d6a84709630a745b
       isCollapsed ? 'justify-center' : 'justify-between'
     )}>
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
