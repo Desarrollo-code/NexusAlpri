@@ -87,7 +87,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out shadow-xl",
-          "bg-card dark:bg-gradient-to-b dark:from-blue-900/50 dark:via-purple-900/50 dark:to-background", 
+          "bg-card dark:bg-gradient-to-b dark:from-background dark:via-background/90 dark:to-background", 
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >

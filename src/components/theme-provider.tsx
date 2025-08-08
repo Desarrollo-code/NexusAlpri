@@ -18,7 +18,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
         {...props}
         attribute="class"
         defaultTheme="dark"
-        enableSystem={false} // Disable system to have full control
+        enableSystem={false}
         disableTransitionOnChange
         themes={AVAILABLE_THEMES.map(t => t.value)}
       >
