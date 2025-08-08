@@ -71,8 +71,8 @@
     --event-red: 0 72% 61%;
     --event-orange: 45 96% 62%;
     --sidebar-foreground: hsl(0 0% 98% / 0.7);
-    --sidebar-active-background: hsl(var(--primary) / 0.1);
-    --sidebar-accent-foreground: hsl(var(--primary));
+    --sidebar-active-background: hsl(0 0% 100% / 0.1);
+    --sidebar-accent-foreground: hsl(0 0% 100%);
   }
 
   * {
