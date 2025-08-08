@@ -59,31 +59,36 @@ export default function EnrollmentsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  const fetchCoursesForRole = useCallback(async () => {
-    if (!currentUser) return;
-    setIsLoadingCourses(true);
-    setError(null);
-    try {
-      let url = '/api/courses';
-      const queryParams = new URLSearchParams();
-      if (currentUser.id) queryParams.append('userId', currentUser.id);
-      if (currentUser.role) queryParams.append('userRole', currentUser.role as string);
-      queryParams.append('manageView', 'true');
-      
-      url = `/api/courses?${queryParams.toString()}`;
+  useEffect(() => {
+    if (!isAuthLoading && currentUser) {
+        const fetchCoursesForRole = async () => {
+            setIsLoadingCourses(true);
+            setError(null);
+            try {
+              let url = '/api/courses';
+              const queryParams = new URLSearchParams();
+              if (currentUser.id) queryParams.append('userId', currentUser.id);
+              if (currentUser.role) queryParams.append('userRole', currentUser.role as string);
+              queryParams.append('manageView', 'true');
+              
+              url = `/api/courses?${queryParams.toString()}`;
 
-      const response = await fetch(url, { cache: 'no-store' });
-      if (!response.ok) throw new Error('Failed to fetch courses');
-      const data: ApiCourseForEnrollments[] = await response.json();
-      setCourses(data);
+              const response = await fetch(url, { cache: 'no-store' });
+              if (!response.ok) throw new Error('Failed to fetch courses');
+              const data: ApiCourseForEnrollments[] = await response.json();
+              setCourses(data);
 
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error fetching courses');
-      toast({ title: "Error", description: "Could not load courses.", variant: "destructive" });
-    } finally {
-      setIsLoadingCourses(false);
+            } catch (err) {
+              setError(err instanceof Error ? err.message : 'Unknown error fetching courses');
+              toast({ title: "Error", description: "Could not load courses.", variant: "destructive" });
+            } finally {
+              setIsLoadingCourses(false);
+            }
+        };
+        fetchCoursesForRole();
     }
-  }, [currentUser, toast]);
+  }, [currentUser, isAuthLoading, toast]);
+
 
   const fetchEnrollmentsForCourse = useCallback(async (courseId: string) => {
     if (!courseId) return;
@@ -159,12 +164,6 @@ export default function EnrollmentsPage() {
     setProgressData(prev => ({ ...prev, ...newProgressData }));
     setIsLoadingProgress(false);
   }, []);
-
-  useEffect(() => {
-    if (!isAuthLoading && currentUser) {
-      fetchCoursesForRole();
-    }
-  }, [currentUser, isAuthLoading, fetchCoursesForRole]);
 
   useEffect(() => {
     if (selectedCourse) {
