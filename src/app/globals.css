@@ -3,9 +3,8 @@
 @tailwind utilities;
 
 @layer base {
-  /* --- TEMA CLARO POR DEFECTO --- */
+  :root,
   html:not([class*='theme-']) {
-    --radius: 0.75rem;
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
@@ -25,7 +24,8 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 262.1 83.3% 57.8%;
-    
+    --radius: 0.75rem;
+
     /* Colores de UI */
     --sidebar-foreground: hsl(240 3.8% 46.1%);
     --sidebar-active-background: hsl(var(--primary) / 0.1);
@@ -39,9 +39,15 @@
     --gauge-green: 145 63% 42%;
     --gauge-yellow: 45 93% 47%;
     --gauge-red: 0 72% 51%;
+    
+    /* Chart Colors */
+    --chart-1: 220 80% 60%;
+    --chart-2: 160 70% 50%;
+    --chart-3: 40 80% 60%;
+    --chart-4: 280 80% 60%;
+    --chart-5: 340 80% 60%;
   }
 
-  /* --- TEMAS PERSONALIZADOS (Se aplican sobre la clase en <html>) --- */
   html.dark {
     --background: 240 10% 4%;
     --foreground: 210 20% 98%;
@@ -72,6 +78,13 @@
     --gauge-green: 145 63% 55%;
     --gauge-yellow: 45 93% 55%;
     --gauge-red: 0 80% 65%;
+
+    /* Chart Colors */
+    --chart-1: 220 80% 70%;
+    --chart-2: 160 70% 60%;
+    --chart-3: 40 80% 70%;
+    --chart-4: 280 80% 70%;
+    --chart-5: 340 80% 70%;
   }
 
   html.theme-sunset {
