@@ -17,18 +17,19 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search');
     const category = searchParams.get('category');
 
-    let whereClause: any = { 
-        parentId,
+    // Base permissions: user can see resources that are public, they own, or are shared with them.
+    const permissionsClause = {
         OR: [
-            { isPublic: true }, // Can see public resources
-            { uploaderId: session.id }, // Can see their own resources
-            { sharedWith: { some: { id: session.id } } } // Can see resources shared with them
+            { isPublic: true },
+            { uploaderId: session.id },
+            { sharedWith: { some: { id: session.id } } }
         ]
     };
     
+    // Filters that apply ON TOP of permissions
+    const filterClauses: any[] = [{ parentId }];
     if (search) {
-        whereClause.AND = whereClause.AND || [];
-        whereClause.AND.push({
+        filterClauses.push({
             OR: [
                 { title: { contains: search } },
                 { description: { contains: search } },
@@ -38,8 +39,17 @@ export async function GET(req: NextRequest) {
     }
 
     if (category && category !== 'all') {
-        whereClause.category = category;
+        filterClauses.push({ category });
     }
+
+    // Combine all conditions correctly
+    const whereClause = {
+        AND: [
+            permissionsClause,
+            ...filterClauses,
+        ]
+    };
+
 
     try {
         const resources = await prisma.resource.findMany({
@@ -101,7 +111,7 @@ export async function POST(req: NextRequest) {
         
         if (isPublic === false && sharedWithUserIds && Array.isArray(sharedWithUserIds)) {
             data.sharedWith = {
-                connect: sharedWithUserIds.map(id => ({ id }))
+                connect: sharedWithUserIds.map((id:string) => ({ id }))
             };
         }
 
