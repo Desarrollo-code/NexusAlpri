@@ -7,83 +7,80 @@ interface DecorativeFolderProps {
   className?: string;
 }
 
+// Paleta de colores para los FONDOS de las carpetas. Son colores muy suaves.
+const backgroundColors = [
+    'hsl(210 40% 98%)',   // bg-slate-50
+    'hsl(30 54% 96%)',    // bg-orange-50
+    'hsl(142 71% 94%)',  // bg-green-50
+    'hsl(222 47% 96%)',  // bg-blue-50
+    'hsl(346 76% 96%)',  // bg-pink-50
+    'hsl(48 91% 95%)',   // bg-yellow-50
+];
+
+// Paleta de colores para los PATRONES (líneas, puntos). Contrastan suavemente con el fondo.
+const patternColors = [
+    'hsl(210 40% 85%)',   // slate-300
+    'hsl(30 54% 80%)',    // orange-300
+    'hsl(142 71% 75%)',  // green-300
+    'hsl(222 47% 80%)',  // blue-300
+    'hsl(346 76% 85%)',  // pink-300
+    'hsl(48 91% 80%)',   // yellow-300
+];
+
+// Definición de los patrones usando CSS background-image
 const patterns = [
-  // Pattern 1: Wavy Lines
-  (color: string) => (
-    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="pattern1" patternUnits="userSpaceOnUse" width="40" height="40" patternTransform="rotate(45)">
-          <path d="M-10 10 Q 10 0 30 10 T 70 10" stroke={color} strokeWidth="1.5" fill="none" />
-          <path d="M-10 30 Q 10 20 30 30 T 70 30" stroke={color} strokeWidth="1.5" fill="none" />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#pattern1)" />
-    </svg>
-  ),
-  // Pattern 2: Polka Dots
-  (color: string) => (
-    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="pattern2" patternUnits="userSpaceOnUse" width="20" height="20">
-          <circle cx="5" cy="5" r="1.5" fill={color} />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#pattern2)" />
-    </svg>
-  ),
-  // Pattern 3: Grid Lines
-  (color: string) => (
-    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="pattern3" patternUnits="userSpaceOnUse" width="15" height="15">
-          <path d="M 0 0 L 0 15 M 0 0 L 15 0" stroke={color} strokeWidth="0.8" fill="none" />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#pattern3)" />
-    </svg>
-  ),
-  // Pattern 4: Diagonal Lines
-  (color: string) => (
-    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="pattern4" patternUnits="userSpaceOnUse" width="10" height="10">
-          <path d="M-1,1 l2,-2 M0,10 l10,-10 M9,11 l2,-2" stroke={color} strokeWidth="1.2" />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#pattern4)" />
-    </svg>
-  ),
+  // Cuadrícula (Grid)
+  (color: string) => ({
+    backgroundImage: `
+      linear-gradient(${color} 1px, transparent 1px),
+      linear-gradient(90deg, ${color} 1px, transparent 1px)
+    `,
+    backgroundSize: '20px 20px',
+  }),
+  // Líneas Diagonales
+  (color: string) => ({
+    backgroundImage: `repeating-linear-gradient(
+      45deg,
+      ${color},
+      ${color} 1px,
+      transparent 1px,
+      transparent 10px
+    )`,
+  }),
+  // Puntos (Dots)
+  (color: string) => ({
+    backgroundImage: `radial-gradient(${color} 1px, transparent 1px)`,
+    backgroundSize: '15px 15px',
+  }),
 ];
 
-const folderColors = [
-    'hsl(var(--chart-1) / 0.2)', // Turquesa
-    'hsl(var(--chart-2) / 0.2)', // Azulado
-    'hsl(var(--event-green) / 0.2)', // Verde
-    'hsl(var(--chart-3) / 0.2)', // Naranja
-    'hsl(var(--event-red) / 0.15)', // Rojo
-    'hsl(var(--event-blue) / 0.2)', // Azul
-];
-
-const getPatternAndColor = (id: number | string) => {
-    const numericId = typeof id === 'string' 
-        ? id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) 
+/**
+ * Asigna un estilo único (color de fondo + patrón) a cada carpeta
+ * basado en su ID.
+ */
+const getUniqueFolderStyle = (id: number | string): React.CSSProperties => {
+    const numericId = typeof id === 'string'
+        ? id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
         : id;
-    
-    const patternIndex = numericId % patterns.length;
-    const colorIndex = numericId % folderColors.length;
 
+    const bgColor = backgroundColors[numericId % backgroundColors.length];
+    const patternColor = patternColors[numericId % patternColors.length];
+    const patternGenerator = patterns[numericId % patterns.length];
+    
+    // Genera el estilo del patrón y lo combina con el color de fondo.
+    const patternStyle = patternGenerator(patternColor);
+    
     return {
-        pattern: patterns[patternIndex],
-        color: folderColors[colorIndex]
+        backgroundColor: bgColor,
+        ...patternStyle
     };
 };
 
 export const DecorativeFolder: React.FC<DecorativeFolderProps> = ({ patternId, className }) => {
-  const { pattern: patternGenerator, color } = getPatternAndColor(patternId);
+  // Obtenemos el objeto de estilo completo para la carpeta.
+  const style = getUniqueFolderStyle(patternId);
 
   return (
-    <div className={className}>
-      {patternGenerator(color)}
-    </div>
+    <div className={className} style={style} />
   );
 };
