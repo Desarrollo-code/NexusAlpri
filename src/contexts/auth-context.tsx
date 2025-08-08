@@ -40,7 +40,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
-    // This function will run only once when the provider is mounted.
     const fetchSessionData = async () => {
         try {
             const [settingsRes, userRes] = await Promise.all([
@@ -51,8 +50,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
             setSettings(settingsData);
             
-            const userData = userRes.ok ? (await userRes.json()).user : null;
-            setUser(userData);
+            if (userRes.ok) {
+              const userData = await userRes.json();
+              setUser(userData.user);
+            } else {
+              setUser(null);
+            }
         } catch (error) {
             console.error("Failed to fetch session data:", error);
             setUser(null);
@@ -63,7 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
     
     fetchSessionData();
-  }, []); // Empty dependency array ensures this runs only once.
+  }, []);
 
   const login = useCallback((userData: User) => {
     setUser(userData);
@@ -79,9 +82,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to call logout API", error);
     } finally {
       setUser(null);
-      window.location.href = '/sign-in';
+      router.push('/sign-in');
     }
-  }, []);
+  }, [router]);
   
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser(prevUser => {

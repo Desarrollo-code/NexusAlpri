@@ -3,10 +3,17 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/auth-context'; // Import useAuth to get logout
 
 export const useIdleTimeout = (onTimeout: () => void, timeoutMinutes: number, enabled: boolean) => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
+  const { logout } = useAuth(); // Get logout from context
+
+  const handleTimeout = useCallback(() => {
+    onTimeout();
+  }, [onTimeout]);
+
 
   const resetTimer = useCallback(() => {
     if (timeoutRef.current) {
@@ -14,9 +21,9 @@ export const useIdleTimeout = (onTimeout: () => void, timeoutMinutes: number, en
     }
     if (enabled) {
       const timeoutMs = timeoutMinutes * 60 * 1000;
-      timeoutRef.current = setTimeout(onTimeout, timeoutMs);
+      timeoutRef.current = setTimeout(handleTimeout, timeoutMs);
     }
-  }, [onTimeout, timeoutMinutes, enabled]);
+  }, [handleTimeout, timeoutMinutes, enabled]);
 
   const clearTimer = useCallback(() => {
     if (timeoutRef.current) {
