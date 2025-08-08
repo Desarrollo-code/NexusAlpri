@@ -57,7 +57,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
                 category, 
                 tags: Array.isArray(tags) ? tags.join(',') : '',
                 description,
-                isPublic,
+                ispublic: isPublic, // Corrected from isPublic
                 sharedWith: isPublic ? { set: [] } : { set: sharedWithUserIds.map((id: string) => ({ id })) }
             },
         });

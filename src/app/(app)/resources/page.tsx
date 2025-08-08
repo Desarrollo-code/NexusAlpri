@@ -4,8 +4,8 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
-import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, List, MoreVertical, Folder as FolderIcon, FileText, Video, Info, Notebook, Shield, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Filter, ArrowUp, ArrowDown, Lock, X, UploadCloud, Grid, Link as LinkIcon, FolderPlus } from 'lucide-react';
+import type { EnterpriseResource as AppResourceType, User as AppUser, UserRole } from '@/types';
+import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, List, MoreVertical, Folder as FolderIcon, FileText, Video, Info, Notebook, Shield, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Filter, ArrowUp, ArrowDown, Lock, X, UploadCloud, Grid, Link as LinkIcon, FolderPlus, Globe, Users as UsersIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -28,7 +28,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import type { Resource as PrismaResource, ResourceType as PrismaResourceType } from '@prisma/client';
+import type { Resource as PrismaResource, ResourceType as PrismaResourceType, User as PrismaUser } from '@prisma/client';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
@@ -48,6 +48,11 @@ import { DownloadButton } from '@/components/ui/download-button';
 import { Badge } from '@/components/ui/badge';
 import { DecorativeFolder } from '@/components/resources/decorative-folder';
 import { useTitle } from '@/contexts/title-context';
+import { Switch } from '@/components/ui/switch';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getInitials } from '@/lib/security-log-utils';
 
 
 // --- Types and Mappers ---
@@ -74,6 +79,8 @@ function mapApiResourceToAppResource(apiResource: ApiResource): AppResourceType 
     uploaderName: apiResource.uploader?.name || 'N/A',
     hasPin: apiResource.hasPin,
     parentId: apiResource.parentId,
+    ispublic: false, // Will be replaced with actual value
+    sharedWith: [],  // Will be replaced with actual value
   };
 }
 
@@ -153,7 +160,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
     return (
         <div className="w-full">
             <Card 
-                className={cn("group w-full h-full transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg", isFolder ? "hover:-translate-y-1" : "")}
+                className={cn("group w-full h-full transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg overflow-hidden", isFolder ? "hover:-translate-y-1" : "")}
                 onClick={handleClick}
             >
                 <div className="aspect-video w-full flex items-center justify-center relative border-b rounded-t-lg">
@@ -176,7 +183,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                                     <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 -mr-2 text-muted-foreground" aria-label={`Opciones para ${resource.title}`}><MoreVertical className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                    {!isFolder && <DropdownMenuItem onClick={()=> onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>}
+                                    <DropdownMenuItem onClick={()=> onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -199,6 +206,7 @@ export default function ResourcesPage() {
   const { setPageTitle } = useTitle();
 
   const [allApiResources, setAllApiResources] = useState<AppResourceType[]>([]);
+  const [allUsers, setAllUsers] = useState<AppUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -206,26 +214,27 @@ export default function ResourcesPage() {
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
-  // Folder navigation state
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([{ id: null, title: 'Biblioteca' }]);
 
-  // Modals state
-  const [showCreateFileModal, setShowCreateFileModal] = useState(false);
+  const [showCreateUpdateModal, setShowCreateUpdateModal] = useState(false);
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
+  const [editingResource, setEditingResource] = useState<AppResourceType | null>(null);
   
   const [isSubmittingResource, setIsSubmittingResource] = useState(false);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  // Form State for new resource
   const [newResourceTitle, setNewResourceTitle] = useState('');
   const [newResourceType, setNewResourceType] = useState<AppResourceType['type']>('DOCUMENT');
   const [newResourceCategory, setNewResourceCategory] = useState('');
   const [newResourceFile, setNewResourceFile] = useState<File | null>(null);
   const [newResourceUrl, setNewResourceUrl] = useState('');
   const [newFolderName, setNewFolderName] = useState('');
-
+  const [newResourceDescription, setNewResourceDescription] = useState('');
+  const [isPublic, setIsPublic] = useState(true);
+  const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
+  const [userSearch, setUserSearch] = useState('');
 
   const [resourceToDelete, setResourceToDelete] = useState<AppResourceType | null>(null);
   const [isDeletingResource, setIsDeletingResource] = useState(false);
@@ -236,7 +245,6 @@ export default function ResourcesPage() {
     setPageTitle(breadcrumbs[breadcrumbs.length - 1].title);
   }, [breadcrumbs, setPageTitle]);
 
-  // --- Data Fetching and Memoization ---
   const fetchResources = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -258,12 +266,26 @@ export default function ResourcesPage() {
     }
   }, [toast, currentFolderId, searchTerm, activeCategory]);
 
+  const fetchAllUsers = useCallback(async () => {
+    try {
+      const response = await fetch('/api/users?pageSize=1000'); // Fetch all users for selector
+      if (!response.ok) return;
+      const data = await response.json();
+      setAllUsers(data.users.filter((u: AppUser) => u.id !== user?.id)); // Exclude self
+    } catch (error) {
+      console.error("Failed to fetch users", error);
+    }
+  }, [user?.id]);
+
+
   useEffect(() => {
     fetchResources();
-  }, [fetchResources]);
+    if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
+      fetchAllUsers();
+    }
+  }, [fetchResources, fetchAllUsers, user?.role]);
 
-  // --- Event Handlers ---
-  const resetCreateForm = () => {
+  const resetForm = () => {
     setNewResourceTitle('');
     setNewResourceType('DOCUMENT');
     setNewResourceCategory('');
@@ -271,6 +293,22 @@ export default function ResourcesPage() {
     setNewResourceUrl('');
     setUploadProgress(0);
     setNewFolderName('');
+    setNewResourceDescription('');
+    setIsPublic(true);
+    setSharedWithUserIds([]);
+    setEditingResource(null);
+  };
+
+  const handleOpenEditModal = (resource: AppResourceType) => {
+    setEditingResource(resource);
+    setNewResourceTitle(resource.title);
+    setNewResourceType(resource.type);
+    setNewResourceCategory(resource.category || '');
+    setNewResourceUrl(resource.url || '');
+    setNewResourceDescription(resource.description || '');
+    setIsPublic(resource.ispublic);
+    setSharedWithUserIds(resource.sharedWith?.map(u => u.id) || []);
+    setShowCreateUpdateModal(true);
   };
 
   const handleCreateFolder = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -293,7 +331,7 @@ export default function ResourcesPage() {
         if (!response.ok) throw new Error((await response.json()).message || 'Failed to create folder');
         toast({ title: "Carpeta Creada", description: `La carpeta "${newFolderName}" ha sido creada.` });
         setShowCreateFolderModal(false);
-        resetCreateForm();
+        resetForm();
         fetchResources();
     } catch (err) {
         toast({ title: "Error al crear carpeta", description: (err as Error).message, variant: "destructive" });
@@ -303,21 +341,16 @@ export default function ResourcesPage() {
   };
 
 
-  const handleCreateFile = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateOrUpdateFile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user?.id || !newResourceTitle || !newResourceCategory || !newResourceType) {
         toast({ title: "Error", description: "Todos los campos son obligatorios.", variant: "destructive" });
         return;
     }
 
-    let finalResourceUrl = newResourceUrl;
+    let finalResourceUrl = editingResource?.url || newResourceUrl;
 
-    if (newResourceType !== 'EXTERNAL_LINK' && newResourceType !== 'FOLDER') {
-        if (!newResourceFile) {
-            toast({ title: "Error", description: "Por favor, selecciona un archivo para subir.", variant: "destructive" });
-            return;
-        }
-        
+    if (newResourceType !== 'EXTERNAL_LINK' && newResourceType !== 'FOLDER' && newResourceFile) {
         setIsUploadingFile(true);
         setUploadProgress(0);
         setIsSubmittingResource(true);
@@ -339,6 +372,9 @@ export default function ResourcesPage() {
     }
     
     setIsSubmittingResource(true);
+    const endpoint = editingResource ? `/api/resources/${editingResource.id}` : '/api/resources';
+    const method = editingResource ? 'PUT' : 'POST';
+
     try {
       const payload = { 
           title: newResourceTitle, 
@@ -346,16 +382,19 @@ export default function ResourcesPage() {
           category: newResourceCategory, 
           url: finalResourceUrl, 
           uploaderId: user.id, 
-          parentId: currentFolderId 
+          parentId: currentFolderId,
+          description: newResourceDescription,
+          isPublic,
+          sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
       };
-      const response = await fetch('/api/resources', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      if (!response.ok) throw new Error((await response.json()).message || 'Failed to create resource');
-      toast({ title: "Recurso Creado", description: `El recurso "${newResourceTitle}" ha sido añadido.` });
-      setShowCreateFileModal(false);
-      resetCreateForm();
+      const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (!response.ok) throw new Error((await response.json()).message || 'Failed to save resource');
+      toast({ title: `Recurso ${editingResource ? 'Actualizado' : 'Creado'}`, description: `El recurso "${newResourceTitle}" ha sido guardado.` });
+      setShowCreateUpdateModal(false);
+      resetForm();
       fetchResources();
     } catch (err) {
-      toast({ title: "Error al crear recurso", description: (err as Error).message, variant: "destructive" });
+      toast({ title: `Error al ${editingResource ? 'actualizar' : 'crear'} recurso`, description: (err as Error).message, variant: "destructive" });
     } finally {
       setIsSubmittingResource(false);
     }
@@ -403,6 +442,14 @@ export default function ResourcesPage() {
     setActiveCategory(categoryName);
   }
 
+  const handleUserShareToggle = (userId: string, checked: boolean) => {
+      setSharedWithUserIds(prev => checked ? [...prev, userId] : prev.filter(id => id !== userId));
+  }
+
+  const filteredUsers = useMemo(() => {
+    return allUsers.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()));
+  }, [allUsers, userSearch]);
+
   const allCategories = useMemo(() => ['all', ...(settings?.resourceCategories || [])], [settings]);
 
   const currentFolderBanner = useMemo(() => {
@@ -422,7 +469,7 @@ export default function ResourcesPage() {
             </div>
              <div className="relative">
                 {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-                    <Button onClick={() => setShowCreateFileModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
+                    <Button onClick={() => setShowCreateUpdateModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
                         <UploadCloud className="mr-2 h-4 w-4"/> Subir Aquí
                     </Button>
                 )}
@@ -446,7 +493,7 @@ export default function ResourcesPage() {
                         <Button variant="outline" onClick={() => setShowCreateFolderModal(true)}>
                             <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
                         </Button>
-                        <Button onClick={() => setShowCreateFileModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
+                        <Button onClick={() => setShowCreateUpdateModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
                           <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
                         </Button>
                     </div>
@@ -460,18 +507,6 @@ export default function ResourcesPage() {
                            <Input type="search" id="resource-search" name="resource-search" placeholder="Buscar documentos, guías o materiales..." className="pl-10 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
                         </form>
                         <div className="flex items-center gap-2">
-                            <Select>
-                              <SelectTrigger id="resource-type-filter" aria-label="Filtrar por tipo" className="w-[180px]">
-                                <SelectValue placeholder="Todos los Tipos" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="all">Todos los Tipos</SelectItem>
-                                <SelectItem value="DOCUMENT">Documento</SelectItem>
-                                <SelectItem value="VIDEO">Video</SelectItem>
-                                <SelectItem value="GUIDE">Guía</SelectItem>
-                                <SelectItem value="EXTERNAL_LINK">Enlace Externo</SelectItem>
-                              </SelectContent>
-                            </Select>
                             <div className="flex bg-muted rounded-md p-1">
                               <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
                               <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
@@ -527,7 +562,7 @@ export default function ResourcesPage() {
                 </div>
             ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-                    {allApiResources.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={() => {}} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
+                    {allApiResources.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
                 </div>
             ) : (
                 <Table>
@@ -559,7 +594,7 @@ export default function ResourcesPage() {
               resource={selectedResource}
               onClose={() => setSelectedResource(null)}
               onDelete={(id) => { setResourceToDelete(allApiResources.find(r => r.id === id) || null); }}
-              onEdit={() => {}}
+              onEdit={handleOpenEditModal}
          />
       </div>
       
@@ -576,16 +611,19 @@ export default function ResourcesPage() {
           </AlertDialogContent>
       </AlertDialog>
       
-       <Dialog open={showCreateFileModal} onOpenChange={(isOpen) => { if (!isOpen) resetCreateForm(); setShowCreateFileModal(isOpen); }}>
-          <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
+       <Dialog open={showCreateUpdateModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowCreateUpdateModal(isOpen); }}>
+          <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] flex flex-col">
               <DialogHeader>
-                  <DialogTitle>Subir Nuevo Recurso</DialogTitle>
-                  <DialogDescription>Completa los detalles para añadir un nuevo recurso a la biblioteca.</DialogDescription>
+                  <DialogTitle>{editingResource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
+                  <DialogDescription>Completa los detalles para {editingResource ? 'actualizar este recurso' : 'añadir un nuevo recurso a la biblioteca'}.</DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleCreateFile} className="grid gap-4 py-4">
+              <form onSubmit={handleCreateOrUpdateFile} className="grid gap-4 py-4 overflow-y-auto pr-3 -mr-6">
                   <div className="space-y-1"><Label htmlFor="title">Título <span className="text-destructive">*</span></Label><Input id="title" name="title" value={newResourceTitle} onChange={(e) => setNewResourceTitle(e.target.value)} required disabled={isSubmittingResource} /></div>
-                  <div className="space-y-1"><Label htmlFor="type">Tipo <span className="text-destructive">*</span></Label><Select name="type" required value={newResourceType} onValueChange={(v) => setNewResourceType(v as any)} disabled={isSubmittingResource}><SelectTrigger id="new-resource-type"><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent><SelectItem value="DOCUMENT">Documento</SelectItem><SelectItem value="GUIDE">Guía</SelectItem><SelectItem value="VIDEO">Video</SelectItem><SelectItem value="EXTERNAL_LINK">Enlace Externo</SelectItem></SelectContent></Select></div>
-                  <div className="space-y-1"><Label htmlFor="category">Categoría <span className="text-destructive">*</span></Label><Select name="category" required value={newResourceCategory} onValueChange={setNewResourceCategory} disabled={isSubmittingResource}><SelectTrigger id="new-resource-category"><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" name="description" value={newResourceDescription} onChange={(e) => setNewResourceDescription(e.target.value)} disabled={isSubmittingResource} rows={3} /></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1"><Label htmlFor="type">Tipo <span className="text-destructive">*</span></Label><Select name="type" required value={newResourceType} onValueChange={(v) => setNewResourceType(v as any)} disabled={isSubmittingResource || !!editingResource}><SelectTrigger id="new-resource-type"><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent><SelectItem value="DOCUMENT">Documento</SelectItem><SelectItem value="GUIDE">Guía</SelectItem><SelectItem value="VIDEO">Video</SelectItem><SelectItem value="EXTERNAL_LINK">Enlace Externo</SelectItem></SelectContent></Select></div>
+                    <div className="space-y-1"><Label htmlFor="category">Categoría <span className="text-destructive">*</span></Label><Select name="category" required value={newResourceCategory} onValueChange={setNewResourceCategory} disabled={isSubmittingResource}><SelectTrigger id="new-resource-category"><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                  </div>
                   <Separator />
                   
                   {newResourceType === 'EXTERNAL_LINK' ? (
@@ -593,20 +631,47 @@ export default function ResourcesPage() {
                         <Label htmlFor="url">URL del Enlace Externo<span className="text-destructive">*</span></Label>
                         <Input id="url" name="url" type="url" placeholder="https://ejemplo.com" value={newResourceUrl} onChange={(e) => setNewResourceUrl(e.target.value)} required disabled={isSubmittingResource} />
                       </div>
-                  ) : newResourceType !== 'FOLDER' && (
+                  ) : newResourceType !== 'FOLDER' && !editingResource ? (
                     <div className="space-y-1">
                         <UploadArea onFileSelect={(file) => setNewResourceFile(file)} disabled={isSubmittingResource} />
                         {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
                         {newResourceFile && <p className="text-xs text-center text-muted-foreground mt-1">Archivo seleccionado: {newResourceFile.name}</p>}
                     </div>
-                  )}
+                  ) : null}
 
-                  <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4"><Button type="button" variant="outline" onClick={() => setShowCreateFileModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Guardar</Button></DialogFooter>
+                  <Separator />
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                        <Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} />
+                        <Label htmlFor="is-public" className="flex items-center gap-2 cursor-pointer">{isPublic ? <Globe className="h-4 w-4 text-primary" /> : <UsersIcon className="h-4 w-4 text-destructive" />} {isPublic ? 'Público (visible para todos)' : 'Privado (compartir con usuarios específicos)'}</Label>
+                    </div>
+                    {!isPublic && (
+                        <Card className="bg-muted/50 p-3">
+                            <Input placeholder="Buscar usuarios para compartir..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
+                            <ScrollArea className="h-40">
+                                <div className="space-y-2">
+                                {filteredUsers.map(u => (
+                                    <div key={u.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-background">
+                                        <Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={c => handleUserShareToggle(u.id, !!c)} />
+                                        <Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer">
+                                            <Avatar className="h-7 w-7"><AvatarImage src={u.avatar || undefined} /><AvatarFallback>{getInitials(u.name)}</AvatarFallback></Avatar>
+                                            {u.name}
+                                        </Label>
+                                    </div>
+                                ))}
+                                </div>
+                            </ScrollArea>
+                        </Card>
+                    )}
+                  </div>
+
+
               </form>
+               <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4"><Button type="button" variant="outline" onClick={() => setShowCreateUpdateModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button form="create-update-form" type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}{editingResource ? 'Guardar Cambios' : 'Crear Recurso'}</Button></DialogFooter>
           </DialogContent>
        </Dialog>
 
-      <Dialog open={showCreateFolderModal} onOpenChange={(isOpen) => { if (!isOpen) resetCreateForm(); setShowCreateFolderModal(isOpen); }}>
+      <Dialog open={showCreateFolderModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowCreateFolderModal(isOpen); }}>
           <DialogContent className="w-[95vw] max-w-md rounded-lg">
               <DialogHeader>
                   <DialogTitle>Crear Nueva Carpeta</DialogTitle>
