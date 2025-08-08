@@ -1,5 +1,3 @@
-
-
 // @ts-nocheck
 'use client';
 
@@ -23,6 +21,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTitle } from '@/contexts/title-context';
 
 
 // Helper types and functions
@@ -102,6 +101,7 @@ export default function CourseDetailPage() {
   const { toast } = useToast();
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const { setPageTitle } = useTitle();
   
   const [course, setCourse] = useState<AppCourse | null>(null);
   const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(null);
@@ -159,6 +159,7 @@ export default function CourseDetailPage() {
       const apiCourseData: ApiDetailedCourse = await courseResponse.json();
       const appCourseData = mapApiDetailedCourseToAppCourse(apiCourseData);
       setCourse(appCourseData);
+      setPageTitle(appCourseData.title);
       
       const firstLessonId = appCourseData.modules?.[0]?.lessons?.[0]?.id;
       if (firstLessonId) {
@@ -187,10 +188,11 @@ export default function CourseDetailPage() {
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido');
+      setPageTitle('Error');
     } finally {
       setIsLoading(false);
     }
-  }, [courseId, user, isCreatorViewingCourse, recordInteraction]);
+  }, [courseId, user, isCreatorViewingCourse, recordInteraction, setPageTitle]);
 
   useEffect(() => {
     fetchCourseAndProgress();
@@ -424,9 +426,6 @@ export default function CourseDetailPage() {
                         <PanelLeft />
                     </Button>
                 )}
-                <h1 className="text-xl font-semibold font-headline truncate" title={course.title}>
-                    {course.title}
-                </h1>
             </div>
             <div className="flex items-center gap-2">
                 { !isCreatorViewingCourse && isEnrolled && (
@@ -529,5 +528,3 @@ export default function CourseDetailPage() {
     </div>
   );
 }
-
-    

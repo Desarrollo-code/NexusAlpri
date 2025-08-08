@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Notification } from "@/types";
 import { useToast } from "@/hooks/use-toast";
+import { useTitle } from "@/contexts/title-context";
 
 const timeSince = (date: Date): string => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -29,12 +30,9 @@ const timeSince = (date: Date): string => {
     return Math.floor(seconds) + "s";
 };
 
-interface TopBarProps {
-  pageTitle: string;
-}
-
-export const TopBar = ({ pageTitle }: TopBarProps) => {
+export const TopBar = () => {
     const { isMobile, toggleSidebar } = useSidebar();
+    const { pageTitle } = useTitle();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const { toast } = useToast();
@@ -99,7 +97,7 @@ export const TopBar = ({ pageTitle }: TopBarProps) => {
                         <ChevronsLeft className="h-5 w-5" />
                     </Button>
                 )}
-                 <h1 className="text-xl font-semibold text-foreground">{pageTitle}</h1>
+                 <h1 className="text-xl font-semibold text-foreground truncate">{pageTitle}</h1>
             </div>
 
             {/* Right side */}

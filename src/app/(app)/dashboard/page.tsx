@@ -44,6 +44,7 @@ import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { getEventDetails, getInitials } from '@/lib/security-log-utils';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useTitle } from '@/contexts/title-context';
 
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -258,6 +259,7 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { setPageTitle } = useTitle();
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -266,6 +268,10 @@ export default function DashboardPage() {
     return user?.role === 'ADMINISTRATOR' && !user.isTwoFactorEnabled;
   }, [user]);
 
+  useEffect(() => {
+    setPageTitle('Panel Principal');
+  }, [setPageTitle]);
+  
   useEffect(() => {
     if (!user) return;
 

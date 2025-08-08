@@ -1,5 +1,3 @@
-
-
 // En /home/user/studio/src/app/(app)/manage-courses/[courseId]/edit/page.tsx
 
 'use client';
@@ -55,6 +53,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ImageCropper } from '@/components/image-cropper';
+import { useTitle } from '@/contexts/title-context';
 
 
 // === TIPOS E INTERFACES ===
@@ -718,6 +717,7 @@ export default function EditCoursePage() {
     const router = useRouter();
     const { toast } = useToast();
     const { user, settings, isLoading: isAuthLoading } = useAuth();
+    const { setPageTitle } = useTitle();
 
     const courseId = (params?.courseId as string) || '';
     const isNewCourse = courseId === 'new';
@@ -791,6 +791,7 @@ export default function EditCoursePage() {
 
     const fetchCourseData = useCallback(async () => {
         if (isNewCourse) {
+            setPageTitle('Crear Nuevo Curso');
             setIsLoading(false);
             return;
         }
@@ -811,6 +812,8 @@ export default function EditCoursePage() {
                 throw new Error(`Error fetching course: ${res.statusText}`);
             }
             const data: AppCourse & { instructor?: LocalInstructor | null } = await res.json();
+            
+            setPageTitle(`Editando: ${data.title}`);
 
             // Transformar la fecha de string a Date si existe
             const transformedData: EditableCourse = {
@@ -845,7 +848,7 @@ export default function EditCoursePage() {
         } finally {
             setIsLoading(false);
         }
-    }, [courseId, isNewCourse, reset, router, toast, user]);
+    }, [courseId, isNewCourse, reset, router, toast, user, setPageTitle]);
 
     useEffect(() => {
         if (!isAuthLoading && user?.id) {
@@ -939,6 +942,7 @@ export default function EditCoursePage() {
                 const result = await res.json();
                 reset(result); // Reset form with data from backend to ensure sync
                 toast({ title: "Curso Guardado", description: "La información del curso se ha actualizado correctamente." });
+                 setPageTitle(`Editando: ${result.title}`);
             }
 
         } catch (error: any) {
@@ -951,7 +955,7 @@ export default function EditCoursePage() {
         } finally {
             setIsSaving(false);
         }
-    }, [isNewCourse, courseId, router, toast, reset]);
+    }, [isNewCourse, courseId, router, toast, reset, setPageTitle]);
 
 
     const handleChangeCourseStatus = useCallback(async (newStatus: CourseStatus) => {
@@ -1449,5 +1453,3 @@ export default function EditCoursePage() {
         </FormProvider>
     );
 }
-
-    

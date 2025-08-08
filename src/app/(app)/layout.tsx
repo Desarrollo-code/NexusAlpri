@@ -18,30 +18,12 @@ import {
 import { TopBar } from '@/components/layout/top-bar';
 import { Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { usePathname } from 'next/navigation';
-import { getNavItemsForRole } from '@/lib/nav-items';
-import type { NavItem } from '@/types';
-
-// Función para encontrar el título de la página basado en la ruta
-const findPageTitle = (navItems: NavItem[], pathname: string): string | null => {
-  for (const item of navItems) {
-    if (item.path && (pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path)))) {
-      return item.label;
-    }
-    if (item.children) {
-      const childTitle = findPageTitle(item.children, pathname);
-      if (childTitle) return childTitle;
-    }
-  }
-  return null;
-};
+import { TitleProvider } from '@/contexts/title-context';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
   const { toast } = useToast();
   const { isMobile, isCollapsed } = useSidebar();
-  const { theme } = useTheme();
-  const pathname = usePathname();
 
   const handleIdleLogout = React.useCallback(() => {
     logout();
@@ -57,16 +39,6 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   useIdleTimeout(handleIdleLogout, idleTimeoutMinutes, isIdleTimeoutEnabled);
 
-  const navItems = React.useMemo(() => getNavItemsForRole(user?.role || 'STUDENT'), [user?.role]);
-  const pageTitle = React.useMemo(() => {
-      const title = findPageTitle(navItems, pathname);
-      // Casos especiales para rutas dinámicas
-      if (pathname.startsWith('/manage-courses/') && pathname.endsWith('/edit')) return 'Editar Curso';
-      if (pathname.startsWith('/courses/')) return 'Detalle del Curso';
-      return title || 'Panel Principal';
-  }, [navItems, pathname]);
-
-
   if (isLoading || !user) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background text-foreground">
@@ -76,7 +48,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <>
+    <TitleProvider>
       <Sidebar>
         <SidebarHeader />
         <SidebarContent />
@@ -89,14 +61,14 @@ function AppLayout({ children }: { children: React.ReactNode }) {
           !isMobile && (isCollapsed ? "ml-20" : "ml-72")
         )}
       >
-        <TopBar pageTitle={pageTitle} />
+        <TopBar />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative bg-muted/30">
           <div className="relative z-10">
             {children}
           </div>
         </main>
       </div>
-    </>
+    </TitleProvider>
   );
 }
 
