@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
-import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, List, MoreVertical, Folder, FileText, Video, Info, Notebook, Shield, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Filter, ArrowUp, ArrowDown, Lock, X, UploadCloud, Grid, Link as LinkIcon, FolderPlus } from 'lucide-react';
+import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, List, MoreVertical, Folder as FolderIcon, FileText, Video, Info, Notebook, Shield, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Filter, ArrowUp, ArrowDown, Lock, X, UploadCloud, Grid, Link as LinkIcon, FolderPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -46,6 +46,7 @@ import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DownloadButton } from '@/components/ui/download-button';
 import { Badge } from '@/components/ui/badge';
+import { DecorativeFolder, getPattern } from '@/components/resources/decorative-folder';
 
 
 // --- Types and Mappers ---
@@ -79,7 +80,7 @@ function mapApiResourceToAppResource(apiResource: ApiResource): AppResourceType 
 const getIconForType = (type: AppResourceType['type']) => {
     const props = { className: "h-5 w-5 shrink-0" };
     switch (type) {
-      case 'FOLDER': return <Folder {...props} />;
+      case 'FOLDER': return <FolderIcon {...props} />;
       case 'DOCUMENT': return <FileText {...props} />;
       case 'GUIDE': return <Info {...props} />;
       case 'MANUAL': return <Notebook {...props} />;
@@ -130,10 +131,18 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
             {React.cloneElement(getIconForType(resource.type), { className: "h-16 w-16 text-muted-foreground/50" })}
           </div>
         );
-
+        
         if (isFolder) {
-            return fallbackIcon;
+            return (
+                <div className="w-full h-full relative overflow-hidden bg-muted/30">
+                    <DecorativeFolder patternId={resource.id} className="absolute inset-0 opacity-50" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <FolderIcon className="h-16 w-16 text-foreground/20" />
+                    </div>
+                </div>
+            );
         }
+
         if (isImage) {
            return <Image src={resource.url!} alt={resource.title} fill className="object-cover" data-ai-hint="resource document"/>
         }
@@ -146,7 +155,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
     return (
         <div className="w-full">
             <Card 
-                className={cn("group w-full h-full overflow-hidden transition-all duration-200 cursor-pointer bg-muted/30 hover:bg-muted/50 hover:shadow-lg")}
+                className={cn("group w-full h-full overflow-hidden transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg", isFolder ? "hover:-translate-y-1" : "")}
                 onClick={handleClick}
             >
                 <div className="aspect-video w-full flex items-center justify-center overflow-hidden relative border-b">
@@ -393,6 +402,25 @@ export default function ResourcesPage() {
 
   const allCategories = useMemo(() => ['all', ...(settings?.resourceCategories || [])], [settings]);
 
+  const currentFolderBanner = useMemo(() => {
+    if (!currentFolderId) return null;
+    const Pattern = getPattern(currentFolderId);
+    return (
+        <div className="relative h-24 md:h-32 rounded-lg overflow-hidden mb-6 bg-card">
+            <div className="absolute inset-0 opacity-20">
+                {Pattern('hsl(var(--primary))')}
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/70 to-transparent" />
+            <div className="relative h-full flex flex-col justify-end p-4 md:p-6">
+                 <h2 className="text-2xl md:text-3xl font-bold font-headline text-foreground flex items-center gap-3">
+                    <FolderIcon className="h-8 w-8 text-primary shrink-0" />
+                    {breadcrumbs[breadcrumbs.length - 1].title}
+                 </h2>
+            </div>
+        </div>
+    );
+  }, [currentFolderId, breadcrumbs]);
+
   return (
     <div className="flex h-full">
       <main className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
@@ -469,6 +497,8 @@ export default function ResourcesPage() {
             ))}
         </div>
         
+        {currentFolderId && currentFolderBanner}
+
         <div className="flex-grow overflow-auto -mx-4 px-4 mt-4 thin-scrollbar">
             {isLoading ? (
                 <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
