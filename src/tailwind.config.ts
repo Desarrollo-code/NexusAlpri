@@ -17,7 +17,6 @@ export default {
     },
     extend: {
       backgroundImage: {
-        'sidebar-gradient': 'linear-gradient(to bottom, hsl(var(--primary)), hsl(330, 84%, 60%), hsl(45, 96%, 58%))',
         'topbar-gradient': 'linear-gradient(to bottom, #1D1D1D, #181818)',
       },
       fontFamily: {

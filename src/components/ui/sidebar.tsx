@@ -86,7 +86,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out shadow-xl",
-          "bg-card dark:bg-sidebar-gradient", 
+          "bg-card dark:bg-gray-900", 
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -169,11 +169,11 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item relative",
         isCollapsed && !isMobile ? "justify-center px-0" : "px-4",
         isActive
-          ? "dark:active-item-gradient text-primary dark:active-item-text shadow-sm"
-          : "text-muted-foreground dark:text-white/80 hover:bg-muted/50 dark:hover:bg-white/10 dark:hover:text-white"
+          ? "bg-sidebar-active-background text-sidebar-accent-foreground"
+          : "text-sidebar-foreground hover:bg-muted/50 dark:hover:bg-white/10 hover:text-sidebar-accent-foreground"
       )}>
         {isActive && !isCollapsed && (
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary dark:active-item-border rounded-r-full"></div>
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full"></div>
         )}
         <GradientIcon icon={item.icon || Shield} isActive={isActive} color={isActive ? undefined : item.color} />
         {showText && <span className="whitespace-nowrap">{item.label}</span>}

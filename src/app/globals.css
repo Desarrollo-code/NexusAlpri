@@ -35,8 +35,10 @@
     --event-green: 145 63% 49%;
     --event-red: 0 72% 51%;
     --event-orange: 45 96% 58%;
-    --sidebar-foreground: hsl(240 5% 46% / 0.9);
-    --sidebar-active-background: hsl(var(--primary) / 0.1);
+
+    /* Sidebar Light Theme */
+    --sidebar-foreground: hsl(240 4% 46%);
+    --sidebar-active-background: hsl(var(--primary) / 0.08);
     --sidebar-accent-foreground: hsl(var(--primary));
   }
 
@@ -70,9 +72,11 @@
     --event-green: 145 63% 59%;
     --event-red: 0 72% 61%;
     --event-orange: 45 96% 62%;
-    --sidebar-foreground: hsl(0 0% 98% / 0.7);
-    --sidebar-active-background: hsl(0 0% 100% / 0.1);
-    --sidebar-accent-foreground: hsl(0 0% 100%);
+    
+    /* Sidebar Dark Theme */
+    --sidebar-foreground: hsl(240 5% 65%);
+    --sidebar-active-background: hsl(var(--primary) / 0.15);
+    --sidebar-accent-foreground: hsl(var(--primary));
   }
 
   * {
