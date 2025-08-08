@@ -50,9 +50,9 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
   }, [pathname]);
 
   React.useEffect(() => {
-    if (isMobile) {
-      setOpenMobile(false);
-    }
+      if (isMobile) {
+        setOpenMobile(false);
+      }
   }, [pathname, isMobile]);
   
   const value = {
@@ -86,7 +86,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out shadow-xl",
-          "bg-[--sidebar-background] border-r border-[--sidebar-border]", 
+          "bg-card dark:bg-gray-900", 
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -100,18 +100,14 @@ export const SidebarHeader = () => {
   const { isCollapsed } = useSidebar();
   return (
     <div className={cn(
-      "flex items-center h-20 px-4 border-b border-[--sidebar-border]", 
+      "flex items-center h-20 px-4 border-b border-border dark:border-white/20", 
       isCollapsed ? 'justify-center' : 'justify-between'
     )}>
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
         <div className="w-12 h-12 bg-card dark:bg-white/20 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg">
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo"/>
         </div>
-<<<<<<< HEAD
         <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary dark:text-white transition-opacity duration-300", isCollapsed ? 'opacity-0 w-0' : 'opacity-100')}>
-=======
-        <span className={cn("text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-[--primary] transition-opacity duration-300", isCollapsed ? 'opacity-0 w-0' : 'opacity-100')}>
->>>>>>> c4d4e12 (.)
           NexusAlpri
         </span>
       </Link>
@@ -150,7 +146,7 @@ const SidebarSectionHeader = ({ label }: { label: string }) => {
     if (isCollapsed) return null;
     return (
       <h2 className={cn(
-          "px-4 text-xs font-semibold uppercase text-[--sidebar-foreground] tracking-wider transition-all duration-300"
+          "px-4 text-xs font-semibold uppercase text-muted-foreground dark:text-white/70 tracking-wider transition-all duration-300"
       )}>
           {label}
       </h2>
@@ -173,11 +169,11 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item relative",
         isCollapsed && !isMobile ? "justify-center px-0" : "px-4",
         isActive
-          ? "bg-[--sidebar-active-background] text-[--sidebar-active-foreground]"
-          : "text-[--sidebar-foreground] hover:bg-[--sidebar-active-background] hover:text-[--sidebar-active-foreground]"
+          ? "bg-sidebar-active-background text-sidebar-accent-foreground"
+          : "text-sidebar-foreground hover:bg-muted/50 dark:hover:bg-white/10 hover:text-sidebar-accent-foreground"
       )}>
         {isActive && !isCollapsed && (
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-[--primary] rounded-r-full"></div>
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full"></div>
         )}
         <GradientIcon icon={item.icon || Shield} isActive={isActive} color={isActive ? undefined : item.color} />
         {showText && <span className="whitespace-nowrap">{item.label}</span>}
@@ -193,10 +189,10 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   if (isCollapsed && !isMobile) {
     return (
         <Tooltip>
-          <TooltipTrigger asChild>{linkWrapper}</TooltipTrigger>
-          <TooltipContent side="right" align="center" sideOffset={10}>
-              <p>{item.label}</p>
-          </TooltipContent>
+            <TooltipTrigger asChild>{linkWrapper}</TooltipTrigger>
+            <TooltipContent side="right" align="center" sideOffset={10}>
+                <p>{item.label}</p>
+            </TooltipContent>
         </Tooltip>
     );
   }
@@ -209,14 +205,14 @@ export const SidebarFooter = () => {
   const { isCollapsed, toggleSidebar } = useSidebar();
 
   return (
-    <div className="p-4 border-t border-[--sidebar-border] mt-auto">
+    <div className="p-4 border-t border-border dark:border-white/20 mt-auto">
       <div className={cn("flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
         <Button
           onClick={toggleSidebar}
           variant="ghost"
           size="icon"
           className={cn(
-              "h-9 w-9 text-[--sidebar-foreground] hover:bg-[--muted] hover:text-[--primary] transition-transform duration-300",
+              "h-9 w-9 text-muted-foreground dark:text-white/80 hover:bg-muted/50 dark:hover:bg-white/20 dark:hover:text-white transition-transform duration-300",
               isCollapsed && "rotate-180"
           )}
         >
