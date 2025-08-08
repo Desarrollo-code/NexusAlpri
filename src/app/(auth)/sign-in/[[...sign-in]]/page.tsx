@@ -111,12 +111,12 @@ export default function SignInPage() {
 
 
   return (
-        <Card className="shadow-lg">
+        <Card className="shadow-lg border-2 border-foreground/10">
           {!show2fa ? (
             <>
                 <CardHeader className="text-center">
-                  <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center shadow-lg">
-                      <LogIn className="w-8 h-8 text-white" />
+                  <div className="mx-auto mb-4">
+                      <LogIn className="w-12 h-12 text-primary" />
                   </div>
                   <CardTitle className="text-2xl font-headline">Iniciar Sesión</CardTitle>
                   <CardDescription>Ingresa a tu cuenta para continuar</CardDescription>
@@ -135,7 +135,7 @@ export default function SignInPage() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           disabled={isLoading}
-                          className="pl-10"
+                          className="pl-10 bg-muted"
                         />
                       </div>
                     </div>
@@ -151,21 +151,21 @@ export default function SignInPage() {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           disabled={isLoading}
-                          className="pl-10 pr-10"
+                          className="pl-10 pr-10 bg-muted"
                         />
                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                             {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                         </button>
                       </div>
                     </div>
-                    <Button type="submit" className="w-full btn-primary-gradient" disabled={isLoading}>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
                       {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                       {isLoading ? 'Ingresando...' : 'Ingresar'}
                     </Button>
                   </form>
                 </CardContent>
                  <CardFooter>
-                   <p className="text-center text-sm w-full">
+                   <p className="text-center text-sm w-full text-muted-foreground">
                       ¿No tienes una cuenta?{' '}
                       <Link href="/sign-up" className="underline text-primary">
                           Crea una cuenta
@@ -199,7 +199,7 @@ export default function SignInPage() {
                       </InputOTPGroup>
                     </InputOTP>
                   </div>
-                  <Button type="submit" className="w-full btn-primary-gradient" disabled={isLoading || token.length < 6}>
+                  <Button type="submit" className="w-full" disabled={isLoading || token.length < 6}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                     {isLoading ? 'Verificando...' : 'Verificar y Entrar'}
                   </Button>

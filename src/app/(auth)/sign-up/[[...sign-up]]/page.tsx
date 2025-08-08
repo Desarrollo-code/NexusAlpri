@@ -104,7 +104,7 @@ export default function SignUpPage() {
   
   if (!settings.allowPublicRegistration) {
       return (
-            <Card className="shadow-lg">
+            <Card className="shadow-lg border-2 border-foreground/10">
                 <CardHeader className="text-center">
                     <CardTitle className="text-2xl font-headline">Registro Deshabilitado</CardTitle>
                 </CardHeader>
@@ -126,10 +126,10 @@ export default function SignUpPage() {
 
   return (
     
-      <Card className="shadow-lg">
+      <Card className="shadow-lg border-2 border-foreground/10">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center shadow-lg">
-              <UserPlus className="w-8 h-8 text-white" />
+          <div className="mx-auto mb-4">
+              <UserPlus className="w-12 h-12 text-primary" />
           </div>
           <CardTitle className="text-2xl font-headline">Crear una Cuenta</CardTitle>
           <CardDescription>Regístrate para empezar a aprender</CardDescription>
@@ -148,7 +148,7 @@ export default function SignUpPage() {
               <div className="relative">
                 <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input type="text" id="registerName" placeholder="Tu nombre completo" required 
-                          value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} className="pl-10" />
+                          value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} className="pl-10 bg-muted" />
               </div>
             </div>
             <div className="grid gap-2">
@@ -156,7 +156,7 @@ export default function SignUpPage() {
                <div className="relative">
                 <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input type="email" id="registerEmail" placeholder="tu@email.com" required 
-                          value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="pl-10"/>
+                          value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="pl-10 bg-muted"/>
                </div>
             </div>
             <div className="grid gap-2">
@@ -164,7 +164,7 @@ export default function SignUpPage() {
               <div className="relative">
                 <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input type={showPassword ? "text" : "password"} id="registerPassword" placeholder="••••••••" required
-                          value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} className="pl-10 pr-10" />
+                          value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} className="pl-10 pr-10 bg-muted" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -175,20 +175,20 @@ export default function SignUpPage() {
               <div className="relative">
                 <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input type={showConfirmPassword ? "text" : "password"} id="confirmPassword" placeholder="••••••••" required
-                          value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} className="pl-10 pr-10" />
+                          value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isLoading} className="pl-10 pr-10 bg-muted" />
                 <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                     {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
-            <Button type="submit" className="w-full btn-primary-gradient" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading && <Loader2 className="animate-spin mr-2" />}
               Registrarse
             </Button>
           </form>
         </CardContent>
         <CardFooter>
-                <p className="w-full text-center text-sm">
+                <p className="w-full text-center text-sm text-muted-foreground">
                   ¿Ya tienes una cuenta? <Link href="/sign-in" className="underline text-primary">Inicia sesión</Link>
                 </p>
         </CardFooter>
