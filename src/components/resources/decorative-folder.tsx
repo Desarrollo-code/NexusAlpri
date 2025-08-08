@@ -8,24 +8,15 @@ interface DecorativeFolderProps {
   className?: string;
 }
 
-// Paleta de colores sólidos y profesionales para el tema oscuro
-const backgroundColors = [
-    'hsl(150, 15%, 25%)', // Verde musgo oscuro
-    'hsl(30, 8%, 30%)',   // Gris cálido
-    'hsl(220, 10%, 32%)', // Azul pizarra
-    'hsl(210, 12%, 28%)', // Azul grisáceo
-    'hsl(180, 10%, 26%)', // Turquesa oscuro
-    'hsl(40, 10%, 30%)',  // Marrón suave
-];
-
-// Paleta de colores para los PATRONES. Contrastan sutilmente con el fondo.
-const patternColors = [
-    'hsl(150, 15%, 20%)', // Verde más oscuro
-    'hsl(30, 8%, 25%)',   // Gris más oscuro
-    'hsl(220, 10%, 27%)', // Azul más oscuro
-    'hsl(210, 12%, 23%)', // Azul grisáceo más oscuro
-    'hsl(180, 10%, 21%)', // Turquesa más oscuro
-    'hsl(40, 10%, 25%)',  // Marrón más oscuro
+// Paletas de colores tonales inspiradas en la imagen.
+// Cada objeto contiene un color de fondo y un color más oscuro para el patrón.
+const colorPalettes = [
+    { background: 'hsl(150, 15%, 30%)', pattern: 'hsl(150, 15%, 25%)' }, // Verde musgo
+    { background: 'hsl(30, 8%, 35%)',   pattern: 'hsl(30, 8%, 30%)' },   // Gris cálido
+    { background: 'hsl(220, 10%, 38%)', pattern: 'hsl(220, 10%, 32%)' }, // Azul pizarra
+    { background: 'hsl(210, 12%, 34%)', pattern: 'hsl(210, 12%, 28%)' }, // Azul grisáceo
+    { background: 'hsl(180, 10%, 32%)', pattern: 'hsl(180, 10%, 26%)' }, // Turquesa oscuro
+    { background: 'hsl(40, 10%, 36%)',  pattern: 'hsl(40, 10%, 30%)' },  // Marrón suave
 ];
 
 
@@ -51,10 +42,10 @@ const patterns = [
   }),
   // Puntos (Dots)
   (color: string) => ({
-    backgroundImage: `radial-gradient(${color} 1px, transparent 1px)`,
+    backgroundImage: `radial-gradient(${color} 1.2px, transparent 1.2px)`,
     backgroundSize: '15px 15px',
   }),
-   // Ondas (Waves)
+   // Ondas (Waves) - Un patrón adicional para más variedad
   (color: string) => ({
     backgroundImage: `
       radial-gradient(circle at 100% 50%, transparent 20%, ${color} 21%, ${color} 34%, transparent 35%, transparent),
@@ -73,15 +64,14 @@ const getUniqueFolderStyle = (id: number | string): React.CSSProperties => {
         ? id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
         : id;
 
-    const bgColor = backgroundColors[numericId % backgroundColors.length];
-    const patternColor = patternColors[numericId % patternColors.length];
+    const { background, pattern: patternColor } = colorPalettes[numericId % colorPalettes.length];
     const patternGenerator = patterns[numericId % patterns.length];
     
     // Genera el estilo del patrón y lo combina con el color de fondo.
     const patternStyle = patternGenerator(patternColor);
     
     return {
-        backgroundColor: bgColor,
+        backgroundColor: background,
         ...patternStyle
     };
 };
