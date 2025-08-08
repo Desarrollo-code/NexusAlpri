@@ -106,61 +106,60 @@ export default function ManageCoursesPage() {
     router.push(`${pathname}?${createQueryString({ page })}`);
   };
 
-  const fetchCourses = useCallback(async () => {
+  useEffect(() => {
     if (!user) {
       setIsLoading(false);
       return;
     }
-    setIsLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams({ 
-        manageView: 'true',
-        page: String(currentPage),
-        pageSize: String(PAGE_SIZE),
-        tab: activeTab
-      });
-      
-      if (user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR') {
-        params.append('userId', user.id);
-        params.append('userRole', user.role as string);
-      } else {
-        setIsLoading(false);
-        setError("Acceso no autorizado para gestionar cursos.");
-        setAllCourses([]);
-        return;
-      }
-      
-      const response = await fetch(`/api/courses?${params.toString()}`, { cache: 'no-store' });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to fetch courses: ${response.statusText}`);
-      }
-      const data: { courses: ApiCourseForManage[], totalCourses: number } = await response.json();
-      const appCourses = data.courses.map(mapApiCourseToAppCourse);
-      setAllCourses(appCourses);
-      setTotalCourses(data.totalCourses);
-      
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar cursos');
-      setAllCourses([]);
-      toast({ title: "Error al cargar cursos", description: err instanceof Error ? err.message : 'No se pudieron cargar los cursos.', variant: "destructive"});
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, toast, currentPage, activeTab]);
 
-  useEffect(() => {
-    if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
+    const fetchCourses = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams({ 
+          manageView: 'true',
+          page: String(currentPage),
+          pageSize: String(PAGE_SIZE),
+          tab: activeTab
+        });
+        
+        if (user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR') {
+          params.append('userId', user.id);
+          params.append('userRole', user.role as string);
+        } else {
+          setIsLoading(false);
+          setError("Acceso no autorizado para gestionar cursos.");
+          setAllCourses([]);
+          return;
+        }
+        
+        const response = await fetch(`/api/courses?${params.toString()}`, { cache: 'no-store' });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `Failed to fetch courses: ${response.statusText}`);
+        }
+        const data: { courses: ApiCourseForManage[], totalCourses: number } = await response.json();
+        const appCourses = data.courses.map(mapApiCourseToAppCourse);
+        setAllCourses(appCourses);
+        setTotalCourses(data.totalCourses);
+        
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar cursos');
+        setAllCourses([]);
+        toast({ title: "Error al cargar cursos", description: err instanceof Error ? err.message : 'No se pudieron cargar los cursos.', variant: "destructive"});
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR') {
       fetchCourses();
-    } else if (user) {
+    } else {
       setIsLoading(false);
       setError("Solo Administradores e Instructores pueden gestionar cursos desde esta sección.");
       setAllCourses([]);
-    } else {
-        setIsLoading(false);
     }
-  }, [fetchCourses, user, courseUpdateSignal]);
+  }, [user, toast, currentPage, activeTab, courseUpdateSignal]);
 
   const handleCreationSuccess = (newCourseId: string) => {
     setShowCreateModal(false);
@@ -326,7 +325,7 @@ export default function ManageCoursesPage() {
                 <AlertTriangle className="h-8 w-8 mb-2" />
                 <p className="font-semibold">Error al Cargar Cursos</p>
                 <p className="text-sm">{error}</p>
-                <Button onClick={fetchCourses} variant="outline" className="mt-4">Reintentar</Button>
+                <Button onClick={() => setCourseUpdateSignal(s => s + 1)} variant="outline" className="mt-4">Reintentar</Button>
               </div>
             ) : allCourses.length > 0 ? (
                  isMobile ? <MobileManagementList /> : <DesktopManagementGrid />

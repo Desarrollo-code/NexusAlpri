@@ -94,35 +94,39 @@ export default function UsersPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedNewRole, setSelectedNewRole] = useState<UserRole>('STUDENT');
 
-
-  const fetchUsers = useCallback(async (page: number, search: string) => {
+  const fetchUsers = useCallback(() => {
+    if (!currentUser) return;
     setIsLoading(true);
     setError(null);
-    try {
-      const params = new URLSearchParams();
-      params.append('page', String(page));
-      params.append('pageSize', String(PAGE_SIZE));
-      if (search) {
-        params.append('search', search);
-      }
-
-      const response = await fetch(`/api/users?${params.toString()}`, { cache: 'no-store' });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Falló la carga de usuarios: ${response.statusText}`);
-      }
-      const responseData: { users: User[]; totalUsers: number; } = await response.json();
-      setUsersList(responseData.users || []);
-      setTotalUsers(responseData.totalUsers || 0);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar usuarios');
-      setUsersList([]);
-      setTotalUsers(0);
-       toast({ title: "Error al cargar usuarios", description: err instanceof Error ? err.message : 'No se pudieron cargar los usuarios.', variant: "destructive"});
-    } finally {
-      setIsLoading(false);
+    const params = new URLSearchParams();
+    params.append('page', String(currentPage));
+    params.append('pageSize', String(PAGE_SIZE));
+    if (debouncedSearchTerm) {
+      params.append('search', debouncedSearchTerm);
     }
-  }, [toast]);
+    
+    fetch(`/api/users?${params.toString()}`, { cache: 'no-store' })
+      .then(res => {
+        if (!res.ok) {
+          return res.json().then(errorData => {
+            throw new Error(errorData.message || `Falló la carga de usuarios: ${res.statusText}`);
+          });
+        }
+        return res.json();
+      })
+      .then((responseData: { users: User[]; totalUsers: number; }) => {
+        setUsersList(responseData.users || []);
+        setTotalUsers(responseData.totalUsers || 0);
+      })
+      .catch(err => {
+        setError(err.message);
+        toast({ title: "Error al cargar usuarios", description: err.message, variant: "destructive"});
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [currentUser, currentPage, debouncedSearchTerm, toast]);
+
   
   const createQueryString = useCallback(
     (paramsToUpdate: Record<string, string | number>) => {
@@ -144,18 +148,18 @@ export default function UsersPage() {
       router.push('/dashboard');
       return;
     }
-    
-    // Check if debounced search term has changed from what's in the URL
-    // If so, it means the user has typed something new, so we should go to page 1
-    if (debouncedSearchTerm !== (searchParams.get('search') || '')) {
-      const newQueryString = createQueryString({ page: 1, search: debouncedSearchTerm });
-      router.push(`${pathname}?${newQueryString}`);
-    } else {
-      // Otherwise, just fetch for the current page and search term
-      fetchUsers(currentPage, debouncedSearchTerm);
-    }
-  }, [currentUser, debouncedSearchTerm, currentPage, fetchUsers, router, pathname, searchParams, createQueryString]);
+    fetchUsers();
+  }, [currentUser, currentPage, debouncedSearchTerm, router, fetchUsers]);
 
+  useEffect(() => {
+     // If search term changes, push to history
+     const newQueryString = createQueryString({ page: 1, search: debouncedSearchTerm });
+     // Avoid pushing the same query string
+     if (debouncedSearchTerm !== (searchParams.get('search') || '') || !searchParams.get('page')) {
+         router.push(`${pathname}?${newQueryString}`);
+     }
+  }, [debouncedSearchTerm, pathname, router, createQueryString, searchParams]);
+  
   
   const getInitials = (name?: string | null) => {
     if (!name) return '??';
@@ -266,7 +270,7 @@ export default function UsersPage() {
         title: userToEdit ? "Usuario Actualizado" : "Usuario Creado", 
         description: `El usuario ${savedUser.name} ha sido ${userToEdit ? 'actualizado' : 'creado'}.` 
       });
-      fetchUsers(currentPage, debouncedSearchTerm);
+      fetchUsers();
       setShowAddEditModal(false);
       setUserToEdit(null); 
       resetFormFields();
@@ -293,7 +297,7 @@ export default function UsersPage() {
         throw new Error(errorData.message || 'Falló al eliminar el usuario');
       }
       toast({ title: "Usuario Eliminado", description: `El usuario ${userToDelete.name} ha sido eliminado.` });
-      fetchUsers(currentPage, debouncedSearchTerm);
+      fetchUsers();
     } catch (err) {
       toast({ title: "Error al eliminar", description: err instanceof Error ? err.message : 'No se pudo eliminar el usuario.', variant: "destructive" });
     } finally {
@@ -326,7 +330,7 @@ export default function UsersPage() {
         throw new Error(errorData.message || 'Falló al cambiar el rol del usuario');
       }
       toast({ title: "Rol Actualizado", description: `El rol de ${userToChangeRole.name} ha sido cambiado a ${getRoleInSpanish(selectedNewRole)}.` });
-      fetchUsers(currentPage, debouncedSearchTerm); 
+      fetchUsers(); 
       setShowChangeRoleDialog(false);
       setUserToChangeRole(null);
     } catch (err) {
@@ -590,7 +594,7 @@ export default function UsersPage() {
               <AlertTriangle className="h-8 w-8 mb-2" />
               <p className="font-semibold">Error al cargar usuarios</p>
               <p className="text-sm">{error}</p>
-              <Button onClick={() => fetchUsers(currentPage, debouncedSearchTerm)} variant="outline" className="mt-4">Reintentar</Button>
+              <Button onClick={() => fetchUsers()} variant="outline" className="mt-4">Reintentar</Button>
             </div>
           )}
           {!error && (

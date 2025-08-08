@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { AnnouncementCard } from '@/components/announcement-card';
@@ -68,49 +69,49 @@ export default function AnnouncementsPage() {
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const fetchAnnouncements = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams();
-      params.append('page', String(currentPage));
-      params.append('pageSize', String(PAGE_SIZE));
-
-      const response = await fetch(`/api/announcements?${params.toString()}`, { cache: 'no-store' });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to fetch announcements: ${response.statusText}`);
-      }
-      const data: { announcements: PrismaAnnouncement[], totalAnnouncements: number } = await response.json();
-      
-      const displayData: DisplayAnnouncement[] = data.announcements.map(ann => {
-        let parsedAudience: UserRole[] | 'ALL' = 'ALL';
-        if (ann.audience === 'ALL') {
-          parsedAudience = 'ALL';
-        } else if (Array.isArray(ann.audience)) { 
-            parsedAudience = ann.audience as UserRole[];
-        }
-        return {
-          ...ann,
-          audience: parsedAudience, 
-          author: ann.author ? { id: ann.author.id, name: ann.author.name } : null,
-        };
-      });
-      setAllAnnouncements(displayData);
-      setTotalAnnouncements(data.totalAnnouncements);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar los anuncios');
-      setAllAnnouncements([]);
-      setTotalAnnouncements(0);
-      toast({ title: "Error al cargar anuncios", description: err instanceof Error ? err.message : 'No se pudieron cargar los anuncios.', variant: "destructive"});
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast, currentPage]);
-
   useEffect(() => {
+    const fetchAnnouncements = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams();
+        params.append('page', String(currentPage));
+        params.append('pageSize', String(PAGE_SIZE));
+
+        const response = await fetch(`/api/announcements?${params.toString()}`, { cache: 'no-store' });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `Failed to fetch announcements: ${response.statusText}`);
+        }
+        const data: { announcements: PrismaAnnouncement[], totalAnnouncements: number } = await response.json();
+        
+        const displayData: DisplayAnnouncement[] = data.announcements.map(ann => {
+          let parsedAudience: UserRole[] | 'ALL' = 'ALL';
+          if (ann.audience === 'ALL') {
+            parsedAudience = 'ALL';
+          } else if (Array.isArray(ann.audience)) { 
+              parsedAudience = ann.audience as UserRole[];
+          }
+          return {
+            ...ann,
+            audience: parsedAudience, 
+            author: ann.author ? { id: ann.author.id, name: ann.author.name } : null,
+          };
+        });
+        setAllAnnouncements(displayData);
+        setTotalAnnouncements(data.totalAnnouncements);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar los anuncios');
+        setAllAnnouncements([]);
+        setTotalAnnouncements(0);
+        toast({ title: "Error al cargar anuncios", description: err instanceof Error ? err.message : 'No se pudieron cargar los anuncios.', variant: "destructive"});
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchAnnouncements();
-  }, [fetchAnnouncements]);
+  }, [toast, currentPage]);
 
   const relevantAnnouncements = useMemo(() => {
     return allAnnouncements
@@ -207,7 +208,8 @@ export default function AnnouncementsPage() {
       });
       setShowCreateEditModal(false);
       resetFormAndState();
-      fetchAnnouncements(); 
+      // Re-fetch announcements after saving
+      router.refresh();
     } catch (err) {
       toast({ 
           title: `Error al ${announcementToEdit ? 'actualizar' : 'crear'} anuncio`, 
@@ -231,7 +233,7 @@ export default function AnnouncementsPage() {
         throw new Error(errorData.message || 'Failed to delete announcement');
       }
       toast({ title: 'Anuncio Eliminado', description: `El anuncio "${announcementToDelete.title}" ha sido eliminado.` });
-      fetchAnnouncements();
+      router.refresh();
     } catch (err) {
       toast({ title: 'Error al eliminar', description: err instanceof Error ? err.message : 'No se pudo eliminar el anuncio.', variant: 'destructive' });
     } finally {
@@ -348,7 +350,7 @@ export default function AnnouncementsPage() {
           <AlertTriangle className="h-8 w-8 mb-2" />
           <p className="font-semibold">Error al cargar anuncios</p>
           <p className="text-sm">{error}</p>
-          <Button onClick={fetchAnnouncements} variant="outline" className="mt-4">Reintentar</Button>
+          <Button onClick={() => router.refresh()} variant="outline" className="mt-4">Reintentar</Button>
         </div>
       ) : relevantAnnouncements.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

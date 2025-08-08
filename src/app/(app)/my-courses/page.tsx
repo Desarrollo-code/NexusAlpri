@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -22,51 +23,53 @@ export default function MyCoursesPage() {
   const [error, setError] = useState<string | null>(null);
   const [enrollmentUpdatedSignal, setEnrollmentUpdatedSignal] = useState(0);
 
-  const fetchMyEnrollments = useCallback(async () => {
+  useEffect(() => {
+    if (isAuthLoading) return;
+    
     if (!user || !user.id) {
         setIsFetchingPageData(false); 
         setMyEnrolledCourses([]); 
         return;
     }
-    setIsFetchingPageData(true);
-    setError(null);
-    try {
-      const response = await fetch(`/api/enrollment/${user.id}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to fetch enrolled courses: ${response.statusText}`);
-      }
-      const data: any[] = await response.json(); 
-      const mappedCourses: EnrolledCourse[] = data.map(item => ({
-        id: item.id,
-        title: item.title,
-        description: item.description,
-        instructor: item.instructorName || 'N/A',
-        imageUrl: item.imageUrl,
-        modulesCount: item.modulesCount || 0,
-        duration: item.duration,
-        modules: [], 
-        enrolledAt: item.enrolledAt,
-        isEnrolled: true, 
-        instructorId: item.instructorId,
-        status: item.status || 'PUBLISHED',
-        progressPercentage: item.progressPercentage,
-      }));
-      setMyEnrolledCourses(mappedCourses);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar tus cursos inscritos');
-      setMyEnrolledCourses([]);
-      toast({ title: "Error al cargar cursos", description: err instanceof Error ? err.message : 'No se pudieron cargar tus cursos inscritos.', variant: "destructive"});
-    } finally {
-      setIsFetchingPageData(false);
-    }
-  }, [user, toast]);
 
-  useEffect(() => {
-    if (!isAuthLoading) {
-      fetchMyEnrollments();
-    }
-  }, [isAuthLoading, fetchMyEnrollments, enrollmentUpdatedSignal]);
+    const fetchMyEnrollments = async () => {
+        setIsFetchingPageData(true);
+        setError(null);
+        try {
+          const response = await fetch(`/api/enrollment/${user.id}`);
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Failed to fetch enrolled courses: ${response.statusText}`);
+          }
+          const data: any[] = await response.json(); 
+          const mappedCourses: EnrolledCourse[] = data.map(item => ({
+            id: item.id,
+            title: item.title,
+            description: item.description,
+            instructor: item.instructorName || 'N/A',
+            imageUrl: item.imageUrl,
+            modulesCount: item.modulesCount || 0,
+            duration: item.duration,
+            modules: [], 
+            enrolledAt: item.enrolledAt,
+            isEnrolled: true, 
+            instructorId: item.instructorId,
+            status: item.status || 'PUBLISHED',
+            progressPercentage: item.progressPercentage,
+          }));
+          setMyEnrolledCourses(mappedCourses);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar tus cursos inscritos');
+          setMyEnrolledCourses([]);
+          toast({ title: "Error al cargar cursos", description: err instanceof Error ? err.message : 'No se pudieron cargar tus cursos inscritos.', variant: "destructive"});
+        } finally {
+          setIsFetchingPageData(false);
+        }
+    };
+    
+    fetchMyEnrollments();
+
+  }, [isAuthLoading, user, toast, enrollmentUpdatedSignal]);
 
 
   const handleEnrollmentChangeOnPage = (courseId: string, newStatus: boolean) => {
@@ -120,7 +123,7 @@ export default function MyCoursesPage() {
             <AlertTriangle className="h-8 w-8 mb-2" />
             <p className="font-semibold">Error al Cargar Cursos</p>
             <p className="text-sm">{error}</p>
-            <Button onClick={fetchMyEnrollments} variant="outline" className="mt-4">Reintentar</Button>
+            <Button onClick={() => setEnrollmentUpdatedSignal(s => s + 1)} variant="outline" className="mt-4">Reintentar</Button>
         </div>
       )}
 
