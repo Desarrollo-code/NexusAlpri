@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { User, PlatformSettings } from '@/types';
@@ -38,32 +39,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  const fetchSessionData = useCallback(async () => {
-    try {
-      const [settingsRes, userRes] = await Promise.all([
-        fetch('/api/settings'),
-        fetch('/api/auth/me'),
-      ]);
-
-      const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
-      setSettings(settingsData);
-      
-      const userData = userRes.ok ? (await userRes.json()).user : null;
-      setUser(userData);
-    } catch (error) {
-      setUser(null);
-      setSettings(DEFAULT_SETTINGS);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  // --- CORRECCIÓN AQUÍ ---
-  // El useEffect solo debe ejecutarse una vez al montar el componente.
-  // Un array de dependencias vacío `[]` previene el bucle.
   useEffect(() => {
+    // This function will run only once when the provider is mounted.
+    const fetchSessionData = async () => {
+        try {
+            const [settingsRes, userRes] = await Promise.all([
+                fetch('/api/settings'),
+                fetch('/api/auth/me'),
+            ]);
+
+            const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
+            setSettings(settingsData);
+            
+            const userData = userRes.ok ? (await userRes.json()).user : null;
+            setUser(userData);
+        } catch (error) {
+            console.error("Failed to fetch session data:", error);
+            setUser(null);
+            setSettings(DEFAULT_SETTINGS);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
     fetchSessionData();
-  }, []); // <--- array de dependencias vacío
+  }, []); // Empty dependency array ensures this runs only once.
 
   const login = useCallback((userData: User) => {
     setUser(userData);
@@ -79,7 +79,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to call logout API", error);
     } finally {
       setUser(null);
-      // Ojo: Esto provoca un "hard refresh". Podrías usar router.replace('/sign-in') para una navegación más suave.
       window.location.href = '/sign-in';
     }
   }, []);
@@ -109,7 +108,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }), [user, settings, login, logout, isLoading, updateUser, updateSettings]);
 
   if (isLoading) {
-    // Puedes mostrar un spinner mientras los datos se están cargando
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
