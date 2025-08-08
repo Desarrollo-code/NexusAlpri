@@ -1,3 +1,4 @@
+// src/components/resources/details-sidebar.tsx
 'use client';
 
 import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
@@ -5,8 +6,11 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock } from 'lucide-react';
+import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users } from 'lucide-react';
 import Image from 'next/image';
+import { useAuth } from '@/contexts/auth-context';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { getInitials } from '@/lib/security-log-utils';
 
 interface ResourceDetailsSidebarProps {
     resource: AppResourceType | null;
@@ -30,12 +34,15 @@ const getYoutubeVideoId = (url: string | undefined): string | null => {
 };
 
 export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: ResourceDetailsSidebarProps) {
+    const { user } = useAuth();
+
     if (!resource) {
         return <div className="h-full w-full bg-card" />;
     }
 
     const isImage = resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
     const youtubeId = resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
+    const canModify = user?.role === 'ADMINISTRATOR' || user?.id === resource.uploaderId;
 
     return (
         <div className="flex flex-col h-full bg-card">
@@ -60,12 +67,22 @@ export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: 
 
                     <div className="flex gap-2 mb-4">
                         <Button className="flex-1"><Download className="mr-2 h-4 w-4"/> Descargar</Button>
-                        <Button variant="outline"><Share2 className="mr-2 h-4 w-4"/> Compartir</Button>
+                        {canModify && 
+                            <Button variant="outline" onClick={() => onEdit(resource)}>
+                                <Share2 className="mr-2 h-4 w-4"/> Compartir
+                            </Button>
+                        }
                     </div>
 
                     <Separator className="my-4" />
 
                     <div className="space-y-4 text-sm">
+                         <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground flex items-center gap-2"><Globe className="h-4 w-4"/> Visibilidad</span>
+                            <Badge variant={resource.isPublic ? 'secondary' : 'default'} className="bg-primary/10 text-primary">
+                                {resource.isPublic ? 'Público' : 'Privado'}
+                            </Badge>
+                        </div>
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Nombre</span>
                             <span className="font-medium text-right line-clamp-2">{resource.title}</span>
@@ -101,6 +118,24 @@ export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: 
                     
                     <Separator className="my-4" />
                     
+                    {!resource.isPublic && resource.sharedWith && resource.sharedWith.length > 0 && (
+                        <div>
+                             <h4 className="font-semibold mb-3 flex items-center gap-2"><Users className="h-4 w-4"/> Compartido Con</h4>
+                             <div className="flex flex-wrap gap-2">
+                                {resource.sharedWith.map(u => (
+                                    <div key={u.id} className="flex items-center gap-2 p-1.5 pr-2.5 rounded-full bg-muted text-sm">
+                                        <Avatar className="h-6 w-6">
+                                            <AvatarImage src={u.avatar || undefined} alt={u.name || undefined} />
+                                            <AvatarFallback className="text-xs">{getInitials(u.name)}</AvatarFallback>
+                                        </Avatar>
+                                        <span>{u.name}</span>
+                                    </div>
+                                ))}
+                             </div>
+                            <Separator className="my-4" />
+                        </div>
+                    )}
+                    
                     <div>
                         <h4 className="font-semibold mb-2 flex items-center gap-2"><Tag className="h-4 w-4"/> Etiquetas</h4>
                         <div className="flex flex-wrap gap-2">
@@ -115,14 +150,16 @@ export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: 
                 </div>
             </ScrollArea>
             
-            <footer className="p-4 border-t flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => onEdit(resource)}>
-                    <Edit className="mr-2 h-4 w-4"/> Editar
-                </Button>
-                <Button variant="destructive" className="flex-1" onClick={() => onDelete(resource.id)}>
-                    <Trash2 className="mr-2 h-4 w-4"/> Eliminar
-                </Button>
-            </footer>
+            {canModify && (
+                <footer className="p-4 border-t flex gap-2">
+                    <Button variant="outline" className="flex-1" onClick={() => onEdit(resource)}>
+                        <Edit className="mr-2 h-4 w-4"/> Editar
+                    </Button>
+                    <Button variant="destructive" className="flex-1" onClick={() => onDelete(resource.id)}>
+                        <Trash2 className="mr-2 h-4 w-4"/> Eliminar
+                    </Button>
+                </footer>
+            )}
         </div>
     )
 }

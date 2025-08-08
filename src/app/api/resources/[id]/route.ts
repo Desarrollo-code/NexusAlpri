@@ -1,4 +1,4 @@
-
+// src/app/api/resources/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -13,6 +13,7 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
             where: { id: context.params.id },
             include: {
                 uploader: { select: { id: true, name: true } },
+                sharedWith: { select: { id: true, name: true, avatar: true } }
             },
         });
         if (!resource) {
@@ -47,7 +48,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
              return NextResponse.json({ message: 'No tienes permiso para editar este recurso' }, { status: 403 });
         }
 
-        const { title, category, tags, description } = await req.json();
+        const { title, category, tags, description, isPublic, sharedWithUserIds } = await req.json();
 
         const updatedResource = await prisma.resource.update({
             where: { id: context.params.id },
@@ -56,6 +57,8 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
                 category, 
                 tags: Array.isArray(tags) ? tags.join(',') : '',
                 description,
+                isPublic,
+                sharedWith: isPublic ? { set: [] } : { set: sharedWithUserIds.map((id: string) => ({ id })) }
             },
         });
 

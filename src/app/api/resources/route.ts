@@ -1,16 +1,30 @@
-
+// src/app/api/resources/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 // GET resources
 export async function GET(req: NextRequest) {
+    const session = await getCurrentUser();
+    if (!session) {
+      return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const parentId = searchParams.get('parentId') || null;
     const search = searchParams.get('search');
     const category = searchParams.get('category');
 
-    let whereClause: any = { parentId };
+    let whereClause: any = { 
+        parentId,
+        OR: [
+            { isPublic: true }, // Can see public resources
+            { uploaderId: session.id }, // Can see their own resources
+            { sharedWith: { some: { id: session.id } } } // Can see resources shared with them
+        ]
+    };
     
     if (search) {
         whereClause.AND = whereClause.AND || [];
@@ -23,7 +37,7 @@ export async function GET(req: NextRequest) {
         });
     }
 
-    if (category) {
+    if (category && category !== 'all') {
         whereClause.category = category;
     }
 
@@ -32,6 +46,7 @@ export async function GET(req: NextRequest) {
             where: whereClause,
             include: {
                 uploader: { select: { id: true, name: true } },
+                sharedWith: { select: { id: true, name: true, avatar: true } }
             },
             orderBy: [
                 { type: 'asc' }, // Folders first
@@ -62,7 +77,7 @@ export async function POST(req: NextRequest) {
     
     try {
         const body = await req.json();
-        const { title, type, url, category, tags, parentId, description } = body;
+        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds } = body;
 
         if (!title || !type) {
             return NextResponse.json({ message: 'Título y tipo son requeridos' }, { status: 400 });
@@ -72,17 +87,26 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: 'URL es requerida para archivos' }, { status: 400 });
         }
 
+        const data: any = {
+            title,
+            type,
+            description,
+            url: url || null,
+            category: category || 'General',
+            tags: Array.isArray(tags) ? tags.join(',') : '',
+            uploaderId: session.id,
+            parentId: parentId || null,
+            isPublic: isPublic === true,
+        };
+        
+        if (isPublic === false && sharedWithUserIds && Array.isArray(sharedWithUserIds)) {
+            data.sharedWith = {
+                connect: sharedWithUserIds.map(id => ({ id }))
+            };
+        }
+
         const newResource = await prisma.resource.create({
-            data: {
-                title,
-                type,
-                description,
-                url: url || null,
-                category: category || 'General',
-                tags: Array.isArray(tags) ? tags.join(',') : '',
-                uploaderId: session.id,
-                parentId: parentId || null,
-            },
+            data,
         });
         
         const { pin, ...safeResource } = newResource;
