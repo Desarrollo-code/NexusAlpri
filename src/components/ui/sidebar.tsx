@@ -23,7 +23,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tool
 const SidebarContext = React.createContext<any>(null);
 
 export function useSidebar() {
-  const context = React.createContext(SidebarContext);
+  const context = React.useContext(SidebarContext);
   if (!context) throw new Error("useSidebar must be used within a SidebarProvider.");
   return context;
 }
@@ -100,15 +100,7 @@ export const SidebarHeader = () => {
   const { isCollapsed } = useSidebar();
   return (
     <div className={cn(
-<<<<<<< HEAD
-<<<<<<< HEAD
-      "flex items-center h-20 px-4", 
-=======
-      "flex items-center h-20 px-4 border-b border-[--sidebar-border]", 
->>>>>>> fad6febb73daef9df69c3ef8ed7fbd789f250b50
-=======
       "flex items-center h-20 px-4 border-b border-border dark:border-white/20", 
->>>>>>> 0b24635ca2d20649bc03c8a6d6a84709630a745b
       isCollapsed ? 'justify-center' : 'justify-between'
     )}>
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
@@ -130,7 +122,6 @@ export const SidebarContent = () => {
 
   return (
     <TooltipProvider delayDuration={100}>
-      <div className="h-1 bg-sidebar-gold-gradient mb-2"></div>
       <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1">
         {navItems.map((item) => {
           if (item.children && item.children.length > 0) {
