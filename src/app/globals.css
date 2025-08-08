@@ -81,7 +81,7 @@
 
     /* 🌌 Barra lateral y superior (Oscuro) */
     --sidebar-foreground: hsl(0 0% 100% / 0.8);
-    --sidebar-active-background: hsl(0 0% 100% / 0.2);
+    --sidebar-active-background: hsl(0 0% 100% / 0.1);
     --sidebar-accent-foreground: hsl(0 0% 100%);
   }
 

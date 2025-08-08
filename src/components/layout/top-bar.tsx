@@ -34,7 +34,7 @@ export function TopBar() {
 
   return (
    <div className={cn(
-       "h-20 border-b bg-topbar-gradient", // Aplicando el nuevo gradiente vertical
+       "h-20 border-b bg-card dark:bg-topbar-gradient", 
        "flex items-center justify-between px-4 lg:px-6 flex-shrink-0"
     )}>
       <div className="flex items-center gap-4">
@@ -42,14 +42,14 @@ export function TopBar() {
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          className="lg:hidden p-2 text-white/80 hover:bg-white/10"
+          className="lg:hidden p-2 text-muted-foreground dark:text-white/80 hover:bg-muted dark:hover:bg-white/10"
         >
           <Menu className="h-6 w-6" />
         </Button>
-        <h1 className="text-xl font-semibold text-white">{getPageTitle()}</h1>
+        <h1 className="text-xl font-semibold text-foreground dark:text-white">{getPageTitle()}</h1>
       </div>
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="relative h-10 w-10 text-white/80 hover:bg-white/10">
+        <Button variant="ghost" size="icon" className="relative h-10 w-10 text-muted-foreground dark:text-white/80 hover:bg-muted dark:hover:bg-white/10">
             <Bell className="h-5 w-5" />
             <span className="absolute top-2 right-2 flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
