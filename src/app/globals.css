@@ -6,28 +6,28 @@
   :root {
     --radius: 0.5rem;
 
-    /* 🎨 Paleta Claro (Turquesa Moderno) */
-    --background: 0 0% 100%;
+    /* 🎨 Paleta Claro (Turquesa Educativo) */
+    --background: 180 52% 96.1%; /* Menta muy claro */
     --foreground: 224 71.4% 4.1%;
-    --card: 0 0% 100%;
+    --card: 180 33% 99%;
     --card-foreground: 224 71.4% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
-    --primary: 168 100% 39%; /* Turquesa Vibrante */
+    --primary: 171 100% 33.1%; /* Turquesa de la imagen */
     --primary-foreground: 0 0% 100%;
     --secondary: 220 13% 91%;
     --secondary-foreground: 224 71.4% 4.1%;
     --muted: 220 13% 91%;
     --muted-foreground: 220 9% 40%;
-    --accent: 220 13% 91%;
-    --accent-foreground: 224 71.4% 4.1%;
+    --accent: 171 90% 45.1%; /* Un acento más brillante */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 168 100% 39%;
-    --chart-1: 168 100% 39%;
-    --chart-2: 221 83% 53%;
+    --border: 220 13% 88%;
+    --input: 220 13% 94%;
+    --ring: 171 100% 33.1%;
+    --chart-1: 171 100% 33.1%;
+    --chart-2: 193 90% 36.1%;
     --chart-3: 27.5 100% 63.1%;
     --chart-4: 240 5% 65%;
     --chart-5: 240 10% 3.9%;
@@ -41,28 +41,28 @@
   }
 
   .dark {
-    /* 🌚 Tema Oscuro (Turquesa Moderno) */
-    --background: 224 71.4% 4.1%;
+    /* 🌚 Tema Oscuro (Turquesa Educativo) */
+    --background: 204 20% 7%; /* Azul noche oscuro */
     --foreground: 0 0% 98%;
-    --card: 224 71.4% 8%;
+    --card: 204 20% 11%;
     --card-foreground: 0 0% 98%;
-    --popover: 224 71.4% 4.1%;
+    --popover: 204 20% 7%;
     --popover-foreground: 0 0% 98%;
-    --primary: 168 100% 39%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 224 71.4% 12%;
+    --primary: 171 90% 48%; /* Turquesa más brillante para oscuro */
+    --primary-foreground: 204 20% 7%;
+    --secondary: 204 20% 15%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 224 71.4% 12%;
-    --muted-foreground: 220 9% 40%;
-    --accent: 224 71.4% 12%;
-    --accent-foreground: 0 0% 98%;
+    --muted: 204 20% 15%;
+    --muted-foreground: 220 9% 55%;
+    --accent: 171 90% 48%;
+    --accent-foreground: 204 20% 7%;
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 0 0% 100%;
-    --border: 224 71.4% 12%;
-    --input: 224 71.4% 12%;
-    --ring: 168 100% 39%;
-    --chart-1: 168 100% 39%;
-    --chart-2: 221 83% 63%;
+    --border: 204 20% 15%;
+    --input: 204 20% 15%;
+    --ring: 171 90% 48%;
+    --chart-1: 171 90% 48%;
+    --chart-2: 193 85% 55%;
     --chart-3: 27.5 100% 63.1%;
     --chart-4: 0 0% 70%;
     --chart-5: 0 0% 50%;
