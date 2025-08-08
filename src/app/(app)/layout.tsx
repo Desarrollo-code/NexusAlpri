@@ -50,7 +50,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <TitleProvider>
-      <Sidebar />
+      <Sidebar>
+        <SidebarHeader />
+        <SidebarContent />
+        <SidebarFooter />
+      </Sidebar>
       <div
         className={cn(
           "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
