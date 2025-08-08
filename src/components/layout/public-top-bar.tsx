@@ -11,13 +11,17 @@ import { useAuth } from '@/contexts/auth-context';
 
 export function PublicTopBar() {
   const pathname = usePathname();
-  const { settings } = useAuth();
+  const { settings, user } = useAuth();
 
   const navItems = [
     { href: '/', label: 'Inicio' },
     { href: '/courses', label: 'Cursos' },
     { href: '/about', label: 'Nosotros' },
   ];
+  
+  if (user) {
+      return null;
+  }
 
   return (
     <header className={cn(

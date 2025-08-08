@@ -64,7 +64,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         )}
       >
         <TopBar />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative bg-background">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative bg-muted/30">
           <div className="relative z-10">
             {children}
           </div>
@@ -76,7 +76,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
 const AppLayoutWrapper = ({ children }: { children: React.ReactNode }) => (
   <SidebarProvider>
-    <div className="flex h-screen bg-muted/30 text-foreground">
+    <div className="flex h-screen bg-background text-foreground">
       <AppLayout>{children}</AppLayout>
     </div>
   </SidebarProvider>
