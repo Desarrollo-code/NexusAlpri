@@ -304,7 +304,7 @@ export default function ProfilePage() {
         <div className="profile-card">
             <ProfileCardBackground />
             <div className="card__avatar">
-                 <Avatar className="w-24 h-24">
+                 <Avatar className="avatar">
                   <AvatarImage src={avatarPreview || `https://placehold.co/100x100.png?text=${getInitials(user.name)}`} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
                   <AvatarFallback className="text-4xl">{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
@@ -329,7 +329,7 @@ export default function ProfilePage() {
                 />
             </div>
             <div className="card__title">{user.name}</div>
-            <div className="card__subtitle capitalize">{getRoleInSpanish(user.role) || 'student'}</div>
+            <div className="card__subtitle capitalize">{getRoleInSpanish(user.role)}</div>
         </div>
      </div>
   );
@@ -384,11 +384,10 @@ export default function ProfilePage() {
       ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1 space-y-8">
-              <Card className="text-center card-border-animated">
-                <CardHeader>
-                  <ProfileCardBackground />
-                  <div className="relative mx-auto w-32 h-32 mb-4 mt-[-64px] z-10">
-                    <Avatar className="w-32 h-32 border-4 border-card shadow-md">
+              <div className="profile-card">
+                 <ProfileCardBackground />
+                  <div className="card__avatar">
+                    <Avatar className="avatar">
                       <AvatarImage src={avatarPreview || `https://placehold.co/128x128.png?text=${getInitials(user.name)}`} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
                       <AvatarFallback className="text-4xl">{getInitials(user.name)}</AvatarFallback>
                     </Avatar>
@@ -418,15 +417,10 @@ export default function ProfilePage() {
                       <p className="text-xs mt-1 text-muted-foreground">{uploadProgress}%</p>
                     </div>
                   )}
-                  <CardTitle className="text-2xl font-headline mt-2">{user.name}</CardTitle>
-                  <Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'default' : 'secondary'} className="capitalize mx-auto">
-                    {getRoleInSpanish(user.role)}
-                  </Badge>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><Mail className="h-4 w-4 text-primary"/> {user.email}</p>
-                </CardContent>
-              </Card>
+                  <div className="card__title">{user.name}</div>
+                  <div className="card__subtitle"><Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'default' : 'secondary'} className="capitalize mx-auto">{getRoleInSpanish(user.role)}</Badge></div>
+                  <p className="text-sm text-muted-foreground flex items-center justify-center gap-2 mt-2"><Mail className="h-4 w-4 text-primary"/> {user.email}</p>
+              </div>
             </div>
     
             <div className="lg:col-span-2 space-y-6">
