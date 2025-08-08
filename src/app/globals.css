@@ -80,8 +80,8 @@
     --event-orange: 25 95% 63%;
 
     /* 🌌 Barra lateral y superior (Oscuro) */
-    --sidebar-foreground: hsl(0 0% 100% / 0.7);
-    --sidebar-active-background: hsl(0 0% 100% / 0.1);
+    --sidebar-foreground: hsla(0, 76%, 53%, 0.7);
+    --sidebar-active-background: hsl(61, 37%, 57%);
     --sidebar-accent-foreground: hsl(0 0% 100%);
   }
 
