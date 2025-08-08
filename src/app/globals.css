@@ -6,70 +6,70 @@
   :root {
     --radius: 0.5rem;
 
-    /* 🎨 Paleta Claro (Turquesa Educativo) */
-    --background: 180 52% 96.1%; /* Menta muy claro */
-    --foreground: 224 71.4% 4.1%;
-    --card: 180 33% 99%;
-    --card-foreground: 224 71.4% 4.1%;
+    /* 🎨 Paleta Claro (Violeta y Amarillo) */
+    --background: 240 60% 98%;    /* Lavanda muy claro */
+    --foreground: 240 10% 3.9%;   /* Negro azulado */
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
-    --primary: 171 100% 33.1%; /* Turquesa de la imagen */
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 262 83% 58%;       /* Violeta principal */
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 13% 91%;
-    --secondary-foreground: 224 71.4% 4.1%;
-    --muted: 220 13% 91%;
-    --muted-foreground: 220 9% 40%;
-    --accent: 171 90% 45.1%; /* Un acento más brillante */
-    --accent-foreground: 0 0% 100%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 10% 3.9%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 45 96% 58%;         /* Amarillo para acentos */
+    --accent-foreground: 240 10% 3.9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 88%;
-    --input: 220 13% 94%;
-    --ring: 171 100% 33.1%;
-    --chart-1: 171 100% 33.1%;
-    --chart-2: 193 90% 36.1%;
-    --chart-3: 27.5 100% 63.1%;
-    --chart-4: 240 5% 65%;
-    --chart-5: 240 10% 3.9%;
-    --event-blue: 210 100% 50%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 262 83% 58%;
+    --chart-1: 262 83% 58%; /* Violeta */
+    --chart-2: 330 84% 60%; /* Rosa */
+    --chart-3: 217 91% 60%; /* Azul */
+    --chart-4: 45 96% 58%;  /* Amarillo */
+    --chart-5: 240 5% 65%;
+    --event-blue: 217 91% 60%;
     --event-green: 145 63% 49%;
     --event-red: 0 72% 51%;
-    --event-orange: 25 95% 53%;
-    --sidebar-foreground: hsl(224 71.4% 4.1% / 0.7);
+    --event-orange: 45 96% 58%;
+    --sidebar-foreground: hsl(240 5% 46% / 0.9);
     --sidebar-active-background: hsl(var(--primary) / 0.1);
     --sidebar-accent-foreground: hsl(var(--primary));
   }
 
   .dark {
-    /* 🌚 Tema Oscuro (Turquesa Educativo) */
-    --background: 0 0% 0%; /* Azul noche oscuro */
+    /* 🌚 Tema Oscuro (Violeta y Amarillo) */
+    --background: 240 10% 3.9%;     /* Negro azulado */
     --foreground: 0 0% 98%;
-    --card: 204 20% 11%;
+    --card: 240 6% 10%;
     --card-foreground: 0 0% 98%;
-    --popover: 204 20% 7%;
+    --popover: 240 6% 7%;
     --popover-foreground: 0 0% 98%;
-    --primary: 171 90% 48%; /* Turquesa más brillante para oscuro */
-    --primary-foreground: 204 20% 7%;
-    --secondary: 204 20% 15%;
+    --primary: 262 83% 68%;       /* Violeta más claro para modo oscuro */
+    --primary-foreground: 240 10% 3.9%;
+    --secondary: 240 4% 16%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 204 20% 15%;
-    --muted-foreground: 220 9% 55%;
-    --accent: 171 90% 48%;
-    --accent-foreground: 204 20% 7%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 45 96% 62%;         /* Amarillo más brillante */
+    --accent-foreground: 240 10% 3.9%;
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 0 0% 100%;
-    --border: 204 20% 15%;
-    --input: 204 20% 15%;
-    --ring: 171 90% 48%;
-    --chart-1: 171 90% 48%;
-    --chart-2: 193 85% 55%;
-    --chart-3: 27.5 100% 63.1%;
-    --chart-4: 0 0% 70%;
-    --chart-5: 0 0% 50%;
-    --event-blue: 210 100% 65%;
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 262 83% 68%;
+    --chart-1: 262 83% 68%;
+    --chart-2: 330 84% 70%;
+    --chart-3: 217 91% 70%;
+    --chart-4: 45 96% 62%;
+    --chart-5: 0 0% 70%;
+    --event-blue: 217 91% 70%;
     --event-green: 145 63% 59%;
     --event-red: 0 72% 61%;
-    --event-orange: 25 95% 63%;
+    --event-orange: 45 96% 62%;
     --sidebar-foreground: hsl(0 0% 98% / 0.7);
     --sidebar-active-background: hsl(var(--primary) / 0.1);
     --sidebar-accent-foreground: hsl(var(--primary));
