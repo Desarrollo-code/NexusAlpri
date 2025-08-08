@@ -1,7 +1,6 @@
 import type {Config} from 'tailwindcss';
 
-export default {
-  darkMode: ['class'],
+const config: Config = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -17,8 +16,8 @@ export default {
     },
     extend: {
       backgroundImage: {
-        'sidebar-gold-gradient': 'linear-gradient(to right, #bfa05b, #fce588, #bfa05b)',
-        'topbar-gradient': 'linear-gradient(to bottom, #1D1D1D, #181818)',
+        'sidebar-gold-gradient': 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)))',
+        'topbar-gradient': 'linear-gradient(to bottom, hsl(var(--card)), hsl(var(--background)))',
       },
       fontFamily: {
         body: ['var(--font-body)', 'Inter', 'sans-serif'],
@@ -135,4 +134,5 @@ export default {
     },
   },
   plugins: [require('tailwindcss-animate')],
-} satisfies Config;
+}
+export default config;

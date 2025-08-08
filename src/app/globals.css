@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  :root,
   html:not([class*='theme-']) {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
@@ -49,6 +48,10 @@
   }
 
   html.dark {
+    @apply theme-dark;
+  }
+  
+  html.theme-dark {
     --background: 240 10% 4%;
     --foreground: 210 20% 98%;
     --card: 240 5% 10%;
