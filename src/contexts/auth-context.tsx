@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { User, PlatformSettings } from '@/types';
@@ -59,10 +58,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  // --- CORRECCIÓN AQUÍ ---
+  // El useEffect solo debe ejecutarse una vez al montar el componente.
+  // Un array de dependencias vacío `[]` previene el bucle.
   useEffect(() => {
     fetchSessionData();
-  }, [fetchSessionData]);
-  
+  }, []); // <--- array de dependencias vacío
+
   const login = useCallback((userData: User) => {
     setUser(userData);
     const params = new URLSearchParams(window.location.search);
@@ -77,6 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to call logout API", error);
     } finally {
       setUser(null);
+      // Ojo: Esto provoca un "hard refresh". Podrías usar router.replace('/sign-in') para una navegación más suave.
       window.location.href = '/sign-in';
     }
   }, []);
@@ -104,6 +107,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     updateUser,
     updateSettings,
   }), [user, settings, login, logout, isLoading, updateUser, updateSettings]);
+
+  if (isLoading) {
+    // Puedes mostrar un spinner mientras los datos se están cargando
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider value={contextValue}>
