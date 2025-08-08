@@ -4,7 +4,7 @@
 
 @layer base {
   /* --- TEMA CLARO POR DEFECTO --- */
-  :root {
+  html:not([class*='theme-']) {
     --radius: 0.75rem;
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
@@ -42,7 +42,7 @@
   }
 
   /* --- TEMAS PERSONALIZADOS (Se aplican sobre la clase en <html>) --- */
-  .dark {
+  html.dark {
     --background: 240 10% 4%;
     --foreground: 210 20% 98%;
     --card: 240 5% 10%;
@@ -74,7 +74,7 @@
     --gauge-red: 0 80% 65%;
   }
 
-  .theme-sunset {
+  html.theme-sunset {
     --background: 20 14% 4%;
     --foreground: 20 5% 95%;
     --card: 20 10% 8%;
@@ -106,7 +106,7 @@
     --gauge-red: 350 90% 65%;
   }
 
-  .theme-forest {
+  html.theme-forest {
     --background: 120 20% 4%;
     --foreground: 90 5% 95%;
     --card: 120 15% 8%;
@@ -138,7 +138,7 @@
     --gauge-red: 0 72% 51%;
   }
 
-  .theme-oceanic {
+  html.theme-oceanic {
     --background: 210 25% 5%;
     --foreground: 190 10% 95%;
     --card: 210 20% 9%;
@@ -170,7 +170,7 @@
     --gauge-red: 0 72% 51%;
   }
 
-  .theme-rose-gold {
+  html.theme-rose-gold {
     --background: 30 15% 97%;
     --foreground: 25 20% 10%;
     --card: 0 0% 100%;
@@ -265,6 +265,9 @@
   /* --- Estilos para el Profile Card --- */
   .profile-card {
       position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       width: 100%;
       height: 250px;
       background-color: hsl(var(--card));
