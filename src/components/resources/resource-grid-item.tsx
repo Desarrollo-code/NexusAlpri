@@ -73,7 +73,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
         
         if (isFolder) {
             return (
-                <div className="w-full h-full relative bg-muted/30">
+                <div className="w-full h-full relative">
                     <DecorativeFolder patternId={resource.id} className="absolute inset-0" />
                 </div>
             );
@@ -94,7 +94,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                 className={cn("group w-full h-full transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg", isFolder ? "hover:-translate-y-1" : "")}
                 onClick={handleClick}
             >
-                <div className="aspect-video w-full flex items-center justify-center relative border-b rounded-t-lg">
+                <div className="aspect-video w-full flex items-center justify-center relative border-b rounded-t-lg overflow-hidden">
                     <Thumbnail />
                      {resource.hasPin && !isFolder && (
                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
