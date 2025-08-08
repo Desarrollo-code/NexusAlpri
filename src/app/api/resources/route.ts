@@ -18,14 +18,47 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search');
     const category = searchParams.get('category');
 
-    // Base permissions: user can see resources that are public, they own, or are shared with them.
+    // --- Start of Advanced Permission Logic ---
+
+    // 1. Get IDs of all folders shared with the user or created by the user
+    const userAccessibleFolders = await prisma.resource.findMany({
+        where: {
+            type: 'FOLDER',
+            OR: [
+                { uploaderId: session.id },
+                { sharedWith: { some: { id: session.id } } }
+            ]
+        },
+        select: { id: true }
+    });
+    const userAccessibleFolderIds = userAccessibleFolders.map(f => f.id);
+
+    // 2. Recursively find all descendant folder IDs starting from the accessible ones
+    let allAccessibleFolderIds = new Set(userAccessibleFolderIds);
+    let newIdsFound = true;
+    while (newIdsFound) {
+        const currentSize = allAccessibleFolderIds.size;
+        const childFolders = await prisma.resource.findMany({
+            where: {
+                type: 'FOLDER',
+                parentId: { in: Array.from(allAccessibleFolderIds) }
+            },
+            select: { id: true }
+        });
+        childFolders.forEach(f => allAccessibleFolderIds.add(f.id));
+        newIdsFound = allAccessibleFolderIds.size > currentSize;
+    }
+
+    // 3. Define the final permission clause
     const permissionsClause = {
         OR: [
-            { ispublic: true },
-            { uploaderId: session.id },
-            { sharedWith: { some: { id: session.id } } }
+            { ispublic: true }, // Can see all public resources
+            { uploaderId: session.id }, // Can see all own resources
+            { sharedWith: { some: { id: session.id } } }, // Can see resources directly shared
+            { parentId: { in: Array.from(allAccessibleFolderIds) } } // Can see content inside accessible folders
         ]
     };
+    // --- End of Advanced Permission Logic ---
     
     // Filters that apply ON TOP of permissions
     const filterClauses: any[] = [{ parentId }];

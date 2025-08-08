@@ -1,3 +1,4 @@
+
 // src/components/resources/resource-grid-item.tsx
 'use client';
 import React from 'react';
@@ -6,7 +7,7 @@ import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
 import { DecorativeFolder } from '@/components/resources/decorative-folder';
-import { Edit, FolderIcon, MoreVertical, Trash2, Video, FileText, Info, Notebook, Shield, FileQuestion, Link as LinkIcon, Lock } from 'lucide-react';
+import { Edit, FolderIcon, MoreVertical, Trash2, Video, FileText, Info, Notebook, Shield, FileQuestion, Link as LinkIcon, Lock, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -91,7 +92,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
     return (
         <div className="w-full">
             <Card 
-                className={cn("group w-full h-full transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg overflow-hidden", isFolder ? "hover:-translate-y-1" : "")}
+                className={cn("group w-full h-full transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg", isFolder ? "hover:-translate-y-1" : "")}
                 onClick={handleClick}
             >
                 <div className="aspect-video w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg">
@@ -114,7 +115,10 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                                     <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 -mr-2 text-muted-foreground" aria-label={`Opciones para ${resource.title}`}><MoreVertical className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                    {!isFolder && <DropdownMenuItem onClick={()=> onEdit(resource)}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>}
+                                    <DropdownMenuItem onClick={()=> onEdit(resource)}>
+                                        {isFolder ? <Share2 className="mr-2 h-4 w-4" /> : <Edit className="mr-2 h-4 w-4" />}
+                                        {isFolder ? 'Compartir' : 'Editar'}
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
