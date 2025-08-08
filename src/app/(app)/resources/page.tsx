@@ -137,9 +137,6 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
             return (
                 <div className="w-full h-full relative overflow-hidden bg-muted/30">
                     <DecorativeFolder patternId={resource.id} className="absolute inset-0 opacity-50" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <FolderIcon className="h-16 w-16 text-foreground/20" />
-                    </div>
                 </div>
             );
         }
@@ -156,10 +153,10 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
     return (
         <div className="w-full">
             <Card 
-                className={cn("group w-full h-full overflow-hidden transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg", isFolder ? "hover:-translate-y-1" : "")}
+                className={cn("group w-full h-full transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg", isFolder ? "hover:-translate-y-1" : "")}
                 onClick={handleClick}
             >
-                <div className="aspect-video w-full flex items-center justify-center overflow-hidden relative border-b">
+                <div className="aspect-video w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg">
                     <Thumbnail />
                      {resource.hasPin && !isFolder && (
                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
@@ -412,79 +409,91 @@ export default function ResourcesPage() {
     if (!currentFolderId) return null;
     const Pattern = getPattern(currentFolderId);
     return (
-        <div className="relative h-24 md:h-32 rounded-lg overflow-hidden mb-6 bg-card">
+        <div className="relative h-24 md:h-32 rounded-lg overflow-hidden mb-6 bg-card flex justify-between items-end p-4 md:p-6">
             <div className="absolute inset-0 opacity-20">
                 {Pattern('hsl(var(--primary))')}
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-card via-card/70 to-transparent" />
-            <div className="relative h-full flex flex-col justify-end p-4 md:p-6">
+            <div className="relative">
                  <h2 className="text-2xl md:text-3xl font-bold font-headline text-foreground flex items-center gap-3">
                     <FolderIcon className="h-8 w-8 text-primary shrink-0" />
                     {breadcrumbs[breadcrumbs.length - 1].title}
                  </h2>
             </div>
+             <div className="relative">
+                {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
+                    <Button onClick={() => setShowCreateFileModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
+                        <UploadCloud className="mr-2 h-4 w-4"/> Subir Aquí
+                    </Button>
+                )}
+            </div>
         </div>
     );
-  }, [currentFolderId, breadcrumbs]);
+  }, [currentFolderId, breadcrumbs, user?.role]);
 
   return (
     <div className="flex h-full">
       <main className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
-        <header className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-           <div>
-               <p className="text-muted-foreground">Explora, busca y gestiona todos los archivos de la organización.</p>
-           </div>
-           {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-            <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setShowCreateFolderModal(true)}>
-                    <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
-                </Button>
-                <Button onClick={() => setShowCreateFileModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
-                  <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
-                </Button>
-            </div>
-           )}
-        </header>
-
-        <Card className="flex-shrink-0 p-4 mb-6 shadow-sm">
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-                <form onSubmit={handleSearchSubmit} className="relative w-full flex-grow">
-                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                   <Input type="search" id="resource-search" name="resource-search" placeholder="Buscar documentos, guías o materiales..." className="pl-10 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
-                </form>
-                <div className="flex items-center gap-2">
-                    <Select>
-                      <SelectTrigger id="resource-type-filter" aria-label="Filtrar por tipo" className="w-[180px]">
-                        <SelectValue placeholder="Todos los Tipos" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos los Tipos</SelectItem>
-                        <SelectItem value="DOCUMENT">Documento</SelectItem>
-                        <SelectItem value="VIDEO">Video</SelectItem>
-                        <SelectItem value="GUIDE">Guía</SelectItem>
-                        <SelectItem value="EXTERNAL_LINK">Enlace Externo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <div className="flex bg-muted rounded-md p-1">
-                      <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
-                      <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
+        
+        {currentFolderId === null && (
+            <>
+                <header className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                   <div>
+                       <p className="text-muted-foreground">Explora, busca y gestiona todos los archivos de la organización.</p>
+                   </div>
+                   {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
+                    <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => setShowCreateFolderModal(true)}>
+                            <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
+                        </Button>
+                        <Button onClick={() => setShowCreateFileModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
+                          <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
+                        </Button>
                     </div>
-                </div>
-            </div>
-             <Separator className="my-4"/>
-             <div className="flex flex-wrap gap-2">
-                 {allCategories.map(category => (
-                    <Button 
-                        key={category} 
-                        variant={activeCategory === category ? 'default' : 'outline'}
-                        onClick={() => handleCategoryChange(category)}
-                        className="rounded-full px-3 py-1 h-auto text-xs"
-                    >
-                        {category === 'all' ? 'Toda la Biblioteca' : category}
-                    </Button>
-                 ))}
-             </div>
-        </Card>
+                   )}
+                </header>
+
+                <Card className="flex-shrink-0 p-4 mb-6 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                        <form onSubmit={handleSearchSubmit} className="relative w-full flex-grow">
+                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                           <Input type="search" id="resource-search" name="resource-search" placeholder="Buscar documentos, guías o materiales..." className="pl-10 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
+                        </form>
+                        <div className="flex items-center gap-2">
+                            <Select>
+                              <SelectTrigger id="resource-type-filter" aria-label="Filtrar por tipo" className="w-[180px]">
+                                <SelectValue placeholder="Todos los Tipos" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Todos los Tipos</SelectItem>
+                                <SelectItem value="DOCUMENT">Documento</SelectItem>
+                                <SelectItem value="VIDEO">Video</SelectItem>
+                                <SelectItem value="GUIDE">Guía</SelectItem>
+                                <SelectItem value="EXTERNAL_LINK">Enlace Externo</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <div className="flex bg-muted rounded-md p-1">
+                              <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
+                              <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
+                            </div>
+                        </div>
+                    </div>
+                     <Separator className="my-4"/>
+                     <div className="flex flex-wrap gap-2">
+                         {allCategories.map(category => (
+                            <Button 
+                                key={category} 
+                                variant={activeCategory === category ? 'default' : 'outline'}
+                                onClick={() => handleCategoryChange(category)}
+                                className="rounded-full px-3 py-1 h-auto text-xs"
+                            >
+                                {category === 'all' ? 'Toda la Biblioteca' : category}
+                            </Button>
+                         ))}
+                     </div>
+                </Card>
+            </>
+        )}
 
         <div className="flex items-center text-sm text-muted-foreground mb-4">
             {breadcrumbs.map((crumb, index) => (
