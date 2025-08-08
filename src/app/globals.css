@@ -6,30 +6,30 @@
   :root {
     --radius: 0.5rem;
 
-    /* 🎨 Paleta Claro (Violeta y Amarillo) */
-    --background: 240 60% 98%;    /* Lavanda muy claro */
-    --foreground: 240 10% 3.9%;   /* Negro azulado */
+    /* 🎨 Paleta "Océano y Atardecer" con Dorado - Claro */
+    --background: 210 36% 98%;
+    --foreground: 210 10% 25%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 210 10% 25%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 262 83% 58%;       /* Violeta principal */
+    --popover-foreground: 210 10% 25%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 10% 3.9%;
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
-    --accent: 45 96% 58%;         /* Amarillo para acentos */
-    --accent-foreground: 240 10% 3.9%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 210 10% 25%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 210 5% 55%;
+    --accent: 45 96% 58%; /* 🌟 Dorado para acentos */
+    --accent-foreground: 210 10% 25%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 262 83% 58%;
-    --chart-1: 262 83% 58%; /* Violeta */
-    --chart-2: 330 84% 60%; /* Rosa */
-    --chart-3: 217 91% 60%; /* Azul */
-    --chart-4: 45 96% 58%;  /* Amarillo */
+    --border: 210 30% 90%;
+    --input: 210 30% 90%;
+    --ring: 217 91% 60%;
+    --chart-1: 217 91% 60%;
+    --chart-2: 350 70% 60%;
+    --chart-3: 145 63% 49%;
+    --chart-4: 45 96% 58%; /* 🌟 Dorado */
     --chart-5: 240 5% 65%;
     --event-blue: 217 91% 60%;
     --event-green: 145 63% 49%;
@@ -37,46 +37,50 @@
     --event-orange: 45 96% 58%;
 
     /* Sidebar Light Theme */
-    --sidebar-foreground: hsl(240 4% 46%);
-    --sidebar-active-background: hsl(var(--primary) / 0.08);
-    --sidebar-accent-foreground: hsl(var(--primary));
+    --sidebar-background: linear-gradient(to bottom, hsl(var(--card)) 0%, hsl(var(--primary) / 0.1) 100%);
+    --sidebar-border: hsl(var(--border));
+    --sidebar-foreground: hsl(var(--muted-foreground));
+    --sidebar-active-background: hsl(var(--primary) / 0.1);
+    --sidebar-active-foreground: hsl(var(--accent)); /* 🌟 Dorado para el texto activo */
   }
 
   .dark {
-    /* 🌚 Tema Oscuro (Violeta y Amarillo) */
-    --background: 240 10% 3.9%;     /* Negro azulado */
-    --foreground: 0 0% 98%;
-    --card: 240 6% 10%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 6% 7%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 262 83% 68%;       /* Violeta más claro para modo oscuro */
-    --primary-foreground: 240 10% 3.9%;
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 4% 16%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 45 96% 62%;         /* Amarillo más brillante */
-    --accent-foreground: 240 10% 3.9%;
+    /* 🌚 Paleta "Océano y Atardecer" con Dorado - Oscuro */
+    --background: 210 10% 9%;
+    --foreground: 210 20% 98%;
+    --card: 210 10% 15%;
+    --card-foreground: 210 20% 98%;
+    --popover: 210 10% 12%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 217 91% 70%;
+    --primary-foreground: 210 10% 9%;
+    --secondary: 210 10% 20%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 210 10% 20%;
+    --muted-foreground: 210 5% 75%;
+    --accent: 45 96% 62%; /* 🌟 Dorado más claro para acentos */
+    --accent-foreground: 210 10% 9%;
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 262 83% 68%;
-    --chart-1: 262 83% 68%;
-    --chart-2: 330 84% 70%;
-    --chart-3: 217 91% 70%;
-    --chart-4: 45 96% 62%;
+    --border: 210 10% 25%;
+    --input: 210 10% 25%;
+    --ring: 217 91% 70%;
+    --chart-1: 217 91% 70%;
+    --chart-2: 350 70% 70%;
+    --chart-3: 145 63% 59%;
+    --chart-4: 45 96% 62%; /* 🌟 Dorado */
     --chart-5: 0 0% 70%;
     --event-blue: 217 91% 70%;
     --event-green: 145 63% 59%;
     --event-red: 0 72% 61%;
     --event-orange: 45 96% 62%;
-    
+
     /* Sidebar Dark Theme */
-    --sidebar-foreground: hsl(240 5% 65%);
+    --sidebar-background: linear-gradient(to bottom, hsl(var(--card)) 0%, hsl(var(--primary) / 0.15) 100%);
+    --sidebar-border: hsl(var(--border));
+    --sidebar-foreground: hsl(var(--muted-foreground));
     --sidebar-active-background: hsl(var(--primary) / 0.15);
-    --sidebar-accent-foreground: hsl(var(--primary));
+    --sidebar-active-foreground: hsl(var(--accent)); /* 🌟 Dorado para el texto activo */
   }
 
   * {
@@ -110,12 +114,37 @@
     @apply relative w-32 h-32 mx-auto mb-4 mt-12 z-10;
   }
   .card__avatar .avatar {
-     @apply w-32 h-32 border-4 border-card shadow-lg;
+    @apply w-32 h-32 border-4 border-card shadow-lg;
   }
   .card__title {
     @apply text-2xl font-headline font-bold mt-4;
   }
   .card__subtitle {
     @apply text-muted-foreground;
+  }
+  
+  /* 🆕 Nuevas clases para el Sidebar */
+  .sidebar {
+    @apply bg-[--sidebar-background] text-[--sidebar-foreground] border-r border-[--sidebar-border];
+  }
+  
+  .sidebar-header {
+    @apply border-b border-[--sidebar-border];
+  }
+
+  .sidebar-menu-item {
+    @apply flex items-center gap-3 py-3 rounded-lg transition-all duration-200 font-medium;
+  }
+  
+  .sidebar-menu-item:hover {
+    @apply bg-[--sidebar-active-background] text-[--sidebar-active-foreground];
+  }
+
+  .sidebar-menu-item.active {
+    @apply bg-[--sidebar-active-background] text-[--sidebar-active-foreground];
+  }
+
+  .sidebar-section-header {
+    @apply px-4 text-xs font-semibold uppercase text-[--sidebar-foreground];
   }
 }
