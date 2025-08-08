@@ -104,10 +104,10 @@ export const SidebarHeader = () => {
       isCollapsed ? 'justify-center' : 'justify-between'
     )}>
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
-        <div className="w-10 h-10 bg-background dark:bg-white/20 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg">
+        <div className="w-12 h-12 bg-card dark:bg-white/20 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg">
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo"/>
         </div>
-        <span className={cn("text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary dark:text-white transition-opacity duration-300", isCollapsed ? 'opacity-0 w-0' : 'opacity-100')}>
+        <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary dark:text-white transition-opacity duration-300", isCollapsed ? 'opacity-0 w-0' : 'opacity-100')}>
           NexusAlpri
         </span>
       </Link>
