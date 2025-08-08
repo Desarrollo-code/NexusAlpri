@@ -116,6 +116,10 @@ export default {
           '0%, 70%, 100%': { opacity: '1' },
           '20%, 50%': { opacity: '0' },
         },
+         'spin-slow': {
+            'from': { transform: 'rotate(0deg)' },
+            'to': { transform: 'rotate(360deg)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -123,6 +127,7 @@ export default {
         'press': 'press 0.2s 1 linear',
         'throw': 'throw 0.4s ease-out forwards',
         'caret-blink': 'caret-blink 1.25s ease-out infinite',
+        'spin-slow': 'spin-slow 20s linear infinite',
       },
     },
   },
