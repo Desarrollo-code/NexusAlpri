@@ -99,7 +99,7 @@ export default function AuthForm({ defaultView }: { defaultView: AuthView }) {
             </h1>
             <div className="flex items-center space-x-2">
                  <div className="h-px w-8 bg-border" />
-                 <span className="text-muted-foreground text-xs">ACCEDE A TU PLATAFORMA</span>
+                 <span className="text-muted-foreground text-xs">{isSignIn ? 'ACCEDE A TU PLATAFORMA' : 'COMPLETA TUS DATOS'}</span>
                  <div className="h-px w-8 bg-border" />
             </div>
 
@@ -140,31 +140,31 @@ export default function AuthForm({ defaultView }: { defaultView: AuthView }) {
                     </div>
                 </div>
             )}
-            <Button type="submit" className="w-40" disabled={isLoading}>
+            <Button type="submit" className="w-40">
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isSignIn ? 'Ingresar' : 'Registrarse'}
             </Button>
         </form>
     );
 
-    const OverlayPanel = ({ isSignIn }: { isSignIn: boolean }) => (
+    const OverlayPanel = ({ forSignIn }: { forSignIn: boolean }) => (
         <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center text-primary-foreground h-full">
             <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={80} height={80} data-ai-hint="logo"/>
             <h1 className="text-3xl font-bold font-headline mt-4">
-                {isSignIn ? '¡Hola, Amigo!' : '¡Bienvenido de Nuevo!'}
+                {forSignIn ? '¡Bienvenido de Nuevo!' : '¡Hola, Amigo!'}
             </h1>
             <div className="h-1 w-10 bg-primary-foreground/50 my-4 rounded-full" />
             <p className="max-w-xs">
-                {isSignIn
-                    ? 'Ingresa tus datos personales y comienza tu viaje con nosotros.'
-                    : 'Para mantenerte conectado con nosotros, por favor inicia sesión con tu información personal.'}
+                {forSignIn
+                    ? 'Para mantenerte conectado con nosotros, por favor inicia sesión con tu información personal.'
+                    : 'Ingresa tus datos personales y comienza tu viaje con nosotros.'}
             </p>
             <Button
                 variant="outline"
-                onClick={() => setActiveView(isSignIn ? 'signUp' : 'signIn')}
+                onClick={() => setActiveView(forSignIn ? 'signIn' : 'signUp')}
                 className="mt-8 bg-transparent border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
             >
-                {isSignIn ? 'Registrarse' : 'Iniciar Sesión'}
+                {forSignIn ? 'Iniciar Sesión' : 'Registrarse'}
             </Button>
         </div>
     );
@@ -172,48 +172,44 @@ export default function AuthForm({ defaultView }: { defaultView: AuthView }) {
     return (
         <div className={cn(
             "relative w-full max-w-4xl min-h-[550px] bg-card rounded-2xl shadow-2xl overflow-hidden",
-            "transition-all duration-700 ease-in-out",
-            activeView === 'signUp' ? 'container-active' : ''
+            "transition-all duration-700 ease-in-out"
         )}>
-            {/* Sign Up Form */}
+            {/* Form Containers */}
             <div className={cn(
-                "absolute top-0 left-0 h-full w-1/2 transition-all duration-700 ease-in-out",
-                activeView === 'signUp' && "transform translate-x-full opacity-100 z-50",
-                activeView === 'signIn' && "opacity-0 z-10"
-            )}>
-                <FormContent isSignIn={false} />
-            </div>
-
-            {/* Sign In Form */}
-            <div className={cn(
-                "absolute top-0 left-0 h-full w-1/2 transition-all duration-700 ease-in-out",
-                 activeView === 'signIn' && "transform translate-x-0 opacity-100 z-50",
-                 activeView === 'signUp' && "opacity-0 z-10"
+                "absolute top-0 h-full w-1/2 left-0 transition-all duration-700 ease-in-out",
+                activeView === 'signUp' && "transform translate-x-full z-10",
+                activeView === 'signIn' && "z-20"
             )}>
                 <FormContent isSignIn={true} />
             </div>
-            
+            <div className={cn(
+                "absolute top-0 h-full w-1/2 left-0 transition-all duration-700 ease-in-out",
+                activeView === 'signIn' && "transform -translate-x-full z-10",
+                activeView === 'signUp' && "z-20"
+            )}>
+                 <FormContent isSignIn={false} />
+            </div>
+
              {/* Overlay Container */}
             <div className={cn(
                 "absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-40",
-                 activeView === 'signUp' ? "-translate-x-full" : "translate-x-0"
+                 activeView === 'signUp' && "-translate-x-full"
             )}>
                 <div className={cn(
                     "relative -left-full h-full w-[200%] bg-gradient-to-r from-accent to-primary text-primary-foreground",
                     "transition-transform duration-700 ease-in-out",
-                     activeView === 'signUp' ? "translate-x-1/2" : "translate-x-0"
+                     activeView === 'signUp' && "translate-x-1/2"
                 )}>
-                    {/* Left Overlay Panel */}
+                    {/* Panel for Sign In */}
                     <div className="absolute top-0 left-0 h-full w-1/2">
-                         <OverlayPanel isSignIn={true} />
+                         <OverlayPanel forSignIn={false} />
                     </div>
-                    {/* Right Overlay Panel */}
+                    {/* Panel for Sign Up */}
                     <div className="absolute top-0 right-0 h-full w-1/2">
-                        <OverlayPanel isSignIn={false} />
+                        <OverlayPanel forSignIn={true} />
                     </div>
                 </div>
             </div>
-
         </div>
     );
 }
