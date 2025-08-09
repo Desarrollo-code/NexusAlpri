@@ -1,3 +1,4 @@
+
 // src/app/layout.tsx
 import { Inter, Space_Grotesk, Dancing_Script, Source_Code_Pro } from 'next/font/google';
 import './globals.css';
@@ -47,8 +48,9 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
-          enableSystem
+          enableSystem={false}
           disableTransitionOnChange
+          themes={['light', 'dark', 'sunset', 'forest', 'oceanic', 'rose-gold']}
         >
           <AuthProvider>
             {children}
