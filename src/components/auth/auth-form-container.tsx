@@ -1,49 +1,34 @@
 // src/components/auth/auth-form-container.tsx
 'use client';
 
-import { useState, type FormEvent, useEffect } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, UserPlus, LogIn, Eye, EyeOff } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { cn } from '@/lib/utils';
-import Image from 'next/image';
-import type { User } from '@/types';
-import { useRouter } from 'next/navigation';
-
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'signUp' }) {
-    const { login, settings } = useAuth();
+    const { login } = useAuth();
     const { toast } = useToast();
-    const router = useRouter();
+    const searchParams = useSearchParams();
 
-    const [isSignUpActive, setIsSignUpActive] = useState(defaultView === 'signUp');
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<{type: 'signIn' | 'signUp', message: string} | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-    // Form fields
-    const [name, setName] = useState('');
+    // Common fields
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [signInEmail, setSignInEmail] = useState('');
-    const [signInPassword, setSignInPassword] = useState('');
     
-    // Clear errors when switching panels
-    useEffect(() => {
-        setError(null);
-    }, [isSignUpActive]);
-
+    // Sign Up specific field
+    const [name, setName] = useState('');
 
     const handleSignUpSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError(null);
-        if (password.length < (settings?.passwordMinLength || 8)) {
-            setError({ type: 'signUp', message: `La contraseña debe tener al menos ${settings?.passwordMinLength || 8} caracteres.` });
-            return;
-        }
         setIsLoading(true);
 
         try {
@@ -58,7 +43,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
             toast({ title: '¡Cuenta Creada!', description: 'Bienvenido. Has iniciado sesión correctamente.' });
             login(data.user);
         } catch (err) {
-            setError({ type: 'signUp', message: (err as Error).message });
+            setError((err as Error).message);
         } finally {
             setIsLoading(false);
         }
@@ -73,123 +58,81 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: signInEmail, password: signInPassword }),
+                body: JSON.stringify({ email, password }),
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || 'Ocurrió un error inesperado.');
-
+            
             if (data.twoFactorRequired) {
-                toast({ title: 'Verificación de dos factores requerida', description: 'Funcionalidad en desarrollo.'});
+                 const redirectPath = `/sign-in/2fa?userId=${data.userId}&redirectedFrom=${encodeURIComponent(searchParams.get('redirectedFrom') || '/dashboard')}`;
+                 window.location.href = redirectPath;
             } else {
                 toast({ title: '¡Bienvenido de nuevo!' });
                 login(data.user);
             }
         } catch (err) {
-            setError({ type: 'signIn', message: (err as Error).message });
+            setError((err as Error).message);
         } finally {
             setIsLoading(false);
         }
     }
 
-
-    const SignUpForm = () => (
-        <form onSubmit={handleSignUpSubmit} className="flex flex-col items-center justify-center px-6 md:px-12 text-center h-full space-y-4">
-            <h1 className="text-3xl font-bold font-headline text-foreground">Crear Cuenta</h1>
-            {error && error.type === 'signUp' && (
-                <Alert variant="destructive" className="text-xs text-left"><AlertDescription>{error.message}</AlertDescription></Alert>
-            )}
-            <Input type="text" placeholder="Nombre" required value={name} onChange={e => setName(e.target.value)} disabled={isLoading} />
-            <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} />
-            <Input type="password" placeholder="Contraseña" required value={password} onChange={e => setPassword(e.target.value)} disabled={isLoading} />
-            <Button type="submit" className="w-40 !mt-6" disabled={isLoading}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Registrarse'}
-            </Button>
-        </form>
-    );
-
-    const SignInForm = () => (
-         <form onSubmit={handleSignInSubmit} className="flex flex-col items-center justify-center px-6 md:px-12 text-center h-full space-y-4">
-            <h1 className="text-3xl font-bold font-headline text-foreground">Iniciar Sesión</h1>
-             {error && error.type === 'signIn' && (
-                <Alert variant="destructive" className="text-xs text-left"><AlertDescription>{error.message}</AlertDescription></Alert>
-            )}
-            <Input type="email" placeholder="Email" required value={signInEmail} onChange={e => setSignInEmail(e.target.value)} disabled={isLoading} />
-            <Input type="password" placeholder="Contraseña" required value={signInPassword} onChange={e => setSignInPassword(e.target.value)} disabled={isLoading} />
-            <Button type="submit" className="w-40 !mt-6" disabled={isLoading}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Ingresar'}
-            </Button>
-        </form>
-    );
+    if (defaultView === 'signUp') {
+        return (
+            <div className="w-full max-w-sm space-y-6">
+                <div className="text-center bg-primary text-primary-foreground p-8 rounded-t-lg">
+                    <h1 className="text-3xl font-bold">¡Hola, Amigo!</h1>
+                    <p className="mt-2 text-sm">Ingresa tus datos personales y comienza tu viaje con nosotros.</p>
+                </div>
+                <form onSubmit={handleSignUpSubmit} className="space-y-4 p-8 pt-4 bg-card rounded-b-lg shadow-lg">
+                    <h2 className="text-2xl font-bold text-center text-foreground">Registrarse</h2>
+                     {error && (
+                        <Alert variant="destructive" className="text-xs text-left"><AlertDescription>{error}</AlertDescription></Alert>
+                    )}
+                    <div className="space-y-2">
+                        <Input type="text" placeholder="Nombre" required value={name} onChange={e => setName(e.target.value)} disabled={isLoading} />
+                    </div>
+                     <div className="space-y-2">
+                        <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} />
+                    </div>
+                    <div className="space-y-2">
+                        <Input type="password" placeholder="Contraseña" required value={password} onChange={e => setPassword(e.target.value)} disabled={isLoading} />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Registrarse'}
+                    </Button>
+                    <p className="text-center text-xs text-muted-foreground pt-2">
+                        ¿Ya tienes una cuenta? <Link href="/sign-in" className="font-semibold text-primary hover:underline">Inicia Sesión</Link>
+                    </p>
+                </form>
+            </div>
+        );
+    }
 
     return (
-        <div className={cn(
-            "bg-card rounded-2xl shadow-2xl relative overflow-hidden",
-            "w-full max-w-4xl min-h-[520px] md:min-h-[480px]",
-            isSignUpActive && "right-panel-active"
-        )}>
-            {/* Form Containers */}
-            <div className={cn(
-                "form-container sign-up-container",
-                "absolute top-0 h-full w-full md:w-1/2",
-                "transition-all duration-700 ease-in-out",
-                 isSignUpActive 
-                    ? "md:translate-x-full opacity-100 z-20"
-                    : "opacity-0 z-10"
-            )}>
-                <SignUpForm />
+        <div className="w-full max-w-sm space-y-6">
+            <div className="text-center bg-primary text-primary-foreground p-8 rounded-t-lg">
+                <h1 className="text-3xl font-bold">¡Bienvenido!</h1>
+                <p className="mt-2 text-sm">Regístrate con tus datos personales para usar todas las funciones del sitio.</p>
+                <Button asChild variant="outline" className="mt-4 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+                    <Link href="/sign-up">Registrarse</Link>
+                </Button>
             </div>
-            <div className={cn(
-                "form-container sign-in-container",
-                "absolute top-0 h-full w-full md:w-1/2",
-                "transition-all duration-700 ease-in-out",
-                 isSignUpActive 
-                    ? "md:translate-x-full opacity-0 z-10"
-                    : "opacity-100 z-20"
-            )}>
-                 <SignInForm />
-            </div>
-
-            {/* Overlay Container */}
-            <div className={cn(
-                "overlay-container",
-                "absolute top-0 left-1/2 w-full md:w-1/2 h-full overflow-hidden",
-                "transition-transform duration-700 ease-in-out z-40",
-                isSignUpActive && "md:-translate-x-full"
-            )}>
-                <div className={cn(
-                    "overlay",
-                    "relative -left-full h-full w-[200%] bg-gradient-to-r from-accent to-primary text-primary-foreground",
-                    "transition-transform duration-700 ease-in-out",
-                     isSignUpActive ? "translate-x-1/2" : "translate-x-0"
-                )}>
-                     {/* Panel for Sign In */}
-                    <div className={cn(
-                        "overlay-panel overlay-left",
-                        "absolute top-0 h-full w-1/2 flex flex-col items-center justify-center p-6 md:p-12 text-center",
-                        "transition-transform duration-700 ease-in-out",
-                        isSignUpActive ? "translate-x-0" : "-translate-x-[20%]"
-                    )}>
-                        <h1 className="text-3xl font-bold font-headline mt-4">¡Bienvenido de Nuevo!</h1>
-                        <p className="max-w-xs mt-4">Para mantenerte conectado, por favor inicia sesión con tu información personal.</p>
-                        <Button variant="outline" onClick={() => setIsSignUpActive(false)} className="mt-8 bg-transparent border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
-                            Iniciar Sesión
-                        </Button>
-                    </div>
-                     {/* Panel for Sign Up */}
-                    <div className={cn(
-                        "overlay-panel overlay-right",
-                         "absolute top-0 right-0 h-full w-1/2 flex flex-col items-center justify-center p-6 md:p-12 text-center",
-                         "transition-transform duration-700 ease-in-out",
-                         isSignUpActive ? "translate-x-[20%]" : "translate-x-0"
-                    )}>
-                        <h1 className="text-3xl font-bold font-headline mt-4">¡Hola, Amigo!</h1>
-                        <p className="max-w-xs mt-4">Ingresa tus datos personales y comienza tu viaje con nosotros.</p>
-                        <Button variant="outline" onClick={() => setIsSignUpActive(true)} className="mt-8 bg-transparent border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
-                            Registrarse
-                        </Button>
-                    </div>
+            <form onSubmit={handleSignInSubmit} className="space-y-4 p-8 pt-4 bg-card rounded-b-lg shadow-lg">
+                <h2 className="text-2xl font-bold text-center text-foreground">Iniciar Sesión</h2>
+                {error && (
+                    <Alert variant="destructive" className="text-xs text-left"><AlertDescription>{error}</AlertDescription></Alert>
+                )}
+                 <div className="space-y-2">
+                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} />
                 </div>
-            </div>
+                <div className="space-y-2">
+                    <Input type="password" placeholder="Contraseña" required value={password} onChange={e => setPassword(e.target.value)} disabled={isLoading} />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Ingresar'}
+                </Button>
+            </form>
         </div>
     );
 }
