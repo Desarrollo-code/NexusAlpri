@@ -26,23 +26,26 @@ export function PublicTopBar() {
   // Ocultar esta barra en móvil, ya que BottomNav se encarga de ello.
   return (
     <header className={cn(
-        "hidden md:flex items-center justify-between px-4 lg:px-6 h-20 sticky top-0 z-50",
-        "bg-background/80 backdrop-blur-sm border-b"
+        "hidden md:flex items-center justify-between px-4 lg:px-6 h-20",
+        "bg-transparent" // Fondo transparente para que se integre con la página
     )}>
       <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
          <div className="w-10 h-10 bg-card flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg">
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo"/>
         </div>
-        <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary dark:text-white">
+        <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary dark:text-foreground">
            {settings?.platformName || 'NexusAlpri'}
         </span>
       </Link>
       
-      <nav className="hidden items-center gap-2 sm:gap-4 lg:flex">
+      <nav className="flex items-center gap-2 p-2 rounded-full bg-card/80 backdrop-blur-sm border">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
-             <Button key={item.href} variant={isActive ? "secondary" : "ghost"} asChild>
+             <Button key={item.href} variant="ghost" asChild className={cn(
+                 "rounded-full transition-colors",
+                 isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-primary"
+             )}>
                 <Link href={item.href}>
                     <item.icon className="mr-2 h-4 w-4" />
                     {item.label}
