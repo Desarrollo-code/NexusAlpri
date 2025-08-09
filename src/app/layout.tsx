@@ -50,13 +50,7 @@ export default function RootLayout({
           `${inter.variable} ${spaceGrotesk.variable} ${dancingScript.variable} ${sourceCodePro.variable}`,
           "font-body flex flex-col min-h-screen bg-background"
       )}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-          themes={['light', 'dark', 'sunset', 'forest', 'oceanic', 'rose-gold']}
-        >
+        <ThemeProvider>
             <AuthProvider>
                 <TitleProvider>
                     <SidebarProvider>
