@@ -127,7 +127,8 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
     return (
         <div className={cn(
             "relative w-full max-w-4xl min-h-[480px] bg-card rounded-2xl shadow-2xl overflow-hidden",
-            "transition-all duration-700 ease-in-out"
+            "transition-all duration-700 ease-in-out",
+            isSignUpActive && "right-panel-active"
         )}>
             {/* Form Containers */}
             <div className={cn(
@@ -140,7 +141,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
             <div className={cn(
                 "form-container sign-in-container",
                 "absolute top-0 h-full w-1/2 left-0 transition-all duration-700 ease-in-out",
-                isSignUpActive ? "transform translate-x-full" : ""
+                isSignUpActive ? "transform translate-x-full opacity-0 z-10" : "opacity-100 z-20"
             )}>
                  <SignInForm />
             </div>
