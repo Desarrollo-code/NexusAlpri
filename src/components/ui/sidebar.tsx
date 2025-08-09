@@ -110,9 +110,11 @@ export const SidebarHeader = () => {
         <div className="w-12 h-12 bg-card dark:bg-white/20 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg">
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo"/>
         </div>
-        <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary dark:text-white transition-opacity duration-300", isCollapsed ? 'opacity-0 w-0' : 'opacity-100')}>
-          {settings?.platformName || 'NexusAlpri'}
-        </span>
+        {!isCollapsed && (
+            <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary dark:text-white transition-opacity duration-300")}>
+              {settings?.platformName || 'NexusAlpri'}
+            </span>
+        )}
       </Link>
     </div>
   );
