@@ -41,11 +41,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <head>
-          <title>NexusAlpri</title>
-          <meta name="description" content="Plataforma E-learning Corporativa" />
-          <link rel="icon" href="/uploads/images/logo-nexusalpri.png" sizes="any" />
-      </head>
       <body className={cn(
           `${inter.variable} ${spaceGrotesk.variable} ${dancingScript.variable} ${sourceCodePro.variable}`,
           "font-body flex flex-col min-h-screen bg-background"
