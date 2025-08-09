@@ -208,6 +208,17 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+  .grainy-gradient::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: 
+        radial-gradient(ellipse at 70% 20%, hsla(var(--primary) / 0.25), transparent 50%),
+        radial-gradient(ellipse at 30% 80%, hsla(var(--accent) / 0.25), transparent 50%);
+    filter: url(#grainy-filter);
+    opacity: 0.7;
+  }
+  
 }
 
 @layer components {
