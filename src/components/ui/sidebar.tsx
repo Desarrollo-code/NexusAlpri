@@ -111,7 +111,7 @@ export const SidebarHeader = () => {
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo"/>
         </div>
         {!isCollapsed && (
-            <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary dark:text-white transition-opacity duration-300")}>
+            <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary dark:text-foreground transition-opacity duration-300")}>
               {settings?.platformName || 'NexusAlpri'}
             </span>
         )}
