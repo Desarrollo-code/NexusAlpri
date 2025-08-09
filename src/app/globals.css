@@ -4,20 +4,20 @@
 
 @layer base {
   :root, html.light {
-    --background: 42 93% 64%; /* Amarillo dorado del fondo */
+    --background: 42 93% 95%; /* Amarillo muy claro/casi blanco */
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%; /* Blanco para las tarjetas */
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 343 69% 50%; /* Rojo/rosa vibrante para botones */
+    --primary: 343 69% 50%; /* Rojo/rosa vibrante */
     --primary-foreground: 0 0% 100%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 343 69% 50%; /* Acento coincide con primario */
-    --accent-foreground: 0 0% 100%;
+    --accent: 42 93% 64%; /* Amarillo dorado */
+    --accent-foreground: 240 10% 3.9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
     --border: 240 5.9% 90%;
@@ -49,14 +49,14 @@
     --card-foreground: 210 20% 98%;
     --popover: 240 10% 4%;
     --popover-foreground: 210 20% 98%;
-    --primary: 343 75% 58%; /* Versión más brillante del rojo/rosa para modo oscuro */
+    --primary: 343 75% 58%; 
     --primary-foreground: 210 20% 98%;
     --secondary: 240 5% 15%;
     --secondary-foreground: 210 20% 98%;
     --muted: 240 5% 15%;
     --muted-foreground: 210 20% 65%;
-    --accent: 343 75% 58%;
-    --accent-foreground: 210 20% 98%;
+    --accent: 42 85% 60%; /* Amarillo dorado brillante */
+    --accent-foreground: 240 10% 4%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 210 20% 98%;
     --border: 240 5% 15%;
@@ -98,10 +98,86 @@
     filter: url(#grainy-filter);
     opacity: 0.7;
   }
-  
 }
 
 @layer components {
+  .auth-form {
+    @apply flex h-full flex-col items-center justify-center gap-4 bg-card px-6 text-center md:px-10;
+  }
+
+  .form-container {
+    @apply absolute top-0 h-full transition-all duration-700 ease-in-out;
+  }
+  
+  .sign-in-container {
+    @apply left-0 w-full md:w-1/2;
+  }
+
+  .sign-up-container {
+      @apply left-0 w-full md:w-1/2;
+  }
+
+  .overlay-container {
+      @apply absolute top-0 left-full md:left-1/2 w-full md:w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-40;
+  }
+
+  .overlay {
+      @apply relative -left-full h-full w-[200%] bg-gradient-to-r from-primary to-accent text-primary-foreground transition-transform duration-700 ease-in-out;
+  }
+
+  .overlay-panel {
+      @apply absolute top-0 flex h-full w-full md:w-1/2 flex-col items-center justify-center px-10 text-center;
+  }
+
+  .overlay-left {
+      @apply right-0 md:transform-none;
+  }
+  
+  .overlay-right {
+      @apply left-0 md:transform-none;
+  }
+
+  .ghost {
+      @apply bg-transparent border-primary-foreground hover:bg-primary-foreground/20;
+  }
+  
+  /* Desktop animation classes */
+  .right-panel-active .sign-in-container {
+      @apply md:translate-x-full md:opacity-0 z-10;
+  }
+  
+  .right-panel-active .sign-up-container {
+      @apply md:translate-x-full md:opacity-100 z-20;
+      animation: show 0.6s;
+  }
+
+  .right-panel-active .overlay-container {
+      @apply md:-translate-x-full;
+  }
+
+  .right-panel-active .overlay {
+      @apply md:translate-x-1/2;
+  }
+  
+  .right-panel-active .overlay-left {
+      @apply md:translate-x-0;
+  }
+  
+  .right-panel-active .overlay-right {
+      @apply md:translate-x-[20%];
+  }
+
+  @keyframes show {
+    0%, 49.99% {
+      opacity: 0;
+      z-index: 10;
+    }
+    50%, 100% {
+      opacity: 1;
+      z-index: 20;
+    }
+  }
+
   .btn-primary-gradient {
     @apply bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-primary/40 hover:from-primary/90 hover:to-accent/90;
   }
