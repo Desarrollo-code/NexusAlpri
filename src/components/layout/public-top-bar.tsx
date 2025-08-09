@@ -44,7 +44,9 @@ export function PublicTopBar() {
           return (
              <Button key={item.href} variant="ghost" asChild className={cn(
                  "rounded-full transition-colors",
-                 isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-primary"
+                 isActive 
+                    ? "bg-primary/10 text-primary hover:bg-primary/10" 
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-primary"
              )}>
                 <Link href={item.href}>
                     <item.icon className="mr-2 h-4 w-4" />
