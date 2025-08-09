@@ -6,11 +6,7 @@ import { type ThemeProviderProps } from 'next-themes/dist/types';
 
 export const AVAILABLE_THEMES = [
   { value: 'light', label: 'Claro' },
-  { value: 'dark', label: 'Nebula Oscuro' },
-  { value: 'sunset', label: 'Atardecer Púrpura' },
-  { value: 'forest', label: 'Bosque Esmeralda' },
-  { value: 'oceanic', label: 'Oceánico' },
-  { value: 'rose-gold', label: 'Oro Rosado' },
+  { value: 'dark', label: 'Oscuro' },
 ];
 
 export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, 'themes'>) {

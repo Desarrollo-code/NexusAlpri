@@ -72,9 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
     
     fetchSessionData();
-    // The dependency array is intentionally empty to run this effect only once on mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setTheme]);
 
   const login = useCallback((userData: User) => {
     setUser(userData);
