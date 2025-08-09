@@ -1,4 +1,3 @@
-
 // src/app/layout.tsx
 import { Inter, Space_Grotesk, Dancing_Script, Source_Code_Pro } from 'next/font/google';
 import './globals.css';
@@ -7,6 +6,9 @@ import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
 import React from 'react';
 import Image from 'next/image';
+import { TitleProvider } from '@/contexts/title-context';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -44,7 +46,10 @@ export default function RootLayout({
           <meta name="description" content="Plataforma E-learning Corporativa" />
           <link rel="icon" href="/uploads/images/logo-nexusalpri.png" sizes="any" />
       </head>
-      <body className={`${inter.variable} ${spaceGrotesk.variable} ${dancingScript.variable} ${sourceCodePro.variable} font-body flex flex-col min-h-screen bg-background`}>
+      <body className={cn(
+          `${inter.variable} ${spaceGrotesk.variable} ${dancingScript.variable} ${sourceCodePro.variable}`,
+          "font-body flex flex-col min-h-screen bg-background"
+      )}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -52,10 +57,14 @@ export default function RootLayout({
           disableTransitionOnChange
           themes={['light', 'dark', 'sunset', 'forest', 'oceanic', 'rose-gold']}
         >
-          <AuthProvider>
-            {children}
-            <Toaster />
-          </AuthProvider>
+            <AuthProvider>
+                <TitleProvider>
+                    <SidebarProvider>
+                        {children}
+                        <Toaster />
+                    </SidebarProvider>
+                </TitleProvider>
+            </AuthProvider>
         </ThemeProvider>
          <div className="fixed bottom-8 right-2 z-50 pointer-events-none">
             <Image

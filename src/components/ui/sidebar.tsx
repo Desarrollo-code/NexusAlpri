@@ -99,6 +99,8 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
 
 export const SidebarHeader = () => {
   const { isCollapsed } = useSidebar();
+  const { settings } = useAuth();
+  
   return (
     <div className={cn(
       "flex items-center h-20 px-4", 
@@ -109,7 +111,7 @@ export const SidebarHeader = () => {
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo"/>
         </div>
         <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary dark:text-white transition-opacity duration-300", isCollapsed ? 'opacity-0 w-0' : 'opacity-100')}>
-          NexusAlpri
+          {settings?.platformName || 'NexusAlpri'}
         </span>
       </Link>
     </div>

@@ -1,4 +1,3 @@
-
 "use client"
 
 import { ThemeProvider as NextThemesProvider } from "next-themes"
@@ -15,7 +14,14 @@ export const AVAILABLE_THEMES = [
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return (
-      <NextThemesProvider {...props}>
+      <NextThemesProvider 
+        {...props}
+        attribute="class"
+        defaultTheme="dark"
+        enableSystem={false}
+        disableTransitionOnChange
+        themes={AVAILABLE_THEMES.map(t => t.value)}
+      >
         {children}
       </NextThemesProvider>
   );
