@@ -73,11 +73,6 @@ const config: Config = {
           yellow: 'hsl(var(--gauge-yellow))',
           red: 'hsl(var(--gauge-red))',
         },
-        sidebar: {
-          foreground: 'hsl(var(--sidebar-foreground))',
-          'active-background': 'hsl(var(--sidebar-active-background))',
-          'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-        },
       },
       borderRadius: {
         lg: 'var(--radius)',

@@ -26,12 +26,12 @@
     --ring: 262.1 83.3% 57.8%;
     --radius: 0.75rem;
 
-    /* UI Colors */
-    --sidebar-foreground: 240 3.8% 46.1%;
-    --sidebar-active-background: 262.1 83.3% 57.8%; /* primary with opacity */
-    --sidebar-accent-foreground: 262.1 83.3% 57.8%; /* primary */
+    /* Colores de UI */
+    --sidebar-foreground: var(--muted-foreground);
+    --sidebar-active-background: hsl(var(--primary) / 0.1);
+    --sidebar-accent-foreground: var(--primary);
     
-    /* Event & Gauge Colors */
+    /* Colores de Eventos y Medidores */
     --event-blue: 210 100% 50%;
     --event-green: 145 63% 42%;
     --event-red: 0 72% 51%;
@@ -69,11 +69,9 @@
     --border: 240 5% 15%;
     --input: 240 5% 15%;
     --ring: 252 88% 66%;
-
-    --sidebar-foreground: 210 20% 75%;
-    --sidebar-active-background: 252 88% 66%;
-    --sidebar-accent-foreground: 252 88% 66%;
-
+    --sidebar-foreground: var(--muted-foreground);
+    --sidebar-active-background: hsl(var(--primary) / 0.15);
+    --sidebar-accent-foreground: var(--primary);
     --event-blue: 210 100% 70%;
     --event-green: 145 63% 55%;
     --event-red: 0 80% 65%;
@@ -81,7 +79,6 @@
     --gauge-green: 145 63% 55%;
     --gauge-yellow: 45 93% 55%;
     --gauge-red: 0 80% 65%;
-
     --chart-1: 220 80% 70%;
     --chart-2: 160 70% 60%;
     --chart-3: 40 80% 70%;
@@ -109,9 +106,9 @@
     --border: 20 10% 15%;
     --input: 20 10% 15%;
     --ring: 25 95% 58%;
-    --sidebar-foreground: 20 5% 75%;
-    --sidebar-active-background: 25 95% 58%;
-    --sidebar-accent-foreground: 25 95% 58%;
+    --sidebar-foreground: var(--muted-foreground);
+    --sidebar-active-background: hsl(var(--primary) / 0.15);
+    --sidebar-accent-foreground: var(--primary);
     --event-blue: 210 100% 70%;
     --event-green: 145 63% 55%;
     --event-red: 350 90% 65%;
@@ -141,9 +138,9 @@
     --border: 120 15% 15%;
     --input: 120 15% 15%;
     --ring: 145 70% 40%;
-    --sidebar-foreground: 90 5% 75%;
-    --sidebar-active-background: 145 70% 40%;
-    --sidebar-accent-foreground: 145 70% 40%;
+    --sidebar-foreground: var(--muted-foreground);
+    --sidebar-active-background: hsl(var(--primary) / 0.15);
+    --sidebar-accent-foreground: var(--primary);
     --event-blue: 190 90% 55%;
     --event-green: 145 70% 40%;
     --event-red: 0 72% 51%;
@@ -173,9 +170,9 @@
     --border: 210 20% 16%;
     --input: 210 20% 16%;
     --ring: 190 90% 55%;
-    --sidebar-foreground: 190 10% 75%;
-    --sidebar-active-background: 190 90% 55%;
-    --sidebar-accent-foreground: 190 90% 55%;
+    --sidebar-foreground: var(--muted-foreground);
+    --sidebar-active-background: hsl(var(--primary) / 0.15);
+    --sidebar-accent-foreground: var(--primary);
     --event-blue: 230 80% 65%;
     --event-green: 145 70% 40%;
     --event-red: 0 72% 51%;
@@ -205,9 +202,9 @@
     --border: 30 15% 90%;
     --input: 30 15% 90%;
     --ring: 350 70% 60%;
-    --sidebar-foreground: 25 20% 30%;
-    --sidebar-active-background: 350 70% 60%;
-    --sidebar-accent-foreground: 350 70% 60%;
+    --sidebar-foreground: var(--muted-foreground);
+    --sidebar-active-background: hsl(var(--primary) / 0.1);
+    --sidebar-accent-foreground: var(--primary);
     --event-blue: 210 100% 50%;
     --event-green: 145 63% 42%;
     --event-red: 350 70% 60%;
