@@ -123,34 +123,28 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
 
     return (
         <div className={cn(
-            "w-full h-full md:w-auto md:h-auto", // Responsive size
-            "md:max-w-4xl md:min-h-[480px]", // Desktop size constraints
-            "bg-card rounded-none md:rounded-2xl shadow-none md:shadow-2xl overflow-hidden",
-            "relative flex flex-col md:block", // Flex column on mobile
-            "transition-all duration-700 ease-in-out",
-            isSignUpActive && "md:right-panel-active"
+            "bg-card rounded-2xl shadow-2xl relative overflow-hidden",
+            "w-full max-w-4xl min-h-[520px] md:min-h-[480px]",
+            isSignUpActive && "right-panel-active"
         )}>
-
             {/* Form Containers */}
             <div className={cn(
                 "form-container sign-up-container",
-                "h-1/2 md:h-full md:w-1/2 w-full",
-                "md:absolute top-0 left-0",
-                "md:transition-all md:duration-700 md:ease-in-out",
-                isSignUpActive 
-                    ? "md:transform md:translate-x-full opacity-100 md:z-20"
-                    : "md:opacity-0 md:z-10"
+                "absolute top-0 h-full w-full md:w-1/2",
+                "transition-all duration-700 ease-in-out",
+                 isSignUpActive 
+                    ? "md:translate-x-full opacity-100 z-20"
+                    : "opacity-0 z-10"
             )}>
                 <SignUpForm />
             </div>
             <div className={cn(
                 "form-container sign-in-container",
-                "h-1/2 md:h-full md:w-1/2 w-full",
-                "md:absolute top-0 left-0",
-                "md:transition-all md:duration-700 md:ease-in-out",
-                isSignUpActive
-                    ? "md:transform md:translate-x-full md:opacity-0 md:z-10"
-                    : "opacity-100 md:z-20"
+                "absolute top-0 h-full w-full md:w-1/2",
+                "transition-all duration-700 ease-in-out",
+                 isSignUpActive 
+                    ? "md:translate-x-full opacity-0 z-10"
+                    : "opacity-100 z-20"
             )}>
                  <SignInForm />
             </div>
@@ -158,22 +152,22 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
             {/* Overlay Container */}
             <div className={cn(
                 "overlay-container",
-                "md:absolute top-0 left-1/2 md:w-1/2 w-full h-1/2 md:h-full overflow-hidden",
-                "md:transition-transform md:duration-700 md:ease-in-out md:z-40 order-first md:order-last",
+                "absolute top-0 left-1/2 w-full md:w-1/2 h-full overflow-hidden",
+                "transition-transform duration-700 ease-in-out z-40",
                 isSignUpActive && "md:-translate-x-full"
             )}>
                 <div className={cn(
                     "overlay",
-                    "relative md:-left-full h-full md:w-[200%] bg-gradient-to-r from-accent to-primary text-primary-foreground",
+                    "relative -left-full h-full w-[200%] bg-gradient-to-r from-accent to-primary text-primary-foreground",
                     "transition-transform duration-700 ease-in-out",
-                     isSignUpActive ? "md:translate-x-1/2" : "md:translate-x-0"
+                     isSignUpActive ? "translate-x-1/2" : "translate-x-0"
                 )}>
-                     {/* Panel for Sign Up */}
+                     {/* Panel for Sign In */}
                     <div className={cn(
                         "overlay-panel overlay-left",
-                        "absolute top-0 h-full w-full md:w-1/2 flex flex-col items-center justify-center p-6 md:p-12 text-center",
+                        "absolute top-0 h-full w-1/2 flex flex-col items-center justify-center p-6 md:p-12 text-center",
                         "transition-transform duration-700 ease-in-out",
-                        isSignUpActive ? "md:translate-x-0" : "md:-translate-x-[20%]"
+                        isSignUpActive ? "translate-x-0" : "-translate-x-[20%]"
                     )}>
                         <h1 className="text-3xl font-bold font-headline mt-4">¡Bienvenido de Nuevo!</h1>
                         <p className="max-w-xs mt-4">Para mantenerte conectado, por favor inicia sesión con tu información personal.</p>
@@ -181,12 +175,12 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                             Iniciar Sesión
                         </Button>
                     </div>
-                     {/* Panel for Sign In */}
+                     {/* Panel for Sign Up */}
                     <div className={cn(
                         "overlay-panel overlay-right",
-                         "absolute top-0 right-0 h-full w-full md:w-1/2 flex flex-col items-center justify-center p-6 md:p-12 text-center",
+                         "absolute top-0 right-0 h-full w-1/2 flex flex-col items-center justify-center p-6 md:p-12 text-center",
                          "transition-transform duration-700 ease-in-out",
-                         isSignUpActive ? "md:translate-x-[20%]" : "md:translate-x-0"
+                         isSignUpActive ? "translate-x-[20%]" : "translate-x-0"
                     )}>
                         <h1 className="text-3xl font-bold font-headline mt-4">¡Hola, Amigo!</h1>
                         <p className="max-w-xs mt-4">Ingresa tus datos personales y comienza tu viaje con nosotros.</p>
