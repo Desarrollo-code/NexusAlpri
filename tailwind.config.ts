@@ -15,10 +15,6 @@ const config: Config = {
       },
     },
     extend: {
-      backgroundImage: {
-        'sidebar-gold-gradient': 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)))',
-        'topbar-gradient': 'linear-gradient(to bottom, hsl(var(--card)), hsl(var(--background)))',
-      },
       fontFamily: {
         body: ['var(--font-body)', 'Inter', 'sans-serif'],
         headline: ['var(--font-headline)', 'Space Grotesk', 'sans-serif'],
@@ -26,16 +22,11 @@ const config: Config = {
         code: ['var(--font-code)', 'Source Code Pro', 'monospace'],
       },
       colors: {
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
-        },
-        popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
-        },
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
@@ -43,6 +34,10 @@ const config: Config = {
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
         },
         muted: {
           DEFAULT: 'hsl(var(--muted))',
@@ -52,13 +47,14 @@ const config: Config = {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
         },
-        destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
         },
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',
@@ -66,7 +62,7 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
-        event: {
+         event: {
           blue: 'hsl(var(--event-blue))',
           green: 'hsl(var(--event-green))',
           red: 'hsl(var(--event-red))',
@@ -119,8 +115,8 @@ const config: Config = {
           '20%, 50%': { opacity: '0' },
         },
          'spin-slow': {
-            'from': { transform: 'rotate(0deg)' },
-            'to': { transform: 'rotate(360deg)' },
+            'from': { '--angle': '0deg' },
+            'to': { '--angle': '360deg' },
         },
       },
       animation: {
@@ -129,7 +125,7 @@ const config: Config = {
         'press': 'press 0.2s 1 linear',
         'throw': 'throw 0.4s ease-out forwards',
         'caret-blink': 'caret-blink 1.25s ease-out infinite',
-        'spin-slow': 'spin-slow 20s linear infinite',
+        'spin-slow': 'spin-slow 10s linear infinite',
       },
     },
   },

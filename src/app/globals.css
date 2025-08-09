@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-  html:not([class*='theme-']) {
+  :root, html.theme-light {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
@@ -16,8 +16,8 @@
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --accent: 262.1 83.3% 57.8%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
     --border: 240 5.9% 90%;
@@ -47,11 +47,7 @@
     --chart-5: 340 80% 60%;
   }
 
-  html.dark {
-    @apply theme-dark;
-  }
-  
-  html.theme-dark {
+  html.dark, html.theme-dark {
     --background: 240 10% 4%;
     --foreground: 210 20% 98%;
     --card: 240 5% 10%;
@@ -217,11 +213,12 @@
     --gauge-yellow: 30 90% 65%;
     --gauge-red: 350 70% 60%;
   }
+}
 
+@layer base {
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -354,6 +351,7 @@
       animation: spin-slow 10s linear infinite;
       transition: opacity 0.5s, --angle 0.5s;
       opacity: 0;
+      --angle: 0deg;
   }
 
   .card-border-animated:hover::before {
@@ -371,11 +369,5 @@
     bottom: 1px;
     background: hsl(var(--card));
     border-radius: inherit;
-  }
-
-  @property --angle {
-    syntax: '<angle>';
-    inherits: false;
-    initial-value: 0deg;
   }
 }
