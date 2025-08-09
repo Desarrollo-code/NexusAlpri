@@ -4,25 +4,25 @@
 
 @layer base {
   :root, html.theme-light {
-    --background: 0 0% 100%;
+    --background: 42 93% 64%; /* Amarillo dorado del fondo */
     --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
+    --card: 0 0% 100%; /* Blanco para las tarjetas */
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 262.1 83.3% 57.8%;
+    --primary: 343 69% 50%; /* Rojo/rosa vibrante para botones */
     --primary-foreground: 0 0% 100%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 262.1 83.3% 57.8%;
+    --accent: 343 69% 50%; /* Acento coincide con primario */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 262.1 83.3% 57.8%;
+    --ring: 343 69% 50%;
     --radius: 0.75rem;
 
     /* Colores de Eventos y Medidores */
@@ -49,19 +49,19 @@
     --card-foreground: 210 20% 98%;
     --popover: 240 10% 4%;
     --popover-foreground: 210 20% 98%;
-    --primary: 252 88% 66%;
+    --primary: 343 75% 58%; /* Versión más brillante del rojo/rosa para modo oscuro */
     --primary-foreground: 210 20% 98%;
     --secondary: 240 5% 15%;
     --secondary-foreground: 210 20% 98%;
     --muted: 240 5% 15%;
     --muted-foreground: 210 20% 65%;
-    --accent: 252 88% 66%;
+    --accent: 343 75% 58%;
     --accent-foreground: 210 20% 98%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 210 20% 98%;
     --border: 240 5% 15%;
     --input: 240 5% 15%;
-    --ring: 252 88% 66%;
+    --ring: 343 75% 58%;
 
     --event-blue: 210 100% 70%;
     --event-green: 145 63% 55%;
