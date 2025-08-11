@@ -2,7 +2,7 @@
 import { Footer } from '@/components/layout/footer';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
 import { BottomNav } from '@/components/layout/bottom-nav';
-import { AnimatedBackground } from '@/components/layout/animated-background';
+import { IsometricBackground } from '@/components/layout/isometric-background';
 
 export default function PublicLayout({
   children,
@@ -11,7 +11,7 @@ export default function PublicLayout({
 }) {
   return (
     <div className="flex flex-col min-h-screen bg-background relative">
-      <AnimatedBackground />
+      <IsometricBackground />
       <PublicTopBar />
       <main className="flex-1 flex flex-col items-center justify-center z-10 pt-20 md:pt-0">
         {children}
