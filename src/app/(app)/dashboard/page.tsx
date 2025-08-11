@@ -278,7 +278,7 @@ export default function DashboardPage() {
     setIsLoading(true);
     setError(null);
     try {
-        const promises: Promise<any>[] = [fetch('/api/announcements')];
+        const promises: Promise<any>[] = [fetch('/api/announcements?pageSize=4')];
         
         if (user.role === 'ADMINISTRATOR') {
             promises.push(fetch('/api/dashboard/admin-stats'));
@@ -303,7 +303,7 @@ export default function DashboardPage() {
         
         const [announcementsRes, ...roleSpecificRes] = responses;
         const announcementsJson = await announcementsRes.json();
-        const announcementsData = Array.isArray(announcementsJson) ? announcementsJson : announcementsJson.announcements || [];
+        const announcementsData = announcementsJson.announcements || [];
 
         const dashboardPayload: DashboardData = {
             adminStats: null,
@@ -328,7 +328,7 @@ export default function DashboardPage() {
         }
         if (user.role === 'INSTRUCTOR' && roleSpecificRes[0]) {
             const taughtCoursesResponse = await roleSpecificRes[0].json();
-            const taughtCoursesData = Array.isArray(taughtCoursesResponse) ? taughtCoursesResponse : (taughtCoursesResponse.courses || []);
+            const taughtCoursesData = Array.isArray(taughtCoursesResponse.courses) ? taughtCoursesResponse.courses : [];
             dashboardPayload.instructorStats = { taught: taughtCoursesData.length };
             dashboardPayload.taughtCourses = taughtCoursesData.map(mapApiCourseToAppCourse).slice(0, 4);
         }
@@ -346,7 +346,7 @@ export default function DashboardPage() {
         
         setData(dashboardPayload);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error fetching dashboard data');
+      setError(err instanceof Error ? err.message : 'Error al obtener las estadísticas del dashboard');
     } finally {
       setIsLoading(false);
     }
@@ -367,7 +367,7 @@ export default function DashboardPage() {
         return false;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 3); 
+      .slice(0, 2); 
   }, [data?.recentAnnouncements, user]);
 
   if (!user) {
