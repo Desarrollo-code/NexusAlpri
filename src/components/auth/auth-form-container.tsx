@@ -12,6 +12,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Separator } from '@/components/ui/separator';
 
 const FormInput = ({ icon: Icon, ...props }: { icon: React.ElementType } & React.ComponentProps<typeof Input>) => (
     <div className="relative flex items-center">
