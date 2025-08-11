@@ -275,6 +275,12 @@
       color: hsl(var(--primary));
       font-weight: 500;
   }
+
+  .animated-line {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: draw-line 30s linear infinite;
+  }
 }
 
 @layer utilities {
@@ -321,5 +327,11 @@
     bottom: 1px;
     background: hsl(var(--card));
     border-radius: inherit;
+  }
+
+  @keyframes draw-line {
+    to {
+      stroke-dashoffset: 0;
+    }
   }
 }
