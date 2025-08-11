@@ -125,7 +125,7 @@ export async function GET(req: NextRequest) {
         const studentInfoMap = new Map((await prisma.user.findMany({ where: { role: 'STUDENT' }, select: { id: true, name: true, avatar: true } })).map(u => [u.id, u]));
 
         const studentCompletionCounts = allCourseProgressRaw.reduce((acc, cp) => {
-            if (cp.progressPercentage && cp.progressPercentage >= 100 && cp.enrollment?.userId) {
+            if (cp.enrollment && cp.progressPercentage && cp.progressPercentage >= 100 && cp.enrollment.userId) {
                 acc[cp.enrollment.userId] = (acc[cp.enrollment.userId] || 0) + 1;
             }
             return acc;
