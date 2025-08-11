@@ -48,8 +48,8 @@ export async function createSession(userId: string) {
 }
 
 export async function deleteSession() {
-  const cookieStore = cookies();
-  cookieStore.set('session', '', { expires: new Date(0), path: '/' });
+    const cookieStore = cookies();
+    cookieStore.set('session', '', { expires: new Date(0), path: '/' });
 }
 
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
