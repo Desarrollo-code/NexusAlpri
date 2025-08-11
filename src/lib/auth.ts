@@ -53,7 +53,8 @@ export async function deleteSession() {
 }
 
 export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
-  const sessionCookie = cookies().get('session')?.value;
+  const cookieStore = cookies();
+  const sessionCookie = cookieStore.get('session')?.value;
 
   if (!sessionCookie) {
     return null;
