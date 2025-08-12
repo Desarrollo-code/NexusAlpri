@@ -37,11 +37,10 @@ export async function GET(req: NextRequest) {
             studentsByEnrollmentRaw,
             instructorsByCoursesRaw
         ] = await prisma.$transaction([
-            // ✅ CORRECCIÓN: Se usa `{ where: {} }` para evitar errores de validación con count().
-            prisma.user.count({ where: {} }), 
-            prisma.course.count({ where: {} }),
+            prisma.user.count(),
+            prisma.course.count(),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
-            prisma.enrollment.count({ where: {} }),
+            prisma.enrollment.count(),
             prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
             prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
             prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } } }),
@@ -55,18 +54,6 @@ export async function GET(req: NextRequest) {
             prisma.user.findMany({ where: { role: 'STUDENT' }, select: { id: true, name: true, avatar: true, _count: { select: { enrollments: true } } }, orderBy: { enrollments: { _count: 'desc' } }, take: 5 }),
             prisma.user.findMany({ where: { role: { in: ['INSTRUCTOR', 'ADMINISTRATOR'] } }, select: { id: true, name: true, avatar: true, _count: { select: { courses: true } } }, orderBy: { courses: { _count: 'desc' } }, take: 5 }),
         ]);
-
-        // ✅ LOG PARA DEPURACIÓN
-        console.log('[DEBUG-ADMIN-STATS] Resultados de Prisma:', {
-            totalUsersResult,
-            totalCoursesResult,
-            totalPublishedCoursesCount,
-            totalEnrollmentsResult,
-            usersByRole,
-            coursesByStatus,
-            recentLoginsCount,
-            newUsersLast7DaysCount,
-        });
 
         const courseActivityData: Record<string, { newCourses: number, publishedCourses: number, newEnrollments: number }> = {};
         for (let i = 0; i < 30; i++) {
