@@ -11,32 +11,32 @@
     --card-foreground: 224 71.4% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
-    --primary: 217 91% 60%;
+    --primary: 330 85% 55%; /* Magenta/Rosa Vibrante */
     --primary-foreground: 210 20% 98%;
     --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
-    --accent: 170 80% 45%;
+    --accent: 180 90% 45%; /* Cian/Teal Vibrante */
     --accent-foreground: 210 20% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 217 91% 60%;
+    --ring: 330 85% 55%;
     --radius: 1rem;
     
     /* Chart & Event Colors */
     --chart-1: hsl(var(--primary));
     --chart-2: hsl(var(--accent));
-    --chart-3: 30 90% 60%;
-    --chart-4: 140 50% 55%;
-    --chart-5: 190 80% 65%;
+    --chart-3: 60 90% 50%; /* Amarillo Neón */
+    --chart-4: 120 80% 45%; /* Verde Lima */
+    --chart-5: 280 90% 60%; /* Púrpura Eléctrico */
     
     --event-blue: hsl(var(--chart-5));
     --event-green: hsl(var(--chart-4));
     --event-red: hsl(var(--destructive));
-    --event-orange: hsl(var(--chart-3));
+    --event-orange: hsl(30, 90%, 55%);
 
     /* Sidebar Variables for light theme */
     --sidebar-background: 220 14.3% 97%;
@@ -48,46 +48,46 @@
   }
  
   .dark {
-    --background: 222 83% 12%; /* Deep Navy */
+    --background: 0 0% 0%; /* Negro Profundo */
     --foreground: 210 20% 98%;
-    --card: 222 83% 15%; /* Slightly lighter navy */
+    --card: 222 83% 4%; /* Casi negro, azulado */
     --card-foreground: 210 20% 98%;
-    --popover: 222 83% 8%;
+    --popover: 222 83% 2%;
     --popover-foreground: 210 20% 98%;
-    --primary: 217 91% 60%; /* Vibrant Blue */
+    --primary: 330 85% 55%; /* Magenta/Rosa Vibrante */
     --primary-foreground: 210 20% 98%;
-    --secondary: 222 47% 20%;
+    --secondary: 180 90% 45%; /* Cian/Teal Vibrante */
     --secondary-foreground: 210 20% 98%;
-    --muted: 222 47% 20%;
+    --muted: 222 47% 11%;
     --muted-foreground: 215 20% 65%;
-    --accent: 170 80% 45%; /* Vibrant Teal */
+    --accent: 180 90% 45%; /* Cian/Teal Vibrante */
     --accent-foreground: 210 20% 98%;
-    --destructive: 0 63% 45%;
+    --destructive: 0 70% 55%;
     --destructive-foreground: 210 20% 98%;
-    --border: 222 47% 25%;
-    --input: 222 47% 20%;
-    --ring: 217 91% 60%;
+    --border: 222 47% 15%;
+    --input: 222 47% 11%;
+    --ring: 330 85% 55%;
     --radius: 1rem;
     
     /* Chart & Event Colors for Dark Theme */
     --chart-1: hsl(var(--primary));
     --chart-2: hsl(var(--accent));
-    --chart-3: 30 90% 55%;
-    --chart-4: 140 40% 55%;
-    --chart-5: 190 80% 60%;
+    --chart-3: 60 90% 50%; /* Amarillo Neón */
+    --chart-4: 120 80% 45%; /* Verde Lima */
+    --chart-5: 280 90% 60%; /* Púrpura Eléctrico */
     
-    --event-blue: hsl(190 80% 60%);
-    --event-green: hsl(140 40% 55%);
-    --event-red: hsl(0 75% 55%);
-    --event-orange: hsl(30 90% 55%);
+    --event-blue: hsl(var(--chart-5));
+    --event-green: hsl(var(--chart-4));
+    --event-red: hsl(var(--destructive));
+    --event-orange: hsl(30, 90%, 55%);
 
     /* Sidebar Variables for dark theme */
-    --sidebar-background: 222 83% 10%;
+    --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 210 40% 92%;
     --sidebar-muted-foreground: 215 20% 55%;
     --sidebar-accent: hsl(var(--primary));
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: 222 83% 15%;
+    --sidebar-border: 0 0% 10%;
   }
 }
  
@@ -193,8 +193,8 @@
   inset: 0;
   background-color: hsl(var(--background));
   background-image: 
-    radial-gradient(ellipse at top left, hsl(var(--accent) / 0.15), transparent 50%),
-    radial-gradient(ellipse at bottom right, hsl(var(--primary) / 0.15), transparent 50%);
+    radial-gradient(ellipse at 10% 10%, hsl(var(--accent) / 0.15), transparent 50%),
+    radial-gradient(ellipse at 90% 90%, hsl(var(--primary) / 0.15), transparent 50%);
   animation: pulse-slow 12s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 

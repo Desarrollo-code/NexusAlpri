@@ -8,19 +8,19 @@ import { cn } from '@/lib/utils';
 
 const features = [
   {
-    icon: <Zap className="h-8 w-8" />,
+    icon: <Zap className="h-8 w-8 text-primary" />,
     title: 'Aprendizaje Interactivo',
     description: 'Crea cursos con videos, textos y quizzes dinámicos para mantener a tus equipos enganchados.',
     gradient: 'from-primary/70 to-accent/70',
   },
   {
-    icon: <BarChart className="h-8 w-8" />,
+    icon: <BarChart className="h-8 w-8 text-accent" />,
     title: 'Seguimiento Automatizado',
     description: 'El progreso se registra automáticamente, permitiéndote enfocarte en el contenido y no en el papeleo.',
     gradient: 'from-accent/70 to-primary/70',
   },
   {
-    icon: <ShieldCheck className="h-8 w-8" />,
+    icon: <ShieldCheck className="h-8 w-8 text-primary" />,
     title: 'Seguridad y Roles',
     description: 'Gestiona permisos detallados por rol (Estudiante, Instructor, Admin) y protege tu contenido.',
     gradient: 'from-primary/70 via-accent/70 to-primary/70',
@@ -130,7 +130,7 @@ export default function LandingPage() {
                         )}
                       >
                        <div className="relative z-10 flex flex-col items-center justify-center h-full">
-                         <div className="mb-4 text-accent">
+                         <div className="mb-4">
                             {feature.icon}
                          </div>
                          <h3 className="text-2xl font-bold font-headline mb-2 text-foreground">{feature.title}</h3>

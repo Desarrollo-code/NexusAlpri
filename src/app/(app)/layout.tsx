@@ -61,7 +61,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
               )}
           >
               <TopBar />
-              <main className="flex-1 overflow-y-auto relative bg-muted/30">
+              <main className="flex-1 overflow-y-auto relative bg-background">
               <DecorativeHeaderBackground />
               <div className="relative z-10 p-4 md:p-6 lg:p-8">
                   {children}
