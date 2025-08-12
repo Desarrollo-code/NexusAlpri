@@ -17,7 +17,6 @@ export default function AuthLayout({
           playsInline
           className="absolute top-0 left-0 w-full h-full object-cover -z-20"
           src="/videos/background.mp4"
-          poster="/uploads/images/video-poster.jpg"
         >
           Tu navegador no soporta el tag de video.
         </video>
