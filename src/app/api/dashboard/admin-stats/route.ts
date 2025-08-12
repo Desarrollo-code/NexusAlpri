@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
             studentsByEnrollmentRaw,
             instructorsByCoursesRaw
         ] = await prisma.$transaction([
-            prisma.user.count(), // Corrected from prisma.user.count({ select: ... })
+            prisma.user.count(),
             prisma.course.count(),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
             prisma.enrollment.count(),

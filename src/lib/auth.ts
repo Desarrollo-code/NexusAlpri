@@ -18,7 +18,6 @@ interface JWTPayload {
 }
 
 async function encrypt(payload: JWTPayload): Promise<string> {
-  // Convert payload to a plain object with string values
   const jwtPayload: Record<string, unknown> = {
     userId: payload.userId,
     expires: payload.expires.toISOString(),
@@ -57,7 +56,7 @@ export async function deleteSession() {
   cookieStore.set('session', '', { expires: new Date(0), path: '/' });
 }
 
-export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
+export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => {
   const cookieStore = cookies();
   const sessionCookie = cookieStore.get('session')?.value;
 
@@ -80,3 +79,7 @@ export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
     return null;
   }
 });
+
+export async function getCurrentUser() {
+    return await getUserFromSession();
+}
