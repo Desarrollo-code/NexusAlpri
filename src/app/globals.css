@@ -49,16 +49,16 @@
   }
  
   .dark {
-    --background: 224 71% 4%;
+    --background: 224 80% 6%; /* Deep Night Blue */
     --foreground: 210 40% 98%;
 
-    --card: 222 84% 4.9%;
+    --card: 222 84% 8%; /* Slightly lighter card background */
     --card-foreground: 210 40% 98%;
  
     --popover: 222 84% 4.9%;
     --popover-foreground: 210 40% 98%;
  
-    --primary: 263 52% 47%; /* Soft Lavender */
+    --primary: 25 95% 53%; /* Fiery Orange */
     --primary-foreground: 210 40% 98%;
  
     --secondary: 217.2 32.6% 17.5%;
@@ -67,17 +67,29 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
  
-    --accent: 258 52% 51%;
+    --accent: 320 85% 55%; /* Vibrant Magenta/Pink */
     --accent-foreground: 210 40% 98%;
  
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
+    --border: 217.2 32.6% 22.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 263 52% 47%;
+    --ring: 25 95% 53%;
     
     --radius: 1rem;
+
+    /* New Chart & Event Colors for Dark Theme */
+    --chart-1: hsl(var(--primary));   /* Fiery Orange */
+    --chart-2: hsl(var(--accent));     /* Vibrant Magenta */
+    --chart-3: 45 100% 50%;          /* Bright Yellow */
+    --chart-4: 180 80% 45%;          /* Electric Cyan */
+    --chart-5: 280 80% 65%;          /* Vivid Purple */
+    
+    --event-blue: hsl(190 80% 55%);
+    --event-green: hsl(130 70% 45%);
+    --event-red: hsl(350 85% 60%);
+    --event-orange: hsl(var(--primary));
   }
 }
  
