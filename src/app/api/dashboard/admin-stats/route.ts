@@ -1,4 +1,3 @@
-
 // src/app/api/dashboard/admin-stats/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -27,7 +26,7 @@ export async function GET(req: NextRequest) {
             totalEnrollmentsResult,
             usersByRole,
             coursesByStatus,
-            recentLoginLogs,
+            recentLoginsCount,
             newUsersLast7DaysCount,
             recentUsersData,
             newCoursesData,
@@ -38,13 +37,14 @@ export async function GET(req: NextRequest) {
             studentsByEnrollmentRaw,
             instructorsByCoursesRaw
         ] = await prisma.$transaction([
-            prisma.user.count(),
-            prisma.course.count(),
+            // ✅ CORRECCIÓN: Se usa `{ where: {} }` para evitar errores de validación con count().
+            prisma.user.count({ where: {} }), 
+            prisma.course.count({ where: {} }),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
-            prisma.enrollment.count(),
+            prisma.enrollment.count({ where: {} }),
             prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
             prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
-            prisma.securityLog.groupBy({ by: ['userId'], where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } } }),
+            prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } } }),
             prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo } } }),
             prisma.user.findMany({ where: { registeredDate: { gte: sevenDaysAgo } }, select: { registeredDate: true } }),
             prisma.course.findMany({ where: { createdAt: { gte: thirtyDaysAgo } }, select: { createdAt: true } }),
@@ -56,9 +56,18 @@ export async function GET(req: NextRequest) {
             prisma.user.findMany({ where: { role: { in: ['INSTRUCTOR', 'ADMINISTRATOR'] } }, select: { id: true, name: true, avatar: true, _count: { select: { courses: true } } }, orderBy: { courses: { _count: 'desc' } }, take: 5 }),
         ]);
 
-        const recentLoginsCount = recentLoginLogs.length;
+        // ✅ LOG PARA DEPURACIÓN
+        console.log('[DEBUG-ADMIN-STATS] Resultados de Prisma:', {
+            totalUsersResult,
+            totalCoursesResult,
+            totalPublishedCoursesCount,
+            totalEnrollmentsResult,
+            usersByRole,
+            coursesByStatus,
+            recentLoginsCount,
+            newUsersLast7DaysCount,
+        });
 
-        // --- Trend and Activity Processing ---
         const courseActivityData: Record<string, { newCourses: number, publishedCourses: number, newEnrollments: number }> = {};
         for (let i = 0; i < 30; i++) {
             const date = format(subDays(today, i), 'yyyy-MM-dd');
@@ -94,7 +103,6 @@ export async function GET(req: NextRequest) {
         });
         const userRegistrationTrend = Object.keys(userRegistrationTrendData).map(date => ({ date, count: userRegistrationTrendData[date] }));
 
-        // --- Completion and Ranking Processing ---
         const courseCompletionStats: { [courseId: string]: { totalProgress: number; count: number; title: string; imageUrl: string | null } } = {};
         allCourseProgressRaw.forEach(cp => {
             if (cp.enrollment?.courseId) {
@@ -140,7 +148,6 @@ export async function GET(req: NextRequest) {
             }))
             .sort((a, b) => b.value - a.value).slice(0, 5);
 
-        // --- Final Assembly ---
         const adminStats = {
             totalUsers: totalUsersResult,
             totalCourses: totalCoursesResult,
