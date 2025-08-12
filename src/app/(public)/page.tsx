@@ -62,18 +62,18 @@ const testimonials = [
 
 export default function LandingPage() {
   return (
-      <div className="flex-1">
-        <section className="w-full py-20 md:py-32 lg:py-40 bg-grainy-gradient">
+      <div className="flex-1 text-white">
+        <section className="w-full py-20 md:py-32 lg:py-40">
           <div className="container px-4 md:px-6 relative z-10">
             <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
-                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-foreground">
+                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
                     Despierta el Potencial.
                     <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Transforma tu Equipo.</span>
                   </h1>
-                  <p className="max-w-[600px] text-muted-foreground md:text-xl">
+                  <p className="max-w-[600px] text-gray-200 md:text-xl">
                     NexusAlpri es la plataforma de e-learning corporativa que se adapta a ti. Intuitiva, potente y segura.
                   </p>
                 </div>
@@ -99,7 +99,7 @@ export default function LandingPage() {
                 width="600"
                 height="600"
                 alt="Hero"
-                className="mx-auto aspect-square overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
+                className="mx-auto aspect-square overflow-hidden rounded-xl object-cover sm:w-full"
                 data-ai-hint="team collaboration"
                 priority
               />
@@ -107,15 +107,15 @@ export default function LandingPage() {
           </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 bg-background/50 backdrop-blur-lg relative z-10">
+        <section className="w-full py-12 md:py-24 bg-black/20 backdrop-blur-lg relative z-10">
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary font-semibold">
+                        <div className="inline-block rounded-lg bg-primary/20 px-3 py-1 text-sm text-primary-foreground font-semibold">
                             Características Principales
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Una Plataforma Todo en Uno</h2>
-                        <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                        <p className="max-w-[900px] text-gray-200 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                             Desde la creación de contenido hasta el análisis de resultados, todo lo que necesitas está aquí.
                         </p>
                     </div>
@@ -126,7 +126,7 @@ export default function LandingPage() {
                         key={index}
                         className={cn(
                           "relative rounded-2xl p-8 text-center h-full transition-all duration-300 overflow-hidden",
-                          "bg-card text-card-foreground shadow-lg hover:shadow-xl",
+                          "bg-white/5 text-white shadow-lg hover:shadow-xl",
                           "bg-gradient-to-br",
                           feature.gradient
                         )}
@@ -153,7 +153,7 @@ export default function LandingPage() {
                         width="600"
                         height="400"
                         alt="Benefits"
-                        className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full"
+                        className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full shadow-2xl"
                         data-ai-hint="diverse team"
                       />
                     <div className="space-y-8">
@@ -162,7 +162,7 @@ export default function LandingPage() {
                             <div className="flex-shrink-0">{benefit.icon}</div>
                             <div>
                                 <h3 className="text-xl font-bold">{benefit.title}</h3>
-                                <p className="text-muted-foreground">{benefit.description}</p>
+                                <p className="text-gray-300">{benefit.description}</p>
                             </div>
                           </div>
                        ))}
@@ -171,11 +171,11 @@ export default function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 bg-background/50 backdrop-blur-lg relative z-10">
+        <section className="w-full py-12 md:py-24 bg-black/20 backdrop-blur-lg relative z-10">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary font-semibold">
+                        <div className="inline-block rounded-lg bg-primary/20 px-3 py-1 text-sm text-primary-foreground font-semibold">
                             Testimonios
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Lo que Nuestros Clientes Dicen</h2>
@@ -183,7 +183,7 @@ export default function LandingPage() {
                 </div>
                  <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 py-12">
                     {testimonials.map((testimonial, index) => (
-                        <Card key={index} className="bg-card/50 backdrop-blur-sm card-border-animated">
+                        <Card key={index} className="bg-white/10 backdrop-blur-sm card-border-animated border-white/20 text-white">
                            <CardContent className="pt-6">
                              <blockquote className="text-lg font-semibold leading-snug">
                                “{testimonial.testimony}”
@@ -194,7 +194,7 @@ export default function LandingPage() {
                                 <Image className="rounded-full" src={testimonial.avatar} height={40} width={40} alt={testimonial.name} data-ai-hint="portrait person" />
                                 <div>
                                     <p className="font-semibold">{testimonial.name}</p>
-                                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                                    <p className="text-sm text-gray-300">{testimonial.role}</p>
                                 </div>
                               </div>
                            </CardFooter>
@@ -204,10 +204,10 @@ export default function LandingPage() {
             </div>
         </section>
         
-         <section className="w-full py-20 md:py-32 text-center bg-background/50 backdrop-blur-lg relative z-10">
+         <section className="w-full py-20 md:py-32 text-center bg-black/20 backdrop-blur-lg relative z-10">
             <div className="container px-4 md:px-6">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">¿Listo para Empezar?</h2>
-                 <p className="max-w-2xl mx-auto mt-4 text-muted-foreground md:text-xl">
+                 <p className="max-w-2xl mx-auto mt-4 text-gray-200 md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar.
                  </p>
                   <Button asChild size="lg" variant="primary-gradient" className="mt-8">

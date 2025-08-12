@@ -12,7 +12,18 @@ export default function PublicLayout({
     // This div now defaults to the light theme for all public pages.
     <div>
       <div className="flex flex-col min-h-screen bg-background relative isolate">
-        <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]"><div className="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_500px_at_50%_200px,#C9EBFF,transparent)]"></div></div>
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+          className="absolute top-0 left-0 w-full h-full object-cover -z-20"
+          src="/videos/background.mp4"
+          poster="/uploads/images/video-poster.jpg"
+        >
+          Tu navegador no soporta el tag de video.
+        </video>
+        <div className="absolute inset-0 bg-black/50 -z-10" />
         <PublicTopBar />
         <main className="flex-1 flex flex-col items-center justify-center z-10">
           {children}
