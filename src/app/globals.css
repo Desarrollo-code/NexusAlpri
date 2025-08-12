@@ -42,7 +42,8 @@
     --sidebar-background: 220 40% 10%; /* Azul Marino Oscuro */
     --sidebar-foreground: 45 80% 70%;  /* Dorado Brillante (para texto activo/hover) */
     --sidebar-muted-foreground: 45 50% 55%; /* Dorado Tenue (para texto inactivo) */
-    --sidebar-accent: hsl(45, 80%, 70%); /* Mismo que el foreground para el borde activo */
+    --sidebar-accent: hsl(var(--primary)); /* Usar primario como acento para hover */
+    --sidebar-accent-foreground: hsl(var(--primary-foreground));
     --sidebar-border: 220 40% 15%; /* Borde azul ligeramente más claro */
   }
  
@@ -84,7 +85,8 @@
     --sidebar-background: 220 40% 10%; 
     --sidebar-foreground: 45 80% 70%; 
     --sidebar-muted-foreground: 45 50% 55%;
-    --sidebar-accent: hsl(45, 80%, 70%); 
+    --sidebar-accent: hsl(var(--primary)); 
+    --sidebar-accent-foreground: hsl(var(--primary-foreground));
     --sidebar-border: 220 40% 15%; 
   }
 }

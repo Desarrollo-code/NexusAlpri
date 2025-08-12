@@ -109,9 +109,9 @@ export const SidebarHeader = () => {
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
          <div className={cn(
             "flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg transition-all duration-300",
-            isCollapsed ? "w-12 h-12" : "w-14 h-14 bg-card dark:bg-white/20"
+            "w-14 h-14 bg-card dark:bg-white/20"
         )}>
-          <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={isCollapsed ? 48 : 60} height={isCollapsed ? 48 : 60} data-ai-hint="logo"/>
+          <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={60} height={60} data-ai-hint="logo"/>
         </div>
         {!isCollapsed && (
             <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-sidebar-foreground transition-opacity duration-300")}>
@@ -176,15 +176,12 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   
   const content = (
       <div className={cn(
-        "flex items-center gap-3 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item relative",
+        "flex items-center gap-3 py-3 rounded-lg transition-all duration-300 font-medium group/menu-item relative",
         isCollapsed && !isMobile ? "justify-center px-0" : "px-4",
         isActive
-          ? "bg-sidebar-accent/10 text-sidebar-foreground" // Estilo activo más prominente
-          : "text-sidebar-muted-foreground hover:bg-sidebar-muted-foreground/10 hover:text-sidebar-foreground"
+          ? "bg-gradient-to-r from-accent/50 to-primary/50 text-sidebar-accent-foreground"
+          : "text-sidebar-muted-foreground hover:bg-accent/20 hover:text-primary"
       )}>
-        {isActive && !isCollapsed && (
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-sidebar-accent rounded-r-full"></div>
-        )}
         <GradientIcon icon={item.icon || Shield} isActive={isActive} />
         {showText && <span className="whitespace-nowrap">{item.label}</span>}
       </div>
