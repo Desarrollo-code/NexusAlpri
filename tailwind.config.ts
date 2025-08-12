@@ -1,4 +1,5 @@
 import type {Config} from 'tailwindcss';
+const {fontFamily} = require("tailwindcss/defaultTheme")
 
 const config: Config = {
   content: [
@@ -22,10 +23,9 @@ const config: Config = {
         '2xl': '1rem',
       },
       fontFamily: {
-        body: ['var(--font-body)', 'Inter', 'sans-serif'],
-        headline: ['var(--font-headline)', 'Space Grotesk', 'sans-serif'],
-        'headline-alt': ['var(--font-headline-alt)', 'Dancing Script', 'cursive'],
-        code: ['var(--font-code)', 'Source Code Pro', 'monospace'],
+        body: ['var(--font-body)', ...fontFamily.sans],
+        headline: ['var(--font-headline)', ...fontFamily.sans],
+        code: ['var(--font-code)', ...fontFamily.mono],
       },
       colors: {
         border: 'hsl(var(--border))',
