@@ -1,4 +1,3 @@
-
 // src/lib/auth.ts
 import 'server-only';
 import { cookies } from 'next/headers';
@@ -24,14 +23,19 @@ export async function createSession(userId: string) {
     .setExpirationTime('24h')
     .sign(key);
 
-  const cookieStore = cookies();
-  cookieStore.set('session', session, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    expires,
-    sameSite: 'lax',
-    path: '/',
-  });
+  try {
+    const cookieStore = cookies();
+    cookieStore.set('session', session, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      expires,
+      sameSite: 'lax',
+      path: '/',
+    });
+  } catch (error) {
+    // This can happen in non-server environments, handle gracefully
+    console.error("Failed to set session cookie", error);
+  }
 }
 
 // ================================
@@ -61,8 +65,12 @@ export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => 
 // Cerrar sesión
 // ================================
 export async function deleteSession() {
-  const cookieStore = cookies();
-  cookieStore.set('session', '', { expires: new Date(0), path: '/' });
+  try {
+    const cookieStore = cookies();
+    cookieStore.set('session', '', { expires: new Date(0), path: '/' });
+  } catch (error) {
+     console.error("Failed to delete session cookie", error);
+  }
 }
 
 // ================================
