@@ -114,7 +114,7 @@ export default function LandingPage() {
                         <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm text-secondary-foreground font-semibold">
                             Características Principales
                         </div>
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Una Plataforma Todo en Uno</h2>
+                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">Una Plataforma Todo en Uno</h2>
                         <p className="max-w-[900px] text-gray-200 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                             Desde la creación de contenido hasta el análisis de resultados, todo lo que necesitas está aquí.
                         </p>
@@ -133,7 +133,7 @@ export default function LandingPage() {
                          <div className="mb-4 text-primary">
                             {feature.icon}
                          </div>
-                         <h3 className="text-2xl font-bold font-headline mb-2">{feature.title}</h3>
+                         <h3 className="text-2xl font-bold font-headline mb-2 text-foreground">{feature.title}</h3>
                          <p className="text-muted-foreground">{feature.description}</p>
                        </div>
                      </div>
