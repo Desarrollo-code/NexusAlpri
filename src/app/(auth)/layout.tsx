@@ -10,6 +10,7 @@ export default function AuthLayout({
 }) {
   return (
     <div className="flex flex-col min-h-screen bg-background relative">
+       <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]"><div className="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_500px_at_50%_200px,#C9EBFF,transparent)]"></div></div>
        <PublicTopBar />
        <main className="flex-1 flex flex-col items-center justify-center p-4 z-10 pt-20 md:pt-0">
         {children}
