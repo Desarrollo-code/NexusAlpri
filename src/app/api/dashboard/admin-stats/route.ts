@@ -16,15 +16,12 @@ export async function GET(req: NextRequest) {
     const totalCoursesCount = await prisma.course.count(); // Moved outside transaction
 
  const [
- usersByRoleRaw,
- coursesByStatusRaw,
       recentLoginsCount,
       newUsersLast7DaysCount,
       recentUsersData,
       newCoursesData,
  publishedCoursesData, // Keep publishedCoursesData to calculate count later
       newEnrollmentsData,
-      coursesWithEnrollmentCounts,
       studentsByEnrollmentRaw,
  instructorsByCoursesRaw,
  allCourseProgressRaw,
@@ -57,6 +54,10 @@ export async function GET(req: NextRequest) {
         where: { enrollment: { userId: { not: null } } },
         select: { enrollment: { select: { userId: true, courseId: true } }, progressPercentage: true }
       }),
+      // Agrupados (groupBy) — usar _all para contar por grupo
+      prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
+      prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
+      prisma.course.findMany({ where: { status: 'PUBLISHED' }, select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } } }),
 
       // Cursos publicados + conteo de inscripciones
       prisma.course.findMany({
@@ -78,38 +79,15 @@ export async function GET(req: NextRequest) {
         select: { id: true, name: true, avatar: true, _count: { select: { courses: true } } },
         orderBy: { courses: { _count: 'desc' } },
         take: 5
- ] = await prisma.$transaction([
- // Logins exitosos en los últimos 7 días (usa la tabla de logs de seguridad)
-      prisma.securityLog.count({
-        where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } }
       }),
-
-      // Nuevos usuarios en los últimos 7 días (ajusta el campo si tu usuario tiene otro nombre)
-      prisma.user.count({
-        where: { registeredDate: { gte: sevenDaysAgo } }
-      }),
-
-      // Datos para series temporales / gráficas (solo campos necesarios)
-      prisma.user.findMany({
-        where: { registeredDate: { gte: sevenDaysAgo } },
-        select: { registeredDate: true }
-      }),
-      prisma.course.findMany({
-        where: { createdAt: { gte: thirtyDaysAgo } },
-        select: { createdAt: true }
- }),
-
- // Agrupados (groupBy) — usar _all para contar por grupo
-      prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
-      prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
- ]);
+    ]);
 
 
     const totalEnrollmentsCount = await prisma.enrollment.count(); // Moved outside transaction
     const totalPublishedCoursesCount = publishedCoursesData.length; // Calculate from findMany result
     // Normalizo resultados de aggregation y groupBy (_count._all)
-    const usersByRole = usersByRoleRaw.map((r: any) => ({ role: r.role, count: r. _count. _all }));
-    const coursesByStatus = coursesByStatusRaw.map((r: any) => ({ status: r.status, count: r. _count. _all }));
+    const usersByRole = usersByRoleRaw.map((r: any) => ({ role: r.role, count: r._count._all }));
+    const coursesByStatus = coursesByStatusRaw.map((r: any) => ({ status: r.status, count: r._count._all }));
 
     const payload = {
  totalUsersCount,
