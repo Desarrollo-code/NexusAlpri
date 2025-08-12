@@ -198,7 +198,9 @@
   z-index: -10;
   background-color: hsl(var(--background));
   background-image: 
-    radial-gradient(ellipse 80% 80% at 70% -15%, hsl(var(--primary) / 0.3), transparent),
-    radial-gradient(ellipse 80% 80% at 20% -20%, hsl(var(--accent) / 0.3), transparent);
-  animation: pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    radial-gradient(ellipse at top left, hsl(48, 100%, 70%, 0.5), transparent 50%),
+    radial-gradient(ellipse at top right, hsl(199, 100%, 80%, 0.4), transparent 50%),
+    radial-gradient(ellipse at bottom right, hsl(260, 100%, 80%, 0.4), transparent 50%),
+    radial-gradient(ellipse at bottom left, hsl(240, 100%, 70%, 0.5), transparent 50%);
+  animation: pulse-slow 12s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
