@@ -24,8 +24,8 @@ export async function createSession(userId: string) {
     .sign(key);
 
   try {
-    const cookieStore = cookies();
-    cookieStore.set('session', session, {
+    // Correct way to set cookies in async context
+    cookies().set('session', session, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       expires,
@@ -42,6 +42,7 @@ export async function createSession(userId: string) {
 // Obtener usuario desde la sesión
 // ================================
 export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => {
+  // Correctly get the cookie store instance first
   const cookieStore = cookies();
   const sessionCookie = cookieStore.get('session')?.value;
 
@@ -66,8 +67,8 @@ export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => 
 // ================================
 export async function deleteSession() {
   try {
-    const cookieStore = cookies();
-    cookieStore.set('session', '', { expires: new Date(0), path: '/' });
+    // Correct way to delete cookies in async context
+    cookies().set('session', '', { expires: new Date(0), path: '/' });
   } catch (error) {
      console.error("Failed to delete session cookie", error);
   }
