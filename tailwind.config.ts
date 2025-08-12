@@ -15,6 +15,12 @@ const config: Config = {
       },
     },
     extend: {
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 4px)",
+        sm: "calc(var(--radius) - 8px)",
+        '2xl': '1rem',
+      },
       fontFamily: {
         body: ['var(--font-body)', 'Inter', 'sans-serif'],
         headline: ['var(--font-headline)', 'Space Grotesk', 'sans-serif'],
@@ -68,18 +74,6 @@ const config: Config = {
           red: 'hsl(var(--event-red))',
           orange: 'hsl(var(--event-orange))',
         },
-        gauge: {
-          green: 'hsl(var(--gauge-green))',
-          yellow: 'hsl(var(--gauge-yellow))',
-          red: 'hsl(var(--gauge-red))',
-        },
-        'gradient-start': 'hsl(var(--gradient-start))',
-        'gradient-end': 'hsl(var(--gradient-end))',
-      },
-      borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 4px)',
-        sm: 'calc(var(--radius) - 8px)',
       },
       keyframes: {
         'accordion-down': {
@@ -111,9 +105,9 @@ const config: Config = {
           '0%, 70%, 100%': { opacity: '1' },
           '20%, 50%': { opacity: '0' },
         },
-        'spin': {
-            from: { transform: 'rotate(0deg)' },
-            to: { transform: 'rotate(360deg)' },
+        'spin-slow': {
+            from: { '--angle': '0deg' },
+            to: { '--angle': '360deg' },
         },
       },
       animation: {
@@ -122,7 +116,7 @@ const config: Config = {
         'press': 'press 0.2s 1 linear',
         'throw': 'throw 0.4s ease-out forwards',
         'caret-blink': 'caret-blink 1.25s ease-out infinite',
-        'spin-slow': 'spin 3s linear infinite',
+        'spin-slow': 'spin-slow 4s linear infinite',
       },
     },
   },
