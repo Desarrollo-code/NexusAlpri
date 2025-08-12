@@ -285,7 +285,7 @@ export default function ProfilePage() {
   
   const MobileProfileView = () => (
      <div className="w-full">
-        <div className="profile-card">
+        <div className="profile-card p-6">
             <ProfileCardBackground />
             <div className="card__avatar">
                  <Avatar className="avatar">
@@ -312,8 +312,11 @@ export default function ProfilePage() {
                     name="mobile-avatar-upload"
                 />
             </div>
-            <div className="card__title">{user.name}</div>
-            <div className="card__subtitle capitalize">{getRoleInSpanish(user.role)}</div>
+            <h2 className="text-xl font-bold mt-2">{user.name}</h2>
+            <div className="card__subtitle mt-2">
+                <Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'default' : 'secondary'} className="capitalize mx-auto">{getRoleInSpanish(user.role)}</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground flex items-center justify-center gap-2 mt-4"><Mail className="h-4 w-4 text-primary"/> {user.email}</p>
         </div>
      </div>
   );
@@ -368,7 +371,7 @@ export default function ProfilePage() {
       ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1 space-y-8">
-              <div className="profile-card">
+              <div className="profile-card p-6">
                  <ProfileCardBackground />
                   <div className="card__avatar">
                     <Avatar className="avatar">
@@ -401,9 +404,11 @@ export default function ProfilePage() {
                       <p className="text-xs mt-1 text-muted-foreground">{uploadProgress}%</p>
                     </div>
                   )}
-                  <div className="card__title">{user.name}</div>
-                  <div className="card__subtitle"><Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'default' : 'secondary'} className="capitalize mx-auto">{getRoleInSpanish(user.role)}</Badge></div>
-                  <p className="text-sm text-muted-foreground flex items-center justify-center gap-2 mt-2"><Mail className="h-4 w-4 text-primary"/> {user.email}</p>
+                  <h2 className="text-xl font-bold mt-2">{user.name}</h2>
+                  <div className="card__subtitle mt-2">
+                    <Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'default' : 'secondary'} className="capitalize mx-auto">{getRoleInSpanish(user.role)}</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground flex items-center justify-center gap-2 mt-4"><Mail className="h-4 w-4 text-primary"/> {user.email}</p>
               </div>
             </div>
     

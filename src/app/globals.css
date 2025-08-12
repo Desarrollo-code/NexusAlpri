@@ -42,7 +42,7 @@
     --sidebar-background: 240 50% 98%; /* Lavanda muy claro */
     --sidebar-foreground: 240 10% 20%; /* Texto oscuro */
     --sidebar-muted-foreground: 240 10% 45%;
-    --sidebar-accent: hsl(340, 90%, 65%); /* Rosa Pastel */
+    --sidebar-accent: hsl(330, 90%, 75%); /* Rosa Pastel */
     --sidebar-accent-foreground: hsl(0, 0%, 100%);
     --sidebar-border: 240 10% 90%;
   }
@@ -124,7 +124,7 @@
   }
   
   .profile-card {
-    @apply w-full max-w-sm mx-auto bg-card rounded-2xl shadow-lg overflow-hidden;
+    @apply w-full max-w-sm mx-auto bg-card rounded-2xl shadow-lg overflow-hidden text-center;
   }
   .profile-card .card__img {
     @apply h-24 w-full relative;
@@ -136,10 +136,10 @@
      @apply w-full h-full rounded-full border-4 border-background;
   }
   .profile-card .card__title {
-    @apply text-center text-xl font-bold mt-2;
+    @apply text-xl font-bold mt-2;
   }
   .profile-card .card__subtitle {
-    @apply text-center text-sm text-muted-foreground mt-1;
+    @apply text-center text-sm text-muted-foreground mt-2;
   }
 }
 
