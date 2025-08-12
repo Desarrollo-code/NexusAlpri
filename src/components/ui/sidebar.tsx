@@ -167,7 +167,9 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
-    return activeItem === item.path || (activeItem.startsWith(item.path) && item.path !== '/');
+    // Exact match for dashboard, startsWith for others
+    if (item.path === '/dashboard') return activeItem === item.path;
+    return activeItem.startsWith(item.path) && item.path !== '/';
   }, [activeItem, item.path]);
 
   const showText = !isCollapsed || isMobile;
@@ -177,7 +179,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item relative",
         isCollapsed && !isMobile ? "justify-center px-0" : "px-4",
         isActive
-          ? "bg-sidebar-accent/10 text-sidebar-accent-foreground"
+          ? "bg-sidebar-accent/10 text-sidebar-accent"
           : "text-sidebar-muted-foreground hover:bg-sidebar-muted-foreground/10 hover:text-sidebar-foreground"
       )}>
         {isActive && !isCollapsed && (
