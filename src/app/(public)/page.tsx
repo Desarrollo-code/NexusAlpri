@@ -62,9 +62,9 @@ const testimonials = [
 
 export default function LandingPage() {
   return (
-      <div className="flex-1">
+      <div className="flex-1 z-10">
         <section className="w-full py-20 md:py-32 lg:py-40">
-          <div className="container px-4 md:px-6 relative z-10">
+          <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
@@ -73,7 +73,7 @@ export default function LandingPage() {
                     <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Transforma tu Equipo.</span>
                   </h1>
-                  <p className="max-w-[600px] text-gray-200 md:text-xl">
+                  <p className="max-w-[600px] text-white/80 md:text-xl">
                     NexusAlpri es la plataforma de e-learning corporativa que se adapta a ti. Intuitiva, potente y segura.
                   </p>
                 </div>
@@ -107,7 +107,7 @@ export default function LandingPage() {
           </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 bg-background/20 backdrop-blur-lg relative z-10">
+        <section className="w-full py-12 md:py-24 bg-background/60 backdrop-blur-lg">
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -115,7 +115,7 @@ export default function LandingPage() {
                             Características Principales
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">Una Plataforma Todo en Uno</h2>
-                        <p className="max-w-[900px] text-gray-200 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                        <p className="max-w-[900px] text-white/80 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                             Desde la creación de contenido hasta el análisis de resultados, todo lo que necesitas está aquí.
                         </p>
                     </div>
@@ -126,11 +126,11 @@ export default function LandingPage() {
                         key={index}
                         className={cn(
                           "relative rounded-2xl p-8 text-center h-full transition-all duration-300 overflow-hidden",
-                          "bg-card/60 backdrop-blur-sm shadow-lg hover:shadow-xl hover:-translate-y-2"
+                          "bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:-translate-y-2"
                         )}
                       >
                        <div className="relative z-10 flex flex-col items-center justify-center h-full">
-                         <div className="mb-4 text-primary">
+                         <div className="mb-4 text-accent">
                             {feature.icon}
                          </div>
                          <h3 className="text-2xl font-bold font-headline mb-2 text-foreground">{feature.title}</h3>
@@ -142,7 +142,7 @@ export default function LandingPage() {
             </div>
         </section>
 
-        <section className="w-full py-12 md:py-24 relative z-10">
+        <section className="w-full py-12 md:py-24">
             <div className="container px-4 md:px-6">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                         <Image
@@ -158,8 +158,8 @@ export default function LandingPage() {
                           <div key={index} className="flex items-start gap-4">
                             <div className="flex-shrink-0">{benefit.icon}</div>
                             <div>
-                                <h3 className="text-xl font-bold">{benefit.title}</h3>
-                                <p className="text-gray-300">{benefit.description}</p>
+                                <h3 className="text-xl font-bold text-foreground">{benefit.title}</h3>
+                                <p className="text-white/80">{benefit.description}</p>
                             </div>
                           </div>
                        ))}
@@ -168,7 +168,7 @@ export default function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 bg-background/20 backdrop-blur-lg relative z-10">
+        <section className="w-full py-12 md:py-24 bg-background/60 backdrop-blur-lg">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -180,9 +180,9 @@ export default function LandingPage() {
                 </div>
                  <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 py-12">
                     {testimonials.map((testimonial, index) => (
-                        <Card key={index} className="bg-card/60 backdrop-blur-sm card-border-animated">
+                        <Card key={index} className="bg-card/80 backdrop-blur-sm card-border-animated">
                            <CardContent className="pt-6">
-                             <blockquote className="text-lg font-semibold leading-snug">
+                             <blockquote className="text-lg font-semibold leading-snug text-foreground">
                                “{testimonial.testimony}”
                              </blockquote>
                            </CardContent>
@@ -190,7 +190,7 @@ export default function LandingPage() {
                               <div className="flex items-center gap-3">
                                 <Image className="rounded-full" src={testimonial.avatar} height={40} width={40} alt={testimonial.name} data-ai-hint="portrait person" />
                                 <div>
-                                    <p className="font-semibold">{testimonial.name}</p>
+                                    <p className="font-semibold text-foreground">{testimonial.name}</p>
                                     <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                                 </div>
                               </div>
@@ -201,10 +201,10 @@ export default function LandingPage() {
             </div>
         </section>
         
-         <section className="w-full py-20 md:py-32 text-center bg-background/20 backdrop-blur-lg relative z-10">
+         <section className="w-full py-20 md:py-32 text-center bg-background/60 backdrop-blur-lg">
             <div className="container px-4 md:px-6">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">¿Listo para Empezar?</h2>
-                 <p className="max-w-2xl mx-auto mt-4 text-gray-200 md:text-xl">
+                 <p className="max-w-2xl mx-auto mt-4 text-white/80 md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar.
                  </p>
                   <Button asChild size="lg" variant="primary-gradient" className="mt-8">

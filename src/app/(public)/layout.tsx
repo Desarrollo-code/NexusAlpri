@@ -13,13 +13,13 @@ export default function PublicLayout({
       <div className="flex flex-col min-h-screen bg-background relative isolate">
         <div className="bg-grainy-gradient" />
         <PublicTopBar />
-        <main className="flex-1 flex flex-col items-center justify-center z-10">
+        <main className="flex-1 flex flex-col items-center justify-center">
           {children}
         </main>
-        <div className="hidden md:block z-10">
+        <div className="hidden md:block">
           <Footer />
         </div>
-        <div className="z-10">
+        <div className="md:hidden">
           <BottomNav />
         </div>
       </div>

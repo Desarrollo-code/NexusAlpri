@@ -15,17 +15,17 @@ export default function AboutPage() {
 
   return (
     <>
-        <section className="w-full py-12 md:py-24 lg:py-32">
-          <div className="container px-4 md:px-6 relative z-10">
+        <section className="w-full py-12 md:py-24 lg:py-32 z-10">
+          <div className="container px-4 md:px-6">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
               <div className="space-y-4">
                 <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm font-semibold">
                   Nuestra Misión
                 </div>
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline">
+                <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline text-foreground">
                   Potenciando el Conocimiento, Impulsando el Crecimiento
                 </h1>
-                <p className="max-w-[600px] text-gray-200 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                <p className="max-w-[600px] text-white/80 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                   NexusAlpri nació de la necesidad de una plataforma de e-learning corporativa que fuera a la vez potente y fácil de usar. Creemos que la formación continua es el motor del éxito organizacional y nuestra misión es proporcionar las herramientas para hacerlo posible.
                 </p>
               </div>
@@ -41,15 +41,15 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="w-full py-12 md:py-24 relative z-10">
+        <section className="w-full py-12 md:py-24 z-10">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm font-semibold">
                   Tecnología
                 </div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Construido con Herramientas Modernas</h2>
-                <p className="max-w-[900px] text-gray-200 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">Construido con Herramientas Modernas</h2>
+                <p className="max-w-[900px] text-white/80 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                   Utilizamos un stack tecnológico de vanguardia para asegurar una experiencia de usuario rápida, segura y escalable.
                 </p>
               </div>
@@ -61,7 +61,7 @@ export default function AboutPage() {
                     <div className={'bg-primary/20 p-3 rounded-full text-primary'}>
                         {React.cloneElement(tech.icon, { className: "h-6 w-6" })}
                     </div>
-                    <CardTitle>{tech.name}</CardTitle>
+                    <CardTitle className="text-foreground">{tech.name}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">{tech.description}</p>

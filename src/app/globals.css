@@ -5,42 +5,33 @@
 
 @layer base {
   :root {
-    --background: 240 10% 98%;
-    --foreground: 222 47% 11%;
-
-    --card: 240 10% 100%;
-    --card-foreground: 222 47% 11%;
- 
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
- 
-    --primary: 263 70% 65%; /* Lavanda suave */
-    --primary-foreground: 210 40% 98%;
- 
-    --secondary: 240 5% 94%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 220 14.3% 95.9%;
     --secondary-foreground: 222.2 47.4% 11.2%;
- 
-    --muted: 240 5% 94%;
-    --muted-foreground: 240 4% 46%;
- 
-    --accent: 340 85% 70%; /* Rosa suave */
-    --accent-foreground: 210 40% 98%;
- 
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 170 80% 45%;
+    --accent-foreground: 210 20% 98%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 263 70% 65%;
- 
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
     --radius: 1rem;
-
+    
     /* Chart & Event Colors */
-    --chart-1: 263 70% 65%; /* Lavanda */
-    --chart-2: 340 85% 70%; /* Rosa */
-    --chart-3: 25 85% 70%;  /* Salmón */
-    --chart-4: 140 60% 70%; /* Verde menta */
-    --chart-5: 190 70% 65%; /* Azul cielo */
+    --chart-1: hsl(var(--primary));
+    --chart-2: hsl(var(--accent));
+    --chart-3: 30 90% 60%;
+    --chart-4: 140 50% 55%;
+    --chart-5: 190 80% 65%;
     
     --event-blue: hsl(var(--chart-5));
     --event-green: hsl(var(--chart-4));
@@ -48,45 +39,36 @@
     --event-orange: hsl(var(--chart-3));
 
     /* Sidebar Variables for light theme */
-    --sidebar-background: 240 10% 99%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-muted-foreground: 240 4% 46%;
+    --sidebar-background: 220 14.3% 97%;
+    --sidebar-foreground: 224 71.4% 4.1%;
+    --sidebar-muted-foreground: 220 8.9% 46.1%;
     --sidebar-accent: hsl(var(--primary));
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: 240 6% 90%;
+    --sidebar-border: 220 13% 91%;
   }
  
   .dark {
-    --background: 222 47% 11%; /* Slate 900 */
-    --foreground: 210 40% 98%; /* Slate 50 */
-
-    --card: 222 47% 14%; /* Slate 850, a bit lighter */
-    --card-foreground: 210 40% 98%;
- 
-    --popover: 222 47% 8%; /* Darker for popovers */
-    --popover-foreground: 210 40% 98%;
- 
-    --primary: 217 91% 60%; /* Azul Vibrante */
-    --primary-foreground: 210 40% 98%;
- 
-    --secondary: 215 28% 17%; /* Slate 800 */
-    --secondary-foreground: 210 40% 98%;
- 
-    --muted: 215 28% 17%;
-    --muted-foreground: 215 20% 65%; /* Slate 400 */
- 
-    --accent: 330 85% 65%; /* Rosa Eléctrico */
-    --accent-foreground: 210 40% 98%;
- 
+    --background: 222 83% 12%; /* Deep Navy */
+    --foreground: 210 20% 98%;
+    --card: 222 83% 15%; /* Slightly lighter navy */
+    --card-foreground: 210 20% 98%;
+    --popover: 222 83% 8%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 217 91% 60%; /* Vibrant Blue */
+    --primary-foreground: 210 20% 98%;
+    --secondary: 222 47% 20%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 222 47% 20%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 170 80% 45%; /* Vibrant Teal */
+    --accent-foreground: 210 20% 98%;
     --destructive: 0 63% 45%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 215 28% 20%; /* Slate 750 */
-    --input: 215 28% 17%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 222 47% 25%;
+    --input: 222 47% 20%;
     --ring: 217 91% 60%;
-    
     --radius: 1rem;
-
+    
     /* Chart & Event Colors for Dark Theme */
     --chart-1: hsl(var(--primary));
     --chart-2: hsl(var(--accent));
@@ -100,12 +82,12 @@
     --event-orange: hsl(30 90% 55%);
 
     /* Sidebar Variables for dark theme */
-    --sidebar-background: 222 47% 9%; /* Slightly darker than main bg */
+    --sidebar-background: 222 83% 10%;
     --sidebar-foreground: 210 40% 92%;
     --sidebar-muted-foreground: 215 20% 55%;
     --sidebar-accent: hsl(var(--primary));
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: 217 33% 15%;
+    --sidebar-border: 222 83% 15%;
   }
 }
  
@@ -209,10 +191,18 @@
 .bg-grainy-gradient {
   position: absolute;
   inset: 0;
-  z-index: 0;
   background-color: hsl(var(--background));
   background-image: 
     radial-gradient(ellipse at top left, hsl(var(--accent) / 0.15), transparent 50%),
     radial-gradient(ellipse at bottom right, hsl(var(--primary) / 0.15), transparent 50%);
   animation: pulse-slow 12s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.bg-grainy-gradient::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"><filter id="a" x="0" y="0" width="100%" height="100%"><feTurbulence baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23a)"/></svg>');
+    opacity: 0.025;
+    pointer-events: none;
 }
