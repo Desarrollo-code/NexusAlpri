@@ -8,8 +8,7 @@ interface DecorativeFolderProps {
   className?: string;
 }
 
-// Paletas de colores tonales vibrantes.
-// Cada objeto contiene un color de fondo y un color más oscuro para el patrón.
+// Paletas de colores tonales vibrantes ampliadas.
 const colorPalettes = [
     { background: 'hsl(210, 50%, 45%)', pattern: 'hsl(210, 50%, 40%)' }, // Azul
     { background: 'hsl(160, 50%, 40%)', pattern: 'hsl(160, 50%, 35%)' }, // Verde
@@ -17,6 +16,10 @@ const colorPalettes = [
     { background: 'hsl(30, 80%, 55%)',  pattern: 'hsl(30, 80%, 50%)' },  // Naranja
     { background: 'hsl(260, 45%, 50%)', pattern: 'hsl(260, 45%, 45%)' }, // Púrpura
     { background: 'hsl(180, 60%, 40%)', pattern: 'hsl(180, 60%, 35%)' }, // Turquesa
+    { background: 'hsl(340, 65%, 55%)', pattern: 'hsl(340, 65%, 50%)' }, // Rosa
+    { background: 'hsl(50, 90%, 50%)',  pattern: 'hsl(50, 90%, 45%)' },  // Amarillo
+    { background: 'hsl(290, 50%, 48%)', pattern: 'hsl(290, 50%, 43%)' }, // Magenta
+    { background: 'hsl(240, 60%, 60%)', pattern: 'hsl(240, 60%, 55%)' }, // Índigo
 ];
 
 
@@ -45,13 +48,37 @@ const patterns = [
     backgroundImage: `radial-gradient(${color} 1.2px, transparent 1.2px)`,
     backgroundSize: '15px 15px',
   }),
-   // Ondas (Waves) - Un patrón adicional para más variedad
+  // Ondas (Waves)
   (color: string) => ({
     backgroundImage: `
       radial-gradient(circle at 100% 50%, transparent 20%, ${color} 21%, ${color} 34%, transparent 35%, transparent),
       radial-gradient(circle at 0% 50%, transparent 20%, ${color} 21%, ${color} 34%, transparent 35%, transparent)
     `,
     backgroundSize: '30px 40px',
+  }),
+  // Zig-Zag
+  (color: string) => ({
+    backgroundImage: `
+      linear-gradient(135deg, ${color} 25%, transparent 25%), 
+      linear-gradient(225deg, ${color} 25%, transparent 25%)`,
+    backgroundSize: '20px 20px',
+  }),
+  // Chevrones (Chevron)
+  (color: string) => ({
+    backgroundImage: `
+      linear-gradient(45deg, ${color} 25%, transparent 25%, transparent 75%, ${color} 75%, ${color}),
+      linear-gradient(45deg, ${color} 25%, transparent 25%, transparent 75%, ${color} 75%, ${color})
+    `,
+    backgroundSize: '25px 25px',
+    backgroundPosition: '0 0, 12.5px 12.5px',
+  }),
+  // Cruces (Plus)
+  (color: string) => ({
+    backgroundImage: `
+      linear-gradient(${color} 1.5px, transparent 1.5px),
+      linear-gradient(to right, ${color} 1.5px, transparent 1.5px)
+    `,
+    backgroundSize: '15px 15px',
   }),
 ];
 
