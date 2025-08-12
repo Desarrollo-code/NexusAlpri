@@ -11,100 +11,86 @@
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 210 80% 55%; /* Azul Cian de la imagen */
+    --primary: 220 85% 55%; /* Azul Eléctrico */
     --primary-foreground: 0 0% 100%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 320 80% 55%; /* Magenta/Rosa de la imagen */
+    --accent: 330 90% 55%; /* Fucsia Neón */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 210 80% 55%;
+    --ring: 220 85% 55%;
     --radius: 0.75rem;
 
     /* Chart & Event Colors */
-    --chart-1: 210 80% 55%; /* Azul */
-    --chart-2: 320 80% 55%; /* Magenta */
-    --chart-3: 45 95% 55%;  /* Amarillo */
-    --chart-4: 160 70% 45%; /* Verde Menta (alternativo) */
-    --chart-5: 260 80% 65%; /* Púrpura (alternativo) */
+    --chart-1: hsl(var(--primary));
+    --chart-2: hsl(var(--accent));
+    --chart-3: 160 80% 50%;
+    --chart-4: 45 95% 55%;
+    --chart-5: 260 80% 65%;
     
-    /* Event Colors from user request */
-    --event-blue: hsl(210 80% 55%);
+    --event-blue: hsl(var(--primary));
     --event-green: hsl(140 70% 45%);
     --event-red: hsl(0 80% 55%);
     --event-orange: hsl(30 90% 55%);
-
-    /* Gauge Colors */
-    --gauge-green: hsl(120 80% 45%);
-    --gauge-yellow: hsl(45 90% 50%);
-    --gauge-red: hsl(0 80% 55%);
 
     /* Sidebar & Layout */
     --sidebar-foreground: 220 15% 70%;
     --sidebar-active-foreground: 0 0% 100%;
     --sidebar-accent-foreground: hsl(var(--primary));
-    --sidebar-background: 220 15% 15%;
-    --topbar-background: 220 15% 12%;
+    --sidebar-background: 225 20% 15%;
+    --topbar-background: 225 20% 12%;
     
-    /* Gradient for Top Bar */
-    --gradient-start: hsl(220, 80%, 55%);
-    --gradient-end: hsl(260, 80%, 60%);
+    --gradient-start: hsl(var(--primary));
+    --gradient-end: hsl(var(--accent));
   }
 
   .dark {
-    --background: 220 15% 10%; /* Negro Tinta (ligeramente azulado) */
+    --background: 225 15% 8%; /* Azul casi negro */
     --foreground: 210 40% 98%;
-    --card: 220 15% 15%;
+    --card: 225 15% 12%;
     --card-foreground: 210 40% 98%;
-    --popover: 220 15% 10%;
+    --popover: 225 15% 8%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 90% 65%; /* Azul Cian más brillante */
+    --primary: 220 90% 65%;
     --primary-foreground: 222 47% 11%;
-    --secondary: 217 32.6% 17.5%;
+    --secondary: 225 20% 18%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217 32.6% 17.5%;
+    --muted: 225 20% 18%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 320 90% 65%; /* Magenta más brillante */
-    --accent-foreground: 210 40% 98%;
+    --accent: 330 95% 65%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 32.6% 25%;
-    --input: 217 32.6% 25%;
-    --ring: 210 90% 65%;
+    --border: 225 15% 25%;
+    --input: 225 15% 20%;
+    --ring: 220 90% 65%;
     
-    /* Chart & Event Colors - Dark Theme */
-    --chart-1: 210 90% 65%;
-    --chart-2: 320 90% 65%;
-    --chart-3: 45 95% 60%;
-    --chart-4: 160 80% 60%;
+    /* Chart & Event Colors */
+    --chart-1: hsl(var(--primary));
+    --chart-2: hsl(var(--accent));
+    --chart-3: 160 80% 60%;
+    --chart-4: 45 95% 60%;
     --chart-5: 260 90% 75%;
-
-    /* Event Colors from user request - Dark */
-    --event-blue: hsl(210 90% 65%);
+    
+    --event-blue: hsl(var(--primary));
     --event-green: hsl(140 80% 60%);
     --event-red: hsl(0 80% 65%);
     --event-orange: hsl(30 90% 60%);
 
-    /* Gauge Colors - Dark */
-    --gauge-green: hsl(120 70% 55%);
-    --gauge-yellow: hsl(45 80% 55%);
-    --gauge-red: hsl(0 70% 60%);
-    
     /* Sidebar & Layout */
-    --sidebar-foreground: 210 20% 75%;
+    --sidebar-foreground: 220 20% 75%;
     --sidebar-active-foreground: 0 0% 100%;
     --sidebar-accent-foreground: hsl(var(--primary));
-    --sidebar-background: 220 15% 12%;
-    --topbar-background: 220 15% 10%;
-
-    /* Gradient for Top Bar */
-    --gradient-start: hsl(220, 80%, 50%);
-    --gradient-end: hsl(260, 80%, 55%);
+    --sidebar-background: 225 15% 12%;
+    --topbar-background: 225 15% 8%;
+    
+    --gradient-start: hsl(var(--primary));
+    --gradient-end: hsl(var(--accent));
   }
 }
 
@@ -119,8 +105,6 @@
 }
 
 @layer components {
-  /* ... (otros componentes se mantienen igual) ... */
-
   .btn-primary-gradient {
     background-size: 200% auto;
     @apply bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-500 hover:shadow-primary/40 hover:bg-right;

@@ -1,4 +1,3 @@
-
 // src/components/layout/top-bar.tsx
 'use client';
 
@@ -83,7 +82,7 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-16 px-4 shrink-0",
-            "bg-gradient-to-b from-gradient-start to-gradient-end text-primary-foreground shadow-md sticky top-0 z-40"
+            "bg-card border-b sticky top-0 z-40"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2">
@@ -92,7 +91,7 @@ export const TopBar = () => {
                         onClick={toggleSidebar}
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 text-primary-foreground hover:bg-white/10"
+                        className="h-9 w-9 text-foreground"
                     >
                         <ChevronsLeft className="h-5 w-5" />
                     </Button>
@@ -104,7 +103,7 @@ export const TopBar = () => {
             <div className="flex items-center gap-3">
                  <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative text-primary-foreground hover:bg-white/10">
+                        <Button variant="ghost" size="icon" className="relative text-foreground">
                             <Bell className="h-5 w-5"/>
                             {unreadCount > 0 && (
                                 <span className="absolute top-1 right-1 flex h-4 w-4">
@@ -146,7 +145,7 @@ export const TopBar = () => {
                          </div>
                     </PopoverContent>
                  </Popover>
-                <Separator orientation="vertical" className="h-8 bg-white/20" />
+                <Separator orientation="vertical" className="h-8" />
                 <UserAvatarDropdown />
             </div>
         </div>

@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { Loader2 } from 'lucide-react';
+import { ThemeProvider } from '@/components/theme-provider';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
@@ -45,26 +46,28 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
-        <Sidebar>
-            <SidebarHeader />
-            <SidebarContent />
-            <SidebarFooter />
-        </Sidebar>
-        <div
-            className={cn(
-            "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
-            !isMobile && (isCollapsed ? "ml-20" : "ml-72")
-            )}
-        >
-            <TopBar />
-            <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative bg-muted/30">
-            <div className="relative z-10">
-                {children}
-            </div>
-            </main>
-        </div>
-    </div>
+    <ThemeProvider>
+      <div className="flex h-screen bg-background text-foreground">
+          <Sidebar>
+              <SidebarHeader />
+              <SidebarContent />
+              <SidebarFooter />
+          </Sidebar>
+          <div
+              className={cn(
+              "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
+              !isMobile && (isCollapsed ? "ml-20" : "ml-72")
+              )}
+          >
+              <TopBar />
+              <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative bg-muted/30">
+              <div className="relative z-10">
+                  {children}
+              </div>
+              </main>
+          </div>
+      </div>
+    </ThemeProvider>
   );
 }
 

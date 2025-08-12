@@ -26,13 +26,13 @@ export function PublicTopBar() {
   return (
     <header className={cn(
         "fixed md:relative top-0 left-0 right-0 flex items-center justify-between px-4 lg:px-6 h-20 z-40",
-        "bg-card/80 dark:bg-background/80 backdrop-blur-sm border-b"
+        "bg-background/80 backdrop-blur-sm border-b"
     )}>
       <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
-         <div className="w-10 h-10 bg-card dark:bg-white/20 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg">
+         <div className="w-10 h-10 bg-card flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg">
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo"/>
         </div>
-        <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary dark:text-foreground">
+        <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary">
            {settings?.platformName || 'NexusAlpri'}
         </span>
       </Link>
