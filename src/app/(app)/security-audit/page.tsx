@@ -111,7 +111,9 @@ export default function SecurityAuditPage() {
     const getInitials = (name?: string | null) => {
         if (!name) return '??';
         const names = name.split(' ');
-        if (names.length > 1 && names[0] && names[names.length - 1]) return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+        if (names.length > 1 && names[0] && names[names.length - 1]) {
+          return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+        }
         if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
         return name.substring(0, 2).toUpperCase();
     };

@@ -33,7 +33,6 @@ import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import type { AdminDashboardStats, Course } from '@/types';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { getInitials } from '@/lib/security-log-utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { format, parseISO } from 'date-fns';
@@ -238,6 +237,19 @@ function CourseRankingCard({ title, courses, metric, icon: Icon, unit = '' }: { 
 }
 
 function UserRankingCard({ title, users, metric, icon: Icon, unit = '' }: { title: string; users: any[]; metric: string; icon: React.ElementType; unit?: string }) {
+    
+    const getInitials = (name?: string | null): string => {
+      if (!name) return '??';
+      const names = name.split(' ');
+      if (names.length > 1 && names[0] && names[names.length - 1]) {
+        return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+      }
+      if (names.length === 1 && names[0]) {
+        return names[0].substring(0, 2).toUpperCase();
+      }
+      return name.substring(0, 2).toUpperCase();
+    };
+
     return (
         <Card className="card-border-animated">
             <CardHeader>
