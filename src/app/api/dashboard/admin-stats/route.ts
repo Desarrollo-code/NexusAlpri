@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
             prisma.course.findMany({ where: { createdAt: { gte: thirtyDaysAgo } }, select: { createdAt: true } }),
             prisma.course.findMany({ where: { publicationDate: { not: null, gte: thirtyDaysAgo } }, select: { publicationDate: true } }),
             prisma.enrollment.findMany({ where: { enrolledAt: { gte: thirtyDaysAgo } }, select: { enrolledAt: true } }),
-            prisma.courseProgress.findMany({ select: { enrollment: { select: { userId: true, courseId: true } }, progressPercentage: true } }),
+            prisma.courseProgress.findMany({ where: { enrollment: { userId: { not: null } } }, select: { enrollment: { select: { userId: true, courseId: true } }, progressPercentage: true } }),
             prisma.course.findMany({ where: { status: 'PUBLISHED' }, select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } } }),
             prisma.user.findMany({ where: { role: 'STUDENT' }, select: { id: true, name: true, avatar: true, _count: { select: { enrollments: true } } }, orderBy: { enrollments: { _count: 'desc' } }, take: 5 }),
             prisma.user.findMany({ where: { role: { in: ['INSTRUCTOR', 'ADMINISTRATOR'] } }, select: { id: true, name: true, avatar: true, _count: { select: { courses: true } } }, orderBy: { courses: { _count: 'desc' } }, take: 5 }),

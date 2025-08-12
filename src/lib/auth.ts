@@ -1,4 +1,3 @@
-
 // src/lib/auth.ts
 import 'server-only';
 import { cookies } from 'next/headers';
@@ -59,18 +58,18 @@ export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => 
 });
 
 // ================================
-// Alias para compatibilidad - FIX: Export this function
-// ================================
-export async function getCurrentUser(): Promise<PrismaUser | null> {
-  return await getUserFromSession();
-}
-
-// ================================
 // Cerrar sesión
 // ================================
 export async function deleteSession() {
   const cookieStore = cookies();
   cookieStore.set('session', '', { expires: new Date(0), path: '/' });
+}
+
+// ================================
+// Alias para compatibilidad - FIX: Export this function
+// ================================
+export async function getCurrentUser(): Promise<PrismaUser | null> {
+  return await getUserFromSession();
 }
 
 // ================================
