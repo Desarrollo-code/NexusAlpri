@@ -129,6 +129,12 @@
   to { --angle: 360deg; }
 }
 
+@keyframes pulse-slow {
+    50% {
+        opacity: 0.8;
+    }
+}
+
 .card-border-animated {
   position: relative;
   border: 2px solid transparent; 

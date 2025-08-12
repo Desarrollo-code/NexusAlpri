@@ -9,7 +9,6 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    // This div now defaults to the light theme for all public pages.
     <div className="dark">
       <div className="flex flex-col min-h-screen bg-background relative isolate">
         <div className="bg-grainy-gradient" />
