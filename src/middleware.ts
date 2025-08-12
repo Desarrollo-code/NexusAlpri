@@ -1,4 +1,3 @@
-
 // src/middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
@@ -15,7 +14,6 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/_next') ||
     pathname.startsWith('/static') ||
     pathname.startsWith('/uploads') ||
-    pathname.startsWith('/videos') || // <-- CORRECCIÓN: Añadido para permitir videos
     pathname.match(/\.(.*)$/)
   ) {
     return NextResponse.next();

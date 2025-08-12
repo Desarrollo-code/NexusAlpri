@@ -186,15 +186,13 @@
   animation: bloom 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Background gradient for public pages */
-.bg-grainy-gradient::before {
-    content: '';
+.bg-grainy-gradient {
     position: absolute;
     inset: 0;
+    z-index: -10;
     background-image: 
         radial-gradient(ellipse 80% 80% at 50% -20%, hsl(var(--primary) / 0.3), transparent),
         radial-gradient(ellipse 80% 80% at 80% 40%, hsl(var(--accent) / 0.2), transparent),
         radial-gradient(ellipse 80% 80% at 20% 60%, hsl(var(--primary) / 0.2), transparent);
-    opacity: 0.5;
-    z-index: 0;
+    animation: pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

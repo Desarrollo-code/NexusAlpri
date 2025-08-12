@@ -10,19 +10,9 @@ export default function PublicLayout({
 }) {
   return (
     // This div now defaults to the light theme for all public pages.
-    <div>
+    <div className="light">
       <div className="flex flex-col min-h-screen bg-background relative isolate">
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-          className="absolute top-0 left-0 w-full h-full object-cover -z-20"
-          src="/videos/background.mp4"
-        >
-          Tu navegador no soporta el tag de video.
-        </video>
-        <div className="absolute inset-0 bg-black/50 -z-10" />
+        <div className="bg-grainy-gradient" />
         <PublicTopBar />
         <main className="flex-1 flex flex-col items-center justify-center z-10">
           {children}
