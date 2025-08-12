@@ -43,7 +43,7 @@ import { DecorativeHeaderBackground } from '@/components/layout/decorative-heade
 
 const ProfileCardBackground = () => (
     <div className="card__img">
-      <DecorativeHeaderBackground />
+      <div className="absolute top-0 left-0 w-full h-full bg-sidebar-background" />
     </div>
 );
 
@@ -92,11 +92,15 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  const getInitials = (name?: string | null) => {
+  const getInitials = (name?: string | null): string => {
     if (!name) return '??';
     const names = name.split(' ');
-    if (names.length > 1 && names[0] && names[names.length - 1]) return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-    if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
+    if (names.length > 1 && names[0] && names[names.length - 1]) {
+      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    }
+    if (names.length === 1 && names[0]) {
+      return names[0].substring(0, 2).toUpperCase();
+    }
     return name.substring(0, 2).toUpperCase();
   };
   
@@ -129,24 +133,29 @@ export default function ProfilePage() {
         hasChanges = true;
       }
       
-      const file = avatarInputRef.current?.files?.[0];
-      if (file && avatarPreview !== user.avatar) {
-          setIsUploadingAvatar(true);
-          setUploadProgress(0);
-          const formData = new FormData();
-          formData.append('file', file);
-          try {
-              const { url } = await uploadWithProgress('/api/upload/avatar', formData, setUploadProgress);
-              updatedUserData.avatar = url;
-              hasChanges = true;
-          } catch(e) {
-              toast({ title: 'Error de Subida', description: (e as Error).message, variant: 'destructive' });
-              setIsSaving(false);
-              setIsUploadingAvatar(false);
-              return;
-          } finally {
-              setIsUploadingAvatar(false);
-          }
+      if (avatarPreview && avatarPreview !== user.avatar) {
+        const file = avatarInputRef.current?.files?.[0];
+        // Check if there's a new file object, or if the preview was set by other means (like a future crop feature)
+        if (file) {
+            setIsUploadingAvatar(true);
+            setUploadProgress(0);
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+                const { url } = await uploadWithProgress('/api/upload/avatar', formData, setUploadProgress);
+                updatedUserData.avatar = url;
+                hasChanges = true;
+            } catch(e) {
+                toast({ title: 'Error de Subida', description: (e as Error).message, variant: 'destructive' });
+                setIsSaving(false);
+                setIsUploadingAvatar(false);
+                return;
+            } finally {
+                setIsUploadingAvatar(false);
+            }
+        } else if (avatarPreview.startsWith('blob:')) {
+             // This logic would be for pre-cropped images if implemented
+        }
       }
 
       if (!hasChanges) {
@@ -312,11 +321,11 @@ export default function ProfilePage() {
                     name="mobile-avatar-upload"
                 />
             </div>
-            <h2 className="text-xl font-bold mt-2">{user.name}</h2>
-            <div className="card__subtitle mt-2">
+            <h2 className="text-xl font-bold mt-4">{user.name}</h2>
+            <div className="card__subtitle mt-2 space-y-2">
                 <Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'default' : 'secondary'} className="capitalize mx-auto">{getRoleInSpanish(user.role)}</Badge>
+                <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><Mail className="h-4 w-4"/> {user.email}</p>
             </div>
-            <p className="text-sm text-muted-foreground flex items-center justify-center gap-2 mt-4"><Mail className="h-4 w-4 text-primary"/> {user.email}</p>
         </div>
      </div>
   );
@@ -338,10 +347,10 @@ export default function ProfilePage() {
               )}
             <div id="info-card" className="w-full">
                 <Card className="card-border-animated">
-                    <CardHeader><CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-primary"/>Información Personal</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>Información Personal</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
                       <div><Label htmlFor="fullNameMobile">Nombre Completo</Label><Input id="fullNameMobile" name="fullNameMobile" value={editableName} onChange={(e) => setEditableName(e.target.value)} disabled={isSaving || isUploadingAvatar}/></div>
-                      <Button onClick={handleSaveChanges} disabled={isSaving || isUploadingAvatar} className="w-full">
+                      <Button onClick={handleSaveChanges} disabled={isSaving || isUploadingAvatar} className="w-full" variant="primary-gradient">
                           {isSaving || isUploadingAvatar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                           {isSaving ? 'Guardando...' : (isUploadingAvatar ? 'Subiendo...' : 'Guardar Información')}
                       </Button>
@@ -350,7 +359,7 @@ export default function ProfilePage() {
             </div>
              <div id="security-card" className="w-full">
                  <Card className="card-border-animated">
-                    <CardHeader><CardTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/>Seguridad</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>Seguridad</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
                        <div>
                           <h4 className="font-semibold mb-2">2FA</h4>
@@ -404,18 +413,18 @@ export default function ProfilePage() {
                       <p className="text-xs mt-1 text-muted-foreground">{uploadProgress}%</p>
                     </div>
                   )}
-                  <h2 className="text-xl font-bold mt-2">{user.name}</h2>
-                  <div className="card__subtitle mt-2">
-                    <Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'default' : 'secondary'} className="capitalize mx-auto">{getRoleInSpanish(user.role)}</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground flex items-center justify-center gap-2 mt-4"><Mail className="h-4 w-4 text-primary"/> {user.email}</p>
+                  <h2 className="text-xl font-bold mt-4">{user.name}</h2>
+                   <div className="card__subtitle mt-2 space-y-2">
+                        <Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'default' : 'secondary'} className="capitalize mx-auto">{getRoleInSpanish(user.role)}</Badge>
+                        <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><Mail className="h-4 w-4"/> {user.email}</p>
+                    </div>
               </div>
             </div>
     
             <div className="lg:col-span-2 space-y-6">
               <Card className="card-border-animated">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-primary"/>Información Personal</CardTitle>
+                  <CardTitle>Información Personal</CardTitle>
                   <CardDescription>Estos datos son visibles en tu perfil público (si aplica).</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -435,7 +444,7 @@ export default function ProfilePage() {
                     <p className="text-xs text-muted-foreground mt-1">El correo electrónico no se puede cambiar desde aquí.</p>
                   </div>
                    <div className="pt-2">
-                      <Button onClick={handleSaveChanges} disabled={isSaving || isUploadingAvatar} className="w-full">
+                      <Button onClick={handleSaveChanges} disabled={isSaving || isUploadingAvatar} className="w-full" variant="primary-gradient">
                           {isSaving || isUploadingAvatar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                           {isSaving ? 'Guardando...' : (isUploadingAvatar ? 'Subiendo...' : 'Guardar Información')}
                       </Button>
@@ -445,7 +454,7 @@ export default function ProfilePage() {
               
               <Card className="card-border-animated">
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/>Seguridad de la Cuenta</CardTitle>
+                    <CardTitle>Seguridad de la Cuenta</CardTitle>
                     <CardDescription>Gestiona la seguridad de tu acceso a NexusAlpri.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">

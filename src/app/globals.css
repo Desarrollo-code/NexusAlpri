@@ -17,7 +17,7 @@
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
-    --accent: 180 90% 45%; /* Cian Vibrante */
+    --accent: 170 80% 45%; /* Verde Azulado (Teal) */
     --accent-foreground: 210 20% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
@@ -38,13 +38,12 @@
     --event-red: hsl(var(--destructive));
     --event-orange: hsl(30, 90%, 55%);
 
-    /* Sidebar Variables for light theme */
-    --sidebar-background: 240 50% 98%; /* Lavanda muy claro */
-    --sidebar-foreground: 240 10% 20%; /* Texto oscuro */
-    --sidebar-muted-foreground: 240 10% 45%;
-    --sidebar-accent: hsl(330, 90%, 75%); /* Rosa Pastel */
-    --sidebar-accent-foreground: hsl(0, 0%, 100%);
-    --sidebar-border: 240 10% 90%;
+    /* Sidebar Variables for both themes */
+    --sidebar-background: 220 40% 10%; /* Azul Marino Oscuro */
+    --sidebar-foreground: 45 80% 70%;  /* Dorado Brillante (para texto activo/hover) */
+    --sidebar-muted-foreground: 45 50% 55%; /* Dorado Tenue (para texto inactivo) */
+    --sidebar-accent: hsl(45, 80%, 70%); /* Mismo que el foreground para el borde activo */
+    --sidebar-border: 220 40% 15%; /* Borde azul ligeramente más claro */
   }
  
   .dark {
@@ -60,7 +59,7 @@
     --secondary-foreground: 210 20% 98%;
     --muted: 222 47% 11%;
     --muted-foreground: 215 20% 65%;
-    --accent: 180 90% 45%; /* Cian/Teal Vibrante */
+    --accent: 170 80% 45%; /* Verde Azulado (Teal) */
     --accent-foreground: 210 20% 98%;
     --destructive: 0 70% 55%;
     --destructive-foreground: 210 20% 98%;
@@ -81,12 +80,12 @@
     --event-red: hsl(var(--destructive));
     --event-orange: hsl(30, 90%, 55%);
 
-    /* Sidebar Variables for dark theme */
-    --sidebar-background: 220 40% 10%; /* Azul Marino Oscuro */
-    --sidebar-foreground: 45 80% 70%;  /* Dorado Brillante (para texto activo/hover) */
-    --sidebar-muted-foreground: 45 50% 55%; /* Dorado Tenue (para texto inactivo) */
-    --sidebar-accent: hsl(45, 80%, 70%); /* Mismo que el foreground para el borde activo */
-    --sidebar-border: 220 40% 15%; /* Borde azul ligeramente más claro */
+    /* Sidebar Variables for dark theme - same as light for consistency */
+    --sidebar-background: 220 40% 10%; 
+    --sidebar-foreground: 45 80% 70%; 
+    --sidebar-muted-foreground: 45 50% 55%;
+    --sidebar-accent: hsl(45, 80%, 70%); 
+    --sidebar-border: 220 40% 15%; 
   }
 }
  
@@ -126,16 +125,13 @@
     @apply w-full max-w-sm mx-auto bg-card rounded-2xl shadow-lg overflow-hidden text-center;
   }
   .profile-card .card__img {
-    @apply h-24 w-full relative;
+    @apply h-28 w-full relative;
   }
   .profile-card .card__avatar {
-    @apply relative w-32 h-32 mx-auto -mt-16;
+    @apply relative w-32 h-32 mx-auto -mt-20;
   }
   .profile-card .card__avatar .avatar {
      @apply w-full h-full rounded-full border-4 border-background;
-  }
-  .profile-card .card__title {
-    @apply text-xl font-bold mt-2 text-foreground;
   }
   .profile-card .card__subtitle {
     @apply text-center text-sm text-muted-foreground mt-2;
