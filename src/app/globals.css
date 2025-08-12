@@ -122,6 +122,25 @@
   .animated-underline:hover::after {
     @apply scale-x-100 origin-bottom-left;
   }
+  
+  .profile-card {
+    @apply w-full max-w-sm mx-auto bg-card rounded-2xl shadow-lg overflow-hidden;
+  }
+  .profile-card .card__img {
+    @apply h-24 w-full relative;
+  }
+  .profile-card .card__avatar {
+    @apply relative w-32 h-32 mx-auto -mt-16;
+  }
+  .profile-card .card__avatar .avatar {
+     @apply w-full h-full rounded-full border-4 border-background;
+  }
+  .profile-card .card__title {
+    @apply text-center text-xl font-bold mt-2;
+  }
+  .profile-card .card__subtitle {
+    @apply text-center text-sm text-muted-foreground mt-1;
+  }
 }
 
 
