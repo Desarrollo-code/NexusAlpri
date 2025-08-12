@@ -83,7 +83,7 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-16 px-4 shrink-0",
-            "bg-gradient-to-r from-gradient-start to-gradient-end text-primary-foreground shadow-md sticky top-0 z-40"
+            "bg-gradient-to-b from-gradient-start to-gradient-end text-primary-foreground shadow-md sticky top-0 z-40"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2">
