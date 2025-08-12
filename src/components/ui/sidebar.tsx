@@ -107,8 +107,11 @@ export const SidebarHeader = () => {
       isCollapsed ? 'justify-center' : 'justify-between'
     )}>
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
-        <div className="w-16 h-16 bg-card dark:bg-white/20 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg">
-          <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={60} height={60} data-ai-hint="logo"/>
+        <div className={cn(
+            "flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg transition-all duration-300",
+            isCollapsed ? "w-12 h-12" : "w-16 h-16 bg-card dark:bg-white/20"
+        )}>
+          <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={isCollapsed ? 48 : 60} height={isCollapsed ? 48 : 60} data-ai-hint="logo"/>
         </div>
         {!isCollapsed && (
             <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary dark:text-foreground transition-opacity duration-300")}>
