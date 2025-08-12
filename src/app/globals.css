@@ -57,55 +57,55 @@
   }
  
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 210 40% 98%;
+    --background: 222 47% 11%; /* Slate 900 */
+    --foreground: 210 40% 98%; /* Slate 50 */
 
-    --card: 222 84% 8%;
+    --card: 222 47% 14%; /* Slate 850, a bit lighter */
     --card-foreground: 210 40% 98%;
  
-    --popover: 222 84% 4.9%;
+    --popover: 222 47% 8%; /* Darker for popovers */
     --popover-foreground: 210 40% 98%;
  
-    --primary: 25 95% 53%; /* Naranja cálido */
+    --primary: 217 91% 60%; /* Azul Vibrante */
     --primary-foreground: 210 40% 98%;
  
-    --secondary: 217 33% 17%;
+    --secondary: 215 28% 17%; /* Slate 800 */
     --secondary-foreground: 210 40% 98%;
  
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 215 28% 17%;
+    --muted-foreground: 215 20% 65%; /* Slate 400 */
  
-    --accent: 320 85% 65%; /* Magenta */
+    --accent: 330 85% 65%; /* Rosa Eléctrico */
     --accent-foreground: 210 40% 98%;
  
-    --destructive: 0 63% 31%;
+    --destructive: 0 63% 45%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217 33% 22%;
-    --input: 217 33% 17%;
-    --ring: 25 95% 53%;
+    --border: 215 28% 20%; /* Slate 750 */
+    --input: 215 28% 17%;
+    --ring: 217 91% 60%;
     
     --radius: 1rem;
 
     /* Chart & Event Colors for Dark Theme */
     --chart-1: hsl(var(--primary));
-    --chart-2: 30 90% 55%;
-    --chart-3: 340 86% 76%;
-    --chart-4: 140 34% 66%;
-    --chart-5: 280 80% 65%;
+    --chart-2: hsl(var(--accent));
+    --chart-3: 30 90% 55%;
+    --chart-4: 140 40% 55%;
+    --chart-5: 190 80% 60%;
     
-    --event-blue: hsl(210 80% 55%);
-    --event-green: hsl(130 70% 45%);
-    --event-red: hsl(350 85% 60%);
-    --event-orange: hsl(var(--primary));
+    --event-blue: hsl(190 80% 60%);
+    --event-green: hsl(140 40% 55%);
+    --event-red: hsl(0 75% 55%);
+    --event-orange: hsl(30 90% 55%);
 
     /* Sidebar Variables for dark theme */
-    --sidebar-background: 224 71% 4%;
+    --sidebar-background: 222 47% 9%; /* Slightly darker than main bg */
     --sidebar-foreground: 210 40% 92%;
     --sidebar-muted-foreground: 215 20% 55%;
     --sidebar-accent: hsl(var(--primary));
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: 217 33% 12%;
+    --sidebar-border: 217 33% 15%;
   }
 }
  
@@ -117,6 +117,31 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .btn-primary-gradient {
+    background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
+    color: hsl(var(--primary-foreground));
+    transition: all 0.3s ease;
+    background-size: 150% 100%;
+  }
+  .btn-primary-gradient:hover {
+      background-position: right center;
+      box-shadow: 0 4px 15px 0 hsl(var(--primary) / 0.3);
+  }
+
+  .animated-underline {
+    @apply relative inline-block;
+  }
+  .animated-underline::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-[1px] bg-primary transform scale-x-0 origin-bottom-right transition-transform duration-300 ease-out;
+  }
+  .animated-underline:hover::after {
+    @apply scale-x-100 origin-bottom-left;
+  }
+}
+
 
 @property --angle {
   syntax: '<angle>';
@@ -137,29 +162,18 @@
 
 .card-border-animated {
   position: relative;
-  border: 2px solid transparent; 
+  border: 1px solid transparent; 
 }
 
-.card-border-animated:hover::before {
-  content: '';
-  position: absolute;
-  top: -2px; left: -2px; right: -2px; bottom: -2px;
-  border-radius: calc(var(--radius) - 2px); 
-  background: conic-gradient(from var(--angle), hsl(var(--primary) / 0.8), hsl(var(--accent) / 0.8), hsl(var(--primary) / 0.8));
-  animation: spin-slow 4s linear infinite;
-  z-index: -1;
+.dark .card-border-animated:hover {
+  border-color: hsl(var(--primary) / 0.3);
+  box-shadow: 0 0 20px hsl(var(--primary) / 0.1);
 }
 
-.btn-primary-gradient {
-    background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
-    color: hsl(var(--primary-foreground));
-    transition: all 0.3s ease;
-    background-size: 150% 100%;
+.light .card-border-animated:hover {
+  border-color: hsl(var(--primary) / 0.5);
 }
-.btn-primary-gradient:hover {
-    background-position: right center;
-    box-shadow: 0 4px 15px 0 hsl(var(--primary) / 0.3);
-}
+
 
 .thin-scrollbar {
   scrollbar-width: thin;
@@ -195,12 +209,10 @@
 .bg-grainy-gradient {
   position: absolute;
   inset: 0;
-  z-index: -10;
+  z-index: 0;
   background-color: hsl(var(--background));
   background-image: 
-    radial-gradient(ellipse at top left, hsl(48, 100%, 70%, 0.5), transparent 50%),
-    radial-gradient(ellipse at top right, hsl(199, 100%, 80%, 0.4), transparent 50%),
-    radial-gradient(ellipse at bottom right, hsl(260, 100%, 80%, 0.4), transparent 50%),
-    radial-gradient(ellipse at bottom left, hsl(240, 100%, 70%, 0.5), transparent 50%);
+    radial-gradient(ellipse at top left, hsl(var(--accent) / 0.15), transparent 50%),
+    radial-gradient(ellipse at bottom right, hsl(var(--primary) / 0.15), transparent 50%);
   animation: pulse-slow 12s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
