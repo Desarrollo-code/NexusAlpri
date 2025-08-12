@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React from 'react';
@@ -102,7 +101,7 @@ export function CourseCard({
   const mainLinkHref = viewMode === 'management' ? `/manage-courses/${course.id}/edit` : `/courses/${course.id}`;
 
   return (
-    <Card className="group flex flex-col h-full overflow-hidden transition-transform duration-300 ease-in-out hover:-translate-y-2 card-border-animated">
+    <Card className="group flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out">
         <Link href={mainLinkHref}>
             <div className="aspect-video w-full relative overflow-hidden">
                 <Image

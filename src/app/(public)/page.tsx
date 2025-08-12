@@ -11,19 +11,19 @@ const features = [
     icon: <Zap className="h-8 w-8" />,
     title: 'Aprendizaje Interactivo',
     description: 'Crea cursos con videos, textos y quizzes dinámicos para mantener a tus equipos enganchados.',
-    color: 'hsl(var(--primary))', 
+    gradient: 'from-primary/70 to-accent/70',
   },
   {
     icon: <BarChart className="h-8 w-8" />,
     title: 'Seguimiento Automatizado',
     description: 'El progreso se registra automáticamente, permitiéndote enfocarte en el contenido y no en el papeleo.',
-    color: 'hsl(var(--accent))',
+    gradient: 'from-accent/70 to-primary/70',
   },
   {
     icon: <ShieldCheck className="h-8 w-8" />,
     title: 'Seguridad y Roles',
     description: 'Gestiona permisos detallados por rol (Estudiante, Instructor, Admin) y protege tu contenido.',
-    color: 'hsl(var(--primary) / 0.7)',
+    gradient: 'from-primary/70 via-accent/70 to-primary/70',
   },
 ];
 
@@ -122,23 +122,24 @@ export default function LandingPage() {
                 </div>
                 <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3 lg:gap-8">
                    {features.map((feature, index) => (
-                     <Card 
-                        key={index} 
-                        className="text-center h-full border-2 transition-all hover:shadow-xl hover:-translate-y-2 bg-card/50 backdrop-blur-sm card-border-animated"
+                     <div 
+                        key={index}
+                        className={cn(
+                          "relative rounded-2xl p-8 text-center h-full transition-all duration-300 overflow-hidden",
+                          "bg-card text-card-foreground shadow-lg hover:shadow-xl",
+                          "bg-gradient-to-br",
+                          feature.gradient
+                        )}
                       >
-                       <CardHeader>
-                         <div 
-                           className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4"
-                           style={{ color: feature.color, backgroundColor: `${feature.color}1A` }}
-                          >
+                       <div className="absolute inset-0 bg-black/10"></div>
+                       <div className="relative z-10 flex flex-col items-center justify-center h-full text-white">
+                         <div className="mb-4 text-white/80">
                             {feature.icon}
                          </div>
-                         <CardTitle>{feature.title}</CardTitle>
-                       </CardHeader>
-                       <CardContent>
-                         <p className="text-muted-foreground">{feature.description}</p>
-                       </CardContent>
-                     </Card>
+                         <h3 className="text-2xl font-bold font-headline mb-2">{feature.title}</h3>
+                         <p className="text-white/70">{feature.description}</p>
+                       </div>
+                     </div>
                    ))}
                 </div>
             </div>
