@@ -15,7 +15,6 @@ export async function GET(req: NextRequest) {
     const totalUsersCount = await prisma.user.count(); // Moved outside transaction
     const totalCoursesCount = await prisma.course.count(); // Moved outside transaction
 
-    const [
       // totalPublishedCoursesCount, // Removed from destructuring
  totalEnrollmentsResult,
       recentLoginsCount,
@@ -78,7 +77,7 @@ export async function GET(req: NextRequest) {
         orderBy: { courses: { _count: 'desc' } },
         take: 5
  ] = await prisma.$transaction([
- // Agrupados (groupBy) — usar _all para contar por grupo
+      // Agrupados (groupBy) — usar _all para contar por grupo
       prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
       prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
 
@@ -87,6 +86,20 @@ export async function GET(req: NextRequest) {
         where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } }
       }),
 
+      // Nuevos usuarios en los últimos 7 días (ajusta el campo si tu usuario tiene otro nombre)
+      prisma.user.count({
+        where: { registeredDate: { gte: sevenDaysAgo } }
+      }),
+
+      // Datos para series temporales / gráficas (solo campos necesarios)
+      prisma.user.findMany({
+        where: { registeredDate: { gte: sevenDaysAgo } },
+        select: { registeredDate: true }
+      }),
+      prisma.course.findMany({
+        where: { createdAt: { gte: thirtyDaysAgo } },
+        select: { createdAt: true }
+      }),
       })
     ]);
 
