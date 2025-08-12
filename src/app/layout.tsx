@@ -55,14 +55,14 @@ export default function RootLayout({
                 </TitleProvider>
             </AuthProvider>
         </ThemeProvider>
-         <div className="fixed bottom-8 right-2 z-50 pointer-events-none">
+         <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
             <Image
-                src="/uploads/images/watermark-alprigrama.png"
-                alt="NexusAlpri Watermark"
-                width={50}
-                height={50}
+                src="/uploads/images/alprigrama_watermark.png"
+                alt="Alprigrama Watermark"
+                width={80}
+                height={80}
                 className="opacity-40"
-                data-ai-hint="logo"
+                data-ai-hint="logo company"
                 priority
                 style={{ width: 'auto', height: 'auto' }}
             />
