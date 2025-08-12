@@ -1,3 +1,4 @@
+
 import 'server-only';
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
@@ -79,6 +80,7 @@ export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => 
     return null;
   }
 });
+
 
 export async function getCurrentUser() {
     return await getUserFromSession();
