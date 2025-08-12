@@ -4,8 +4,8 @@
 import type { User, PlatformSettings } from '@/types';
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { ColorfulLoader } from '@/components/ui/colorful-loader';
 
 interface AuthContextType {
   user: User | null;
@@ -150,8 +150,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <ColorfulLoader />
       </div>
     );
   }
