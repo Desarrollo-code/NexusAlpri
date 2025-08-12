@@ -26,25 +26,25 @@ export function PublicTopBar() {
   return (
     <header className={cn(
         "fixed md:relative top-0 left-0 right-0 flex items-center justify-between px-4 lg:px-6 h-20 z-40",
-        "bg-background/80 backdrop-blur-sm border-b"
+        "bg-transparent backdrop-blur-sm border-b border-white/10"
     )}>
       <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
          <div className="w-10 h-10 bg-card flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg">
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={50} height={50} data-ai-hint="logo"/>
         </div>
-        <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary">
+        <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-foreground">
            {settings?.platformName || 'NexusAlpri'}
         </span>
       </Link>
       
-      <nav className="hidden md:flex items-center gap-2 p-2 rounded-full bg-card/80 backdrop-blur-sm border">
+      <nav className="hidden md:flex items-center gap-2 p-2 rounded-full bg-foreground/5 backdrop-blur-sm border border-foreground/10">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
              <Button key={item.href} variant="ghost" asChild className={cn(
                  "rounded-full transition-colors",
-                 "text-muted-foreground hover:bg-muted/50 hover:text-primary",
-                 isActive && "text-primary"
+                 "text-foreground/70 hover:bg-foreground/10 hover:text-foreground",
+                 isActive && "text-foreground bg-foreground/10"
              )}>
                 <Link href={item.href}>
                     <item.icon className="mr-2 h-4 w-4" />
@@ -55,7 +55,7 @@ export function PublicTopBar() {
         })}
       </nav>
       
-      <Button asChild className="hidden md:flex">
+      <Button asChild className="hidden md:flex btn-primary-gradient">
         <Link href="/sign-in">
             <LogIn className="mr-2 h-4 w-4"/>
             Acceder

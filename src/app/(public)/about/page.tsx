@@ -16,7 +16,7 @@ export default function AboutPage() {
   return (
     <>
         <section className="w-full py-12 md:py-24 lg:py-32 bg-grainy-gradient">
-          <div className="container px-4 md:px-6">
+          <div className="container px-4 md:px-6 relative z-10">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
               <div className="space-y-4">
                 <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary font-semibold">
@@ -41,7 +41,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="w-full py-12 md:py-24 lg:py-32">
+        <section className="w-full py-12 md:py-24 relative z-10">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
@@ -56,7 +56,7 @@ export default function AboutPage() {
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3 lg:max-w-none mt-12">
               {techStack.map((tech) => (
-                <Card key={tech.name} className="hover:border-primary/50 transition-colors">
+                <Card key={tech.name} className="hover:border-primary/50 transition-colors bg-card/50 backdrop-blur-sm">
                   <CardHeader className="flex flex-row items-center gap-4">
                     <div className={`bg-primary/10 p-3 rounded-full ${tech.color}`}>
                         {React.cloneElement(tech.icon, { className: "h-6 w-6" })}

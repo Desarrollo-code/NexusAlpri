@@ -63,8 +63,8 @@ const testimonials = [
 export default function LandingPage() {
   return (
       <div className="flex-1">
-        <section className="w-full py-20 md:py-32 lg:py-40">
-          <div className="container px-4 md:px-6">
+        <section className="w-full py-20 md:py-32 lg:py-40 bg-grainy-gradient">
+          <div className="container px-4 md:px-6 relative z-10">
             <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
@@ -107,7 +107,7 @@ export default function LandingPage() {
           </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 bg-muted/50">
+        <section className="w-full py-12 md:py-24 bg-background/50 backdrop-blur-lg relative z-10">
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -124,7 +124,7 @@ export default function LandingPage() {
                    {features.map((feature, index) => (
                      <Card 
                         key={index} 
-                        className="text-center h-full border-2 transition-all hover:shadow-xl hover:-translate-y-2 bg-card card-border-animated"
+                        className="text-center h-full border-2 transition-all hover:shadow-xl hover:-translate-y-2 bg-card/50 backdrop-blur-sm card-border-animated"
                       >
                        <CardHeader>
                          <div 
@@ -144,7 +144,7 @@ export default function LandingPage() {
             </div>
         </section>
 
-        <section className="w-full py-12 md:py-24">
+        <section className="w-full py-12 md:py-24 relative z-10">
             <div className="container px-4 md:px-6">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                         <Image
@@ -170,7 +170,7 @@ export default function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 bg-muted/50">
+        <section className="w-full py-12 md:py-24 bg-background/50 backdrop-blur-lg relative z-10">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -182,7 +182,7 @@ export default function LandingPage() {
                 </div>
                  <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 py-12">
                     {testimonials.map((testimonial, index) => (
-                        <Card key={index} className="bg-card card-border-animated">
+                        <Card key={index} className="bg-card/50 backdrop-blur-sm card-border-animated">
                            <CardContent className="pt-6">
                              <blockquote className="text-lg font-semibold leading-snug">
                                “{testimonial.testimony}”
@@ -203,7 +203,7 @@ export default function LandingPage() {
             </div>
         </section>
         
-         <section className="w-full py-20 md:py-32 text-center bg-primary/5">
+         <section className="w-full py-20 md:py-32 text-center bg-background/50 backdrop-blur-lg relative z-10">
             <div className="container px-4 md:px-6">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">¿Listo para Empezar?</h2>
                  <p className="max-w-2xl mx-auto mt-4 text-muted-foreground md:text-xl">
