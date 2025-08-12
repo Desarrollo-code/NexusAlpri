@@ -130,7 +130,7 @@ export default function ProfilePage() {
       }
       
       const file = avatarInputRef.current?.files?.[0];
-      if (file) {
+      if (file && avatarPreview !== user.avatar) {
           setIsUploadingAvatar(true);
           setUploadProgress(0);
           const formData = new FormData();
