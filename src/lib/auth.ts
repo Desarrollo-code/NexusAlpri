@@ -23,8 +23,8 @@ export async function createSession(userId: string) {
     .setExpirationTime('24h')
     .sign(key);
 
-  // Correctly get the cookie store instance first
-  const cookieStore = cookies();
+  // Correctamente, ahora usamos await para el cookies()
+  const cookieStore = await cookies();
   cookieStore.set('session', session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -38,7 +38,8 @@ export async function createSession(userId: string) {
 // Obtener usuario desde la sesión
 // ================================
 export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => {
-  const cookieStore = cookies();
+  // Aquí usamos await para el cookies()
+  const cookieStore = await cookies();
   const sessionCookie = cookieStore.get('session')?.value;
 
   if (!sessionCookie) {
@@ -61,7 +62,8 @@ export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => 
 // Cerrar sesión
 // ================================
 export async function deleteSession() {
-  const cookieStore = cookies();
+  // Aquí usamos await para el cookies()
+  const cookieStore = await cookies();
   cookieStore.set('session', '', { expires: new Date(0), path: '/' });
 }
 
