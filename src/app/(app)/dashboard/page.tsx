@@ -107,10 +107,11 @@ const MetricCard = ({ title, value: finalValue, icon: Icon, description }: { tit
 };
 
 const activityChartConfig = {
-  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" },
-  publishedCourses: { label: "Cursos Publicados", color: "hsl(var(--chart-1))" },
-  newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-3))" },
+  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-5))" }, // Púrpura
+  publishedCourses: { label: "Cursos Publicados", color: "hsl(var(--chart-2))" }, // Cian
+  newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-3))" }, // Amarillo
 } satisfies ChartConfig;
+
 
 const formatDateTick = (tick: string) => {
     try {
