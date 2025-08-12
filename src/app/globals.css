@@ -3,43 +3,63 @@
 @tailwind utilities;
 
 @layer base {
-  :root, html.light, html.dark {
-    --background: 224 71% 4%; /* Azul noche muy oscuro */
-    --foreground: 210 20% 98%;
-    --card: 225 35% 9%; /* Azul noche ligeramente más claro */
-    --card-foreground: 210 20% 98%;
-    --popover: 226 50% 6%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 320 100% 55%; /* Magenta vibrante */
+  :root {
+    --background: 220 20% 98%;
+    --foreground: 220 15% 25%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 20%;
+    --primary: 250 60% 60%; /* Lavanda Suave */
     --primary-foreground: 210 20% 98%;
-    --secondary: 215 28% 17%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 215 28% 17%;
-    --muted-foreground: 210 20% 65%;
-    --accent: 180 100% 45%; /* Cian eléctrico */
-    --accent-foreground: 210 20% 98%;
+    --secondary: 220 15% 90%;
+    --secondary-foreground: 220 15% 25%;
+    --muted: 220 15% 90%;
+    --muted-foreground: 220 10% 45%;
+    --accent: 160 70% 45%; /* Verde Menta */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 20% 98%;
-    --border: 215 28% 17%;
-    --input: 215 28% 17%;
-    --ring: 180 100% 50%;
+    --border: 220 15% 88%;
+    --input: 220 15% 94%;
+    --ring: 250 60% 55%;
     --radius: 0.75rem;
 
-    /* Colores de Eventos y Medidores */
-    --event-blue: 210 100% 60%;
-    --event-green: 145 70% 45%;
-    --event-red: 0 80% 60%;
-    --event-orange: 30 90% 55%;
-    --gauge-green: 145 70% 45%;
-    --gauge-yellow: 45 90% 50%;
-    --gauge-red: 0 80% 60%;
+    /* Chart & Event Colors - Light Theme */
+    --chart-1: 250 60% 65%;
+    --chart-2: 160 60% 50%;
+    --chart-3: 30 90% 60%;
+    --chart-4: 210 80% 60%;
+    --chart-5: 340 80% 65%;
+  }
 
-    /* Chart Colors */
-    --chart-1: 180 100% 45%; /* Cian */
-    --chart-2: 320 100% 55%; /* Magenta */
-    --chart-3: 260 100% 65%; /* Púrpura */
-    --chart-4: 40 90% 55%;  /* Amarillo/Naranja */
-    --chart-5: 210 100% 60%; /* Azul */
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 96%;
+    --card: 222 47% 15%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 250 70% 70%; /* Lavanda Vibrante */
+    --primary-foreground: 222 47% 11%;
+    --secondary: 217 33% 25%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 217 33% 20%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 160 80% 60%; /* Verde Menta Brillante */
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 210 40% 96%;
+    --border: 217 33% 22%;
+    --input: 217 33% 20%;
+    --ring: 250 70% 65%;
+    
+    /* Chart & Event Colors - Dark Theme */
+    --chart-1: 250 70% 70%;
+    --chart-2: 160 80% 60%;
+    --chart-3: 30 90% 65%;
+    --chart-4: 210 90% 70%;
+    --chart-5: 340 90% 75%;
   }
 }
 

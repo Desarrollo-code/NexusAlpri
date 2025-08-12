@@ -42,25 +42,14 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, children, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
-    
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
-      >
-        <span className={cn(
-          "absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)] transition-opacity duration-500",
-          variant === 'primary-gradient' ? 'opacity-100 group-hover:opacity-100' : 'opacity-0 group-hover:opacity-10'
-        )} />
-        <span className={cn(
-            "inline-flex h-full w-full cursor-pointer items-center justify-center rounded-md bg-card/95 dark:bg-background/95 px-3 py-1 text-sm font-medium text-foreground backdrop-blur-3xl"
-        )}>
-          {children}
-        </span>
-      </Comp>
+      />
     )
   }
 )
