@@ -95,7 +95,7 @@ export default function ProfilePage() {
   const getInitials = (name?: string | null) => {
     if (!name) return '??';
     const names = name.split(' ');
-    if (names.length > 1 && names[0] && names[names.length - 1]) return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    if (names.length > 1 && names[0] && names[names.length - 1]) return `${''\'\'}${names[0][0]}${names[names.length - 1][0]}${''\'\'}`.toUpperCase();
     if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
     return name.substring(0, 2).toUpperCase();
   };
@@ -156,7 +156,7 @@ export default function ProfilePage() {
       }
       
       try {
-          const response = await fetch(`/api/users/${user.id}`, {
+          const response = await fetch(`/api/users/${''\'\'}${user.id}${''\'\'}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(updatedUserData)
@@ -259,7 +259,7 @@ export default function ProfilePage() {
     
     setIsChangingPassword(true);
     try {
-        const response = await fetch(`/api/users/${user.id}/change-password`, {
+        const response = await fetch(`/api/users/${''\'\'}${user.id}${''\'\'}/change-password`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
@@ -289,7 +289,7 @@ export default function ProfilePage() {
             <ProfileCardBackground />
             <div className="card__avatar">
                  <Avatar className="avatar">
-                  <AvatarImage src={avatarPreview || `https://placehold.co/100x100.png?text=${getInitials(user.name)}`} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
+                  <AvatarImage src={avatarPreview || `https://placehold.co/100x100.png?text=${''\'\'}${getInitials(user.name)}${''\'\'}`} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
                   <AvatarFallback className="text-4xl">{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
                 <Button 
@@ -372,7 +372,7 @@ export default function ProfilePage() {
                  <ProfileCardBackground />
                   <div className="card__avatar">
                     <Avatar className="avatar">
-                      <AvatarImage src={avatarPreview || `https://placehold.co/128x128.png?text=${getInitials(user.name)}`} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
+                      <AvatarImage src={avatarPreview || `https://placehold.co/128x128.png?text=${''\'\'}${getInitials(user.name)}${''\'\'}`} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
                       <AvatarFallback className="text-4xl">{getInitials(user.name)}</AvatarFallback>
                     </Avatar>
                     <Button 

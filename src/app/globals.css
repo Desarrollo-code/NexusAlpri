@@ -187,46 +187,14 @@
 }
 
 /* Background gradient for public pages */
-.aurora-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
-  z-index: -10;
-}
-
-.aurora-background::before, .aurora-background::after {
-  content: '';
-  position: absolute;
-  filter: blur(100px);
-  will-change: filter;
-}
-
-/* Blue circle */
-.aurora-background::before {
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  background: hsl(var(--primary) / 0.3);
-  top: -50px;
-  left: -50px;
-  animation: pulse 8s infinite alternate;
-}
-
-/* Magenta circle */
-.aurora-background::after {
-  width: 400px;
-  height: 400px;
-  border-radius: 50%;
-  background: hsl(var(--accent) / 0.25);
-  bottom: -100px;
-  right: -100px;
-  animation: pulse 10s infinite alternate-reverse;
-}
-
-@keyframes pulse {
-  from { transform: scale(0.9); opacity: 0.8; }
-  to { transform: scale(1.1); opacity: 1; }
+.bg-grainy-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+        radial-gradient(ellipse 80% 80% at 50% -20%, hsl(var(--primary) / 0.3), transparent),
+        radial-gradient(ellipse 80% 80% at 80% 40%, hsl(var(--accent) / 0.2), transparent),
+        radial-gradient(ellipse 80% 80% at 20% 60%, hsl(var(--primary) / 0.2), transparent);
+    opacity: 0.5;
+    z-index: 0;
 }

@@ -106,7 +106,7 @@ export default function SettingsPage() {
     if (!categoryToDelete) return;
     setIsCheckingCategory(true);
     try {
-        const response = await fetch(`/api/settings/category-check/${encodeURIComponent(categoryToDelete)}`);
+        const response = await fetch(`/api/settings/category-check/${''\'\'}${encodeURIComponent(categoryToDelete)}${''\'\'}`);
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message);
@@ -114,7 +114,7 @@ export default function SettingsPage() {
         // If check is successful, remove from state
         const updatedCategories = formState.resourceCategories.filter(cat => cat !== categoryToDelete);
         handleInputChange('resourceCategories', updatedCategories);
-        toast({ title: "Categoría Eliminada (Pendiente)", description: `"${categoryToDelete}" se eliminará al guardar los cambios.` });
+        toast({ title: "Categoría Eliminada (Pendiente)", description: `"${''\'\'}${categoryToDelete}${''\'\'}" se eliminará al guardar los cambios.` });
     } catch (err) {
         toast({ title: "Error al Eliminar Categoría", description: (err as Error).message, variant: "destructive" });
     } finally {
@@ -135,7 +135,7 @@ export default function SettingsPage() {
       });
 
       if (!response.ok) {
-        let errorData = { message: `Failed to save settings (${response.status})`};
+        let errorData = { message: `Failed to save settings (${''\'\'}${response.status}${''\'\'})`};
         try {
             if (response.headers.get('content-type')?.includes('application/json')) {
                 errorData = await response.json();

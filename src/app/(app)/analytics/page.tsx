@@ -1,4 +1,5 @@
 
+
 // src/app/(app)/analytics/page.tsx
 'use client';
 
@@ -126,7 +127,7 @@ const renderActiveShape = (props: any) => {
         outerRadius={outerRadius + 8}
         fill={fill}
       />
-       <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
+       <path d={`M${''\'\'}${sx},${sy}L${mx},${my}L${ex},${ey}${''\'\'}`} stroke={fill} fill="none" />
        <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
        <text x={ex + (cos >= 0 ? 1 : -1) * 6} y={ey} textAnchor={textAnchor} fill="hsl(var(--foreground))" className="text-xs">
          <tspan x={ex + (cos >= 0 ? 1 : -1) * 6} dy="-0.5em">{value}</tspan>
@@ -171,7 +172,7 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
                 className="cursor-pointer"
               >
                  {data.map((entry) => (
-                    <Cell key={`cell-${entry.label}`} fill={entry.fill} />
+                    <Cell key={`cell-${''\'\'}${entry.label}${''\'\'}`} fill={entry.fill} />
                   ))}
                  {activeIndex === undefined && (
                     <Label
@@ -223,7 +224,7 @@ function CourseRankingCard({ title, courses, metric, icon: Icon, unit = '' }: { 
                                             <AvatarImage src={course.imageUrl || undefined} />
                                             <AvatarFallback>{course.title.charAt(0)}</AvatarFallback>
                                         </Avatar>
-                                        <Link href={`/courses/${course.id}`} className="font-medium hover:underline truncate">{course.title}</Link>
+                                        <Link href={`/courses/${''\'\'}${course.id}${''\'\'}`} className="font-medium hover:underline truncate">{course.title}</Link>
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-right font-semibold">{course.value}{unit}</TableCell>
@@ -259,7 +260,7 @@ function UserRankingCard({ title, users, metric, icon: Icon, unit = '' }: { titl
                                             <AvatarImage src={user.avatar || undefined} />
                                             <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                                         </Avatar>
-                                        <Link href={`/profile/${user.id}`} className="font-medium hover:underline truncate">{user.name}</Link>
+                                        <Link href={`/profile/${''\'\'}${user.id}${''\'\'}`} className="font-medium hover:underline truncate">{user.name}</Link>
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-right font-semibold">{user.value}{unit}</TableCell>

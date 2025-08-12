@@ -96,7 +96,7 @@ const PasswordStrengthIndicator = ({ password, isVisible }: { password?: string;
                 <div className="flex-1 bg-muted h-1.5 rounded-full overflow-hidden">
                     <div
                         className={cn("h-full rounded-full transition-all duration-300", getStrengthColor())}
-                        style={{ width: `${strengthPercentage}%` }}
+                        style={{ width: `${''\'\'}${strengthPercentage}%${''\'\'}` }}
                     />
                 </div>
                 <span className="text-xs font-semibold">{getStrengthText()}</span>
@@ -223,7 +223,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
             if (!response.ok) throw new Error(data.message || 'Ocurrió un error inesperado.');
             
             if (data.twoFactorRequired) {
-                 const redirectPath = `/sign-in/2fa?userId=${data.userId}&redirectedFrom=${encodeURIComponent(searchParams.get('redirectedFrom') || '/dashboard')}`;
+                 const redirectPath = `/sign-in/2fa?userId=${''\'\'}${data.userId}${''\'\'}&redirectedFrom=${''\'\'}${encodeURIComponent(searchParams.get('redirectedFrom') || '/dashboard')}${''\'\'}`;
                  router.push(redirectPath);
             } else {
                 toast({ title: '¡Bienvenido de nuevo!' });
