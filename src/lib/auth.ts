@@ -1,4 +1,3 @@
-
 import 'server-only';
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
@@ -41,6 +40,8 @@ async function decrypt(input: string): Promise<any> {
 export async function createSession(userId: string) {
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
   const session = await encrypt({ userId, expires });
+  
+  // Correctly get cookie store instance and use it
   const cookieStore = cookies();
   cookieStore.set('session', session, {
     httpOnly: true,
@@ -57,6 +58,7 @@ export async function deleteSession() {
 }
 
 export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => {
+  // Correctly get cookie store instance and use it
   const cookieStore = cookies();
   const sessionCookie = cookieStore.get('session')?.value;
 
