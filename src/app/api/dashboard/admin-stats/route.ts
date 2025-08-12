@@ -9,6 +9,11 @@ export async function GET(req: NextRequest) {
   try {
     const today = new Date();
     const sevenDaysAgo = startOfDay(subDays(today, 7));
+
+    // Obtener conteos totales por separado para evitar posibles problemas con aggregate en transacción
+    const totalUsersCount = await prisma.user.count();
+    const totalCoursesCount = await prisma.course.count();
+    const totalEnrollmentsCount = await prisma.enrollment.count();
     const thirtyDaysAgo = startOfDay(subDays(today, 30));
 
     const [
@@ -16,8 +21,6 @@ export async function GET(req: NextRequest) {
  totalCoursesResult,
       totalPublishedCoursesCount,
  totalEnrollmentsResult,
-      usersByRoleRaw,
-      coursesByStatusRaw,
       recentLoginsCount,
       newUsersLast7DaysCount,
       recentUsersData,
@@ -28,24 +31,11 @@ export async function GET(req: NextRequest) {
       coursesWithEnrollmentCounts,
       studentsByEnrollmentRaw,
       instructorsByCoursesRaw
+ ,
+ usersByRoleRaw,
+ coursesByStatusRaw,
     ] = await prisma.$transaction([
-      // Conteos simples
-      prisma.user.aggregate({
-        _count: {
- _all: true
-        }
-      }),
-      prisma.course.aggregate({
-        _count: {
- _all: true
-        }
-      }),
       prisma.course.count({ where: { status: 'PUBLISHED' }}),
-      prisma.enrollment.aggregate({
-        _count: {
- _all: true
-        }
-      }),
 
       // Agrupados (groupBy) — usar _all para contar por grupo
       prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
@@ -109,8 +99,6 @@ export async function GET(req: NextRequest) {
     ]);
 
     // Normalizo resultados de aggregation y groupBy (_count._all)
-    const totalUsersCount = totalUsersResult._count._all;
- const totalCoursesCount = totalCoursesResult._count._all;
     const usersByRole = usersByRoleRaw.map((r: any) => ({ role: r.role, count: r. _count. _all }));
     const coursesByStatus = coursesByStatusRaw.map((r: any) => ({ status: r.status, count: r. _count. _all }));
 
