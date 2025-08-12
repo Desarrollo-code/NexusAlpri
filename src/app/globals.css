@@ -82,12 +82,11 @@
     --event-orange: hsl(30, 90%, 55%);
 
     /* Sidebar Variables for dark theme */
-    --sidebar-background: 265 25% 12%; /* Lavanda muy oscuro */
-    --sidebar-foreground: 265 15% 90%;
-    --sidebar-muted-foreground: 265 10% 65%;
-    --sidebar-accent: hsl(330, 90%, 75%); /* Rosa Pastel Brillante */
-    --sidebar-accent-foreground: hsl(0, 0%, 100%);
-    --sidebar-border: 265 20% 18%;
+    --sidebar-background: 220 40% 10%; /* Azul Marino Oscuro */
+    --sidebar-foreground: 45 80% 70%;  /* Dorado Brillante (para texto activo/hover) */
+    --sidebar-muted-foreground: 45 50% 55%; /* Dorado Tenue (para texto inactivo) */
+    --sidebar-accent: hsl(45, 80%, 70%); /* Mismo que el foreground para el borde activo */
+    --sidebar-border: 220 40% 15%; /* Borde azul ligeramente más claro */
   }
 }
  
@@ -136,7 +135,7 @@
      @apply w-full h-full rounded-full border-4 border-background;
   }
   .profile-card .card__title {
-    @apply text-xl font-bold mt-2;
+    @apply text-xl font-bold mt-2 text-foreground;
   }
   .profile-card .card__subtitle {
     @apply text-center text-sm text-muted-foreground mt-2;

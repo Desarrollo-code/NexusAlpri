@@ -114,7 +114,7 @@ export const SidebarHeader = () => {
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={isCollapsed ? 48 : 60} height={isCollapsed ? 48 : 60} data-ai-hint="logo"/>
         </div>
         {!isCollapsed && (
-            <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-primary dark:text-foreground transition-opacity duration-300")}>
+            <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-sidebar-foreground transition-opacity duration-300")}>
               {settings?.platformName || 'NexusAlpri'}
             </span>
         )}
@@ -179,13 +179,13 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item relative",
         isCollapsed && !isMobile ? "justify-center px-0" : "px-4",
         isActive
-          ? "bg-sidebar-accent/10 text-sidebar-accent"
+          ? "bg-sidebar-muted-foreground/10 text-sidebar-foreground"
           : "text-sidebar-muted-foreground hover:bg-sidebar-muted-foreground/10 hover:text-sidebar-foreground"
       )}>
         {isActive && !isCollapsed && (
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-sidebar-accent rounded-r-full"></div>
         )}
-        <GradientIcon icon={item.icon || Shield} isActive={isActive} color={item.color} />
+        <GradientIcon icon={item.icon || Shield} isActive={isActive} color={isActive ? 'hsl(var(--sidebar-foreground))' : 'hsl(var(--sidebar-muted-foreground))'} />
         {showText && <span className="whitespace-nowrap">{item.label}</span>}
       </div>
   );

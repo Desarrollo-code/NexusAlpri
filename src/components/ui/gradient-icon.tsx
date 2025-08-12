@@ -31,7 +31,7 @@ export const GradientIcon = ({
   const iconColor = color 
     ? color // Si se proporciona un color personalizado, usarlo
     : isActive 
-      ? 'hsl(var(--sidebar-accent))' 
+      ? 'hsl(var(--sidebar-foreground))' 
       : 'hsl(var(--sidebar-muted-foreground))';
 
   return (
@@ -41,7 +41,6 @@ export const GradientIcon = ({
         sizeClasses[size],
         "transition-colors duration-200",
         !color && "group-hover/menu-item:text-sidebar-foreground",
-        isActive && !color && "text-sidebar-accent",
         className
       )}
       style={{ color: iconColor }}

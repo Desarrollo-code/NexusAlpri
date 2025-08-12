@@ -92,19 +92,19 @@ export const TopBar = () => {
                         onClick={toggleSidebar}
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 text-foreground"
+                        className="h-9 w-9 text-sidebar-foreground"
                     >
                         <ChevronsLeft className="h-5 w-5" />
                     </Button>
                 )}
-                 <h1 className="text-xl font-semibold truncate">{pageTitle}</h1>
+                 <h1 className="text-xl font-semibold truncate text-sidebar-foreground">{pageTitle}</h1>
             </div>
 
             {/* Right side */}
             <div className="flex items-center gap-3">
                  <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative text-foreground">
+                        <Button variant="ghost" size="icon" className="relative text-sidebar-muted-foreground hover:text-sidebar-foreground">
                             <Bell className="h-5 w-5"/>
                             {unreadCount > 0 && (
                                 <span className="absolute top-1 right-1 flex h-4 w-4">
