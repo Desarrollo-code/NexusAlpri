@@ -187,12 +187,12 @@
 }
 
 .bg-grainy-gradient {
-    position: absolute;
-    inset: 0;
-    z-index: -10;
-    background-image: 
-        radial-gradient(ellipse 80% 80% at 50% -20%, hsl(var(--primary) / 0.3), transparent),
-        radial-gradient(ellipse 80% 80% at 80% 40%, hsl(var(--accent) / 0.2), transparent),
-        radial-gradient(ellipse 80% 80% at 20% 60%, hsl(var(--primary) / 0.2), transparent);
-    animation: pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  position: absolute;
+  inset: 0;
+  z-index: -10;
+  background-color: hsl(var(--background));
+  background-image: 
+    radial-gradient(ellipse 80% 80% at 70% -15%, hsl(var(--primary) / 0.3), transparent),
+    radial-gradient(ellipse 80% 80% at 20% -20%, hsl(var(--accent) / 0.3), transparent);
+  animation: pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

@@ -26,7 +26,7 @@ export function PublicTopBar() {
   return (
     <header className={cn(
         "fixed md:relative top-0 left-0 right-0 flex items-center justify-between px-4 lg:px-6 h-20 z-40",
-        "bg-transparent backdrop-blur-sm border-b border-white/10"
+        "bg-transparent"
     )}>
       <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
          <div className="w-14 h-14 bg-card dark:bg-white/20 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg">

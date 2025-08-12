@@ -73,7 +73,7 @@ export default function LandingPage() {
                     <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Transforma tu Equipo.</span>
                   </h1>
-                  <p className="max-w-[600px] text-muted-foreground md:text-xl">
+                  <p className="max-w-[600px] text-gray-200 md:text-xl">
                     NexusAlpri es la plataforma de e-learning corporativa que se adapta a ti. Intuitiva, potente y segura.
                   </p>
                 </div>
@@ -107,15 +107,15 @@ export default function LandingPage() {
           </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 bg-muted/40 backdrop-blur-lg relative z-10">
+        <section className="w-full py-12 md:py-24 bg-background/20 backdrop-blur-lg relative z-10">
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm text-foreground font-semibold">
+                        <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm text-secondary-foreground font-semibold">
                             Características Principales
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Una Plataforma Todo en Uno</h2>
-                        <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                        <p className="max-w-[900px] text-gray-200 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                             Desde la creación de contenido hasta el análisis de resultados, todo lo que necesitas está aquí.
                         </p>
                     </div>
@@ -159,7 +159,7 @@ export default function LandingPage() {
                             <div className="flex-shrink-0">{benefit.icon}</div>
                             <div>
                                 <h3 className="text-xl font-bold">{benefit.title}</h3>
-                                <p className="text-muted-foreground">{benefit.description}</p>
+                                <p className="text-gray-300">{benefit.description}</p>
                             </div>
                           </div>
                        ))}
@@ -168,11 +168,11 @@ export default function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 bg-muted/40 backdrop-blur-lg relative z-10">
+        <section className="w-full py-12 md:py-24 bg-background/20 backdrop-blur-lg relative z-10">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm font-semibold">
+                        <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm font-semibold text-secondary-foreground">
                             Testimonios
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Lo que Nuestros Clientes Dicen</h2>
@@ -201,10 +201,10 @@ export default function LandingPage() {
             </div>
         </section>
         
-         <section className="w-full py-20 md:py-32 text-center bg-muted/40 backdrop-blur-lg relative z-10">
+         <section className="w-full py-20 md:py-32 text-center bg-background/20 backdrop-blur-lg relative z-10">
             <div className="container px-4 md:px-6">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">¿Listo para Empezar?</h2>
-                 <p className="max-w-2xl mx-auto mt-4 text-muted-foreground md:text-xl">
+                 <p className="max-w-2xl mx-auto mt-4 text-gray-200 md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar.
                  </p>
                   <Button asChild size="lg" variant="primary-gradient" className="mt-8">
