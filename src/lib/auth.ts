@@ -66,7 +66,7 @@ export async function deleteSession() {
 }
 
 // ================================
-// Alias para compatibilidad - FIX: Export this function
+// Alias para compatibilidad
 // ================================
 export async function getCurrentUser(): Promise<PrismaUser | null> {
   return await getUserFromSession();
