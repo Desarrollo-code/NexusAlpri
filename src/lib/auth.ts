@@ -1,10 +1,10 @@
-// src/lib/auth.ts
+
 import 'server-only';
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
+import { cache } from 'react';
 import type { User as PrismaUser } from '@prisma/client';
 import prisma from './prisma';
-import { cache } from 'react';
 
 const secretKey = process.env.JWT_SECRET;
 if (!secretKey) {
@@ -12,37 +12,52 @@ if (!secretKey) {
 }
 const key = new TextEncoder().encode(secretKey);
 
-// ================================
-// Crear sesión con JWT
-// ================================
-export async function createSession(userId: string) {
-  const expires = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24h
-  const session = await new SignJWT({ userId })
+interface JWTPayload {
+  userId: string;
+  expires: Date;
+}
+
+async function encrypt(payload: JWTPayload): Promise<string> {
+  // Convert payload to a plain object with string values
+  const jwtPayload: Record<string, unknown> = {
+    userId: payload.userId,
+    expires: payload.expires.toISOString(),
+  };
+  return await new SignJWT(jwtPayload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('24h')
+    .setExpirationTime('7d')
     .sign(key);
+}
 
+async function decrypt(input: string): Promise<any> {
   try {
-    // Correct way to set cookies in async context
-    cookies().set('session', session, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      expires,
-      sameSite: 'lax',
-      path: '/',
-    });
+    const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
+    return payload;
   } catch (error) {
-    // This can happen in non-server environments, handle gracefully
-    console.error("Failed to set session cookie", error);
+    return null;
   }
 }
 
-// ================================
-// Obtener usuario desde la sesión
-// ================================
-export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => {
-  // Correctly get the cookie store instance first
+export async function createSession(userId: string) {
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  const session = await encrypt({ userId, expires });
+  const cookieStore = cookies();
+  cookieStore.set('session', session, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
+    path: '/',
+    sameSite: 'lax',
+  });
+}
+
+export async function deleteSession() {
+  const cookieStore = cookies();
+  cookieStore.set('session', '', { expires: new Date(0), path: '/' });
+}
+
+export const getCurrentUser = cache(async (): Promise<PrismaUser | null> => {
   const cookieStore = cookies();
   const sessionCookie = cookieStore.get('session')?.value;
 
@@ -50,40 +65,18 @@ export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => 
     return null;
   }
 
+  const session = await decrypt(sessionCookie);
+  if (!session?.userId) {
+    return null;
+  }
+
   try {
-    const { payload } = await jwtVerify(sessionCookie, key, { algorithms: ['HS256'] });
     const user = await prisma.user.findUnique({
-      where: { id: payload.userId as string },
+      where: { id: session.userId },
     });
-    return user;
+    return user || null;
   } catch (error) {
-    console.error('Error al verificar la sesión:', error);
+    console.error("Error al obtener el usuario desde la base de datos:", error);
     return null;
   }
 });
-
-// ================================
-// Cerrar sesión
-// ================================
-export async function deleteSession() {
-  try {
-    // Correct way to delete cookies in async context
-    cookies().set('session', '', { expires: new Date(0), path: '/' });
-  } catch (error) {
-     console.error("Failed to delete session cookie", error);
-  }
-}
-
-// ================================
-// Alias para compatibilidad
-// ================================
-export async function getCurrentUser(): Promise<PrismaUser | null> {
-  return await getUserFromSession();
-}
-
-// ================================
-// Alias para el logout, manteniendo consistencia
-// ================================
-export async function signOut() {
-  await deleteSession();
-}
