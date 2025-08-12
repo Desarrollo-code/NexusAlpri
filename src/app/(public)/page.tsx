@@ -129,7 +129,7 @@ export default function LandingPage() {
                        <CardHeader>
                          <div 
                            className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4"
-                           style={{ color: feature.color, backgroundColor: `${''\'\''}${feature.color}1A${''\'\''}` }}
+                           style={{ color: feature.color, backgroundColor: `${feature.color}1A` }}
                           >
                             {feature.icon}
                          </div>
