@@ -30,9 +30,9 @@ export async function GET(req: NextRequest) {
       instructorsByCoursesRaw
     ] = await prisma.$transaction([
       // Conteos simples
-      prisma.user.aggregate({ _count: { id: true } }),
+      prisma.user.count(),
       prisma.course.count(),
-      prisma.course.count({ where: { status: 'PUBLISHED' } }),
+      prisma.course.count({ where: { status: 'PUBLISHED' }}),
       prisma.enrollment.count(),
 
       // Agrupados (groupBy) — usar _all para contar por grupo
@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
     ]);
 
     // Normalizo resultados de groupBy (_count._all)
-    const usersByRole = usersByRoleRaw.map((r: any) => ({ role: r.role, count: r._count.id }));
+    const usersByRole = usersByRoleRaw.map((r: any) => ({ role: r.role, count: r._count._all }));
     const coursesByStatus = coursesByStatusRaw.map((r: any) => ({ status: r.status, count: r._count._all }));
 
     const payload = {
