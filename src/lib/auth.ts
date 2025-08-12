@@ -1,9 +1,11 @@
+
 // src/lib/auth.ts
 import 'server-only';
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
 import type { User as PrismaUser } from '@prisma/client';
 import prisma from './prisma';
+import { cache } from 'react';
 
 const secretKey = process.env.JWT_SECRET;
 if (!secretKey) {
@@ -22,7 +24,9 @@ export async function createSession(userId: string) {
     .setExpirationTime('24h')
     .sign(key);
 
-  cookies().set('session', session, {
+  // Correctly get the cookie store instance first
+  const cookieStore = cookies();
+  cookieStore.set('session', session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     expires,
@@ -34,12 +38,16 @@ export async function createSession(userId: string) {
 // ================================
 // Obtener usuario desde la sesión
 // ================================
-export async function getUserFromSession(): Promise<PrismaUser | null> {
-  const session = cookies().get('session')?.value;
-  if (!session) return null;
+export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => {
+  const cookieStore = cookies();
+  const sessionCookie = cookieStore.get('session')?.value;
+
+  if (!sessionCookie) {
+    return null;
+  }
 
   try {
-    const { payload } = await jwtVerify(session, key, { algorithms: ['HS256'] });
+    const { payload } = await jwtVerify(sessionCookie, key, { algorithms: ['HS256'] });
     const user = await prisma.user.findUnique({
       where: { id: payload.userId as string },
     });
@@ -48,10 +56,10 @@ export async function getUserFromSession(): Promise<PrismaUser | null> {
     console.error('Error al verificar la sesión:', error);
     return null;
   }
-}
+});
 
 // ================================
-// Alias para compatibilidad
+// Alias para compatibilidad - FIX: Export this function
 // ================================
 export async function getCurrentUser(): Promise<PrismaUser | null> {
   return await getUserFromSession();
@@ -60,12 +68,14 @@ export async function getCurrentUser(): Promise<PrismaUser | null> {
 // ================================
 // Cerrar sesión
 // ================================
+export async function deleteSession() {
+  const cookieStore = cookies();
+  cookieStore.set('session', '', { expires: new Date(0), path: '/' });
+}
+
+// ================================
+// Alias para el logout, manteniendo consistencia
+// ================================
 export async function signOut() {
-  cookies().set('session', '', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    expires: new Date(0),
-    sameSite: 'lax',
-    path: '/',
-  });
+  await deleteSession();
 }
