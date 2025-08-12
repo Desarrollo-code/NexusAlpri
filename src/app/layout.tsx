@@ -1,5 +1,5 @@
 // src/app/layout.tsx
-import { Inter, Space_Grotesk, Dancing_Script, Source_Code_Pro } from 'next/font/google';
+import { Inter, Space_Grotesk, Source_Code_Pro } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/auth-context';
@@ -22,12 +22,6 @@ const spaceGrotesk = Space_Grotesk({
   variable: '--font-headline',
 });
 
-const dancingScript = Dancing_Script({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-headline-alt',
-});
-
 const sourceCodePro = Source_Code_Pro({
     subsets: ['latin'],
     display: 'swap',
@@ -42,10 +36,9 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={cn(
-          `${inter.variable} ${spaceGrotesk.variable} ${dancingScript.variable} ${sourceCodePro.variable}`,
+          `${inter.variable} ${spaceGrotesk.variable} ${sourceCodePro.variable}`,
           "font-body flex flex-col min-h-screen bg-background"
       )}>
-        {/* ThemeProvider has been moved to AppLayout to scope it */}
         <AuthProvider>
             <TitleProvider>
                 <SidebarProvider>
