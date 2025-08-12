@@ -106,8 +106,12 @@ const config: Config = {
           '20%, 50%': { opacity: '0' },
         },
         'spin-slow': {
-            from: { '--angle': '0deg' },
-            to: { '--angle': '360deg' },
+            from: { transform: 'rotate(0deg)' },
+            to: { transform: 'rotate(360deg)' },
+        },
+        'bloom': {
+          '0%, 100%': { transform: 'scale(0.8)', opacity: 0.7 },
+          '50%': { transform: 'scale(1.1)', opacity: 1 },
         },
       },
       animation: {
@@ -116,7 +120,8 @@ const config: Config = {
         'press': 'press 0.2s 1 linear',
         'throw': 'throw 0.4s ease-out forwards',
         'caret-blink': 'caret-blink 1.25s ease-out infinite',
-        'spin-slow': 'spin-slow 4s linear infinite',
+        'spin-slow': 'spin-slow 3s linear infinite',
+        'bloom': 'bloom 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
     },
   },

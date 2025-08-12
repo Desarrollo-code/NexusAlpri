@@ -15,19 +15,22 @@ export const ColorfulLoader = () => {
   ];
 
   return (
-    <div className="relative w-16 h-16 animate-spin-slow">
+    <div className="relative w-20 h-20 animate-spin-slow">
       {colors.map((color, i) => (
         <div
           key={i}
-          className="absolute w-full h-full"
-          style={{ transform: `rotate(${i * 60}deg)` }}
+          className="absolute w-full h-full animate-bloom"
+          style={{ 
+            transform: `rotate(${i * 60}deg)`,
+            animationDelay: `${i * 150}ms`,
+          }}
         >
           <svg
             width="100%"
             height="100%"
             viewBox="0 0 100 100"
             style={{
-              transform: `translate(0, -100%)`, // Move petal "up" from center
+              transform: `translate(0, -100%)`, 
               transformOrigin: '50% 150%',
             }}
           >
