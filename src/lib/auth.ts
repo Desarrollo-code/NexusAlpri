@@ -1,3 +1,4 @@
+
 // src/lib/auth.ts
 import 'server-only';
 import { cookies } from 'next/headers';
@@ -23,7 +24,7 @@ export async function createSession(userId: string) {
     .setExpirationTime('24h')
     .sign(key);
 
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   cookieStore.set('session', session, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -37,7 +38,7 @@ export async function createSession(userId: string) {
 // Obtener usuario desde la sesión
 // ================================
 export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   const sessionCookie = cookieStore.get('session')?.value;
 
   if (!sessionCookie) {
@@ -60,7 +61,7 @@ export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => 
 // Cerrar sesión
 // ================================
 export async function deleteSession() {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   cookieStore.set('session', '', { expires: new Date(0), path: '/' });
 }
 

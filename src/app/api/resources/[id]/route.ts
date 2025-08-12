@@ -10,8 +10,9 @@ export const dynamic = 'force-dynamic';
 // GET a specific resource
 export async function GET(req: NextRequest, context: { params: { id: string } }) {
     try {
+        const { id } = context.params;
         const resource = await prisma.resource.findUnique({
-            where: { id: context.params.id },
+            where: { id },
             include: {
                 uploader: { select: { id: true, name: true } },
                 sharedWith: { select: { id: true, name: true, avatar: true } }
@@ -41,7 +42,8 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
     }
     
     try {
-        const resourceToUpdate = await prisma.resource.findUnique({ where: { id: context.params.id } });
+        const { id } = context.params;
+        const resourceToUpdate = await prisma.resource.findUnique({ where: { id } });
         if (!resourceToUpdate) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
@@ -52,7 +54,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
         const { title, category, tags, description, isPublic, sharedWithUserIds } = await req.json();
 
         const updatedResource = await prisma.resource.update({
-            where: { id: context.params.id },
+            where: { id },
             data: { 
                 title, 
                 category, 
@@ -78,7 +80,8 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
     }
 
     try {
-        const resourceToDelete = await prisma.resource.findUnique({ where: { id: context.params.id } });
+        const { id } = context.params;
+        const resourceToDelete = await prisma.resource.findUnique({ where: { id } });
         if (!resourceToDelete) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
@@ -88,13 +91,13 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
         
         if (resourceToDelete.type === 'FOLDER') {
             // Recursive delete for folders might be needed here, or prevent deletion if not empty
-            const children = await prisma.resource.count({ where: { parentId: context.params.id } });
+            const children = await prisma.resource.count({ where: { parentId: id } });
             if (children > 0) {
                 return NextResponse.json({ message: 'No se puede eliminar una carpeta que no está vacía' }, { status: 400 });
             }
         }
 
-        await prisma.resource.delete({ where: { id: context.params.id } });
+        await prisma.resource.delete({ where: { id } });
         // Note: Actual file deletion from storage is not handled here.
 
         return new NextResponse(null, { status: 204 });

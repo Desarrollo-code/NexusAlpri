@@ -107,12 +107,13 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
     
-    if (session.id === context.params.id) {
+    const { id } = context.params;
+    if (session.id === id) {
         return NextResponse.json({ message: 'No puedes eliminar tu propia cuenta' }, { status: 400 });
     }
 
     try {
-        await prisma.user.delete({ where: { id: context.params.id } });
+        await prisma.user.delete({ where: { id } });
         return new NextResponse(null, { status: 204 });
     } catch (error) {
         console.error('[USER_DELETE_ERROR]', error);
