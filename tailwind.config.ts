@@ -110,8 +110,13 @@ const config: Config = {
           '20%, 50%': { opacity: '0' },
         },
          'spin-slow': {
-            'from': { '--angle': '0deg' },
-            'to': { '--angle': '360deg' },
+            from: { '--angle': '0deg' },
+            to: { '--angle': '360deg' },
+        },
+        'spin': {
+          to: {
+            transform: 'rotate(360deg)',
+          },
         },
       },
       animation: {

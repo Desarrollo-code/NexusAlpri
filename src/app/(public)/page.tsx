@@ -1,9 +1,10 @@
 // src/app/(public)/page.tsx
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Zap, Users, BarChart, BookOpen, UserCheck, ShieldCheck, Heart } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const features = [
   {
@@ -16,7 +17,7 @@ const features = [
     icon: <BarChart className="h-8 w-8" />,
     title: 'Seguimiento Automatizado',
     description: 'El progreso se registra automáticamente, permitiéndote enfocarte en el contenido y no en el papeleo.',
-    color: 'hsl(var(--primary) / 0.8)',
+    color: 'hsl(var(--accent))',
   },
   {
     icon: <ShieldCheck className="h-8 w-8" />,
@@ -33,7 +34,7 @@ const benefits = [
     description: 'Accede a tus cursos desde cualquier lugar, sigue tu progreso y obtén certificados al finalizar.',
   },
   {
-    icon: <UserCheck className="h-10 w-10 text-primary" />,
+    icon: <UserCheck className="h-10 w-10 text-accent" />,
     title: 'Para Instructores',
     description: 'Crea y gestiona tu contenido con una interfaz drag-and-drop y analiza el rendimiento de tus alumnos.',
   },
@@ -70,14 +71,14 @@ export default function LandingPage() {
                   <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-foreground">
                     Despierta el Potencial.
                     <br />
-                    <span className="text-primary">Transforma tu Equipo.</span>
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Transforma tu Equipo.</span>
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
                     NexusAlpri es la plataforma de e-learning corporativa que se adapta a ti. Intuitiva, potente y segura.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button asChild size="lg">
+                  <Button asChild size="lg" variant="primary-gradient">
                     <Link
                       href="/sign-up"
                     >
@@ -123,8 +124,7 @@ export default function LandingPage() {
                    {features.map((feature, index) => (
                      <Card 
                         key={index} 
-                        className="text-center h-full border-2 transition-all hover:shadow-xl hover:-translate-y-2 bg-card"
-                        style={{ borderColor: feature.color, boxShadow: `0 0 20px ${feature.color}33` }}
+                        className="text-center h-full border-2 transition-all hover:shadow-xl hover:-translate-y-2 bg-card card-border-animated"
                       >
                        <CardHeader>
                          <div 
@@ -182,7 +182,7 @@ export default function LandingPage() {
                 </div>
                  <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 py-12">
                     {testimonials.map((testimonial, index) => (
-                        <Card key={index} className="bg-card">
+                        <Card key={index} className="bg-card card-border-animated">
                            <CardContent className="pt-6">
                              <blockquote className="text-lg font-semibold leading-snug">
                                “{testimonial.testimony}”
@@ -209,7 +209,7 @@ export default function LandingPage() {
                  <p className="max-w-2xl mx-auto mt-4 text-muted-foreground md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar.
                  </p>
-                  <Button asChild size="lg" className="mt-8">
+                  <Button asChild size="lg" variant="primary-gradient" className="mt-8">
                     <Link href="/sign-up">
                       Crear Mi Cuenta Gratis
                     </Link>

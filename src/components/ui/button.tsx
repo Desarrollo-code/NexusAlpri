@@ -5,20 +5,21 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden shadow-sm active:shadow-inner active:scale-[0.98]",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden group",
   {
     variants: {
       variant: {
         default:
-          "border-primary/80 border bg-primary text-primary-foreground hover:bg-primary/90",
+          "bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:bg-primary/90 active:scale-[0.97]",
         destructive:
-          "border-destructive/80 border bg-gradient-to-b from-destructive/90 to-destructive text-destructive-foreground hover:from-destructive hover:to-destructive active:from-destructive/90 active:to-destructive/80",
+          "bg-destructive text-destructive-foreground shadow-md hover:bg-destructive/90",
         outline:
-          "border-input bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground",
+          "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "border-secondary/80 border bg-gradient-to-b from-secondary/90 to-secondary text-secondary-foreground hover:from-secondary hover:to-secondary active:from-secondary/90 active:to-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground shadow-none",
-        link: "text-primary underline-offset-4 hover:underline shadow-none",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+        "primary-gradient": "btn-primary-gradient",
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -41,33 +42,22 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     
-    // Si asChild es true, no podemos añadir elementos extra.
-    // El componente padre se encargará de renderizar el contenido.
-    if (asChild) {
-      return (
-        <Comp
-          className={cn(buttonVariants({ variant, size, className }))}
-          ref={ref}
-          {...props}
-        />
-      )
-    }
-
-    // Si es un botón normal, añadimos el efecto de brillo.
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
       >
-        <span 
-            className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/30 to-transparent opacity-80"
-            aria-hidden="true"
-        />
-        <span className="relative z-10">{props.children}</span>
+        <span className={cn(
+          "absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)] transition-opacity duration-500",
+          variant === 'primary-gradient' ? 'opacity-100 group-hover:opacity-100' : 'opacity-0 group-hover:opacity-10'
+        )} />
+        <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-md bg-card/95 dark:bg-background/95 px-3 py-1 text-sm font-medium text-foreground backdrop-blur-3xl">
+          {children}
+        </span>
       </Comp>
     )
   }

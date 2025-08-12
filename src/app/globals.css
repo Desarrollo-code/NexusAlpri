@@ -3,80 +3,43 @@
 @tailwind utilities;
 
 @layer base {
-  :root, html.light {
-    --background: 42 93% 95%; /* Amarillo muy claro/casi blanco */
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%; /* Blanco para las tarjetas */
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 343 69% 50%; /* Rojo/rosa vibrante */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 42 93% 64%; /* Amarillo dorado */
-    --accent-foreground: 240 10% 3.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 343 69% 50%;
+  :root, html.light, html.dark {
+    --background: 224 71% 4%; /* Azul noche muy oscuro */
+    --foreground: 210 20% 98%;
+    --card: 225 35% 9%; /* Azul noche ligeramente más claro */
+    --card-foreground: 210 20% 98%;
+    --popover: 226 50% 6%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 320 100% 55%; /* Magenta vibrante */
+    --primary-foreground: 210 20% 98%;
+    --secondary: 215 28% 17%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 28% 17%;
+    --muted-foreground: 210 20% 65%;
+    --accent: 180 100% 45%; /* Cian eléctrico */
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
+    --ring: 180 100% 50%;
     --radius: 0.75rem;
 
     /* Colores de Eventos y Medidores */
-    --event-blue: 210 100% 50%;
-    --event-green: 145 63% 42%;
-    --event-red: 0 72% 51%;
-    --event-orange: 25 95% 53%;
-    --gauge-green: 145 63% 42%;
-    --gauge-yellow: 45 93% 47%;
-    --gauge-red: 0 72% 51%;
-    
-    /* Chart Colors */
-    --chart-1: 220 80% 60%;
-    --chart-2: 160 70% 50%;
-    --chart-3: 40 80% 60%;
-    --chart-4: 280 80% 60%;
-    --chart-5: 340 80% 60%;
-  }
-
-  html.dark {
-    --background: 240 10% 4%;
-    --foreground: 210 20% 98%;
-    --card: 240 5% 10%;
-    --card-foreground: 210 20% 98%;
-    --popover: 240 10% 4%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 343 75% 58%; 
-    --primary-foreground: 210 20% 98%;
-    --secondary: 240 5% 15%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 240 5% 15%;
-    --muted-foreground: 210 20% 65%;
-    --accent: 42 85% 60%; /* Amarillo dorado brillante */
-    --accent-foreground: 240 10% 4%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 240 5% 15%;
-    --input: 240 5% 15%;
-    --ring: 343 75% 58%;
-
-    --event-blue: 210 100% 70%;
-    --event-green: 145 63% 55%;
-    --event-red: 0 80% 65%;
-    --event-orange: 25 95% 60%;
-    --gauge-green: 145 63% 55%;
-    --gauge-yellow: 45 93% 55%;
-    --gauge-red: 0 80% 65%;
+    --event-blue: 210 100% 60%;
+    --event-green: 145 70% 45%;
+    --event-red: 0 80% 60%;
+    --event-orange: 30 90% 55%;
+    --gauge-green: 145 70% 45%;
+    --gauge-yellow: 45 90% 50%;
+    --gauge-red: 0 80% 60%;
 
     /* Chart Colors */
-    --chart-1: 220 80% 70%;
-    --chart-2: 160 70% 60%;
-    --chart-3: 40 80% 70%;
-    --chart-4: 280 80% 70%;
-    --chart-5: 340 80% 70%;
+    --chart-1: 180 100% 45%; /* Cian */
+    --chart-2: 320 100% 55%; /* Magenta */
+    --chart-3: 260 100% 65%; /* Púrpura */
+    --chart-4: 40 90% 55%;  /* Amarillo/Naranja */
+    --chart-5: 210 100% 60%; /* Azul */
   }
 }
 
@@ -93,8 +56,8 @@
     position: absolute;
     inset: 0;
     background-image: 
-        radial-gradient(ellipse at 70% 20%, hsla(var(--primary) / 0.25), transparent 50%),
-        radial-gradient(ellipse at 30% 80%, hsla(var(--accent) / 0.25), transparent 50%);
+        radial-gradient(ellipse at 70% 20%, hsla(var(--primary) / 0.15), transparent 50%),
+        radial-gradient(ellipse at 30% 80%, hsla(var(--accent) / 0.15), transparent 50%);
     filter: url(#grainy-filter);
     opacity: 0.7;
   }
@@ -179,28 +142,20 @@
   }
 
   .btn-primary-gradient {
-    @apply bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-primary/40 hover:from-primary/90 hover:to-accent/90;
+    background-size: 200% auto;
+    @apply bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-500 hover:shadow-primary/40 hover:bg-right;
   }
 
   .animated-underline {
-    @apply relative inline-block;
-    background-clip: text;
-    -webkit-background-clip: text;
+    background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
+    background-size: 0% 2px;
+    background-repeat: no-repeat;
+    background-position: left bottom;
+    transition: background-size 0.3s ease-in-out;
   }
 
-  .animated-underline::after {
-    content: '';
-    position: absolute;
-    width: 0%;
-    height: 2px;
-    bottom: -2px;
-    left: 0;
-    background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
-    transition: width 0.3s ease-in-out;
-  }
-
-  .animated-underline:hover::after {
-    width: 100%;
+  .animated-underline:hover {
+    background-size: 100% 2px;
   }
 
   .thin-scrollbar {
@@ -288,27 +243,35 @@
   .card-border-animated::before {
       content: '';
       position: absolute;
-      z-index: -1;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      z-index: -2;
+      top: 50%;
+      left: 50%;
+      width: 200%;
+      height: 200%;
       background: conic-gradient(
           from var(--angle),
-          hsl(var(--accent) / 0.3),
-          hsl(var(--primary) / 0.4),
-          hsl(var(--accent) / 0.3)
+          transparent 0%,
+          hsl(var(--accent) / 0.8) 10%,
+          transparent 20%,
+          hsl(var(--primary) / 0.8) 30%,
+          transparent 40%,
+          hsl(var(--accent) / 0.8) 50%,
+          transparent 60%,
+          hsl(var(--primary) / 0.8) 70%,
+          transparent 80%,
+          hsl(var(--accent) / 0.8) 90%,
+          transparent 100%
       );
-      border-radius: inherit;
+      transform-origin: center;
+      transform: translate(-50%, -50%);
       animation: spin-slow 10s linear infinite;
-      transition: opacity 0.5s, --angle 0.5s;
       opacity: 0;
+      transition: opacity 0.5s;
       --angle: 0deg;
   }
 
   .card-border-animated:hover::before {
     opacity: 1;
-    animation-duration: 3s;
   }
   
   .card-border-animated::after {
