@@ -12,10 +12,10 @@ export async function GET(req: NextRequest) {
     const thirtyDaysAgo = startOfDay(subDays(today, 30));
 
     const [
-      totalUsersCount,
-      totalCoursesCount,
+ totalUsersResult,
+ totalCoursesResult,
       totalPublishedCoursesCount,
-      totalEnrollmentsCount,
+ totalEnrollmentsResult,
       usersByRoleRaw,
       coursesByStatusRaw,
       recentLoginsCount,
@@ -109,8 +109,8 @@ export async function GET(req: NextRequest) {
     ]);
 
     // Normalizo resultados de aggregation y groupBy (_count._all)
-    const totalUsersCount = totalUsersCount. _count. _all;
- const totalCoursesCount = totalCoursesCount. _count. _all;
+    const totalUsersCount = totalUsersResult._count._all;
+ const totalCoursesCount = totalCoursesResult._count._all;
     const usersByRole = usersByRoleRaw.map((r: any) => ({ role: r.role, count: r. _count. _all }));
     const coursesByStatus = coursesByStatusRaw.map((r: any) => ({ status: r.status, count: r. _count. _all }));
 
