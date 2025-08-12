@@ -107,9 +107,9 @@ export const SidebarHeader = () => {
       isCollapsed ? 'justify-center' : 'justify-between'
     )}>
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
-        <div className={cn(
+         <div className={cn(
             "flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg transition-all duration-300",
-            isCollapsed ? "w-12 h-12" : "w-16 h-16 bg-card dark:bg-white/20"
+            isCollapsed ? "w-12 h-12" : "w-14 h-14 bg-card dark:bg-white/20"
         )}>
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={isCollapsed ? 48 : 60} height={isCollapsed ? 48 : 60} data-ai-hint="logo"/>
         </div>
@@ -179,13 +179,13 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 py-3 rounded-lg transition-all duration-200 font-medium group/menu-item relative",
         isCollapsed && !isMobile ? "justify-center px-0" : "px-4",
         isActive
-          ? "bg-sidebar-muted-foreground/10 text-sidebar-foreground"
+          ? "bg-sidebar-accent/10 text-sidebar-foreground" // Estilo activo más prominente
           : "text-sidebar-muted-foreground hover:bg-sidebar-muted-foreground/10 hover:text-sidebar-foreground"
       )}>
         {isActive && !isCollapsed && (
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-sidebar-accent rounded-r-full"></div>
         )}
-        <GradientIcon icon={item.icon || Shield} isActive={isActive} color={isActive ? 'hsl(var(--sidebar-foreground))' : 'hsl(var(--sidebar-muted-foreground))'} />
+        <GradientIcon icon={item.icon || Shield} isActive={isActive} />
         {showText && <span className="whitespace-nowrap">{item.label}</span>}
       </div>
   );

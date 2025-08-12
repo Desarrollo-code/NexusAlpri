@@ -8,7 +8,6 @@ interface GradientIconProps extends LucideProps {
   icon: React.ComponentType<LucideProps>;
   size?: 'default' | 'sm' | 'lg' | 'xl';
   isActive?: boolean;
-  color?: string; // Propiedad de color personalizada
 }
 
 export const GradientIcon = ({ 
@@ -16,7 +15,6 @@ export const GradientIcon = ({
   size = 'default', 
   className,
   isActive = false,
-  color, // Recibir el color
   ...props 
 }: GradientIconProps) => {
 
@@ -27,23 +25,15 @@ export const GradientIcon = ({
     'xl': 'w-8 h-8',
   };
   
-  // Determinar el color final del icono
-  const iconColor = color 
-    ? color // Si se proporciona un color personalizado, usarlo
-    : isActive 
-      ? 'hsl(var(--sidebar-foreground))' 
-      : 'hsl(var(--sidebar-muted-foreground))';
-
   return (
     <Icon
       className={cn(
         "shrink-0", // Prevent icon from shrinking
         sizeClasses[size],
         "transition-colors duration-200",
-        !color && "group-hover/menu-item:text-sidebar-foreground",
+        isActive ? 'text-sidebar-foreground' : 'text-sidebar-muted-foreground group-hover/menu-item:text-sidebar-foreground',
         className
       )}
-      style={{ color: iconColor }}
       {...props}
     />
   );
