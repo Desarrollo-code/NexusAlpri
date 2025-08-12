@@ -16,9 +16,7 @@ export async function GET(req: NextRequest) {
     const totalCoursesCount = await prisma.course.count(); // Moved outside transaction
 
     const [
- totalUsersResult,
- totalCoursesResult,
-      totalPublishedCoursesCount,
+      // totalPublishedCoursesCount, // Removed from destructuring
  totalEnrollmentsResult,
       recentLoginsCount,
       newUsersLast7DaysCount,
@@ -30,16 +28,6 @@ export async function GET(req: NextRequest) {
       coursesWithEnrollmentCounts,
       studentsByEnrollmentRaw,
       instructorsByCoursesRaw
-    ] = await prisma.$transaction([
-      // Agrupados (groupBy) — usar _all para contar por grupo
-      prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
-      prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
-
-      // Logins exitosos en los últimos 7 días (usa la tabla de logs de seguridad)
-      prisma.securityLog.count({
-        where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } }
-      }),
-
       // Nuevos usuarios en los últimos 7 días (ajusta el campo si tu usuario tiene otro nombre)
       prisma.user.count({
         where: { registeredDate: { gte: sevenDaysAgo } }
@@ -89,6 +77,16 @@ export async function GET(req: NextRequest) {
         select: { id: true, name: true, avatar: true, _count: { select: { courses: true } } },
         orderBy: { courses: { _count: 'desc' } },
         take: 5
+ ] = await prisma.$transaction([
+ // Agrupados (groupBy) — usar _all para contar por grupo
+      prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
+      prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
+
+      // Logins exitosos en los últimos 7 días (usa la tabla de logs de seguridad)
+      prisma.securityLog.count({
+        where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } }
+      }),
+
       })
     ]);
 
