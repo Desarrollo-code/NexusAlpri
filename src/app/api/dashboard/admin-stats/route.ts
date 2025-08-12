@@ -11,10 +11,9 @@ export async function GET(req: NextRequest) {
     const sevenDaysAgo = startOfDay(subDays(today, 7));
 
     // Obtener conteos totales por separado para evitar posibles problemas con aggregate en transacción
-    const totalUsersCount = await prisma.user.count();
-    const totalCoursesCount = await prisma.course.count();
-    const totalEnrollmentsCount = await prisma.enrollment.count();
     const thirtyDaysAgo = startOfDay(subDays(today, 30));
+    const totalUsersCount = await prisma.user.count(); // Moved outside transaction
+    const totalCoursesCount = await prisma.course.count(); // Moved outside transaction
 
     const [
  totalUsersResult,
@@ -25,18 +24,13 @@ export async function GET(req: NextRequest) {
       newUsersLast7DaysCount,
       recentUsersData,
       newCoursesData,
-      publishedCoursesData,
+ publishedCoursesData, // Keep publishedCoursesData to calculate count later
       newEnrollmentsData,
       allCourseProgressRaw,
       coursesWithEnrollmentCounts,
       studentsByEnrollmentRaw,
       instructorsByCoursesRaw
- ,
- usersByRoleRaw,
- coursesByStatusRaw,
     ] = await prisma.$transaction([
-      prisma.course.count({ where: { status: 'PUBLISHED' }}),
-
       // Agrupados (groupBy) — usar _all para contar por grupo
       prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
       prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
@@ -98,12 +92,13 @@ export async function GET(req: NextRequest) {
       })
     ]);
 
+    const totalEnrollmentsCount = await prisma.enrollment.count(); // Moved outside transaction
+    const totalPublishedCoursesCount = publishedCoursesData.length; // Calculate from findMany result
     // Normalizo resultados de aggregation y groupBy (_count._all)
     const usersByRole = usersByRoleRaw.map((r: any) => ({ role: r.role, count: r. _count. _all }));
     const coursesByStatus = coursesByStatusRaw.map((r: any) => ({ status: r.status, count: r. _count. _all }));
 
     const payload = {
-      totalUsersCount,
       totalCoursesCount,
       totalPublishedCoursesCount,
       totalEnrollmentsCount,
