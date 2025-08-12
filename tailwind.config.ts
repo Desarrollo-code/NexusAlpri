@@ -73,6 +73,8 @@ const config: Config = {
           yellow: 'hsl(var(--gauge-yellow))',
           red: 'hsl(var(--gauge-red))',
         },
+        'gradient-start': 'hsl(var(--gradient-start))',
+        'gradient-end': 'hsl(var(--gradient-end))',
       },
       borderRadius: {
         lg: 'var(--radius)',

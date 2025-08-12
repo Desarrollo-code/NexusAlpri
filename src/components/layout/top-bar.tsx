@@ -82,9 +82,8 @@ export const TopBar = () => {
 
     return (
         <div className={cn(
-            "flex items-center justify-between h-20 px-4 shrink-0",
-            "bg-card border-b sticky top-0 z-40",
-            "dark:bg-gradient-to-r dark:from-gray-900/80 dark:via-blue-900/30 dark:to-purple-900/30 dark:border-border backdrop-blur-sm"
+            "flex items-center justify-between h-16 px-4 shrink-0",
+            "bg-gradient-to-r from-gradient-start to-gradient-end text-primary-foreground shadow-md sticky top-0 z-40"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2">
@@ -93,24 +92,24 @@ export const TopBar = () => {
                         onClick={toggleSidebar}
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 text-muted-foreground hover:text-foreground"
+                        className="h-9 w-9 text-primary-foreground hover:bg-white/10"
                     >
                         <ChevronsLeft className="h-5 w-5" />
                     </Button>
                 )}
-                 <h1 className="text-xl font-semibold text-foreground truncate">{pageTitle}</h1>
+                 <h1 className="text-xl font-semibold truncate">{pageTitle}</h1>
             </div>
 
             {/* Right side */}
             <div className="flex items-center gap-3">
                  <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative">
+                        <Button variant="ghost" size="icon" className="relative text-primary-foreground hover:bg-white/10">
                             <Bell className="h-5 w-5"/>
                             {unreadCount > 0 && (
                                 <span className="absolute top-1 right-1 flex h-4 w-4">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-4 w-4 bg-primary items-center justify-center text-xs text-primary-foreground">{unreadCount}</span>
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-4 w-4 bg-destructive items-center justify-center text-xs text-destructive-foreground">{unreadCount}</span>
                                 </span>
                             )}
                         </Button>
@@ -147,7 +146,7 @@ export const TopBar = () => {
                          </div>
                     </PopoverContent>
                  </Popover>
-                <Separator orientation="vertical" className="h-8" />
+                <Separator orientation="vertical" className="h-8 bg-white/20" />
                 <UserAvatarDropdown />
             </div>
         </div>
