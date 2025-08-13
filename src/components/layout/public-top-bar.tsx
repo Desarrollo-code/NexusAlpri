@@ -29,8 +29,8 @@ export function PublicTopBar() {
         "bg-transparent"
     )}>
       <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
-         <div className="w-14 h-14 bg-card dark:bg-white/20 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg">
-          <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={60} height={60} data-ai-hint="logo"/>
+         <div className="w-12 h-12 bg-card dark:bg-white/20 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg">
+          <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={48} height={48} data-ai-hint="logo"/>
         </div>
         <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-foreground">
            {settings?.platformName || 'NexusAlpri'}
