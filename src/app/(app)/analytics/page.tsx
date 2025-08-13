@@ -85,9 +85,9 @@ const userRolesChartConfig = {
 
 const courseStatusChartConfig = {
     count: { label: "Cursos" },
-    DRAFT: { label: "Borrador", color: "hsl(var(--chart-3))" }, // Amarillo
-    PUBLISHED: { label: "Publicado", color: "hsl(var(--chart-2))" }, // Cian
-    ARCHIVED: { label: "Archivado", color: "hsl(var(--chart-5))" }, // Púrpura
+    DRAFT: { label: "Borrador", color: "hsl(var(--chart-3))" },
+    PUBLISHED: { label: "Publicado", color: "hsl(var(--chart-2))" },
+    ARCHIVED: { label: "Archivado", color: "hsl(var(--chart-5))" },
 } satisfies ChartConfig;
 
 const renderActiveShape = (props: any) => {

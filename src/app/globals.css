@@ -27,9 +27,9 @@
     --radius: 1rem;
     
     /* Chart & Event Colors */
-    --chart-1: hsl(var(--primary));
-    --chart-2: hsl(var(--accent));
-    --chart-3: 60 90% 50%; /* Amarillo Neón */
+    --chart-1: 340 85% 55%; /* Magenta Eléctrico (Primary) */
+    --chart-2: 170 80% 45%; /* Verde Azulado (Accent) */
+    --chart-3: 50 100% 50%; /* Amarillo Neón */
     --chart-4: 120 80% 45%; /* Verde Lima */
     --chart-5: 280 90% 60%; /* Púrpura Eléctrico */
     
@@ -70,9 +70,9 @@
     --radius: 1rem;
     
     /* Chart & Event Colors for Dark Theme */
-    --chart-1: hsl(var(--primary));
-    --chart-2: hsl(var(--accent));
-    --chart-3: 60 90% 50%; /* Amarillo Neón */
+    --chart-1: 340 85% 55%; /* Magenta Eléctrico (Primary) */
+    --chart-2: 170 80% 45%; /* Verde Azulado (Accent) */
+    --chart-3: 50 100% 50%; /* Amarillo Neón */
     --chart-4: 120 80% 45%; /* Verde Lima */
     --chart-5: 280 90% 60%; /* Púrpura Eléctrico */
     

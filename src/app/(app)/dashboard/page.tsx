@@ -107,9 +107,9 @@ const MetricCard = ({ title, value: finalValue, icon: Icon, description }: { tit
 };
 
 const activityChartConfig = {
-  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-5))" }, // Púrpura
-  publishedCourses: { label: "Cursos Publicados", color: "hsl(var(--chart-2))" }, // Cian
-  newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-3))" }, // Amarillo
+  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-5))" },
+  publishedCourses: { label: "Cursos Publicados", color: "hsl(var(--chart-2))" },
+  newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
 
@@ -337,7 +337,8 @@ export default function DashboardPage() {
             const enrolledData: any[] = await roleSpecificRes[0].json();
             const mappedCourses: EnrolledCourse[] = enrolledData.map(item => ({
               id: item.id, title: item.title, description: item.description, instructor: item.instructorName || 'N/A',
-              imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, enrolledAt: item.enrolledAt, isEnrolled: true, instructorId: item.instructorId, status: 'PUBLISHED', modules: [],
+              imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, duration: item.duration, modules: [], 
+              enrolledAt: item.enrolledAt, isEnrolled: true, instructorId: item.instructorId, status: 'PUBLISHED',
               progressPercentage: item.progressPercentage || 0,
             }));
             const completedCount = mappedCourses.filter(c => c.progressPercentage === 100).length;
