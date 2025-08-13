@@ -1,4 +1,3 @@
-
 // src/app/api/resources/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -25,6 +24,7 @@ export async function GET(req: NextRequest) {
         where: {
             type: 'FOLDER',
             OR: [
+                { ispublic: true },
                 { uploaderId: session.id },
                 { sharedWith: { some: { id: session.id } } }
             ]
@@ -35,19 +35,22 @@ export async function GET(req: NextRequest) {
 
     // 2. Recursively find all descendant folder IDs starting from the accessible ones
     let allAccessibleFolderIds = new Set(userAccessibleFolderIds);
-    let newIdsFound = true;
-    while (newIdsFound) {
-        const currentSize = allAccessibleFolderIds.size;
-        const childFolders = await prisma.resource.findMany({
-            where: {
-                type: 'FOLDER',
-                parentId: { in: Array.from(allAccessibleFolderIds) }
-            },
-            select: { id: true }
-        });
-        childFolders.forEach(f => allAccessibleFolderIds.add(f.id));
-        newIdsFound = allAccessibleFolderIds.size > currentSize;
+    if (userAccessibleFolderIds.length > 0) {
+        let newIdsFound = true;
+        while (newIdsFound) {
+            const currentSize = allAccessibleFolderIds.size;
+            const childFolders = await prisma.resource.findMany({
+                where: {
+                    type: 'FOLDER',
+                    parentId: { in: Array.from(allAccessibleFolderIds) }
+                },
+                select: { id: true }
+            });
+            childFolders.forEach(f => allAccessibleFolderIds.add(f.id));
+            newIdsFound = allAccessibleFolderIds.size > currentSize;
+        }
     }
+
 
     // 3. Define the final permission clause
     const permissionsClause = {

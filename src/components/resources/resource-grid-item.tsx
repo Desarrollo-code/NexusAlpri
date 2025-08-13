@@ -1,4 +1,3 @@
-
 // src/components/resources/resource-grid-item.tsx
 'use client';
 import React from 'react';
@@ -116,8 +115,8 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                     <DropdownMenuItem onClick={()=> onEdit(resource)}>
-                                        {isFolder ? <UsersIcon className="mr-2 h-4 w-4" /> : <Edit className="mr-2 h-4 w-4" />}
-                                        {isFolder ? 'Compartir' : 'Editar'}
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Editar / Compartir
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
                                 </DropdownMenuContent>

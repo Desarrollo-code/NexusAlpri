@@ -1,4 +1,3 @@
-
 # Manual de Usuario de NexusAlpri
 
 ## 1. Introducción
@@ -55,10 +54,14 @@ Para asegurar un seguimiento real de tu aprendizaje, el sistema registra tu prog
 
 ### 4.4. Biblioteca de Recursos
 
+**Ruta:** `/resources`
+
 Aquí encontrarás documentos, guías y políticas de la empresa.
-*   Navega por las carpetas para encontrar archivos.
-*   Haz clic en un recurso para previsualizarlo o descargarlo.
-*   Algunos recursos pueden requerir un PIN para acceder.
+
+*   **Navegar y Acceder:** Navega por las carpetas para encontrar los archivos que necesitas. Haz clic en un recurso para ver sus detalles, previsualizarlo o descargarlo.
+*   **Recursos Públicos:** Son visibles y accesibles para todos en la organización.
+*   **Recursos Compartidos Contigo:** Verás archivos y carpetas que un administrador o instructor ha compartido específicamente contigo.
+*   **Recursos Protegidos con PIN:** Para acceder a ciertos archivos sensibles, el sistema te pedirá un PIN de seguridad. Este código te lo debe proporcionar la persona que subió el recurso. Si ingresas el PIN correcto, podrás acceder al archivo.
 
 ### 4.5. Anuncios y Calendario
 

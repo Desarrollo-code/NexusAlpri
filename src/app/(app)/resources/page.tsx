@@ -1,4 +1,3 @@
-
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -187,7 +186,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                     <DropdownMenuItem onClick={()=> onEdit(resource)}>
                                         {isFolder ? <UsersIcon className="mr-2 h-4 w-4" /> : <Edit className="mr-2 h-4 w-4" />}
-                                        {isFolder ? 'Compartir' : 'Editar'}
+                                        {isFolder ? 'Gestionar' : 'Editar'}
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -240,6 +239,8 @@ export default function ResourcesPage() {
   const [isPublic, setIsPublic] = useState(true);
   const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
   const [userSearch, setUserSearch] = useState('');
+  const [newResourcePin, setNewResourcePin] = useState('');
+  const [removePin, setRemovePin] = useState(false);
 
   const [resourceToDelete, setResourceToDelete] = useState<AppResourceType | null>(null);
   const [isDeletingResource, setIsDeletingResource] = useState(false);
@@ -301,6 +302,8 @@ export default function ResourcesPage() {
     setNewResourceDescription('');
     setIsPublic(true);
     setSharedWithUserIds([]);
+    setNewResourcePin('');
+    setRemovePin(false);
     setEditingResource(null);
   };
 
@@ -313,6 +316,16 @@ export default function ResourcesPage() {
     setNewResourceDescription(resource.description || '');
     setIsPublic(resource.ispublic);
     setSharedWithUserIds(resource.sharedWith?.map(u => u.id) || []);
+    setShowCreateUpdateModal(true);
+  };
+  
+  const handleOpenCreateFolderModal = () => {
+    resetForm();
+    setShowCreateFolderModal(true);
+  };
+
+  const handleOpenCreateFileModal = () => {
+    resetForm();
     setShowCreateUpdateModal(true);
   };
 
@@ -349,7 +362,7 @@ export default function ResourcesPage() {
   const handleCreateOrUpdateFile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user?.id || !newResourceTitle || !newResourceCategory || !newResourceType) {
-        toast({ title: "Error", description: "Todos los campos son obligatorios.", variant: "destructive" });
+        toast({ title: "Error", description: "Título, tipo y categoría son obligatorios.", variant: "destructive" });
         return;
     }
 
@@ -394,6 +407,22 @@ export default function ResourcesPage() {
       };
       const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to save resource');
+      
+      const savedResource = await response.json();
+
+      // Handle PIN management
+      if (editingResource) {
+          if (removePin) {
+              await fetch(`/api/resources/${editingResource.id}/pin`, { method: 'DELETE' });
+          } else if (newResourcePin) {
+              await fetch(`/api/resources/${editingResource.id}/pin`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ pin: newResourcePin }),
+              });
+          }
+      }
+      
       toast({ title: `Recurso ${editingResource ? 'Actualizado' : 'Creado'}`, description: `El recurso "${newResourceTitle}" ha sido guardado.` });
       setShowCreateUpdateModal(false);
       resetForm();
@@ -474,14 +503,14 @@ export default function ResourcesPage() {
             </div>
              <div className="relative">
                 {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-                    <Button onClick={() => setShowCreateUpdateModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
+                    <Button onClick={handleOpenCreateFileModal} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
                         <UploadCloud className="mr-2 h-4 w-4"/> Subir Aquí
                     </Button>
                 )}
             </div>
         </div>
     );
-  }, [currentFolderId, breadcrumbs, user?.role]);
+  }, [currentFolderId, breadcrumbs, user?.role, handleOpenCreateFileModal]);
 
   return (
     <div className="flex h-full">
@@ -495,10 +524,10 @@ export default function ResourcesPage() {
                    </div>
                    {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={() => setShowCreateFolderModal(true)}>
+                        <Button variant="outline" onClick={handleOpenCreateFolderModal}>
                             <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
                         </Button>
-                        <Button onClick={() => setShowCreateUpdateModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
+                        <Button onClick={handleOpenCreateFileModal} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
                           <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
                         </Button>
                     </div>
@@ -618,61 +647,76 @@ export default function ResourcesPage() {
       
        <Dialog open={showCreateUpdateModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowCreateUpdateModal(isOpen); }}>
           <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] flex flex-col">
-              <DialogHeader>
+              <DialogHeader className="p-6 pb-0">
                   <DialogTitle>{editingResource ? 'Editar Recurso' : 'Subir Nuevo Recurso'}</DialogTitle>
                   <DialogDescription>Completa los detalles para {editingResource ? 'actualizar este recurso' : 'añadir un nuevo recurso a la biblioteca'}.</DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleCreateOrUpdateFile} id="create-update-form" className="grid gap-4 py-4 overflow-y-auto pr-3 -mr-6">
-                  <div className="space-y-1"><Label htmlFor="title">Título <span className="text-destructive">*</span></Label><Input id="title" name="title" value={newResourceTitle} onChange={(e) => setNewResourceTitle(e.target.value)} required disabled={isSubmittingResource} /></div>
-                  <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" name="description" value={newResourceDescription} onChange={(e) => setNewResourceDescription(e.target.value)} disabled={isSubmittingResource} rows={3} /></div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1"><Label htmlFor="type">Tipo <span className="text-destructive">*</span></Label><Select name="type" required value={newResourceType} onValueChange={(v) => setNewResourceType(v as any)} disabled={isSubmittingResource || !!editingResource}><SelectTrigger id="new-resource-type"><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent><SelectItem value="DOCUMENT">Documento</SelectItem><SelectItem value="GUIDE">Guía</SelectItem><SelectItem value="VIDEO">Video</SelectItem><SelectItem value="EXTERNAL_LINK">Enlace Externo</SelectItem></SelectContent></Select></div>
-                    <div className="space-y-1"><Label htmlFor="category">Categoría <span className="text-destructive">*</span></Label><Select name="category" required value={newResourceCategory} onValueChange={setNewResourceCategory} disabled={isSubmittingResource}><SelectTrigger id="new-resource-category"><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-                  </div>
-                  <Separator />
-                  
-                  {newResourceType === 'EXTERNAL_LINK' ? (
-                     <div className="space-y-1">
-                        <Label htmlFor="url">URL del Enlace Externo<span className="text-destructive">*</span></Label>
-                        <Input id="url" name="url" type="url" placeholder="https://ejemplo.com" value={newResourceUrl} onChange={(e) => setNewResourceUrl(e.target.value)} required disabled={isSubmittingResource} />
+              <form onSubmit={handleCreateOrUpdateFile} id="create-update-form" className="flex-1 overflow-y-auto px-6 py-4 thin-scrollbar">
+                  <div className="space-y-4">
+                    <div className="space-y-1"><Label htmlFor="title">Título <span className="text-destructive">*</span></Label><Input id="title" name="title" value={newResourceTitle} onChange={(e) => setNewResourceTitle(e.target.value)} required disabled={isSubmittingResource} /></div>
+                    <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" name="description" value={newResourceDescription} onChange={(e) => setNewResourceDescription(e.target.value)} disabled={isSubmittingResource} rows={3} /></div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1"><Label htmlFor="type">Tipo <span className="text-destructive">*</span></Label><Select name="type" required value={newResourceType} onValueChange={(v) => setNewResourceType(v as any)} disabled={isSubmittingResource || !!editingResource}><SelectTrigger id="new-resource-type"><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger><SelectContent><SelectItem value="DOCUMENT">Documento</SelectItem><SelectItem value="GUIDE">Guía</SelectItem><SelectItem value="VIDEO">Video</SelectItem><SelectItem value="EXTERNAL_LINK">Enlace Externo</SelectItem></SelectContent></Select></div>
+                        <div className="space-y-1"><Label htmlFor="category">Categoría <span className="text-destructive">*</span></Label><Select name="category" required value={newResourceCategory} onValueChange={setNewResourceCategory} disabled={isSubmittingResource}><SelectTrigger id="new-resource-category"><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                    </div>
+                    
+                    {newResourceType === 'EXTERNAL_LINK' ? (
+                       <div className="space-y-1">
+                          <Label htmlFor="url">URL del Enlace Externo<span className="text-destructive">*</span></Label>
+                          <Input id="url" name="url" type="url" placeholder="https://ejemplo.com" value={newResourceUrl} onChange={(e) => setNewResourceUrl(e.target.value)} required disabled={isSubmittingResource} />
+                        </div>
+                    ) : newResourceType !== 'FOLDER' && !editingResource ? (
+                      <div className="space-y-1">
+                          <UploadArea onFileSelect={(file) => setNewResourceFile(file)} disabled={isSubmittingResource} />
+                          {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
+                          {newResourceFile && <p className="text-xs text-center text-muted-foreground mt-1">Archivo seleccionado: {newResourceFile.name}</p>}
                       </div>
-                  ) : newResourceType !== 'FOLDER' && !editingResource ? (
-                    <div className="space-y-1">
-                        <UploadArea onFileSelect={(file) => setNewResourceFile(file)} disabled={isSubmittingResource} />
-                        {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
-                        {newResourceFile && <p className="text-xs text-center text-muted-foreground mt-1">Archivo seleccionado: {newResourceFile.name}</p>}
-                    </div>
-                  ) : null}
-
-                  <Separator />
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                        <Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} />
-                        <Label htmlFor="is-public" className="flex items-center gap-2 cursor-pointer">{isPublic ? <Globe className="h-4 w-4 text-primary" /> : <UsersIcon className="h-4 w-4 text-destructive" />} {isPublic ? 'Público (visible para todos)' : 'Privado (compartir con usuarios específicos)'}</Label>
-                    </div>
-                    {!isPublic && (
-                        <Card className="bg-muted/50 p-3">
-                            <Input placeholder="Buscar usuarios para compartir..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
-                            <ScrollArea className="h-40">
-                                <div className="space-y-2">
-                                {filteredUsers.map(u => (
-                                    <div key={u.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-background">
-                                        <Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={c => handleUserShareToggle(u.id, !!c)} />
-                                        <Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer">
-                                            <Avatar className="h-7 w-7"><AvatarImage src={u.avatar || undefined} /><AvatarFallback>{getInitials(u.name)}</AvatarFallback></Avatar>
-                                            {u.name}
-                                        </Label>
+                    ) : null}
+                     
+                     <Separator />
+                     <h3 className="text-base font-semibold">Control de Acceso</h3>
+                     <div className="space-y-3 p-3 border rounded-lg">
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="is-public" className="flex items-center gap-2 cursor-pointer">{isPublic ? <Globe className="h-4 w-4 text-primary" /> : <UsersIcon className="h-4 w-4 text-destructive" />} {isPublic ? 'Público' : 'Privado'}</Label>
+                            <Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} />
+                        </div>
+                        {!isPublic && (
+                            <Card className="bg-background p-3">
+                                <Input placeholder="Buscar usuarios para compartir..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
+                                <ScrollArea className="h-32">
+                                    <div className="space-y-2">
+                                    {filteredUsers.map(u => (
+                                        <div key={u.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
+                                            <Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={c => handleUserShareToggle(u.id, !!c)} />
+                                            <Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer">
+                                                <Avatar className="h-7 w-7"><AvatarImage src={u.avatar || undefined} /><AvatarFallback>{getInitials(u.name)}</AvatarFallback></Avatar>
+                                                {u.name}
+                                            </Label>
+                                        </div>
+                                    ))}
                                     </div>
-                                ))}
-                                </div>
-                            </ScrollArea>
-                        </Card>
+                                </ScrollArea>
+                            </Card>
+                        )}
+                    </div>
+                    
+                    {editingResource && (
+                        <div className="space-y-3 p-3 border rounded-lg">
+                            <Label htmlFor="pin" className="font-medium">PIN de Seguridad (Opcional)</Label>
+                            <p className="text-xs text-muted-foreground">Establece un PIN de 4-8 dígitos para una capa extra de seguridad. Deja en blanco para no usar PIN.</p>
+                            <Input id="pin" name="pin" type="text" maxLength={8} value={newResourcePin} onChange={e => setNewResourcePin(e.target.value.replace(/\D/g, ''))} disabled={isSubmittingResource || removePin} />
+                            {editingResource.hasPin && (
+                               <div className="flex items-center space-x-2">
+                                    <Checkbox id="remove-pin" checked={removePin} onCheckedChange={(c) => setRemovePin(!!c)} />
+                                    <Label htmlFor="remove-pin" className="text-sm font-normal text-destructive">Quitar PIN existente</Label>
+                               </div>
+                            )}
+                        </div>
                     )}
+
                   </div>
-
-
               </form>
-               <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4"><Button type="button" variant="outline" onClick={() => setShowCreateUpdateModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button form="create-update-form" type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}{editingResource ? 'Guardar Cambios' : 'Crear Recurso'}</Button></DialogFooter>
+               <DialogFooter className="p-6 pt-2 flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><Button type="button" variant="outline" onClick={() => setShowCreateUpdateModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button form="create-update-form" type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}{editingResource ? 'Guardar Cambios' : 'Crear Recurso'}</Button></DialogFooter>
           </DialogContent>
        </Dialog>
 
