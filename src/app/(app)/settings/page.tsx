@@ -33,6 +33,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils';
 import { fontMap } from '@/lib/fonts';
 import { ImageCropper } from '@/components/image-cropper';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Progress } from '@/components/ui/progress';
 
 const availableFonts = [
     { value: 'Inter', label: 'Inter (Sans-serif)' },
@@ -49,12 +51,14 @@ const UploadWidget = ({
   onFileSelect,
   onRemove,
   disabled,
+  useCropper = true,
 }: {
   label: string;
   currentImageUrl?: string | null;
   onFileSelect: (e: ChangeEvent<HTMLInputElement>) => void;
   onRemove: () => void;
   disabled: boolean;
+  useCropper?: boolean;
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -207,6 +211,8 @@ export default function SettingsPage() {
   const [cropUploadUrl, setCropUploadUrl] = useState('');
   const [cropField, setCropField] = useState<'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | null>(null);
 
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     setPageTitle('Configuración');
@@ -236,20 +242,41 @@ export default function SettingsPage() {
     setFormState(prev => prev ? { ...prev, [field]: checked } : null);
   };
   
-  const handleFileSelected = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl', e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelected = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl', e: ChangeEvent<HTMLInputElement>, useCropper: boolean) => {
     if (e.target.files && e.target.files[0]) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = () => {
-            setImageToCrop(reader.result as string);
-            setCropUploadUrl('/api/upload/course-image');
-            setCropField(field);
-        };
-        reader.readAsDataURL(file);
+      const file = e.target.files[0];
+      if (useCropper) {
+          const reader = new FileReader();
+          reader.onload = () => {
+              setImageToCrop(reader.result as string);
+              setCropUploadUrl('/api/upload/course-image'); 
+              setCropField(field);
+          };
+          reader.readAsDataURL(file);
+      } else {
+          // Direct upload without cropper
+          handleDirectUpload(field, file);
+      }
     }
     if (e.target) e.target.value = '';
   };
   
+  const handleDirectUpload = async (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl', file: File) => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const result: { url: string } = await uploadWithProgress('/api/upload/course-image', formData, setUploadProgress);
+        setFormState(prev => prev ? { ...prev, [field]: result.url } : null);
+        toast({ title: "Imagen Subida", description: "La imagen se ha subido correctamente." });
+    } catch (err) {
+        toast({ title: "Error de Subida", description: (err as Error).message, variant: "destructive" });
+    } finally {
+        setIsUploading(false);
+    }
+  };
+
   const handleCropComplete = (croppedFileUrl: string) => {
     if (cropField) {
         setFormState(prev => prev ? { ...prev, [cropField]: croppedFileUrl } : null);
@@ -368,10 +395,16 @@ export default function SettingsPage() {
                             <CardDescription>Logo, marca de agua e imágenes de las páginas públicas.</CardDescription>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                           <UploadWidget label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(e) => handleFileSelected('logoUrl', e)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} />
-                           <UploadWidget label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(e) => handleFileSelected('watermarkUrl', e)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} />
-                           <UploadWidget label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(e) => handleFileSelected('landingImageUrl', e)} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving} />
-                           <UploadWidget label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(e) => handleFileSelected('authImageUrl', e)} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving} />
+                           <UploadWidget label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(e) => handleFileSelected('logoUrl', e, false)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving || isUploading} useCropper={false} />
+                           <UploadWidget label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(e) => handleFileSelected('watermarkUrl', e, false)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving || isUploading} useCropper={false}/>
+                           <UploadWidget label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(e) => handleFileSelected('landingImageUrl', e, true)} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving || isUploading} useCropper={true}/>
+                           <UploadWidget label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(e) => handleFileSelected('authImageUrl', e, true)} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving || isUploading} useCropper={true}/>
+                           {isUploading && (
+                                <div className="md:col-span-2">
+                                    <Progress value={uploadProgress} className="w-full" />
+                                    <p className="text-sm text-center mt-1 text-muted-foreground">Subiendo...</p>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                     <Card className="card-border-animated">

@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import { cn } from "@/lib/utils";
 import React, { useRef } from 'react';
-import { UploadCloud, FileCheck, FileUp } from 'lucide-react';
+import { UploadCloud, FileUp } from 'lucide-react';
 
 interface UploadAreaProps {
   onFileSelect: (file: File | null) => void;
