@@ -4,7 +4,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/auth-context';
 import React from 'react';
 import { TitleProvider } from '@/contexts/title-context';
-import { SidebarProvider } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
 import { DynamicThemeProvider } from '@/components/dynamic-theme-provider';
@@ -26,10 +25,8 @@ export default async function RootLayout({
         <AuthProvider>
           <DynamicThemeProvider>
             <TitleProvider>
-                <SidebarProvider>
-                    {children}
-                    <Toaster />
-                </SidebarProvider>
+                {children}
+                <Toaster />
             </TitleProvider>
           </DynamicThemeProvider>
         </AuthProvider>

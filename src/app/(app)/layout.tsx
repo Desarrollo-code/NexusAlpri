@@ -11,18 +11,62 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  useSidebar,
+  SidebarProvider, // Importar el Provider
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
-import { ThemeProvider } from '@/components/theme-provider';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
 import Image from 'next/image';
 import { SidebarHeader } from '@/components/layout/sidebar-header';
 
+function AppLayoutContent({ children }: { children: React.ReactNode }) {
+  const { settings } = useAuth();
+  const { isMobile, isCollapsed } = useSidebar();
+
+  return (
+    <div className="flex h-screen bg-background text-foreground">
+        <Sidebar>
+            <SidebarHeader />
+            <SidebarContent />
+            <SidebarFooter />
+        </Sidebar>
+        <div
+            className={cn(
+            "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
+            !isMobile && (isCollapsed ? "ml-20" : "ml-72")
+            )}
+        >
+            <TopBar />
+            <main className="flex-1 overflow-y-auto relative bg-background">
+            <DecorativeHeaderBackground />
+            <div className="relative z-10 p-4 md:p-6 lg:p-8">
+                {children}
+            </div>
+            </main>
+        </div>
+        {settings?.watermarkUrl && (
+          <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
+            <Image
+                src={settings.watermarkUrl}
+                alt="Alprigrama Watermark"
+                width={60}
+                height={60}
+                className="opacity-20"
+                data-ai-hint="logo company"
+                priority
+                style={{ width: 'auto', height: 'auto' }}
+            />
+          </div>
+        )}
+    </div>
+  );
+}
+
+
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
   const { toast } = useToast();
-  const { isMobile, isCollapsed } = useSidebar();
 
   const handleIdleLogout = React.useCallback(() => {
     logout();
@@ -47,43 +91,9 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <ThemeProvider>
-      <div className="flex h-screen bg-background text-foreground">
-          <Sidebar>
-              <SidebarHeader />
-              <SidebarContent />
-              <SidebarFooter />
-          </Sidebar>
-          <div
-              className={cn(
-              "relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out",
-              !isMobile && (isCollapsed ? "ml-20" : "ml-72")
-              )}
-          >
-              <TopBar />
-              <main className="flex-1 overflow-y-auto relative bg-background">
-              <DecorativeHeaderBackground />
-              <div className="relative z-10 p-4 md:p-6 lg:p-8">
-                  {children}
-              </div>
-              </main>
-          </div>
-          {settings?.watermarkUrl && (
-            <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
-              <Image
-                  src={settings.watermarkUrl}
-                  alt="Alprigrama Watermark"
-                  width={60}
-                  height={60}
-                  className="opacity-20"
-                  data-ai-hint="logo company"
-                  priority
-                  style={{ width: 'auto', height: 'auto' }}
-              />
-            </div>
-          )}
-      </div>
-    </ThemeProvider>
+    <SidebarProvider>
+      <AppLayoutContent>{children}</AppLayoutContent>
+    </SidebarProvider>
   );
 }
 
