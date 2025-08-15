@@ -33,6 +33,7 @@ import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { fontMap } from '@/lib/fonts';
+import { ImageCropper } from '@/components/image-cropper';
 
 const availableFonts = [
     { value: 'Inter', label: 'Inter (Sans-serif)' },
@@ -52,17 +53,11 @@ const UploadWidget = ({
 }: {
   label: string;
   currentImageUrl?: string | null;
-  onFileSelect: (file: File) => void;
+  onFileSelect: (e: ChangeEvent<HTMLInputElement>) => void;
   onRemove: () => void;
   disabled: boolean;
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      onFileSelect(e.target.files[0]);
-    }
-  };
 
   return (
     <div className="space-y-2">
@@ -117,7 +112,7 @@ const UploadWidget = ({
       <input
         type="file"
         ref={fileInputRef}
-        onChange={handleFileChange}
+        onChange={onFileSelect}
         disabled={disabled}
         accept="image/png, image/jpeg, image/svg+xml, image/webp"
         className="hidden"
@@ -208,6 +203,11 @@ export default function SettingsPage() {
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [isCheckingCategory, setIsCheckingCategory] = useState(false);
 
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [cropUploadUrl, setCropUploadUrl] = useState('');
+  const [cropField, setCropField] = useState<'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | null>(null);
+
+
   useEffect(() => {
     setPageTitle('Configuración');
   }, [setPageTitle]);
@@ -236,23 +236,28 @@ export default function SettingsPage() {
     setFormState(prev => prev ? { ...prev, [field]: checked } : null);
   };
   
-  const handleFileChange = async (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl', file: File) => {
-      if (!file) return;
-
-      setIsSaving(true);
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      try {
-          const result: { url: string } = await uploadWithProgress('/api/upload/resource-file', formData, () => {});
-          setFormState(prev => prev ? { ...prev, [field]: result.url } : null);
-          toast({ title: 'Imagen Subida', description: 'La nueva imagen está lista. Guarda los cambios para aplicarla.' });
-      } catch (e) {
-          toast({ title: 'Error de Subida', description: (e as Error).message, variant: 'destructive' });
-      } finally {
-          setIsSaving(false);
-      }
+  const handleFileSelected = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl', e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+            setImageToCrop(reader.result as string);
+            setCropUploadUrl('/api/upload/course-image'); // Using a generic image uploader
+            setCropField(field);
+        };
+        reader.readAsDataURL(file);
+    }
+    if (e.target) e.target.value = ''; // Reset input
   };
+  
+  const handleCropComplete = (croppedFileUrl: string) => {
+    if (cropField) {
+        setFormState(prev => prev ? { ...prev, [cropField]: croppedFileUrl } : null);
+    }
+    setImageToCrop(null);
+    setCropField(null);
+  };
+
 
   const handleRemoveImage = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl') => {
       setFormState(prev => prev ? { ...prev, [field]: null } : null);
@@ -363,10 +368,10 @@ export default function SettingsPage() {
                             <CardDescription>Logo, marca de agua e imágenes de las páginas públicas.</CardDescription>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                           <UploadWidget label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(file) => handleFileChange('logoUrl', file)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} />
-                           <UploadWidget label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(file) => handleFileChange('watermarkUrl', file)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} />
-                           <UploadWidget label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(file) => handleFileChange('landingImageUrl', file)} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving} />
-                           <UploadWidget label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(file) => handleFileChange('authImageUrl', file)} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving} />
+                           <UploadWidget label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(e) => handleFileSelected('logoUrl', e)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} />
+                           <UploadWidget label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(e) => handleFileSelected('watermarkUrl', e)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} />
+                           <UploadWidget label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(e) => handleFileSelected('landingImageUrl', e)} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving} />
+                           <UploadWidget label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(e) => handleFileSelected('authImageUrl', e)} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving} />
                         </CardContent>
                     </Card>
                     <Card className="card-border-animated">
@@ -514,6 +519,12 @@ export default function SettingsPage() {
             </Card>
         </div>
       </div>
+       <ImageCropper
+            imageSrc={imageToCrop}
+            onCropComplete={handleCropComplete}
+            onClose={() => { setImageToCrop(null); setCropField(null); }}
+            uploadUrl={cropUploadUrl}
+        />
       <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
         <AlertDialogContent>
             <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>
@@ -523,4 +534,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
