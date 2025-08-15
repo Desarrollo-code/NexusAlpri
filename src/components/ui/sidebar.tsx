@@ -179,8 +179,8 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 py-3 rounded-lg transition-all duration-300 font-medium group/menu-item relative",
         isCollapsed && !isMobile ? "justify-center px-0" : "px-4",
         isActive
-          ? "bg-gradient-to-r from-accent/50 to-primary/50 text-sidebar-accent-foreground"
-          : "text-sidebar-muted-foreground hover:bg-accent/20 hover:text-primary"
+          ? "bg-gradient-to-r from-accent/50 to-primary/50 text-sidebar-foreground"
+          : "text-sidebar-muted-foreground hover:bg-accent/20 hover:text-sidebar-foreground"
       )}>
         <GradientIcon icon={item.icon || Shield} isActive={isActive} />
         {showText && <span className="whitespace-nowrap">{item.label}</span>}

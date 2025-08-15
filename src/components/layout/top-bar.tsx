@@ -104,7 +104,7 @@ export const TopBar = () => {
             <div className="flex items-center gap-3">
                  <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative text-sidebar-muted-foreground hover:text-sidebar-foreground">
+                        <Button variant="ghost" size="icon" className="relative text-sidebar-foreground hover:text-sidebar-foreground/80">
                             <Bell className="h-5 w-5"/>
                             {unreadCount > 0 && (
                                 <span className="absolute top-1 right-1 flex h-4 w-4">
