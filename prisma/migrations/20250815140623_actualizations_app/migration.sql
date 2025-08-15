@@ -4,12 +4,12 @@ CREATE TABLE `User` (
     `name` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
-    `avatar` VARCHAR(191) NULL,
     `role` ENUM('ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT') NOT NULL DEFAULT 'STUDENT',
+    `avatar` VARCHAR(191) NULL,
+    `theme` VARCHAR(191) NULL,
     `isTwoFactorEnabled` BOOLEAN NOT NULL DEFAULT false,
     `twoFactorSecret` VARCHAR(191) NULL,
-    `registeredDate` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `theme` VARCHAR(191) NULL DEFAULT 'dark',
+    `registeredDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `User_email_key`(`email`),
     INDEX `User_email_idx`(`email`),
@@ -20,14 +20,14 @@ CREATE TABLE `User` (
 CREATE TABLE `Course` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
-    `description` TEXT NOT NULL,
-    `imageUrl` VARCHAR(191) NULL,
+    `description` TEXT NULL,
     `category` VARCHAR(191) NULL,
+    `imageUrl` VARCHAR(191) NULL,
     `status` ENUM('DRAFT', 'PUBLISHED', 'ARCHIVED', 'SCHEDULED') NOT NULL DEFAULT 'DRAFT',
     `publicationDate` DATETIME(3) NULL,
+    `instructorId` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
-    `instructorId` VARCHAR(191) NOT NULL,
 
     INDEX `Course_instructorId_idx`(`instructorId`),
     PRIMARY KEY (`id`)
@@ -38,8 +38,6 @@ CREATE TABLE `Module` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `order` INTEGER NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
     `courseId` VARCHAR(191) NOT NULL,
 
     INDEX `Module_courseId_idx`(`courseId`),
@@ -51,8 +49,6 @@ CREATE TABLE `Lesson` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `order` INTEGER NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
     `moduleId` VARCHAR(191) NOT NULL,
 
     INDEX `Lesson_moduleId_idx`(`moduleId`),
@@ -65,8 +61,6 @@ CREATE TABLE `ContentBlock` (
     `type` ENUM('TEXT', 'VIDEO', 'QUIZ', 'FILE') NOT NULL,
     `content` TEXT NULL,
     `order` INTEGER NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
     `lessonId` VARCHAR(191) NOT NULL,
 
     INDEX `ContentBlock_lessonId_idx`(`lessonId`),
@@ -87,7 +81,7 @@ CREATE TABLE `Quiz` (
 -- CreateTable
 CREATE TABLE `Question` (
     `id` VARCHAR(191) NOT NULL,
-    `text` TEXT NOT NULL,
+    `text` VARCHAR(191) NOT NULL,
     `type` ENUM('MULTIPLE_CHOICE', 'SINGLE_CHOICE', 'TRUE_FALSE') NOT NULL,
     `order` INTEGER NOT NULL,
     `quizId` VARCHAR(191) NOT NULL,
@@ -99,9 +93,9 @@ CREATE TABLE `Question` (
 -- CreateTable
 CREATE TABLE `AnswerOption` (
     `id` VARCHAR(191) NOT NULL,
-    `text` TEXT NOT NULL,
-    `isCorrect` BOOLEAN NOT NULL DEFAULT false,
-    `feedback` TEXT NULL,
+    `text` VARCHAR(191) NOT NULL,
+    `isCorrect` BOOLEAN NOT NULL,
+    `feedback` VARCHAR(191) NULL,
     `questionId` VARCHAR(191) NOT NULL,
 
     INDEX `AnswerOption_questionId_idx`(`questionId`),
@@ -127,11 +121,11 @@ CREATE TABLE `CourseProgress` (
     `userId` VARCHAR(191) NOT NULL,
     `courseId` VARCHAR(191) NOT NULL,
     `progressPercentage` DOUBLE NOT NULL DEFAULT 0,
-    `completedAt` DATETIME(3) NULL,
     `enrollmentId` VARCHAR(191) NOT NULL,
 
     UNIQUE INDEX `CourseProgress_enrollmentId_key`(`enrollmentId`),
-    INDEX `CourseProgress_userId_courseId_idx`(`userId`, `courseId`),
+    INDEX `CourseProgress_userId_idx`(`userId`),
+    INDEX `CourseProgress_courseId_idx`(`courseId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -142,37 +136,10 @@ CREATE TABLE `LessonCompletionRecord` (
     `lessonId` VARCHAR(191) NOT NULL,
     `type` VARCHAR(191) NOT NULL,
     `score` DOUBLE NULL,
-    `completedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
+    INDEX `LessonCompletionRecord_progressId_idx`(`progressId`),
+    INDEX `LessonCompletionRecord_lessonId_idx`(`lessonId`),
     UNIQUE INDEX `LessonCompletionRecord_progressId_lessonId_key`(`progressId`, `lessonId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `Announcement` (
-    `id` VARCHAR(191) NOT NULL,
-    `title` VARCHAR(191) NOT NULL,
-    `content` TEXT NOT NULL,
-    `date` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `audience` JSON NOT NULL,
-    `priority` VARCHAR(191) NULL,
-    `authorId` VARCHAR(191) NOT NULL,
-
-    INDEX `Announcement_authorId_idx`(`authorId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `Notification` (
-    `id` VARCHAR(191) NOT NULL,
-    `title` VARCHAR(191) NOT NULL,
-    `description` TEXT NULL,
-    `read` BOOLEAN NOT NULL DEFAULT false,
-    `link` VARCHAR(191) NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `userId` VARCHAR(191) NOT NULL,
-
-    INDEX `Notification_userId_idx`(`userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -185,14 +152,28 @@ CREATE TABLE `Resource` (
     `category` VARCHAR(191) NOT NULL,
     `tags` VARCHAR(191) NULL,
     `url` VARCHAR(191) NULL,
-    `pin` VARCHAR(191) NULL,
     `uploadDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `uploaderId` VARCHAR(191) NULL,
+    `pin` VARCHAR(191) NULL,
     `ispublic` BOOLEAN NOT NULL DEFAULT true,
-    `uploaderId` VARCHAR(191) NOT NULL,
     `parentId` VARCHAR(191) NULL,
 
     INDEX `Resource_uploaderId_idx`(`uploaderId`),
     INDEX `Resource_parentId_idx`(`parentId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Announcement` (
+    `id` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL,
+    `content` TEXT NOT NULL,
+    `date` DATETIME(3) NOT NULL,
+    `priority` VARCHAR(191) NULL DEFAULT 'Normal',
+    `audience` JSON NOT NULL,
+    `authorId` VARCHAR(191) NOT NULL,
+
+    INDEX `Announcement_authorId_idx`(`authorId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -205,26 +186,62 @@ CREATE TABLE `CalendarEvent` (
     `end` DATETIME(3) NOT NULL,
     `allDay` BOOLEAN NOT NULL DEFAULT false,
     `location` VARCHAR(191) NULL,
-    `videoConferenceLink` VARCHAR(191) NULL,
     `color` VARCHAR(191) NOT NULL DEFAULT 'blue',
-    `attachments` JSON NULL,
-    `audienceType` ENUM('ALL', 'ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT', 'SPECIFIC') NOT NULL DEFAULT 'ALL',
+    `audienceType` VARCHAR(191) NOT NULL,
     `creatorId` VARCHAR(191) NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
+    `videoConferenceLink` VARCHAR(191) NULL,
+    `attachments` JSON NULL,
 
     INDEX `CalendarEvent_creatorId_idx`(`creatorId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `Notification` (
+    `id` VARCHAR(191) NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `link` VARCHAR(191) NULL,
+    `read` BOOLEAN NOT NULL DEFAULT false,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    INDEX `Notification_userId_idx`(`userId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `SecurityLog` (
+    `id` VARCHAR(191) NOT NULL,
+    `event` VARCHAR(191) NOT NULL,
+    `ipAddress` VARCHAR(191) NULL,
+    `userId` VARCHAR(191) NULL,
+    `details` TEXT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `emailAttempt` VARCHAR(191) NULL,
+
+    INDEX `SecurityLog_userId_idx`(`userId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `PlatformSettings` (
     `id` VARCHAR(191) NOT NULL,
-    `platformName` VARCHAR(191) NOT NULL,
+    `platformName` VARCHAR(191) NULL DEFAULT 'NexusAlpri',
+    `logoUrl` VARCHAR(191) NULL,
+    `watermarkUrl` VARCHAR(191) NULL,
+    `landingImageUrl` VARCHAR(191) NULL,
+    `authImageUrl` VARCHAR(191) NULL,
+    `primaryColor` VARCHAR(191) NULL DEFAULT '#673AB7',
+    `secondaryColor` VARCHAR(191) NULL DEFAULT '#81C784',
+    `accentColor` VARCHAR(191) NULL DEFAULT '#6F42C1',
+    `backgroundColorLight` VARCHAR(191) NULL DEFAULT '#F5F5F5',
+    `backgroundColorDark` VARCHAR(191) NULL DEFAULT '#303030',
+    `fontHeadline` VARCHAR(191) NULL DEFAULT 'Space Grotesk',
+    `fontBody` VARCHAR(191) NULL DEFAULT 'Inter',
     `allowPublicRegistration` BOOLEAN NOT NULL DEFAULT true,
     `enableEmailNotifications` BOOLEAN NOT NULL DEFAULT true,
-    `emailWhitelist` TEXT NULL,
-    `resourceCategories` TEXT NOT NULL,
+    `emailWhitelist` VARCHAR(191) NULL,
     `passwordMinLength` INTEGER NOT NULL DEFAULT 8,
     `passwordRequireUppercase` BOOLEAN NOT NULL DEFAULT true,
     `passwordRequireLowercase` BOOLEAN NOT NULL DEFAULT true,
@@ -233,23 +250,9 @@ CREATE TABLE `PlatformSettings` (
     `enableIdleTimeout` BOOLEAN NOT NULL DEFAULT true,
     `idleTimeoutMinutes` INTEGER NOT NULL DEFAULT 20,
     `require2faForAdmins` BOOLEAN NOT NULL DEFAULT false,
+    `resourceCategories` VARCHAR(191) NOT NULL,
     `updatedAt` DATETIME(3) NOT NULL,
 
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `SecurityLog` (
-    `id` VARCHAR(191) NOT NULL,
-    `event` ENUM('SUCCESSFUL_LOGIN', 'FAILED_LOGIN_ATTEMPT', 'PASSWORD_CHANGE_SUCCESS', 'TWO_FACTOR_ENABLED', 'TWO_FACTOR_DISABLED', 'USER_ROLE_CHANGED') NOT NULL,
-    `ipAddress` VARCHAR(191) NULL,
-    `userId` VARCHAR(191) NULL,
-    `emailAttempt` VARCHAR(191) NULL,
-    `details` TEXT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-
-    INDEX `SecurityLog_userId_idx`(`userId`),
-    INDEX `SecurityLog_event_idx`(`event`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -274,15 +277,6 @@ CREATE TABLE `TemplateBlock` (
 
     INDEX `TemplateBlock_templateId_idx`(`templateId`),
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `_LessonToTemplate` (
-    `A` VARCHAR(191) NOT NULL,
-    `B` VARCHAR(191) NOT NULL,
-
-    UNIQUE INDEX `_LessonToTemplate_AB_unique`(`A`, `B`),
-    INDEX `_LessonToTemplate_B_index`(`B`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -331,13 +325,13 @@ ALTER TABLE `Enrollment` ADD CONSTRAINT `Enrollment_userId_fkey` FOREIGN KEY (`u
 ALTER TABLE `Enrollment` ADD CONSTRAINT `Enrollment_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `Course`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `CourseProgress` ADD CONSTRAINT `CourseProgress_enrollmentId_fkey` FOREIGN KEY (`enrollmentId`) REFERENCES `Enrollment`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE `CourseProgress` ADD CONSTRAINT `CourseProgress_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `CourseProgress` ADD CONSTRAINT `CourseProgress_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `Course`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `CourseProgress` ADD CONSTRAINT `CourseProgress_enrollmentId_fkey` FOREIGN KEY (`enrollmentId`) REFERENCES `Enrollment`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `LessonCompletionRecord` ADD CONSTRAINT `LessonCompletionRecord_progressId_fkey` FOREIGN KEY (`progressId`) REFERENCES `CourseProgress`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -346,34 +340,28 @@ ALTER TABLE `LessonCompletionRecord` ADD CONSTRAINT `LessonCompletionRecord_prog
 ALTER TABLE `LessonCompletionRecord` ADD CONSTRAINT `LessonCompletionRecord_lessonId_fkey` FOREIGN KEY (`lessonId`) REFERENCES `Lesson`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Announcement` ADD CONSTRAINT `Announcement_authorId_fkey` FOREIGN KEY (`authorId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `Resource` ADD CONSTRAINT `Resource_uploaderId_fkey` FOREIGN KEY (`uploaderId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Resource` ADD CONSTRAINT `Resource_parentId_fkey` FOREIGN KEY (`parentId`) REFERENCES `Resource`(`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE `Announcement` ADD CONSTRAINT `Announcement_authorId_fkey` FOREIGN KEY (`authorId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `CalendarEvent` ADD CONSTRAINT `CalendarEvent_creatorId_fkey` FOREIGN KEY (`creatorId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Notification` ADD CONSTRAINT `Notification_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Resource` ADD CONSTRAINT `Resource_uploaderId_fkey` FOREIGN KEY (`uploaderId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Resource` ADD CONSTRAINT `Resource_parentId_fkey` FOREIGN KEY (`parentId`) REFERENCES `Resource`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `CalendarEvent` ADD CONSTRAINT `CalendarEvent_creatorId_fkey` FOREIGN KEY (`creatorId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `SecurityLog` ADD CONSTRAINT `SecurityLog_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `SecurityLog` ADD CONSTRAINT `SecurityLog_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `LessonTemplate` ADD CONSTRAINT `LessonTemplate_creatorId_fkey` FOREIGN KEY (`creatorId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `TemplateBlock` ADD CONSTRAINT `TemplateBlock_templateId_fkey` FOREIGN KEY (`templateId`) REFERENCES `LessonTemplate`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `_LessonToTemplate` ADD CONSTRAINT `_LessonToTemplate_A_fkey` FOREIGN KEY (`A`) REFERENCES `Lesson`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `_LessonToTemplate` ADD CONSTRAINT `_LessonToTemplate_B_fkey` FOREIGN KEY (`B`) REFERENCES `LessonTemplate`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `_SharedWithUsers` ADD CONSTRAINT `_SharedWithUsers_A_fkey` FOREIGN KEY (`A`) REFERENCES `Resource`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
