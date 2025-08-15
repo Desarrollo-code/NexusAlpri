@@ -6,13 +6,15 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Link as LinkIcon, Info, Notebook, Shield } from 'lucide-react';
+import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Link as LinkIcon, Info, Notebook, Shield, Loader2, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { getInitials } from '@/lib/security-log-utils';
 import { DecorativeFolder } from './decorative-folder';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import * as mammoth from 'mammoth';
+import * as xlsx from 'xlsx';
 
 const getIconForType = (type: AppResourceType['type']) => {
     const props = { className: "h-5 w-5 shrink-0" };
@@ -42,9 +44,66 @@ const getYoutubeVideoId = (url: string | undefined): string | null => {
     return match ? match[1] : null;
 };
 
+const OfficePreviewer = ({ url }: { url: string }) => {
+    const [html, setHtml] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const loadFile = async () => {
+            setIsLoading(true);
+            setError(null);
+            setHtml(null);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('No se pudo cargar el archivo.');
+                const arrayBuffer = await response.arrayBuffer();
+
+                if (url.endsWith('.docx')) {
+                    const result = await mammoth.convertToHtml({ arrayBuffer });
+                    setHtml(result.value);
+                } else if (url.endsWith('.xlsx')) {
+                    const workbook = xlsx.read(arrayBuffer, { type: 'buffer' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const htmlString = xlsx.utils.sheet_to_html(worksheet);
+                    setHtml(`<style>
+                        .xlsx-table { border-collapse: collapse; width: 100%; font-size: 12px; }
+                        .xlsx-table th, .xlsx-table td { border: 1px solid #ccc; padding: 4px; text-align: left; }
+                        .xlsx-table th { background-color: #f2f2f2; }
+                    </style>
+                    <div class="overflow-x-auto"><table class="xlsx-table">${htmlString}</table></div>`);
+                }
+
+            } catch (e) {
+                console.error("Error processing Office file:", e);
+                setError(e instanceof Error ? e.message : "Error al procesar el archivo.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadFile();
+    }, [url]);
+
+    if (isLoading) {
+        return <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin"/></div>;
+    }
+    if (error) {
+        return <div className="p-4 text-center text-destructive-foreground bg-destructive/80 text-sm"><AlertTriangle className="inline-block h-4 w-4 mr-1"/>{error}</div>
+    }
+    if (html) {
+        return <div className="p-4 bg-white text-black prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: html }} />;
+    }
+    return null;
+};
+
+
 const ResourcePreview = ({ resource }: { resource: AppResourceType }) => {
     const isImage = resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
     const isPdf = resource.url && resource.url.toLowerCase().endsWith('.pdf');
+    const isDocx = resource.url && resource.url.toLowerCase().endsWith('.docx');
+    const isXlsx = resource.url && resource.url.toLowerCase().endsWith('.xlsx');
     const isVideoFile = resource.url && /\.(mp4|webm|ogv)$/i.test(resource.url);
     const youtubeId = resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
     
@@ -84,6 +143,10 @@ const ResourcePreview = ({ resource }: { resource: AppResourceType }) => {
     
     if (isPdf) {
          return <iframe src={resource.url!} className="w-full h-full" title={`PDF Preview: ${resource.title}`}/>;
+    }
+    
+    if (isDocx || isXlsx) {
+        return <OfficePreviewer url={resource.url!} />;
     }
 
     return <FallbackIcon />;

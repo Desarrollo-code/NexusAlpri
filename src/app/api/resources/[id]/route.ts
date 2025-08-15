@@ -1,3 +1,4 @@
+
 // src/app/api/resources/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -73,7 +74,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 
 // DELETE a resource
 export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
-     const session = await getCurrentUser();
+    const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
@@ -89,16 +90,33 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
         }
         
         if (resourceToDelete.type === 'FOLDER') {
-            // Recursive delete for folders might be needed here, or prevent deletion if not empty
-            const children = await prisma.resource.count({ where: { parentId: id } });
-            if (children > 0) {
-                return NextResponse.json({ message: 'No se puede eliminar una carpeta que no está vacía' }, { status: 400 });
+            // Get all children IDs recursively
+            const getChildIds = async (folderId: string): Promise<string[]> => {
+                const children = await prisma.resource.findMany({
+                    where: { parentId: folderId },
+                    select: { id: true, type: true }
+                });
+                let ids: string[] = children.map(c => c.id);
+                for (const child of children) {
+                    if (child.type === 'FOLDER') {
+                        const grandChildIds = await getChildIds(child.id);
+                        ids = ids.concat(grandChildIds);
+                    }
+                }
+                return ids;
+            };
+            const allChildIds = await getChildIds(id);
+            // Delete all children first
+            if (allChildIds.length > 0) {
+                 await prisma.resource.deleteMany({
+                    where: { id: { in: allChildIds } }
+                });
             }
         }
 
+        // Delete the resource/folder itself
         await prisma.resource.delete({ where: { id } });
-        // Note: Actual file deletion from storage is not handled here.
-
+        
         return new NextResponse(null, { status: 204 });
     } catch (error) {
         console.error('[RESOURCE_DELETE_ERROR]', error);
