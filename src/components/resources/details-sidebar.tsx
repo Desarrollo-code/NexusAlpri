@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, Loader2, AlertTriangle, LinkIcon } from 'lucide-react';
+import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, Loader2, AlertTriangle, Link as LinkIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -77,6 +77,15 @@ const OfficePreviewer = ({ url }: { url: string }) => {
     return null;
 };
 
+const FallbackIcon = ({ resource }: { resource: AppResourceType }) => {
+    const Icon = getIconForType(resource.type);
+    return (
+        <div className="flex flex-col items-center justify-center h-full text-muted-foreground bg-muted/50">
+            <Icon className='h-16 w-16'/>
+            <span className="mt-2 text-sm">Sin vista previa disponible</span>
+        </div>
+    );
+};
 
 const ResourcePreview = ({ resource }: { resource: AppResourceType }) => {
     const isImage = resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
@@ -86,16 +95,6 @@ const ResourcePreview = ({ resource }: { resource: AppResourceType }) => {
     const isVideoFile = resource.url && /\.(mp4|webm|ogv)$/i.test(resource.url);
     const youtubeId = resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
     
-    const FallbackIcon = () => {
-        const Icon = getIconForType(resource.type);
-        return (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground bg-muted/50">
-                <Icon className='h-16 w-16'/>
-                <span className="mt-2 text-sm">Sin vista previa disponible</span>
-            </div>
-        );
-    };
-
     if (resource.type === 'FOLDER') {
         return (
             <div className="w-full h-full relative">
@@ -128,7 +127,7 @@ const ResourcePreview = ({ resource }: { resource: AppResourceType }) => {
         return <OfficePreviewer url={resource.url!} />;
     }
 
-    return <FallbackIcon />;
+    return <FallbackIcon resource={resource} />;
 }
 
 
