@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -33,13 +32,13 @@ export async function GET(req: NextRequest, context: { params: { userId: string,
             return NextResponse.json({
                 userId,
                 courseId,
-                completedLessonIds: [],
+                completedLessons: [],
                 progressPercentage: 0,
             });
         }
         
         // Map the included records to the desired structure for the client
-        const completedLessonIds = progress.completedLessons.map(record => ({
+        const completedLessonRecords = progress.completedLessons.map(record => ({
             lessonId: record.lessonId,
             type: record.type,
             score: record.score,
@@ -47,7 +46,8 @@ export async function GET(req: NextRequest, context: { params: { userId: string,
 
         return NextResponse.json({
             ...progress,
-            completedLessons: completedLessonIds, // Return the mapped array
+            completedLessons: completedLessonRecords,
+            completedLessonIds: progress.completedLessons.map(l => l.lessonId) // Keep for backward compatibility if needed
         });
 
     } catch (error) {
