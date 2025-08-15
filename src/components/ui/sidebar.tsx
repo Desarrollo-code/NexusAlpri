@@ -109,9 +109,9 @@ export const SidebarHeader = () => {
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
          <div className={cn(
             "flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg transition-all duration-300",
-            "w-14 h-14 bg-card dark:bg-white/20"
+            "w-12 h-12 bg-card dark:bg-white/20"
         )}>
-          <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={60} height={60} data-ai-hint="logo"/>
+          <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={48} height={48} data-ai-hint="logo"/>
         </div>
         {!isCollapsed && (
             <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-sidebar-foreground transition-opacity duration-300")}>

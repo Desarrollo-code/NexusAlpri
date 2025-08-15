@@ -47,18 +47,6 @@ export default function RootLayout({
                 </SidebarProvider>
             </TitleProvider>
         </AuthProvider>
-         <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
-            <Image
-                src="/uploads/images/watermark-alprigrama.png"
-                alt="Alprigrama Watermark"
-                width={80}
-                height={80}
-                className="opacity-40"
-                data-ai-hint="logo company"
-                priority
-                style={{ width: 'auto', height: 'auto' }}
-            />
-        </div>
       </body>
     </html>
   );
