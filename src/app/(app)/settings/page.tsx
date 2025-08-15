@@ -7,11 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, Image as ImageIcon, Paintbrush, Type, User } from 'lucide-react';
+import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, Image as ImageIcon, Paintbrush, Type, User, UploadCloud, XCircle, Replace } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { PlatformSettings as AppPlatformSettings } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -43,19 +43,89 @@ const availableFonts = [
     { value: 'Montserrat', label: 'Montserrat (Sans-serif)' },
 ];
 
-const UploadWidget = ({ label, currentImageUrl, onFileSelect, disabled }: { label: string, currentImageUrl?: string | null, onFileSelect: (file: File) => void, disabled: boolean }) => {
-    return (
-        <div className="space-y-2">
-            <Label>{label}</Label>
-            {currentImageUrl && (
-                <div className="relative w-32 h-16 border rounded-md overflow-hidden bg-muted">
-                    <Image src={currentImageUrl} alt={label} layout="fill" objectFit="contain" />
-                </div>
-            )}
-            <Input type="file" onChange={(e) => e.target.files && onFileSelect(e.target.files[0])} disabled={disabled} accept="image/png, image/jpeg, image/svg+xml" className="h-9 text-xs" />
-        </div>
-    );
+const UploadWidget = ({
+  label,
+  currentImageUrl,
+  onFileSelect,
+  onRemove,
+  disabled,
+}: {
+  label: string;
+  currentImageUrl?: string | null;
+  onFileSelect: (file: File) => void;
+  onRemove: () => void;
+  disabled: boolean;
+}) => {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      onFileSelect(e.target.files[0]);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <div className="relative aspect-video w-full border-2 border-dashed border-muted-foreground/30 rounded-lg flex items-center justify-center bg-muted/20">
+        {currentImageUrl ? (
+          <>
+            <Image
+              src={currentImageUrl}
+              alt={`Previsualización de ${label}`}
+              fill
+              className="object-contain p-2 rounded-lg"
+            />
+            <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="h-7 w-7 rounded-full shadow-md"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={disabled}
+              >
+                <Replace className="h-4 w-4" />
+                <span className="sr-only">Reemplazar imagen</span>
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="h-7 w-7 rounded-full shadow-md"
+                onClick={onRemove}
+                disabled={disabled}
+              >
+                <XCircle className="h-4 w-4" />
+                <span className="sr-only">Eliminar imagen</span>
+              </Button>
+            </div>
+          </>
+        ) : (
+          <Button
+            type="button"
+            variant="ghost"
+            className="flex flex-col h-full w-full items-center justify-center text-muted-foreground"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={disabled}
+          >
+            <UploadCloud className="h-8 w-8 mb-1" />
+            <span className="text-xs font-semibold">Subir imagen</span>
+          </Button>
+        )}
+      </div>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        disabled={disabled}
+        accept="image/png, image/jpeg, image/svg+xml, image/webp"
+        className="hidden"
+      />
+    </div>
+  );
 };
+
 
 const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) => {
     if (!settings) return null;
@@ -176,13 +246,17 @@ export default function SettingsPage() {
       try {
           const result: { url: string } = await uploadWithProgress('/api/upload/resource-file', formData, () => {});
           handleInputChange(field, result.url);
-          toast({ title: 'Imagen Subida', description: 'La imagen se ha subido. Guarda los cambios para aplicarla.' });
+          toast({ title: 'Imagen Subida', description: 'La nueva imagen está lista. Guarda los cambios para aplicarla.' });
       } catch (e) {
           toast({ title: 'Error de Subida', description: (e as Error).message, variant: 'destructive' });
       } finally {
           setIsSaving(false);
       }
   };
+
+  const handleRemoveImage = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl') => {
+      handleInputChange(field, null);
+  }
 
 
   const handleAddCategory = () => {
@@ -289,10 +363,10 @@ export default function SettingsPage() {
                             <CardDescription>Logo, marca de agua e imágenes de las páginas públicas.</CardDescription>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <UploadWidget label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(file) => handleFileChange('logoUrl', file)} disabled={isSaving} />
-                            <UploadWidget label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(file) => handleFileChange('watermarkUrl', file)} disabled={isSaving} />
-                            <UploadWidget label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(file) => handleFileChange('landingImageUrl', file)} disabled={isSaving} />
-                            <UploadWidget label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(file) => handleFileChange('authImageUrl', file)} disabled={isSaving} />
+                           <UploadWidget label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(file) => handleFileChange('logoUrl', file)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} />
+                           <UploadWidget label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(file) => handleFileChange('watermarkUrl', file)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} />
+                           <UploadWidget label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(file) => handleFileChange('landingImageUrl', file)} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving} />
+                           <UploadWidget label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(file) => handleFileChange('authImageUrl', file)} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving} />
                         </CardContent>
                     </Card>
                     <Card className="card-border-animated">
