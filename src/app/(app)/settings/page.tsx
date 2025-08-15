@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useTitle } from '@/contexts/title-context';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { uploadWithProgress } from '@/lib/upload-with-progress';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
@@ -70,6 +69,7 @@ const UploadWidget = ({
               alt={`Previsualización de ${label}`}
               fill
               className="object-contain p-2 rounded-lg"
+              data-ai-hint="logo company"
             />
             <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
               <Button
@@ -143,7 +143,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                         <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Apariencia General</h3>
                         <div className="mt-2 p-4 rounded-md shadow-sm" style={{ backgroundColor: settings.backgroundColorLight || '#FFFFFF' }}>
                             <div className="flex items-center gap-2 mb-4">
-                                {settings.logoUrl ? <Image src={settings.logoUrl} alt="logo" width={32} height={32} /> : <div className="w-8 h-8 rounded-md bg-muted" />}
+                                {settings.logoUrl ? <Image src={settings.logoUrl} alt="logo" width={32} height={32} data-ai-hint="logo company" /> : <div className="w-8 h-8 rounded-md bg-muted" />}
                                 <h4 className="font-headline text-base font-bold" style={{ color: settings.primaryColor }}>{settings.platformName}</h4>
                             </div>
                             <p className="font-body text-sm" style={{ color: '#000000' }}>Este es un texto de párrafo para previsualizar la fuente del cuerpo.</p>
@@ -160,13 +160,13 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                             <div className="space-y-2">
                                 <Label className="text-xs">Página de Inicio (Landing)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
-                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" layout="fill" objectFit="cover" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" layout="fill" objectFit="cover" data-ai-hint="office workspace" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                              <div className="space-y-2">
                                 <Label className="text-xs">Página de Acceso (Login)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
-                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" layout="fill" objectFit="cover" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" layout="fill" objectFit="cover" data-ai-hint="abstract background" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                         </div>
@@ -177,7 +177,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                            <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Marca de Agua</h3>
                            <div className="mt-2 h-20 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
                                 <span className="text-sm text-muted-foreground z-10">Contenido de la app</span>
-                                <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" layout="fill" objectFit="contain" className="opacity-20 z-0 p-2"/>
+                                <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" layout="fill" objectFit="contain" className="opacity-20 z-0 p-2" data-ai-hint="logo company"/>
                            </div>
                         </div>
                     )}
@@ -242,12 +242,12 @@ export default function SettingsPage() {
         const reader = new FileReader();
         reader.onload = () => {
             setImageToCrop(reader.result as string);
-            setCropUploadUrl('/api/upload/course-image'); // Using a generic image uploader
+            setCropUploadUrl('/api/upload/course-image');
             setCropField(field);
         };
         reader.readAsDataURL(file);
     }
-    if (e.target) e.target.value = ''; // Reset input
+    if (e.target) e.target.value = '';
   };
   
   const handleCropComplete = (croppedFileUrl: string) => {
@@ -501,6 +501,26 @@ export default function SettingsPage() {
                                 ) : ( <p className="text-sm text-muted-foreground text-center py-4">No hay categorías.</p> )}
                             </div>
                         </CardContent>
+                    </Card>
+                    <Card>
+                       <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-primary"/>Gestión de Usuarios</CardTitle>
+                            <CardDescription>Configuración relacionada con los usuarios y el registro.</CardDescription>
+                       </CardHeader>
+                       <CardContent>
+                            <div className="space-y-2">
+                               <Label htmlFor="emailWhitelist">Lista Blanca de Correos</Label>
+                               <Textarea 
+                                   id="emailWhitelist" 
+                                   value={formState.emailWhitelist || ''} 
+                                   onChange={e => handleInputChange('emailWhitelist', e.target.value)}
+                                   placeholder="ejemplo.com, empresa.com"
+                                   rows={3}
+                                   disabled={isSaving}
+                               />
+                               <p className="text-xs text-muted-foreground">Si se especifica, solo se permitirán correos de estos dominios. Deja en blanco para permitir todos. Separa los dominios con comas.</p>
+                           </div>
+                       </CardContent>
                     </Card>
                  </TabsContent>
             </Tabs>
