@@ -56,7 +56,7 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
       }
       
       const formData = new FormData();
-      formData.append('file', croppedImageResult.file, 'cropped-image.jpeg');
+      formData.append('file', croppedImageResult.file, 'cropped-image.png');
       
       const result: { url: string } = await uploadWithProgress(uploadUrl, formData, setUploadProgress);
       

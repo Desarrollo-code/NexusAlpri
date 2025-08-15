@@ -1,3 +1,4 @@
+
 'use client';
 
 import { type Area } from 'react-easy-crop';
@@ -66,10 +67,10 @@ export default async function getCroppedImg(
         reject(new Error('Canvas is empty'));
         return;
       }
-      const file = new File([blob], 'cropped-image.jpeg', { type: 'image/jpeg' });
+      const file = new File([blob], 'cropped-image.png', { type: 'image/png' });
       const url = URL.createObjectURL(blob);
       resolve({ file, url });
-    }, 'image/jpeg');
+    }, 'image/png');
   });
 }
 
