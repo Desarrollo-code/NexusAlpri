@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { User, PlatformSettings } from '@/types';
@@ -22,7 +21,7 @@ const DEFAULT_SETTINGS: PlatformSettings = {
     platformName: "NexusAlpri",
     allowPublicRegistration: true,
     enableEmailNotifications: true,
-    resourceCategories: [],
+    resourceCategories: ["General", "Recursos Humanos", "Ventas"],
     passwordMinLength: 8,
     passwordRequireUppercase: true,
     passwordRequireLowercase: true,
@@ -42,37 +41,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const { setTheme } = useTheme();
 
-  useEffect(() => {
-    const fetchSessionData = async () => {
-        try {
-            const [settingsRes, userRes] = await Promise.all([
-                fetch('/api/settings'),
-                fetch('/api/auth/me'),
-            ]);
+  const fetchSessionData = useCallback(async () => {
+    try {
+        const [settingsRes, userRes] = await Promise.all([
+            fetch('/api/settings'),
+            fetch('/api/auth/me'),
+        ]);
 
-            const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
-            setSettings(settingsData);
-            
-            if (userRes.ok) {
-              const userData = await userRes.json();
-              setUser(userData.user);
-              if (userData.user?.theme) {
-                setTheme(userData.user.theme);
-              }
-            } else {
-              setUser(null);
-            }
-        } catch (error) {
-            console.error("Failed to fetch session data:", error);
-            setUser(null);
-            setSettings(DEFAULT_SETTINGS);
-        } finally {
-            setIsLoading(false);
+        const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
+        setSettings(settingsData);
+        
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          setUser(userData.user);
+          if (userData.user?.theme) {
+            setTheme(userData.user.theme);
+          }
+        } else {
+          setUser(null);
         }
-    };
-    
-    fetchSessionData();
+    } catch (error) {
+        console.error("Failed to fetch session data:", error);
+        setUser(null);
+        setSettings(DEFAULT_SETTINGS);
+    } finally {
+        setIsLoading(false);
+    }
   }, [setTheme]);
+
+  useEffect(() => {
+    fetchSessionData();
+  }, [fetchSessionData]);
 
   const login = useCallback((userData: User) => {
     setUser(userData);
@@ -108,31 +107,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!prevSettings) return null;
       return { ...prevSettings, ...updatedData };
     });
+    // This will trigger a re-render in DynamicThemeProvider
   }, []);
 
   const updateTheme = useCallback(async (newTheme: string) => {
     if (!user) return;
-    // Optimistic UI update
-    setTheme(newTheme);
     updateUser({ theme: newTheme });
+    setTheme(newTheme);
 
     try {
-      const res = await fetch(`/api/users/${user.id}/theme`, {
+      await fetch(`/api/users/${user.id}/theme`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ theme: newTheme }),
       });
-      if (!res.ok) {
-        // Revert on failure
-        setTheme(user.theme || 'dark');
-        updateUser({ theme: user.theme });
-        console.error('Failed to save theme to database');
-      }
     } catch (error) {
-       // Revert on failure
-       setTheme(user.theme || 'dark');
-       updateUser({ theme: user.theme });
        console.error('Error saving theme:', error);
+       // Optional: revert optimistic update
+       updateUser({ theme: user.theme });
+       setTheme(user.theme || 'dark');
     }
   }, [user, setTheme, updateUser]);
 

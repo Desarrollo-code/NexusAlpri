@@ -6,7 +6,6 @@
 import * as React from "react";
 import { useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ChevronsLeft, Shield } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -14,11 +13,10 @@ import { useAuth } from "@/contexts/auth-context";
 import { getNavItemsForRole } from "@/lib/nav-items";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import { GradientIcon } from "./gradient-icon";
 import type { NavItem } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
+import { SidebarHeader } from "../layout/sidebar-header";
 
 const SidebarContext = React.createContext<any>(null);
 
@@ -96,35 +94,8 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const SidebarHeader = () => {
-  const { isCollapsed } = useSidebar();
-  const { settings } = useAuth();
-  
-  return (
-    <div className={cn(
-      "flex items-center h-20 px-4", 
-      isCollapsed ? 'justify-center' : 'justify-between'
-    )}>
-      <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
-         <div className={cn(
-            "flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg transition-all duration-300",
-            "w-12 h-12 bg-card dark:bg-white/20"
-        )}>
-          <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={48} height={48} data-ai-hint="logo"/>
-        </div>
-        {!isCollapsed && (
-            <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-foreground transition-opacity duration-300")}>
-              {settings?.platformName || 'NexusAlpri'}
-            </span>
-        )}
-      </Link>
-    </div>
-  );
-};
-
 export const SidebarContent = () => {
   const { user } = useAuth();
-  const { isCollapsed, isMobile } = useSidebar();
   const navItems = getNavItemsForRole(user?.role || 'STUDENT');
 
   return (
@@ -166,9 +137,9 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
-    // Exact match for dashboard, startsWith for others
+    if (item.path === '/') return activeItem === '/';
     if (item.path === '/dashboard') return activeItem === item.path;
-    return activeItem.startsWith(item.path) && item.path !== '/';
+    return activeItem.startsWith(item.path);
   }, [activeItem, item.path]);
 
   const showText = !isCollapsed || isMobile;

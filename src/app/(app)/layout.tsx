@@ -11,14 +11,13 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
-  useSidebar,
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { ThemeProvider } from '@/components/theme-provider';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
 import Image from 'next/image';
+import { SidebarHeader } from '@/components/layout/sidebar-header';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
@@ -69,18 +68,20 @@ function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
               </main>
           </div>
-          <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
-            <Image
-                src="/uploads/images/watermark-alprigrama.png"
-                alt="Alprigrama Watermark"
-                width={60}
-                height={60}
-                className="opacity-20"
-                data-ai-hint="logo company"
-                priority
-                style={{ width: 'auto', height: 'auto' }}
-            />
-        </div>
+          {settings?.watermarkUrl && (
+            <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
+              <Image
+                  src={settings.watermarkUrl}
+                  alt="Alprigrama Watermark"
+                  width={60}
+                  height={60}
+                  className="opacity-20"
+                  data-ai-hint="logo company"
+                  priority
+                  style={{ width: 'auto', height: 'auto' }}
+              />
+            </div>
+          )}
       </div>
     </ThemeProvider>
   );

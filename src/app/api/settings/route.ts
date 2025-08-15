@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -7,7 +6,6 @@ import type { NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-// The default settings, but with arrays that will be stringified for the DB
 const DEFAULT_DB_SETTINGS = {
   platformName: "NexusAlpri",
   allowPublicRegistration: true,
@@ -22,6 +20,18 @@ const DEFAULT_DB_SETTINGS = {
   enableIdleTimeout: true,
   idleTimeoutMinutes: 20,
   require2faForAdmins: false,
+  primaryColor: '#6366f1',
+  secondaryColor: '#a5b4fc',
+  accentColor: '#ec4899',
+  backgroundColorLight: '#f8fafc',
+  primaryColorDark: '#a5b4fc',
+  backgroundColorDark: '#020617',
+  fontHeadline: 'Space Grotesk',
+  fontBody: 'Inter',
+  logoUrl: null,
+  watermarkUrl: null,
+  landingImageUrl: null,
+  authImageUrl: null
 };
 
 // GET /api/settings - Fetches platform settings
@@ -30,13 +40,11 @@ export async function GET(req: NextRequest) {
     let dbSettings = await prisma.platformSettings.findFirst();
 
     if (!dbSettings) {
-      // If no settings exist, create them with default values
       dbSettings = await prisma.platformSettings.create({
         data: DEFAULT_DB_SETTINGS,
       });
     }
     
-    // Transform string fields to arrays for the client
     const settingsToReturn: PlatformSettings = {
         ...dbSettings,
         resourceCategories: dbSettings.resourceCategories?.split(',').filter(Boolean) ?? [],
@@ -47,7 +55,6 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     console.error('[SETTINGS_GET_ERROR]', error);
-    // If there's a DB error, return the parsed default settings object to allow the app to function.
     const fallbackSettings: PlatformSettings = {
         ...DEFAULT_DB_SETTINGS,
         resourceCategories: DEFAULT_DB_SETTINGS.resourceCategories.split(','),
@@ -71,13 +78,11 @@ export async function POST(req: NextRequest) {
         resourceCategories: dataFromClient.resourceCategories.join(','),
     };
 
-    // Remove fields that should not be manually set by client
     delete (dataToSave as any).id;
     delete (dataToSave as any).updatedAt;
     
     const currentSettings = await prisma.platformSettings.findFirst();
     
-    // --- START: CATEGORY DELETION CHECK ---
     if (currentSettings && currentSettings.resourceCategories) {
         const oldCategories = currentSettings.resourceCategories.split(',').filter(Boolean);
         const newCategories = dataToSave.resourceCategories.split(',').filter(Boolean);
@@ -91,17 +96,16 @@ export async function POST(req: NextRequest) {
                 if (totalUsage > 0) {
                     return NextResponse.json({
                         message: `No se puede eliminar la categoría "${category}" porque está siendo utilizada por ${totalUsage} curso(s) o recurso(s).`,
-                    }, { status: 409 }); // 409 Conflict
+                    }, { status: 409 }); 
                 }
             }
         }
     }
-    // --- END: CATEGORY DELETION CHECK ---
 
     const updatedDbSettings = await prisma.platformSettings.upsert({
       where: { id: currentSettings?.id || 'non-existent-id-for-upsert' },
       update: dataToSave,
-      create: dataToSave,
+      create: { ...DEFAULT_DB_SETTINGS, ...dataToSave },
     });
     
     const settingsToReturn: PlatformSettings = {
