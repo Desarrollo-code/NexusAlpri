@@ -77,7 +77,7 @@ const OfficePreviewer = ({ url }: { url: string }) => {
     return null;
 };
 
-const FallbackIcon = ({ resource }: { resource: AppResourceType }) => {
+export const FallbackIcon = ({ resource }: { resource: AppResourceType }) => {
     const Icon = getIconForType(resource.type);
     return (
         <div className="flex flex-col items-center justify-center h-full text-muted-foreground bg-muted/50">

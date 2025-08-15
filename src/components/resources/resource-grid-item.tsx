@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from 'next/image';
 import { getIconForType, getYoutubeVideoId } from '@/lib/resource-utils';
+import { FallbackIcon } from './details-sidebar';
 
 // --- Sub-components for Page ---
 const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onNavigate }: { resource: AppResourceType, onSelect: () => void, onEdit: (r: AppResourceType) => void, onDelete: (id: string) => void, onNavigate: (r: AppResourceType) => void }) => {
@@ -36,12 +37,6 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
         const isImage = !isFolder && resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
         const youtubeId = !isFolder && resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
         
-        const fallbackIcon = (
-          <div className="flex h-full w-full items-center justify-center bg-muted">
-            {React.cloneElement(getIconForType(resource.type), { className: "h-16 w-16 text-muted-foreground/50" })}
-          </div>
-        );
-        
         if (isFolder) {
             return (
                 <div className="w-full h-full relative">
@@ -56,7 +51,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
         if (youtubeId) {
             return <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail"/>
         }
-        return <FallbackIcon />;
+        return <FallbackIcon resource={resource} />;
     };
 
     return (
