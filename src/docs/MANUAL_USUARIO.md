@@ -1,3 +1,4 @@
+
 # Manual de Usuario de NexusAlpri
 
 ## 1. Introducción

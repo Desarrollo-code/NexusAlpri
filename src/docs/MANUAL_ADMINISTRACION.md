@@ -1,3 +1,4 @@
+
 # Manual de Administración de NexusAlpri
 
 ## 1. Introducción

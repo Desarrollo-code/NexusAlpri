@@ -60,7 +60,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
                 category, 
                 tags: Array.isArray(tags) ? tags.join(',') : '',
                 description,
-                ispublic: isPublic,
+                isPublic: isPublic,
                 sharedWith: isPublic ? { set: [] } : { set: sharedWithUserIds.map((id: string) => ({ id })) }
             },
         });
@@ -90,31 +90,12 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
         }
         
         if (resourceToDelete.type === 'FOLDER') {
-            // Get all children IDs recursively
-            const getChildIds = async (folderId: string): Promise<string[]> => {
-                const children = await prisma.resource.findMany({
-                    where: { parentId: folderId },
-                    select: { id: true, type: true }
-                });
-                let ids: string[] = children.map(c => c.id);
-                for (const child of children) {
-                    if (child.type === 'FOLDER') {
-                        const grandChildIds = await getChildIds(child.id);
-                        ids = ids.concat(grandChildIds);
-                    }
-                }
-                return ids;
-            };
-            const allChildIds = await getChildIds(id);
-            // Delete all children first
-            if (allChildIds.length > 0) {
-                 await prisma.resource.deleteMany({
-                    where: { id: { in: allChildIds } }
-                });
+            const children = await prisma.resource.findMany({ where: { parentId: id } });
+            if (children.length > 0) {
+                return NextResponse.json({ message: 'No se puede eliminar una carpeta que contiene otros recursos.' }, { status: 409 });
             }
         }
 
-        // Delete the resource/folder itself
         await prisma.resource.delete({ where: { id } });
         
         return new NextResponse(null, { status: 204 });

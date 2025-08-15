@@ -1,3 +1,4 @@
+
 // src/types.ts
 import type { LessonTemplate, TemplateBlock, Prisma } from "@prisma/client";
 
