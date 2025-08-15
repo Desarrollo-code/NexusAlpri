@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, FileQuestion } from 'lucide-react';
+import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Link as LinkIcon, Info, Notebook, Shield } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -14,12 +14,19 @@ import { getInitials } from '@/lib/security-log-utils';
 import { DecorativeFolder } from './decorative-folder';
 import React from 'react';
 
-interface ResourceDetailsSidebarProps {
-    resource: AppResourceType | null;
-    onClose: () => void;
-    onEdit: (resource: AppResourceType) => void;
-    onDelete: (id: string) => void;
-}
+const getIconForType = (type: AppResourceType['type']) => {
+    const props = { className: "h-5 w-5 shrink-0" };
+    switch (type) {
+      case 'FOLDER': return <FolderIcon {...props} />;
+      case 'DOCUMENT': return <FileTextIcon {...props} />;
+      case 'GUIDE': return <Info {...props} />;
+      case 'MANUAL': return <Notebook {...props} />;
+      case 'POLICY': return <Shield {...props} />;
+      case 'VIDEO': return <VideoIcon {...props} />;
+      case 'EXTERNAL_LINK': return <LinkIcon {...props} />;
+      default: return <FileQuestion {...props} />;
+    }
+};
 
 const getYoutubeVideoId = (url: string | undefined): string | null => {
     if (!url) return null;
@@ -38,25 +45,20 @@ const getYoutubeVideoId = (url: string | undefined): string | null => {
 const ResourcePreview = ({ resource }: { resource: AppResourceType }) => {
     const isImage = resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
     const isPdf = resource.url && resource.url.toLowerCase().endsWith('.pdf');
+    const isVideoFile = resource.url && /\.(mp4|webm|ogv)$/i.test(resource.url);
     const youtubeId = resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
     
-    const fallbackIcon = (
-        <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-            {React.cloneElement(resource.type === 'FOLDER' ? <FolderIcon /> : <FileQuestion />, { className: 'h-16 w-16' })}
-            <span className="mt-2 text-sm">Sin vista previa disponible</span>
-        </div>
-    );
+    const FallbackIcon = () => {
+        const Icon = getIconForType(resource.type) || FileQuestion;
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground bg-muted/50">
+                <Icon className='h-16 w-16'/>
+                <span className="mt-2 text-sm">Sin vista previa disponible</span>
+            </div>
+        );
+    };
 
-    if (isImage) {
-        return <Image src={resource.url!} alt={resource.title} fill className="object-contain p-2" data-ai-hint="document image" />;
-    }
-    if (youtubeId) {
-        return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
-    }
-    if (isPdf) {
-         return <iframe src={resource.url!} className="w-full h-full" title={`PDF Preview: ${resource.title}`}/>;
-    }
-     if (resource.type === 'FOLDER') {
+    if (resource.type === 'FOLDER') {
         return (
             <div className="w-full h-full relative">
                 <DecorativeFolder patternId={resource.id} className="absolute inset-0" />
@@ -66,7 +68,25 @@ const ResourcePreview = ({ resource }: { resource: AppResourceType }) => {
             </div>
         );
     }
-    return fallbackIcon;
+    
+    if (resource.type === 'VIDEO') {
+        if (youtubeId) {
+            return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+        }
+        if (isVideoFile) {
+            return <video src={resource.url} controls className="w-full h-full object-contain bg-black" />
+        }
+    }
+    
+    if (isImage) {
+        return <Image src={resource.url!} alt={resource.title} fill className="object-contain p-2" data-ai-hint="document image" />;
+    }
+    
+    if (isPdf) {
+         return <iframe src={resource.url!} className="w-full h-full" title={`PDF Preview: ${resource.title}`}/>;
+    }
+
+    return <FallbackIcon />;
 }
 
 
