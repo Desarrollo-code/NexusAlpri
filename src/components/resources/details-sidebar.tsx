@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, Link as LinkIcon, Loader2, AlertTriangle } from 'lucide-react';
+import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, Link as LinkIcon, Loader2, AlertTriangle, FileText as FileTextIcon, FileQuestion, Video as VideoIcon, Info, Notebook, Shield } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -15,11 +15,28 @@ import { DecorativeFolder } from './decorative-folder';
 import React, { useState, useEffect } from 'react';
 import * as mammoth from 'mammoth';
 import * as xlsx from 'xlsx';
-import { getIconForType, getYoutubeVideoId } from '@/lib/resource-utils';
+import { getYoutubeVideoId } from '@/lib/resource-utils';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DownloadButton } from '@/components/ui/download-button';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
+
+
+const getIconForType = (type: AppResourceType['type']) => {
+    const props = { className: "h-5 w-5 shrink-0" };
+    switch (type) {
+      case 'FOLDER': return <FolderIcon {...props} />;
+      case 'DOCUMENT': return <FileTextIcon {...props} />;
+      case 'GUIDE': return <Info {...props} />;
+      case 'MANUAL': return <Notebook {...props} />;
+      case 'POLICY': return <Shield {...props} />;
+      case 'VIDEO': return <VideoIcon {...props} />;
+      case 'EXTERNAL_LINK': return <LinkIcon {...props} />;
+      default: return <FileQuestion {...props} />;
+    }
+};
+
 
 const OfficePreviewer = ({ url }: { url: string }) => {
     const [html, setHtml] = useState<string | null>(null);
