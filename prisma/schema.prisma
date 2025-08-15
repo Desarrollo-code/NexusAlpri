@@ -51,154 +51,157 @@ enum ResourceType {
 // --- MODELS ---
 
 model User {
-  id                    String    @id @default(cuid())
+  id                    String                   @id @default(cuid())
   name                  String
-  email                 String    @unique
+  email                 String                   @unique
   password              String
-  role                  UserRole  @default(STUDENT)
+  role                  UserRole                 @default(STUDENT)
   avatar                String?
   theme                 String?
-  registeredDate        DateTime? @default(now())
-  isTwoFactorEnabled    Boolean   @default(false)
+  registeredDate        DateTime?                @default(now())
+  isTwoFactorEnabled    Boolean                  @default(false)
   twoFactorSecret       String?
-  coursesCreated        Course[]  @relation("InstructorCourses")
+  coursesCreated        Course[]                 @relation("InstructorCourses")
   enrollments           Enrollment[]
   courseProgress        CourseProgress[]
   announcements         Announcement[]
   notifications         Notification[]
-  eventsCreated         CalendarEvent[] @relation("EventCreator")
-  eventsAttending       CalendarEvent[] @relation("EventAttendees")
+  eventsCreated         CalendarEvent[]          @relation("EventCreator")
+  eventsAttending       CalendarEvent[]          @relation("EventAttendees")
   resourcesUploaded     Resource[]
   securityLogs          SecurityLog[]
   createdTemplates      LessonTemplate[]
   notes                 UserNote[]
   quizAttempts          QuizAttempt[]
-  sharedResources       Resource[] @relation("SharedWithUsers")
+  sharedResources       Resource[]               @relation("SharedWithUsers")
+  learningPathEnrollments LearningPathEnrollment[]
 }
 
 model Course {
-  id               String       @id @default(cuid())
-  title            String
-  description      String?      @db.Text
-  imageUrl         String?
-  category         String?
-  status           CourseStatus @default(DRAFT)
-  publicationDate  DateTime?
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  instructorId     String?
-  instructor       User?        @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: SetNull)
-  modules          Module[]
-  enrollments      Enrollment[]
-  progress         CourseProgress[]
-  learningPaths    LearningPathCourse[]
+  id              String             @id @default(cuid())
+  title           String
+  description     String?            @db.Text
+  imageUrl        String?
+  category        String?
+  status          CourseStatus       @default(DRAFT)
+  publicationDate DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  instructorId    String?
+  instructor      User?              @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: SetNull)
+  modules         Module[]
+  enrollments     Enrollment[]
+  progress        CourseProgress[]
+  learningPaths   LearningPathCourse[]
 }
 
 model Module {
-  id          String   @id @default(cuid())
-  title       String
-  order       Int
-  courseId    String
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lessons     Lesson[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  title     String
+  order     Int
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons   Lesson[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Lesson {
-  id             String                @id @default(cuid())
-  title          String
-  order          Int
-  moduleId       String
-  module         Module                @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  contentBlocks  ContentBlock[]
-  notes          UserNote[]
+  id              String                 @id @default(cuid())
+  title           String
+  order           Int
+  moduleId        String
+  module          Module                 @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  contentBlocks   ContentBlock[]
+  notes           UserNote[]
+  completionRecords LessonCompletionRecord[]
 }
 
 model ContentBlock {
-  id        String      @id @default(cuid())
-  type      LessonType
-  content   String?     @db.Text
-  order     Int
-  lessonId  String
-  lesson    Lesson      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  quiz      Quiz?
-  template  TemplateBlock?
+  id              String         @id @default(cuid())
+  type            LessonType
+  content         String?        @db.Text
+  order           Int
+  lessonId        String
+  lesson          Lesson         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  quiz            Quiz?
+  template        TemplateBlock? @relation(fields: [templateBlockId], references: [id])
+  templateBlockId String?        @unique
 }
 
 model Quiz {
-  id              String      @id @default(cuid())
+  id              String       @id @default(cuid())
   title           String
-  description     String?     @db.Text
-  contentBlockId  String      @unique
+  description     String?      @db.Text
+  contentBlockId  String       @unique
   contentBlock    ContentBlock @relation(fields: [contentBlockId], references: [id], onDelete: Cascade)
   questions       Question[]
   attempts        QuizAttempt[]
 }
 
 model Question {
-  id          String      @id @default(cuid())
+  id          String         @id @default(cuid())
   text        String
-  type        QuestionType @default(MULTIPLE_CHOICE)
+  type        QuestionType   @default(MULTIPLE_CHOICE)
   order       Int
   quizId      String
-  quiz        Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quiz        Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
   options     AnswerOption[]
   attempts    AnswerAttempt[]
 }
 
 model AnswerOption {
-  id          String      @id @default(cuid())
-  text        String
-  isCorrect   Boolean     @default(false)
-  feedback    String?     @db.Text
-  questionId  String
-  question    Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  id            String          @id @default(cuid())
+  text          String
+  isCorrect     Boolean         @default(false)
+  feedback      String?         @db.Text
+  questionId    String
+  question      Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
   AnswerAttempt AnswerAttempt[]
 }
 
 model QuizAttempt {
-  id          String      @id @default(cuid())
+  id          String          @id @default(cuid())
   userId      String
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   quizId      String
-  quiz        Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quiz        Quiz            @relation(fields: [quizId], references: [id], onDelete: Cascade)
   score       Float
-  submittedAt DateTime    @default(now())
+  submittedAt DateTime        @default(now())
   answers     AnswerAttempt[]
 }
 
 model AnswerAttempt {
-  id               String        @id @default(cuid())
+  id               String       @id @default(cuid())
   attemptId        String
-  attempt          QuizAttempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  attempt          QuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
   questionId       String
-  question         Question      @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  question         Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
   selectedOptionId String
-  selectedOption   AnswerOption  @relation(fields: [selectedOptionId], references: [id], onDelete: Cascade)
+  selectedOption   AnswerOption @relation(fields: [selectedOptionId], references: [id], onDelete: Cascade)
 }
 
 model Enrollment {
-  id        String          @id @default(cuid())
-  userId    String
-  courseId  String
-  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course    Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  id         String         @id @default(cuid())
+  userId     String
+  courseId   String
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course     Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
   enrolledAt DateTime       @default(now())
-  progress  CourseProgress?
+  progress   CourseProgress?
   
   @@unique([userId, courseId])
 }
 
 model CourseProgress {
-  id                 String                  @id @default(cuid())
+  id                 String                 @id @default(cuid())
   userId             String
-  user               User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseId           String
-  course             Course                  @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  enrollmentId       String                  @unique
-  enrollment         Enrollment              @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  progressPercentage Float                   @default(0)
+  course             Course                 @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrollmentId       String                 @unique
+  enrollment         Enrollment             @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  progressPercentage Float                  @default(0)
   completedLessons   LessonCompletionRecord[]
   
   @@unique([userId, courseId])
@@ -218,36 +221,35 @@ model LessonCompletionRecord {
 }
 
 model UserNote {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lessonId   String
-  lesson     Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  content    String   @db.Text
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, lessonId])
 }
 
-
 model Resource {
-  id            String       @id @default(cuid())
+  id            String        @id @default(cuid())
   title         String
-  description   String?      @db.Text
+  description   String?       @db.Text
   type          ResourceType
   category      String
-  tags          String?      @db.Text // Comma-separated
+  tags          String?       @db.Text // Comma-separated
   url           String?
-  uploadDate    DateTime     @default(now())
+  uploadDate    DateTime      @default(now())
   uploaderId    String?
-  uploader      User?        @relation(fields: [uploaderId], references: [id], onDelete: SetNull)
+  uploader      User?         @relation(fields: [uploaderId], references: [id], onDelete: SetNull)
   pin           String?
   parentId      String?
-  parent        Resource?    @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: NoAction)
-  children      Resource[]   @relation("FolderHierarchy")
-  ispublic      Boolean      @default(true)
-  sharedWith    User[]       @relation("SharedWithUsers")
+  parent        Resource?     @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: NoAction)
+  children      Resource[]    @relation("FolderHierarchy")
+  ispublic      Boolean       @default(true)
+  sharedWith    User[]        @relation("SharedWithUsers")
 }
 
 model Announcement {
@@ -348,34 +350,34 @@ model PlatformSettings {
 // --- Learning Paths ---
 
 model LearningPath {
-  id              String                  @id @default(cuid())
-  title           String
-  description     String?                 @db.Text
-  createdAt       DateTime                @default(now())
-  updatedAt       DateTime                @updatedAt
-  courses         LearningPathCourse[]
-  enrollments     LearningPathEnrollment[]
+  id          String                 @id @default(cuid())
+  title       String
+  description String?                @db.Text
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  courses     LearningPathCourse[]
+  enrollments LearningPathEnrollment[]
 }
 
 model LearningPathCourse {
-  id              String      @id @default(cuid())
-  pathId          String
-  courseId        String
-  order           Int
-  path            LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
-  course          Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  id       String         @id @default(cuid())
+  pathId   String
+  courseId String
+  order    Int
+  path     LearningPath   @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  course   Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([pathId, courseId])
   @@unique([pathId, order])
 }
 
 model LearningPathEnrollment {
-  id              String      @id @default(cuid())
-  userId          String
-  pathId          String
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  path            LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
-  enrolledAt      DateTime    @default(now())
+  id         String       @id @default(cuid())
+  userId     String
+  pathId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  path       LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  enrolledAt DateTime     @default(now())
 
   @@unique([userId, pathId])
 }
@@ -397,9 +399,10 @@ model LessonTemplate {
 }
 
 model TemplateBlock {
-  id          String        @id @default(cuid())
-  templateId  String
-  template    LessonTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  type        LessonType
-  order       Int
+  id           String         @id @default(cuid())
+  templateId   String
+  template     LessonTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  type         LessonType
+  order        Int
+  contentBlock ContentBlock?
 }
