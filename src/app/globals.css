@@ -50,23 +50,23 @@
   .dark {
     --background: 0 0% 0%; /* Negro Absoluto */
     --foreground: 210 20% 98%; /* Blanco casi puro */
-    --card: 224 71% 4%; /* Azul noche muy oscuro */
+    --card: 222 83% 4%; /* Azul Noche */
     --card-foreground: 210 20% 98%;
-    --popover: 224 71% 4%;
+    --popover: 222 83% 4%;
     --popover-foreground: 210 20% 98%;
-    --primary: 217 91% 60%; /* Azul Eléctrico */
+    --primary: 340 85% 55%; /* Magenta Eléctrico */
     --primary-foreground: 210 20% 98%;
-    --secondary: 173 95% 42%; /* Turquesa Intenso */
+    --secondary: 180 90% 45%; /* Cian/Teal Vibrante */
     --secondary-foreground: 210 20% 98%;
     --muted: 215 28% 17%; /* Azul grisáceo oscuro */
     --muted-foreground: 215 20% 65%;
-    --accent: 262 88% 59%; /* Violeta Brillante */
+    --accent: 170 80% 45%; /* Verde Azulado */
     --accent-foreground: 210 20% 98%;
-    --destructive: 0 84% 60%;
+    --destructive: 0 74% 50%;
     --destructive-foreground: 210 20% 98%;
     --border: 215 28% 17%;
     --input: 215 28% 17%;
-    --ring: 217 91% 60%;
+    --ring: 340 85% 55%;
     --radius: 1rem;
     
     /* Chart & Event Colors for Dark Theme */
@@ -97,6 +97,10 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-headline);
   }
 }
 
