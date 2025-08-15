@@ -245,7 +245,7 @@ export default function SettingsPage() {
       
       try {
           const result: { url: string } = await uploadWithProgress('/api/upload/resource-file', formData, () => {});
-          handleInputChange(field, result.url);
+          setFormState(prev => prev ? { ...prev, [field]: result.url } : null);
           toast({ title: 'Imagen Subida', description: 'La nueva imagen está lista. Guarda los cambios para aplicarla.' });
       } catch (e) {
           toast({ title: 'Error de Subida', description: (e as Error).message, variant: 'destructive' });
@@ -255,7 +255,7 @@ export default function SettingsPage() {
   };
 
   const handleRemoveImage = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl') => {
-      handleInputChange(field, null);
+      setFormState(prev => prev ? { ...prev, [field]: null } : null);
   }
 
 
@@ -523,3 +523,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
