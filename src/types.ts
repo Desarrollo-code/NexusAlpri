@@ -1,4 +1,3 @@
-
 // src/types.ts
 import type { LessonTemplate, TemplateBlock, Prisma } from "@prisma/client";
 
@@ -167,7 +166,7 @@ export interface EnterpriseResource {
     uploaderName: string;
     hasPin: boolean;
     parentId: string | null;
-    isPublic: boolean;
+    ispublic: boolean;
     sharedWith: Pick<User, 'id' | 'name' | 'avatar'>[];
 }
 

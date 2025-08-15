@@ -1,4 +1,3 @@
-
 // src/lib/resource-utils.tsx
 import React from 'react';
 import type { AppResourceType } from '@/types';

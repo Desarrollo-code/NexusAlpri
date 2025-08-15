@@ -1,4 +1,3 @@
-
 // src/app/api/resources/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -21,10 +20,10 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
         if (!resource) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
-        const { pin, tags, ...safeResource } = resource;
+        const { pin, ...safeResource } = resource;
         return NextResponse.json({
             ...safeResource,
-            tags: tags?.split(',').filter(Boolean) ?? [],
+            tags: safeResource.tags,
             hasPin: !!pin,
         });
     } catch (error) {
@@ -58,9 +57,9 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
             data: { 
                 title, 
                 category, 
-                tags: Array.isArray(tags) ? tags.join(',') : '',
+                tags, // tags is already an array of strings
                 description,
-                isPublic: isPublic,
+                ispublic: isPublic,
                 sharedWith: isPublic ? { set: [] } : { set: sharedWithUserIds.map((id: string) => ({ id })) }
             },
         });

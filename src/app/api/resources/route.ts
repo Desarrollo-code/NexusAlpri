@@ -16,49 +16,15 @@ export async function GET(req: NextRequest) {
     const parentId = searchParams.get('parentId') || null;
     const search = searchParams.get('search');
     const category = searchParams.get('category');
+    const type = searchParams.get('type');
+    const dateFrom = searchParams.get('dateFrom');
 
     // --- Start of Advanced Permission Logic ---
-
-    // 1. Get IDs of all folders shared with the user or created by the user
-    const userAccessibleFolders = await prisma.resource.findMany({
-        where: {
-            type: 'FOLDER',
-            OR: [
-                { ispublic: true },
-                { uploaderId: session.id },
-                { sharedWith: { some: { id: session.id } } }
-            ]
-        },
-        select: { id: true }
-    });
-    const userAccessibleFolderIds = userAccessibleFolders.map(f => f.id);
-
-    // 2. Recursively find all descendant folder IDs starting from the accessible ones
-    let allAccessibleFolderIds = new Set(userAccessibleFolderIds);
-    if (userAccessibleFolderIds.length > 0) {
-        let newIdsFound = true;
-        while (newIdsFound) {
-            const currentSize = allAccessibleFolderIds.size;
-            const childFolders = await prisma.resource.findMany({
-                where: {
-                    type: 'FOLDER',
-                    parentId: { in: Array.from(allAccessibleFolderIds) }
-                },
-                select: { id: true }
-            });
-            childFolders.forEach(f => allAccessibleFolderIds.add(f.id));
-            newIdsFound = allAccessibleFolderIds.size > currentSize;
-        }
-    }
-
-
-    // 3. Define the final permission clause
     const permissionsClause = {
         OR: [
-            { ispublic: true }, // Can see all public resources
-            { uploaderId: session.id }, // Can see all own resources
-            { sharedWith: { some: { id: session.id } } }, // Can see resources directly shared
-            { parentId: { in: Array.from(allAccessibleFolderIds) } } // Can see content inside accessible folders
+            { ispublic: true },
+            { uploaderId: session.id },
+            { sharedWith: { some: { id: session.id } } }
         ]
     };
     // --- End of Advanced Permission Logic ---
@@ -70,23 +36,26 @@ export async function GET(req: NextRequest) {
             OR: [
                 { title: { contains: search } },
                 { description: { contains: search } },
-                { tags: { contains: search } },
+                { tags: { has: search } },
             ],
         });
     }
-
     if (category && category !== 'all') {
         filterClauses.push({ category });
     }
+    if (type && type !== 'all') {
+        filterClauses.push({ type });
+    }
+    if (dateFrom) {
+        filterClauses.push({ uploadDate: { gte: new Date(dateFrom) } });
+    }
 
-    // Combine all conditions correctly
     const whereClause = {
         AND: [
             permissionsClause,
             ...filterClauses,
         ]
     };
-
 
     try {
         const resources = await prisma.resource.findMany({
@@ -102,9 +71,8 @@ export async function GET(req: NextRequest) {
         });
         
         // Don't expose the PIN hash to the client
-        const safeResources = resources.map(({ pin, tags, ...resource }) => ({
+        const safeResources = resources.map(({ pin, ...resource }) => ({
             ...resource,
-            tags: tags?.split(',').filter(Boolean) ?? [],
             hasPin: !!pin,
         }));
 
@@ -140,7 +108,7 @@ export async function POST(req: NextRequest) {
             description,
             url: url || null,
             category: category || 'General',
-            tags: Array.isArray(tags) ? tags.join(',') : '',
+            tags: tags || [],
             uploaderId: session.id,
             parentId: parentId || null,
             ispublic: isPublic === true,
@@ -160,7 +128,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ 
             ...safeResource,
-            tags: safeResource.tags?.split(',').filter(Boolean) ?? [],
+            tags: safeResource.tags,
             hasPin: !!pin,
         }, { status: 201 });
 
