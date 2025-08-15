@@ -293,7 +293,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                     <h2 className="text-3xl font-bold font-headline">NexusAlpri</h2>
                     <p className="mt-2 text-white/80 max-w-sm">Tu portal de conocimiento corporativo. Aprende, crece y avanza con nosotros.</p>
                 </div>
-                 <Image src="/uploads/images/world-map.png" alt="World Map" width={500} height={300} className="absolute bottom-4 right-4 opacity-10 object-contain" data-ai-hint="world map" />
+                 <Image src="https://placehold.co/600x400.png" alt="Decorative background" width={500} height={300} className="absolute bottom-0 right-0 opacity-20 object-cover" data-ai-hint="abstract background" />
             </div>
 
             <div className="w-full md:w-1/2 lg:w-[45%] p-6 sm:p-8 flex flex-col justify-center">
