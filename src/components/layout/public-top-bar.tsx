@@ -37,17 +37,14 @@ export function PublicTopBar() {
         </span>
       </Link>
       
-      <nav className="hidden md:flex items-center gap-2 p-2 rounded-full bg-foreground/5 backdrop-blur-sm border border-foreground/10">
+      <nav className="hidden md:flex items-center gap-2 p-1 rounded-full bg-background/50 backdrop-blur-sm border border-border">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
-             <Button key={item.href} variant="ghost" asChild className={cn(
+             <Button key={item.href} variant={isActive ? "secondary" : "ghost"} asChild className={cn(
                  "rounded-full transition-colors",
-                 "text-foreground/70 hover:bg-foreground/10 hover:text-foreground",
-                 isActive && "text-foreground bg-foreground/10"
              )}>
                 <Link href={item.href}>
-                    <item.icon className="mr-2 h-4 w-4" />
                     {item.label}
                 </Link>
              </Button>
@@ -55,9 +52,8 @@ export function PublicTopBar() {
         })}
       </nav>
       
-      <Button asChild className="hidden md:flex btn-primary-gradient">
+      <Button asChild className="hidden md:flex" variant="default">
         <Link href="/sign-in">
-            <LogIn className="mr-2 h-4 w-4"/>
             Acceder
         </Link>
       </Button>

@@ -5,34 +5,17 @@ import { cn } from "@/lib/utils";
 import React from 'react';
 
 export const DecorativeHeaderBackground = () => (
-  <div className="absolute top-0 left-0 right-0 h-48 -z-0 overflow-hidden" aria-hidden="true">
-    <svg
-      className="absolute inset-0 w-full h-full"
-      xmlns="http://www.w3.org/2000/svg"
-      preserveAspectRatio="none"
-    >
-      <defs>
-        <radialGradient id="grad1" cx="50%" cy="0%" r="90%" fx="50%" fy="0%">
-          <stop offset="0%" style={{ stopColor: 'hsl(var(--accent) / 0.1)' }} />
-          <stop offset="100%" style={{ stopColor: 'hsl(var(--accent) / 0)' }} />
-        </radialGradient>
-        <radialGradient id="grad2" cx="100%" cy="50%" r="70%" fx="100%" fy="50%">
-          <stop offset="0%" style={{ stopColor: 'hsl(var(--primary) / 0.1)' }} />
-          <stop offset="100%" style={{ stopColor: 'hsl(var(--primary) / 0)' }} />
-        </radialGradient>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#grad1)" />
-      <rect width="100%" height="100%" fill="url(#grad2)" />
-      <path
-        d="M-200 0 C -50 150, 200 50, 500 200 L 500 0 Z"
-        fill="hsl(var(--accent) / 0.05)"
-        className="animate-pulse-slow"
-      />
-      <path
-        d="M300 200 C 450 50, 700 250, 1000 100 L 1000 200 Z"
-        fill="hsl(var(--primary) / 0.05)"
-        className="animate-pulse-slow animation-delay-500"
-      />
+  <div className="absolute top-0 left-0 right-0 h-full w-full -z-10 overflow-hidden" aria-hidden="true">
+    <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 rounded-full bg-primary/10 animate-pulse-slow" />
+    <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 rounded-full bg-secondary/20 animate-pulse-slow" style={{ animationDelay: '2s' }} />
+    <svg className="absolute inset-0 w-full h-full opacity-50">
+        <defs>
+            <filter id="grainy-filter">
+                <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+            </filter>
+        </defs>
+        <rect width="100%" height="100%" filter="url(#grainy-filter)" style={{opacity: 0.03}} />
     </svg>
+    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-background via-transparent to-background" />
   </div>
 );
