@@ -6,13 +6,14 @@ import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
 import { DecorativeFolder } from '@/components/resources/decorative-folder';
-import { Edit, FolderIcon, MoreVertical, Trash2, Lock } from 'lucide-react';
+import { Edit, FolderIcon, MoreVertical, Trash2, Lock, Share2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import Image from 'next/image';
 import { getIconForType, getYoutubeVideoId } from '@/lib/resource-utils';
@@ -84,10 +85,17 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                                     <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 -mr-2 text-muted-foreground" aria-label={`Opciones para ${resource.title}`}><MoreVertical className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                    {!isFolder && resource.url && (
+                                        <DropdownMenuItem asChild>
+                                            <a href={resource.url} target="_blank" rel="noopener noreferrer" download>
+                                                <Download className="mr-2 h-4 w-4" /> Descargar
+                                            </a>
+                                        </DropdownMenuItem>
+                                    )}
                                     <DropdownMenuItem onClick={()=> onEdit(resource)}>
-                                        <Edit className="mr-2 h-4 w-4" />
-                                        Editar / Compartir
+                                        <Share2 className="mr-2 h-4 w-4" /> Editar / Compartir
                                     </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
