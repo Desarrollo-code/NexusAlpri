@@ -36,13 +36,18 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: 'Inscripción exitosa' }, { status: 201 });
         } else {
             // Unenroll
-            await prisma.enrollment.delete({
-                where: { userId_courseId: { userId: session.id, courseId } },
+            const enrollmentToDelete = await prisma.enrollment.findUnique({
+                where: { userId_courseId: { userId: session.id, courseId } }
             });
-            // Also delete progress associated with this enrollment
-            await prisma.courseProgress.deleteMany({
-                where: { userId: session.id, courseId }
-            });
+            if (enrollmentToDelete) {
+                // Delete progress first, then enrollment
+                await prisma.courseProgress.deleteMany({
+                    where: { enrollmentId: enrollmentToDelete.id }
+                });
+                await prisma.enrollment.delete({
+                    where: { id: enrollmentToDelete.id },
+                });
+            }
             return NextResponse.json({ message: 'Inscripción cancelada' });
         }
 
