@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, Image as ImageIcon, Paintbrush, Type } from 'lucide-react';
+import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, Image as ImageIcon, Paintbrush, Type, User } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
@@ -27,11 +27,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useTitle } from '@/contexts/title-context';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
-import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
+import { fontMap } from '@/lib/fonts';
 
 const availableFonts = [
     { value: 'Inter', label: 'Inter (Sans-serif)' },
@@ -47,14 +47,59 @@ const UploadWidget = ({ label, currentImageUrl, onFileSelect, disabled }: { labe
         <div className="space-y-2">
             <Label>{label}</Label>
             {currentImageUrl ? (
-                <div className="relative w-32 h-32 border rounded-md overflow-hidden">
+                <div className="relative w-32 h-16 border rounded-md overflow-hidden bg-muted">
                     <Image src={currentImageUrl} alt={label} layout="fill" objectFit="contain" />
                 </div>
             ) : null}
-            <Input type="file" onChange={(e) => e.target.files && onFileSelect(e.target.files[0])} disabled={disabled} accept="image/png, image/jpeg, image/svg+xml" />
+            <Input type="file" onChange={(e) => e.target.files && onFileSelect(e.target.files[0])} disabled={disabled} accept="image/png, image/jpeg, image/svg+xml" className="h-9 text-xs" />
         </div>
     );
 };
+
+const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) => {
+    if (!settings) return null;
+
+    const fontVars = {
+        '--font-headline': fontMap[settings.fontHeadline || 'Space Grotesk']?.style.fontFamily,
+        '--font-body': fontMap[settings.fontBody || 'Inter']?.style.fontFamily,
+    } as React.CSSProperties;
+
+    return (
+        <div className="space-y-4">
+             <Card className="overflow-hidden">
+                <CardHeader>
+                    <CardTitle>Vista Previa</CardTitle>
+                    <CardDescription>Así se verán los cambios en la plataforma.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="p-6 rounded-lg" style={{ ...fontVars, backgroundColor: settings.backgroundColorLight || '#FFFFFF' }}>
+                         <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Tema Claro</h3>
+                         <div className="mt-4 p-4 rounded-md shadow-sm" style={{ backgroundColor: '#FFFFFF' }}>
+                            <h4 className="font-headline text-base font-bold" style={{ color: settings.primaryColor }}>Título de Ejemplo</h4>
+                            <p className="font-body text-sm mt-1" style={{ color: '#000000' }}>Este es un texto de párrafo para previsualizar la fuente y el color del cuerpo.</p>
+                            <div className="flex gap-2 mt-4">
+                                <Button style={{ backgroundColor: settings.primaryColor, color: '#FFFFFF' }} size="sm">Botón Primario</Button>
+                                <Button style={{ backgroundColor: settings.secondaryColor, color: '#000000' }} size="sm">Botón Secundario</Button>
+                            </div>
+                        </div>
+                    </div>
+                     <div className="p-6 rounded-lg" style={{ ...fontVars, backgroundColor: settings.backgroundColorDark || '#000000' }}>
+                         <h3 className="text-lg font-bold" style={{ color: settings.primaryColorDark }}>Tema Oscuro</h3>
+                         <div className="mt-4 p-4 rounded-md shadow-sm" style={{ backgroundColor: '#0A0A0A' }}>
+                            <h4 className="font-headline text-base font-bold" style={{ color: settings.primaryColorDark }}>Título de Ejemplo</h4>
+                            <p className="font-body text-sm mt-1" style={{ color: '#FFFFFF' }}>Este es un texto de párrafo para previsualizar la fuente y el color del cuerpo.</p>
+                             <div className="flex gap-2 mt-4">
+                                <Button style={{ backgroundColor: settings.primaryColorDark, color: '#FFFFFF' }} size="sm">Botón Primario</Button>
+                                <Button style={{ backgroundColor: settings.secondaryColor || '#FFFFFF', color: '#000000' }} size="sm">Botón Secundario</Button>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    )
+}
+
 
 export default function SettingsPage() {
   const { user, settings: globalSettings, updateSettings } = useAuth();
@@ -207,12 +252,13 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">Ajusta los parámetros generales, de seguridad y apariencia de NexusAlpri.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2">
             <Tabs defaultValue="appearance" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="appearance">Apariencia</TabsTrigger>
-                    <TabsTrigger value="security">Seguridad y Generales</TabsTrigger>
+                    <TabsTrigger value="security">Seguridad</TabsTrigger>
+                    <TabsTrigger value="general">Generales</TabsTrigger>
                 </TabsList>
                 <TabsContent value="appearance" className="space-y-8 mt-6">
                    <Card className="card-border-animated">
@@ -261,16 +307,16 @@ export default function SettingsPage() {
                          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="fontHeadline">Fuente de Títulos</Label>
-                                <Select value={formState.fontHeadline || 'Space Grotesk'} onValueChange={(value) => handleInputChange('fontHeadline', value)}>
+                                 <Select value={formState.fontHeadline || 'Space Grotesk'} onValueChange={(value) => handleInputChange('fontHeadline', value)}>
                                     <SelectTrigger><SelectValue/></SelectTrigger>
-                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}</SelectContent>
+                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: fontMap[f.value]?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="fontBody">Fuente de Párrafos</Label>
                                  <Select value={formState.fontBody || 'Inter'} onValueChange={(value) => handleInputChange('fontBody', value)}>
                                     <SelectTrigger><SelectValue/></SelectTrigger>
-                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}</SelectContent>
+                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: fontMap[f.value]?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
                         </CardContent>
@@ -299,10 +345,7 @@ export default function SettingsPage() {
                             <div>
                                 <h4 className="font-medium mb-3">Política de Contraseñas</h4>
                                 <div className="space-y-4 p-3 border rounded-lg shadow-sm">
-                                    <div className="flex items-center justify-between">
-                                        <Label htmlFor="passwordMinLength">Longitud Mínima</Label>
-                                        <Input id="passwordMinLength" type="number" className="w-24" value={formState.passwordMinLength} onChange={(e) => handleInputChange('passwordMinLength', parseInt(e.target.value, 10) || 8)} min="8" disabled={isSaving} />
-                                    </div>
+                                    <div className="flex items-center justify-between"><Label htmlFor="passwordMinLength">Longitud Mínima</Label><Input id="passwordMinLength" type="number" className="w-24" value={formState.passwordMinLength} onChange={(e) => handleInputChange('passwordMinLength', parseInt(e.target.value, 10) || 8)} min="8" disabled={isSaving} /></div>
                                     <div className="flex items-center justify-between"><Label htmlFor="passwordRequireUppercase">Requerir Mayúscula</Label><Switch id="passwordRequireUppercase" checked={formState.passwordRequireUppercase} onCheckedChange={(c) => handleSwitchChange('passwordRequireUppercase', c)} disabled={isSaving} /></div>
                                     <div className="flex items-center justify-between"><Label htmlFor="passwordRequireLowercase">Requerir Minúscula</Label><Switch id="passwordRequireLowercase" checked={formState.passwordRequireLowercase} onCheckedChange={(c) => handleSwitchChange('passwordRequireLowercase', c)} disabled={isSaving} /></div>
                                     <div className="flex items-center justify-between"><Label htmlFor="passwordRequireNumber">Requerir Número</Label><Switch id="passwordRequireNumber" checked={formState.passwordRequireNumber} onCheckedChange={(c) => handleSwitchChange('passwordRequireNumber', c)} disabled={isSaving} /></div>
@@ -329,9 +372,40 @@ export default function SettingsPage() {
                         </CardContent>
                     </Card>
                 </TabsContent>
+                 <TabsContent value="general" className="space-y-8 mt-6">
+                    <Card className="card-border-animated">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary" />Categorías de Recursos</CardTitle>
+                            <CardDescription>Gestiona las categorías usadas en cursos y la biblioteca.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="newCategoryName">Nueva Categoría</Label>
+                                <div className="flex gap-2">
+                                <Input id="newCategoryName" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Ej: Marketing" disabled={isSaving}/>
+                                <Button onClick={handleAddCategory} disabled={isSaving || !newCategory.trim()}>Añadir</Button>
+                                </div>
+                            </div>
+                            <Separator />
+                            <div>
+                                <h4 className="text-sm font-medium mb-3">Categorías Existentes:</h4>
+                                {formState.resourceCategories.length > 0 ? (
+                                <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                                    {formState.resourceCategories.map(category => (
+                                    <div key={category} className="flex items-center justify-between p-2.5 border rounded-lg bg-card text-sm">
+                                        <span className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/>{category}</span>
+                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => setCategoryToDelete(category)} disabled={isSaving}><Trash2 className="h-4 w-4" /><span className="sr-only">Eliminar {category}</span></Button>
+                                    </div>))}
+                                </div>
+                                ) : ( <p className="text-sm text-muted-foreground text-center py-4">No hay categorías.</p> )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                 </TabsContent>
             </Tabs>
         </div>
-        <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+        <div className="lg:col-span-1 lg:sticky lg:top-24 space-y-6">
+            <ThemePreview settings={formState} />
             <Card className="card-border-animated">
                 <CardHeader><CardTitle>Guardar Cambios</CardTitle></CardHeader>
                 <CardContent>
@@ -340,31 +414,6 @@ export default function SettingsPage() {
                         {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         {isSaving ? 'Guardando...' : 'Guardar Configuración'}
                     </Button>
-                </CardContent>
-            </Card>
-            <Card className="card-border-animated">
-                <CardHeader><CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary" />Categorías de Recursos</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="newCategoryName">Nueva Categoría</Label>
-                    <div className="flex gap-2">
-                    <Input id="newCategoryName" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Ej: Marketing" disabled={isSaving}/>
-                    <Button onClick={handleAddCategory} disabled={isSaving || !newCategory.trim()}>Añadir</Button>
-                    </div>
-                </div>
-                <Separator />
-                <div>
-                    <h4 className="text-sm font-medium mb-3">Categorías Existentes:</h4>
-                    {formState.resourceCategories.length > 0 ? (
-                    <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                        {formState.resourceCategories.map(category => (
-                        <div key={category} className="flex items-center justify-between p-2.5 border rounded-lg bg-card text-sm">
-                            <span className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/>{category}</span>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => setCategoryToDelete(category)} disabled={isSaving}><Trash2 className="h-4 w-4" /><span className="sr-only">Eliminar {category}</span></Button>
-                        </div>))}
-                    </div>
-                    ) : ( <p className="text-sm text-muted-foreground text-center py-4">No hay categorías.</p> )}
-                </div>
                 </CardContent>
             </Card>
         </div>
