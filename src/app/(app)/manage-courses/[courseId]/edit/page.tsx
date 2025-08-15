@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Zap, CircleOff, Paperclip, ChevronRight, Calendar as CalendarIcon, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Zap, CircleOff, Paperclip, ChevronRight, Calendar as CalendarIcon, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState, ChangeEvent, useCallback, useMemo } from 'react';
@@ -54,6 +54,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ImageCropper } from '@/components/image-cropper';
 import { useTitle } from '@/contexts/title-context';
+import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 
 
 // === TIPOS E INTERFACES ===
@@ -196,12 +197,13 @@ function OptionsEditor({ moduleIndex, lessonIndex, blockIndex, questionIndex }: 
 }
 OptionsEditor.displayName = 'OptionsEditor';
 
-function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPreviewQuizDetails }: {
+function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPreviewQuizDetails, setAnalyticsQuizId }: {
     moduleIndex: number;
     lessonIndex: number;
     blockIndex: number;
     onClose: () => void;
-    setPreviewQuizDetails: (details: { moduleIndex: number; lessonIndex: number, blockIndex: number }) => void;
+    setPreviewQuizDetails: (details: { moduleIndex: number; lessonIndex: number, blockIndex: number } | null) => void;
+    setAnalyticsQuizId: (quizId: string | null) => void;
 }) {
     const { control, register, watch, setValue, getValues } = useFormContext<EditableCourse>();
     const { toast } = useToast();
@@ -283,7 +285,7 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPr
                     </ScrollArea>
                 </div>
                 <DialogFooter className="border-t pt-4 flex justify-between w-full">
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         <Button 
                             type="button" 
                             variant="outline" 
@@ -296,7 +298,15 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPr
                             onClick={() => setPreviewQuizDetails({ moduleIndex, lessonIndex, blockIndex })}
                             disabled={!currentQuizData?.questions || currentQuizData.questions.length === 0}
                         >
-                            <Eye className="mr-2 h-4 w-4" /> Previsualizar Quiz
+                            <Eye className="mr-2 h-4 w-4" /> Previsualizar
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setAnalyticsQuizId(currentQuizData?.id || null)}
+                            disabled={!currentQuizData?.id}
+                        >
+                            <BarChart3 className="mr-2 h-4 w-4" /> Analíticas
                         </Button>
                     </div>
                     <Button onClick={onClose} type="button">Cerrar Editor</Button>
@@ -317,13 +327,12 @@ const getBlockTypeIcon = (type: AppLessonType) => {
     }
 };
 
-const ContentBlockList = React.memo(({ moduleIndex, lessonIndex, setItemToDeleteDetails, isSaving, openQuizEditor, openQuizPreview, appendBlock }: {
+const ContentBlockList = React.memo(({ moduleIndex, lessonIndex, setItemToDeleteDetails, isSaving, openQuizEditor, appendBlock }: {
     moduleIndex: number;
     lessonIndex: number;
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
     isSaving: boolean;
     openQuizEditor: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void;
-    openQuizPreview: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void;
     appendBlock: (moduleIndex: number, lessonIndex: number, newBlock: EditableContentBlock) => void;
 }) => {
     const { control, getValues, watch } = useFormContext<EditableCourse>();
@@ -357,7 +366,6 @@ const ContentBlockList = React.memo(({ moduleIndex, lessonIndex, setItemToDelete
                                         isSaving={isSaving}
                                         setItemToDeleteDetails={setItemToDeleteDetails}
                                         openQuizEditor={openQuizEditor}
-                                        openQuizPreview={openQuizPreview}
                                     />
                                 );
                             })}
@@ -385,7 +393,7 @@ const ContentBlockList = React.memo(({ moduleIndex, lessonIndex, setItemToDelete
 });
 ContentBlockList.displayName = 'ContentBlockList';
 
-const ContentBlockItem = React.memo(({ moduleIndex, lessonIndex, blockIndex, dndId, isSaving, setItemToDeleteDetails, openQuizEditor, openQuizPreview }: {
+const ContentBlockItem = React.memo(({ moduleIndex, lessonIndex, blockIndex, dndId, isSaving, setItemToDeleteDetails, openQuizEditor }: {
     moduleIndex: number;
     lessonIndex: number;
     blockIndex: number;
@@ -393,7 +401,6 @@ const ContentBlockItem = React.memo(({ moduleIndex, lessonIndex, blockIndex, dnd
     isSaving: boolean;
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
     openQuizEditor: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void;
-    openQuizPreview: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void;
 }) => {
     const { control, getValues, register, watch } = useFormContext<EditableCourse>();
     const block = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}` as const);
@@ -545,6 +552,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
     const { getValues, register, watch, setValue } = useFormContext<EditableCourse>();
     const [quizEditorDetails, setQuizEditorDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
     const [previewQuizDetails, setPreviewQuizDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
+    const [analyticsQuizId, setAnalyticsQuizId] = useState<string | null>(null);
     const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
     const [templateName, setTemplateName] = useState('');
     const [templateDescription, setTemplateDescription] = useState('');
@@ -554,14 +562,6 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
     const [isExpanded, setIsExpanded] = useState(false);
 
     const openQuizEditor = useCallback((mIndex: number, lIndex: number, bIndex: number) => setQuizEditorDetails({ moduleIndex: mIndex, lessonIndex: lIndex, blockIndex: bIndex }), []);
-    const openQuizPreview = useCallback((mIndex: number, lIndex: number, bIndex: number) => {
-        const quizData = getValues(`modules.${mIndex}.lessons.${lIndex}.contentBlocks.${bIndex}.quiz`);
-        if (quizData && quizData.questions && quizData.questions.length > 0) {
-            setPreviewQuizDetails({ moduleIndex: mIndex, lessonIndex: lIndex, blockIndex: bIndex });
-        } else {
-            toast({ title: "Quiz Vacío", description: "Añade preguntas al quiz antes de previsualizar.", variant: "default" });
-        }
-    }, [getValues, toast]);
 
     const course = watch();
     const isCreatorPreview = user?.role === 'ADMINISTRATOR' || user?.id === course.instructorId;
@@ -650,7 +650,6 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                             setItemToDeleteDetails={setItemToDeleteDetails}
                             isSaving={isSaving}
                             openQuizEditor={openQuizEditor}
-                            openQuizPreview={openQuizPreview}
                             appendBlock={appendBlock}
                         />
                     )}
@@ -659,6 +658,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                             {...quizEditorDetails}
                             onClose={() => setQuizEditorDetails(null)}
                             setPreviewQuizDetails={setPreviewQuizDetails}
+                            setAnalyticsQuizId={setAnalyticsQuizId}
                         />
                     )}
                     {previewQuizDetails?.lessonIndex === lessonIndex && (
@@ -676,6 +676,19 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                                 isCreatorPreview={true}
                             />
                           </DialogContent>
+                        </Dialog>
+                    )}
+                    {analyticsQuizId && (
+                        <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setAnalyticsQuizId(null)}>
+                            <DialogContent className="max-w-4xl w-[95vw] h-[90vh] flex flex-col">
+                                <DialogHeader>
+                                    <DialogTitle>Analíticas del Quiz</DialogTitle>
+                                    <DialogDescription>Rendimiento detallado de los estudiantes en este quiz.</DialogDescription>
+                                </DialogHeader>
+                                <div className="flex-grow overflow-hidden">
+                                   <QuizAnalyticsView quizId={analyticsQuizId} />
+                                </div>
+                            </DialogContent>
                         </Dialog>
                     )}
                      <Dialog open={showSaveTemplateModal} onOpenChange={setShowSaveTemplateModal}>
