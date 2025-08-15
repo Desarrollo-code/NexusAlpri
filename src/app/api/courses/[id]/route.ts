@@ -345,3 +345,5 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
         return NextResponse.json({ message: 'Error al eliminar el curso' }, { status: 500 });
     }
 }
+
+    

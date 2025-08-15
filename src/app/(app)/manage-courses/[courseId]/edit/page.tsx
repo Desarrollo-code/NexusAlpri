@@ -1,3 +1,4 @@
+
 // En /home/user/studio/src/app/(app)/manage-courses/[courseId]/edit/page.tsx
 
 'use client';
@@ -1100,7 +1101,7 @@ export default function EditCoursePage() {
 
         toast({
             title: `${type.charAt(0).toUpperCase() + type.slice(1)} marcado para eliminación`,
-            description: `Se eliminará al guardar los cambios.`,
+            description: `Se eliminará al guardar los cambios del curso.`,
             variant: "default",
         });
 
@@ -1466,3 +1467,5 @@ export default function EditCoursePage() {
         </FormProvider>
     );
 }
+
+    
