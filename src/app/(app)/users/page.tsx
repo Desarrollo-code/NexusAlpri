@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -105,11 +104,11 @@ export default function UsersPage() {
       params.append('search', debouncedSearchTerm);
     }
     
-    fetch(`/api/users?${''\'\'}${params.toString()}${''\'\'}`, { cache: 'no-store' })
+    fetch(`/api/users?${params.toString()}`, { cache: 'no-store' })
       .then(res => {
         if (!res.ok) {
           return res.json().then(errorData => {
-            throw new Error(errorData.message || `Falló la carga de usuarios: ${''\'\'}${res.statusText}${''\'\'}`);
+            throw new Error(errorData.message || `Falló la carga de usuarios: ${res.statusText}`);
           });
         }
         return res.json();
@@ -156,7 +155,7 @@ export default function UsersPage() {
      const newQueryString = createQueryString({ page: 1, search: debouncedSearchTerm });
      // Avoid pushing the same query string
      if (debouncedSearchTerm !== (searchParams.get('search') || '') || !searchParams.get('page')) {
-         router.push(`${''\'\'}${pathname}?${newQueryString}${''\'\'}`);
+         router.push(`${pathname}?${newQueryString}`);
      }
   }, [debouncedSearchTerm, pathname, router, createQueryString, searchParams]);
   
@@ -164,7 +163,7 @@ export default function UsersPage() {
   const getInitials = (name?: string | null) => {
     if (!name) return '??';
     const names = name.split(' ');
-    if (names.length > 1 && names[0] && names[names.length - 1]) return `${''\'\'}${names[0][0]}${names[names.length - 1][0]}${''\'\'}`.toUpperCase();
+    if (names.length > 1 && names[0] && names[names.length - 1]) return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
     if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
     return name.substring(0, 2).toUpperCase();
   };
@@ -220,7 +219,7 @@ export default function UsersPage() {
   
   const handlePageChange = (page: number) => {
       const newQueryString = createQueryString({ page });
-      router.push(`${''\'\'}${pathname}?${newQueryString}${''\'\'}`);
+      router.push(`${pathname}?${newQueryString}`);
   };
 
 
@@ -250,7 +249,7 @@ export default function UsersPage() {
     }
 
     const method = userToEdit ? 'PUT' : 'POST';
-    const endpoint = userToEdit ? `/api/users/${''\'\'}${userToEdit.id}${''\'\'}` : '/api/users';
+    const endpoint = userToEdit ? `/api/users/${userToEdit.id}` : '/api/users';
 
     try {
       const response = await fetch(endpoint, {
@@ -268,7 +267,7 @@ export default function UsersPage() {
       
       toast({ 
         title: userToEdit ? "Usuario Actualizado" : "Usuario Creado", 
-        description: `El usuario ${''\'\'}${savedUser.name}${''\'\'} ha sido ${userToEdit ? 'actualizado' : 'creado'}.` 
+        description: `El usuario ${savedUser.name} ha sido ${userToEdit ? 'actualizado' : 'creado'}.` 
       });
       fetchUsers();
       setShowAddEditModal(false);
@@ -291,12 +290,12 @@ export default function UsersPage() {
     }
     setIsProcessing(true);
     try {
-      const response = await fetch(`/api/users/${''\'\'}${userToDelete.id}${''\'\'}`, { method: 'DELETE' });
+      const response = await fetch(`/api/users/${userToDelete.id}`, { method: 'DELETE' });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Falló al eliminar el usuario');
       }
-      toast({ title: "Usuario Eliminado", description: `El usuario ${''\'\'}${userToDelete.name}${''\'\'} ha sido eliminado.` });
+      toast({ title: "Usuario Eliminado", description: `El usuario ${userToDelete.name} ha sido eliminado.` });
       fetchUsers();
     } catch (err) {
       toast({ title: "Error al eliminar", description: err instanceof Error ? err.message : 'No se pudo eliminar el usuario.', variant: "destructive" });
@@ -319,7 +318,7 @@ export default function UsersPage() {
     
     setIsProcessing(true);
     try {
-      const response = await fetch(`/api/users/${''\'\'}${userToChangeRole.id}${''\'\'}`, {
+      const response = await fetch(`/api/users/${userToChangeRole.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: selectedNewRole }), 
@@ -329,7 +328,7 @@ export default function UsersPage() {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Falló al cambiar el rol del usuario');
       }
-      toast({ title: "Rol Actualizado", description: `El rol de ${''\'\'}${userToChangeRole.name}${''\'\'} ha sido cambiado a ${getRoleInSpanish(selectedNewRole)}.` });
+      toast({ title: "Rol Actualizado", description: `El rol de ${userToChangeRole.name} ha sido cambiado a ${getRoleInSpanish(selectedNewRole)}.` });
       fetchUsers(); 
       setShowChangeRoleDialog(false);
       setUserToChangeRole(null);
@@ -391,7 +390,7 @@ export default function UsersPage() {
               <TableCell>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                    <Button aria-haspopup="true" size="icon" variant="ghost" aria-label={`Acciones para ${''\'\'}${u.name}${''\'\'}`}>
+                    <Button aria-haspopup="true" size="icon" variant="ghost" aria-label={`Acciones para ${u.name}`}>
                         <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">Toggle menu</span>
                     </Button>
@@ -462,7 +461,7 @@ export default function UsersPage() {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2" aria-label={`Acciones para ${''\'\'}${u.name}${''\'\'}`}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2" aria-label={`Acciones para ${u.name}`}>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
