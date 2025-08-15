@@ -185,4 +185,3 @@ La autenticación se realiza a través de un token JWT en una cookie http-only. 
 *   **Código Asíncrono:** Utilizar `async/await` para operaciones asíncronas.
 *   **Comentarios:** Añadir comentarios JSDoc a funciones complejas y a las props de los componentes para clarificar su propósito.
 
-    
