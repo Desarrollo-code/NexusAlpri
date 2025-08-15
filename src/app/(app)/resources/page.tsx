@@ -55,6 +55,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/security-log-utils';
 import { Textarea } from '@/components/ui/textarea';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
+import { getIconForType } from '@/lib/resource-utils';
 
 
 // --- Types and Mappers ---
