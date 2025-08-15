@@ -244,19 +244,18 @@ export default function SettingsPage() {
   
   const handleFileSelected = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl', e: ChangeEvent<HTMLInputElement>, useCropper: boolean) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (useCropper) {
-          const reader = new FileReader();
-          reader.onload = () => {
-              setImageToCrop(reader.result as string);
-              setCropUploadUrl('/api/upload/course-image'); 
-              setCropField(field);
-          };
-          reader.readAsDataURL(file);
-      } else {
-          // Direct upload without cropper
-          handleDirectUpload(field, file);
-      }
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+            if (useCropper) {
+                setImageToCrop(reader.result as string);
+                setCropUploadUrl('/api/upload/course-image');
+                setCropField(field);
+            } else {
+                handleDirectUpload(field, file);
+            }
+        };
+        reader.readAsDataURL(file);
     }
     if (e.target) e.target.value = '';
   };
@@ -587,3 +586,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
