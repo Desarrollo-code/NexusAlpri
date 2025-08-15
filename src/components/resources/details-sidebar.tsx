@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, Link as LinkIcon, Loader2, AlertTriangle, FileText as FileTextIcon, FileQuestion, Video as VideoIcon, Info, Notebook, Shield } from 'lucide-react';
+import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, Loader2, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
