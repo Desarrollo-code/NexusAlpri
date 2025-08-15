@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -46,11 +47,11 @@ const UploadWidget = ({ label, currentImageUrl, onFileSelect, disabled }: { labe
     return (
         <div className="space-y-2">
             <Label>{label}</Label>
-            {currentImageUrl ? (
+            {currentImageUrl && (
                 <div className="relative w-32 h-16 border rounded-md overflow-hidden bg-muted">
                     <Image src={currentImageUrl} alt={label} layout="fill" objectFit="contain" />
                 </div>
-            ) : null}
+            )}
             <Input type="file" onChange={(e) => e.target.files && onFileSelect(e.target.files[0])} disabled={disabled} accept="image/png, image/jpeg, image/svg+xml" className="h-9 text-xs" />
         </div>
     );
@@ -72,28 +73,49 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                     <CardDescription>Así se verán los cambios en la plataforma.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="p-6 rounded-lg" style={{ ...fontVars, backgroundColor: settings.backgroundColorLight || '#FFFFFF' }}>
-                         <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Tema Claro</h3>
-                         <div className="mt-4 p-4 rounded-md shadow-sm" style={{ backgroundColor: '#FFFFFF' }}>
-                            <h4 className="font-headline text-base font-bold" style={{ color: settings.primaryColor }}>Título de Ejemplo</h4>
-                            <p className="font-body text-sm mt-1" style={{ color: '#000000' }}>Este es un texto de párrafo para previsualizar la fuente y el color del cuerpo.</p>
+                     {/* Preview for Light Theme */}
+                    <div className="p-4 rounded-lg border bg-background" style={{...fontVars}}>
+                        <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Apariencia General</h3>
+                        <div className="mt-2 p-4 rounded-md shadow-sm" style={{ backgroundColor: settings.backgroundColorLight || '#FFFFFF' }}>
+                            <div className="flex items-center gap-2 mb-4">
+                                {settings.logoUrl ? <Image src={settings.logoUrl} alt="logo" width={32} height={32} /> : <div className="w-8 h-8 rounded-md bg-muted" />}
+                                <h4 className="font-headline text-base font-bold" style={{ color: settings.primaryColor }}>{settings.platformName}</h4>
+                            </div>
+                            <p className="font-body text-sm" style={{ color: '#000000' }}>Este es un texto de párrafo para previsualizar la fuente del cuerpo.</p>
                             <div className="flex gap-2 mt-4">
                                 <Button style={{ backgroundColor: settings.primaryColor, color: '#FFFFFF' }} size="sm">Botón Primario</Button>
                                 <Button style={{ backgroundColor: settings.secondaryColor, color: '#000000' }} size="sm">Botón Secundario</Button>
                             </div>
                         </div>
                     </div>
-                     <div className="p-6 rounded-lg" style={{ ...fontVars, backgroundColor: settings.backgroundColorDark || '#000000' }}>
-                         <h3 className="text-lg font-bold" style={{ color: settings.primaryColorDark }}>Tema Oscuro</h3>
-                         <div className="mt-4 p-4 rounded-md shadow-sm" style={{ backgroundColor: '#0A0A0A' }}>
-                            <h4 className="font-headline text-base font-bold" style={{ color: settings.primaryColorDark }}>Título de Ejemplo</h4>
-                            <p className="font-body text-sm mt-1" style={{ color: '#FFFFFF' }}>Este es un texto de párrafo para previsualizar la fuente y el color del cuerpo.</p>
-                             <div className="flex gap-2 mt-4">
-                                <Button style={{ backgroundColor: settings.primaryColorDark, color: '#FFFFFF' }} size="sm">Botón Primario</Button>
-                                <Button style={{ backgroundColor: settings.secondaryColor || '#FFFFFF', color: '#000000' }} size="sm">Botón Secundario</Button>
+                     {/* Preview for Public Pages */}
+                    <div className="p-4 rounded-lg border bg-background" style={fontVars}>
+                        <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Páginas Públicas</h3>
+                         <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-xs">Landing Page</Label>
+                                <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
+                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Landing Page" layout="fill" objectFit="cover" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                </div>
+                            </div>
+                             <div className="space-y-2">
+                                <Label className="text-xs">Página de Login</Label>
+                                <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
+                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Auth Page" layout="fill" objectFit="cover" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                </div>
                             </div>
                         </div>
                     </div>
+                    {/* Watermark Preview */}
+                    {settings.watermarkUrl && (
+                        <div className="p-4 rounded-lg border bg-background" style={fontVars}>
+                           <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Marca de Agua</h3>
+                           <div className="mt-2 h-20 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
+                                <span className="text-sm text-muted-foreground z-10">Contenido de la app</span>
+                                <Image src={settings.watermarkUrl} alt="Watermark" layout="fill" objectFit="contain" className="opacity-20 z-0 p-2"/>
+                           </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
