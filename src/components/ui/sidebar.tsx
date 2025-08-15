@@ -1,4 +1,3 @@
-
 'use client';
 
 // Sidebar-layout-enhanced 🌈 Creativo & juvenil
@@ -87,7 +86,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out shadow-xl",
-          "bg-sidebar-background border-r border-sidebar-border",
+          "bg-card border-r border-border",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -114,7 +113,7 @@ export const SidebarHeader = () => {
           <Image src="/uploads/images/logo-nexusalpri.png" alt="Logo" width={48} height={48} data-ai-hint="logo"/>
         </div>
         {!isCollapsed && (
-            <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-sidebar-foreground transition-opacity duration-300")}>
+            <span className={cn("text-2xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-foreground transition-opacity duration-300")}>
               {settings?.platformName || 'NexusAlpri'}
             </span>
         )}
@@ -154,7 +153,7 @@ const SidebarSectionHeader = ({ label }: { label: string }) => {
     if (isCollapsed) return null;
     return (
       <h2 className={cn(
-          "px-4 text-xs font-semibold uppercase text-sidebar-muted-foreground tracking-wider transition-all duration-300"
+          "px-4 text-xs font-semibold uppercase text-muted-foreground tracking-wider transition-all duration-300"
       )}>
           {label}
       </h2>
@@ -179,8 +178,8 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 py-3 rounded-lg transition-all duration-300 font-medium group/menu-item relative",
         isCollapsed && !isMobile ? "justify-center px-0" : "px-4",
         isActive
-          ? "bg-gradient-to-r from-accent/50 to-primary/50 text-sidebar-foreground"
-          : "text-sidebar-muted-foreground hover:bg-accent/20 hover:text-sidebar-foreground"
+          ? "bg-primary/10 text-primary"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground"
       )}>
         <GradientIcon icon={item.icon || Shield} isActive={isActive} />
         {showText && <span className="whitespace-nowrap">{item.label}</span>}
@@ -212,14 +211,14 @@ export const SidebarFooter = () => {
   const { isCollapsed, toggleSidebar } = useSidebar();
 
   return (
-    <div className="p-4 border-t border-sidebar-border mt-auto">
+    <div className="p-4 border-t border-border mt-auto">
       <div className={cn("flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
         <Button
           onClick={toggleSidebar}
           variant="ghost"
           size="icon"
           className={cn(
-              "h-9 w-9 text-sidebar-muted-foreground hover:bg-sidebar-muted-foreground/10 hover:text-sidebar-foreground transition-transform duration-300",
+              "h-9 w-9 text-muted-foreground hover:bg-muted hover:text-foreground transition-transform duration-300",
               isCollapsed && "rotate-180"
           )}
         >

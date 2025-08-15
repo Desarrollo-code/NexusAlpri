@@ -1,4 +1,3 @@
-
 'use client';
 
 import { cn } from "@/lib/utils";
@@ -31,7 +30,7 @@ export const GradientIcon = ({
         "shrink-0", // Prevent icon from shrinking
         sizeClasses[size],
         "transition-colors duration-200",
-        isActive ? 'text-sidebar-foreground' : 'text-sidebar-muted-foreground group-hover/menu-item:text-sidebar-foreground',
+        isActive ? 'text-primary' : 'text-muted-foreground group-hover/menu-item:text-foreground',
         className
       )}
       {...props}

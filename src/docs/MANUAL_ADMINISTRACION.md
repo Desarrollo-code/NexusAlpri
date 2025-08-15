@@ -82,7 +82,7 @@ Aquí puedes gestionar todos los archivos y materiales compartidos de la organiz
 **Ruta:** `/settings`
 
 Esta sección te permite personalizar el comportamiento de toda la plataforma.
-*   **Apariencia:** Cambia el nombre de la plataforma.
+*   **Apariencia:** Cambia el nombre de la plataforma, los logos, colores y fuentes.
 *   **Seguridad y Acceso:**
     *   **Registro Público:** Habilita o deshabilita la capacidad de que nuevos usuarios se registren por sí mismos.
     *   **Política de Contraseñas:** Define la complejidad requerida para las contraseñas de los usuarios.

@@ -15,7 +15,7 @@ export default function AuthLayout({
           <DecorativeHeaderBackground />
           <PublicTopBar />
           <main className="flex-1 flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-4xl mx-auto">
+            <div className="w-full max-w-2xl mx-auto">
               {children}
             </div>
           </main>

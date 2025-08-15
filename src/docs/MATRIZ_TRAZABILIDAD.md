@@ -68,5 +68,4 @@ El estudiante consume el contenido formativo de la plataforma.
 | **S-14** | **Calendario** | Ver los eventos del calendario que le conciernen. | `/calendar` | Eventos del calendario. | El estudiante puede ver un calendario con los eventos dirigidos a él, a su rol o a todos. |
 | **S-15** | **Anuncios** | Ver los anuncios relevantes para él. | `/announcements` | Anuncios de la plataforma. | El estudiante ve los anuncios dirigidos a él, a su rol o a todos los usuarios. |
 | **S-16** | **Mis Cursos** | Ver una lista dedicada de los cursos en los que está inscrito. | `/my-courses` | Sus inscripciones, su progreso. | La página muestra solo los cursos en los que está inscrito, con su progreso visible. |
-
-    
+| **S-17** | **Mis Apuntes** | Ver y gestionar todas las notas tomadas en los cursos. | `/my-notes` | Sus notas personales. | La página muestra una lista de sus notas, organizadas por curso, y permite acceder a ellas. |
