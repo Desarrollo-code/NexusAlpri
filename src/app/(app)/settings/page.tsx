@@ -93,15 +93,15 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                         <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Páginas Públicas</h3>
                          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-xs">Landing Page</Label>
+                                <Label className="text-xs">Página de Inicio (Landing)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
-                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Landing Page" layout="fill" objectFit="cover" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Página de Inicio" layout="fill" objectFit="cover" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                              <div className="space-y-2">
-                                <Label className="text-xs">Página de Login</Label>
+                                <Label className="text-xs">Página de Acceso (Login)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
-                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Auth Page" layout="fill" objectFit="cover" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Página de Acceso" layout="fill" objectFit="cover" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                         </div>
@@ -112,7 +112,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                            <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Marca de Agua</h3>
                            <div className="mt-2 h-20 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
                                 <span className="text-sm text-muted-foreground z-10">Contenido de la app</span>
-                                <Image src={settings.watermarkUrl} alt="Watermark" layout="fill" objectFit="contain" className="opacity-20 z-0 p-2"/>
+                                <Image src={settings.watermarkUrl} alt="Marca de Agua" layout="fill" objectFit="contain" className="opacity-20 z-0 p-2"/>
                            </div>
                         </div>
                     )}
