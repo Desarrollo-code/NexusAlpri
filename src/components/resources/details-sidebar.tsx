@@ -90,7 +90,12 @@ const ResourcePreview = ({ resource }: { resource: AppResourceType }) => {
 }
 
 
-export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: ResourceDetailsSidebarProps) {
+export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: { 
+    resource: AppResourceType | null;
+    onClose: () => void;
+    onEdit: (resource: AppResourceType) => void;
+    onDelete: (id: string) => void;
+}) {
     const { user } = useAuth();
 
     if (!resource) {

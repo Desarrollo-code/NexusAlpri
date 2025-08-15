@@ -13,7 +13,7 @@ export function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/static') ||
-    pathname.startsWith('/uploads') ||
+    pathname.startsWith('/uploads') || // <<< FIX: Allow direct access to uploads
     pathname.match(/\.(.*)$/)
   ) {
     return NextResponse.next();
