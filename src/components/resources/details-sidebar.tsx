@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, Loader2, AlertTriangle, Link as LinkIcon } from 'lucide-react';
+import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, Loader2, AlertTriangle, LinkIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -21,6 +21,32 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DownloadButton } from '@/components/ui/download-button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+
+const colorPalette = [
+    'text-red-500', 'text-blue-500', 'text-green-500', 'text-yellow-500', 
+    'text-purple-500', 'text-pink-500', 'text-indigo-500', 'text-teal-500'
+];
+
+const getColorForCategory = (category: string) => {
+    let hash = 0;
+    for (let i = 0; i < category.length; i++) {
+        hash = category.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash % colorPalette.length);
+    return colorPalette[index];
+};
+
+
+export const FallbackIcon = ({ resource }: { resource: AppResourceType }) => {
+  const Icon = getIconForType(resource.type);
+  const colorClass = getColorForCategory(resource.category);
+  return (
+    <div className="flex flex-col items-center justify-center h-full text-muted-foreground bg-muted/50">
+      <Icon className={cn('h-16 w-16', colorClass)} />
+      <span className="mt-2 text-sm">{resource.type === 'FOLDER' ? '' : 'Sin vista previa'}</span>
+    </div>
+  );
+};
 
 
 const OfficePreviewer = ({ url }: { url: string }) => {
@@ -77,15 +103,6 @@ const OfficePreviewer = ({ url }: { url: string }) => {
     return null;
 };
 
-export const FallbackIcon = ({ resource }: { resource: AppResourceType }) => {
-    const Icon = getIconForType(resource.type);
-    return (
-        <div className="flex flex-col items-center justify-center h-full text-muted-foreground bg-muted/50">
-            <Icon className='h-16 w-16'/>
-            <span className="mt-2 text-sm">Sin vista previa disponible</span>
-        </div>
-    );
-};
 
 const ResourcePreview = ({ resource }: { resource: AppResourceType }) => {
     const isImage = resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
