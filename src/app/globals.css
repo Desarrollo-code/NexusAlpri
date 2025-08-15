@@ -5,12 +5,12 @@
 
 @layer base {
   :root {
-    --background: 24 43% 96%; /* Crema/Hueso de la imagen */
+    --background: 0 0% 98%; /* Gris claro sofisticado */
     --foreground: 240 10% 3.9%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --card: 0 0% 100%; /* Blanco puro para tarjetas */
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
     --primary: 244 51% 59%; /* Púrpura/Índigo de la imagen */
     --primary-foreground: 0 0% 98%;
     --secondary: 216 71% 85%; /* Azul claro de la imagen */
