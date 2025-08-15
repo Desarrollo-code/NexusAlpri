@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon } from 'lucide-react';
+import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, Link as LinkIcon, Loader2, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -16,7 +16,10 @@ import React, { useState, useEffect } from 'react';
 import * as mammoth from 'mammoth';
 import * as xlsx from 'xlsx';
 import { getIconForType, getYoutubeVideoId } from '@/lib/resource-utils';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DownloadButton } from '@/components/ui/download-button';
+import { cn } from '@/lib/utils';
 
 const OfficePreviewer = ({ url }: { url: string }) => {
     const [html, setHtml] = useState<string | null>(null);
@@ -96,7 +99,7 @@ const ResourcePreview = ({ resource }: { resource: AppResourceType }) => {
             <div className="w-full h-full relative">
                 <DecorativeFolder patternId={resource.id} className="absolute inset-0" />
                  <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                    <Icon className="h-24 w-24 text-white/50" strokeWidth={1} />
+                    <FolderIcon className="h-24 w-24 text-white/50" strokeWidth={1} />
                  </div>
             </div>
         );
