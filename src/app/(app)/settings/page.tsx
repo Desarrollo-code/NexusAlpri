@@ -61,8 +61,8 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
     if (!settings) return null;
 
     const fontVars = {
-        '--font-headline': fontMap[settings.fontHeadline || 'Space Grotesk']?.style.fontFamily,
-        '--font-body': fontMap[settings.fontBody || 'Inter']?.style.fontFamily,
+        '--font-headline': (fontMap[settings.fontHeadline || 'Space Grotesk'] as any)?.style.fontFamily,
+        '--font-body': (fontMap[settings.fontBody || 'Inter'] as any)?.style.fontFamily,
     } as React.CSSProperties;
 
     return (
@@ -72,9 +72,9 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                     <CardTitle>Vista Previa</CardTitle>
                     <CardDescription>Así se verán los cambios en la plataforma.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4" style={fontVars}>
                      {/* Preview for Light Theme */}
-                    <div className="p-4 rounded-lg border bg-background" style={{...fontVars}}>
+                    <div className="p-4 rounded-lg border bg-background">
                         <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Apariencia General</h3>
                         <div className="mt-2 p-4 rounded-md shadow-sm" style={{ backgroundColor: settings.backgroundColorLight || '#FFFFFF' }}>
                             <div className="flex items-center gap-2 mb-4">
@@ -89,7 +89,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                         </div>
                     </div>
                      {/* Preview for Public Pages */}
-                    <div className="p-4 rounded-lg border bg-background" style={fontVars}>
+                    <div className="p-4 rounded-lg border bg-background">
                         <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Páginas Públicas</h3>
                          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
@@ -108,7 +108,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                     </div>
                     {/* Watermark Preview */}
                     {settings.watermarkUrl && (
-                        <div className="p-4 rounded-lg border bg-background" style={fontVars}>
+                        <div className="p-4 rounded-lg border bg-background">
                            <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Marca de Agua</h3>
                            <div className="mt-2 h-20 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
                                 <span className="text-sm text-muted-foreground z-10">Contenido de la app</span>
@@ -331,14 +331,14 @@ export default function SettingsPage() {
                                 <Label htmlFor="fontHeadline">Fuente de Títulos</Label>
                                  <Select value={formState.fontHeadline || 'Space Grotesk'} onValueChange={(value) => handleInputChange('fontHeadline', value)}>
                                     <SelectTrigger><SelectValue/></SelectTrigger>
-                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: fontMap[f.value]?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
+                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: (fontMap[f.value] as any)?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="fontBody">Fuente de Párrafos</Label>
                                  <Select value={formState.fontBody || 'Inter'} onValueChange={(value) => handleInputChange('fontBody', value)}>
                                     <SelectTrigger><SelectValue/></SelectTrigger>
-                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: fontMap[f.value]?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
+                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: (fontMap[f.value] as any)?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
                         </CardContent>

@@ -6,6 +6,7 @@ const config: Config = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: ["class"],
   theme: {
     container: {
       center: true,
@@ -71,6 +72,18 @@ const config: Config = {
           green: 'hsl(var(--event-green))',
           red: 'hsl(var(--event-red))',
           orange: 'hsl(var(--event-orange))',
+        },
+        sidebar: {
+          background: 'hsl(var(--sidebar-background))',
+          foreground: 'hsl(var(--sidebar-foreground))',
+          muted: {
+            foreground: 'hsl(var(--sidebar-muted-foreground))',
+          },
+          accent: {
+            DEFAULT: 'hsl(var(--sidebar-accent))',
+            foreground: 'hsl(var(--sidebar-accent-foreground))',
+          },
+          border: 'hsl(var(--sidebar-border))',
         },
       },
       keyframes: {

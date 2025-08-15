@@ -3,11 +3,9 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/auth-context';
 import React from 'react';
-import Image from 'next/image';
 import { TitleProvider } from '@/contexts/title-context';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
-import { ThemeProvider } from '@/components/theme-provider';
 import { getFontVariables } from '@/lib/fonts';
 
 export default async function RootLayout({
