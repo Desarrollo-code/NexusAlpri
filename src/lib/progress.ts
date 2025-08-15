@@ -56,9 +56,9 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
         where: { enrollmentId: enrollment.id },
         update: {},
         create: {
-            enrollmentId: enrollment.id,
             userId: userId,
             courseId: courseId,
+            enrollmentId: enrollment.id,
             progressPercentage: 0,
         },
     });
