@@ -95,13 +95,13 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                             <div className="space-y-2">
                                 <Label className="text-xs">Página de Inicio (Landing)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
-                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Página de Inicio" layout="fill" objectFit="cover" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" layout="fill" objectFit="cover" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                              <div className="space-y-2">
                                 <Label className="text-xs">Página de Acceso (Login)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
-                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Página de Acceso" layout="fill" objectFit="cover" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" layout="fill" objectFit="cover" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                         </div>
@@ -112,7 +112,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                            <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Marca de Agua</h3>
                            <div className="mt-2 h-20 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
                                 <span className="text-sm text-muted-foreground z-10">Contenido de la app</span>
-                                <Image src={settings.watermarkUrl} alt="Marca de Agua" layout="fill" objectFit="contain" className="opacity-20 z-0 p-2"/>
+                                <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" layout="fill" objectFit="contain" className="opacity-20 z-0 p-2"/>
                            </div>
                         </div>
                     )}
@@ -291,8 +291,8 @@ export default function SettingsPage() {
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <UploadWidget label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(file) => handleFileChange('logoUrl', file)} disabled={isSaving} />
                             <UploadWidget label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(file) => handleFileChange('watermarkUrl', file)} disabled={isSaving} />
-                            <UploadWidget label="Imagen Landing Page" currentImageUrl={formState.landingImageUrl} onFileSelect={(file) => handleFileChange('landingImageUrl', file)} disabled={isSaving} />
-                            <UploadWidget label="Imagen Página de Login" currentImageUrl={formState.authImageUrl} onFileSelect={(file) => handleFileChange('authImageUrl', file)} disabled={isSaving} />
+                            <UploadWidget label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(file) => handleFileChange('landingImageUrl', file)} disabled={isSaving} />
+                            <UploadWidget label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(file) => handleFileChange('authImageUrl', file)} disabled={isSaving} />
                         </CardContent>
                     </Card>
                     <Card className="card-border-animated">
