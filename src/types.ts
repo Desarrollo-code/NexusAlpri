@@ -127,6 +127,15 @@ export interface CourseProgress {
     progressPercentage: number;
 }
 
+export interface UserNote {
+    id: string;
+    userId: string;
+    lessonId: string;
+    content: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
 
 // --- RESOURCES ---
 export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER';

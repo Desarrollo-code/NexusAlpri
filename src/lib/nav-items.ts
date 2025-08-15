@@ -16,6 +16,7 @@ import {
   Bell,
   GitCommitHorizontal,
   LayoutGrid,
+  Notebook,
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -39,6 +40,13 @@ const NAVIGATION_ITEMS: NavItem[] = [
     icon: GraduationCap,
     path: '/my-courses',
     roles: ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR']
+  },
+  {
+    id: 'my-notes',
+    label: 'Mis Apuntes',
+    icon: Notebook,
+    path: '/my-notes',
+    roles: ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'],
   },
   {
     id: 'resources',

@@ -3,11 +3,11 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, ContentBlock, LessonType, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption, CourseProgress, LessonCompletionRecord } from '@/types';
+import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, ContentBlock, LessonType, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption, CourseProgress, LessonCompletionRecord, UserNote } from '@/types';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useAuth } from '@/contexts/auth-context';
@@ -22,9 +22,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTitle } from '@/contexts/title-context';
+import { Textarea } from '@/components/ui/textarea';
+import { useDebounce } from '@/hooks/use-debounce';
 
 
-// Helper types and functions
+// --- Helper types and functions
 interface PrismaLessonWithContentBlocks extends PrismaLesson {
   contentBlocks: (ContentBlock & { quiz?: (AppQuiz & { questions: (AppQuestion & { options: AppAnswerOption[] })[] }) | null })[];
 }
@@ -91,6 +93,88 @@ function getYouTubeVideoId(url: string | null | undefined): string | null {
   }
   return videoId;
 }
+
+// --- Note Taking Component ---
+const LessonNotes = ({ lessonId }: { lessonId: string }) => {
+    const { user } = useAuth();
+    const [noteContent, setNoteContent] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const debouncedContent = useDebounce(noteContent, 1000); // 1-second debounce
+
+    useEffect(() => {
+        const fetchNote = async () => {
+            if (!user) return;
+            setIsLoading(true);
+            try {
+                const res = await fetch(`/api/notes/${lessonId}`);
+                if (res.ok) {
+                    const data: UserNote = await res.json();
+                    setNoteContent(data.content);
+                }
+            } catch (error) {
+                // Silently fail, user can start typing a new note
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchNote();
+    }, [lessonId, user]);
+
+    const saveNote = useCallback(async (content: string) => {
+        if (!user) return;
+        setIsSaving(true);
+        try {
+            await fetch('/api/notes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lessonId, content }),
+            });
+        } catch (error) {
+            console.error("Failed to save note:", error);
+        } finally {
+            setTimeout(() => setIsSaving(false), 500); // Visual cue for saving
+        }
+    }, [lessonId, user]);
+
+    useEffect(() => {
+        // Only save if the component is not loading and there's debounced content
+        if (!isLoading && debouncedContent !== null) {
+            saveNote(debouncedContent);
+        }
+    }, [debouncedContent, isLoading, saveNote]);
+
+    return (
+        <div className="mt-8">
+            <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="notes">
+                    <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                        <div className="flex items-center gap-2">
+                           <Notebook className="h-5 w-5 text-primary" /> Mis Apuntes
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                        {isLoading ? (
+                            <div className="flex justify-center items-center h-24">
+                                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                            </div>
+                        ) : (
+                            <div className="relative">
+                                <Textarea
+                                    value={noteContent}
+                                    onChange={(e) => setNoteContent(e.target.value)}
+                                    placeholder="Escribe tus notas privadas para esta lección aquí..."
+                                    className="w-full min-h-[150px] bg-muted/30"
+                                />
+                                {isSaving && <p className="text-xs text-muted-foreground text-right mt-1">Guardando...</p>}
+                            </div>
+                        )}
+                    </AccordionContent>
+                </AccordionItem>
+            </Accordion>
+        </div>
+    );
+};
 
 
 // --- MAIN COMPONENT ---
@@ -508,6 +592,7 @@ export default function CourseDetailPage() {
                             <h2>{selectedLesson.title}</h2>
                         </div>
                         {(selectedLesson.contentBlocks || []).map(block => renderContentBlock(block))}
+                         {isEnrolled && !isCreatorViewingCourse && <LessonNotes lessonId={selectedLesson.id} />}
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center">
