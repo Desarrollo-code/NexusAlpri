@@ -15,27 +15,12 @@ import { DecorativeFolder } from './decorative-folder';
 import React, { useState, useEffect } from 'react';
 import * as mammoth from 'mammoth';
 import * as xlsx from 'xlsx';
-import { getYoutubeVideoId } from '@/lib/resource-utils';
+import { getYoutubeVideoId, getIconForType } from '@/lib/resource-utils';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DownloadButton } from '@/components/ui/download-button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-
-
-const getIconForType = (type: AppResourceType['type']) => {
-    const props = { className: "h-5 w-5 shrink-0" };
-    switch (type) {
-      case 'FOLDER': return <FolderIcon {...props} />;
-      case 'DOCUMENT': return <FileTextIcon {...props} />;
-      case 'GUIDE': return <Info {...props} />;
-      case 'MANUAL': return <Notebook {...props} />;
-      case 'POLICY': return <Shield {...props} />;
-      case 'VIDEO': return <VideoIcon {...props} />;
-      case 'EXTERNAL_LINK': return <LinkIcon {...props} />;
-      default: return <FileQuestion {...props} />;
-    }
-};
 
 
 const OfficePreviewer = ({ url }: { url: string }) => {
