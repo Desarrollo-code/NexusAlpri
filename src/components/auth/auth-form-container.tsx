@@ -1,4 +1,3 @@
-
 // src/components/auth/auth-form-container.tsx
 'use client';
 
@@ -11,9 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Separator } from '@/components/ui/separator';
+import Image from 'next/image';
 
 const FormInput = ({ icon: Icon, ...props }: { icon: React.ElementType } & React.ComponentProps<typeof Input>) => (
     <div className="relative flex items-center">
@@ -247,7 +246,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                         {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
                     </button>
                  </div>
-                <Button type="submit" className="w-full !mt-6 h-12 text-base" disabled={isLoading}>
+                <Button type="submit" className="w-full !mt-6 h-12 text-base btn-primary-gradient" disabled={isLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Ingresar'}
                 </Button>
             </form>
@@ -280,7 +279,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                          <PasswordStrengthIndicator password={password} isVisible={isPasswordFocused || password.length > 0} />
                     </AnimatePresence>
                  </div>
-                <Button type="submit" className="w-full !mt-6 h-12 text-base" disabled={isLoading}>
+                <Button type="submit" className="w-full !mt-6 h-12 text-base btn-primary-gradient" disabled={isLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Crear Cuenta'}
                 </Button>
             </form>
@@ -288,16 +287,25 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
     );
 
     return (
-        <Card className="w-full max-w-md shadow-2xl card-border-animated my-auto">
-            <CardHeader className="text-center">
-                 <CardTitle className="text-3xl font-bold font-headline text-foreground">
-                    {view === 'signIn' ? 'Iniciar Sesión' : 'Crear Cuenta'}
-                </CardTitle>
-                <CardDescription>
-                    {view === 'signIn' ? 'Bienvenido de nuevo a NexusAlpri' : 'Comienza tu viaje de aprendizaje con nosotros'}
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
+        <div className="bg-card/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden w-full flex min-h-[600px]">
+            <div className="hidden md:block md:w-1/2 lg:w-[55%] p-8 lg:p-12 relative text-white btn-primary-gradient flex-col justify-between">
+                <div className="relative z-10">
+                    <h2 className="text-3xl font-bold font-headline">NexusAlpri</h2>
+                    <p className="mt-2 text-white/80 max-w-sm">Tu portal de conocimiento corporativo. Aprende, crece y avanza con nosotros.</p>
+                </div>
+                 <Image src="/uploads/images/world-map.png" alt="World Map" width={500} height={300} className="absolute bottom-4 right-4 opacity-10 object-contain" data-ai-hint="world map" />
+            </div>
+
+            <div className="w-full md:w-1/2 lg:w-[45%] p-6 sm:p-8 flex flex-col justify-center">
+                 <div className="text-center mb-6">
+                    <h1 className="text-3xl font-bold font-headline text-foreground">
+                        {view === 'signIn' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+                    </h1>
+                    <p className="text-muted-foreground">
+                        {view === 'signIn' ? 'Bienvenido de nuevo' : 'Comienza tu viaje de aprendizaje'}
+                    </p>
+                </div>
+
                  {error && (
                     <Alert variant="destructive" className="mb-4">
                          <AlertTitle>Error</AlertTitle>
@@ -307,9 +315,9 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                 <AnimatePresence mode="wait">
                     {view === 'signIn' ? SignInForm : SignUpForm}
                 </AnimatePresence>
-            </CardContent>
-            <CardFooter className="flex-col gap-4">
-                <Separator />
+                
+                 <Separator className="my-6" />
+
                 <div className="text-center text-sm">
                     {view === 'signIn' ? (
                         <>
@@ -327,7 +335,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                         </>
                     )}
                 </div>
-            </CardFooter>
-        </Card>
+            </div>
+        </div>
     );
 }
