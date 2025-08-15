@@ -1,3 +1,4 @@
+// src/contexts/auth-context.tsx
 'use client';
 
 import type { User, PlatformSettings } from '@/types';
@@ -107,7 +108,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!prevSettings) return null;
       return { ...prevSettings, ...updatedData };
     });
-    // This will trigger a re-render in DynamicThemeProvider
   }, []);
 
   const updateTheme = useCallback(async (newTheme: string) => {

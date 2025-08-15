@@ -6,7 +6,7 @@ import React from 'react';
 import { TitleProvider } from '@/contexts/title-context';
 import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
-import { DynamicThemeProvider } from '@/components/dynamic-theme-provider';
+import { ThemeProvider } from '@/components/theme-provider';
 
 export default async function RootLayout({
   children,
@@ -23,12 +23,12 @@ export default async function RootLayout({
           "font-body flex flex-col min-h-screen bg-background"
       )}>
         <AuthProvider>
-          <DynamicThemeProvider>
+          <ThemeProvider>
             <TitleProvider>
                 {children}
                 <Toaster />
             </TitleProvider>
-          </DynamicThemeProvider>
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>
