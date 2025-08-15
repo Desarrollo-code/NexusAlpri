@@ -29,6 +29,19 @@ export interface PlatformSettings {
     passwordRequireNumber: boolean;
     passwordRequireSpecialChar: boolean;
     resourceCategories: string[];
+    // New theme properties
+    primaryColor?: string;
+    secondaryColor?: string;
+    accentColor?: string;
+    backgroundColorLight?: string;
+    primaryColorDark?: string;
+    backgroundColorDark?: string;
+    fontHeadline?: string;
+    fontBody?: string;
+    logoUrl?: string;
+    watermarkUrl?: string;
+    landingImageUrl?: string;
+    authImageUrl?: string;
 }
 
 // --- NAVIGATION ---
