@@ -141,9 +141,7 @@ export default function ResourcesPage() {
     setError(null);
     const params = new URLSearchParams();
     if (currentFolderId) params.append('parentId', currentFolderId);
-    if (searchTerm) params.append('search', searchTerm);
-    if (activeCategory !== 'all') params.append('category', activeCategory);
-
+    
     try {
       const response = await fetch(`/api/resources?${params.toString()}`, { cache: 'no-store' });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch resources');
@@ -155,7 +153,7 @@ export default function ResourcesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast, currentFolderId, searchTerm, activeCategory]);
+  }, [toast, currentFolderId]);
 
   const fetchAllUsers = useCallback(async () => {
     try {
@@ -175,6 +173,28 @@ export default function ResourcesPage() {
       fetchAllUsers();
     }
   }, [fetchResources, fetchAllUsers, user?.role]);
+
+    const folders = useMemo(() => {
+        return allApiResources
+            .filter(r => r.type === 'FOLDER')
+            .filter(r => {
+                if (!searchTerm) return true;
+                return r.title.toLowerCase().includes(searchTerm.toLowerCase());
+            });
+    }, [allApiResources, searchTerm]);
+
+    const files = useMemo(() => {
+        return allApiResources
+            .filter(r => r.type !== 'FOLDER')
+            .filter(r => {
+                const matchesSearch = searchTerm ?
+                    r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    r.description?.toLowerCase().includes(searchTerm.toLowerCase())
+                    : true;
+                const matchesCategory = activeCategory === 'all' ? true : r.category === activeCategory;
+                return matchesSearch && matchesCategory;
+            });
+    }, [allApiResources, searchTerm, activeCategory]);
 
   const resetForm = () => {
     setNewResourceTitle('');
@@ -352,11 +372,6 @@ export default function ResourcesPage() {
     setSelectedResource(null);
   };
   
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchResources();
-  };
-  
   const handleCategoryChange = (categoryName: string) => {
     setActiveCategory(categoryName);
   }
@@ -420,31 +435,10 @@ export default function ResourcesPage() {
                 </header>
 
                 <Card className="flex-shrink-0 p-4 mb-6 shadow-sm">
-                    <div className="flex flex-col sm:flex-row items-center gap-4">
-                        <form onSubmit={handleSearchSubmit} className="relative w-full flex-grow">
-                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                           <Input type="search" id="resource-search" name="resource-search" placeholder="Buscar documentos, guías o materiales..." className="pl-10 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
-                        </form>
-                        <div className="flex items-center gap-2">
-                            <div className="flex bg-muted rounded-md p-1">
-                              <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
-                              <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
-                            </div>
-                        </div>
+                    <div className="relative w-full flex-grow">
+                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                       <Input type="search" id="resource-search" name="resource-search" placeholder="Buscar documentos, guías o carpetas..." className="pl-10 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
                     </div>
-                     <Separator className="my-4"/>
-                     <div className="flex flex-wrap gap-2">
-                         {allCategories.map(category => (
-                            <Button 
-                                key={category} 
-                                variant={activeCategory === category ? 'default' : 'outline'}
-                                onClick={() => handleCategoryChange(category)}
-                                className="rounded-full px-3 py-1 h-auto text-xs"
-                            >
-                                {category === 'all' ? 'Toda la Biblioteca' : category}
-                            </Button>
-                         ))}
-                     </div>
                 </Card>
             </>
         )}
@@ -473,37 +467,75 @@ export default function ResourcesPage() {
                 <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : error ? (
                 <div className="flex flex-col items-center justify-center h-full text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p></div>
-            ) : allApiResources.length === 0 ? (
+            ) : folders.length === 0 && files.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                     <ArchiveX className="h-16 w-16 mb-4 text-primary"/>
                     <h3 className="text-xl font-semibold text-foreground">{searchTerm ? 'No hay coincidencias' : 'Carpeta Vacía'}</h3>
                     <p>{searchTerm ? 'Prueba con otro término.' : 'Sube un archivo para empezar.'}</p>
                 </div>
-            ) : viewMode === 'grid' ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-                    {allApiResources.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
-                </div>
             ) : (
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Nombre</TableHead>
-                            <TableHead>Tipo</TableHead>
-                            <TableHead>Categoría</TableHead>
-                            <TableHead>Fecha</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {allApiResources.map(item => (
-                            <TableRow key={item.id} onClick={() => item.type === 'FOLDER' ? handleNavigateFolder(item) : setSelectedResource(item)} className="cursor-pointer">
-                                <TableCell className="font-medium flex items-center gap-2">{React.cloneElement(getIconForType(item.type), { className: "h-4 w-4 shrink-0 text-muted-foreground" })} {item.title}</TableCell>
-                                <TableCell>{item.type}</TableCell>
-                                <TableCell><Badge variant="outline">{item.category}</Badge></TableCell>
-                                <TableCell>{new Date(item.uploadDate).toLocaleDateString()}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                <div className="space-y-8">
+                    {folders.length > 0 && (
+                        <section>
+                            <h2 className="text-xl font-semibold mb-4">Carpetas</h2>
+                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+                                {folders.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
+                            </div>
+                        </section>
+                    )}
+                    
+                    {files.length > 0 && (
+                        <section>
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                                <div>
+                                    <h2 className="text-xl font-semibold">Archivos Recientes</h2>
+                                    <p className="text-sm text-muted-foreground">Filtra por categoría o cambia el modo de visualización.</p>
+                                </div>
+                                <div className="flex items-center gap-2 w-full sm:w-auto">
+                                    <Select value={activeCategory} onValueChange={handleCategoryChange}>
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Categorías" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {allCategories.map(c => <SelectItem key={c} value={c}>{c === 'all' ? 'Todas' : c}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                    <div className="flex bg-muted rounded-md p-1">
+                                      <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
+                                      <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {viewMode === 'grid' ? (
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+                                    {files.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
+                                </div>
+                            ) : (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Nombre</TableHead>
+                                            <TableHead>Tipo</TableHead>
+                                            <TableHead>Categoría</TableHead>
+                                            <TableHead>Fecha</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {files.map(item => (
+                                            <TableRow key={item.id} onClick={() => item.type === 'FOLDER' ? handleNavigateFolder(item) : setSelectedResource(item)} className="cursor-pointer">
+                                                <TableCell className="font-medium flex items-center gap-2">{React.cloneElement(getIconForType(item.type), { className: "h-4 w-4 shrink-0 text-muted-foreground" })} {item.title}</TableCell>
+                                                <TableCell>{item.type}</TableCell>
+                                                <TableCell><Badge variant="outline">{item.category}</Badge></TableCell>
+                                                <TableCell>{new Date(item.uploadDate).toLocaleDateString()}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </section>
+                    )}
+                </div>
             )}
         </div>
       </main>
