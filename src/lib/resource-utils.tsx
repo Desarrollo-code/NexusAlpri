@@ -4,16 +4,15 @@ import type { AppResourceType } from '@/types';
 import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon } from 'lucide-react';
 
 export const getIconForType = (type: AppResourceType['type']) => {
-    const props = { className: "h-5 w-5 shrink-0" };
     switch (type) {
-      case 'FOLDER': return <FolderIcon {...props} />;
-      case 'DOCUMENT': return <FileTextIcon {...props} />;
-      case 'GUIDE': return <Info {...props} />;
-      case 'MANUAL': return <Notebook {...props} />;
-      case 'POLICY': return <Shield {...props} />;
-      case 'VIDEO': return <VideoIcon {...props} />;
-      case 'EXTERNAL_LINK': return <LinkIcon {...props} />;
-      default: return <FileQuestion {...props} />;
+      case 'FOLDER': return FolderIcon;
+      case 'DOCUMENT': return FileTextIcon;
+      case 'GUIDE': return Info;
+      case 'MANUAL': return Notebook;
+      case 'POLICY': return Shield;
+      case 'VIDEO': return VideoIcon;
+      case 'EXTERNAL_LINK': return LinkIcon;
+      default: return FileQuestion;
     }
 };
 
