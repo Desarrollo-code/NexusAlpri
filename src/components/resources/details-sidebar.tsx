@@ -1,4 +1,3 @@
-
 // src/components/resources/details-sidebar.tsx
 'use client';
 
@@ -7,11 +6,13 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon } from 'lucide-react';
+import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, FileQuestion } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { getInitials } from '@/lib/security-log-utils';
+import { DecorativeFolder } from './decorative-folder';
+import React from 'react';
 
 interface ResourceDetailsSidebarProps {
     resource: AppResourceType | null;
@@ -34,6 +35,41 @@ const getYoutubeVideoId = (url: string | undefined): string | null => {
     return match ? match[1] : null;
 };
 
+const ResourcePreview = ({ resource }: { resource: AppResourceType }) => {
+    const isImage = resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
+    const isPdf = resource.url && resource.url.toLowerCase().endsWith('.pdf');
+    const youtubeId = resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
+    
+    const fallbackIcon = (
+        <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+            {React.cloneElement(resource.type === 'FOLDER' ? <FolderIcon /> : <FileQuestion />, { className: 'h-16 w-16' })}
+            <span className="mt-2 text-sm">Sin vista previa disponible</span>
+        </div>
+    );
+
+    if (isImage) {
+        return <Image src={resource.url!} alt={resource.title} fill className="object-contain p-2" data-ai-hint="document image" />;
+    }
+    if (youtubeId) {
+        return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+    }
+    if (isPdf) {
+         return <iframe src={resource.url!} className="w-full h-full" title={`PDF Preview: ${resource.title}`}/>;
+    }
+     if (resource.type === 'FOLDER') {
+        return (
+            <div className="w-full h-full relative">
+                <DecorativeFolder patternId={resource.id} className="absolute inset-0" />
+                 <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                     <FolderIcon className="h-24 w-24 text-white/50" strokeWidth={1} />
+                 </div>
+            </div>
+        );
+    }
+    return fallbackIcon;
+}
+
+
 export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: ResourceDetailsSidebarProps) {
     const { user } = useAuth();
 
@@ -41,8 +77,6 @@ export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: 
         return <div className="h-full w-full bg-card" />;
     }
 
-    const isImage = resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
-    const youtubeId = resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
     const canModify = user?.role === 'ADMINISTRATOR' || user?.id === resource.uploaderId;
 
     return (
@@ -56,18 +90,16 @@ export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: 
             
             <ScrollArea className="flex-1">
                 <div className="p-4">
-                    <div className="aspect-video w-full bg-muted rounded-md mb-4 flex items-center justify-center overflow-hidden">
-                        {isImage ? (
-                            <Image src={resource.url!} alt={resource.title} width={300} height={169} className="object-cover" data-ai-hint="document image" />
-                        ) : youtubeId ? (
-                            <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} width={300} height={169} className="object-cover" data-ai-hint="video thumbnail" />
-                        ) : (
-                            <Eye className="h-12 w-12 text-muted-foreground" />
-                        )}
+                    <div className="aspect-video w-full bg-muted rounded-md mb-4 flex items-center justify-center overflow-hidden border">
+                       <ResourcePreview resource={resource} />
                     </div>
 
                     <div className="flex gap-2 mb-4">
-                        <Button className="flex-1"><Download className="mr-2 h-4 w-4"/> Descargar</Button>
+                       {resource.url && resource.type !== 'FOLDER' && (
+                           <a href={resource.url} target="_blank" rel="noopener noreferrer" className="flex-1">
+                             <Button className="w-full"><Download className="mr-2 h-4 w-4"/> Descargar</Button>
+                           </a>
+                       )}
                         {canModify && 
                             <Button variant="outline" onClick={() => onEdit(resource)}>
                                 <Share2 className="mr-2 h-4 w-4"/> Compartir
