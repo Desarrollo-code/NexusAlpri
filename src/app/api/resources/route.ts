@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
         where: {
             type: 'FOLDER',
             OR: [
-                { isPublic: true },
+                { ispublic: true },
                 { uploaderId: session.id },
                 { sharedWith: { some: { id: session.id } } }
             ]
@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
     // 3. Define the final permission clause
     const permissionsClause = {
         OR: [
-            { isPublic: true }, // Can see all public resources
+            { ispublic: true }, // Can see all public resources
             { uploaderId: session.id }, // Can see all own resources
             { sharedWith: { some: { id: session.id } } }, // Can see resources directly shared
             { parentId: { in: Array.from(allAccessibleFolderIds) } } // Can see content inside accessible folders
@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
             tags: Array.isArray(tags) ? tags.join(',') : '',
             uploaderId: session.id,
             parentId: parentId || null,
-            isPublic: isPublic === true,
+            ispublic: isPublic === true,
         };
         
         if (isPublic === false && sharedWithUserIds && Array.isArray(sharedWithUserIds)) {
