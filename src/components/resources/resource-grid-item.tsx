@@ -6,7 +6,7 @@ import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
 import { DecorativeFolder } from '@/components/resources/decorative-folder';
-import { Edit, FolderIcon, MoreVertical, Trash2, Video, FileText, Info, Notebook, Shield, FileQuestion, Link as LinkIcon, Lock, Users as UsersIcon } from 'lucide-react';
+import { Edit, FolderIcon, MoreVertical, Trash2, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,37 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Image from 'next/image';
-
-const getIconForType = (type: AppResourceType['type']) => {
-    const props = { className: "h-5 w-5 shrink-0" };
-    switch (type) {
-      case 'FOLDER': return <FolderIcon {...props} />;
-      case 'DOCUMENT': return <FileText {...props} />;
-      case 'GUIDE': return <Info {...props} />;
-      case 'MANUAL': return <Notebook {...props} />;
-      case 'POLICY': return <Shield {...props} />;
-      case 'VIDEO': return <Video {...props} />;
-      case 'EXTERNAL_LINK': return <LinkIcon {...props} />;
-      default: return <FileQuestion {...props} />;
-    }
-};
-
-const getYoutubeVideoId = (url: string | undefined): string | null => {
-    if (!url) return null;
-    let videoId = null;
-    try {
-      const urlObj = new URL(url);
-      if (urlObj.hostname === 'www.youtube.com' || urlObj.hostname === 'youtube.com') {
-        videoId = urlObj.searchParams.get('v');
-      } else if (urlObj.hostname === 'youtu.be') {
-        videoId = urlObj.pathname.substring(1);
-      }
-    } catch (e) {
-      const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-      return match ? match[1] : null;
-    }
-    return videoId;
-};
+import { getIconForType, getYoutubeVideoId } from '@/lib/resource-utils';
 
 // --- Sub-components for Page ---
 const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onNavigate }: { resource: AppResourceType, onSelect: () => void, onEdit: (r: AppResourceType) => void, onDelete: (id: string) => void, onNavigate: (r: AppResourceType) => void }) => {
