@@ -2,6 +2,7 @@
 import React from 'react';
 import type { AppResourceType } from '@/types';
 import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon } from 'lucide-react';
+import { cn } from './utils';
 
 export const getIconForType = (type: AppResourceType['type']): React.ComponentType<React.SVGProps<SVGSVGElement>> => {
     switch (type) {
@@ -36,7 +37,7 @@ export const getYoutubeVideoId = (url: string | undefined): string | null => {
 export const FallbackIcon = ({ resource, className }: { resource: AppResourceType, className?: string }) => {
     const Icon = getIconForType(resource.type);
     return (
-        <div className="w-full h-full flex items-center justify-center bg-muted/30">
+        <div className={cn("w-full h-full flex items-center justify-center bg-muted/30", className)}>
             <Icon className="h-12 w-12 text-muted-foreground/50" />
         </div>
     );
