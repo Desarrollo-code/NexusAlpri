@@ -287,13 +287,16 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
     );
 
     return (
-        <div className="bg-card/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden w-full flex min-h-[600px]">
-            <div className="hidden md:block md:w-1/2 lg:w-[55%] p-8 lg:p-12 relative text-white btn-primary-gradient flex-col justify-between">
+        <div className="bg-card/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden w-full flex flex-col md:flex-row min-h-[600px]">
+            <div className="hidden md:flex md:w-1/2 lg:w-[55%] p-8 lg:p-12 relative text-white btn-primary-gradient flex-col justify-between">
                 <div className="relative z-10">
-                    <h2 className="text-3xl font-bold font-headline">NexusAlpri</h2>
+                    <h2 className="text-3xl font-bold font-headline">{settings?.platformName || 'NexusAlpri'}</h2>
                     <p className="mt-2 text-white/80 max-w-sm">Tu portal de conocimiento corporativo. Aprende, crece y avanza con nosotros.</p>
                 </div>
-                 <Image src="https://placehold.co/600x400.png" alt="Decorative background" width={500} height={300} className="absolute bottom-0 right-0 opacity-20 object-cover" data-ai-hint="abstract background" />
+                 {settings?.authImageUrl ? 
+                    <Image src={settings.authImageUrl} alt="Decorative background" fill className="object-cover opacity-20" data-ai-hint="abstract background" />
+                    : <div className="absolute -bottom-1/4 -right-1/4 w-3/4 h-3/4 bg-white/10 rounded-full" />
+                 }
             </div>
 
             <div className="w-full md:w-1/2 lg:w-[45%] p-6 sm:p-8 flex flex-col justify-center">

@@ -6,8 +6,8 @@ import React from 'react';
 
 export const DecorativeHeaderBackground = () => (
   <div className="absolute top-0 left-0 right-0 h-full w-full -z-10 overflow-hidden" aria-hidden="true">
-    <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 rounded-full bg-primary/40 animate-pulse-slow" />
-    <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 rounded-full bg-secondary/50 animate-pulse-slow" style={{ animationDelay: '2s' }} />
+    <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 rounded-full bg-primary/20 animate-pulse-slow" />
+    <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 rounded-full bg-secondary/30 animate-pulse-slow" style={{ animationDelay: '2s' }} />
     <svg className="absolute inset-0 w-full h-full opacity-100">
         <defs>
             <filter id="grainy-filter">
