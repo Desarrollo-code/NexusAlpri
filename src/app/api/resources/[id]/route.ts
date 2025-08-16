@@ -20,10 +20,10 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
         if (!resource) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
-        const { pin, tags: tagsString, ...safeResource } = resource;
+        const { pin, tags, ...safeResource } = resource;
         return NextResponse.json({
             ...safeResource,
-            tags: tagsString ? tagsString.split(',').filter(Boolean) : [],
+            tags: tags ? tags.split(',').filter(Boolean) : [],
             hasPin: !!pin,
         });
     } catch (error) {

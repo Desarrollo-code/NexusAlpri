@@ -46,9 +46,9 @@ export async function GET(req: NextRequest) {
         });
         
         // Don't expose the PIN hash to the client
-        const safeResources = resources.map(({ pin, tags: tagsString, ...resource }) => ({
+        const safeResources = resources.map(({ pin, tags, ...resource }) => ({
             ...resource,
-            tags: tagsString ? tagsString.split(',').filter(Boolean) : [],
+            tags: tags ? tags.split(',').filter(Boolean) : [],
             hasPin: !!pin,
         }));
 
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
             description,
             url: url || null,
             category: category || 'General',
-            tags: Array.isArray(tags) ? tags.join(',') : '',
+            tags: Array.isArray(tags) ? tags.join(',') : '', // Convert array to comma-separated string
             uploaderId: session.id,
             parentId: parentId || null,
             ispublic: isPublic === true,
