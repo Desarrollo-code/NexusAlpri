@@ -178,24 +178,26 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     return (
         <Dialog open={!!resource} onOpenChange={(isOpen) => !isOpen && onClose()}>
             <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg">
-                <DialogHeader className="flex-shrink-0 h-16 px-4 flex justify-between items-center border-b z-10 bg-background/70">
+                 <header className="flex-shrink-0 h-16 px-4 flex justify-between items-center border-b z-10 bg-background/70">
                     <div className="flex items-center gap-3 overflow-hidden">
-                        {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0 text-primary" })}
-                        {/* This DialogTitle is for accessibility but is visually hidden */}
-                        <DialogTitle className="sr-only">{resource.title}</DialogTitle>
-                        <p className="font-semibold truncate">{resource.title}</p>
+                        {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0" })}
+                        {/* El DialogTitle se mantiene por accesibilidad pero se oculta visualmente */}
+                        <DialogHeader>
+                            <DialogTitle className="sr-only">{resource.title}</DialogTitle>
+                        </DialogHeader>
+                        <p className="font-semibold truncate text-foreground">{resource.title}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        {resource.url && (
+                         {resource.url && (
                           <DownloadButton url={pinVerifiedUrl || resource.url} resourceId={resource.id} hasPin={resource.hasPin} />
                         )}
-                        <Button variant="outline" size="icon" disabled>
-                            <Info className="h-5 w-5" />
-                            <span className="sr-only">Detalles</span>
+                        <Button variant="outline" size="sm" disabled>
+                            <Info className="h-4 w-4 mr-2" />
+                            Detalles
                         </Button>
                         <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5" /></Button>
                     </div>
-                </DialogHeader>
+                </header>
                 <div className="flex-grow relative">
                     <Button variant="ghost" size="icon" onClick={() => onNavigate('prev')} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronLeft/></Button>
                     <div className="absolute inset-0 flex items-center justify-center p-2">
