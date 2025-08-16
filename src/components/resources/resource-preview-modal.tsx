@@ -72,11 +72,10 @@ const OfficePreviewer = ({ url }: { url: string }) => {
 
 
 const FallbackPreview = ({ resource }: { resource: AppResourceType }) => {
-    const Icon = getIconForType(resource.type);
     return (
         <div className="flex flex-col items-center justify-center h-full text-muted-foreground bg-muted/50 p-8">
-            <Icon className="h-24 w-24 text-primary/40 mb-4" />
-            <h3 className="text-xl font-semibold text-foreground">{resource.title}</h3>
+            <FallbackIcon resource={resource} />
+            <h3 className="text-xl font-semibold text-foreground mt-4">{resource.title}</h3>
             <p className="text-sm mt-2">No hay una vista previa disponible para este tipo de archivo.</p>
             <DownloadButton 
                 url={resource.url!}
