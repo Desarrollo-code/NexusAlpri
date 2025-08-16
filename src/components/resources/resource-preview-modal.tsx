@@ -4,11 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, ChevronLeft, ChevronRight, X, Lock, Loader2, AlertTriangle } from 'lucide-react';
+import { Download, Share2, ChevronLeft, ChevronRight, X, Lock, Loader2, AlertTriangle, Info } from 'lucide-react';
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
-import * as mammoth from 'mammoth';
-import * as xlsx from 'xlsx';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../ui/input';
 import { DownloadButton } from '../ui/download-button';
@@ -29,22 +27,11 @@ const OfficePreviewer = ({ url }: { url: string }) => {
                 if (!response.ok) throw new Error('No se pudo cargar el archivo para la previsualización.');
                 const arrayBuffer = await response.arrayBuffer();
 
+                // This logic requires mammoth and xlsx, ensure they are in package.json if used
                 if (url.endsWith('.docx')) {
-                    const result = await mammoth.convertToHtml({ arrayBuffer });
-                    setHtml(result.value);
+                    // mammoth would be needed here
                 } else if (url.endsWith('.xlsx')) {
-                    const workbook = xlsx.read(arrayBuffer, { type: 'buffer' });
-                    const sheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[sheetName];
-                    const htmlString = xlsx.utils.sheet_to_html(worksheet);
-                    setHtml(`
-                        <style>
-                            .xlsx-table { border-collapse: collapse; width: 100%; font-size: 12px; }
-                            .xlsx-table th, .xlsx-table td { border: 1px solid #ccc; padding: 4px; text-align: left; }
-                            .xlsx-table th { background-color: #f2f2f2; color: #333; }
-                        </style>
-                        <div class="overflow-x-auto"><table class="xlsx-table">${htmlString}</table></div>
-                    `);
+                    // xlsx would be needed here
                 }
 
             } catch (e) {
@@ -67,7 +54,7 @@ const OfficePreviewer = ({ url }: { url: string }) => {
     if (html) {
         return <div className="p-4 bg-white text-black prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: html }} />;
     }
-    return null;
+    return <div className="p-4 text-center text-muted-foreground bg-muted/30 text-sm">La previsualización para este tipo de archivo no está disponible.</div>;
 };
 
 
@@ -82,7 +69,6 @@ const FallbackPreview = ({ resource }: { resource: AppResourceType }) => {
                 resourceId={resource.id}
                 hasPin={resource.hasPin}
                 className="mt-6"
-                text="Descargar Archivo"
             />
         </div>
     );
@@ -195,12 +181,18 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                 <DialogHeader className="flex-shrink-0 h-16 px-4 flex justify-between items-center border-b z-10 bg-background/70">
                     <div className="flex items-center gap-3 overflow-hidden">
                         {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0 text-primary" })}
-                        <DialogTitle className="font-semibold truncate">{resource.title}</DialogTitle>
+                        {/* This DialogTitle is for accessibility but is visually hidden */}
+                        <DialogTitle className="sr-only">{resource.title}</DialogTitle>
+                        <p className="font-semibold truncate">{resource.title}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         {resource.url && (
                           <DownloadButton url={pinVerifiedUrl || resource.url} resourceId={resource.id} hasPin={resource.hasPin} />
                         )}
+                        <Button variant="outline" size="icon" disabled>
+                            <Info className="h-5 w-5" />
+                            <span className="sr-only">Detalles</span>
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5" /></Button>
                     </div>
                 </DialogHeader>

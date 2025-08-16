@@ -16,7 +16,7 @@ interface DownloadButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEleme
 }
 
 export const DownloadButton = React.forwardRef<HTMLButtonElement, DownloadButtonProps>(
-  ({ className, text = "Download", url, resourceId, hasPin, ...props }, ref) => {
+  ({ className, text = "Descargar", url, resourceId, hasPin, ...props }, ref) => {
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
 
