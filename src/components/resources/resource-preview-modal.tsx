@@ -1,15 +1,21 @@
 // src/components/resources/resource-preview-modal.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, ChevronLeft, ChevronRight, X, Lock, Loader2, AlertTriangle, Info } from 'lucide-react';
+import { Download, Share2, ChevronLeft, ChevronRight, X, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users } from 'lucide-react';
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../ui/input';
 import { DownloadButton } from '../ui/download-button';
+import { cn } from '@/lib/utils';
+import { Separator } from '../ui/separator';
+import { Badge } from '../ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { getInitials } from '@/lib/security-log-utils';
+import { ScrollArea } from '../ui/scroll-area';
 
 
 const OfficePreviewer = ({ url }: { url: string }) => {
@@ -102,7 +108,6 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     };
     
     useEffect(() => {
-        // Reset PIN state when resource changes
         setPin('');
         setError(null);
     }, [resource]);
@@ -159,6 +164,56 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     return <FallbackPreview resource={resource} />;
 }
 
+
+const ResourceDetailsSidebar = ({ resource }: { resource: AppResourceType }) => (
+    <div className="w-full sm:w-80 flex-shrink-0 border-l bg-background/50 flex flex-col">
+        <div className="p-4 border-b">
+            <h3 className="font-semibold">Detalles del Recurso</h3>
+        </div>
+        <ScrollArea className="flex-grow p-4">
+            <div className="space-y-6 text-sm">
+                <div>
+                    <h4 className="font-medium text-muted-foreground mb-1">Título</h4>
+                    <p className="font-semibold text-base">{resource.title}</p>
+                </div>
+                {resource.description && (
+                     <div>
+                        <h4 className="font-medium text-muted-foreground mb-1">Descripción</h4>
+                        <p className="text-muted-foreground whitespace-pre-wrap">{resource.description}</p>
+                    </div>
+                )}
+                 <div>
+                    <h4 className="font-medium text-muted-foreground mb-2">Información</h4>
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2"><User className="h-4 w-4 shrink-0"/><span>Subido por: <strong>{resource.uploaderName}</strong></span></div>
+                        <div className="flex items-center gap-2"><Calendar className="h-4 w-4 shrink-0"/><span>Fecha: <strong>{new Date(resource.uploadDate).toLocaleDateString()}</strong></span></div>
+                        <div className="flex items-center gap-2"><Tag className="h-4 w-4 shrink-0"/><span>Categoría: <Badge variant="secondary">{resource.category}</Badge></span></div>
+                    </div>
+                 </div>
+                 <Separator/>
+                 <div>
+                    <h4 className="font-medium text-muted-foreground mb-2">Permisos</h4>
+                     <div className="flex items-center gap-2">
+                        {resource.ispublic ? <Globe className="h-4 w-4 text-green-500 shrink-0"/> : <Users className="h-4 w-4 text-blue-500 shrink-0"/>}
+                        <span>{resource.ispublic ? 'Acceso Público' : 'Compartido con usuarios específicos'}</span>
+                    </div>
+                    {!resource.ispublic && resource.sharedWith && resource.sharedWith.length > 0 && (
+                        <div className="mt-2 space-y-2 pl-6">
+                            {resource.sharedWith.map(user => (
+                                <div key={user.id} className="flex items-center gap-2">
+                                    <Avatar className="h-6 w-6"><AvatarImage src={user.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(user.name)}</AvatarFallback></Avatar>
+                                    <span>{user.name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                 </div>
+            </div>
+        </ScrollArea>
+    </div>
+);
+
+
 interface ResourcePreviewModalProps {
     resource: AppResourceType | null;
     onClose: () => void;
@@ -167,10 +222,11 @@ interface ResourcePreviewModalProps {
 
 export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ resource, onClose, onNavigate }) => {
     const [pinVerifiedUrl, setPinVerifiedUrl] = useState<string | null>(null);
+    const [showDetails, setShowDetails] = useState(false);
 
     useEffect(() => {
-        // Reset PIN verification when resource changes
         setPinVerifiedUrl(null);
+        setShowDetails(false); 
     }, [resource]);
     
     if (!resource) return null;
@@ -181,29 +237,30 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                  <header className="flex-shrink-0 h-16 px-4 flex justify-between items-center border-b z-10 bg-background/70">
                     <div className="flex items-center gap-3 overflow-hidden">
                         {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0" })}
-                        {/* El DialogTitle se mantiene por accesibilidad pero se oculta visualmente */}
-                        <DialogHeader>
-                            <DialogTitle className="sr-only">{resource.title}</DialogTitle>
-                        </DialogHeader>
-                        <p className="font-semibold truncate text-foreground">{resource.title}</p>
+                        <h2 className="font-semibold truncate text-foreground">{resource.title}</h2>
                     </div>
                     <div className="flex items-center gap-2">
                          {resource.url && (
-                          <DownloadButton url={pinVerifiedUrl || resource.url} resourceId={resource.id} hasPin={resource.hasPin} />
-                        )}
-                        <Button variant="outline" size="sm" disabled>
-                            <Info className="h-4 w-4 mr-2" />
+                           <DownloadButton url={pinVerifiedUrl || resource.url} resourceId={resource.id} hasPin={resource.hasPin} />
+                         )}
+                        <Button variant="outline" size="sm" onClick={() => setShowDetails(!showDetails)}>
+                             <Info className="h-4 w-4 mr-2" />
                             Detalles
                         </Button>
                         <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5" /></Button>
                     </div>
                 </header>
-                <div className="flex-grow relative">
-                    <Button variant="ghost" size="icon" onClick={() => onNavigate('prev')} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronLeft/></Button>
-                    <div className="absolute inset-0 flex items-center justify-center p-2">
-                        <ContentPreview resource={resource} pinVerifiedUrl={pinVerifiedUrl} onPinVerified={setPinVerifiedUrl} />
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => onNavigate('next')} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronRight/></Button>
+                <div className="flex-grow flex relative overflow-hidden">
+                     <div className="flex-grow relative">
+                        <Button variant="ghost" size="icon" onClick={() => onNavigate('prev')} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronLeft/></Button>
+                        <div className="absolute inset-0 flex items-center justify-center p-2">
+                            <ContentPreview resource={resource} pinVerifiedUrl={pinVerifiedUrl} onPinVerified={setPinVerifiedUrl} />
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => onNavigate('next')} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronRight/></Button>
+                     </div>
+                     {showDetails && (
+                        <ResourceDetailsSidebar resource={resource} />
+                     )}
                 </div>
             </DialogContent>
         </Dialog>
