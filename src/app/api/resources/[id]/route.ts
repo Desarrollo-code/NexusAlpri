@@ -20,10 +20,10 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
         if (!resource) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
-        const { pin, ...safeResource } = resource;
+        const { pin, tags: tagsString, ...safeResource } = resource;
         return NextResponse.json({
             ...safeResource,
-            tags: safeResource.tags,
+            tags: tagsString ? tagsString.split(',').filter(Boolean) : [],
             hasPin: !!pin,
         });
     } catch (error) {
@@ -57,7 +57,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
             data: { 
                 title, 
                 category, 
-                tags, // tags is already an array of strings
+                tags: Array.isArray(tags) ? tags.join(',') : '',
                 description,
                 ispublic: isPublic,
                 sharedWith: isPublic ? { set: [] } : { set: sharedWithUserIds.map((id: string) => ({ id })) }
