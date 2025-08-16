@@ -32,3 +32,12 @@ export const getYoutubeVideoId = (url: string | undefined): string | null => {
     }
     return videoId;
 };
+
+export const FallbackIcon = ({ resource, className }: { resource: AppResourceType, className?: string }) => {
+    const Icon = getIconForType(resource.type);
+    return (
+        <div className="w-full h-full flex items-center justify-center bg-muted/30">
+            <Icon className="h-12 w-12 text-muted-foreground/50" />
+        </div>
+    );
+};

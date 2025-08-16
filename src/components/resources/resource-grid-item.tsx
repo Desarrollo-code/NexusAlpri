@@ -16,8 +16,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import Image from 'next/image';
-import { getIconForType, getYoutubeVideoId } from '@/lib/resource-utils';
-import { FallbackIcon } from './details-sidebar';
+import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 
 // --- Sub-components for Page ---
 const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onNavigate }: { resource: AppResourceType, onSelect: () => void, onEdit: (r: AppResourceType) => void, onDelete: (id: string) => void, onNavigate: (r: AppResourceType) => void }) => {

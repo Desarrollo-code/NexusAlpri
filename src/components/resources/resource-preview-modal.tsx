@@ -5,7 +5,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Download, Share2, ChevronLeft, ChevronRight, X, Lock, Loader2, AlertTriangle } from 'lucide-react';
-import { getIconForType, getYoutubeVideoId } from '@/lib/resource-utils';
+import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import * as mammoth from 'mammoth';
 import * as xlsx from 'xlsx';
