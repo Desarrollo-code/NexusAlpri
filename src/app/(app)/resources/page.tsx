@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, User as AppUser, UserRole } from '@/types';
-import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, List, MoreVertical, Folder as FolderIcon, FileText, Video, Info, Notebook, Shield, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, Home, Filter, ArrowUp, ArrowDown, Lock, X, UploadCloud, Grid, Link as LinkIcon, FolderPlus, Globe, Users as UsersIcon } from 'lucide-react';
+import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, List, MoreVertical, Folder as FolderIcon, FileText, Video, Info, Notebook, Shield, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, ChevronLeft, Home, Filter, ArrowUp, ArrowDown, Lock, X, UploadCloud, Grid, Link as LinkIcon, FolderPlus, Globe, Users as UsersIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -33,18 +33,10 @@ import { uploadWithProgress } from '@/lib/upload-with-progress';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
 import { UploadArea } from '@/components/ui/upload-area';
-import { ResourceDetailsSidebar } from '@/components/resources/details-sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DownloadButton } from '@/components/ui/download-button';
 import { Badge } from '@/components/ui/badge';
 import { DecorativeFolder } from '@/components/resources/decorative-folder';
 import { useTitle } from '@/contexts/title-context';
@@ -56,6 +48,7 @@ import { getInitials } from '@/lib/security-log-utils';
 import { Textarea } from '@/components/ui/textarea';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { getIconForType } from '@/lib/resource-utils';
+import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 
 
 // --- Types and Mappers ---
@@ -86,7 +79,6 @@ function mapApiResourceToAppResource(apiResource: ApiResource): AppResourceType 
     sharedWith: [],  // Will be replaced with actual value
   };
 }
-
 
 
 // --- Main Page Component ---
@@ -412,143 +404,147 @@ export default function ResourcesPage() {
         </div>
     );
   }, [currentFolderId, breadcrumbs, user?.role, handleOpenCreateFileModal]);
+  
+  const handleNavigateItem = (direction: 'next' | 'prev') => {
+      const currentIndex = files.findIndex(f => f.id === selectedResource?.id);
+      if (currentIndex === -1) return;
+
+      const nextIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+      
+      if (nextIndex >= 0 && nextIndex < files.length) {
+          setSelectedResource(files[nextIndex]);
+      }
+  }
+
 
   return (
-    <div className="flex h-full">
-      <main className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
-        
-        {currentFolderId === null && (
-            <>
-                <header className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-                   <div>
-                       <p className="text-muted-foreground">Explora, busca y gestiona todos los archivos de la organización.</p>
-                   </div>
-                   {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-                    <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleOpenCreateFolderModal}>
-                            <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
-                        </Button>
-                        <Button onClick={handleOpenCreateFileModal} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
-                          <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
-                        </Button>
-                    </div>
-                   )}
-                </header>
+    <div className="flex flex-col h-full overflow-hidden">
+      <header className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+          <div>
+              <p className="text-muted-foreground">Explora, busca y gestiona todos los archivos de la organización.</p>
+          </div>
+          {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
+          <div className="flex gap-2">
+              <Button variant="outline" onClick={handleOpenCreateFolderModal}>
+                  <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
+              </Button>
+              <Button onClick={handleOpenCreateFileModal} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
+                <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
+              </Button>
+          </div>
+          )}
+      </header>
 
-                <Card className="flex-shrink-0 p-4 mb-6 shadow-sm">
-                    <div className="relative w-full flex-grow">
-                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                       <Input type="search" id="resource-search" name="resource-search" placeholder="Buscar documentos, guías o carpetas..." className="pl-10 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
-                    </div>
-                </Card>
-            </>
-        )}
+      {currentFolderId === null && (
+          <Card className="flex-shrink-0 p-4 mb-6 shadow-sm">
+              <div className="relative w-full flex-grow">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input type="search" id="resource-search" name="resource-search" placeholder="Buscar documentos, guías o carpetas..." className="pl-10 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
+              </div>
+          </Card>
+      )}
 
-        <div className="flex items-center text-sm text-muted-foreground mb-4">
-            {breadcrumbs.map((crumb, index) => (
-            <React.Fragment key={crumb.id || 'root'}>
-                {index > 0 && <ChevronRight className="h-4 w-4 mx-1" />}
-                <button 
-                  onClick={() => handleBreadcrumbClick(crumb.id, index)} 
-                  className={cn(
-                      "hover:text-primary",
-                      index === breadcrumbs.length - 1 ? "font-semibold text-foreground" : ""
-                  )}
-                >
-                    {crumb.title}
-                </button>
-            </React.Fragment>
-            ))}
-        </div>
-        
-        {currentFolderId && currentFolderBanner}
-
-        <div className="flex-grow overflow-auto -mx-4 px-4 mt-4 thin-scrollbar">
-            {isLoading ? (
-                <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-            ) : error ? (
-                <div className="flex flex-col items-center justify-center h-full text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p></div>
-            ) : folders.length === 0 && files.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                    <ArchiveX className="h-16 w-16 mb-4 text-primary"/>
-                    <h3 className="text-xl font-semibold text-foreground">{searchTerm ? 'No hay coincidencias' : 'Carpeta Vacía'}</h3>
-                    <p>{searchTerm ? 'Prueba con otro término.' : 'Sube un archivo para empezar.'}</p>
-                </div>
-            ) : (
-                <div className="space-y-8">
-                    {folders.length > 0 && (
-                        <section>
-                            <h2 className="text-xl font-semibold mb-4">Carpetas</h2>
-                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-                                {folders.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
-                            </div>
-                        </section>
-                    )}
-                    
-                    {files.length > 0 && (
-                        <section>
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-                                <div>
-                                    <h2 className="text-xl font-semibold">Archivos Recientes</h2>
-                                    <p className="text-sm text-muted-foreground">Filtra por categoría o cambia el modo de visualización.</p>
-                                </div>
-                                <div className="flex items-center gap-2 w-full sm:w-auto">
-                                    <Select value={activeCategory} onValueChange={handleCategoryChange}>
-                                        <SelectTrigger className="w-[180px]">
-                                            <SelectValue placeholder="Categorías" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {allCategories.map(c => <SelectItem key={c} value={c}>{c === 'all' ? 'Todas' : c}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                    <div className="flex bg-muted rounded-md p-1">
-                                      <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
-                                      <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            {viewMode === 'grid' ? (
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-                                    {files.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
-                                </div>
-                            ) : (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Nombre</TableHead>
-                                            <TableHead>Tipo</TableHead>
-                                            <TableHead>Categoría</TableHead>
-                                            <TableHead>Fecha</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {files.map(item => (
-                                            <TableRow key={item.id} onClick={() => item.type === 'FOLDER' ? handleNavigateFolder(item) : setSelectedResource(item)} className="cursor-pointer">
-                                                <TableCell className="font-medium flex items-center gap-2">{React.cloneElement(getIconForType(item.type), { className: "h-4 w-4 shrink-0 text-muted-foreground" })} {item.title}</TableCell>
-                                                <TableCell>{item.type}</TableCell>
-                                                <TableCell><Badge variant="outline">{item.category}</Badge></TableCell>
-                                                <TableCell>{new Date(item.uploadDate).toLocaleDateString()}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            )}
-                        </section>
-                    )}
-                </div>
-            )}
-        </div>
-      </main>
-
-      <div className={cn("transition-all duration-300 ease-in-out", selectedResource ? 'w-[450px] flex-shrink-0 border-l' : 'w-0 opacity-0')}>
-         <ResourceDetailsSidebar
-              resource={selectedResource}
-              onClose={() => setSelectedResource(null)}
-              onDelete={(id) => { setResourceToDelete(allApiResources.find(r => r.id === id) || null); }}
-              onEdit={handleOpenEditModal}
-         />
+      <div className="flex items-center text-sm text-muted-foreground mb-4">
+          {breadcrumbs.map((crumb, index) => (
+          <React.Fragment key={crumb.id || 'root'}>
+              {index > 0 && <ChevronRight className="h-4 w-4 mx-1" />}
+              <button 
+                onClick={() => handleBreadcrumbClick(crumb.id, index)} 
+                className={cn(
+                    "hover:text-primary",
+                    index === breadcrumbs.length - 1 ? "font-semibold text-foreground" : ""
+                )}
+              >
+                  {crumb.title}
+              </button>
+          </React.Fragment>
+          ))}
       </div>
+      
+      {currentFolderId && currentFolderBanner}
+
+      <div className="flex-grow overflow-auto -mx-4 px-4 mt-4 thin-scrollbar">
+          {isLoading ? (
+              <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+          ) : error ? (
+              <div className="flex flex-col items-center justify-center h-full text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p></div>
+          ) : folders.length === 0 && files.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                  <ArchiveX className="h-16 w-16 mb-4 text-primary"/>
+                  <h3 className="text-xl font-semibold text-foreground">{searchTerm ? 'No hay coincidencias' : 'Carpeta Vacía'}</h3>
+                  <p>{searchTerm ? 'Prueba con otro término.' : 'Sube un archivo para empezar.'}</p>
+              </div>
+          ) : (
+              <div className="space-y-8">
+                  {folders.length > 0 && (
+                      <section>
+                          <h2 className="text-xl font-semibold mb-4">Carpetas</h2>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+                              {folders.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
+                          </div>
+                      </section>
+                  )}
+                  
+                  {files.length > 0 && (
+                      <section>
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                              <div>
+                                  <h2 className="text-xl font-semibold">Archivos</h2>
+                                  <p className="text-sm text-muted-foreground">Filtra por categoría o cambia el modo de visualización.</p>
+                              </div>
+                              <div className="flex items-center gap-2 w-full sm:w-auto">
+                                  <Select value={activeCategory} onValueChange={handleCategoryChange}>
+                                      <SelectTrigger className="w-[180px]">
+                                          <SelectValue placeholder="Categorías" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                          {allCategories.map(c => <SelectItem key={c} value={c}>{c === 'all' ? 'Todas' : c}</SelectItem>)}
+                                      </SelectContent>
+                                  </Select>
+                                  <div className="flex bg-muted rounded-md p-1">
+                                    <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
+                                    <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
+                                  </div>
+                              </div>
+                          </div>
+                          
+                          {viewMode === 'grid' ? (
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+                                  {files.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
+                              </div>
+                          ) : (
+                              <Table>
+                                  <TableHeader>
+                                      <TableRow>
+                                          <TableHead>Nombre</TableHead>
+                                          <TableHead>Tipo</TableHead>
+                                          <TableHead>Categoría</TableHead>
+                                          <TableHead>Fecha</TableHead>
+                                      </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                      {files.map(item => (
+                                          <TableRow key={item.id} onClick={() => item.type === 'FOLDER' ? handleNavigateFolder(item) : setSelectedResource(item)} className="cursor-pointer">
+                                              <TableCell className="font-medium flex items-center gap-2">{React.cloneElement(getIconForType(item.type), { className: "h-4 w-4 shrink-0 text-muted-foreground" })} {item.title}</TableCell>
+                                              <TableCell>{item.type}</TableCell>
+                                              <TableCell><Badge variant="outline">{item.category}</Badge></TableCell>
+                                              <TableCell>{new Date(item.uploadDate).toLocaleDateString()}</TableCell>
+                                          </TableRow>
+                                      ))}
+                                  </TableBody>
+                              </Table>
+                          )}
+                      </section>
+                  )}
+              </div>
+          )}
+      </div>
+
+      <ResourcePreviewModal
+          resource={selectedResource}
+          onClose={() => setSelectedResource(null)}
+          onNavigate={handleNavigateItem}
+      />
       
       <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => !open && setResourceToDelete(null)}>
           <AlertDialogContent>
