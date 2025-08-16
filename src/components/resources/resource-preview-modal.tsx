@@ -1,7 +1,7 @@
 // src/components/resources/resource-preview-modal.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Download, Share2, ChevronLeft, ChevronRight, X, Lock, Loader2, AlertTriangle } from 'lucide-react';
@@ -192,10 +192,10 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     return (
         <Dialog open={!!resource} onOpenChange={(isOpen) => !isOpen && onClose()}>
             <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg">
-                <header className="flex-shrink-0 h-16 px-4 flex justify-between items-center border-b z-10 bg-background/70">
+                <DialogHeader className="flex-shrink-0 h-16 px-4 flex justify-between items-center border-b z-10 bg-background/70">
                     <div className="flex items-center gap-3 overflow-hidden">
                         {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0 text-primary" })}
-                        <h3 className="font-semibold truncate">{resource.title}</h3>
+                        <DialogTitle className="font-semibold truncate">{resource.title}</DialogTitle>
                     </div>
                     <div className="flex items-center gap-2">
                         {resource.url && (
@@ -203,7 +203,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                         )}
                         <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5" /></Button>
                     </div>
-                </header>
+                </DialogHeader>
                 <div className="flex-grow relative">
                     <Button variant="ghost" size="icon" onClick={() => onNavigate('prev')} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronLeft/></Button>
                     <div className="absolute inset-0 flex items-center justify-center p-2">
