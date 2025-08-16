@@ -4,18 +4,25 @@ import type { AppResourceType } from '@/types';
 import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon } from 'lucide-react';
 import { cn } from './utils';
 
-export const getIconForType = (type: AppResourceType['type']): React.ComponentType<React.SVGProps<SVGSVGElement>> => {
-    switch (type) {
-      case 'FOLDER': return FolderIcon;
-      case 'DOCUMENT': return FileTextIcon;
-      case 'GUIDE': return Info;
-      case 'MANUAL': return Notebook;
-      case 'POLICY': return Shield;
-      case 'VIDEO': return VideoIcon;
-      case 'EXTERNAL_LINK': return LinkIcon;
-      default: return FileQuestion;
-    }
+// Enhanced getIconForType with colors
+export const getIconForType = (type: AppResourceType['type']): React.ComponentType<React.SVGProps<SVGSVGElement> & { className?: string }> => {
+    const iconMap: Record<AppResourceType['type'], { icon: React.ElementType, color: string }> = {
+        FOLDER: { icon: FolderIcon, color: 'text-amber-500' },
+        DOCUMENT: { icon: FileTextIcon, color: 'text-blue-500' },
+        GUIDE: { icon: Info, color: 'text-cyan-500' },
+        MANUAL: { icon: Notebook, color: 'text-indigo-500' },
+        POLICY: { icon: Shield, color: 'text-gray-500' },
+        VIDEO: { icon: VideoIcon, color: 'text-red-500' },
+        EXTERNAL_LINK: { icon: LinkIcon, color: 'text-green-500' },
+        OTHER: { icon: FileQuestion, color: 'text-slate-500' }
+    };
+
+    const { icon: Icon, color } = iconMap[type] || iconMap.OTHER;
+    
+    // Return a new component that applies the color class
+    return ({ className, ...props }) => <Icon className={cn(color, className)} {...props} />;
 };
+
 
 export const getYoutubeVideoId = (url: string | undefined): string | null => {
     if (!url) return null;
