@@ -1468,5 +1468,3 @@ export default function EditCoursePage() {
         </FormProvider>
     );
 }
-
-    

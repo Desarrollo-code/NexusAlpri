@@ -67,7 +67,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 
   try {
     const courseData = await req.json();
-    const { title, description, imageUrl, category, status, publicationDate, modules, templateId } = courseData;
+    const { title, description, imageUrl, category, status, publicationDate, modules } = courseData;
 
     // Basic validation
     if (!title || !description) {
@@ -346,5 +346,3 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
         return NextResponse.json({ message: 'Error al eliminar el curso' }, { status: 500 });
     }
 }
-
-    

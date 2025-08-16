@@ -81,5 +81,3 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: 'Error al crear la plantilla' }, { status: 500 });
     }
 }
-
-    
