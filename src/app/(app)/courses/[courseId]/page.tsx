@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -621,3 +622,4 @@ export default function CourseDetailPage() {
     </div>
   );
 }
+

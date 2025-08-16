@@ -1,3 +1,4 @@
+
 // src/app/api/notes/route.ts
 
 import { NextResponse, NextRequest } from 'next/server';
