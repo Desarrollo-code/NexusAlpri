@@ -26,6 +26,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useTitle } from '@/contexts/title-context';
 import { Textarea } from '@/components/ui/textarea';
 import { useDebounce } from '@/hooks/use-debounce';
+import * as mammoth from 'mammoth';
 
 
 // --- Helper types and functions
@@ -172,6 +173,42 @@ const LessonNotes = ({ lessonId }: { lessonId: string }) => {
                 </CardContent>
             </Card>
         </div>
+    );
+};
+
+// --- DOCX Previewer Component ---
+const DocxPreviewer = ({ url }: { url: string }) => {
+    const [html, setHtml] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!url) return;
+        setIsLoading(true);
+        setError(null);
+        fetch(url)
+            .then(response => {
+                if (!response.ok) throw new Error("No se pudo cargar el archivo para previsualizar.");
+                return response.arrayBuffer();
+            })
+            .then(arrayBuffer => mammoth.convertToHtml({ arrayBuffer }))
+            .then(result => setHtml(result.value))
+            .catch(err => setError(err.message))
+            .finally(() => setIsLoading(false));
+    }, [url]);
+
+    if (isLoading) {
+        return <div className="p-4 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></div>;
+    }
+    if (error) {
+        return <div className="p-4 text-destructive-foreground bg-destructive rounded-md">{error}</div>;
+    }
+    return (
+        <div 
+            className="prose dark:prose-invert prose-sm max-w-none my-4 p-4 border rounded-md bg-card" 
+            style={{ maxHeight: '600px', overflowY: 'auto' }}
+            dangerouslySetInnerHTML={{ __html: html || '' }} 
+        />
     );
 };
 
@@ -383,10 +420,15 @@ export default function CourseDetailPage() {
     if (!block.content) {
       return <p key={block.id} className="text-sm text-muted-foreground my-4">Contenido no disponible.</p>;
     }
-
+    
+    const isDocx = block.type === 'FILE' && block.content?.toLowerCase().endsWith('.docx');
     const isPdf = block.type === 'FILE' && block.content?.toLowerCase().endsWith('.pdf');
     const isImage = block.type === 'FILE' && block.content?.toLowerCase().match(/\.(jpeg|jpg|gif|png|webp)$/);
     
+    if (isDocx && block.content) {
+        return <DocxPreviewer key={block.id} url={block.content} />;
+    }
+
     if (isPdf) {
       return (
         <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ maxHeight: '600px', overflowY: 'auto' }}>
@@ -420,14 +462,22 @@ export default function CourseDetailPage() {
        const isExternalLink = block.content.startsWith('http://') || block.content.startsWith('https://');
        if (isExternalLink) {
          return (
-            <div key={block.id} className="my-4 p-4 bg-muted/50 rounded-md">
-             <p className="text-sm text-muted-foreground mb-2">Esta lección es un enlace externo:</p>
-             <Button variant="link" asChild className="p-0 h-auto">
-                <Link href={block.content} target="_blank" rel="noopener noreferrer">
-                    {selectedLesson?.title} <ExternalLink className="ml-1 h-3 w-3" />
-                </Link>
-             </Button>
-           </div>
+            <Card key={block.id} className="my-4 bg-muted/50 text-center">
+                 <CardContent className="p-6">
+                    <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <ExternalLink className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-lg">{selectedLesson?.title}</h3>
+                    <p className="text-sm text-muted-foreground max-w-md mx-auto mt-1 mb-4">
+                        Esta lección te redirigirá a un recurso externo. Haz clic en el botón para continuar.
+                    </p>
+                    <Button asChild>
+                        <Link href={block.content} target="_blank" rel="noopener noreferrer">
+                            Visitar Sitio
+                        </Link>
+                    </Button>
+                 </CardContent>
+            </Card>
          );
        }
        return (
@@ -620,4 +670,3 @@ export default function CourseDetailPage() {
     </div>
   );
 }
-
