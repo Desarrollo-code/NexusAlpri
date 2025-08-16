@@ -3,24 +3,16 @@ import React from 'react';
 import type { AppResourceType } from '@/types';
 import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon } from 'lucide-react';
 
-export const getIconForType = (type: AppResourceType['type']) => {
+export const getIconForType = (type: AppResourceType['type']): React.ComponentType<React.SVGProps<SVGSVGElement>> => {
     switch (type) {
-      case 'FOLDER':
-        return FolderIcon;
-      case 'DOCUMENT':
-        return FileTextIcon;
-      case 'GUIDE':
-        return Info;
-      case 'MANUAL':
-        return Notebook;
-      case 'POLICY':
-        return Shield;
-      case 'VIDEO':
-        return VideoIcon;
-      case 'EXTERNAL_LINK':
-        return LinkIcon;
-      default:
-        return FileQuestion;
+      case 'FOLDER': return FolderIcon;
+      case 'DOCUMENT': return FileTextIcon;
+      case 'GUIDE': return Info;
+      case 'MANUAL': return Notebook;
+      case 'POLICY': return Shield;
+      case 'VIDEO': return VideoIcon;
+      case 'EXTERNAL_LINK': return LinkIcon;
+      default: return FileQuestion;
     }
 };
 

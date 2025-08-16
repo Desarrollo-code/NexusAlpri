@@ -1,12 +1,16 @@
 // src/components/resources/details-sidebar.tsx
 'use client';
 
-import type { EnterpriseResource as AppResourceType, UserRole } from '@/types';
+import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { X, Download, Share2, Edit, Trash2, Tag, Calendar, User, Eye, Lock, Globe, Users as UsersIcon, FolderIcon, Loader2, AlertTriangle, Link as LinkIcon } from 'lucide-react';
+import {
+  X, Download, Share2, Edit, Trash2, Tag, Calendar, User,
+  Lock, Globe, Users as UsersIcon, FolderIcon, Loader2,
+  AlertTriangle,
+} from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -16,11 +20,11 @@ import React, { useState, useEffect } from 'react';
 import * as mammoth from 'mammoth';
 import * as xlsx from 'xlsx';
 import { getYoutubeVideoId, getIconForType } from '@/lib/resource-utils';
-import { Progress } from '@/components/ui/progress';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DownloadButton } from '@/components/ui/download-button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { Input } from '../ui/input';
+import { useToast } from '@/hooks/use-toast';
 
 const OfficePreviewer = ({ url }: { url: string }) => {
     const [html, setHtml] = useState<string | null>(null);
@@ -34,7 +38,7 @@ const OfficePreviewer = ({ url }: { url: string }) => {
             setHtml(null);
             try {
                 const response = await fetch(url);
-                if (!response.ok) throw new Error('No se pudo cargar el archivo.');
+                if (!response.ok) throw new Error('No se pudo cargar el archivo para la previsualización.');
                 const arrayBuffer = await response.arrayBuffer();
 
                 if (url.endsWith('.docx')) {
@@ -45,12 +49,14 @@ const OfficePreviewer = ({ url }: { url: string }) => {
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
                     const htmlString = xlsx.utils.sheet_to_html(worksheet);
-                    setHtml(`<style>
-                        .xlsx-table { border-collapse: collapse; width: 100%; font-size: 12px; }
-                        .xlsx-table th, .xlsx-table td { border: 1px solid #ccc; padding: 4px; text-align: left; }
-                        .xlsx-table th { background-color: #f2f2f2; }
-                    </style>
-                    <div class="overflow-x-auto"><table class="xlsx-table">${htmlString}</table></div>`);
+                    setHtml(`
+                        <style>
+                            .xlsx-table { border-collapse: collapse; width: 100%; font-size: 12px; }
+                            .xlsx-table th, .xlsx-table td { border: 1px solid #ccc; padding: 4px; text-align: left; }
+                            .xlsx-table th { background-color: #f2f2f2; }
+                        </style>
+                        <div class="overflow-x-auto"><table class="xlsx-table">${htmlString}</table></div>
+                    `);
                 }
 
             } catch (e) {
@@ -78,11 +84,13 @@ const OfficePreviewer = ({ url }: { url: string }) => {
 
 export const FallbackIcon = ({ resource }: { resource: AppResourceType }) => {
   const Icon = getIconForType(resource.type);
+
   const colorPalette = [
     'text-red-500', 'text-blue-500', 'text-green-500', 'text-yellow-500', 
     'text-purple-500', 'text-pink-500', 'text-indigo-500', 'text-teal-500'
   ];
-  const getColorForCategory = (category: string) => {
+
+  const getColorForCategory = (category: string = 'General') => {
       let hash = 0;
       for (let i = 0; i < category.length; i++) {
           hash = category.charCodeAt(i) + ((hash << 5) - hash);
@@ -91,6 +99,7 @@ export const FallbackIcon = ({ resource }: { resource: AppResourceType }) => {
       return colorPalette[index];
   };
   const colorClass = getColorForCategory(resource.category);
+
 
   return (
     <div className="flex flex-col items-center justify-center h-full text-muted-foreground bg-muted/50">
@@ -101,13 +110,64 @@ export const FallbackIcon = ({ resource }: { resource: AppResourceType }) => {
 };
 
 
-const ResourcePreview = ({ resource }: { resource: AppResourceType }) => {
+const ResourcePreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource: AppResourceType; pinVerifiedUrl: string | null; onPinVerified: (url: string) => void; }) => {
     const isImage = resource.url && /\.(jpe?g|png|gif|webp)$/i.test(resource.url);
     const isPdf = resource.url && resource.url.toLowerCase().endsWith('.pdf');
     const isDocx = resource.url && resource.url.toLowerCase().endsWith('.docx');
     const isXlsx = resource.url && resource.url.toLowerCase().endsWith('.xlsx');
     const isVideoFile = resource.url && /\.(mp4|webm|ogv)$/i.test(resource.url);
     const youtubeId = resource.type === 'VIDEO' ? getYoutubeVideoId(resource.url) : null;
+    
+    const [pin, setPin] = useState('');
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const { toast } = useToast();
+
+    const handlePinSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsVerifying(true);
+        setError(null);
+        try {
+            const response = await fetch(`/api/resources/${resource.id}/verify-pin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin }),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Error al verificar');
+            toast({ title: "Acceso Concedido" });
+            onPinVerified(data.url);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'PIN incorrecto.');
+        } finally {
+            setIsVerifying(false);
+        }
+    };
+    
+    const displayUrl = pinVerifiedUrl || resource.url;
+
+    if (resource.hasPin && !pinVerifiedUrl) {
+       return (
+         <div className="flex flex-col items-center justify-center h-full p-4 bg-muted/30">
+            <Lock className="h-12 w-12 text-amber-500 mb-4"/>
+            <h4 className="font-semibold text-center">Recurso Protegido</h4>
+            <p className="text-xs text-muted-foreground text-center mb-4">Ingresa el PIN para acceder.</p>
+            <form onSubmit={handlePinSubmit} className="flex gap-2 w-full max-w-xs">
+                <Input 
+                    type="password" 
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value)}
+                    placeholder="PIN"
+                    disabled={isVerifying}
+                />
+                <Button type="submit" disabled={isVerifying}>
+                    {isVerifying ? <Loader2 className="h-4 w-4 animate-spin"/> : 'OK'}
+                </Button>
+            </form>
+            {error && <p className="text-xs text-destructive mt-2">{error}</p>}
+         </div>
+       );
+    }
     
     if (resource.type === 'FOLDER') {
         return (
@@ -124,21 +184,21 @@ const ResourcePreview = ({ resource }: { resource: AppResourceType }) => {
         if (youtubeId) {
             return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
         }
-        if (isVideoFile) {
-            return <video src={resource.url} controls className="w-full h-full object-contain bg-black" />
+        if (isVideoFile && displayUrl) {
+            return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />
         }
     }
     
-    if (isImage) {
-        return <Image src={resource.url!} alt={resource.title} fill className="object-contain p-2" data-ai-hint="document image" />;
+    if (isImage && displayUrl) {
+        return <Image src={displayUrl} alt={resource.title} fill className="object-contain p-2" data-ai-hint="document image" />;
     }
     
-    if (isPdf) {
-         return <iframe src={resource.url!} className="w-full h-full" title={`PDF Preview: ${resource.title}`}/>;
+    if (isPdf && displayUrl) {
+         return <iframe src={displayUrl} className="w-full h-full" title={`PDF Preview: ${resource.title}`}/>;
     }
     
-    if (isDocx || isXlsx) {
-        return <OfficePreviewer url={resource.url!} />;
+    if ((isDocx || isXlsx) && displayUrl) {
+        return <OfficePreviewer url={displayUrl} />;
     }
 
     return <FallbackIcon resource={resource} />;
@@ -152,6 +212,13 @@ export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: 
     onDelete: (id: string) => void;
 }) {
     const { user } = useAuth();
+    const [pinVerifiedUrl, setPinVerifiedUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        // Reset PIN verification when resource changes
+        setPinVerifiedUrl(null);
+    }, [resource]);
+
 
     if (!resource) {
         return <div className="h-full w-full bg-card" />;
@@ -171,14 +238,12 @@ export function ResourceDetailsSidebar({ resource, onClose, onEdit, onDelete }: 
             <ScrollArea className="flex-1">
                 <div className="p-4">
                     <div className="aspect-video w-full bg-muted rounded-md mb-4 flex items-center justify-center overflow-hidden border">
-                       <ResourcePreview resource={resource} />
+                       <ResourcePreview resource={resource} pinVerifiedUrl={pinVerifiedUrl} onPinVerified={setPinVerifiedUrl} />
                     </div>
 
                     <div className="flex gap-2 mb-4">
                        {resource.url && resource.type !== 'FOLDER' && (
-                           <a href={resource.url} target="_blank" rel="noopener noreferrer" className="flex-1">
-                             <Button className="w-full"><Download className="mr-2 h-4 w-4"/> Descargar</Button>
-                           </a>
+                           <DownloadButton url={pinVerifiedUrl || resource.url} resourceId={resource.id} hasPin={resource.hasPin} className="w-full"/>
                        )}
                         {canModify && 
                             <Button variant="outline" onClick={() => onEdit(resource)}>

@@ -88,7 +88,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                                         </DropdownMenuItem>
                                     )}
                                     <DropdownMenuItem onClick={()=> onEdit(resource)}>
-                                        <Share2 className="mr-2 h-4 w-4" /> Editar / Compartir
+                                        <Edit className="mr-2 h-4 w-4" /> Editar / Compartir
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={() => onDelete(resource.id)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem>
