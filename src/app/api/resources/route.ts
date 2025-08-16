@@ -14,11 +14,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const parentId = searchParams.get('parentId') || null;
-    const search = searchParams.get('search');
-    const category = searchParams.get('category');
-    const type = searchParams.get('type');
-    const dateFrom = searchParams.get('dateFrom');
-
+    
     // --- Start of Advanced Permission Logic ---
     const permissionsClause = {
         OR: [
@@ -29,31 +25,10 @@ export async function GET(req: NextRequest) {
     };
     // --- End of Advanced Permission Logic ---
     
-    // Filters that apply ON TOP of permissions
-    const filterClauses: any[] = [{ parentId }];
-    if (search) {
-        filterClauses.push({
-            OR: [
-                { title: { contains: search } },
-                { description: { contains: search } },
-                { tags: { has: search } },
-            ],
-        });
-    }
-    if (category && category !== 'all') {
-        filterClauses.push({ category });
-    }
-    if (type && type !== 'all') {
-        filterClauses.push({ type });
-    }
-    if (dateFrom) {
-        filterClauses.push({ uploadDate: { gte: new Date(dateFrom) } });
-    }
-
     const whereClause = {
         AND: [
+            { parentId },
             permissionsClause,
-            ...filterClauses,
         ]
     };
 
@@ -73,6 +48,7 @@ export async function GET(req: NextRequest) {
         // Don't expose the PIN hash to the client
         const safeResources = resources.map(({ pin, ...resource }) => ({
             ...resource,
+            tags: resource.tags, // ensure tags are included
             hasPin: !!pin,
         }));
 
