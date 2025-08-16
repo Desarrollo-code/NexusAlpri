@@ -76,7 +76,7 @@ const OfficePreviewer = ({ url }: { url: string }) => {
     return null;
 };
 
-const FallbackIcon = ({ resource }: { resource: AppResourceType }) => {
+export const FallbackIcon = ({ resource }: { resource: AppResourceType }) => {
   const Icon = getIconForType(resource.type);
   const colorPalette = [
     'text-red-500', 'text-blue-500', 'text-green-500', 'text-yellow-500', 
