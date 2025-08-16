@@ -1,4 +1,5 @@
 
+
 // @ts-nocheck
 'use client';
 
@@ -147,32 +148,29 @@ const LessonNotes = ({ lessonId }: { lessonId: string }) => {
 
     return (
         <div className="mt-8">
-            <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="notes">
-                    <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                        <div className="flex items-center gap-2">
-                           <Notebook className="h-5 w-5 text-primary" /> Mis Apuntes
+             <Card className="bg-yellow-100/50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800/30 shadow-md">
+                <CardHeader className="flex flex-row items-center justify-between p-4 bg-yellow-100/70 dark:bg-yellow-900/30 rounded-t-lg">
+                    <CardTitle className="text-lg flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+                        <Notebook className="h-5 w-5" />
+                        Mis Apuntes
+                    </CardTitle>
+                    {isSaving && <p className="text-xs text-muted-foreground">Guardando...</p>}
+                </CardHeader>
+                <CardContent className="p-0">
+                    {isLoading ? (
+                        <div className="flex justify-center items-center h-24">
+                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
                         </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        {isLoading ? (
-                            <div className="flex justify-center items-center h-24">
-                                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                            </div>
-                        ) : (
-                            <div className="relative">
-                                <Textarea
-                                    value={noteContent}
-                                    onChange={(e) => setNoteContent(e.target.value)}
-                                    placeholder="Escribe tus notas privadas para esta lección aquí..."
-                                    className="w-full min-h-[150px] bg-muted/30"
-                                />
-                                {isSaving && <p className="text-xs text-muted-foreground text-right mt-1">Guardando...</p>}
-                            </div>
-                        )}
-                    </AccordionContent>
-                </AccordionItem>
-            </Accordion>
+                    ) : (
+                       <Textarea
+                            value={noteContent}
+                            onChange={(e) => setNoteContent(e.target.value)}
+                            placeholder="Escribe tus notas privadas para esta lección aquí. Se guardarán automáticamente..."
+                            className="w-full min-h-[200px] bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-4"
+                        />
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 };
