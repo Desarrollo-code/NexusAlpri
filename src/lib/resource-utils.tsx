@@ -5,14 +5,22 @@ import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon,
 
 export const getIconForType = (type: AppResourceType['type']) => {
     switch (type) {
-      case 'FOLDER': return FolderIcon;
-      case 'DOCUMENT': return FileTextIcon;
-      case 'GUIDE': return Info;
-      case 'MANUAL': return Notebook;
-      case 'POLICY': return Shield;
-      case 'VIDEO': return VideoIcon;
-      case 'EXTERNAL_LINK': return LinkIcon;
-      default: return FileQuestion;
+      case 'FOLDER':
+        return FolderIcon;
+      case 'DOCUMENT':
+        return FileTextIcon;
+      case 'GUIDE':
+        return Info;
+      case 'MANUAL':
+        return Notebook;
+      case 'POLICY':
+        return Shield;
+      case 'VIDEO':
+        return VideoIcon;
+      case 'EXTERNAL_LINK':
+        return LinkIcon;
+      default:
+        return FileQuestion;
     }
 };
 
