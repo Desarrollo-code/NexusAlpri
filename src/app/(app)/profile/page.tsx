@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
-import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { useFileUpload } from '@/hooks/use-file-upload';
 import {
   Dialog,
   DialogContent,
@@ -58,8 +58,9 @@ export default function ProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   
   const [isSaving, setIsSaving] = useState(false);
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  
+  // Use the new hook for avatar uploads
+  const { isUploading, progress: uploadProgress, uploadFile } = useFileUpload();
 
   // 2FA State
   const [show2faSetup, setShow2faSetup] = useState(false);
@@ -113,11 +114,37 @@ export default function ProfilePage() {
     }
   };
 
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setAvatarPreview(URL.createObjectURL(file));
+
+      // --- Start automatic upload on selection ---
+      setIsSaving(true);
+      try {
+        const downloadURL = await uploadFile(file, `avatars/${user?.id}`);
+        const updatedUserData = { avatar: downloadURL };
+        
+        const response = await fetch(`/api/users/${user!.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedUserData)
+        });
+        if (!response.ok) throw new Error('Error al actualizar la foto de perfil');
+        
+        const savedUser = await response.json();
+        updateUser(savedUser); // Update context
+        setAvatarPreview(downloadURL); // Update preview to final URL
+        toast({ title: 'Foto de Perfil Actualizada', description: 'Tu nueva foto ha sido guardada.' });
+
+      } catch (error) {
+        toast({ title: 'Error de Subida', description: (error as Error).message, variant: 'destructive' });
+        setAvatarPreview(user?.avatar || null); // Revert on failure
+      } finally {
+        setIsSaving(false);
+        if (avatarInputRef.current) avatarInputRef.current.value = "";
+      }
+       // --- End automatic upload ---
     }
   };
 
@@ -126,40 +153,12 @@ export default function ProfilePage() {
       setIsSaving(true);
       
       const updatedUserData: any = {};
-      let hasChanges = false;
-      
       if (editableName !== user.name) {
         updatedUserData.name = editableName;
-        hasChanges = true;
       }
       
-      if (avatarPreview && avatarPreview !== user.avatar) {
-        const file = avatarInputRef.current?.files?.[0];
-        // Check if there's a new file object, or if the preview was set by other means (like a future crop feature)
-        if (file) {
-            setIsUploadingAvatar(true);
-            setUploadProgress(0);
-            const formData = new FormData();
-            formData.append('file', file);
-            try {
-                const { url } = await uploadWithProgress('/api/upload/avatar', formData, setUploadProgress);
-                updatedUserData.avatar = url;
-                hasChanges = true;
-            } catch(e) {
-                toast({ title: 'Error de Subida', description: (e as Error).message, variant: 'destructive' });
-                setIsSaving(false);
-                setIsUploadingAvatar(false);
-                return;
-            } finally {
-                setIsUploadingAvatar(false);
-            }
-        } else if (avatarPreview.startsWith('blob:')) {
-             // This logic would be for pre-cropped images if implemented
-        }
-      }
-
-      if (!hasChanges) {
-          toast({ title: 'Sin cambios', description: 'No se detectaron cambios para guardar.' });
+      if (Object.keys(updatedUserData).length === 0) {
+          toast({ title: 'Sin cambios', description: 'No se detectaron cambios en el nombre para guardar.' });
           setIsSaving(false);
           return;
       }
@@ -176,12 +175,11 @@ export default function ProfilePage() {
           }
           const savedUser = await response.json();
           updateUser(savedUser); // Update context
-          toast({ title: 'Perfil Actualizado', description: 'Tus datos han sido guardados.' });
+          toast({ title: 'Nombre Actualizado', description: 'Tu nombre ha sido guardado.' });
       } catch (error) {
           toast({ title: 'Error al Guardar', description: (error as Error).message, variant: 'destructive' });
       } finally {
           setIsSaving(false);
-          if (avatarInputRef.current) avatarInputRef.current.value = "";
       }
   };
 
@@ -306,10 +304,10 @@ export default function ProfilePage() {
                     size="icon" 
                     className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-background"
                     onClick={() => avatarInputRef.current?.click()}
-                    disabled={isSaving || isUploadingAvatar}
+                    disabled={isSaving || isUploading}
                     aria-label="Cambiar foto de perfil"
                 >
-                    <Camera className="h-4 w-4 text-primary" />
+                    {isUploading ? <Loader2 className="h-4 w-4 animate-spin"/> : <Camera className="h-4 w-4 text-primary" />}
                 </Button>
                 <input 
                     type="file" 
@@ -339,7 +337,7 @@ export default function ProfilePage() {
       {isMobile ? (
         <div className="flex flex-col items-center gap-8">
             <MobileProfileView />
-             {isUploadingAvatar && (
+             {isUploading && (
                 <div className="w-full px-4">
                   <Progress value={uploadProgress} className="h-1.5" />
                   <p className="text-xs mt-1 text-muted-foreground text-center">{uploadProgress}%</p>
@@ -349,10 +347,10 @@ export default function ProfilePage() {
                 <Card className="card-border-animated">
                     <CardHeader><CardTitle>Información Personal</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
-                      <div><Label htmlFor="fullNameMobile">Nombre Completo</Label><Input id="fullNameMobile" name="fullNameMobile" value={editableName} onChange={(e) => setEditableName(e.target.value)} disabled={isSaving || isUploadingAvatar}/></div>
-                      <Button onClick={handleSaveChanges} disabled={isSaving || isUploadingAvatar} className="w-full" variant="primary-gradient">
-                          {isSaving || isUploadingAvatar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                          {isSaving ? 'Guardando...' : (isUploadingAvatar ? 'Subiendo...' : 'Guardar Información')}
+                      <div><Label htmlFor="fullNameMobile">Nombre Completo</Label><Input id="fullNameMobile" name="fullNameMobile" value={editableName} onChange={(e) => setEditableName(e.target.value)} disabled={isSaving || isUploading}/></div>
+                      <Button onClick={handleSaveChanges} disabled={isSaving || isUploading} className="w-full" variant="primary-gradient">
+                          {isSaving || isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                          {isSaving ? 'Guardando...' : (isUploading ? 'Subiendo...' : 'Guardar Información')}
                       </Button>
                     </CardContent>
                 </Card>
@@ -392,10 +390,10 @@ export default function ProfilePage() {
                         size="icon" 
                         className="absolute bottom-1 right-1 h-8 w-8 rounded-full bg-background"
                         onClick={() => avatarInputRef.current?.click()}
-                        disabled={isSaving || isUploadingAvatar}
+                        disabled={isSaving || isUploading}
                         aria-label="Cambiar foto de perfil"
                     >
-                        <Camera className="h-4 w-4 text-primary" />
+                        {isUploading ? <Loader2 className="h-4 w-4 animate-spin"/> : <Camera className="h-4 w-4 text-primary" />}
                     </Button>
                     <input 
                         type="file" 
@@ -407,7 +405,7 @@ export default function ProfilePage() {
                         name="desktop-avatar-upload"
                     />
                   </div>
-                  {isUploadingAvatar && (
+                  {isUploading && (
                     <div className="px-4">
                       <Progress value={uploadProgress} className="h-1.5" />
                       <p className="text-xs mt-1 text-muted-foreground">{uploadProgress}%</p>
@@ -435,7 +433,7 @@ export default function ProfilePage() {
                       name="fullName"
                       value={editableName} 
                       onChange={(e) => setEditableName(e.target.value)}
-                      disabled={isSaving || isUploadingAvatar}
+                      disabled={isSaving || isUploading}
                     />
                   </div>
                   <div>
@@ -444,9 +442,9 @@ export default function ProfilePage() {
                     <p className="text-xs text-muted-foreground mt-1">El correo electrónico no se puede cambiar desde aquí.</p>
                   </div>
                    <div className="pt-2">
-                      <Button onClick={handleSaveChanges} disabled={isSaving || isUploadingAvatar} className="w-full" variant="primary-gradient">
-                          {isSaving || isUploadingAvatar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                          {isSaving ? 'Guardando...' : (isUploadingAvatar ? 'Subiendo...' : 'Guardar Información')}
+                      <Button onClick={handleSaveChanges} disabled={isSaving || isUploading} className="w-full" variant="primary-gradient">
+                          {isSaving || isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                          {isSaving ? 'Guardando...' : 'Guardar Información'}
                       </Button>
                   </div>
                 </CardContent>

@@ -9,25 +9,24 @@ import { Slider } from '@/components/ui/slider';
 import getCroppedImg from '@/lib/crop-image';
 import { Crop, RotateCw, ZoomIn, ZoomOut, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
+import { useFileUpload } from '@/hooks/use-file-upload'; // Import the new hook
 
 interface ImageCropperProps {
   imageSrc: string | null;
   onCropComplete: (croppedFileUrl: string) => void;
   onClose: () => void;
-  uploadUrl: string;
+  uploadPath: string; // e.g., 'course-images', 'avatars'
 }
 
-export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComplete, onClose, uploadUrl }) => {
+export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComplete, onClose, uploadPath }) => {
   const { toast } = useToast();
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const { isUploading, progress, uploadFile } = useFileUpload();
 
   const onCropCompleteCallback = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
@@ -46,22 +45,16 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
         return;
     }
 
-    setIsUploading(true);
-    setUploadProgress(0);
-
     try {
       const croppedImageResult = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
       if (!croppedImageResult) {
           throw new Error("No se pudo generar la imagen recortada.");
       }
       
-      const formData = new FormData();
-      formData.append('file', croppedImageResult.file, 'cropped-image.png');
-      
-      const result: { url: string } = await uploadWithProgress(uploadUrl, formData, setUploadProgress);
+      const downloadURL = await uploadFile(croppedImageResult.file, uploadPath);
       
       toast({ title: "Imagen Subida", description: "La imagen se ha subido y guardado." });
-      onCropComplete(result.url);
+      onCropComplete(downloadURL);
 
     } catch (e) {
       console.error(e);
@@ -70,8 +63,6 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
         description: (e instanceof Error ? e.message : 'No se pudo procesar y subir la imagen.'),
         variant: 'destructive',
       });
-    } finally {
-        setIsUploading(false);
     }
   };
 
@@ -103,7 +94,7 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
         {isUploading ? (
             <div className="p-6 space-y-2">
                 <p className="text-sm text-center text-muted-foreground">Subiendo imagen recortada...</p>
-                <Progress value={uploadProgress} />
+                <Progress value={progress} />
             </div>
         ) : (
             <div className="p-6 space-y-4">
