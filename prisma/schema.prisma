@@ -10,245 +10,261 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ------------------------------------
-// ---         MODELS               ---
-// ------------------------------------
+// --- USER & AUTHENTICATION MODELS ---
 
 model User {
   id                    String                 @id @default(cuid())
   name                  String
   email                 String                 @unique
   password              String
-  avatar                String?
-  role                  UserRole
+  role                  UserRole               @default(STUDENT)
+  avatar                String?                @db.Text
   isTwoFactorEnabled    Boolean                @default(false)
-  twoFactorSecret       String?
-  registeredDate        DateTime               @default(now())
-  theme                 String?
-  createdCourses        Course[]               @relation("InstructorCourses")
+  twoFactorSecret       String?                @db.Text
+  registeredDate        DateTime?              @default(now())
+  theme                 String?                @default("dark")
+  coursesAsInstructor   Course[]
   enrollments           Enrollment[]
-  quizAttempts          QuizAttempt[]
-  createdAnnouncements  Announcement[]
-  notifications         Notification[]
-  createdEvents         CalendarEvent[]        @relation("EventCreator")
-  attendingEvents       CalendarEvent[]        @relation("EventAttendees")
-  securityLogs          SecurityLog[]
-  uploadedResources     Resource[]             @relation("UploadedResources")
+  progress              CourseProgress[]
+  announcements         Announcement[]
+  createdEvents         CalendarEvent[]        @relation("EventCreators")
+  attendedEvents        CalendarEvent[]        @relation("EventAttendees")
+  createdResources      Resource[]             @relation("CreatedResources") // Explicit relation for uploader
   sharedResources       Resource[]             @relation("SharedResources")
+  notifications         Notification[]
+  notes                 UserNote[]
   createdTemplates      LessonTemplate[]
-  userNotes             UserNote[]
-  courseProgress        CourseProgress[]
-
-  @@index([email])
+  quizAttempts          QuizAttempt[]
 }
 
+enum UserRole {
+  ADMINISTRATOR
+  INSTRUCTOR
+  STUDENT
+}
+
+// --- COURSE & CONTENT MODELS ---
+
 model Course {
-  id              String         @id @default(cuid())
+  id              String           @id @default(cuid())
   title           String
-  description     String         @db.Text
-  imageUrl        String?        @db.Text
+  description     String           @db.Text
+  imageUrl        String?          @db.Text
   category        String?
-  status          CourseStatus   @default(DRAFT)
+  status          CourseStatus     @default(DRAFT)
   publicationDate DateTime?
-  instructorId    String?
-  instructor      User?          @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  instructorId    String
+  instructor      User             @relation(fields: [instructorId], references: [id], onDelete: Cascade)
   modules         Module[]
   enrollments     Enrollment[]
   progress        CourseProgress[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
 
-  @@index([instructorId])
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  SCHEDULED
 }
 
 model Module {
-  id          String   @id @default(cuid())
-  title       String
-  order       Int
-  courseId    String
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lessons     Lesson[]
-
-  @@index([courseId])
+  id        String   @id @default(cuid())
+  title     String
+  order     Int
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons   Lesson[]
 }
 
 model Lesson {
-  id             String                @id @default(cuid())
-  title          String
-  order          Int
-  moduleId       String
-  module         Module                @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  contentBlocks  ContentBlock[]
-  completions    LessonCompletionRecord[]
-  notes          UserNote[]
-
-  @@index([moduleId])
+  id            String          @id @default(cuid())
+  title         String
+  order         Int
+  moduleId      String
+  module        Module          @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  contentBlocks ContentBlock[]
+  completions   LessonCompletionRecord[]
+  notes         UserNote[]
 }
 
 model ContentBlock {
-  id        String      @id @default(cuid())
-  type      String
-  content   String?     @db.Text
+  id        String     @id @default(cuid())
+  type      LessonType
+  content   String?    @db.Text
   order     Int
   lessonId  String
-  lesson    Lesson      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson    Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   quiz      Quiz?
+}
 
-  @@index([lessonId])
+enum LessonType {
+  TEXT
+  VIDEO
+  QUIZ
+  FILE
 }
 
 model Quiz {
-  id              String         @id @default(cuid())
-  title           String
-  description     String?        @db.Text
-  contentBlockId  String         @unique
-  contentBlock    ContentBlock   @relation(fields: [contentBlockId], references: [id], onDelete: Cascade)
-  questions       Question[]
-  attempts        QuizAttempt[]
-
-  @@index([contentBlockId])
+  id             String         @id @default(cuid())
+  title          String
+  description    String?        @db.Text
+  contentBlockId String         @unique
+  contentBlock   ContentBlock   @relation(fields: [contentBlockId], references: [id], onDelete: Cascade)
+  questions      Question[]
+  attempts       QuizAttempt[]
 }
 
 model Question {
-  id       String         @id @default(cuid())
-  text     String         @db.Text
-  type     String         // e.g., 'MULTIPLE_CHOICE'
-  order    Int
-  quizId   String
-  quiz     Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  options  AnswerOption[]
+  id      String         @id @default(cuid())
+  text    String
+  type    QuestionType
+  order   Int
+  quizId  String
+  quiz    Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options AnswerOption[]
   attempts AnswerAttempt[]
+}
 
-  @@index([quizId])
+enum QuestionType {
+  MULTIPLE_CHOICE
+  SINGLE_CHOICE
+  TRUE_FALSE
 }
 
 model AnswerOption {
-  id       String          @id @default(cuid())
-  text     String          @db.Text
-  isCorrect Boolean
-  feedback String?         @db.Text
-  questionId String
-  question Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  id          String  @id @default(cuid())
+  text        String
+  isCorrect   Boolean
+  feedback    String? @db.Text
+  questionId  String
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   AnswerAttempt AnswerAttempt[]
-
-  @@index([questionId])
 }
 
+model QuizAttempt {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quizId    String
+  quiz      Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  score     Float
+  attemptedAt DateTime @default(now())
+  answers   AnswerAttempt[]
+}
+
+model AnswerAttempt {
+    id String @id @default(cuid())
+    attempt QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+    attemptId String
+    question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+    questionId String
+    selectedOption AnswerOption @relation(fields: [selectedOptionId], references: [id], onDelete: Cascade)
+    selectedOptionId String
+}
+
+// --- PROGRESS & ENROLLMENT MODELS ---
 
 model Enrollment {
-  id           String        @id @default(cuid())
-  userId       String
-  courseId     String
-  enrolledAt   DateTime      @default(now())
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course       Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  progress     CourseProgress?
+  id          String          @id @default(cuid())
+  userId      String
+  courseId    String
+  enrolledAt  DateTime        @default(now())
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress    CourseProgress?
 
   @@unique([userId, courseId])
-  @@index([userId])
-  @@index([courseId])
 }
 
 model CourseProgress {
-  id                  String                   @id @default(cuid())
-  userId              String
-  courseId            String
-  user                User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course              Course                   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  enrollmentId        String                   @unique
-  enrollment          Enrollment               @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  progressPercentage  Float                    @default(0)
-  completedLessons    LessonCompletionRecord[]
+  id               String                   @id @default(cuid())
+  userId           String
+  courseId         String
+  user             User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollmentId     String                   @unique
+  enrollment       Enrollment               @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  progressPercentage Float                  @default(0)
+  completedLessons LessonCompletionRecord[]
+  course           Course                   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
-  @@index([userId, courseId])
+  @@unique([userId, courseId])
 }
 
 model LessonCompletionRecord {
-    id          String  @id @default(cuid())
-    progressId  String
-    progress    CourseProgress @relation(fields: [progressId], references: [id], onDelete: Cascade)
-    lessonId    String
-    lesson      Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-    type        String // 'view' or 'quiz'
-    score       Float? // Only for quizzes
+    id         String      @id @default(cuid())
+    progressId String
+    progress   CourseProgress @relation(fields: [progressId], references: [id], onDelete: Cascade)
+    lessonId   String
+    lesson     Lesson      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+    type       String      // "view" or "quiz"
+    score      Float?      // Only for quiz type
 
     @@unique([progressId, lessonId])
 }
 
-model QuizAttempt {
-  id        String          @id @default(cuid())
-  userId    String
-  quizId    String
-  score     Float
-  attemptedAt DateTime      @default(now())
-  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quiz      Quiz            @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  answers   AnswerAttempt[]
-
-  @@index([userId])
-  @@index([quizId])
-}
-
-model AnswerAttempt {
-  id               String       @id @default(cuid())
-  attemptId        String
-  attempt          QuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-  questionId       String
-  question         Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  selectedOptionId String
-  selectedOption   AnswerOption @relation(fields: [selectedOptionId], references: [id], onDelete: Cascade)
-
-  @@index([attemptId])
-  @@index([questionId])
-}
-
+// --- GLOBAL CONTENT MODELS ---
 
 model Resource {
-  id            String      @id @default(cuid())
-  title         String
-  description   String?     @db.Text
-  type          String      // e.g., 'DOCUMENT', 'VIDEO', 'FOLDER'
-  category      String
-  tags          String[]
-  url           String?     @db.Text
-  uploadDate    DateTime    @default(now())
-  uploaderId    String?
-  uploader      User?       @relation("UploadedResources", fields: [uploaderId], references: [id], onDelete: SetNull)
-  pin           String?     // Hashed PIN
-  ispublic      Boolean     @default(true)
-  parentId      String?     
-  parent        Resource?   @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
-  children      Resource[]  @relation("FolderChildren")
-  sharedWith    User[]      @relation("SharedResources")
-  versions      ResourceVersion[]
-
-  @@index([uploaderId])
-  @@index([parentId])
+  id           String       @id @default(cuid())
+  title        String
+  description  String?      @db.Text
+  type         ResourceType
+  category     String
+  tags         String?
+  url          String?      @db.Text
+  pin          String?
+  uploadDate   DateTime     @default(now())
+  parentId     String?
+  parent       Resource?    @relation("FolderChildren", fields: [parentId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  children     Resource[]   @relation("FolderChildren")
+  uploaderId   String
+  uploader     User         @relation("CreatedResources", fields: [uploaderId], references: [id], onDelete: Cascade)
+  ispublic     Boolean      @default(true)
+  sharedWith   User[]       @relation("SharedResources")
 }
 
-model ResourceVersion {
-  id          String   @id @default(cuid())
-  resourceId  String
-  resource    Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-  url         String   @db.Text
-  version     Int
-  createdAt   DateTime @default(now())
-
-  @@index([resourceId])
+enum ResourceType {
+  FOLDER
+  DOCUMENT
+  GUIDE
+  MANUAL
+  POLICY
+  VIDEO
+  EXTERNAL_LINK
+  OTHER
 }
 
 model Announcement {
-  id        String      @id @default(cuid())
-  title     String
-  content   String      @db.Text
-  date      DateTime    @default(now())
-  authorId  String
-  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  audience  Json        // Storing as JSON to support 'ALL' or ['STUDENT', 'INSTRUCTOR']
-  priority  String?     @default("Normal") // e.g., 'Normal', 'Urgente'
-
-  @@index([authorId])
+  id         String   @id @default(cuid())
+  title      String
+  content    String   @db.Text
+  date       DateTime @default(now())
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  audience   Json     // 'ALL', or a list of roles like ['STUDENT', 'INSTRUCTOR']
+  priority   String   @default("Normal") // Normal, Urgente
 }
+
+model CalendarEvent {
+  id                  String       @id @default(cuid())
+  title               String
+  description         String?      @db.Text
+  location            String?
+  start               DateTime
+  end                 DateTime
+  allDay              Boolean      @default(false)
+  creatorId           String
+  creator             User         @relation("EventCreators", fields: [creatorId], references: [id], onDelete: Cascade)
+  audienceType        String       // 'ALL', 'ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT', 'SPECIFIC'
+  attendees           User[]       @relation("EventAttendees")
+  color               String       @default("blue") // blue, green, red, orange
+  videoConferenceLink String?
+  attachments         Json?        // Array of { name: string, url: string }
+}
+
+// --- SYSTEM & LOGGING MODELS ---
 
 model Notification {
   id          String   @id @default(cuid())
@@ -259,125 +275,92 @@ model Notification {
   link        String?
   read        Boolean  @default(false)
   createdAt   DateTime @default(now())
-
-  @@index([userId])
 }
-
-model CalendarEvent {
-  id                  String   @id @default(cuid())
-  title               String
-  description         String?  @db.Text
-  location            String?
-  start               DateTime
-  end                 DateTime
-  allDay              Boolean
-  color               String
-  audienceType        String   // e.g., 'ALL', 'STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR', 'SPECIFIC'
-  attendees           User[]   @relation("EventAttendees")
-  attachments         Json?
-  videoConferenceLink String?
-  creatorId           String
-  creator             User     @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-
-  @@index([creatorId])
-}
-
 
 model PlatformSettings {
-  id                          String    @id @default(cuid())
-  platformName                String    @default("NexusAlpri")
-  allowPublicRegistration     Boolean   @default(true)
-  enableEmailNotifications    Boolean   @default(true)
-  emailWhitelist              String?   @db.Text // Comma-separated list of domains
-  require2faForAdmins         Boolean   @default(false)
-  idleTimeoutMinutes          Int       @default(20)
-  enableIdleTimeout           Boolean   @default(true)
-  passwordMinLength           Int       @default(8)
-  passwordRequireUppercase    Boolean   @default(true)
-  passwordRequireLowercase    Boolean   @default(true)
-  passwordRequireNumber       Boolean   @default(true)
-  passwordRequireSpecialChar  Boolean   @default(true)
-  resourceCategories          String    @db.Text // Comma-separated list
-  updatedAt                   DateTime  @updatedAt
-  primaryColor                String    @default("#6366f1") // indigo-500
-  secondaryColor              String    @default("#a5b4fc") // indigo-300
-  accentColor                 String    @default("#ec4899") // pink-500
-  backgroundColorLight        String    @default("#f8fafc") // slate-50
-  primaryColorDark            String    @default("#a5b4fc") // indigo-300
-  backgroundColorDark         String    @default("#020617") // slate-950
-  fontHeadline                String    @default("Space Grotesk")
-  fontBody                    String    @default("Inter")
-  logoUrl                     String?
-  watermarkUrl                String?
-  landingImageUrl             String?
-  authImageUrl                String?
+    id                         String    @id @default(cuid())
+    platformName               String    @default("NexusAlpri")
+    allowPublicRegistration    Boolean   @default(true)
+    enableEmailNotifications   Boolean   @default(true)
+    emailWhitelist             String?   @db.Text
+    passwordMinLength          Int       @default(8)
+    passwordRequireUppercase   Boolean   @default(true)
+    passwordRequireLowercase   Boolean   @default(true)
+    passwordRequireNumber      Boolean   @default(true)
+    passwordRequireSpecialChar Boolean   @default(true)
+    enableIdleTimeout          Boolean   @default(true)
+    idleTimeoutMinutes         Int       @default(20)
+    require2faForAdmins        Boolean   @default(false)
+    resourceCategories         String?   @db.Text @default("Recursos Humanos,TI y Seguridad,Marketing,Ventas,Legal,Operaciones,Finanzas,Formación Interna,Documentación de Producto,General")
+    updatedAt                  DateTime  @updatedAt
+    
+    // Theming
+    primaryColor        String? @default("#6366f1") // Indigo 500
+    secondaryColor      String? @default("#a5b4fc") // Indigo 300
+    accentColor         String? @default("#ec4899") // Pink 500
+    backgroundColorLight String? @default("#f8fafc") // Slate 50
+    primaryColorDark    String? @default("#a5b4fc") // Indigo 300
+    backgroundColorDark String? @default("#020617") // Slate 950
+    fontHeadline        String? @default("Space Grotesk")
+    fontBody            String? @default("Inter")
+    logoUrl             String?
+    watermarkUrl        String?
+    landingImageUrl     String?
+    authImageUrl        String?
 }
 
 model SecurityLog {
-  id           String   @id @default(cuid())
-  userId       String?
-  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event        String
-  ipAddress    String?
-  details      String?  @db.Text
-  createdAt    DateTime @default(now())
-  emailAttempt String? // For failed logins where user might not exist
-
-  @@index([userId])
+    id            String            @id @default(cuid())
+    event         SecurityLogEvent
+    ipAddress     String?
+    userId        String?
+    user          User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+    emailAttempt  String?           // To log email used in failed attempts
+    details       String?           @db.Text
+    createdAt     DateTime          @default(now())
 }
 
-model LessonTemplate {
-  id               String          @id @default(cuid())
-  name             String
-  description      String?         @db.Text
-  type             String          // 'SYSTEM' or 'USER'
-  creatorId        String?
-  creator          User?           @relation(fields: [creatorId], references: [id])
-  templateBlocks   TemplateBlock[]
-  createdAt        DateTime        @default(now())
-
-  @@index([creatorId])
-}
-
-model TemplateBlock {
-  id          String         @id @default(cuid())
-  type        String         // 'TEXT', 'VIDEO', 'QUIZ', etc.
-  order       Int
-  templateId  String
-  template    LessonTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  
-  @@index([templateId])
+enum SecurityLogEvent {
+    SUCCESSFUL_LOGIN
+    FAILED_LOGIN_ATTEMPT
+    PASSWORD_CHANGE_SUCCESS
+    TWO_FACTOR_ENABLED
+    TWO_FACTOR_DISABLED
+    USER_ROLE_CHANGED
 }
 
 model UserNote {
-  id        String   @id @default(cuid())
-  userId    String
-  lessonId  String
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, lessonId])
+    id String @id @default(cuid())
+    userId String
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    lessonId String
+    lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+    content String @db.Text
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    
+    @@unique([userId, lessonId])
 }
 
-
-// ------------------------------------
-// ---         ENUMS                ---
-// ------------------------------------
-
-enum UserRole {
-  STUDENT
-  INSTRUCTOR
-  ADMINISTRATOR
+model LessonTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  type        TemplateType @default(USER) // SYSTEM or USER
+  creatorId   String?  // Null for SYSTEM templates
+  creator     User?    @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  templateBlocks TemplateBlock[]
 }
 
-enum CourseStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-  SCHEDULED
+model TemplateBlock {
+  id           String @id @default(cuid())
+  type         LessonType
+  order        Int
+  templateId   String
+  template     LessonTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+}
+
+enum TemplateType {
+  SYSTEM
+  USER
 }
