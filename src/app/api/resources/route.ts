@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     };
 
     try {
-        const resources = await prisma.resource.findMany({
+        const resources = await prisma.enterpriseResource.findMany({
             where: whereClause,
             include: {
                 uploader: { select: { id: true, name: true } },
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
             };
         }
 
-        const newResource = await prisma.resource.create({
+        const newResource = await prisma.enterpriseResource.create({
             data,
         });
         
