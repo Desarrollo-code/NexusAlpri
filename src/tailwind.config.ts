@@ -20,6 +20,7 @@ const config: Config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 4px)",
         sm: "calc(var(--radius) - 8px)",
+        '2xl': '1rem',
       },
       fontFamily: {
         body: ['var(--font-body)', 'sans-serif'],
@@ -115,8 +116,13 @@ const config: Config = {
           '0%, 70%, 100%': { opacity: '1' },
           '20%, 50%': { opacity: '0' },
         },
-        'pulse-slow': {
-          '50%': { opacity: '0.8' },
+        'spin-slow': {
+            from: { transform: 'rotate(0deg)' },
+            to: { transform: 'rotate(360deg)' },
+        },
+        'bloom': {
+          '0%, 100%': { transform: 'scale(0.8)', opacity: 0.7 },
+          '50%': { transform: 'scale(1.1)', opacity: 1 },
         },
       },
       animation: {
@@ -125,7 +131,8 @@ const config: Config = {
         'press': 'press 0.2s 1 linear',
         'throw': 'throw 0.4s ease-out forwards',
         'caret-blink': 'caret-blink 1.25s ease-out infinite',
-        'pulse-slow': 'pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'spin-slow': 'spin-slow 3s linear infinite',
+        'bloom': 'bloom 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
     },
   },

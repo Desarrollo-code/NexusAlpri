@@ -5,6 +5,7 @@ import * as React from 'react';
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from 'next-themes';
 import { type ThemeProviderProps } from 'next-themes/dist/types';
 import { useAuth } from '@/contexts/auth-context';
+import { fontMap } from '@/lib/fonts';
 
 export const AVAILABLE_THEMES = [
   { value: 'light', label: 'Claro' },
@@ -52,18 +53,21 @@ const StyleInjector = () => {
         if (!settings) return '';
 
         const isDark = theme === 'dark';
-
+        
         const primary = isDark ? settings.primaryColorDark : settings.primaryColor;
         const background = isDark ? settings.backgroundColorDark : settings.backgroundColorLight;
         
+        const fontHeadline = fontMap[settings.fontHeadline || 'Space Grotesk'] as any;
+        const fontBody = fontMap[settings.fontBody || 'Inter'] as any;
+
         return `
           :root {
             ${primary ? `--primary: ${hexToHsl(primary)};` : ''}
             ${background ? `--background: ${hexToHsl(background)};` : ''}
-            
-            /* Light-theme specific colors that don't change */
             ${settings.secondaryColor ? `--secondary: ${hexToHsl(settings.secondaryColor)};` : ''}
             ${settings.accentColor ? `--accent: ${hexToHsl(settings.accentColor)};` : ''}
+            ${fontHeadline ? `--font-headline: ${fontHeadline.style.fontFamily};` : ''}
+            ${fontBody ? `--font-body: ${fontBody.style.fontFamily};` : ''}
           }
         `.trim();
     }, [settings, theme]);
