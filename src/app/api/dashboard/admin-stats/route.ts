@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
         const thirtyDaysAgo = startOfDay(subDays(today, 30));
         const sevenDaysAgo = startOfDay(subDays(today, 7));
 
-        // --- Execute simple counts outside the transaction to avoid validation errors ---
+        // --- Execute simple counts outside the transaction to fix validation errors ---
         const totalUsersResult = await prisma.user.count();
         const totalCoursesResult = await prisma.course.count();
         const totalPublishedCoursesCount = await prisma.course.count({ where: { status: 'PUBLISHED' } });
