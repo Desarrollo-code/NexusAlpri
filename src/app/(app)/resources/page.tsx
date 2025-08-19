@@ -368,7 +368,6 @@ export default function ResourcesPage() {
     <div className="space-y-6">
       <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="flex-grow space-y-1">
-           <h1 className="text-2xl font-bold font-headline">Biblioteca de Recursos</h1>
            <div className="flex items-center text-sm text-muted-foreground flex-wrap">
             {breadcrumbs.map((crumb, index) => (
             <React.Fragment key={crumb.id || 'root'}>
