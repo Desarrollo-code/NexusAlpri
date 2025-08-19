@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, ChevronLeft, ChevronRight, X, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, FolderZip, FileCode, List } from 'lucide-react';
+import { Download, Share2, ChevronLeft, ChevronRight, X, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List } from 'lucide-react';
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -81,7 +81,7 @@ const ZipPreviewer = ({ url }: { url: string }) => {
     return (
         <div className="flex flex-col h-full bg-muted/30">
             <div className="p-4 border-b bg-background/70">
-                <h4 className="font-semibold flex items-center gap-2"><FolderZip className="h-5 w-5 text-primary"/>Contenido del Archivo ZIP</h4>
+                <h4 className="font-semibold flex items-center gap-2"><Archive className="h-5 w-5 text-primary"/>Contenido del Archivo ZIP</h4>
             </div>
             <ScrollArea className="flex-grow">
                 <ul className="p-4 text-sm">
