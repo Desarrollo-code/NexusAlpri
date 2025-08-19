@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, ChevronLeft, ChevronRight, X, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List } from 'lucide-react';
+import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List } from 'lucide-react';
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -189,7 +189,6 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     
     const displayUrl = pinVerifiedUrl || resource.url;
     
-    // Intelligent rendering based on URL content
     if (displayUrl) {
         const youtubeId = getYoutubeVideoId(displayUrl);
         const isImage = /\.(jpe?g|png|gif|webp)$/i.test(displayUrl);
@@ -202,7 +201,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
         if (isVideoFile) return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />;
         if (isImage) return <Image src={displayUrl} alt={resource.title} fill className="object-contain" data-ai-hint="document image" />;
         if (isPdf) return <iframe src={displayUrl} className="w-full h-full" title={`PDF Preview: ${resource.title}`}/>;
-        if (isOfficeDoc) return <iframe src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(displayUrl)}`} className="w-full h-full" title={`Office Document Preview: ${resource.title}`} frameBorder="0"/>;
+        if (isOfficeDoc) return <DocxPreviewer url={displayUrl} />;
         if (isZipFile) return <ZipPreviewer url={displayUrl} />;
     }
 
@@ -292,8 +291,8 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                            <DownloadButton url={pinVerifiedUrl || resource.url} resourceId={resource.id} hasPin={resource.hasPin} />
                          )}
                         <Button variant="outline" size="sm" onClick={() => setShowDetails(!showDetails)}>
-                             <Info className="h-4 w-4 mr-2" />
-                            Detalles
+                            <Info className="h-4 w-4" />
+                            <span className="hidden sm:inline ml-2">Ver Detalles</span>
                         </Button>
                     </div>
                 </header>
