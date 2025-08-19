@@ -6,7 +6,7 @@ import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
 import { DecorativeFolder } from '@/components/resources/decorative-folder';
-import { Edit, FolderIcon, MoreVertical, Trash2, Lock, Share2, Download, Globe, ExternalLink } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, ExternalLink, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from 'next/image';
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
-import { Users } from 'lucide-react';
 import { DownloadButton } from '../ui/download-button';
 
 // --- Sub-components for Page ---

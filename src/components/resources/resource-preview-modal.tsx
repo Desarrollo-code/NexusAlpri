@@ -18,6 +18,8 @@ import { getInitials } from '@/lib/security-log-utils';
 import { ScrollArea } from '../ui/scroll-area';
 import mammoth from 'mammoth';
 import JSZip from 'jszip';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
 
 
 const DocxPreviewer = ({ url }: { url: string }) => {
@@ -111,21 +113,22 @@ const FallbackPreview = ({ resource }: { resource: AppResourceType }) => {
                     : "No hay una vista previa disponible para este tipo de archivo, pero puedes descargarlo."
                 }
             </p>
-            {isExternalLink ? (
-                <Button asChild className="mt-6">
-                    <a href={resource.url!} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Visitar Enlace
-                    </a>
-                </Button>
-            ) : (
-                 <DownloadButton 
-                    url={resource.url!}
-                    resourceId={resource.id}
-                    hasPin={resource.hasPin}
-                    className="mt-6"
-                />
-            )}
+             <div className="mt-6">
+                {isExternalLink ? (
+                    <Button asChild>
+                        <a href={resource.url!} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Visitar Enlace
+                        </a>
+                    </Button>
+                ) : (
+                     <DownloadButton 
+                        url={resource.url!}
+                        resourceId={resource.id}
+                        hasPin={resource.hasPin}
+                    />
+                )}
+            </div>
         </div>
     );
 };
@@ -194,7 +197,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
         const isImage = /\.(jpe?g|png|gif|webp)$/i.test(displayUrl);
         const isPdf = displayUrl.toLowerCase().endsWith('.pdf');
         const isVideoFile = /\.(mp4|webm|ogv)$/i.test(displayUrl);
-        const isOfficeDoc = /\.(docx|xlsx|pptx)$/i.test(displayUrl);
+        const isOfficeDoc = displayUrl.toLowerCase().endsWith('.docx');
         const isZipFile = displayUrl.toLowerCase().endsWith('.zip');
 
         if (youtubeId) return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>;
@@ -209,51 +212,44 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
 }
 
 
-const ResourceDetailsSidebar = ({ resource }: { resource: AppResourceType }) => (
-    <div className="w-full sm:w-80 flex-shrink-0 border-l bg-background/50 flex flex-col">
-        <div className="p-4 border-b">
-            <h3 className="font-semibold">Detalles del Recurso</h3>
+const ResourceDetailsContent = ({ resource }: { resource: AppResourceType }) => (
+    <div className="space-y-6 text-sm">
+        <div>
+            <h4 className="font-medium text-muted-foreground mb-1">Título</h4>
+            <p className="font-semibold text-base">{resource.title}</p>
         </div>
-        <ScrollArea className="flex-grow p-4">
-            <div className="space-y-6 text-sm">
-                <div>
-                    <h4 className="font-medium text-muted-foreground mb-1">Título</h4>
-                    <p className="font-semibold text-base">{resource.title}</p>
-                </div>
-                {resource.description && (
-                     <div>
-                        <h4 className="font-medium text-muted-foreground mb-1">Descripción</h4>
-                        <p className="text-muted-foreground whitespace-pre-wrap">{resource.description}</p>
-                    </div>
-                )}
-                 <div>
-                    <h4 className="font-medium text-muted-foreground mb-2">Información</h4>
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2"><User className="h-4 w-4 shrink-0"/><span>Subido por: <strong>{resource.uploaderName}</strong></span></div>
-                        <div className="flex items-center gap-2"><Calendar className="h-4 w-4 shrink-0"/><span>Fecha: <strong>{new Date(resource.uploadDate).toLocaleDateString()}</strong></span></div>
-                        <div className="flex items-center gap-2"><Tag className="h-4 w-4 shrink-0"/><span>Categoría: <Badge variant="secondary">{resource.category}</Badge></span></div>
-                    </div>
-                 </div>
-                 <Separator/>
-                 <div>
-                    <h4 className="font-medium text-muted-foreground mb-2">Permisos</h4>
-                     <div className="flex items-center gap-2">
-                        {resource.ispublic ? <Globe className="h-4 w-4 text-green-500 shrink-0"/> : <Users className="h-4 w-4 text-blue-500 shrink-0"/>}
-                        <span>{resource.ispublic ? 'Acceso Público' : 'Compartido con usuarios específicos'}</span>
-                    </div>
-                    {!resource.ispublic && resource.sharedWith && resource.sharedWith.length > 0 && (
-                        <div className="mt-2 space-y-2 pl-6">
-                            {resource.sharedWith.map(user => (
-                                <div key={user.id} className="flex items-center gap-2">
-                                    <Avatar className="h-6 w-6"><AvatarImage src={user.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(user.name)}</AvatarFallback></Avatar>
-                                    <span>{user.name}</span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                 </div>
+        {resource.description && (
+             <div>
+                <h4 className="font-medium text-muted-foreground mb-1">Descripción</h4>
+                <p className="text-muted-foreground whitespace-pre-wrap">{resource.description}</p>
             </div>
-        </ScrollArea>
+        )}
+         <div>
+            <h4 className="font-medium text-muted-foreground mb-2">Información</h4>
+            <div className="space-y-2">
+                <div className="flex items-center gap-2"><User className="h-4 w-4 shrink-0"/><span>Subido por: <strong>{resource.uploaderName}</strong></span></div>
+                <div className="flex items-center gap-2"><Calendar className="h-4 w-4 shrink-0"/><span>Fecha: <strong>{new Date(resource.uploadDate).toLocaleDateString()}</strong></span></div>
+                <div className="flex items-center gap-2"><Tag className="h-4 w-4 shrink-0"/><span>Categoría: <Badge variant="secondary">{resource.category}</Badge></span></div>
+            </div>
+         </div>
+         <Separator/>
+         <div>
+            <h4 className="font-medium text-muted-foreground mb-2">Permisos</h4>
+             <div className="flex items-center gap-2">
+                {resource.ispublic ? <Globe className="h-4 w-4 text-green-500 shrink-0"/> : <Users className="h-4 w-4 text-blue-500 shrink-0"/>}
+                <span>{resource.ispublic ? 'Acceso Público' : 'Compartido con usuarios específicos'}</span>
+            </div>
+            {!resource.ispublic && resource.sharedWith && resource.sharedWith.length > 0 && (
+                <div className="mt-2 space-y-2 pl-6">
+                    {resource.sharedWith.map(user => (
+                        <div key={user.id} className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6"><AvatarImage src={user.avatar || undefined} /><AvatarFallback className="text-xs">{getInitials(user.name)}</AvatarFallback></Avatar>
+                            <span>{user.name}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+         </div>
     </div>
 );
 
@@ -267,6 +263,7 @@ interface ResourcePreviewModalProps {
 export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ resource, onClose, onNavigate }) => {
     const [pinVerifiedUrl, setPinVerifiedUrl] = useState<string | null>(null);
     const [showDetails, setShowDetails] = useState(false);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         setPinVerifiedUrl(null);
@@ -274,6 +271,17 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     }, [resource]);
     
     if (!resource) return null;
+
+    const DetailsComponent = () => (
+        <div className="w-full sm:w-80 flex-shrink-0 border-l bg-background/50 flex flex-col">
+            <div className="p-4 border-b">
+                <h3 className="font-semibold">Detalles del Recurso</h3>
+            </div>
+            <ScrollArea className="flex-grow p-4">
+                <ResourceDetailsContent resource={resource} />
+            </ScrollArea>
+        </div>
+    );
     
     return (
         <Dialog open={!!resource} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -286,14 +294,26 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                         {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0" })}
                         <h2 className="font-semibold truncate text-foreground">{resource.title}</h2>
                     </div>
-                    <div className="flex items-center gap-2">
+                     <div className="flex items-center gap-2">
                          {resource.url && (
                            <DownloadButton url={pinVerifiedUrl || resource.url} resourceId={resource.id} hasPin={resource.hasPin} />
                          )}
-                        <Button variant="outline" size="sm" onClick={() => setShowDetails(!showDetails)}>
-                            <Info className="h-4 w-4" />
-                            <span className="hidden sm:inline ml-2">Ver Detalles</span>
-                        </Button>
+                         {isMobile ? (
+                            <Sheet open={showDetails} onOpenChange={setShowDetails}>
+                               <SheetTrigger asChild>
+                                  <Button variant="outline" size="sm"><Info className="h-4 w-4" /><span className="hidden sm:inline ml-2">Ver Detalles</span></Button>
+                               </SheetTrigger>
+                               <SheetContent side="bottom" className="h-[60vh] flex flex-col p-0">
+                                   <SheetHeader className="p-4 border-b text-left"><SheetTitle>Detalles del Recurso</SheetTitle></SheetHeader>
+                                   <ScrollArea className="flex-grow p-4"><ResourceDetailsContent resource={resource} /></ScrollArea>
+                                </SheetContent>
+                            </Sheet>
+                         ) : (
+                            <Button variant="outline" size="sm" onClick={() => setShowDetails(!showDetails)}>
+                                <Info className="h-4 w-4" />
+                                <span className="hidden sm:inline ml-2">Ver Detalles</span>
+                            </Button>
+                         )}
                     </div>
                 </header>
                 <div className="flex-grow flex relative overflow-hidden">
@@ -304,9 +324,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => onNavigate('next')} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronRight/></Button>
                      </div>
-                     {showDetails && (
-                        <ResourceDetailsSidebar resource={resource} />
-                     )}
+                     {!isMobile && showDetails && <DetailsComponent />}
                 </div>
             </DialogContent>
         </Dialog>

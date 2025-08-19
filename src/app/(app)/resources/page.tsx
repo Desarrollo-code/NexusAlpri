@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, User as AppUser, UserRole } from '@/types';
-import { Search, ArchiveX, Loader2, AlertTriangle, Trash2, Edit, List, MoreVertical, Folder as FolderIcon, FileText, Video, Info, Notebook, Shield, FileQuestion, LayoutGrid, Eye, Download, ChevronRight, ChevronLeft, Home, Filter, ArrowUp, ArrowDown, Lock, X, UploadCloud, Grid, Link as LinkIcon, FolderPlus, Globe, Users as UsersIcon } from 'lucide-react';
+import { Search, ArchiveX, Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -28,17 +28,10 @@ import {
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import type { Resource as PrismaResource, ResourceType as PrismaResourceType, User as PrismaUser } from '@prisma/client';
-import { uploadWithProgress } from '@/lib/upload-with-progress';
-import Image from 'next/image';
-import { Separator } from '@/components/ui/separator';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 import { UploadArea } from '@/components/ui/upload-area';
 import { Progress } from '@/components/ui/progress';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { DecorativeFolder } from '@/components/resources/decorative-folder';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -47,39 +40,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/security-log-utils';
 import { Textarea } from '@/components/ui/textarea';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
-import { getIconForType } from '@/lib/resource-utils';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
-
-
-// --- Types and Mappers ---
-interface ApiResource extends Omit<PrismaResource, 'uploader' | 'tags' | 'type' | 'uploadDate' | 'pin'> {
-  uploader: { id: string; name: string | null } | null;
-  tags: string[];
-  type: PrismaResourceType;
-  uploadDate: string;
-  hasPin: boolean;
-  description: string | null;
-}
-
-function mapApiResourceToAppResource(apiResource: ApiResource): AppResourceType {
-  return {
-    id: apiResource.id,
-    title: apiResource.title,
-    description: apiResource.description || undefined,
-    type: apiResource.type as AppResourceType['type'],
-    category: apiResource.category || 'General',
-    tags: apiResource.tags || [],
-    url: apiResource.url || undefined,
-    uploadDate: apiResource.uploadDate,
-    uploaderId: apiResource.uploaderId || undefined,
-    uploaderName: apiResource.uploader?.name || 'N/A',
-    hasPin: apiResource.hasPin,
-    parentId: apiResource.parentId,
-    ispublic: false, // Will be replaced with actual value
-    sharedWith: [],  // Will be replaced with actual value
-  };
-}
-
+import { ChevronRight } from 'lucide-react';
 
 // --- Main Page Component ---
 export default function ResourcesPage() {
@@ -402,9 +364,25 @@ export default function ResourcesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div>
-              <p className="text-muted-foreground">Explora, busca y gestiona todos los archivos de la organización.</p>
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border-b -mx-4 -mt-4 bg-card/50">
+          <div className="flex-grow space-y-1">
+             <div className="flex items-center text-sm text-muted-foreground">
+              {breadcrumbs.map((crumb, index) => (
+              <React.Fragment key={crumb.id || 'root'}>
+                  {index > 0 && <ChevronRight className="h-4 w-4 mx-1" />}
+                  <button 
+                    onClick={() => handleBreadcrumbClick(crumb.id, index)} 
+                    className={cn(
+                        "hover:text-primary",
+                        index === breadcrumbs.length - 1 ? "font-semibold text-foreground" : ""
+                    )}
+                  >
+                      {crumb.title}
+                  </button>
+              </React.Fragment>
+              ))}
+            </div>
+             <p className="text-sm text-muted-foreground">Explora, busca y gestiona todos los archivos de la organización.</p>
           </div>
           {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
           <div className="flex gap-2 w-full sm:w-auto">
@@ -418,21 +396,39 @@ export default function ResourcesPage() {
           )}
       </header>
 
-      <div className="flex items-center text-sm text-muted-foreground">
-          {breadcrumbs.map((crumb, index) => (
-          <React.Fragment key={crumb.id || 'root'}>
-              {index > 0 && <ChevronRight className="h-4 w-4 mx-1" />}
-              <button 
-                onClick={() => handleBreadcrumbClick(crumb.id, index)} 
-                className={cn(
-                    "hover:text-primary",
-                    index === breadcrumbs.length - 1 ? "font-semibold text-foreground" : ""
-                )}
-              >
-                  {crumb.title}
-              </button>
-          </React.Fragment>
-          ))}
+      <div className="space-y-4">
+        <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input 
+                placeholder="Buscar en la carpeta actual..." 
+                className="pl-10 h-11 text-base"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
+        </div>
+
+        {files.length > 0 && (
+           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 border rounded-lg bg-card">
+              <div>
+                  <h2 className="text-lg font-semibold">Archivos</h2>
+                  <p className="text-sm text-muted-foreground">Filtra por categoría o cambia el modo de visualización.</p>
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <Select value={activeCategory} onValueChange={handleCategoryChange}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                          <SelectValue placeholder="Categorías" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          {allCategories.map(c => <SelectItem key={c} value={c}>{c === 'all' ? 'Todas' : c}</SelectItem>)}
+                      </SelectContent>
+                  </Select>
+                  <div className="flex bg-muted rounded-md p-1">
+                    <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
+                    <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
+                  </div>
+              </div>
+          </div>
+        )}
       </div>
       
       <div className="flex-grow overflow-auto -mx-4 px-4 mt-4 thin-scrollbar">
@@ -457,56 +453,10 @@ export default function ResourcesPage() {
                       </section>
                   )}
                   
-                  {files.length > 0 && (
-                      <section>
-                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-                              <div>
-                                  <h2 className="text-xl font-semibold">Archivos</h2>
-                                  <p className="text-sm text-muted-foreground">Filtra por categoría o cambia el modo de visualización.</p>
-                              </div>
-                              <div className="flex items-center gap-2 w-full sm:w-auto">
-                                  <Select value={activeCategory} onValueChange={handleCategoryChange}>
-                                      <SelectTrigger className="w-[180px]">
-                                          <SelectValue placeholder="Categorías" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                          {allCategories.map(c => <SelectItem key={c} value={c}>{c === 'all' ? 'Todas' : c}</SelectItem>)}
-                                      </SelectContent>
-                                  </Select>
-                                  <div className="flex bg-muted rounded-md p-1">
-                                    <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
-                                    <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
-                                  </div>
-                              </div>
-                          </div>
-                          
-                          {viewMode === 'grid' ? (
-                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-                                  {files.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
-                              </div>
-                          ) : (
-                              <Table>
-                                  <TableHeader>
-                                      <TableRow>
-                                          <TableHead>Nombre</TableHead>
-                                          <TableHead>Tipo</TableHead>
-                                          <TableHead>Categoría</TableHead>
-                                          <TableHead>Fecha</TableHead>
-                                      </TableRow>
-                                  </TableHeader>
-                                  <TableBody>
-                                      {files.map(item => (
-                                          <TableRow key={item.id} onClick={() => item.type === 'FOLDER' ? handleNavigateFolder(item) : setSelectedResource(item)} className="cursor-pointer">
-                                              <TableCell className="font-medium flex items-center gap-2">{React.createElement(getIconForType(item.type), { className: "h-4 w-4 shrink-0 text-muted-foreground" })} {item.title}</TableCell>
-                                              <TableCell>{item.type}</TableCell>
-                                              <TableCell><Badge variant="outline">{item.category}</Badge></TableCell>
-                                              <TableCell>{new Date(item.uploadDate).toLocaleDateString()}</TableCell>
-                                          </TableRow>
-                                      ))}
-                                  </TableBody>
-                              </Table>
-                          )}
-                      </section>
+                  {files.length > 0 && viewMode === 'grid' && (
+                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+                        {files.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
+                    </div>
                   )}
               </div>
           )}
@@ -563,11 +513,11 @@ export default function ResourcesPage() {
                      <h3 className="text-base font-semibold">Control de Acceso</h3>
                      <div className="space-y-3 p-3 border rounded-lg">
                         <div className="flex items-center justify-between">
-                            <Label htmlFor="is-public" className="flex items-center gap-2 cursor-pointer">{isPublic ? <Globe className="h-4 w-4 text-primary" /> : <UsersIcon className="h-4 w-4 text-destructive" />} {isPublic ? 'Público' : 'Privado'}</Label>
+                            <Label htmlFor="is-public" className="flex items-center gap-2 cursor-pointer">{isPublic ? <Globe className="h-4 w-4 text-primary" /> : <Users className="h-4 w-4 text-destructive" />} {isPublic ? 'Público' : 'Privado'}</Label>
                             <Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} />
                         </div>
                         {!isPublic && (
-                            <Card className="bg-background p-3">
+                            <div className="bg-background p-3 border rounded-lg">
                                 <Input placeholder="Buscar usuarios para compartir..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
                                 <ScrollArea className="h-32">
                                     <div className="space-y-2">
@@ -582,7 +532,7 @@ export default function ResourcesPage() {
                                     ))}
                                     </div>
                                 </ScrollArea>
-                            </Card>
+                            </div>
                         )}
                     </div>
                     
@@ -634,11 +584,11 @@ export default function ResourcesPage() {
                       <h3 className="text-base font-semibold">Control de Acceso</h3>
                        <div className="space-y-3 p-3 border rounded-lg">
                           <div className="flex items-center justify-between">
-                              <Label htmlFor="is-public-folder" className="flex items-center gap-2 cursor-pointer">{isPublic ? <Globe className="h-4 w-4 text-primary" /> : <UsersIcon className="h-4 w-4 text-destructive" />} {isPublic ? 'Público' : 'Privado'}</Label>
+                              <Label htmlFor="is-public-folder" className="flex items-center gap-2 cursor-pointer">{isPublic ? <Globe className="h-4 w-4 text-primary" /> : <Users className="h-4 w-4 text-destructive" />} {isPublic ? 'Público' : 'Privado'}</Label>
                               <Switch id="is-public-folder" checked={isPublic} onCheckedChange={setIsPublic} />
                           </div>
                           {!isPublic && (
-                              <Card className="bg-background p-3">
+                              <div className="bg-background p-3 border rounded-lg">
                                   <Input placeholder="Buscar usuarios para compartir..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
                                   <ScrollArea className="h-32">
                                       <div className="space-y-2">
@@ -653,7 +603,7 @@ export default function ResourcesPage() {
                                       ))}
                                       </div>
                                   </ScrollArea>
-                              </Card>
+                              </div>
                           )}
                       </div>
                   </div>
