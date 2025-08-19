@@ -78,7 +78,6 @@ const PasswordStrengthIndicator = ({ password, isVisible }: { password?: string;
     };
 
     const getStrengthText = () => {
-        if (strengthPercentage < 50) return 'Débil';
         if (strengthPercentage < 100) return 'Buena';
         return 'Fuerte';
     };
@@ -287,56 +286,58 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
     );
 
     return (
-        <div className="bg-card/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl mx-auto flex flex-col md:flex-row min-h-[600px]">
-            <div className="hidden md:flex md:w-1/2 lg:w-[55%] p-8 lg:p-12 relative text-white btn-primary-gradient flex-col justify-between">
-                <div className="relative z-10">
-                    <h2 className="text-3xl font-bold font-headline">{settings?.platformName || 'NexusAlpri'}</h2>
-                    <p className="mt-2 text-white/80 max-w-sm">Tu portal de conocimiento corporativo. Aprende, crece y avanza con nosotros.</p>
-                </div>
-                 {settings?.authImageUrl ? 
-                    <Image src={settings.authImageUrl} alt="Decorative background" fill className="object-cover opacity-20" data-ai-hint="abstract background" />
-                    : <div className="absolute -bottom-1/4 -right-1/4 w-3/4 h-3/4 bg-white/10 rounded-full" />
-                 }
-            </div>
-
-            <div className="w-full md:w-1/2 lg:w-[45%] p-6 sm:p-8 flex flex-col justify-center">
-                 <div className="text-center mb-6">
-                    <h1 className="text-3xl font-bold font-headline text-foreground">
-                        {view === 'signIn' ? 'Iniciar Sesión' : 'Crear Cuenta'}
-                    </h1>
-                    <p className="text-muted-foreground">
-                        {view === 'signIn' ? 'Bienvenido de nuevo' : 'Comienza tu viaje de aprendizaje'}
-                    </p>
+        <div className="flex-1 flex items-center justify-center p-4">
+            <div className="bg-card/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl mx-auto flex flex-col md:flex-row min-h-[600px]">
+                <div className="hidden md:flex md:w-1/2 lg:w-[55%] p-8 lg:p-12 relative text-white btn-primary-gradient flex-col justify-between">
+                    <div className="relative z-10">
+                        <h2 className="text-3xl font-bold font-headline">{settings?.platformName || 'NexusAlpri'}</h2>
+                        <p className="mt-2 text-white/80 max-w-sm">Tu portal de conocimiento corporativo. Aprende, crece y avanza con nosotros.</p>
+                    </div>
+                     {settings?.authImageUrl ? 
+                        <Image src={settings.authImageUrl} alt="Decorative background" fill className="object-cover opacity-20" data-ai-hint="abstract background" />
+                        : <div className="absolute -bottom-1/4 -right-1/4 w-3/4 h-3/4 bg-white/10 rounded-full" />
+                     }
                 </div>
 
-                 {error && (
-                    <Alert variant="destructive" className="mb-4">
-                         <AlertTitle>Error</AlertTitle>
-                        <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                )}
-                <AnimatePresence mode="wait">
-                    {view === 'signIn' ? SignInForm : SignUpForm}
-                </AnimatePresence>
-                
-                 <Separator className="my-6" />
+                <div className="w-full md:w-1/2 lg:w-[45%] p-6 sm:p-8 flex flex-col justify-center">
+                     <div className="text-center mb-6">
+                        <h1 className="text-3xl font-bold font-headline text-foreground">
+                            {view === 'signIn' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+                        </h1>
+                        <p className="text-muted-foreground">
+                            {view === 'signIn' ? 'Bienvenido de nuevo' : 'Comienza tu viaje de aprendizaje'}
+                        </p>
+                    </div>
 
-                <div className="text-center text-sm">
-                    {view === 'signIn' ? (
-                        <>
-                           ¿No tienes una cuenta?{' '}
-                            <Button variant="link" className="p-0 h-auto" onClick={() => { setView('signUp'); resetFields(); }}>
-                                Registrarse
-                            </Button>
-                        </>
-                    ) : (
-                         <>
-                           ¿Ya tienes una cuenta?{' '}
-                            <Button variant="link" className="p-0 h-auto" onClick={() => { setView('signIn'); resetFields(); }}>
-                                Iniciar Sesión
-                            </Button>
-                        </>
+                     {error && (
+                        <Alert variant="destructive" className="mb-4">
+                             <AlertTitle>Error</AlertTitle>
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
                     )}
+                    <AnimatePresence mode="wait">
+                        {view === 'signIn' ? SignInForm : SignUpForm}
+                    </AnimatePresence>
+                    
+                     <Separator className="my-6" />
+
+                    <div className="text-center text-sm">
+                        {view === 'signIn' ? (
+                            <>
+                               ¿No tienes una cuenta?{' '}
+                                <Button variant="link" className="p-0 h-auto" onClick={() => { setView('signUp'); resetFields(); }}>
+                                    Registrarse
+                                </Button>
+                            </>
+                        ) : (
+                             <>
+                               ¿Ya tienes una cuenta?{' '}
+                                <Button variant="link" className="p-0 h-auto" onClick={() => { setView('signIn'); resetFields(); }}>
+                                    Iniciar Sesión
+                                </Button>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
