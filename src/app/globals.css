@@ -33,11 +33,6 @@
     --chart-4: 300 80% 65%; 
     --chart-5: 0 75% 60%; 
     
-    --event-blue: hsl(var(--chart-1));
-    --event-green: hsl(var(--chart-3));
-    --event-red: hsl(var(--chart-5));
-    --event-orange: hsl(var(--chart-2));
-
     /* Variables de la barra lateral (mantienen un estilo consistente) */
     --sidebar-background: 220 40% 10%; 
     --sidebar-foreground: 45 80% 70%;
@@ -108,17 +103,16 @@
   }
   
   .profile-card {
-    @apply relative w-full max-w-sm mx-auto bg-card rounded-2xl shadow-lg text-center transition-all duration-300 hover:shadow-2xl hover:-translate-y-1;
+    @apply w-full max-w-sm mx-auto bg-card rounded-2xl shadow-lg overflow-hidden text-center;
   }
   .profile-card .card__img {
-      @apply h-28 w-full relative;
-      background-image: linear-gradient(45deg, hsl(var(--primary)/.2), hsl(var(--accent)/.2));
+    @apply h-28 w-full relative;
   }
   .profile-card .card__avatar {
-    @apply relative w-32 h-32 mx-auto -mt-16;
+    @apply relative w-32 h-32 mx-auto -mt-20;
   }
   .profile-card .card__avatar .avatar {
-     @apply w-full h-full rounded-full border-4 border-card shadow-lg;
+     @apply w-full h-full rounded-full border-4 border-background;
   }
   .profile-card .card__subtitle {
     @apply text-center text-sm text-muted-foreground mt-2;

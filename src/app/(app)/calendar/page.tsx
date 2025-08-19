@@ -44,10 +44,10 @@ import { useTitle } from '@/contexts/title-context';
 
 
 const eventColors = [
-  { value: 'blue', label: 'Evento General', className: 'bg-event-blue' },
-  { value: 'green', label: 'Taller/Formación', className: 'bg-event-green' },
-  { value: 'red', label: 'Fecha Límite/Urgente', className: 'bg-event-red' },
-  { value: 'orange', label: 'Festivo/Vacaciones', className: 'bg-event-orange' },
+  { value: 'blue', label: 'Evento General', color: 'hsl(var(--chart-1))' },
+  { value: 'green', label: 'Taller/Formación', color: 'hsl(var(--chart-3))' },
+  { value: 'red', label: 'Fecha Límite/Urgente', color: 'hsl(var(--chart-5))' },
+  { value: 'orange', label: 'Festivo/Vacaciones', color: 'hsl(var(--chart-2))' },
 ];
 
 
@@ -395,13 +395,13 @@ export default function CalendarPage() {
                       <div className="sm:col-span-2 space-y-2">
                         <Label>Color del Evento</Label>
                         <div className="flex flex-wrap gap-3 mt-2 justify-start">
-                          {eventColors.map(({ value, className, label }) => (
+                          {eventColors.map(({ value, color, label }) => (
                             <div key={value} className="flex flex-col items-center gap-1.5" onClick={() => setFormColor(value)} title={label}>
                               <div
+                                style={{ backgroundColor: color }}
                                 className={cn(
                                   "h-8 w-8 rounded-full border-2 flex items-center justify-center transition-all duration-200 ease-in-out cursor-pointer",
-                                  formColor === value ? 'border-primary scale-110 shadow-lg' : 'border-transparent',
-                                  className
+                                  formColor === value ? 'border-primary scale-110 shadow-lg' : 'border-transparent'
                                 )}
                               >
                                 {formColor === value && (<Check className="h-5 w-5 text-white" />)}
