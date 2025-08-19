@@ -17,6 +17,7 @@ import { getEventDetails, getInitials, parseUserAgent } from '@/lib/security-log
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useTitle } from '@/contexts/title-context';
 
 interface SecurityLogWithUser extends AppSecurityLog {
   user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
@@ -49,11 +50,16 @@ export default function SecurityAuditPage() {
     const { user: currentUser } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
+    const { setPageTitle } = useTitle();
 
     const [logs, setLogs] = useState<SecurityLogWithUser[]>([]);
     const [stats, setStats] = useState<SecurityStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        setPageTitle('Auditoría de Seguridad');
+    }, [setPageTitle]);
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);

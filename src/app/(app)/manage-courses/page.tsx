@@ -38,6 +38,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourseCard } from '@/components/course-card';
+import { useTitle } from '@/contexts/title-context';
 
 interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
   instructor: { id: string; name: string } | null;
@@ -71,6 +72,7 @@ export default function ManageCoursesPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
+  const { setPageTitle } = useTitle();
 
   const [allCourses, setAllCourses] = useState<AppCourseType[]>([]);
   const [totalCourses, setTotalCourses] = useState(0);
@@ -87,6 +89,10 @@ export default function ManageCoursesPage() {
   const currentPage = Number(searchParams.get('page')) || 1;
   const totalPages = Math.ceil(totalCourses / PAGE_SIZE);
   
+  useEffect(() => {
+    setPageTitle('Gestionar Cursos');
+  }, [setPageTitle]);
+
   const createQueryString = useCallback(
     (paramsToUpdate: Record<string, string | number>) => {
       const params = new URLSearchParams(searchParams.toString());

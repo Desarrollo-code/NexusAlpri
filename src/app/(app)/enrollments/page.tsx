@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import type { Course as PrismaCourse } from '@prisma/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Separator } from '@/components/ui/separator';
+import { useTitle } from '@/contexts/title-context';
 
 interface ApiCourseForEnrollments extends Omit<PrismaCourse, 'instructor' | 'modules' | 'enrollments' | 'progress' | 'createdAt' | 'updatedAt' | '_count'> {
   instructor: { id: string; name: string | null; } | null;
@@ -46,6 +47,7 @@ export default function EnrollmentsPage() {
   const { user: currentUser, isLoading: isAuthLoading } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { setPageTitle } = useTitle();
 
   const [courses, setCourses] = useState<ApiCourseForEnrollments[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<ApiCourseForEnrollments | null>(null);
@@ -58,6 +60,10 @@ export default function EnrollmentsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    setPageTitle('Inscripciones');
+  }, [setPageTitle]);
 
   useEffect(() => {
     if (!isAuthLoading && currentUser) {
@@ -203,7 +209,7 @@ export default function EnrollmentsPage() {
     return <div className="text-center py-10">Acceso denegado a esta sección.</div>;
   }
   
-  const pageTitle = currentUser.role === 'ADMINISTRATOR' ? "Gestión Global de Inscritos" : "Progreso de Mis Cursos";
+  const pageTitleText = currentUser.role === 'ADMINISTRATOR' ? "Gestión Global de Inscritos" : "Progreso de Mis Cursos";
   const pageDescription = currentUser.role === 'ADMINISTRATOR' 
     ? "Selecciona un curso para ver los estudiantes inscritos y su progreso."
     : "Selecciona uno de tus cursos para ver el progreso de tus estudiantes.";
@@ -301,7 +307,7 @@ export default function EnrollmentsPage() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex-grow">
-              <CardTitle className="text-2xl font-headline flex items-center gap-2"><UsersRound /> {pageTitle}</CardTitle>
+              <CardTitle className="text-2xl font-headline flex items-center gap-2"><UsersRound /> {pageTitleText}</CardTitle>
               <CardDescription>{pageDescription}</CardDescription>
             </div>
             <div className="w-full sm:w-auto">

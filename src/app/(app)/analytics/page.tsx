@@ -37,6 +37,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useTitle } from '@/contexts/title-context';
 
 
 const formatDateTick = (tick: string) => {
@@ -293,6 +294,11 @@ function AdminAnalyticsPage() {
     const [error, setError] = useState<string | null>(null);
     const { user } = useAuth();
     const router = useRouter();
+    const { setPageTitle } = useTitle();
+
+    useEffect(() => {
+        setPageTitle('Analíticas');
+    }, [setPageTitle]);
 
     const fetchStats = useCallback(async () => {
         setIsLoading(true);
@@ -446,6 +452,11 @@ function AdminAnalyticsPage() {
 
 export default function AnalyticsPageWrapper() {
   const { user } = useAuth();
+  const { setPageTitle } = useTitle();
+
+  useEffect(() => {
+    setPageTitle('Analíticas');
+  }, [setPageTitle]);
 
   if (user?.role === 'ADMINISTRATOR') {
     return <AdminAnalyticsPage />;

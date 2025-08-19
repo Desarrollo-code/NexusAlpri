@@ -55,6 +55,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { GradientIcon } from '@/components/ui/gradient-icon';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useTitle } from '@/contexts/title-context';
 
 const PAGE_SIZE = 10;
 
@@ -65,6 +66,7 @@ export default function UsersPage() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { setPageTitle } = useTitle();
 
   const [usersList, setUsersList] = useState<User[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -92,6 +94,10 @@ export default function UsersPage() {
   const [editPassword, setEditPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [selectedNewRole, setSelectedNewRole] = useState<UserRole>('STUDENT');
+
+  useEffect(() => {
+    setPageTitle('Gestión de Usuarios');
+  }, [setPageTitle]);
 
   const fetchUsers = useCallback(() => {
     if (!currentUser) return;
