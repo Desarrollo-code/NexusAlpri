@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, ChevronLeft, ChevronRight, X, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users } from 'lucide-react';
+import { Download, Share2, ChevronLeft, ChevronRight, X, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink } from 'lucide-react';
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -65,17 +65,33 @@ const OfficePreviewer = ({ url }: { url: string }) => {
 
 
 const FallbackPreview = ({ resource }: { resource: AppResourceType }) => {
+    const isExternalLink = resource.type === 'EXTERNAL_LINK';
+
     return (
-        <div className="flex flex-col items-center justify-center h-full text-muted-foreground bg-muted/50 p-8">
+        <div className="flex flex-col items-center justify-center h-full text-muted-foreground bg-muted/50 p-8 text-center">
             <FallbackIcon resource={resource} />
             <h3 className="text-xl font-semibold text-foreground mt-4">{resource.title}</h3>
-            <p className="text-sm mt-2">No hay una vista previa disponible para este tipo de archivo.</p>
-            <DownloadButton 
-                url={resource.url!}
-                resourceId={resource.id}
-                hasPin={resource.hasPin}
-                className="mt-6"
-            />
+            <p className="text-sm mt-2 max-w-sm">
+                {isExternalLink 
+                    ? "Este es un enlace a un recurso externo. Haz clic en el botón para visitarlo."
+                    : "No hay una vista previa disponible para este tipo de archivo, pero puedes descargarlo."
+                }
+            </p>
+            {isExternalLink ? (
+                <Button asChild className="mt-6">
+                    <a href={resource.url!} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Visitar Enlace
+                    </a>
+                </Button>
+            ) : (
+                 <DownloadButton 
+                    url={resource.url!}
+                    resourceId={resource.id}
+                    hasPin={resource.hasPin}
+                    className="mt-6"
+                />
+            )}
         </div>
     );
 };

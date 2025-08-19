@@ -6,7 +6,7 @@ import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
 import { DecorativeFolder } from '@/components/resources/decorative-folder';
-import { Edit, FolderIcon, MoreVertical, Trash2, Lock, Share2, Download, Globe } from 'lucide-react';
+import { Edit, FolderIcon, MoreVertical, Trash2, Lock, Share2, Download, Globe, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -18,6 +18,7 @@ import {
 import Image from 'next/image';
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import { Users } from 'lucide-react';
+import { DownloadButton } from '../ui/download-button';
 
 // --- Sub-components for Page ---
 const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onNavigate }: { resource: AppResourceType, onSelect: () => void, onEdit: (r: AppResourceType) => void, onDelete: (r: AppResourceType) => void, onNavigate: (r: AppResourceType) => void }) => {
@@ -84,11 +85,25 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                     {!isFolder && resource.url && (
-                                        <DropdownMenuItem asChild>
-                                            <a href={resource.url} target="_blank" rel="noopener noreferrer" download>
-                                                <Download className="mr-2 h-4 w-4" /> Descargar
-                                            </a>
-                                        </DropdownMenuItem>
+                                        resource.type === 'EXTERNAL_LINK' ? (
+                                            <DropdownMenuItem asChild>
+                                                <a href={resource.url} target="_blank" rel="noopener noreferrer">
+                                                    <ExternalLink className="mr-2 h-4 w-4" /> Visitar Enlace
+                                                </a>
+                                            </DropdownMenuItem>
+                                        ) : (
+                                            <DropdownMenuItem asChild>
+                                               <DownloadButton
+                                                    url={resource.url}
+                                                    resourceId={resource.id}
+                                                    hasPin={resource.hasPin}
+                                                    className="w-full justify-start font-normal h-auto py-1.5 px-2"
+                                                    variant="ghost"
+                                                >
+                                                     <Download className="mr-2 h-4 w-4" /> Descargar
+                                                </DownloadButton>
+                                            </DropdownMenuItem>
+                                        )
                                     )}
                                     <DropdownMenuItem onClick={()=> onEdit(resource)}>
                                         <Edit className="mr-2 h-4 w-4" /> Editar / Compartir
