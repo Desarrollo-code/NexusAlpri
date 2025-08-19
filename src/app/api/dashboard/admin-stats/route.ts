@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
                 select: { userId: true },
                 distinct: ['userId']
             }),
-            prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo } } }),
+            prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo, not: null } } }),
             prisma.courseProgress.findMany({ 
                 where: { course: { status: 'PUBLISHED' } }, // Only consider progress for published courses
                 select: { courseId: true, progressPercentage: true, userId: true } 
@@ -75,14 +75,15 @@ export async function GET(req: NextRequest) {
 
         const dateRange = createDateRange(thirtyDaysAgo, today);
 
-        const formatTrendData = (data: { registeredDate: Date | null, _count: { _all: number }} []) => {
-            const map = new Map(data.map(item => [startOfDay(item.registeredDate!).toISOString().split('T')[0], item._count._all]));
+        const formatTrendData = (data: { registeredDate?: Date | null, createdAt?: Date, publicationDate?: Date | null, enrolledAt?: Date, _count: { _all: number }} []) => {
+            const dateKey = 'registeredDate' in data[0] ? 'registeredDate' : 'createdAt' in data[0] ? 'createdAt' : 'publicationDate' in data[0] ? 'publicationDate' : 'enrolledAt';
+            const map = new Map(data.map(item => [startOfDay(item[dateKey]!).toISOString().split('T')[0], item._count._all]));
             return dateRange.map(date => {
                 const dayString = date.toISOString().split('T')[0];
                 return { date: dayString, count: map.get(dayString) || 0 };
             });
         };
-        const userRegistrationTrend = formatTrendData(userRegistrationsByDay);
+        const userRegistrationTrend = userRegistrationsByDay.length > 0 ? formatTrendData(userRegistrationsByDay as any) : [];
 
         const courseActivity = dateRange.map(date => {
             const dayString = date.toISOString().split('T')[0];
