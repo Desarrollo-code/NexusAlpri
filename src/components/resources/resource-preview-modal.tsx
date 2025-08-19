@@ -295,7 +295,6 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                              <Info className="h-4 w-4 mr-2" />
                             Detalles
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5" /></Button>
                     </div>
                 </header>
                 <div className="flex-grow flex relative overflow-hidden">
