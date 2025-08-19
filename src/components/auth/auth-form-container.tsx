@@ -287,7 +287,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
     );
 
     return (
-        <div className="bg-card/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden w-full flex flex-col md:flex-row min-h-[600px]">
+        <div className="bg-card/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl mx-auto flex flex-col md:flex-row min-h-[600px]">
             <div className="hidden md:flex md:w-1/2 lg:w-[55%] p-8 lg:p-12 relative text-white btn-primary-gradient flex-col justify-between">
                 <div className="relative z-10">
                     <h2 className="text-3xl font-bold font-headline">{settings?.platformName || 'NexusAlpri'}</h2>
