@@ -221,7 +221,6 @@ export default function SettingsPage() {
     if (globalSettings) {
       const settingsWithDefaults = {
         ...globalSettings,
-        emailWhitelist: globalSettings.emailWhitelist || '',
       };
       setFormState(settingsWithDefaults);
       setIsLoading(false);
@@ -534,26 +533,6 @@ export default function SettingsPage() {
                                 ) : ( <p className="text-sm text-muted-foreground text-center py-4">No hay categorías.</p> )}
                             </div>
                         </CardContent>
-                    </Card>
-                    <Card>
-                       <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-primary"/>Gestión de Usuarios</CardTitle>
-                            <CardDescription>Configuración relacionada con los usuarios y el registro.</CardDescription>
-                       </CardHeader>
-                       <CardContent>
-                            <div className="space-y-2">
-                               <Label htmlFor="emailWhitelist">Lista Blanca de Correos</Label>
-                               <Textarea 
-                                   id="emailWhitelist" 
-                                   value={formState.emailWhitelist || ''} 
-                                   onChange={e => handleInputChange('emailWhitelist', e.target.value)}
-                                   placeholder="ejemplo.com, empresa.com"
-                                   rows={3}
-                                   disabled={isSaving}
-                               />
-                               <p className="text-xs text-muted-foreground">Si se especifica, solo se permitirán correos de estos dominios. Deja en blanco para permitir todos. Separa los dominios con comas.</p>
-                           </div>
-                       </CardContent>
                     </Card>
                  </TabsContent>
             </Tabs>
