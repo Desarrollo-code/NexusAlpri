@@ -12,13 +12,14 @@ import {
   SidebarContent,
   SidebarFooter,
   useSidebar,
-  SidebarProvider, // Importar el Provider
+  SidebarProvider,
 } from '@/components/ui/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
 import Image from 'next/image';
 import { SidebarHeader } from '@/components/layout/sidebar-header';
+import { ThemeProvider } from '@/components/theme-provider';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { settings } = useAuth();
@@ -91,9 +92,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <SidebarProvider>
-      <AppLayoutContent>{children}</AppLayoutContent>
-    </SidebarProvider>
+    <ThemeProvider>
+        <SidebarProvider>
+            <AppLayoutContent>{children}</AppLayoutContent>
+        </SidebarProvider>
+    </ThemeProvider>
   );
 }
 

@@ -6,6 +6,7 @@ import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from 'n
 import { type ThemeProviderProps } from 'next-themes/dist/types';
 import { useAuth } from '@/contexts/auth-context';
 import { fontMap } from '@/lib/fonts';
+import { useSidebar } from './ui/sidebar';
 
 export const AVAILABLE_THEMES = [
   { value: 'light', label: 'Claro' },
@@ -57,17 +58,12 @@ const StyleInjector = () => {
         const primary = isDark ? settings.primaryColorDark : settings.primaryColor;
         const background = isDark ? settings.backgroundColorDark : settings.backgroundColorLight;
         
-        const fontHeadline = fontMap[settings.fontHeadline || 'Space Grotesk'] as any;
-        const fontBody = fontMap[settings.fontBody || 'Inter'] as any;
-
         return `
           :root {
             ${primary ? `--primary: ${hexToHsl(primary)};` : ''}
             ${background ? `--background: ${hexToHsl(background)};` : ''}
             ${settings.secondaryColor ? `--secondary: ${hexToHsl(settings.secondaryColor)};` : ''}
             ${settings.accentColor ? `--accent: ${hexToHsl(settings.accentColor)};` : ''}
-            ${fontHeadline ? `--font-headline: ${fontHeadline.style.fontFamily};` : ''}
-            ${fontBody ? `--font-body: ${fontBody.style.fontFamily};` : ''}
           }
         `.trim();
     }, [settings, theme]);

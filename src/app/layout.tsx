@@ -5,27 +5,27 @@ import { AuthProvider } from '@/contexts/auth-context';
 import React from 'react';
 import { TitleProvider } from '@/contexts/title-context';
 import { cn } from '@/lib/utils';
-import { ThemeProvider } from '@/components/theme-provider';
+import { getFontVariables } from '@/lib/fonts';
 
-// No necesitamos getFontVariables aquí, ThemeProvider se encargará
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const fontVariables = await getFontVariables();
   
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={cn(
-          "font-body flex flex-col min-h-screen bg-background"
+          "font-body flex flex-col min-h-screen bg-background",
+          fontVariables
       )}>
         <AuthProvider>
-          <ThemeProvider>
             <TitleProvider>
                 {children}
                 <Toaster />
             </TitleProvider>
-          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

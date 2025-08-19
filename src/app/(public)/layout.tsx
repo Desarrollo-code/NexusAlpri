@@ -3,9 +3,6 @@ import { Footer } from '@/components/layout/footer';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
-import { getFontVariables } from '@/lib/fonts';
-import { ThemeProvider } from '@/components/theme-provider';
-import { cn } from '@/lib/utils';
 import React from 'react';
 
 export default async function PublicLayout({
@@ -13,11 +10,9 @@ export default async function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const fontVariables = await getFontVariables();
 
   return (
-    <ThemeProvider>
-      <div className={cn('flex flex-col min-h-screen bg-background relative isolate', fontVariables)}>
+      <div className='flex flex-col min-h-screen bg-background relative isolate light'>
         <DecorativeHeaderBackground />
         <PublicTopBar />
         <main className="flex-1 flex flex-col items-center justify-center">
@@ -30,6 +25,5 @@ export default async function PublicLayout({
           <BottomNav />
         </div>
       </div>
-    </ThemeProvider>
   );
 }
