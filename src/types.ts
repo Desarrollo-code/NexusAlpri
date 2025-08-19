@@ -230,7 +230,11 @@ export type SecurityLogEvent =
 
 export type SecurityLog = Prisma.SecurityLogGetPayload<{
     include: { user: { select: { id: true, name: true, avatar: true } } }
-}>;
+}> & {
+    userAgent: string | null;
+    city: string | null;
+    country: string | null;
+};
 
 
 // --- ANALYTICS ---
