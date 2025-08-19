@@ -1,5 +1,5 @@
 // src/app/api/resources/route.ts
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/prisma'; // Corrección: Importación añadida
 import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 
