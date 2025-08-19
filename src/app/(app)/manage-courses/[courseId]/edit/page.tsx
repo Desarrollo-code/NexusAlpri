@@ -1,5 +1,3 @@
-
-
 // En /home/user/studio/src/app/(app)/manage-courses/[courseId]/edit/page.tsx
 
 'use client';
