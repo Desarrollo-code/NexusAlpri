@@ -1,4 +1,4 @@
-
+// src/lib/security-log-utils.tsx
 'use client';
 
 import type { SecurityLogEvent } from '@/types';
@@ -9,21 +9,21 @@ export const getEventDetails = (event: SecurityLogEvent, details?: string | null
     switch (event) {
         case 'SUCCESSFUL_LOGIN':
              return {
-                label: 'Inicio de Sesión Exitoso',
+                label: 'Inicio Exitoso',
                 icon: <ShieldCheck className="h-4 w-4 text-green-500" />,
                 variant: 'secondary',
                 details: 'Acceso concedido a la cuenta.'
             };
         case 'FAILED_LOGIN_ATTEMPT':
             return {
-                label: 'Intento de Inicio Fallido',
+                label: 'Intento Fallido',
                 icon: <ShieldX className="h-4 w-4 text-destructive" />,
                 variant: 'destructive',
                 details: 'Credenciales incorrectas o usuario no encontrado.'
             };
         case 'PASSWORD_CHANGE_SUCCESS':
              return {
-                label: 'Cambio de Contraseña',
+                label: 'Cambio Contraseña',
                 icon: <KeyRound className="h-4 w-4 text-primary" />,
                 variant: 'default',
                 details: 'La contraseña del usuario fue actualizada.'
@@ -44,7 +44,7 @@ export const getEventDetails = (event: SecurityLogEvent, details?: string | null
             };
          case 'USER_ROLE_CHANGED':
             return {
-                label: 'Cambio de Rol de Usuario',
+                label: 'Cambio de Rol',
                 icon: <UserCog className="h-4 w-4 text-purple-500" />,
                 variant: 'default',
                 details: details || 'El rol del usuario ha sido modificado.'

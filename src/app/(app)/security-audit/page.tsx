@@ -1,4 +1,4 @@
-
+// src/app/(app)/security-audit/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -13,10 +13,36 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
+import { getEventDetails, getInitials } from '@/lib/security-log-utils';
+import { useAnimatedCounter } from '@/hooks/use-animated-counter';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SecurityLogWithUser extends AppSecurityLog {
   user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
 }
+
+interface SecurityStats {
+    successfulLogins: number;
+    failedLogins: number;
+    twoFactorEvents: number;
+    roleChanges: number;
+}
+
+const MetricCard = ({ title, value, icon: Icon, description }: { title: string; value: number; icon: React.ElementType; description?: string }) => {
+    const animatedValue = useAnimatedCounter(value);
+    return (
+        <Card className="shadow-sm card-border-animated">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{animatedValue}</div>
+                {description && <p className="text-xs text-muted-foreground">{description}</p>}
+            </CardContent>
+        </Card>
+    );
+};
 
 export default function SecurityAuditPage() {
     const { user: currentUser } = useAuth();
@@ -24,23 +50,33 @@ export default function SecurityAuditPage() {
     const { toast } = useToast();
 
     const [logs, setLogs] = useState<SecurityLogWithUser[]>([]);
+    const [stats, setStats] = useState<SecurityStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchLogs = useCallback(async () => {
+    const fetchData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/security/logs');
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to fetch security logs');
+            const [logsResponse, statsResponse] = await Promise.all([
+                fetch('/api/security/logs'),
+                fetch('/api/security/stats')
+            ]);
+            
+            if (!logsResponse.ok || !statsResponse.ok) {
+                 const errorData = !logsResponse.ok ? await logsResponse.json() : await statsResponse.json();
+                 throw new Error(errorData.message || 'Failed to fetch security data');
             }
-            const data: { logs: SecurityLogWithUser[] } = await response.json();
-            setLogs(data.logs || []);
+
+            const logsData: { logs: SecurityLogWithUser[] } = await logsResponse.json();
+            const statsData: SecurityStats = await statsResponse.json();
+
+            setLogs(logsData.logs || []);
+            setStats(statsData);
+
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error fetching logs');
-            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Could not load security logs.', variant: 'destructive' });
+            setError(err instanceof Error ? err.message : 'Unknown error fetching data');
+            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Could not load security data.', variant: 'destructive' });
         } finally {
             setIsLoading(false);
         }
@@ -51,72 +87,8 @@ export default function SecurityAuditPage() {
             router.push('/dashboard');
             return;
         }
-        fetchLogs();
-    }, [currentUser, router, fetchLogs]);
-
-    const getEventDetails = (event: SecurityLogEvent, details?: string | null) => {
-        switch (event) {
-            case 'SUCCESSFUL_LOGIN':
-                 return {
-                    label: 'Inicio de Sesión Exitoso',
-                    icon: <ShieldCheck className="h-4 w-4 text-green-500" />,
-                    variant: 'secondary',
-                    details: 'Acceso concedido a la cuenta.'
-                };
-            case 'FAILED_LOGIN_ATTEMPT':
-                return {
-                    label: 'Intento de Inicio Fallido',
-                    icon: <ShieldX className="h-4 w-4 text-destructive" />,
-                    variant: 'destructive',
-                    details: 'Credenciales incorrectas o usuario no encontrado.'
-                };
-            case 'PASSWORD_CHANGE_SUCCESS':
-                 return {
-                    label: 'Cambio de Contraseña',
-                    icon: <KeyRound className="h-4 w-4 text-primary" />,
-                    variant: 'default',
-                    details: 'La contraseña del usuario fue actualizada.'
-                };
-            case 'TWO_FACTOR_ENABLED':
-                return {
-                    label: '2FA Activado',
-                    icon: <ShieldCheck className="h-4 w-4 text-green-500" />,
-                    variant: 'default',
-                    details: 'El usuario activó la autenticación de dos factores.'
-                };
-            case 'TWO_FACTOR_DISABLED':
-                return {
-                    label: '2FA Desactivado',
-                    icon: <ShieldAlert className="h-4 w-4 text-orange-500" />,
-                    variant: 'destructive',
-                    details: 'El usuario desactivó la autenticación de dos factores.'
-                };
-             case 'USER_ROLE_CHANGED':
-                return {
-                    label: 'Cambio de Rol de Usuario',
-                    icon: <UserCog className="h-4 w-4 text-purple-500" />,
-                    variant: 'default',
-                    details: details || 'El rol del usuario ha sido modificado.'
-                };
-            default:
-                return {
-                    label: event.replace(/_/g, ' ').toLowerCase(),
-                    icon: <ShieldAlert className="h-4 w-4 text-muted-foreground" />,
-                    variant: 'outline',
-                    details: details || 'Evento de seguridad general.'
-                };
-        }
-    };
-    
-    const getInitials = (name?: string | null) => {
-        if (!name) return '??';
-        const names = name.split(' ');
-        if (names.length > 1 && names[0] && names[names.length - 1]) {
-          return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-        }
-        if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
-        return name.substring(0, 2).toUpperCase();
-    };
+        fetchData();
+    }, [currentUser, router, fetchData]);
 
 
     if (currentUser?.role !== 'ADMINISTRATOR') {
@@ -132,14 +104,30 @@ export default function SecurityAuditPage() {
             <div>
                 <p className="text-muted-foreground">Revisa los eventos de seguridad importantes de la plataforma.</p>
             </div>
+            
+            {isLoading && !stats ? (
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Skeleton className="h-28" />
+                    <Skeleton className="h-28" />
+                    <Skeleton className="h-28" />
+                    <Skeleton className="h-28" />
+                 </div>
+            ) : stats && (
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <MetricCard title="Inicios de Sesión Exitosos" value={stats.successfulLogins} icon={ShieldCheck} description="Últimas 24 horas" />
+                    <MetricCard title="Inicios de Sesión Fallidos" value={stats.failedLogins} icon={ShieldX} description="Últimas 24 horas" />
+                    <MetricCard title="Eventos 2FA" value={stats.twoFactorEvents} icon={KeyRound} description="Últimas 24 horas" />
+                    <MetricCard title="Cambios de Rol" value={stats.roleChanges} icon={UserCog} description="Últimas 24 horas" />
+                 </div>
+            )}
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Últimos Eventos de Seguridad</CardTitle>
-                    <CardDescription>Mostrando los últimos 100 eventos registrados.</CardDescription>
+                    <CardTitle>Registro de Eventos</CardTitle>
+                    <CardDescription>Mostrando los últimos 100 eventos registrados en la plataforma.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {isLoading ? (
+                    {isLoading && logs.length === 0 ? (
                         <div className="flex items-center justify-center py-12">
                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
                             <p className="ml-2">Cargando registros...</p>
@@ -148,7 +136,7 @@ export default function SecurityAuditPage() {
                         <div className="flex flex-col items-center justify-center py-12 text-destructive">
                             <AlertTriangle className="h-8 w-8 mb-2" />
                             <p className="font-semibold">{error}</p>
-                            <Button onClick={fetchLogs} variant="outline" className="mt-4">
+                            <Button onClick={fetchData} variant="outline" className="mt-4">
                                 Reintentar
                             </Button>
                         </div>
@@ -186,7 +174,7 @@ export default function SecurityAuditPage() {
                                                                     <AvatarImage src={log.user.avatar || undefined} alt={log.user.name || 'User'} />
                                                                     <AvatarFallback>{getInitials(log.user.name)}</AvatarFallback>
                                                                 </Avatar>
-                                                                <Link href={`/users/${log.user.id}`} className="font-medium hover:underline">{log.user.name}</Link>
+                                                                <Link href={`/users?search=${encodeURIComponent(log.user.name || '')}`} className="font-medium hover:underline">{log.user.name}</Link>
                                                             </div>
                                                         ) : (
                                                             <div className="flex items-center gap-2 text-muted-foreground">
