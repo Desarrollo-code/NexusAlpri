@@ -7,15 +7,16 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, KeyRound, UserRound, Server, UserCog } from 'lucide-react';
+import { Loader2, AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, KeyRound, UserRound, Server, UserCog, Monitor, Globe } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityLogEvent, User as AppUser } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
-import { getEventDetails, getInitials } from '@/lib/security-log-utils';
+import { getEventDetails, getInitials, parseUserAgent } from '@/lib/security-log-utils';
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SecurityLogWithUser extends AppSecurityLog {
   user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
@@ -148,7 +149,8 @@ export default function SecurityAuditPage() {
                                         <TableHead className="w-[200px]">Evento</TableHead>
                                         <TableHead>Detalles</TableHead>
                                         <TableHead>Usuario Afectado</TableHead>
-                                        <TableHead>Dirección IP</TableHead>
+                                        <TableHead>Dispositivo</TableHead>
+                                        <TableHead>Ubicación</TableHead>
                                         <TableHead className="text-right">Fecha y Hora</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -156,6 +158,7 @@ export default function SecurityAuditPage() {
                                     {logs.length > 0 ? (
                                         logs.map((log) => {
                                             const eventDetails = getEventDetails(log.event, log.details);
+                                            const { browser, os } = parseUserAgent(log.userAgent);
                                             return (
                                                 <TableRow key={log.id}>
                                                     <TableCell>
@@ -184,18 +187,32 @@ export default function SecurityAuditPage() {
                                                         )}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <div className="flex items-center gap-2 font-mono text-xs">
-                                                            <Server className="h-4 w-4 text-muted-foreground"/>
-                                                            {log.ipAddress}
+                                                        <TooltipProvider>
+                                                            <Tooltip>
+                                                                <TooltipTrigger>
+                                                                    <div className="flex items-center gap-2 text-xs">
+                                                                        <Monitor className="h-4 w-4 text-muted-foreground"/> {browser} en {os}
+                                                                    </div>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent className="max-w-xs break-words">
+                                                                    <p>{log.userAgent}</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </TooltipProvider>
+                                                    </TableCell>
+                                                     <TableCell>
+                                                        <div className="flex items-center gap-2 text-xs">
+                                                            <Globe className="h-4 w-4 text-muted-foreground"/>
+                                                            {log.city && log.country ? `${log.city}, ${log.country}` : (log.ipAddress || 'Desconocida')}
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="text-right">{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
+                                                    <TableCell className="text-right text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
                                                 </TableRow>
                                             );
                                         })
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="h-24 text-center">
+                                            <TableCell colSpan={6} className="h-24 text-center">
                                                 No hay registros de seguridad.
                                             </TableCell>
                                         </TableRow>

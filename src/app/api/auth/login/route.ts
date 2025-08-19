@@ -29,7 +29,8 @@ function checkRateLimit(ip: string): boolean {
     return record.count < RATE_LIMIT_COUNT;
 }
 
-function recordFailedAttempt(ip: string, email: string, userId?: string) {
+function recordFailedAttempt(req: NextRequest, email: string, userId?: string) {
+    const ip = getIp(req);
     // Record in-memory for rate limiting
     const record = loginAttempts.get(ip) || { count: 0, expiry: Date.now() + RATE_LIMIT_WINDOW_MS };
     record.count++;
@@ -42,16 +43,23 @@ function recordFailedAttempt(ip: string, email: string, userId?: string) {
             ipAddress: ip,
             emailAttempt: email,
             userId: userId,
+            userAgent: req.headers.get('user-agent'),
+            country: req.geo?.country,
+            city: req.geo?.city,
         },
     }).catch(console.error); // Log DB errors without blocking the response
 }
 
-function recordSuccessfulLogin(ip: string, userId: string) {
+function recordSuccessfulLogin(req: NextRequest, userId: string) {
+    const ip = getIp(req);
     prisma.securityLog.create({
         data: {
             event: 'SUCCESSFUL_LOGIN',
             ipAddress: ip,
             userId: userId,
+            userAgent: req.headers.get('user-agent'),
+            country: req.geo?.country,
+            city: req.geo?.city,
         }
     }).catch(console.error);
 }
@@ -76,20 +84,20 @@ export async function POST(req: NextRequest) {
     });
 
     if (!user || !user.password) {
-      recordFailedAttempt(ip, email);
+      recordFailedAttempt(req, email);
       return NextResponse.json({ message: 'Credenciales inválidas' }, { status: 401 });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      recordFailedAttempt(ip, email, user.id);
+      recordFailedAttempt(req, email, user.id);
       return NextResponse.json({ message: 'Credenciales inválidas' }, { status: 401 });
     }
 
     // Clear rate limit attempts on successful login
     loginAttempts.delete(ip);
-    recordSuccessfulLogin(ip, user.id);
+    recordSuccessfulLogin(req, user.id);
 
     // Don't include password in the returned user object
     const { password: _, twoFactorSecret, ...userToReturn } = user;

@@ -2,7 +2,7 @@
 'use client';
 
 import type { SecurityLogEvent } from '@/types';
-import { ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert } from 'lucide-react';
+import { ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert, Monitor, Globe } from 'lucide-react';
 import React from 'react';
 
 export const getEventDetails = (event: SecurityLogEvent, details?: string | null) => {
@@ -67,4 +67,29 @@ export const getInitials = (name?: string | null) => {
   }
   if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
   return name.substring(0, 2).toUpperCase();
+};
+
+export const parseUserAgent = (userAgent: string | null | undefined): { browser: string; os: string } => {
+    if (!userAgent) return { browser: 'Desconocido', os: 'Desconocido' };
+    
+    let browser = 'Desconocido';
+    let os = 'Desconocido';
+
+    // OS detection
+    if (userAgent.includes('Windows NT 10.0')) os = 'Windows 11/10';
+    else if (userAgent.includes('Windows NT 6.3')) os = 'Windows 8.1';
+    else if (userAgent.includes('Windows NT 6.2')) os = 'Windows 8';
+    else if (userAgent.includes('Windows NT 6.1')) os = 'Windows 7';
+    else if (userAgent.includes('Mac OS X')) os = 'macOS';
+    else if (userAgent.includes('Linux')) os = 'Linux';
+    else if (userAgent.includes('Android')) os = 'Android';
+    else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) os = 'iOS';
+
+    // Browser detection
+    if (userAgent.includes('Edg/')) browser = 'Edge';
+    else if (userAgent.includes('Chrome/')) browser = 'Chrome';
+    else if (userAgent.includes('Firefox/')) browser = 'Firefox';
+    else if (userAgent.includes('Safari/')) browser = 'Safari';
+
+    return { browser, os };
 };

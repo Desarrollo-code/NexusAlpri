@@ -75,7 +75,10 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
                         event: 'USER_ROLE_CHANGED',
                         ipAddress: ip,
                         userId: id,
-                        details: `Rol cambiado de ${userToUpdate.role} a ${body.role} por el administrador ${session.email}.`
+                        details: `Rol cambiado de ${userToUpdate.role} a ${body.role} por el administrador ${session.email}.`,
+                        userAgent: req.headers.get('user-agent'),
+                        country: req.geo?.country,
+                        city: req.geo?.city,
                     }
                 });
             }

@@ -63,7 +63,10 @@ export async function POST(req: NextRequest, context: { params: { id: string } }
             data: {
                 event: 'PASSWORD_CHANGE_SUCCESS',
                 ipAddress: ip,
-                userId: user.id
+                userId: user.id,
+                userAgent: req.headers.get('user-agent'),
+                country: req.geo?.country,
+                city: req.geo?.city,
             }
         });
 
