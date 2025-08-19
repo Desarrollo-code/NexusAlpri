@@ -24,7 +24,7 @@
     --border: 240 6% 90%;
     --input: 240 6% 90%;
     --ring: 262 84% 58%;
-    --radius: 1rem;
+    --radius: 0.75rem;
     
     /* Colores para gráficos y eventos como fallback */
     --chart-1: 220 80% 60%; 
@@ -108,7 +108,7 @@
   }
   
   .profile-card {
-    @apply relative w-full max-w-sm mx-auto bg-card rounded-2xl shadow-xl overflow-hidden text-center transition-all duration-300 hover:shadow-2xl hover:-translate-y-1;
+    @apply relative w-full max-w-sm mx-auto bg-card rounded-2xl shadow-xl text-center transition-all duration-300 hover:shadow-2xl hover:-translate-y-1;
   }
   .profile-card .card__avatar {
     @apply relative w-32 h-32 mx-auto -mt-16;

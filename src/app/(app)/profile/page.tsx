@@ -40,7 +40,7 @@ import { useTitle } from '@/contexts/title-context';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const ProfileCardBackground = () => (
-    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 opacity-40" />
+    <div className="absolute top-0 left-0 w-full h-28 bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20" />
 );
 
 
@@ -299,7 +299,7 @@ export default function ProfilePage() {
   
   const MobileProfileView = () => (
      <div className="w-full">
-        <div className="profile-card p-6">
+        <div className="profile-card pt-20 p-6">
             <ProfileCardBackground />
             <div className="card__avatar">
                  <Avatar className="avatar">
@@ -328,7 +328,9 @@ export default function ProfilePage() {
             </div>
             <h2 className="text-xl font-bold mt-4">{user.name}</h2>
             <div className="card__subtitle mt-2 space-y-2">
-                <Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'default' : 'secondary'} className="capitalize mx-auto">{getRoleInSpanish(user.role)}</Badge>
+                {(user.name?.toLowerCase() !== getRoleInSpanish(user.role).toLowerCase()) && (
+                  <Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'default' : 'secondary'} className="capitalize mx-auto">{getRoleInSpanish(user.role)}</Badge>
+                )}
                 <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><Mail className="h-4 w-4"/> {user.email}</p>
             </div>
         </div>
@@ -385,8 +387,8 @@ export default function ProfilePage() {
       ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1 space-y-8">
-              <div className="profile-card p-6">
-                 <ProfileCardBackground />
+              <div className="profile-card pt-8">
+                  <ProfileCardBackground />
                   <div className="card__avatar">
                     <Avatar className="avatar">
                       <AvatarImage src={avatarPreview || `https://placehold.co/128x128.png?text=${getInitials(user.name)}`} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
@@ -412,17 +414,21 @@ export default function ProfilePage() {
                         name="desktop-avatar-upload"
                     />
                   </div>
-                  {isUploading && (
-                    <div className="px-4">
-                      <Progress value={uploadProgress} className="h-1.5" />
-                      <p className="text-xs mt-1 text-muted-foreground">{uploadProgress}%</p>
-                    </div>
-                  )}
-                  <h2 className="text-xl font-bold mt-4">{user.name}</h2>
-                   <div className="card__subtitle mt-2 space-y-2">
-                        <Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'default' : 'secondary'} className="capitalize mx-auto">{getRoleInSpanish(user.role)}</Badge>
+                  <div className="p-6">
+                    {isUploading && (
+                        <div className="px-4 mb-4">
+                        <Progress value={uploadProgress} className="h-1.5" />
+                        <p className="text-xs mt-1 text-muted-foreground">{uploadProgress}%</p>
+                        </div>
+                    )}
+                    <h2 className="text-2xl font-bold">{user.name}</h2>
+                    <div className="card__subtitle mt-2 space-y-2">
+                        {(user.name?.toLowerCase() !== getRoleInSpanish(user.role).toLowerCase()) && (
+                          <Badge variant={user.role === 'ADMINISTRATOR' ? 'destructive' : user.role === 'INSTRUCTOR' ? 'secondary' : 'default'} className="capitalize mx-auto">{getRoleInSpanish(user.role)}</Badge>
+                        )}
                         <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><Mail className="h-4 w-4"/> {user.email}</p>
                     </div>
+                  </div>
               </div>
               <Card className="card-border-animated">
                   <CardHeader><CardTitle>Seguridad de la Cuenta</CardTitle></CardHeader>
