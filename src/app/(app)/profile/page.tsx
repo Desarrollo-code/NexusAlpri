@@ -40,7 +40,10 @@ import { useTitle } from '@/contexts/title-context';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const ProfileCardBackground = () => (
-    <div className="card__img" />
+    <div className="card__img">
+      <div className="card__img--gradient"></div>
+      <div className="card__img--pattern"></div>
+    </div>
 );
 
 
@@ -299,7 +302,7 @@ export default function ProfilePage() {
   
   const MobileProfileView = () => (
      <div className="w-full">
-        <div className="profile-card pt-8">
+        <div className="profile-card">
             <ProfileCardBackground />
             <div className="card__avatar">
                  <Avatar className="avatar">
@@ -385,6 +388,49 @@ export default function ProfilePage() {
                     </CardContent>
                 </Card>
              </div>
+              <div id="gamification-card" className="w-full">
+                 <Card className="card-border-animated">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                           <Star className="text-yellow-400" /> Progreso y Logros
+                        </CardTitle>
+                    </CardHeader>
+                     <CardContent className="space-y-4">
+                        <div className="space-y-1">
+                          <div className="flex justify-between items-center text-sm font-medium">
+                              <span>Puntos de Experiencia</span>
+                              <span>{user.xp?.toLocaleString() || 0} XP</span>
+                          </div>
+                           <Progress value={(user.xp || 0) % 1000 / 10} className="h-2" />
+                           <p className="text-xs text-muted-foreground">Nivel {Math.floor((user.xp || 0) / 1000) + 1}</p>
+                        </div>
+                        <div className="space-y-2">
+                            <h4 className="font-medium text-sm">Logros Recientes</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {userAchievements.length > 0 ? (
+                                    userAchievements.map(ua => (
+                                         <TooltipProvider key={ua.achievement.id}>
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                  <div className="p-2 bg-muted rounded-md border">
+                                                      <Award className="h-5 w-5 text-amber-500"/>
+                                                  </div>
+                                              </TooltipTrigger>
+                                              <TooltipContent>
+                                                  <p className="font-semibold">{ua.achievement.name}</p>
+                                                  <p className="text-xs">{ua.achievement.description}</p>
+                                              </TooltipContent>
+                                            </Tooltip>
+                                         </TooltipProvider>
+                                    ))
+                                ) : (
+                                  <p className="text-xs text-muted-foreground">Aún no has desbloqueado logros.</p>
+                                )}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+              </div>
         </div>
       ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
