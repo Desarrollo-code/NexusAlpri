@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, ChevronLeft, ChevronRight, X, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink } from 'lucide-react';
+import { Download, Share2, ChevronLeft, ChevronRight, X, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, FolderZip, FileCode, List } from 'lucide-react';
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -16,51 +16,85 @@ import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { getInitials } from '@/lib/security-log-utils';
 import { ScrollArea } from '../ui/scroll-area';
+import mammoth from 'mammoth';
+import JSZip from 'jszip';
 
 
-const OfficePreviewer = ({ url }: { url: string }) => {
+const DocxPreviewer = ({ url }: { url: string }) => {
     const [html, setHtml] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const loadFile = async () => {
+        const loadDocx = async () => {
             setIsLoading(true);
             setError(null);
-            setHtml(null);
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('No se pudo cargar el archivo para la previsualización.');
                 const arrayBuffer = await response.arrayBuffer();
-
-                // This logic requires mammoth and xlsx, ensure they are in package.json if used
-                if (url.endsWith('.docx')) {
-                    // mammoth would be needed here
-                } else if (url.endsWith('.xlsx')) {
-                    // xlsx would be needed here
-                }
-
+                const result = await mammoth.convertToHtml({ arrayBuffer });
+                setHtml(result.value);
             } catch (e) {
-                console.error("Error processing Office file:", e);
-                setError(e instanceof Error ? e.message : "Error al procesar el archivo.");
+                console.error("Error procesando DOCX:", e);
+                setError("No se pudo previsualizar este archivo Word.");
             } finally {
                 setIsLoading(false);
             }
         };
-
-        loadFile();
+        loadDocx();
     }, [url]);
 
-    if (isLoading) {
-        return <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin"/></div>;
-    }
-    if (error) {
-        return <div className="p-4 text-center text-destructive-foreground bg-destructive/80 text-sm"><AlertTriangle className="inline-block h-4 w-4 mr-1"/>{error}</div>
-    }
-    if (html) {
-        return <div className="p-4 bg-white text-black prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: html }} />;
-    }
-    return <div className="p-4 text-center text-muted-foreground bg-muted/30 text-sm">La previsualización para este tipo de archivo no está disponible.</div>;
+    if (isLoading) return <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin"/></div>;
+    if (error) return <div className="p-4 text-center text-destructive-foreground bg-destructive/80 text-sm"><AlertTriangle className="inline-block h-4 w-4 mr-1"/>{error}</div>;
+    return <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-background h-full overflow-auto" dangerouslySetInnerHTML={{ __html: html || '' }} />;
+};
+
+const ZipPreviewer = ({ url }: { url: string }) => {
+    const [files, setFiles] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    
+    useEffect(() => {
+        const loadZip = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('No se pudo cargar el archivo ZIP.');
+                const blob = await response.blob();
+                const zip = await JSZip.loadAsync(blob);
+                const fileList = Object.keys(zip.files).filter(fileName => !zip.files[fileName].dir);
+                setFiles(fileList);
+            } catch(e) {
+                setError("No se pudo leer el contenido del archivo ZIP.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadZip();
+    }, [url]);
+
+    if (isLoading) return <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin"/></div>;
+    if (error) return <div className="p-4 text-center text-destructive-foreground bg-destructive/80 text-sm"><AlertTriangle className="inline-block h-4 w-4 mr-1"/>{error}</div>;
+    
+    return (
+        <div className="flex flex-col h-full bg-muted/30">
+            <div className="p-4 border-b bg-background/70">
+                <h4 className="font-semibold flex items-center gap-2"><FolderZip className="h-5 w-5 text-primary"/>Contenido del Archivo ZIP</h4>
+            </div>
+            <ScrollArea className="flex-grow">
+                <ul className="p-4 text-sm">
+                    {files.map(file => (
+                        <li key={file} className="flex items-center gap-2 py-1.5 border-b border-border/50">
+                            <FileText className="h-4 w-4 text-muted-foreground"/>
+                            {file}
+                        </li>
+                    ))}
+                </ul>
+            </ScrollArea>
+        </div>
+    );
 };
 
 
@@ -155,26 +189,21 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     
     const displayUrl = pinVerifiedUrl || resource.url;
     
-    // Intelligent rendering based on URL content, not just resource.type
-    const youtubeId = getYoutubeVideoId(displayUrl);
-    if (youtubeId) {
-        return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
-    }
-    
+    // Intelligent rendering based on URL content
     if (displayUrl) {
+        const youtubeId = getYoutubeVideoId(displayUrl);
         const isImage = /\.(jpe?g|png|gif|webp)$/i.test(displayUrl);
         const isPdf = displayUrl.toLowerCase().endsWith('.pdf');
         const isVideoFile = /\.(mp4|webm|ogv)$/i.test(displayUrl);
+        const isOfficeDoc = /\.(docx|xlsx|pptx)$/i.test(displayUrl);
+        const isZipFile = displayUrl.toLowerCase().endsWith('.zip');
 
-        if (isVideoFile) {
-            return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />;
-        }
-        if (isImage) {
-            return <Image src={displayUrl} alt={resource.title} fill className="object-contain" data-ai-hint="document image" />;
-        }
-        if (isPdf) {
-             return <iframe src={displayUrl} className="w-full h-full" title={`PDF Preview: ${resource.title}`}/>;
-        }
+        if (youtubeId) return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>;
+        if (isVideoFile) return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />;
+        if (isImage) return <Image src={displayUrl} alt={resource.title} fill className="object-contain" data-ai-hint="document image" />;
+        if (isPdf) return <iframe src={displayUrl} className="w-full h-full" title={`PDF Preview: ${resource.title}`}/>;
+        if (isOfficeDoc) return <iframe src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(displayUrl)}`} className="w-full h-full" title={`Office Document Preview: ${resource.title}`} frameBorder="0"/>;
+        if (isZipFile) return <ZipPreviewer url={displayUrl} />;
     }
 
     return <FallbackPreview resource={resource} />;
