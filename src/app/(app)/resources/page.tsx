@@ -214,7 +214,11 @@ export default function ResourcesPage() {
     setNewResourceDescription(resource.description || '');
     setIsPublic(resource.ispublic);
     setSharedWithUserIds(resource.sharedWith?.map(u => u.id) || []);
-    setShowCreateUpdateModal(true);
+    if (resource.type === 'FOLDER') {
+        setShowCreateFolderModal(true);
+    } else {
+        setShowCreateUpdateModal(true);
+    }
   };
   
   const handleOpenCreateFolderModal = () => {
@@ -227,30 +231,36 @@ export default function ResourcesPage() {
     setShowCreateUpdateModal(true);
   };
 
-  const handleCreateFolder = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateOrUpdateFolder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!newFolderName.trim()) {
+    const title = editingResource ? newResourceTitle : newFolderName;
+    if (!title.trim()) {
         toast({ title: "Error", description: "El nombre de la carpeta es obligatorio.", variant: "destructive" });
         return;
     }
     
     setIsSubmittingResource(true);
+    const endpoint = editingResource ? `/api/resources/${editingResource.id}` : '/api/resources';
+    const method = editingResource ? 'PUT' : 'POST';
     try {
         const payload = { 
-            title: newFolderName, 
+            title, 
             type: 'FOLDER', 
             category: 'General',
             uploaderId: user?.id, 
-            parentId: currentFolderId 
+            parentId: currentFolderId,
+            description: newResourceDescription,
+            isPublic,
+            sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
         };
-        const response = await fetch('/api/resources', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (!response.ok) throw new Error((await response.json()).message || 'Failed to create folder');
-        toast({ title: "Carpeta Creada", description: `La carpeta "${newFolderName}" ha sido creada.` });
+        const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!response.ok) throw new Error((await response.json()).message || 'Failed to save folder');
+        toast({ title: `Carpeta ${editingResource ? 'Actualizada' : 'Creada'}`, description: `La carpeta "${title}" ha sido guardada.` });
         setShowCreateFolderModal(false);
         resetForm();
         fetchResources();
     } catch (err) {
-        toast({ title: "Error al crear carpeta", description: (err as Error).message, variant: "destructive" });
+        toast({ title: "Error al guardar carpeta", description: (err as Error).message, variant: "destructive" });
     } finally {
         setIsSubmittingResource(false);
     }
@@ -403,7 +413,7 @@ export default function ResourcesPage() {
             </div>
         </div>
     );
-  }, [currentFolderId, breadcrumbs, user?.role, handleOpenCreateFileModal]);
+  }, [currentFolderId, breadcrumbs, user?.role]);
   
   const handleNavigateItem = (direction: 'next' | 'prev') => {
       const currentIndex = files.findIndex(f => f.id === selectedResource?.id);
@@ -421,6 +431,7 @@ export default function ResourcesPage() {
     <div className="flex flex-col h-full overflow-hidden">
       <header className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
           <div>
+              <h1 className="text-3xl font-bold font-headline text-foreground">Biblioteca de Recursos</h1>
               <p className="text-muted-foreground">Explora, busca y gestiona todos los archivos de la organización.</p>
           </div>
           {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
@@ -635,32 +646,64 @@ export default function ResourcesPage() {
        </Dialog>
 
       <Dialog open={showCreateFolderModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowCreateFolderModal(isOpen); }}>
-          <DialogContent className="w-[95vw] max-w-md rounded-lg">
-              <DialogHeader>
-                  <DialogTitle>Crear Nueva Carpeta</DialogTitle>
-                  <DialogDescription>Introduce el nombre para la nueva carpeta en la ubicación actual.</DialogDescription>
+          <DialogContent className="w-[95vw] max-w-md rounded-lg max-h-[90vh] flex flex-col">
+              <DialogHeader className="p-6 pb-0">
+                  <DialogTitle>{editingResource ? 'Editar Carpeta' : 'Crear Nueva Carpeta'}</DialogTitle>
+                  <DialogDescription>Configura los detalles de la carpeta.</DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleCreateFolder} className="grid gap-4 py-4">
-                  <div className="space-y-1">
-                      <Label htmlFor="folder-name">Nombre de la Carpeta <span className="text-destructive">*</span></Label>
-                      <Input 
-                          id="folder-name" 
-                          name="folder-name" 
-                          value={newFolderName} 
-                          onChange={(e) => setNewFolderName(e.target.value)} 
-                          required 
-                          disabled={isSubmittingResource}
-                          placeholder="Ej: Documentos de Marketing"
-                      />
+              <form onSubmit={handleCreateOrUpdateFolder} className="flex-1 overflow-y-auto px-6 py-4 thin-scrollbar">
+                  <div className="space-y-4">
+                      <div className="space-y-1">
+                          <Label htmlFor="folder-name">Nombre de la Carpeta <span className="text-destructive">*</span></Label>
+                          <Input 
+                              id="folder-name" 
+                              name="folder-name" 
+                              value={editingResource ? newResourceTitle : newFolderName} 
+                              onChange={(e) => editingResource ? setNewResourceTitle(e.target.value) : setNewFolderName(e.target.value)} 
+                              required 
+                              disabled={isSubmittingResource}
+                              placeholder="Ej: Documentos de Marketing"
+                          />
+                      </div>
+                      <div className="space-y-1">
+                          <Label htmlFor="folder-description">Descripción</Label>
+                          <Textarea id="folder-description" name="folder-description" value={newResourceDescription} onChange={(e) => setNewResourceDescription(e.target.value)} disabled={isSubmittingResource} rows={3} />
+                      </div>
+                      <Separator/>
+                      <h3 className="text-base font-semibold">Control de Acceso</h3>
+                       <div className="space-y-3 p-3 border rounded-lg">
+                          <div className="flex items-center justify-between">
+                              <Label htmlFor="is-public-folder" className="flex items-center gap-2 cursor-pointer">{isPublic ? <Globe className="h-4 w-4 text-primary" /> : <UsersIcon className="h-4 w-4 text-destructive" />} {isPublic ? 'Público' : 'Privado'}</Label>
+                              <Switch id="is-public-folder" checked={isPublic} onCheckedChange={setIsPublic} />
+                          </div>
+                          {!isPublic && (
+                              <Card className="bg-background p-3">
+                                  <Input placeholder="Buscar usuarios para compartir..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
+                                  <ScrollArea className="h-32">
+                                      <div className="space-y-2">
+                                      {filteredUsers.map(u => (
+                                          <div key={u.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
+                                              <Checkbox id={`share-folder-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={c => handleUserShareToggle(u.id, !!c)} />
+                                              <Label htmlFor={`share-folder-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer">
+                                                  <Avatar className="h-7 w-7"><AvatarImage src={u.avatar || undefined} /><AvatarFallback>{getInitials(u.name)}</AvatarFallback></Avatar>
+                                                  {u.name}
+                                              </Label>
+                                          </div>
+                                      ))}
+                                      </div>
+                                  </ScrollArea>
+                              </Card>
+                          )}
+                      </div>
                   </div>
-                  <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4">
-                      <Button type="button" variant="outline" onClick={() => setShowCreateFolderModal(false)} disabled={isSubmittingResource}>Cancelar</Button>
-                      <Button type="submit" disabled={isSubmittingResource || !newFolderName.trim()}>
-                          {isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FolderPlus className="mr-2 h-4 w-4" />}
-                          Crear Carpeta
-                      </Button>
-                  </DialogFooter>
               </form>
+               <DialogFooter className="p-6 pt-2 flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setShowCreateFolderModal(false)} disabled={isSubmittingResource}>Cancelar</Button>
+                  <Button type="submit" form="create-folder-form" disabled={isSubmittingResource || !(editingResource ? newResourceTitle : newFolderName).trim()}>
+                      {isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FolderPlus className="mr-2 h-4 w-4" />}
+                      {editingResource ? 'Guardar Cambios' : 'Crear Carpeta'}
+                  </Button>
+              </DialogFooter>
           </DialogContent>
        </Dialog>
     </div>

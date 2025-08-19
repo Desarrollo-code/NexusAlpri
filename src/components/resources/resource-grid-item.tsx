@@ -6,7 +6,7 @@ import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
 import { DecorativeFolder } from '@/components/resources/decorative-folder';
-import { Edit, FolderIcon, MoreVertical, Trash2, Lock, Share2, Download } from 'lucide-react';
+import { Edit, FolderIcon, MoreVertical, Trash2, Lock, Share2, Download, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from 'next/image';
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
+import { Users } from 'lucide-react';
 
 // --- Sub-components for Page ---
 const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onNavigate }: { resource: AppResourceType, onSelect: () => void, onEdit: (r: AppResourceType) => void, onDelete: (r: AppResourceType) => void, onNavigate: (r: AppResourceType) => void }) => {
@@ -40,6 +41,9 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
             return (
                 <div className="w-full h-full relative">
                     <DecorativeFolder patternId={resource.id} className="absolute inset-0" />
+                    <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1.5 rounded-full">
+                       {resource.ispublic ? <Globe className="h-3.5 w-3.5 text-green-500"/> : <Users className="h-3.5 w-3.5 text-blue-500" />}
+                    </div>
                 </div>
             );
         }
