@@ -143,7 +143,6 @@ const LessonNotes = ({ lessonId }: { lessonId: string }) => {
     }, [lessonId, user]);
 
     useEffect(() => {
-        // Guard to prevent saving on initial load or if content hasn't changed
         if (initialContentRef.current !== null && debouncedContent !== initialContentRef.current) {
             saveNote(debouncedContent);
         }
@@ -535,7 +534,7 @@ export default function CourseDetailPage() {
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-sm text-center p-6">
                             <DialogHeader>
-                                <DialogTitle>Tu Progreso</DialogTitle>
+                                <DialogTitle>Tu Progreso en {course.title}</DialogTitle>
                                 <DialogDescription>
                                     {courseProgress && courseProgress.progressPercentage > 0 ? "Este es tu resultado final para el curso." : "Completa todas las lecciones para calcular tu puntuación."}
                                 </DialogDescription>
