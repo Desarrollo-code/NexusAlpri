@@ -138,7 +138,7 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <MetricCard title="Total Usuarios" value={stats.totalUsers} icon={UsersRound} />
             <MetricCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={BookOpenCheck} />
-            <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="En los últimos 7 días" />
+            <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={UsersRound} description="En los últimos 7 días" />
             <MetricCard title="Nuevos Registros" value={stats.newUsersLast7Days} icon={UserPlus} description="En los últimos 7 días"/>
         </div>
         

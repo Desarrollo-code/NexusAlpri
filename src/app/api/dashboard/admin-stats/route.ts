@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
             totalEnrollmentsResult,
             usersByRole,
             coursesByStatus,
-            recentLoginLogs,
+            recentLoginLogs, // Changed this logic below
             newUsersLast7DaysCount,
             allCourseProgressRaw,
             coursesWithEnrollmentCounts,
@@ -53,7 +53,12 @@ export async function GET(req: NextRequest) {
             prisma.enrollment.count(),
             prisma.user.groupBy({ by: ['role'], _count: { role: true } }),
             prisma.course.groupBy({ by: ['status'], _count: { status: true } }),
-            prisma.securityLog.count({ where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } } }),
+            // This query now gets the user IDs for unique user counting
+            prisma.securityLog.findMany({ 
+                where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } },
+                select: { userId: true },
+                distinct: ['userId']
+            }),
             prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo } } }),
             prisma.courseProgress.findMany({ select: { courseId: true, progressPercentage: true, userId: true } }),
             prisma.course.findMany({ where: { status: 'PUBLISHED' }, select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } }, orderBy: { enrollments: { _count: 'desc' } }, take: 5 }),
@@ -63,6 +68,9 @@ export async function GET(req: NextRequest) {
             prisma.course.groupBy({ by: ['publicationDate'], where: { status: 'PUBLISHED', publicationDate: { gte: thirtyDaysAgo } }, _count: { _all: true }, orderBy: { publicationDate: 'asc' } }),
             prisma.enrollment.groupBy({ by: ['enrolledAt'], where: { enrolledAt: { gte: thirtyDaysAgo } }, _count: { _all: true }, orderBy: { enrolledAt: 'asc' } })
         ]);
+        
+        // Correctly calculate unique active users
+        const uniqueActiveUsers = recentLoginLogs.length;
 
         // --- Data Processing and Structuring ---
         const dateRange = createDateRange(thirtyDaysAgo, today);
@@ -111,11 +119,11 @@ export async function GET(req: NextRequest) {
 
         const topCoursesByCompletion = [...avgCompletionByCourse.entries()]
             .sort(([, a], [, b]) => b - a).slice(0, 5)
-            .map(([id, value]) => ({ id, value, ...allPublishedCourses.find(c => c.id === id) }));
+            .map(([id, value]) => ({ id, value: Math.round(value), ...allPublishedCourses.find(c => c.id === id) }));
 
         const lowestCoursesByCompletion = [...avgCompletionByCourse.entries()]
             .sort(([, a], [, b]) => a - b).slice(0, 5)
-            .map(([id, value]) => ({ id, value, ...allPublishedCourses.find(c => c.id === id) }));
+            .map(([id, value]) => ({ id, value: Math.round(value), ...allPublishedCourses.find(c => c.id === id) }));
         
         const topCoursesByEnrollment = coursesWithEnrollmentCounts.map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: c._count.enrollments }));
 
@@ -138,7 +146,7 @@ export async function GET(req: NextRequest) {
             totalEnrollments: totalEnrollmentsResult,
             usersByRole: usersByRole.map(u => ({ role: u.role, count: u._count.role })),
             coursesByStatus: coursesByStatus.map(c => ({ status: c.status, count: c._count.status })),
-            recentLogins: recentLoginLogs,
+            recentLogins: uniqueActiveUsers,
             newUsersLast7Days: newUsersLast7DaysCount,
             userRegistrationTrend,
             courseActivity,
