@@ -1,4 +1,4 @@
-
+// src/components/image-cropper.tsx
 'use client';
 
 import React, { useState, useCallback } from 'react';
@@ -9,24 +9,24 @@ import { Slider } from '@/components/ui/slider';
 import getCroppedImg from '@/lib/crop-image';
 import { Crop, RotateCw, ZoomIn, ZoomOut, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
-import { useFileUpload } from '@/hooks/use-file-upload'; // Import the new hook
 
 interface ImageCropperProps {
   imageSrc: string | null;
   onCropComplete: (croppedFileUrl: string) => void;
   onClose: () => void;
-  uploadPath: string; // e.g., 'course-images', 'avatars'
+  uploadUrl: string;
 }
 
-export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComplete, onClose, uploadPath }) => {
+export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComplete, onClose, uploadUrl }) => {
   const { toast } = useToast();
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
-  
-  const { isUploading, progress, uploadFile } = useFileUpload();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const onCropCompleteCallback = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
@@ -45,16 +45,22 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
         return;
     }
 
+    setIsProcessing(true);
+    setUploadProgress(0);
+
     try {
       const croppedImageResult = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
       if (!croppedImageResult) {
           throw new Error("No se pudo generar la imagen recortada.");
       }
       
-      const downloadURL = await uploadFile(croppedImageResult.file, uploadPath);
+      const formData = new FormData();
+      formData.append('file', croppedImageResult.file);
+      
+      const result: { url: string } = await uploadWithProgress(uploadUrl, formData, setUploadProgress);
       
       toast({ title: "Imagen Subida", description: "La imagen se ha subido y guardado." });
-      onCropComplete(downloadURL);
+      onCropComplete(result.url);
 
     } catch (e) {
       console.error(e);
@@ -63,6 +69,8 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
         description: (e instanceof Error ? e.message : 'No se pudo procesar y subir la imagen.'),
         variant: 'destructive',
       });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -91,10 +99,10 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
           />
         </div>
         
-        {isUploading ? (
+        {isProcessing ? (
             <div className="p-6 space-y-2">
                 <p className="text-sm text-center text-muted-foreground">Subiendo imagen recortada...</p>
-                <Progress value={progress} />
+                <Progress value={uploadProgress} />
             </div>
         ) : (
             <div className="p-6 space-y-4">
@@ -125,10 +133,10 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
         )}
 
         <DialogFooter className="p-6 border-t bg-background">
-          <Button variant="outline" onClick={onClose} disabled={isUploading}>Cancelar</Button>
-          <Button onClick={handleCropAndUpload} disabled={isUploading}>
-            {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Crop className="mr-2 h-4 w-4" />}
-            {isUploading ? 'Subiendo...' : 'Aplicar y Subir'}
+          <Button variant="outline" onClick={onClose} disabled={isProcessing}>Cancelar</Button>
+          <Button onClick={handleCropAndUpload} disabled={isProcessing}>
+            {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Crop className="mr-2 h-4 w-4" />}
+            {isProcessing ? 'Subiendo...' : 'Aplicar y Subir'}
           </Button>
         </DialogFooter>
       </DialogContent>
