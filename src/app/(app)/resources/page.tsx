@@ -525,7 +525,7 @@ export default function ResourcesPage() {
                                   <TableBody>
                                       {files.map(item => (
                                           <TableRow key={item.id} onClick={() => item.type === 'FOLDER' ? handleNavigateFolder(item) : setSelectedResource(item)} className="cursor-pointer">
-                                              <TableCell className="font-medium flex items-center gap-2">{React.cloneElement(getIconForType(item.type), { className: "h-4 w-4 shrink-0 text-muted-foreground" })} {item.title}</TableCell>
+                                              <TableCell className="font-medium flex items-center gap-2">{React.createElement(getIconForType(item.type), { className: "h-4 w-4 shrink-0 text-muted-foreground" })} {item.title}</TableCell>
                                               <TableCell>{item.type}</TableCell>
                                               <TableCell><Badge variant="outline">{item.category}</Badge></TableCell>
                                               <TableCell>{new Date(item.uploadDate).toLocaleDateString()}</TableCell>
