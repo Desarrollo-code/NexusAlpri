@@ -1,6 +1,5 @@
-
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -14,6 +13,7 @@ export interface User {
   isTwoFactorEnabled?: boolean;
   registeredDate?: string | Date;
   theme?: string | null;
+  xp?: number | null; // Added for gamification
 }
 
 export interface PlatformSettings {
@@ -270,3 +270,10 @@ export interface AdminDashboardStats {
 // --- TEMPLATES ---
 export type TemplateType = 'SYSTEM' | 'USER';
 export { type LessonTemplate, type TemplateBlock };
+
+// --- GAMIFICATION ---
+export type UserAchievement = Prisma.UserAchievementGetPayload<{
+    include: {
+        achievement: true;
+    }
+}>;

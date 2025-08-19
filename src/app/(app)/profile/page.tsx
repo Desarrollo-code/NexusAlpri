@@ -35,20 +35,17 @@ import {
 import { cn } from '@/lib/utils';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 import { useIsMobile } from '@/hooks/use-mobile';
-import type { UserRole } from '@/types';
+import type { UserRole, UserAchievement } from '@/types';
 import { useTitle } from '@/contexts/title-context';
-import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
-import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const ProfileCardBackground = () => (
-    <div className="card__img">
-      <div className="absolute top-0 left-0 w-full h-full bg-sidebar-background" />
-    </div>
+    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary via-accent to-secondary opacity-20" />
 );
 
 
 export default function ProfilePage() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, settings } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { setPageTitle } = useTitle();
@@ -56,6 +53,7 @@ export default function ProfilePage() {
   const [editableName, setEditableName] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
   
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -89,6 +87,17 @@ export default function ProfilePage() {
     if (user) {
       setEditableName(user.name || '');
       setAvatarPreview(user.avatar || null);
+      
+      const fetchAchievements = async () => {
+          try {
+              const res = await fetch(`/api/users/${user.id}/achievements`);
+              if (res.ok) {
+                  const data = await res.json();
+                  setUserAchievements(data);
+              }
+          } catch (e) { console.error(e) }
+      };
+      fetchAchievements();
     }
   }, [user]);
 
@@ -118,10 +127,7 @@ export default function ProfilePage() {
       const file = e.target.files[0];
       setAvatarFile(file);
       setAvatarPreview(URL.createObjectURL(file));
-
-      // --- Start automatic upload on selection ---
       handleSaveChanges({ selectedFile: file });
-       // --- End automatic upload ---
     }
   };
 
@@ -436,17 +442,25 @@ export default function ProfilePage() {
                       <div className="space-y-2">
                           <h4 className="font-medium text-sm">Logros Recientes</h4>
                           <div className="flex flex-wrap gap-2">
-                              {/* Esta sección se llenará cuando tengamos la data de logros */}
-                               <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <div className="p-2 bg-muted rounded-md"><Award className="h-5 w-5 text-amber-500"/></div>
-                                    </TooltipTrigger>
-                                    <TooltipContent><p>Primer Curso Completado</p></TooltipContent>
-                                  </Tooltip>
-                               </TooltipProvider>
-                               <div className="p-2 bg-muted rounded-md opacity-50"><Award className="h-5 w-5"/></div>
-                               <div className="p-2 bg-muted rounded-md opacity-50"><Award className="h-5 w-5"/></div>
+                              {userAchievements.length > 0 ? (
+                                  userAchievements.map(ua => (
+                                       <TooltipProvider key={ua.achievement.id}>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <div className="p-2 bg-muted rounded-md border">
+                                                    <Award className="h-5 w-5 text-amber-500"/>
+                                                </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p className="font-semibold">{ua.achievement.name}</p>
+                                                <p className="text-xs">{ua.achievement.description}</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                       </TooltipProvider>
+                                  ))
+                              ) : (
+                                <p className="text-xs text-muted-foreground">Aún no has desbloqueado logros.</p>
+                              )}
                           </div>
                       </div>
                   </CardContent>
