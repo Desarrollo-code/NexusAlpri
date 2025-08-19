@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, User as AppUser, UserRole } from '@/types';
-import { Search, ArchiveX, Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List } from 'lucide-react';
+import { Search, ArchiveX, Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronRight, Users, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -41,13 +41,15 @@ import { getInitials } from '@/lib/security-log-utils';
 import { Textarea } from '@/components/ui/textarea';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
-import { ChevronRight } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+
 
 // --- Main Page Component ---
 export default function ResourcesPage() {
   const { user, settings } = useAuth();
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
+  const isMobile = useIsMobile();
 
   const [allApiResources, setAllApiResources] = useState<AppResourceType[]>([]);
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
@@ -364,37 +366,37 @@ export default function ResourcesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border-b -mx-4 -mt-4 bg-card/50">
-          <div className="flex-grow space-y-1">
-             <div className="flex items-center text-sm text-muted-foreground">
-              {breadcrumbs.map((crumb, index) => (
-              <React.Fragment key={crumb.id || 'root'}>
-                  {index > 0 && <ChevronRight className="h-4 w-4 mx-1" />}
-                  <button 
-                    onClick={() => handleBreadcrumbClick(crumb.id, index)} 
-                    className={cn(
-                        "hover:text-primary",
-                        index === breadcrumbs.length - 1 ? "font-semibold text-foreground" : ""
-                    )}
-                  >
-                      {crumb.title}
-                  </button>
-              </React.Fragment>
-              ))}
-            </div>
-             <p className="text-sm text-muted-foreground">Explora, busca y gestiona todos los archivos de la organización.</p>
+      <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex-grow space-y-1">
+           <h1 className="text-2xl font-bold font-headline">Biblioteca de Recursos</h1>
+           <div className="flex items-center text-sm text-muted-foreground flex-wrap">
+            {breadcrumbs.map((crumb, index) => (
+            <React.Fragment key={crumb.id || 'root'}>
+                {index > 0 && <ChevronRight className="h-4 w-4 mx-1" />}
+                <button 
+                  onClick={() => handleBreadcrumbClick(crumb.id, index)} 
+                  className={cn(
+                      "hover:text-primary",
+                      index === breadcrumbs.length - 1 ? "font-semibold text-foreground" : ""
+                  )}
+                >
+                    {crumb.title}
+                </button>
+            </React.Fragment>
+            ))}
           </div>
-          {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-          <div className="flex gap-2 w-full sm:w-auto">
-              <Button variant="outline" onClick={handleOpenCreateFolderModal} className="w-full">
-                  <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
-              </Button>
-              <Button onClick={handleOpenCreateFileModal} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
-                <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
-              </Button>
-          </div>
-          )}
-      </header>
+        </div>
+        {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
+        <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="outline" onClick={handleOpenCreateFolderModal} className="w-full sm:w-auto">
+                <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
+            </Button>
+            <Button onClick={handleOpenCreateFileModal} className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
+              <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
+            </Button>
+        </div>
+        )}
+    </header>
 
       <div className="space-y-4">
         <div className="relative">
@@ -408,24 +410,20 @@ export default function ResourcesPage() {
         </div>
 
         {files.length > 0 && (
-           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 border rounded-lg bg-card">
-              <div>
-                  <h2 className="text-lg font-semibold">Archivos</h2>
-                  <p className="text-sm text-muted-foreground">Filtra por categoría o cambia el modo de visualización.</p>
-              </div>
+           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-2 w-full sm:w-auto">
                   <Select value={activeCategory} onValueChange={handleCategoryChange}>
                       <SelectTrigger className="w-full sm:w-[180px]">
                           <SelectValue placeholder="Categorías" />
                       </SelectTrigger>
                       <SelectContent>
-                          {allCategories.map(c => <SelectItem key={c} value={c}>{c === 'all' ? 'Todas' : c}</SelectItem>)}
+                          {allCategories.map(c => <SelectItem key={c} value={c}>{c === 'all' ? 'Todas las Categorías' : c}</SelectItem>)}
                       </SelectContent>
                   </Select>
-                  <div className="flex bg-muted rounded-md p-1">
-                    <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
-                    <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
-                  </div>
+              </div>
+              <div className="flex bg-muted rounded-md p-1">
+                <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
+                <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
               </div>
           </div>
         )}
@@ -446,17 +444,25 @@ export default function ResourcesPage() {
               <div className="space-y-8">
                   {folders.length > 0 && (
                       <section>
-                          <h2 className="text-xl font-semibold mb-4">Carpetas</h2>
+                          <h2 className="text-xl font-semibold mb-4 text-muted-foreground">Carpetas</h2>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                               {folders.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
                           </div>
                       </section>
                   )}
                   
-                  {files.length > 0 && viewMode === 'grid' && (
-                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-                        {files.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
-                    </div>
+                  {files.length > 0 && (
+                    <section>
+                        <h2 className="text-xl font-semibold mb-4 text-muted-foreground">Archivos</h2>
+                        {viewMode === 'grid' ? (
+                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+                              {files.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
+                          </div>
+                        ) : (
+                          // Placeholder for future list view
+                          <p>List view coming soon!</p>
+                        )}
+                    </section>
                   )}
               </div>
           )}
