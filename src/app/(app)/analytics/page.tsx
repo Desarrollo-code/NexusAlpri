@@ -410,7 +410,7 @@ function AdminAnalyticsPage() {
 
         <Card className="card-border-animated">
             <CardHeader>
-                <CardTitle>Tendencia de Registros (Últimos 7 Días)</CardTitle>
+                <CardTitle>Tendencia de Registros (Últimos 30 Días)</CardTitle>
             </CardHeader>
             <CardContent className="h-80">
                 <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
@@ -423,7 +423,7 @@ function AdminAnalyticsPage() {
                                 </linearGradient>
                             </defs>
                             <CartesianGrid vertical={false} strokeDasharray="3 3"/>
-                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval={0} tickFormatter={formatDateTick}/>
+                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval={5} tickFormatter={formatDateTick}/>
                             <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false}/>
                             <ChartTooltip 
                                 content={<ChartTooltipContent 
