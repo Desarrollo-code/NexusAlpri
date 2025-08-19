@@ -108,16 +108,13 @@
   }
   
   .profile-card {
-    @apply w-full max-w-sm mx-auto bg-card rounded-2xl shadow-lg overflow-hidden text-center;
-  }
-  .profile-card .card__img {
-    @apply h-28 w-full relative;
+    @apply relative w-full max-w-sm mx-auto bg-card rounded-2xl shadow-xl overflow-hidden text-center transition-all duration-300 hover:shadow-2xl hover:-translate-y-1;
   }
   .profile-card .card__avatar {
-    @apply relative w-32 h-32 mx-auto -mt-20;
+    @apply relative w-32 h-32 mx-auto -mt-16;
   }
   .profile-card .card__avatar .avatar {
-     @apply w-full h-full rounded-full border-4 border-background;
+     @apply w-full h-full rounded-full border-4 border-card shadow-lg;
   }
   .profile-card .card__subtitle {
     @apply text-center text-sm text-muted-foreground mt-2;
@@ -186,4 +183,13 @@
 
 .animate-bloom {
   animation: bloom 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes caret-blink {
+  0%, 70%, 100% {
+    opacity: 1;
+  }
+  20%, 50% {
+    opacity: 0;
+  }
 }

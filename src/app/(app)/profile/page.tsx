@@ -40,7 +40,7 @@ import { useTitle } from '@/contexts/title-context';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const ProfileCardBackground = () => (
-    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary via-accent to-secondary opacity-20" />
+    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 opacity-40" />
 );
 
 
@@ -455,7 +455,7 @@ export default function ProfilePage() {
               </Card>
             </div>
     
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-8">
               <Card className="card-border-animated">
                 <CardHeader>
                   <CardTitle>Información Personal</CardTitle>
