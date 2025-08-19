@@ -126,8 +126,8 @@ export default function ResourcesPage() {
   const [selectedResource, setSelectedResource] = useState<AppResourceType | null>(null);
 
   useEffect(() => {
-    setPageTitle(breadcrumbs[breadcrumbs.length - 1].title);
-  }, [breadcrumbs, setPageTitle]);
+    setPageTitle('Biblioteca de Recursos');
+  }, [setPageTitle]);
 
   const fetchResources = useCallback(async () => {
     setIsLoading(true);
@@ -388,25 +388,6 @@ export default function ResourcesPage() {
   }, [allUsers, userSearch]);
 
   const allCategories = useMemo(() => ['all', ...(settings?.resourceCategories || [])], [settings]);
-
-  const currentFolderBanner = useMemo(() => {
-    if (!currentFolderId) return null;
-
-    return (
-        <div className="relative h-24 md:h-32 rounded-lg overflow-hidden mb-6 bg-card flex justify-between items-end p-4 md:p-6">
-            <div className="absolute inset-0 opacity-20">
-                 <DecorativeFolder patternId={currentFolderId} className="absolute inset-0" />
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/70 to-transparent" />
-            <div className="relative">
-                 <h2 className="text-2xl md:text-3xl font-bold font-headline text-foreground flex items-center gap-3">
-                    <FolderIcon className="h-8 w-8 text-primary shrink-0" />
-                    {breadcrumbs[breadcrumbs.length - 1].title}
-                 </h2>
-            </div>
-        </div>
-    );
-  }, [currentFolderId, breadcrumbs, user?.role]);
   
   const handleNavigateItem = (direction: 'next' | 'prev') => {
       const currentIndex = files.findIndex(f => f.id === selectedResource?.id);
@@ -419,36 +400,25 @@ export default function ResourcesPage() {
       }
   }
 
-
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <header className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+    <div className="space-y-6">
+      <header className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div>
-              <h1 className="text-3xl font-bold font-headline text-foreground">Biblioteca de Recursos</h1>
               <p className="text-muted-foreground">Explora, busca y gestiona todos los archivos de la organización.</p>
           </div>
           {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-          <div className="flex gap-2">
-              <Button variant="outline" onClick={handleOpenCreateFolderModal}>
+          <div className="flex gap-2 w-full sm:w-auto">
+              <Button variant="outline" onClick={handleOpenCreateFolderModal} className="w-full">
                   <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
               </Button>
-              <Button onClick={handleOpenCreateFileModal} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
+              <Button onClick={handleOpenCreateFileModal} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
                 <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
               </Button>
           </div>
           )}
       </header>
 
-      {currentFolderId === null && (
-          <Card className="flex-shrink-0 p-4 mb-6 shadow-sm">
-              <div className="relative w-full flex-grow">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input type="search" id="resource-search" name="resource-search" placeholder="Buscar documentos, guías o carpetas..." className="pl-10 w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
-              </div>
-          </Card>
-      )}
-
-      <div className="flex items-center text-sm text-muted-foreground mb-4">
+      <div className="flex items-center text-sm text-muted-foreground">
           {breadcrumbs.map((crumb, index) => (
           <React.Fragment key={crumb.id || 'root'}>
               {index > 0 && <ChevronRight className="h-4 w-4 mx-1" />}
@@ -465,18 +435,16 @@ export default function ResourcesPage() {
           ))}
       </div>
       
-      {currentFolderId && currentFolderBanner}
-
       <div className="flex-grow overflow-auto -mx-4 px-4 mt-4 thin-scrollbar">
           {isLoading ? (
-              <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+              <div className="flex justify-center items-center h-full py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
           ) : error ? (
-              <div className="flex flex-col items-center justify-center h-full text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p></div>
+              <div className="flex flex-col items-center justify-center h-full py-12 text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p></div>
           ) : folders.length === 0 && files.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-16">
                   <ArchiveX className="h-16 w-16 mb-4 text-primary"/>
                   <h3 className="text-xl font-semibold text-foreground">{searchTerm ? 'No hay coincidencias' : 'Carpeta Vacía'}</h3>
-                  <p>{searchTerm ? 'Prueba con otro término.' : 'Sube un archivo para empezar.'}</p>
+                  <p>{searchTerm ? 'Prueba con otro término.' : 'Sube un archivo o crea una carpeta para empezar.'}</p>
               </div>
           ) : (
               <div className="space-y-8">
@@ -644,7 +612,7 @@ export default function ResourcesPage() {
                   <DialogTitle>{editingResource ? 'Editar Carpeta' : 'Crear Nueva Carpeta'}</DialogTitle>
                   <DialogDescription>Configura los detalles de la carpeta.</DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleCreateOrUpdateFolder} className="flex-1 overflow-y-auto px-6 py-4 thin-scrollbar">
+              <form onSubmit={handleCreateOrUpdateFolder} id="create-folder-form" className="flex-1 overflow-y-auto px-6 py-4 thin-scrollbar">
                   <div className="space-y-4">
                       <div className="space-y-1">
                           <Label htmlFor="folder-name">Nombre de la Carpeta <span className="text-destructive">*</span></Label>
@@ -692,7 +660,7 @@ export default function ResourcesPage() {
               </form>
                <DialogFooter className="p-6 pt-2 flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
                   <Button type="button" variant="outline" onClick={() => setShowCreateFolderModal(false)} disabled={isSubmittingResource}>Cancelar</Button>
-                  <Button type="submit" form="create-update-form" disabled={isSubmittingResource || !(editingResource ? newResourceTitle : newFolderName).trim()}>
+                  <Button type="submit" form="create-folder-form" disabled={isSubmittingResource || !(editingResource ? newResourceTitle : newFolderName).trim()}>
                       {isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FolderPlus className="mr-2 h-4 w-4" />}
                       {editingResource ? 'Guardar Cambios' : 'Crear Carpeta'}
                   </Button>
