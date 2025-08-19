@@ -39,10 +39,13 @@ export interface PlatformSettings {
     backgroundColorDark?: string;
     fontHeadline?: string;
     fontBody?: string;
-    logoUrl?: string;
-    watermarkUrl?: string;
-    landingImageUrl?: string;
-    authImageUrl?: string;
+    logoUrl?: string | null;
+    watermarkUrl?: string | null;
+    landingImageUrl?: string | null;
+    authImageUrl?: string | null;
+    aboutImageUrl?: string | null;
+    testimonial1ImageUrl?: string | null;
+    testimonial2ImageUrl?: string | null;
 }
 
 // --- NAVIGATION ---

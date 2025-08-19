@@ -208,7 +208,7 @@ export default function SettingsPage() {
 
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const [cropUploadUrl, setCropUploadUrl] = useState('');
-  const [cropField, setCropField] = useState<'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | null>(null);
+  const [cropField, setCropField] = useState<'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'testimonial1ImageUrl' | 'testimonial2ImageUrl' | null>(null);
 
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -241,7 +241,7 @@ export default function SettingsPage() {
     setFormState(prev => prev ? { ...prev, [field]: checked } : null);
   };
   
-  const handleFileSelected = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl', e: ChangeEvent<HTMLInputElement>, useCropper: boolean) => {
+  const handleFileSelected = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'testimonial1ImageUrl' | 'testimonial2ImageUrl', e: ChangeEvent<HTMLInputElement>, useCropper: boolean) => {
     if (e.target.files && e.target.files[0]) {
         const file = e.target.files[0];
         const reader = new FileReader();
@@ -259,7 +259,7 @@ export default function SettingsPage() {
     if (e.target) e.target.value = '';
   };
   
-  const handleDirectUpload = async (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl', file: File) => {
+  const handleDirectUpload = async (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'testimonial1ImageUrl' | 'testimonial2ImageUrl', file: File) => {
     setIsUploading(true);
     setUploadProgress(0);
     const formData = new FormData();
@@ -284,7 +284,7 @@ export default function SettingsPage() {
   };
 
 
-  const handleRemoveImage = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl') => {
+  const handleRemoveImage = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'testimonial1ImageUrl' | 'testimonial2ImageUrl') => {
       setFormState(prev => prev ? { ...prev, [field]: null } : null);
   }
 
@@ -397,6 +397,9 @@ export default function SettingsPage() {
                            <UploadWidget label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(e) => handleFileSelected('watermarkUrl', e, false)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving || isUploading} useCropper={false}/>
                            <UploadWidget label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(e) => handleFileSelected('landingImageUrl', e, true)} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving || isUploading} useCropper={true}/>
                            <UploadWidget label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(e) => handleFileSelected('authImageUrl', e, true)} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving || isUploading} useCropper={true}/>
+                           <UploadWidget label="Imagen Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(e) => handleFileSelected('aboutImageUrl', e, true)} onRemove={() => handleRemoveImage('aboutImageUrl')} disabled={isSaving || isUploading} useCropper={true} />
+                           <UploadWidget label="Avatar Testimonio 1" currentImageUrl={formState.testimonial1ImageUrl} onFileSelect={(e) => handleFileSelected('testimonial1ImageUrl', e, true)} onRemove={() => handleRemoveImage('testimonial1ImageUrl')} disabled={isSaving || isUploading} useCropper={true} />
+                           <UploadWidget label="Avatar Testimonio 2" currentImageUrl={formState.testimonial2ImageUrl} onFileSelect={(e) => handleFileSelected('testimonial2ImageUrl', e, true)} onRemove={() => handleRemoveImage('testimonial2ImageUrl')} disabled={isSaving || isUploading} useCropper={true} />
                            {isUploading && (
                                 <div className="md:col-span-2">
                                     <Progress value={uploadProgress} className="w-full" />

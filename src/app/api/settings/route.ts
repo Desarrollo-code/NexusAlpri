@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -32,7 +31,10 @@ const DEFAULT_DB_SETTINGS = {
   logoUrl: null,
   watermarkUrl: null,
   landingImageUrl: null,
-  authImageUrl: null
+  authImageUrl: null,
+  aboutImageUrl: null,
+  testimonial1ImageUrl: null,
+  testimonial2ImageUrl: null,
 };
 
 // GET /api/settings - Fetches platform settings

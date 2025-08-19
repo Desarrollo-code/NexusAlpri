@@ -3,8 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Database, Code, Wind, Feather } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
+import prisma from '@/lib/prisma';
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const settings = await prisma.platformSettings.findFirst();
+  const aboutImageUrl = settings?.aboutImageUrl || "https://placehold.co/600x400.png";
+
   const techStack = [
     { name: 'Next.js', description: 'Framework de React para producción.', icon: <Code />, color: "text-primary" },
     { name: 'TypeScript', description: 'Superset de JavaScript con tipos.', icon: <Code />, color: "text-primary" },
@@ -30,7 +34,7 @@ export default function AboutPage() {
                 </p>
               </div>
               <Image
-                src="https://placehold.co/600x400.png"
+                src={aboutImageUrl}
                 width="600"
                 height="400"
                 alt="About Us"

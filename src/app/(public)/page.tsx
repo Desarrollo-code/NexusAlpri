@@ -46,24 +46,24 @@ const benefits = [
   },
 ];
 
-const testimonials = [
-  {
-    name: 'Ana García',
-    role: 'Líder de Capacitación, TechCorp',
-    testimony: 'NexusAlpri transformó nuestra formación interna. La facilidad para crear contenido y el seguimiento automático nos ahorraron cientos de horas.',
-    avatar: 'https://placehold.co/100x100.png?text=AG'
-  },
-  {
-    name: 'Carlos Mendoza',
-    role: 'Gerente de Ventas, InnovaSolutions',
-    testimony: 'La capacidad de crear quizzes y ver las analíticas nos ha permitido identificar brechas de conocimiento en nuestro equipo de ventas y actuar sobre ellas.',
-     avatar: 'https://placehold.co/100x100.png?text=CM'
-  }
-]
-
 export default async function LandingPage() {
   const settings = await prisma.platformSettings.findFirst();
   const landingImageUrl = settings?.landingImageUrl || "https://placehold.co/600x600.png";
+
+  const testimonials = [
+    {
+      name: 'Ana García',
+      role: 'Líder de Capacitación, TechCorp',
+      testimony: 'NexusAlpri transformó nuestra formación interna. La facilidad para crear contenido y el seguimiento automático nos ahorraron cientos de horas.',
+      avatar: settings?.testimonial1ImageUrl || 'https://placehold.co/100x100.png?text=AG'
+    },
+    {
+      name: 'Carlos Mendoza',
+      role: 'Gerente de Ventas, InnovaSolutions',
+      testimony: 'La capacidad de crear quizzes y ver las analíticas nos ha permitido identificar brechas de conocimiento en nuestro equipo de ventas y actuar sobre ellas.',
+       avatar: settings?.testimonial2ImageUrl || 'https://placehold.co/100x100.png?text=CM'
+    }
+  ]
 
   return (
       <div className="flex-1 z-10">
