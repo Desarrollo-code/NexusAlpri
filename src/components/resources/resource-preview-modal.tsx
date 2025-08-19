@@ -138,27 +138,27 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     }
     
     const displayUrl = pinVerifiedUrl || resource.url;
-    const isImage = displayUrl && /\.(jpe?g|png|gif|webp)$/i.test(displayUrl);
-    const isPdf = displayUrl && displayUrl.toLowerCase().endsWith('.pdf');
-    const isDocx = displayUrl && displayUrl.toLowerCase().endsWith('.docx');
-    const isXlsx = displayUrl && displayUrl.toLowerCase().endsWith('.xlsx');
-    const isVideoFile = displayUrl && /\.(mp4|webm|ogv)$/i.test(displayUrl);
-    const youtubeId = resource.type === 'VIDEO' ? getYoutubeVideoId(displayUrl) : null;
     
+    // Intelligent rendering based on URL content, not just resource.type
+    const youtubeId = getYoutubeVideoId(displayUrl);
     if (youtubeId) {
         return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
     }
-    if (isVideoFile && displayUrl) {
-        return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />
-    }
-    if (isImage && displayUrl) {
-        return <Image src={displayUrl} alt={resource.title} fill className="object-contain" data-ai-hint="document image" />;
-    }
-    if (isPdf && displayUrl) {
-         return <iframe src={displayUrl} className="w-full h-full" title={`PDF Preview: ${resource.title}`}/>;
-    }
-    if ((isDocx || isXlsx) && displayUrl) {
-        return <OfficePreviewer url={displayUrl} />;
+    
+    if (displayUrl) {
+        const isImage = /\.(jpe?g|png|gif|webp)$/i.test(displayUrl);
+        const isPdf = displayUrl.toLowerCase().endsWith('.pdf');
+        const isVideoFile = /\.(mp4|webm|ogv)$/i.test(displayUrl);
+
+        if (isVideoFile) {
+            return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />;
+        }
+        if (isImage) {
+            return <Image src={displayUrl} alt={resource.title} fill className="object-contain" data-ai-hint="document image" />;
+        }
+        if (isPdf) {
+             return <iframe src={displayUrl} className="w-full h-full" title={`PDF Preview: ${resource.title}`}/>;
+        }
     }
 
     return <FallbackPreview resource={resource} />;
