@@ -404,13 +404,6 @@ export default function ResourcesPage() {
                     {breadcrumbs[breadcrumbs.length - 1].title}
                  </h2>
             </div>
-             <div className="relative">
-                {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-                    <Button onClick={handleOpenCreateFileModal} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
-                        <UploadCloud className="mr-2 h-4 w-4"/> Subir Aquí
-                    </Button>
-                )}
-            </div>
         </div>
     );
   }, [currentFolderId, breadcrumbs, user?.role]);
@@ -699,7 +692,7 @@ export default function ResourcesPage() {
               </form>
                <DialogFooter className="p-6 pt-2 flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
                   <Button type="button" variant="outline" onClick={() => setShowCreateFolderModal(false)} disabled={isSubmittingResource}>Cancelar</Button>
-                  <Button type="submit" form="create-folder-form" disabled={isSubmittingResource || !(editingResource ? newResourceTitle : newFolderName).trim()}>
+                  <Button type="submit" form="create-update-form" disabled={isSubmittingResource || !(editingResource ? newResourceTitle : newFolderName).trim()}>
                       {isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FolderPlus className="mr-2 h-4 w-4" />}
                       {editingResource ? 'Guardar Cambios' : 'Crear Carpeta'}
                   </Button>
