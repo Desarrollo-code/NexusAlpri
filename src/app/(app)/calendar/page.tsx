@@ -392,7 +392,25 @@ export default function CalendarPage() {
                               )}
                           </div>
                       </div>
-                      <div className="sm:col-span-2"><Label>Color del Evento</Label><div className="flex flex-wrap gap-3 mt-2 justify-start">{eventColors.map(({ value, className, label }) => (<div key={value} className="flex flex-col items-center gap-1"><div className={cn("h-8 w-8 rounded-full border-2 flex items-center justify-center transition-all duration-200 ease-in-out cursor-pointer", formColor === value ? 'border-primary scale-110' : 'border-transparent', className)} onClick={() => setFormColor(value)} title={label}>{formColor === value && (<Check className="h-4 w-4 text-white" />)}</div><span className="text-xs text-muted-foreground">{label}</span></div>))}</div></div>
+                      <div className="sm:col-span-2 space-y-2">
+                        <Label>Color del Evento</Label>
+                        <div className="flex flex-wrap gap-3 mt-2 justify-start">
+                          {eventColors.map(({ value, className, label }) => (
+                            <div key={value} className="flex flex-col items-center gap-1.5" onClick={() => setFormColor(value)} title={label}>
+                              <div
+                                className={cn(
+                                  "h-8 w-8 rounded-full border-2 flex items-center justify-center transition-all duration-200 ease-in-out cursor-pointer",
+                                  formColor === value ? 'border-primary scale-110 shadow-lg' : 'border-transparent',
+                                  className
+                                )}
+                              >
+                                {formColor === value && (<Check className="h-5 w-5 text-white" />)}
+                              </div>
+                              <span className="text-xs text-muted-foreground">{label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                       <div className="sm:col-span-2"><Label>Dirigido a</Label><div className="flex items-center gap-2 mt-2"><Users className="h-4 w-4 text-muted-foreground"/><RadioGroup value={formAudienceMode} onValueChange={(value) => setFormAudienceMode(value as EventAudienceType)} className="grid grid-cols-2 md:grid-cols-3 gap-2" disabled={isSaving}><div className="flex items-center space-x-2"><RadioGroupItem value="ALL" id="audience-all" /><Label htmlFor="audience-all">Todos</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="ADMINISTRATOR" id="audience-admin" /><Label htmlFor="audience-admin">Admins</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="INSTRUCTOR" id="audience-instructor" /><Label htmlFor="audience-instructor">Instructores</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="STUDENT" id="audience-student" /><Label htmlFor="audience-student">Estudiantes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="SPECIFIC" id="audience-specific" /><Label htmlFor="audience-specific">Específicos</Label></div></RadioGroup></div></div>
                       {formAudienceMode === 'SPECIFIC' && (<div className="sm:col-span-2"><Label>Asistentes Específicos</Label><ScrollArea className="h-40 w-full rounded-md border p-2"><div className="space-y-2">{allUsers.length > 0 ? allUsers.map((u) => (<div key={u.id} className="flex items-center space-x-2 p-1 hover:bg-muted/50 rounded-sm transition-colors"><Checkbox id={`attendee-${u.id}`} checked={formAttendees.includes(u.id)} onCheckedChange={(checked) => { return checked ? setFormAttendees([...formAttendees, u.id]) : setFormAttendees(formAttendees.filter((id) => id !== u.id)); }} disabled={isSaving} /><Label htmlFor={`attendee-${u.id}`} className="font-normal cursor-pointer">{u.name} <span className="text-xs text-muted-foreground">({u.email})</span></Label></div>)) : <p className="text-sm text-muted-foreground text-center py-4">No hay otros usuarios.</p>}</div></ScrollArea></div>)}
                     </form>
