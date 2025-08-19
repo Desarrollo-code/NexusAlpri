@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import { consolidateCourseProgress } from '@/lib/progress';
+import { addXp, checkAndAwardCourseCompletionAchievements, XP_CONFIG } from '@/lib/gamification';
 
 export async function POST(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
     const session = await getCurrentUser();
@@ -14,6 +15,14 @@ export async function POST(req: NextRequest, context: { params: { userId: string
 
     try {
         const finalProgress = await consolidateCourseProgress({ userId, courseId });
+        
+        // --- Gamification Logic ---
+        if (finalProgress.progressPercentage === 100) {
+            await addXp(userId, XP_CONFIG.COMPLETE_COURSE);
+            await checkAndAwardCourseCompletionAchievements(userId);
+        }
+        // --------------------------
+
         return NextResponse.json(finalProgress);
     } catch (error) {
         console.error('[CONSOLIDATE_PROGRESS_ERROR]', error);

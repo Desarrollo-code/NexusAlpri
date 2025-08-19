@@ -2,6 +2,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { addXp, checkAndAwardFirstEnrollment, XP_CONFIG } from '@/lib/gamification';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +34,12 @@ export async function POST(req: NextRequest) {
                     enrolledAt: new Date(),
                 },
             });
+
+            // --- Gamification Logic ---
+            await addXp(session.id, XP_CONFIG.ENROLL_COURSE);
+            await checkAndAwardFirstEnrollment(session.id);
+            // --------------------------
+
             return NextResponse.json({ message: 'Inscripción exitosa' }, { status: 201 });
         } else {
             // Unenroll

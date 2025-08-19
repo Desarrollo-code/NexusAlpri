@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Edit3, Mail, Shield, User, Camera, KeyRound, Save, Loader2, Check, Eye, EyeOff } from 'lucide-react';
+import { Edit3, Mail, Shield, User, Camera, KeyRound, Save, Loader2, Check, Eye, EyeOff, Award, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -38,7 +38,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import type { UserRole } from '@/types';
 import { useTitle } from '@/contexts/title-context';
 import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
-
+import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const ProfileCardBackground = () => (
     <div className="card__img">
@@ -418,6 +418,39 @@ export default function ProfilePage() {
                         <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><Mail className="h-4 w-4"/> {user.email}</p>
                     </div>
               </div>
+              <Card className="card-border-animated">
+                  <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                         <Star className="text-yellow-400" /> Progreso y Logros
+                      </CardTitle>
+                  </CardHeader>
+                   <CardContent className="space-y-4">
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center text-sm font-medium">
+                            <span>Puntos de Experiencia</span>
+                            <span>{user.xp?.toLocaleString() || 0} XP</span>
+                        </div>
+                         <Progress value={(user.xp || 0) % 1000 / 10} className="h-2" />
+                         <p className="text-xs text-muted-foreground">Nivel {Math.floor((user.xp || 0) / 1000) + 1}</p>
+                      </div>
+                      <div className="space-y-2">
+                          <h4 className="font-medium text-sm">Logros Recientes</h4>
+                          <div className="flex flex-wrap gap-2">
+                              {/* Esta sección se llenará cuando tengamos la data de logros */}
+                               <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className="p-2 bg-muted rounded-md"><Award className="h-5 w-5 text-amber-500"/></div>
+                                    </TooltipTrigger>
+                                    <TooltipContent><p>Primer Curso Completado</p></TooltipContent>
+                                  </Tooltip>
+                               </TooltipProvider>
+                               <div className="p-2 bg-muted rounded-md opacity-50"><Award className="h-5 w-5"/></div>
+                               <div className="p-2 bg-muted rounded-md opacity-50"><Award className="h-5 w-5"/></div>
+                          </div>
+                      </div>
+                  </CardContent>
+              </Card>
             </div>
     
             <div className="lg:col-span-2 space-y-6">

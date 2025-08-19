@@ -5,6 +5,7 @@ import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import { recordLessonInteraction } from '@/lib/progress';
 import prisma from '@/lib/prisma';
+import { addXp, awardAchievement, XP_CONFIG, ACHIEVEMENT_SLUGS } from '@/lib/gamification';
 
 // Records a 'quiz' interaction with its score and individual answers
 export async function POST(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
@@ -50,6 +51,16 @@ export async function POST(req: NextRequest, context: { params: { userId: string
             type: 'quiz',
             score,
         });
+
+        // --- Gamification Logic ---
+        await addXp(userId, XP_CONFIG.COMPLETE_QUIZ);
+        if (score >= 80) {
+            await addXp(userId, XP_CONFIG.PASS_QUIZ);
+        }
+        if (score === 100) {
+            await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.PERFECT_SCORE });
+        }
+        // --------------------------
 
         // Save the detailed quiz attempt
         const newAttempt = await prisma.quizAttempt.create({

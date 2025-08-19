@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import { recordLessonInteraction } from '@/lib/progress';
+import { addXp, XP_CONFIG } from '@/lib/gamification';
 
 // Records a 'view' interaction for a lesson
 export async function POST(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
@@ -25,6 +26,10 @@ export async function POST(req: NextRequest, context: { params: { userId: string
             lessonId,
             type: 'view',
         });
+
+        // --- Gamification Logic ---
+        await addXp(userId, XP_CONFIG.COMPLETE_LESSON);
+        // --------------------------
         
         return NextResponse.json({ message: "Interaction recorded" });
 
