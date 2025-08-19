@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
         const thirtyDaysAgo = startOfDay(subDays(today, 30));
         const sevenDaysAgo = startOfDay(subDays(today, 7));
 
-        // --- Execute all queries in parallel, removing the problematic transaction ---
+        // --- Execute all queries in parallel ---
         const [
             totalUsersResult,
             totalCoursesResult,
@@ -58,16 +58,16 @@ export async function GET(req: NextRequest) {
                 select: { userId: true },
                 distinct: ['userId']
             }),
-            prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo, not: null } } }),
+            prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo } } }),
             prisma.courseProgress.findMany({ 
                 where: { course: { status: 'PUBLISHED' } },
                 select: { courseId: true, progressPercentage: true, userId: true } 
             }),
             prisma.course.findMany({ where: { status: 'PUBLISHED' }, select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } }, orderBy: { enrollments: { _count: 'desc' } }, take: 5 }),
             prisma.course.groupBy({ by: ['instructorId'], where: { instructorId: { not: null } }, _count: { id: true }, orderBy: { _count: { id: 'desc' } }, take: 5 }),
-            prisma.user.groupBy({ by: ['registeredDate'], where: { registeredDate: { gte: thirtyDaysAgo, not: null } }, _count: { _all: true }, orderBy: { registeredDate: 'asc' } }),
+            prisma.user.groupBy({ by: ['registeredDate'], where: { registeredDate: { gte: thirtyDaysAgo } }, _count: { _all: true }, orderBy: { registeredDate: 'asc' } }),
             prisma.course.groupBy({ by: ['createdAt'], where: { createdAt: { gte: thirtyDaysAgo } }, _count: { _all: true }, orderBy: { createdAt: 'asc' } }),
-            prisma.course.groupBy({ by: ['publicationDate'], where: { status: 'PUBLISHED', publicationDate: { gte: thirtyDaysAgo, not: null } }, _count: { _all: true }, orderBy: { publicationDate: 'asc' } }),
+            prisma.course.groupBy({ by: ['publicationDate'], where: { status: 'PUBLISHED', publicationDate: { gte: thirtyDaysAgo } }, _count: { _all: true }, orderBy: { publicationDate: 'asc' } }),
             prisma.enrollment.groupBy({ by: ['enrolledAt'], where: { enrolledAt: { gte: thirtyDaysAgo } }, _count: { _all: true }, orderBy: { enrolledAt: 'asc' } })
         ]);
         
