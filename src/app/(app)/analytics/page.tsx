@@ -51,7 +51,7 @@ const formatDateTick = (tick: string) => {
 const formatDateTooltip = (dateString: string) => {
     try {
         const date = parseISO(dateString);
-        return format(date, "d/MM/yyyy", { locale: es });
+        return format(date, "EEEE, d 'de' MMMM", { locale: es });
     } catch (e) {
         return dateString;
     }
@@ -88,6 +88,7 @@ const courseStatusChartConfig = {
     DRAFT: { label: "Borrador", color: "hsl(var(--chart-3))" },
     PUBLISHED: { label: "Publicado", color: "hsl(var(--chart-2))" },
     ARCHIVED: { label: "Archivado", color: "hsl(var(--chart-5))" },
+    SCHEDULED: { label: "Programado", color: "hsl(var(--chart-4))"}
 } satisfies ChartConfig;
 
 const renderActiveShape = (props: any) => {
@@ -221,9 +222,9 @@ function CourseRankingCard({ title, courses, metric, icon: Icon, unit = '' }: { 
                                     <div className="flex items-center gap-2">
                                         <Avatar className="h-8 w-8 hidden sm:flex">
                                             <AvatarImage src={course.imageUrl || undefined} />
-                                            <AvatarFallback>{course.title.charAt(0)}</AvatarFallback>
+                                            <AvatarFallback>{course.title?.charAt(0) ?? 'C'}</AvatarFallback>
                                         </Avatar>
-                                        <Link href={`/courses/${course.id}`} className="font-medium hover:underline truncate">{course.title}</Link>
+                                        <Link href={`/courses/${course.id}`} className="font-medium hover:underline truncate" title={course.title}>{course.title}</Link>
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-right font-semibold">{course.value}{unit}</TableCell>
@@ -272,7 +273,7 @@ function UserRankingCard({ title, users, metric, icon: Icon, unit = '' }: { titl
                                             <AvatarImage src={user.avatar || undefined} />
                                             <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                                         </Avatar>
-                                        <Link href={`/profile/${user.id}`} className="font-medium hover:underline truncate">{user.name}</Link>
+                                        <Link href={`/users?search=${user.name}`} className="font-medium hover:underline truncate" title={user.name}>{user.name}</Link>
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-right font-semibold">{user.value}{unit}</TableCell>
@@ -329,13 +330,13 @@ function AdminAnalyticsPage() {
     
     const courseStatusChartData = useMemo(() => {
         if (!stats?.coursesByStatus) return [];
-        const order: ('DRAFT' | 'PUBLISHED' | 'ARCHIVED')[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED'];
+        const order: ('DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'SCHEDULED')[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED', 'SCHEDULED'];
         return order.map(status => ({
             status: status,
             label: courseStatusChartConfig[status]?.label || status,
             count: stats.coursesByStatus.find(item => item.status === status)?.count || 0,
             fill: courseStatusChartConfig[status]?.color || 'hsl(var(--muted))'
-        }));
+        })).filter(item => item.count > 0);
     }, [stats?.coursesByStatus]);
 
     const registrationTrendChartConfig = {
@@ -426,9 +427,11 @@ function AdminAnalyticsPage() {
                             <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval={5} tickFormatter={formatDateTick}/>
                             <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false}/>
                             <ChartTooltip 
+                                cursor={false}
                                 content={<ChartTooltipContent 
                                     hideIndicator 
-                                    labelFormatter={(label, payload) => payload?.[0]?.payload.date ? formatDateTooltip(payload[0].payload.date) : ''}
+                                    labelFormatter={(value, payload) => formatDateTooltip(value)}
+                                    formatter={(value, name, item) => [`${value} usuarios`, item.payload.count > 0 ? "Nuevos" : ""]}
                                 />} 
                             />
                             <Area dataKey="count" type="monotone" fill="url(#fillArea)" stroke="var(--color-count)" />

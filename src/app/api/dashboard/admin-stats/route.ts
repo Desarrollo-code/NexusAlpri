@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
             totalEnrollmentsResult,
             usersByRole,
             coursesByStatus,
-            recentLoginLogs, // Changed this logic below
+            recentLoginLogs,
             newUsersLast7DaysCount,
             allCourseProgressRaw,
             coursesWithEnrollmentCounts,
@@ -53,36 +53,36 @@ export async function GET(req: NextRequest) {
             prisma.enrollment.count(),
             prisma.user.groupBy({ by: ['role'], _count: { role: true } }),
             prisma.course.groupBy({ by: ['status'], _count: { status: true } }),
-            // This query now gets the user IDs for unique user counting
             prisma.securityLog.findMany({ 
                 where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } },
                 select: { userId: true },
                 distinct: ['userId']
             }),
             prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo } } }),
-            prisma.courseProgress.findMany({ select: { courseId: true, progressPercentage: true, userId: true } }),
+            prisma.courseProgress.findMany({ 
+                where: { course: { status: 'PUBLISHED' } }, // Only consider progress for published courses
+                select: { courseId: true, progressPercentage: true, userId: true } 
+            }),
             prisma.course.findMany({ where: { status: 'PUBLISHED' }, select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } }, orderBy: { enrollments: { _count: 'desc' } }, take: 5 }),
-            prisma.course.groupBy({ by: ['instructorId'], _count: { id: true }, orderBy: { _count: { id: 'desc' } }, take: 5 }),
-            prisma.user.groupBy({ by: ['registeredDate'], where: { registeredDate: { gte: thirtyDaysAgo } }, _count: { _all: true }, orderBy: { registeredDate: 'asc' } }),
+            prisma.course.groupBy({ by: ['instructorId'], where: { instructorId: { not: null } }, _count: { id: true }, orderBy: { _count: { id: 'desc' } }, take: 5 }),
+            prisma.user.groupBy({ by: ['registeredDate'], where: { registeredDate: { gte: thirtyDaysAgo, not: null } }, _count: { _all: true }, orderBy: { registeredDate: 'asc' } }),
             prisma.course.groupBy({ by: ['createdAt'], where: { createdAt: { gte: thirtyDaysAgo } }, _count: { _all: true }, orderBy: { createdAt: 'asc' } }),
-            prisma.course.groupBy({ by: ['publicationDate'], where: { status: 'PUBLISHED', publicationDate: { gte: thirtyDaysAgo } }, _count: { _all: true }, orderBy: { publicationDate: 'asc' } }),
+            prisma.course.groupBy({ by: ['publicationDate'], where: { status: 'PUBLISHED', publicationDate: { gte: thirtyDaysAgo, not: null } }, _count: { _all: true }, orderBy: { publicationDate: 'asc' } }),
             prisma.enrollment.groupBy({ by: ['enrolledAt'], where: { enrolledAt: { gte: thirtyDaysAgo } }, _count: { _all: true }, orderBy: { enrolledAt: 'asc' } })
         ]);
         
-        // Correctly calculate unique active users
         const uniqueActiveUsers = recentLoginLogs.length;
 
-        // --- Data Processing and Structuring ---
         const dateRange = createDateRange(thirtyDaysAgo, today);
 
-        const formatTrendData = (data: any[], dateField: string) => {
-            const map = new Map(data.map(item => [startOfDay(item[dateField]).toISOString().split('T')[0], item._count._all]));
+        const formatTrendData = (data: { registeredDate: Date | null, _count: { _all: number }} []) => {
+            const map = new Map(data.map(item => [startOfDay(item.registeredDate!).toISOString().split('T')[0], item._count._all]));
             return dateRange.map(date => {
                 const dayString = date.toISOString().split('T')[0];
                 return { date: dayString, count: map.get(dayString) || 0 };
             });
         };
-        const userRegistrationTrend = formatTrendData(userRegistrationsByDay, 'registeredDate');
+        const userRegistrationTrend = formatTrendData(userRegistrationsByDay);
 
         const courseActivity = dateRange.map(date => {
             const dayString = date.toISOString().split('T')[0];
@@ -137,7 +137,10 @@ export async function GET(req: NextRequest) {
         const topStudentsCompletionInfo = await prisma.user.findMany({ where: { id: { in: studentCompletionIds } }, select: { id: true, name: true, avatar: true }});
         const topStudentsByCompletion = topStudentsByCompletionRaw.map(s => ({...topStudentsCompletionInfo.find(u => u.id === s.userId), value: s._count.userId }));
 
-        const totalCompletionRate = allCourseProgressRaw.length > 0 ? (allCourseProgressRaw.reduce((acc, p) => acc + (p.progressPercentage || 0), 0) / allCourseProgressRaw.length) : 0;
+        const totalProgressRecords = await prisma.courseProgress.count();
+        const sumOfPercentages = await prisma.courseProgress.aggregate({ _sum: { progressPercentage: true } });
+        const totalCompletionRate = totalProgressRecords > 0 ? (sumOfPercentages._sum.progressPercentage ?? 0) / totalProgressRecords : 0;
+
 
         const responsePayload = {
             totalUsers: totalUsersResult,
