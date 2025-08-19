@@ -62,16 +62,28 @@ Esta sección es el centro de control para todo el contenido formativo.
 ### 4.3. Biblioteca de Recursos
 
 **Ruta:** `/resources`
-*   Sube archivos importantes (PDFs, documentos, videos, etc.) para que estén disponibles para todos los usuarios.
-*   Organiza los recursos en carpetas.
-*   Puedes proteger recursos sensibles con un PIN de acceso, que deberás compartir con los usuarios autorizados.
+
+Aquí puedes gestionar todos los archivos y materiales compartidos de la organización.
+
+*   **Subir Archivos:**
+    1.  Haz clic en "Subir Recurso".
+    2.  Puedes subir diferentes tipos de contenido: **documentos (PDF, Word), imágenes (JPG, PNG), videos (MP4), o añadir enlaces externos**.
+    3.  Completa el título, la descripción y la categoría del recurso.
+*   **Crear Carpetas:** Organiza los recursos en carpetas para una mejor navegación.
+*   **Control de Acceso y Seguridad:** Al crear o editar un recurso, puedes configurar:
+    *   **Visibilidad:**
+        *   **Público:** El recurso es visible para todos los usuarios de la plataforma.
+        *   **Privado:** El recurso solo es visible para ti y para los usuarios específicos con los que lo compartas.
+    *   **Compartir con Usuarios:** Si un recurso es privado, puedes buscar y seleccionar usuarios individuales para concederles acceso.
+    *   **Protección con PIN:** Puedes añadir un PIN de 4 a 8 dígitos a cualquier recurso (sea público o privado) como una capa extra de seguridad. Deberás comunicar este PIN a los usuarios que necesiten acceder.
+*   **Gestionar Recursos Existentes:** Puedes editar los detalles, cambiar los permisos de acceso o eliminar cualquier recurso de la biblioteca.
 
 ## 5. Configuración del Sistema
 
 **Ruta:** `/settings`
 
 Esta sección te permite personalizar el comportamiento de toda la plataforma.
-*   **Apariencia:** Cambia el nombre de la plataforma.
+*   **Apariencia:** Cambia el nombre de la plataforma, los logos, colores y fuentes.
 *   **Seguridad y Acceso:**
     *   **Registro Público:** Habilita o deshabilita la capacidad de que nuevos usuarios se registren por sí mismos.
     *   **Política de Contraseñas:** Define la complejidad requerida para las contraseñas de los usuarios.
