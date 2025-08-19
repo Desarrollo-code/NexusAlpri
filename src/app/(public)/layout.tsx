@@ -15,7 +15,7 @@ export default async function PublicLayout({
       <div className='flex flex-col min-h-screen bg-background relative isolate light'>
         <DecorativeHeaderBackground />
         <PublicTopBar />
-        <main className="flex-1 flex flex-col items-center justify-center">
+        <main className="flex-1 flex flex-col items-center justify-center pb-16 md:pb-0">
           {children}
         </main>
         <div className="hidden md:block">
