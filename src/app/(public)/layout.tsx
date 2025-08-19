@@ -4,12 +4,15 @@ import { PublicTopBar } from '@/components/layout/public-top-bar';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
 import React from 'react';
+import prisma from '@/lib/prisma';
+import Image from 'next/image';
 
 export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const settings = await prisma.platformSettings.findFirst();
 
   return (
       <div className='flex flex-col min-h-screen bg-background relative isolate light'>
@@ -24,6 +27,20 @@ export default async function PublicLayout({
         <div className="md:hidden">
           <BottomNav />
         </div>
+        {settings?.watermarkUrl && (
+          <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
+            <Image
+                src={settings.watermarkUrl}
+                alt="Alprigrama Watermark"
+                width={60}
+                height={60}
+                className="opacity-20"
+                data-ai-hint="logo company"
+                priority
+                style={{ width: 'auto', height: 'auto' }}
+            />
+          </div>
+        )}
       </div>
   );
 }
