@@ -29,14 +29,12 @@ export async function GET(req: NextRequest) {
         const thirtyDaysAgo = startOfDay(subDays(today, 30));
         const sevenDaysAgo = startOfDay(subDays(today, 7));
 
-        // --- Execute simple counts outside the transaction to fix validation errors ---
-        const totalUsersResult = await prisma.user.count();
-        const totalCoursesResult = await prisma.course.count();
-        const totalPublishedCoursesCount = await prisma.course.count({ where: { status: 'PUBLISHED' } });
-        const totalEnrollmentsResult = await prisma.enrollment.count();
-
-        // --- Aggregate Queries in a Transaction ---
+        // --- Execute all queries in parallel, removing the problematic transaction ---
         const [
+            totalUsersResult,
+            totalCoursesResult,
+            totalPublishedCoursesCount,
+            totalEnrollmentsResult,
             usersByRole,
             coursesByStatus,
             recentLoginLogs,
@@ -48,7 +46,11 @@ export async function GET(req: NextRequest) {
             courseCreationByDay,
             coursePublicationByDay,
             enrollmentsByDay
-        ] = await prisma.$transaction([
+        ] = await Promise.all([
+            prisma.user.count(),
+            prisma.course.count(),
+            prisma.course.count({ where: { status: 'PUBLISHED' } }),
+            prisma.enrollment.count(),
             prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
             prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
             prisma.securityLog.findMany({ 
@@ -58,7 +60,7 @@ export async function GET(req: NextRequest) {
             }),
             prisma.user.count({ where: { registeredDate: { gte: sevenDaysAgo, not: null } } }),
             prisma.courseProgress.findMany({ 
-                where: { course: { status: 'PUBLISHED' } }, // Only consider progress for published courses
+                where: { course: { status: 'PUBLISHED' } },
                 select: { courseId: true, progressPercentage: true, userId: true } 
             }),
             prisma.course.findMany({ where: { status: 'PUBLISHED' }, select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } }, orderBy: { enrollments: { _count: 'desc' } }, take: 5 }),
@@ -74,8 +76,8 @@ export async function GET(req: NextRequest) {
         const dateRange = createDateRange(thirtyDaysAgo, today);
 
         const formatTrendData = (data: { registeredDate?: Date | null, createdAt?: Date, publicationDate?: Date | null, enrolledAt?: Date, _count: { _all: number }} []) => {
-            const dateKey = 'registeredDate' in data[0] ? 'registeredDate' : 'createdAt' in data[0] ? 'createdAt' : 'publicationDate' in data[0] ? 'publicationDate' : 'enrolledAt';
-            const map = new Map(data.map(item => [startOfDay(item[dateKey]!).toISOString().split('T')[0], item._count._all]));
+            const dateKey = data.length > 0 && 'registeredDate' in data[0] ? 'registeredDate' : data.length > 0 && 'createdAt' in data[0] ? 'createdAt' : data.length > 0 && 'publicationDate' in data[0] ? 'publicationDate' : 'enrolledAt';
+            const map = new Map(data.map(item => [startOfDay((item as any)[dateKey]!).toISOString().split('T')[0], item._count._all]));
             return dateRange.map(date => {
                 const dayString = date.toISOString().split('T')[0];
                 return { date: dayString, count: map.get(dayString) || 0 };
