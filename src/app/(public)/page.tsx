@@ -1,10 +1,11 @@
 // src/app/(public)/page.tsx
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Zap, Users, BarChart, BookOpen, UserCheck, ShieldCheck, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import prisma from '@/lib/prisma';
 
 const features = [
   {
@@ -60,7 +61,10 @@ const testimonials = [
   }
 ]
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const settings = await prisma.platformSettings.findFirst();
+  const landingImageUrl = settings?.landingImageUrl || "https://placehold.co/600x600.png";
+
   return (
       <div className="flex-1 z-10">
         <section className="w-full py-20 md:py-32 lg:py-40">
@@ -95,7 +99,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <Image
-                src="https://placehold.co/600x600.png"
+                src={landingImageUrl}
                 width="600"
                 height="600"
                 alt="Hero"
