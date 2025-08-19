@@ -101,6 +101,7 @@ const LessonNotes = ({ lessonId }: { lessonId: string }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const debouncedContent = useDebounce(noteContent, 1000); // 1-second debounce
+    const initialContentRef = useRef<string | null>(null);
 
     useEffect(() => {
         const fetchNote = async () => {
@@ -111,9 +112,13 @@ const LessonNotes = ({ lessonId }: { lessonId: string }) => {
                 if (res.ok) {
                     const data: UserNote = await res.json();
                     setNoteContent(data.content);
+                    initialContentRef.current = data.content; // Store initial content
+                } else {
+                     initialContentRef.current = '';
                 }
             } catch (error) {
                 // Silently fail, user can start typing a new note
+                initialContentRef.current = '';
             } finally {
                 setIsLoading(false);
             }
@@ -138,11 +143,11 @@ const LessonNotes = ({ lessonId }: { lessonId: string }) => {
     }, [lessonId, user]);
 
     useEffect(() => {
-        // Only save if the component is not loading and there's debounced content
-        if (!isLoading && debouncedContent !== null) {
+        // Guard to prevent saving on initial load or if content hasn't changed
+        if (initialContentRef.current !== null && debouncedContent !== initialContentRef.current) {
             saveNote(debouncedContent);
         }
-    }, [debouncedContent, isLoading, saveNote]);
+    }, [debouncedContent, saveNote]);
 
     return (
         <div className="mt-8">
