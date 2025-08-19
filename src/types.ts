@@ -44,8 +44,7 @@ export interface PlatformSettings {
     landingImageUrl?: string | null;
     authImageUrl?: string | null;
     aboutImageUrl?: string | null;
-    testimonial1ImageUrl?: string | null;
-    testimonial2ImageUrl?: string | null;
+    benefitsImageUrl?: string | null;
 }
 
 // --- NAVIGATION ---

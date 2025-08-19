@@ -49,19 +49,20 @@ const benefits = [
 export default async function LandingPage() {
   const settings = await prisma.platformSettings.findFirst();
   const landingImageUrl = settings?.landingImageUrl || "https://placehold.co/600x600.png";
+  const benefitsImageUrl = settings?.benefitsImageUrl || "https://placehold.co/600x400.png";
 
   const testimonials = [
     {
       name: 'Ana García',
       role: 'Líder de Capacitación, TechCorp',
       testimony: 'NexusAlpri transformó nuestra formación interna. La facilidad para crear contenido y el seguimiento automático nos ahorraron cientos de horas.',
-      avatar: settings?.testimonial1ImageUrl || 'https://placehold.co/100x100.png?text=AG'
+      avatar: 'https://placehold.co/100x100.png?text=AG'
     },
     {
       name: 'Carlos Mendoza',
       role: 'Gerente de Ventas, InnovaSolutions',
       testimony: 'La capacidad de crear quizzes y ver las analíticas nos ha permitido identificar brechas de conocimiento en nuestro equipo de ventas y actuar sobre ellas.',
-       avatar: settings?.testimonial2ImageUrl || 'https://placehold.co/100x100.png?text=CM'
+       avatar: 'https://placehold.co/100x100.png?text=CM'
     }
   ]
 
@@ -150,7 +151,7 @@ export default async function LandingPage() {
             <div className="container px-4 md:px-6">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                         <Image
-                        src="https://placehold.co/600x400.png"
+                        src={benefitsImageUrl}
                         width="600"
                         height="400"
                         alt="Benefits"

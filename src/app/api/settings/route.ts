@@ -33,8 +33,7 @@ const DEFAULT_DB_SETTINGS = {
   landingImageUrl: null,
   authImageUrl: null,
   aboutImageUrl: null,
-  testimonial1ImageUrl: null,
-  testimonial2ImageUrl: null,
+  benefitsImageUrl: null,
 };
 
 // GET /api/settings - Fetches platform settings
