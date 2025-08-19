@@ -425,6 +425,68 @@ export default function ProfilePage() {
                     </div>
               </div>
               <Card className="card-border-animated">
+                  <CardHeader><CardTitle>Seguridad de la Cuenta</CardTitle></CardHeader>
+                  <CardContent className="space-y-4">
+                      <div>
+                          <h4 className="font-semibold mb-2">Autenticación de Dos Factores (2FA)</h4>
+                          {user.isTwoFactorEnabled ? (
+                              <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
+                                  <p className="text-sm text-green-800 dark:text-green-200">2FA está <strong>activado</strong>.</p>
+                                  <Button variant="destructive" size="sm" onClick={() => setShowDisable2faDialog(true)} disabled={is2faProcessing}>Desactivar</Button>
+                              </div>
+                          ) : (
+                              <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-muted/50 border">
+                                  <p className="text-sm text-muted-foreground">Añade una capa extra de seguridad.</p>
+                                  <Button onClick={handleEnable2fa} disabled={is2faProcessing}>
+                                    {is2faProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                                    Activar 2FA
+                                  </Button>
+                              </div>
+                          )}
+                        </div>
+                        <div>
+                            <h4 className="font-semibold mb-2">Cambiar Contraseña</h4>
+                            <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-muted/50 border">
+                                <p className="text-sm text-muted-foreground">Actualiza tu contraseña regularmente.</p>
+                                <Button variant="outline" onClick={() => setShowChangePasswordDialog(true)}>Cambiar</Button>
+                            </div>
+                        </div>
+                  </CardContent>
+              </Card>
+            </div>
+    
+            <div className="lg:col-span-2 space-y-6">
+              <Card className="card-border-animated">
+                <CardHeader>
+                  <CardTitle>Información Personal</CardTitle>
+                  <CardDescription>Estos datos son visibles en tu perfil público (si aplica).</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="fullName">Nombre Completo</Label>
+                    <Input 
+                      id="fullName" 
+                      name="fullName"
+                      value={editableName} 
+                      onChange={(e) => setEditableName(e.target.value)}
+                      disabled={isSaving || isUploading}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Correo Electrónico</Label>
+                    <Input id="email" name="email" type="email" value={user.email} disabled />
+                    <p className="text-xs text-muted-foreground mt-1">El correo electrónico no se puede cambiar desde aquí.</p>
+                  </div>
+                   <div className="pt-2">
+                      <Button onClick={() => handleSaveChanges()} disabled={isSaving || isUploading} className="w-full" variant="primary-gradient">
+                          {isSaving || isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                          {isSaving ? 'Guardando...' : 'Guardar Información'}
+                      </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="card-border-animated">
                   <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                          <Star className="text-yellow-400" /> Progreso y Logros
@@ -464,71 +526,6 @@ export default function ProfilePage() {
                           </div>
                       </div>
                   </CardContent>
-              </Card>
-            </div>
-    
-            <div className="lg:col-span-2 space-y-6">
-              <Card className="card-border-animated">
-                <CardHeader>
-                  <CardTitle>Información Personal</CardTitle>
-                  <CardDescription>Estos datos son visibles en tu perfil público (si aplica).</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="fullName">Nombre Completo</Label>
-                    <Input 
-                      id="fullName" 
-                      name="fullName"
-                      value={editableName} 
-                      onChange={(e) => setEditableName(e.target.value)}
-                      disabled={isSaving || isUploading}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Correo Electrónico</Label>
-                    <Input id="email" name="email" type="email" value={user.email} disabled />
-                    <p className="text-xs text-muted-foreground mt-1">El correo electrónico no se puede cambiar desde aquí.</p>
-                  </div>
-                   <div className="pt-2">
-                      <Button onClick={() => handleSaveChanges()} disabled={isSaving || isUploading} className="w-full" variant="primary-gradient">
-                          {isSaving || isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                          {isSaving ? 'Guardando...' : 'Guardar Información'}
-                      </Button>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="card-border-animated">
-                <CardHeader>
-                    <CardTitle>Seguridad de la Cuenta</CardTitle>
-                    <CardDescription>Gestiona la seguridad de tu acceso a NexusAlpri.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div>
-                      <h4 className="font-semibold mb-2">Autenticación de Dos Factores (2FA)</h4>
-                      {user.isTwoFactorEnabled ? (
-                          <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
-                              <p className="text-sm text-green-800 dark:text-green-200">2FA está <strong>activado</strong> en tu cuenta.</p>
-                              <Button variant="destructive" size="sm" onClick={() => setShowDisable2faDialog(true)} disabled={is2faProcessing}>Desactivar</Button>
-                          </div>
-                      ) : (
-                          <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-muted/50 border">
-                              <p className="text-sm text-muted-foreground">Añade una capa extra de seguridad.</p>
-                              <Button onClick={handleEnable2fa} disabled={is2faProcessing}>
-                                {is2faProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                                Activar 2FA
-                              </Button>
-                          </div>
-                      )}
-                    </div>
-                    <div>
-                        <h4 className="font-semibold mb-2">Cambiar Contraseña</h4>
-                        <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-muted/50 border">
-                            <p className="text-sm text-muted-foreground">Actualiza tu contraseña regularmente.</p>
-                            <Button variant="outline" onClick={() => setShowChangePasswordDialog(true)}>Cambiar Contraseña</Button>
-                        </div>
-                    </div>
-                </CardContent>
               </Card>
             </div>
           </div>
