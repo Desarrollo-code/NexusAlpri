@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, KeyRound, UserRound, Server, UserCog, Monitor, Globe } from 'lucide-react';
+import { Loader2, AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, KeyRound, UserCog, Monitor, Globe } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, SecurityLogEvent, User as AppUser } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -181,7 +181,7 @@ export default function SecurityAuditPage() {
                                                             </div>
                                                         ) : (
                                                             <div className="flex items-center gap-2 text-muted-foreground">
-                                                               <div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserRound className="h-4 w-4"/></div>
+                                                               <div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserCog className="h-4 w-4"/></div>
                                                                 <span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span>
                                                             </div>
                                                         )}
