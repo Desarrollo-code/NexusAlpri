@@ -1,4 +1,4 @@
-// src/app/(auth)/sign-in/[[...sign-in]]/page.tsx
+// src/app/(public)/sign-in/[[...sign-in]]/page.tsx
 'use client';
 
 import AuthForm from '@/components/auth/auth-form-container';

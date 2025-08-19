@@ -2,8 +2,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const IS_APP_ROUTE_REGEX = /^\/(dashboard|courses|my-courses|profile|manage-courses|users|settings|analytics|security-audit|enrollments|notifications|calendar|resources|my-notes)/;
-const PUBLIC_PATHS = ['/', '/about']; // sign-in and sign-up are handled separately
+const PROTECTED_ROUTE_REGEX = /^\/(dashboard|courses|my-courses|profile|manage-courses|users|settings|analytics|security-audit|enrollments|notifications|calendar|resources|my-notes)/;
+const AUTH_ROUTES = ['/sign-in', '/sign-up'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -13,14 +13,14 @@ export function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/static') ||
-    pathname.startsWith('/uploads') || // <<< FIX: Allow direct access to uploads
+    pathname.startsWith('/uploads') ||
     pathname.match(/\.(.*)$/)
   ) {
     return NextResponse.next();
   }
 
-  const isAppRoute = IS_APP_ROUTE_REGEX.test(pathname);
-  const isAuthRoute = pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up');
+  const isProtectedRoute = PROTECTED_ROUTE_REGEX.test(pathname);
+  const isAuthRoute = AUTH_ROUTES.some(route => pathname.startsWith(route));
 
   // If user has a session cookie
   if (sessionCookie) {
@@ -35,7 +35,7 @@ export function middleware(request: NextRequest) {
   // If user does not have a session cookie
   if (!sessionCookie) {
     // And they are trying to access a protected app route
-    if (isAppRoute) {
+    if (isProtectedRoute) {
       // Redirect to sign-in page, preserving the intended destination
       const signInUrl = new URL('/sign-in', request.url);
       signInUrl.searchParams.set('redirectedFrom', pathname);
