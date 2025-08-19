@@ -29,7 +29,6 @@ export async function GET(req: NextRequest) {
         const thirtyDaysAgo = startOfDay(subDays(today, 30));
         const sevenDaysAgo = startOfDay(subDays(today, 7));
 
-<<<<<<< HEAD
         // --- Execute simple counts outside the transaction to fix validation errors ---
         const totalUsersResult = await prisma.user.count();
         const totalCoursesResult = await prisma.course.count();
@@ -37,14 +36,8 @@ export async function GET(req: NextRequest) {
         const totalEnrollmentsResult = await prisma.enrollment.count();
 
 
-=======
->>>>>>> c05d55899d9aa00f88b783187d6168b995de4dbe
         // --- Aggregate Queries in a Transaction ---
         const [
-            totalUsersResult,
-            totalCoursesResult,
-            totalPublishedCoursesCount,
-            totalEnrollmentsResult,
             usersByRole,
             coursesByStatus,
             recentLoginLogs,
@@ -57,10 +50,6 @@ export async function GET(req: NextRequest) {
             coursePublicationByDay,
             enrollmentsByDay
         ] = await prisma.$transaction([
-            prisma.user.count(),
-            prisma.course.count(),
-            prisma.course.count({ where: { status: 'PUBLISHED' } }),
-            prisma.enrollment.count(),
             prisma.user.groupBy({ by: ['role'], _count: { role: true } }),
             prisma.course.groupBy({ by: ['status'], _count: { status: true } }),
             prisma.securityLog.findMany({ 
