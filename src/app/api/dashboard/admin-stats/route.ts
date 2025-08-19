@@ -35,7 +35,6 @@ export async function GET(req: NextRequest) {
         const totalPublishedCoursesCount = await prisma.course.count({ where: { status: 'PUBLISHED' } });
         const totalEnrollmentsResult = await prisma.enrollment.count();
 
-
         // --- Aggregate Queries in a Transaction ---
         const [
             usersByRole,
@@ -50,8 +49,8 @@ export async function GET(req: NextRequest) {
             coursePublicationByDay,
             enrollmentsByDay
         ] = await prisma.$transaction([
-            prisma.user.groupBy({ by: ['role'], _count: { role: true } }),
-            prisma.course.groupBy({ by: ['status'], _count: { status: true } }),
+            prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
+            prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
             prisma.securityLog.findMany({ 
                 where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } },
                 select: { userId: true },
@@ -147,8 +146,8 @@ export async function GET(req: NextRequest) {
             totalCourses: totalCoursesResult,
             totalPublishedCourses: totalPublishedCoursesCount,
             totalEnrollments: totalEnrollmentsResult,
-            usersByRole: usersByRole.map(u => ({ role: u.role, count: u._count.role })),
-            coursesByStatus: coursesByStatus.map(c => ({ status: c.status, count: c._count.status })),
+            usersByRole: usersByRole.map(u => ({ role: u.role, count: u._count._all })),
+            coursesByStatus: coursesByStatus.map(c => ({ status: c.status, count: c._count._all })),
             recentLogins: uniqueActiveUsers,
             newUsersLast7Days: newUsersLast7DaysCount,
             userRegistrationTrend,
