@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import type { Course as AppCourse, EnrolledCourse, UserRole, CourseStatus } from '@/types';
-import { Layers, ArrowRight, Check, Plus, Loader2, X, User, Edit, MoreVertical, Eye, BookOpenCheck } from 'lucide-react';
+import { Layers, ArrowRight, Check, Plus, Loader2, X, User, Edit, MoreVertical, Eye, BookOpenCheck, Trash2 } from 'lucide-react';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
