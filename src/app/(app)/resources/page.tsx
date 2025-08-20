@@ -115,7 +115,7 @@ export default function ResourcesPage() {
 
   const fetchAllUsers = useCallback(async () => {
     try {
-      const response = await fetch('/api/users?pageSize=1000'); // Fetch all users for selector
+      const response = await fetch('/api/users/list'); // Use the new endpoint
       if (!response.ok) return;
       const data = await response.json();
       setAllUsers(data.users.filter((u: AppUser) => u.id !== user?.id)); // Exclude self
