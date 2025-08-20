@@ -1,3 +1,4 @@
+
 // En /home/user/studio/src/app/(app)/manage-courses/[courseId]/edit/page.tsx
 
 'use client';
@@ -333,7 +334,7 @@ const ContentBlockList = React.memo(({ moduleIndex, lessonIndex, setItemToDelete
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
     isSaving: boolean;
     openQuizEditor: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void;
-    appendBlock: (moduleIndex: number, lessonIndex: number, newBlock: EditableContentBlock) => void;
+    appendBlock: (moduleIndex: number, lessonIndex: number) => void;
 }) => {
     const { control, getValues, watch } = useFormContext<EditableCourse>();
     const { fields, move } = useFieldArray({
@@ -378,12 +379,7 @@ const ContentBlockList = React.memo(({ moduleIndex, lessonIndex, setItemToDelete
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => appendBlock(moduleIndex, lessonIndex, {
-                    id: `new-block-${Date.now()}`,
-                    type: 'TEXT',
-                    content: '',
-                    order: (fields || []).length,
-                })}
+                onClick={() => appendBlock(moduleIndex, lessonIndex)}
                 disabled={isSaving}
             >
                 <PlusCircle className="mr-2 h-4 w-4" /> Añadir Bloque
@@ -541,63 +537,13 @@ const BlockSpecificInput = React.memo(({ moduleIndex, lessonIndex, blockIndex, o
 });
 BlockSpecificInput.displayName = 'BlockSpecificInput';
 
-const LessonList = ({ moduleIndex }: { moduleIndex: number }) => {
-    const { control, getValues, setValue } = useFormContext<EditableCourse>();
-    const { fields, append, remove, move } = useFieldArray({
-        control,
-        name: `modules.${moduleIndex}.lessons`,
-        keyName: 'dndId'
-    });
-    const isSaving = useWatch({ control, name: 'status' }) === 'PUBLISHED'; // Example condition, adapt as needed
-
-    const appendBlock = (mIndex: number, lIndex: number, newBlock: EditableContentBlock) => {
-        const currentBlocks = getValues(`modules.${mIndex}.lessons.${lIndex}.contentBlocks`) || [];
-        setValue(`modules.${mIndex}.lessons.${lIndex}.contentBlocks`, [...currentBlocks, newBlock], { shouldDirty: true });
-    };
-
-    const setItemToDeleteDetails = useState<ItemToDeleteDetails>(null)[1];
-
-    const onLessonDragEnd = (result: DropResult) => {
-        if (!result.destination) return;
-        move(result.source.index, result.destination.index);
-    }
-    
-    return (
-      <DragDropContext onDragEnd={onLessonDragEnd}>
-        <Droppable droppableId={`lessons-of-module-${moduleIndex}`} type={`LESSONS-${moduleIndex}`}>
-            {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                    {fields.map((lessonItem, lessonIndex) => {
-                         const lesson = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
-                         if (lesson._toBeDeleted) return null;
-                        return (
-                            <LessonItem
-                                key={lessonItem.dndId}
-                                dndId={lessonItem.dndId}
-                                moduleIndex={moduleIndex}
-                                lessonIndex={lessonIndex}
-                                isSaving={isSaving}
-                                setItemToDeleteDetails={setItemToDeleteDetails}
-                                appendBlock={appendBlock}
-                            />
-                        )
-                    })}
-                    {provided.placeholder}
-                </div>
-            )}
-        </Droppable>
-      </DragDropContext>
-    );
-};
-
-
 const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setItemToDeleteDetails, appendBlock }: {
     moduleIndex: number;
     lessonIndex: number;
     dndId: string;
     isSaving: boolean;
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
-    appendBlock: (moduleIndex: number, lessonIndex: number, newBlock: EditableContentBlock) => void;
+    appendBlock: (moduleIndex: number, lessonIndex: number) => void;
 }) => {
     const { getValues, register, watch, setValue } = useFormContext<EditableCourse>();
     const [quizEditorDetails, setQuizEditorDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
@@ -700,7 +646,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                             setItemToDeleteDetails={setItemToDeleteDetails}
                             isSaving={isSaving}
                             openQuizEditor={openQuizEditor}
-                            appendBlock={appendBlock}
+                            appendBlock={() => appendBlock(moduleIndex, lessonIndex)}
                         />
                     )}
                     {quizEditorDetails?.lessonIndex === lessonIndex && (
@@ -773,9 +719,15 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
 });
 LessonItem.displayName = 'LessonItem';
 
-const ModuleItem = ({ moduleIndex, provided }: { moduleIndex: number, provided: DraggableProvided }) => {
+const ModuleItem = ({ moduleIndex, provided, appendLesson, setItemToDeleteDetails, appendBlock }: { 
+    moduleIndex: number, 
+    provided: DraggableProvided,
+    appendLesson: (moduleIndex: number, lessonData?: Partial<EditableLesson>) => void;
+    setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
+    appendBlock: (moduleIndex: number, lessonIndex: number) => void;
+}) => {
     const { control, getValues, register } = useFormContext<EditableCourse>();
-    const { fields: lessonFields, append, remove, move } = useFieldArray({
+    const { fields: lessonFields, move } = useFieldArray({
         control,
         name: `modules.${moduleIndex}.lessons`
     });
@@ -784,24 +736,8 @@ const ModuleItem = ({ moduleIndex, provided }: { moduleIndex: number, provided: 
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [templates, setTemplates] = useState<ApiTemplate[]>([]);
     const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
-    const [itemToDeleteDetails, setItemToDeleteDetails] = useState<ItemToDeleteDetails | null>(null);
     const { toast } = useToast();
     
-    const appendLesson = (lessonData: Partial<EditableLesson>) => {
-        append({
-            id: `new-lesson-${Date.now()}`,
-            title: 'Nueva Lección',
-            contentBlocks: [],
-            order: lessonFields.length,
-            ...lessonData,
-        });
-    };
-
-    const appendBlock = (lessonIndex: number, newBlock: EditableContentBlock) => {
-        const currentBlocks = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`) || [];
-        setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`, [...currentBlocks, newBlock], { shouldDirty: true });
-    };
-
     const fetchTemplates = async () => {
         setIsLoadingTemplates(true);
         try {
@@ -825,7 +761,7 @@ const ModuleItem = ({ moduleIndex, provided }: { moduleIndex: number, provided: 
         const selectedTemplate = templates.find(t => t.id === templateId);
         if (!selectedTemplate) return;
 
-        appendLesson({
+        appendLesson(moduleIndex, {
             title: selectedTemplate.name,
             templateId: selectedTemplate.id,
         });
@@ -861,7 +797,7 @@ const ModuleItem = ({ moduleIndex, provided }: { moduleIndex: number, provided: 
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
-                                <DropdownMenuItem onSelect={() => appendLesson({})}>
+                                <DropdownMenuItem onSelect={() => appendLesson(moduleIndex)}>
                                     <PlusCircle className="mr-2 h-4 w-4" /> Añadir Lección
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onSelect={handleOpenTemplateModal}>
@@ -962,11 +898,6 @@ export default function EditCoursePage() {
 
     const [imageToCrop, setImageToCrop] = useState<string | null>(null);
     
-    // State for templates
-    const [showTemplateModal, setShowTemplateModal] = useState<number | null>(null); // moduleIndex
-    const [templates, setTemplates] = useState<ApiTemplate[]>([]);
-    const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
-
     // React Hook Form methods
     const methods = useForm<EditableCourse>({
         defaultValues: {
@@ -995,9 +926,34 @@ export default function EditCoursePage() {
         name: 'modules',
         keyName: 'dndId'
     });
-    
+
     const watchedCourseStatus = watch('status');
     const watchedPublicationDate = watch('publicationDate');
+
+    const appendLesson = useCallback((moduleIndex: number, lessonData: Partial<EditableLesson> = {}) => {
+        const lessons = methods.getValues(`modules.${moduleIndex}.lessons`) || [];
+        const newLesson: EditableLesson = {
+            id: `new-lesson-${Date.now()}`,
+            title: 'Nueva Lección',
+            order: lessons.length,
+            contentBlocks: [],
+            ...lessonData
+        };
+        const updatedLessons = [...lessons, newLesson];
+        methods.setValue(`modules.${moduleIndex}.lessons`, updatedLessons, { shouldDirty: true });
+    }, [methods]);
+
+    const appendBlock = useCallback((moduleIndex: number, lessonIndex: number) => {
+        const blocks = methods.getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`) || [];
+        const newBlock: EditableContentBlock = {
+            id: `new-block-${Date.now()}`,
+            type: 'TEXT',
+            content: '',
+            order: blocks.length,
+        };
+        const updatedBlocks = [...blocks, newBlock];
+        methods.setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`, updatedBlocks, { shouldDirty: true });
+    }, [methods]);
 
 
     // === FUNCIONES DE CARGA Y GUARDADO ===
@@ -1028,7 +984,6 @@ export default function EditCoursePage() {
             
             setPageTitle(`Editando: ${data.title}`);
 
-            // Transformar la fecha de string a Date si existe
             const transformedData: EditableCourse = {
                 ...data,
                 publicationDate: data.publicationDate ? new Date(data.publicationDate) : null,
@@ -1069,25 +1024,6 @@ export default function EditCoursePage() {
         }
     }, [isAuthLoading, user, fetchCourseData]);
 
-    const fetchTemplates = useCallback(async () => {
-        setIsLoadingTemplates(true);
-        try {
-            const res = await fetch('/api/templates');
-            if (!res.ok) throw new Error("Failed to fetch templates");
-            const data = await res.json();
-            setTemplates(data);
-        } catch (error) {
-            toast({ title: "Error", description: (error as Error).message, variant: "destructive" });
-        } finally {
-            setIsLoadingTemplates(false);
-        }
-    }, [toast]);
-    
-    const handleOpenTemplateModal = (moduleIndex: number) => {
-        fetchTemplates();
-        setShowTemplateModal(moduleIndex);
-    };
-
     const onSubmit = useCallback(async (data: EditableCourse) => {
         setIsSaving(true);
         try {
@@ -1115,7 +1051,6 @@ export default function EditCoursePage() {
             };
             
             if (isNewCourse) {
-                // Handle new course creation
                 const res = await fetch('/api/courses', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1127,7 +1062,6 @@ export default function EditCoursePage() {
                 toast({ title: "Curso Creado", description: "La información del curso se ha guardado correctamente." });
                 router.push(`/manage-courses/${newCourse.id}/edit`);
             } else {
-                // Handle course update
                 const res = await fetch(`/api/courses/${courseId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -1137,7 +1071,7 @@ export default function EditCoursePage() {
                 if (!res.ok) throw new Error((await res.json()).message || 'Error al guardar el curso.');
                 
                 const result = await res.json();
-                reset(result); // Reset form with data from backend to ensure sync
+                reset(result); 
                 toast({ title: "Curso Guardado", description: "La información del curso se ha actualizado correctamente." });
                  setPageTitle(`Editando: ${result.title}`);
             }
@@ -1361,7 +1295,7 @@ export default function EditCoursePage() {
                             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                                 <div>
                                     <CardTitle>Contenido del Curso</CardTitle>
-                                    <CardDescription>Arrastra los módulos y lecciones para reordenarlos.</CardDescription>
+                                    <CardDescription>Arrastra los módulos para reordenarlos.</CardDescription>
                                 </div>
                                 <Button type="button" onClick={handleAddModule} disabled={isSaving} className="w-full sm:w-auto">
                                     <PlusCircle className="mr-2 h-4 w-4" /> Añadir Módulo
@@ -1378,7 +1312,13 @@ export default function EditCoursePage() {
                                                     return (
                                                         <Draggable key={moduleItem.dndId} draggableId={moduleItem.dndId} index={moduleIndex}>
                                                           {(provided, snapshot) => (
-                                                              <ModuleItem moduleIndex={moduleIndex} provided={provided} />
+                                                              <ModuleItem 
+                                                                moduleIndex={moduleIndex} 
+                                                                provided={provided} 
+                                                                appendLesson={appendLesson}
+                                                                setItemToDeleteDetails={setItemToDeleteDetails}
+                                                                appendBlock={appendBlock}
+                                                              />
                                                           )}
                                                         </Draggable>
                                                     );
@@ -1549,45 +1489,6 @@ export default function EditCoursePage() {
 
 
                 {/* Dialogs and Modals */}
-                 <Dialog open={showTemplateModal !== null} onOpenChange={() => setShowTemplateModal(null)}>
-                    <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                            <DialogTitle>Seleccionar Plantilla de Lección</DialogTitle>
-                            <DialogDescription>Elige una plantilla para crear una nueva lección con una estructura predefinida.</DialogDescription>
-                        </DialogHeader>
-                        {isLoadingTemplates ? (
-                            <div className="flex justify-center items-center h-48"><Loader2 className="h-8 w-8 animate-spin" /></div>
-                        ) : (
-                            <ScrollArea className="max-h-[60vh] mt-4">
-                                <div className="space-y-2 pr-4">
-                                    {templates.length > 0 ? templates.map(template => (
-                                        <button key={template.id} onClick={() => {
-                                            const targetModuleIndex = showTemplateModal;
-                                            if (targetModuleIndex !== null) {
-                                               const lessonCount = methods.getValues(`modules.${targetModuleIndex}.lessons`)?.length || 0;
-                                               const newLesson = {
-                                                  id: `new-lesson-${Date.now()}`,
-                                                  title: template.name,
-                                                  contentBlocks: [],
-                                                  order: lessonCount,
-                                                  templateId: template.id
-                                               };
-                                               const currentLessons = methods.getValues(`modules.${targetModuleIndex}.lessons`);
-                                               methods.setValue(`modules.${targetModuleIndex}.lessons`, [...currentLessons, newLesson], { shouldDirty: true });
-                                               setShowTemplateModal(null);
-                                               toast({ title: "Plantilla Aplicada", description: "Se ha creado una nueva lección con la estructura de la plantilla." });
-                                            }
-                                        }} className="w-full text-left p-4 border rounded-lg hover:bg-accent transition-colors">
-                                            <h4 className="font-semibold">{template.name}</h4>
-                                            <p className="text-sm text-muted-foreground">{template.description || 'Sin descripción'}</p>
-                                            <p className="text-xs text-muted-foreground mt-2">Creador: {template.creator?.name || 'Sistema'} | Bloques: {template.templateBlocks.length}</p>
-                                        </button>
-                                    )) : <p className="text-center text-muted-foreground">No hay plantillas disponibles.</p>}
-                                </div>
-                            </ScrollArea>
-                        )}
-                    </DialogContent>
-                </Dialog>
                 <AlertDialog open={itemToDeleteDetails !== null} onOpenChange={setItemToDeleteDetails as any}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
@@ -1625,3 +1526,4 @@ export default function EditCoursePage() {
         </FormProvider>
     );
 }
+
