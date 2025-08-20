@@ -13,8 +13,8 @@ export async function GET(
     req: NextRequest, 
     { params }: { params: { id: string } }
 ) {
-  const courseId = params.id;
   try {
+    const { id: courseId } = params;
     const course = await prisma.course.findUnique({
       where: { id: courseId },
       include: {
@@ -56,7 +56,7 @@ export async function GET(
     return NextResponse.json(course);
 
   } catch (error) {
-    console.error(`[COURSE_GET_ERROR] ID: ${courseId}`, error);
+    console.error(`[COURSE_GET_ERROR]`, error);
     return NextResponse.json({ message: `Error al obtener el curso: ${(error as Error).message}` }, { status: 500 });
   }
 }
@@ -71,7 +71,7 @@ export async function PUT(
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const courseId = params.id;
+  const { id: courseId } = params;
   
   try {
     const courseToUpdate = await prisma.course.findUnique({ where: { id: courseId } });
@@ -182,7 +182,33 @@ export async function PUT(
             where: { id: courseId },
             include: {
                 instructor: { select: { id: true, name: true } },
-                modules: { orderBy: { order: 'asc'}, include: { lessons: { orderBy: { order: 'asc' }, include: { contentBlocks: { orderBy: { order: 'asc' }, include: { quiz: { include: { questions: { orderBy: { order: 'asc' }, include: { options: { orderBy: { id: 'asc' } } } } } } } } } } } } }
+                modules: { 
+                    orderBy: { order: 'asc'}, 
+                    include: { 
+                        lessons: { 
+                            orderBy: { order: 'asc' }, 
+                            include: { 
+                                contentBlocks: { 
+                                    orderBy: { order: 'asc' }, 
+                                    include: { 
+                                        quiz: { 
+                                            include: { 
+                                                questions: { 
+                                                    orderBy: { order: 'asc' }, 
+                                                    include: { 
+                                                        options: { 
+                                                            orderBy: { id: 'asc' } 
+                                                        } 
+                                                    } 
+                                                } 
+                                            } 
+                                        } 
+                                    } 
+                                } 
+                            } 
+                        } 
+                    } 
+                }
             },
         });
     });
@@ -206,7 +232,7 @@ export async function DELETE(
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const courseId = params.id;
+  const { id: courseId } = params;
   try {
     const courseToDelete = await prisma.course.findUnique({ where: { id: courseId } });
     if (!courseToDelete) {
@@ -226,5 +252,4 @@ export async function DELETE(
     return NextResponse.json({ message: `Error al eliminar el curso: ${(error as Error).message}` }, { status: 500 });
   }
 }
-
     
