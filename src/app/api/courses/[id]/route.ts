@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 // GET a specific course by ID
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const courseId = params.id;
+  const courseId = await params.id;
   try {
     const course = await prisma.course.findUnique({
       where: { id: courseId },
