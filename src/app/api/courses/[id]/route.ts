@@ -1,4 +1,3 @@
-
 // src/app/api/courses/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -11,10 +10,10 @@ export const dynamic = 'force-dynamic';
 // GET a specific course by ID
 export async function GET(
     req: NextRequest, 
-    { params }: { params: { id: string } }
+    context: { params: { id: string } }
 ) {
-  const courseId = params.id;
   try {
+    const { id: courseId } = context.params;
     const course = await prisma.course.findUnique({
       where: { id: courseId },
       include: {
@@ -64,14 +63,14 @@ export async function GET(
 // PUT (update) a course
 export async function PUT(
     req: NextRequest, 
-    { params }: { params: { id: string } }
+    context: { params: { id: string } }
 ) {
   const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const courseId = params.id;
+  const { id: courseId } = context.params;
   
   try {
     const courseToUpdate = await prisma.course.findUnique({ where: { id: courseId } });
@@ -225,14 +224,14 @@ export async function PUT(
 // DELETE a course
 export async function DELETE(
     req: NextRequest, 
-    { params }: { params: { id: string } }
+    context: { params: { id: string } }
 ) {
   const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const courseId = params.id;
+  const { id: courseId } = context.params;
   try {
     const courseToDelete = await prisma.course.findUnique({ where: { id: courseId } });
     if (!courseToDelete) {
@@ -252,4 +251,3 @@ export async function DELETE(
     return NextResponse.json({ message: `Error al eliminar el curso: ${(error as Error).message}` }, { status: 500 });
   }
 }
-    

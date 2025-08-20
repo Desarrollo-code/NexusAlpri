@@ -1,4 +1,3 @@
-
 // src/app/api/analytics/quiz/[quizId]/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -6,13 +5,13 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: { quizId: string } }) {
+export async function GET(req: NextRequest, context: { params: { quizId: string } }) {
     const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const { quizId } = params;
+    const { quizId } = context.params;
 
     try {
         const quiz = await prisma.quiz.findUnique({

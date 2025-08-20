@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -6,9 +5,9 @@ import type { NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 // Check if a user is enrolled in a specific course
-export async function GET(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
+export async function GET(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
     const session = await getCurrentUser();
-    const { userId, courseId } = params;
+    const { userId, courseId } = context.params;
 
     if (!session || session.id !== userId) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
