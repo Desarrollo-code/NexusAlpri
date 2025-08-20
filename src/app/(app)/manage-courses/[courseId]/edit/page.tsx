@@ -714,11 +714,11 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
 });
 LessonItem.displayName = 'LessonItem';
 
-const ModuleItem = ({ moduleIndex, provided, appendLesson, setItemToDeleteDetails, appendBlock }: { 
+const ModuleItem = ({ moduleIndex, provided, setItemToDeleteDetails, appendLesson, appendBlock }: { 
     moduleIndex: number, 
     provided: DraggableProvided,
-    appendLesson: (moduleIndex: number, lessonData?: Partial<EditableLesson>) => void;
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
+    appendLesson: (moduleIndex: number, lessonData?: Partial<EditableLesson>) => void;
     appendBlock: (moduleIndex: number, lessonIndex: number) => void;
 }) => {
     const { control, getValues, register, watch } = useFormContext<EditableCourse>();
@@ -756,10 +756,9 @@ const ModuleItem = ({ moduleIndex, provided, appendLesson, setItemToDeleteDetail
         const selectedTemplate = templates.find(t => t.id === templateId);
         if (!selectedTemplate) return;
         
-        const newLesson: EditableLesson = {
+        const newLesson: Partial<EditableLesson> = {
             id: `new-lesson-${Date.now()}`,
             title: selectedTemplate.name,
-            order: lessonFields.length,
             contentBlocks: selectedTemplate.templateBlocks.map(block => ({
                 id: `new-block-${Date.now()}-${block.order}`,
                 type: block.type,
@@ -768,7 +767,7 @@ const ModuleItem = ({ moduleIndex, provided, appendLesson, setItemToDeleteDetail
             }))
         };
         
-        append(newLesson);
+        appendLesson(moduleIndex, newLesson);
         setShowTemplateModal(false);
         toast({ title: "Plantilla Aplicada", description: "Se ha creado una nueva lección con la estructura de la plantilla." });
     };
@@ -801,7 +800,7 @@ const ModuleItem = ({ moduleIndex, provided, appendLesson, setItemToDeleteDetail
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
                                 <DropdownMenuItem onSelect={() => appendLesson(moduleIndex)}>
-                                    <PlusCircle className="mr-2 h-4 w-4" /> Añadir Lección
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Añadir Lección en Blanco
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onSelect={handleOpenTemplateModal}>
                                     <FilePlus2 className="mr-2 h-4 w-4" /> Añadir desde Plantilla
@@ -911,13 +910,13 @@ export default function EditCoursePage() {
             category: '',
             publicationDate: null,
             modules: [],
-            instructorId: user?.id || null,
-            instructorName: user?.name || null,
-        } as Partial<EditableCourse>,
+            instructorId: undefined,
+            instructorName: undefined,
+        },
         mode: 'onChange'
     });
 
-    const { control, handleSubmit, reset, watch, formState: { errors, dirtyFields, isDirty }, setValue, getValues } = methods;
+    const { control, handleSubmit, reset, formState: { errors, dirtyFields, isDirty }, setValue, getValues } = methods;
 
     const {
         fields: moduleFields,
@@ -929,19 +928,24 @@ export default function EditCoursePage() {
         name: 'modules',
         keyName: 'dndId'
     });
-
+    
+    const {
+        fields: lessonFields,
+        append: appendLessonHook,
+    } = useFieldArray({ control, name: `modules.0.lessons` }); // Dummy path, will be dynamic
+    
     const watchedCourseStatus = watch('status');
     const watchedPublicationDate = watch('publicationDate');
     
     // --- LÓGICA DE MANIPULACIÓN DEL FORMULARIO ---
-
-    const appendLesson = useCallback((moduleIndex: number) => {
+    const appendLesson = useCallback((moduleIndex: number, lessonData: Partial<EditableLesson> = {}) => {
         const lessonsArray = getValues(`modules.${moduleIndex}.lessons`) || [];
         const newLesson: EditableLesson = {
             id: `new-lesson-${Date.now()}`,
             title: 'Nueva Lección',
             order: lessonsArray.length,
-            contentBlocks: []
+            contentBlocks: [],
+            ...lessonData,
         };
         const updatedLessons = [...lessonsArray, newLesson];
         setValue(`modules.${moduleIndex}.lessons`, updatedLessons, { shouldDirty: true });
@@ -965,6 +969,11 @@ export default function EditCoursePage() {
     const fetchCourseData = useCallback(async () => {
         if (isNewCourse) {
             setPageTitle('Crear Nuevo Curso');
+            // Set instructor ID and name for new courses
+            if (user) {
+                setValue('instructorId', user.id);
+                setValue('instructorName', user.name);
+            }
             setIsLoading(false);
             return;
         }
@@ -1020,7 +1029,7 @@ export default function EditCoursePage() {
         } finally {
             setIsLoading(false);
         }
-    }, [courseId, isNewCourse, reset, router, toast, user, setPageTitle]);
+    }, [courseId, isNewCourse, reset, router, toast, user, setPageTitle, setValue]);
 
     useEffect(() => {
         if (!isAuthLoading && user?.id) {
@@ -1306,8 +1315,8 @@ export default function EditCoursePage() {
                                                               <ModuleItem 
                                                                 moduleIndex={moduleIndex} 
                                                                 provided={provided} 
-                                                                appendLesson={appendLesson}
                                                                 setItemToDeleteDetails={setItemToDeleteDetails}
+                                                                appendLesson={appendLesson}
                                                                 appendBlock={appendBlock}
                                                               />
                                                           )}
@@ -1517,3 +1526,4 @@ export default function EditCoursePage() {
         </FormProvider>
     );
 }
+
