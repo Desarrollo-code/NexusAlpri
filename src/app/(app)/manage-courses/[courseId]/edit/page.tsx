@@ -715,15 +715,14 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
 });
 LessonItem.displayName = 'LessonItem';
 
-const ModuleItem = ({ moduleIndex, provided, setItemToDeleteDetails, appendLesson, appendBlock }: { 
+const ModuleItem = ({ moduleIndex, provided, setItemToDeleteDetails, appendBlock }: { 
     moduleIndex: number, 
     provided: DraggableProvided,
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
-    appendLesson: (moduleIndex: number, lessonData?: Partial<EditableLesson>) => void;
     appendBlock: (moduleIndex: number, lessonIndex: number) => void;
 }) => {
     const { control, getValues, register, watch } = useFormContext<EditableCourse>();
-    const { fields: lessonFields, move, append } = useFieldArray({
+    const { fields: lessonFields, move, append: appendLesson } = useFieldArray({
         control,
         name: `modules.${moduleIndex}.lessons`
     });
@@ -753,22 +752,32 @@ const ModuleItem = ({ moduleIndex, provided, setItemToDeleteDetails, appendLesso
         setShowTemplateModal(true);
     };
 
+    const handleCreateLesson = (lessonData: Partial<EditableLesson> = {}) => {
+        appendLesson({
+            id: `new-lesson-${Date.now()}`,
+            title: 'Nueva Lección',
+            order: lessonFields.length,
+            contentBlocks: [],
+            ...lessonData,
+        });
+    };
+
     const handleSelectTemplate = (templateId: string) => {
         const selectedTemplate = templates.find(t => t.id === templateId);
         if (!selectedTemplate) return;
         
-        const newLesson: Partial<EditableLesson> = {
-            id: `new-lesson-${Date.now()}`,
+        handleCreateLesson({
             title: selectedTemplate.name,
             contentBlocks: selectedTemplate.templateBlocks.map(block => ({
                 id: `new-block-${Date.now()}-${block.order}`,
                 type: block.type,
                 content: '',
                 order: block.order,
+                quiz: null,
+                _toBeDeleted: false
             }))
-        };
+        });
         
-        appendLesson(moduleIndex, newLesson);
         setShowTemplateModal(false);
         toast({ title: "Plantilla Aplicada", description: "Se ha creado una nueva lección con la estructura de la plantilla." });
     };
@@ -800,7 +809,7 @@ const ModuleItem = ({ moduleIndex, provided, setItemToDeleteDetails, appendLesso
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
-                                <DropdownMenuItem onSelect={() => appendLesson(moduleIndex)}>
+                                <DropdownMenuItem onSelect={() => handleCreateLesson()}>
                                     <PlusCircle className="mr-2 h-4 w-4" /> Añadir Lección en Blanco
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onSelect={handleOpenTemplateModal}>
@@ -934,19 +943,6 @@ export default function EditCoursePage() {
     const watchedPublicationDate = watch('publicationDate');
     
     // --- LÓGICA DE MANIPULACIÓN DEL FORMULARIO ---
-    const appendLesson = useCallback((moduleIndex: number, lessonData: Partial<EditableLesson> = {}) => {
-        const lessonsArray = getValues(`modules.${moduleIndex}.lessons`) || [];
-        const newLesson: EditableLesson = {
-            id: `new-lesson-${Date.now()}`,
-            title: 'Nueva Lección',
-            order: lessonsArray.length,
-            contentBlocks: [],
-            ...lessonData,
-        };
-        const updatedLessons = [...lessonsArray, newLesson];
-        setValue(`modules.${moduleIndex}.lessons`, updatedLessons, { shouldDirty: true });
-    }, [getValues, setValue]);
-
     const appendBlock = useCallback((moduleIndex: number, lessonIndex: number) => {
         const blocksArray = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`) || [];
         const newBlock: EditableContentBlock = {
@@ -1312,7 +1308,6 @@ export default function EditCoursePage() {
                                                                 moduleIndex={moduleIndex} 
                                                                 provided={provided} 
                                                                 setItemToDeleteDetails={setItemToDeleteDetails}
-                                                                appendLesson={appendLesson}
                                                                 appendBlock={appendBlock}
                                                               />
                                                           )}
@@ -1522,11 +1517,3 @@ export default function EditCoursePage() {
         </FormProvider>
     );
 }
-
-
-
-    
-
-    
-
-
