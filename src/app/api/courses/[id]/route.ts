@@ -1,3 +1,4 @@
+
 // src/app/api/courses/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -8,8 +9,11 @@ import type { Module, Lesson, ContentBlock } from '@/types';
 export const dynamic = 'force-dynamic';
 
 // GET a specific course by ID
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id: courseId } = params;
+export async function GET(
+    req: NextRequest, 
+    { params }: { params: { id: string } }
+) {
+  const courseId = params.id;
   try {
     const course = await prisma.course.findUnique({
       where: { id: courseId },
@@ -58,13 +62,16 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PUT (update) a course
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+    req: NextRequest, 
+    { params }: { params: { id: string } }
+) {
   const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id: courseId } = params;
+  const courseId = params.id;
   
   try {
     const courseToUpdate = await prisma.course.findUnique({ where: { id: courseId } });
@@ -175,7 +182,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             where: { id: courseId },
             include: {
                 instructor: { select: { id: true, name: true } },
-                modules: { orderBy: { order: 'asc'}, include: { lessons: { orderBy: { order: 'asc' }, include: { contentBlocks: { orderBy: { order: 'asc' }, include: { quiz: { include: { questions: { orderBy: { order: 'asc' }, include: { options: { orderBy: { id: 'asc' }}} } } } } } } } } } }
+                modules: { orderBy: { order: 'asc'}, include: { lessons: { orderBy: { order: 'asc' }, include: { contentBlocks: { orderBy: { order: 'asc' }, include: { quiz: { include: { questions: { orderBy: { order: 'asc' }, include: { options: { orderBy: { id: 'asc' } } } } } } } } } } } } }
             },
         });
     });
@@ -190,13 +197,16 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE a course
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+    req: NextRequest, 
+    { params }: { params: { id: string } }
+) {
   const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id: courseId } = params;
+  const courseId = params.id;
   try {
     const courseToDelete = await prisma.course.findUnique({ where: { id: courseId } });
     if (!courseToDelete) {
@@ -216,3 +226,5 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return NextResponse.json({ message: `Error al eliminar el curso: ${(error as Error).message}` }, { status: 500 });
   }
 }
+
+    
