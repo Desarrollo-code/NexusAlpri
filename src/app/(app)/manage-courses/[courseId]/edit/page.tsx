@@ -445,7 +445,7 @@ const ContentBlockItem = React.memo(({ moduleIndex, lessonIndex, blockIndex, dnd
 ContentBlockItem.displayName = 'ContentBlockItem';
 
 const BlockSpecificInput = React.memo(({ moduleIndex, lessonIndex, blockIndex, openQuizEditor }: { moduleIndex: number, lessonIndex: number, blockIndex: number, openQuizEditor: () => void; }) => {
-    const { control, setValue, watch, register, getValues } = useFormContext<EditableCourse>();
+    const { control, setValue, watch, register } = useFormContext<EditableCourse>();
     const { toast } = useToast();
 
     const [isUploading, setIsUploading] = useState(false);
