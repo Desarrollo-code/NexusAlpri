@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 // GET a specific course by ID
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const courseId = req.url.split('/').pop();
+  const courseId = params.id;
   try {
     const course = await prisma.course.findUnique({
       where: { id: courseId },
@@ -77,6 +77,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
     
     const body = await req.json();
+    console.log("--- INICIO ACTUALIZACIÓN CURSO ---");
+    console.log("1. BODY RECIBIDO DEL CLIENTE:", JSON.stringify(body, null, 2));
+
     const { title, description, category, imageUrl, status, publicationDate, modules } = body;
 
     const transactionOperations = [];
@@ -104,35 +107,40 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const lessonIdsToDelete = existingLessons.filter(el => !modules.flatMap((m: Module) => m.lessons).some((l: Lesson) => l.id === el.id && !l._toBeDeleted)).map(l => l.id);
     const blockIdsToDelete = existingBlocks.filter(eb => !modules.flatMap((m: Module) => m.lessons).flatMap((l: Lesson) => l.contentBlocks).some((b: ContentBlock) => b.id === eb.id && !b._toBeDeleted)).map(b => b.id);
     
+    console.log("2. IDs MARCADOS PARA ELIMINACIÓN:");
+    console.log("   - Módulos a eliminar:", moduleIdsToDelete);
+    console.log("   - Lecciones a eliminar:", lessonIdsToDelete);
+    console.log("   - Bloques a eliminar:", blockIdsToDelete);
+
     // Deletions must happen first and in reverse order of dependency
     if(blockIdsToDelete.length > 0) transactionOperations.push(prisma.contentBlock.deleteMany({ where: { id: { in: blockIdsToDelete } } }));
     if(lessonIdsToDelete.length > 0) transactionOperations.push(prisma.lesson.deleteMany({ where: { id: { in: lessonIdsToDelete } } }));
     if(moduleIdsToDelete.length > 0) transactionOperations.push(prisma.module.deleteMany({ where: { id: { in: moduleIdsToDelete } } }));
     
     // Upsert Modules, Lessons, and ContentBlocks
-    for (const module of modules) {
+    for (const [moduleIndex, module] of modules.entries()) {
         if (module._toBeDeleted) continue;
         transactionOperations.push(
             prisma.module.upsert({
                 where: { id: module.id },
-                update: { title: module.title, order: module.order },
-                create: { id: module.id, title: module.title, order: module.order, courseId: courseId },
+                update: { title: module.title, order: moduleIndex },
+                create: { id: module.id, title: module.title, order: moduleIndex, courseId: courseId },
             })
         );
 
-        for (const lesson of module.lessons) {
+        for (const [lessonIndex, lesson] of module.lessons.entries()) {
             if (lesson._toBeDeleted) continue;
             transactionOperations.push(
                 prisma.lesson.upsert({
                     where: { id: lesson.id },
-                    update: { title: lesson.title, order: lesson.order },
-                    create: { id: lesson.id, title: lesson.title, order: lesson.order, moduleId: module.id },
+                    update: { title: lesson.title, order: lessonIndex },
+                    create: { id: lesson.id, title: lesson.title, order: lessonIndex, moduleId: module.id },
                 })
             );
             
-            for (const block of lesson.contentBlocks) {
+            for (const [blockIndex, block] of lesson.contentBlocks.entries()) {
                 if (block._toBeDeleted) continue;
-                const blockData = { type: block.type, content: block.content, order: block.order };
+                const blockData = { type: block.type, content: block.content, order: blockIndex };
                 transactionOperations.push(
                     prisma.contentBlock.upsert({
                         where: { id: block.id },
@@ -151,8 +159,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                                 ...quizData,
                                 contentBlockId: block.id,
                                 questions: {
-                                    create: questions.map((q: any) => ({
+                                    create: questions.map((q: any, qIndex: number) => ({
                                         ...q,
+                                        order: qIndex,
                                         options: {
                                             create: q.options
                                         }
@@ -165,8 +174,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             }
         }
     }
-
+    
+    console.log("3. EJECUTANDO TRANSACCIÓN EN LA BASE DE DATOS...");
     await prisma.$transaction(transactionOperations);
+    console.log("4. TRANSACCIÓN COMPLETADA EXITOSAMENTE.");
     
     // Fetch the final, updated course state to return
     const finalUpdatedCourse = await prisma.course.findUnique({
@@ -176,7 +187,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             modules: { include: { lessons: { include: { contentBlocks: { include: { quiz: { include: { questions: { include: { options: true }}}}}}}}}}
         },
     });
-
+    
+    console.log("--- FIN ACTUALIZACIÓN CURSO ---");
     return NextResponse.json(finalUpdatedCourse);
 
   } catch (error) {
