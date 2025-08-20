@@ -42,6 +42,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
 
 
 // --- Main Page Component ---
