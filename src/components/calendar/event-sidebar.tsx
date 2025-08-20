@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import type { CalendarEvent, Attachment } from '@/types';
 import { PlusCircle, Edit, CalendarPlus, Video, Link as LinkIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface EventSidebarProps {
   selectedDate: Date;
@@ -22,10 +23,10 @@ export function EventSidebar({ selectedDate, events, onCreateEvent, onEditEvent,
 
   const getEventColorClass = (color?: string): string => {
     switch (color) {
-      case 'blue': return 'bg-event-blue';
-      case 'green': return 'bg-event-green';
-      case 'red': return 'bg-event-red';
-      case 'orange': return 'bg-event-orange';
+      case 'blue': return 'bg-blue-500';
+      case 'green': return 'bg-green-500';
+      case 'red': return 'bg-red-500';
+      case 'orange': return 'bg-orange-500';
       default: return 'bg-primary';
     }
   };

@@ -9,21 +9,12 @@ import type { CalendarEvent } from '@/types';
 import { isHoliday } from '@/lib/holidays';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-interface ColorfulCalendarProps {
-  month: Date;
-  events: CalendarEvent[];
-  selectedDay: Date;
-  onDateSelect: (date: Date) => void;
-  onEventClick: (event: CalendarEvent) => void;
-  className?: string;
-}
-
 const getEventColorClass = (color?: string, type: 'bg' | 'text' = 'bg'): string => {
   const colorMap = {
-    blue: { bg: 'bg-event-blue', text: 'text-event-blue' },
-    green: { bg: 'bg-event-green', text: 'text-event-green' },
-    red: { bg: 'bg-event-red', text: 'text-event-red' },
-    orange: { bg: 'bg-event-orange', text: 'text-event-orange' },
+    blue: { bg: 'bg-blue-500', text: 'text-blue-500' },
+    green: { bg: 'bg-green-500', text: 'text-green-500' },
+    red: { bg: 'bg-red-500', text: 'text-red-500' },
+    orange: { bg: 'bg-orange-500', text: 'text-orange-500' },
   };
   const colorKey = color as keyof typeof colorMap;
   return (colorMap[colorKey] && colorMap[colorKey][type]) || (type === 'bg' ? 'bg-primary' : 'text-primary');
@@ -85,8 +76,7 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
                 {daySpecificEvents.map(event => (
                     <div 
                         key={event.id}
-                        className={cn("text-xs p-1 rounded-md truncate", getEventColorClass(event.color, 'bg'))}
-                        style={{ color: 'hsl(var(--primary-foreground))' }}
+                        className={cn("text-xs p-1 rounded-md truncate text-white", getEventColorClass(event.color, 'bg'))}
                         onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
                     >
                         {event.title}
