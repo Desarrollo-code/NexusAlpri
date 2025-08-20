@@ -1287,7 +1287,12 @@ export default function EditCoursePage() {
                                     <Controller control={control} name="status" render={({ field }) => (
                                         <Select onValueChange={(value: CourseStatus) => { field.onChange(value); if (value === 'PUBLISHED' && !watchedPublicationDate) { methods.setValue('publicationDate', new Date(), { shouldDirty: true }); } }} value={field.value} disabled={isSaving}>
                                             <SelectTrigger id="status"><SelectValue placeholder="Selecciona un estado" /></SelectTrigger>
-                                            <SelectContent><SelectItem value="DRAFT">Borrador</SelectItem><SelectItem value="PUBLISHED">Publicado</SelectItem><SelectItem value="ARCHIVED">Archivado</SelectItem></SelectContent>
+                                            <SelectContent>
+                                                <SelectItem value="DRAFT">Borrador</SelectItem>
+                                                <SelectItem value="PUBLISHED">Publicado</SelectItem>
+                                                <SelectItem value="ARCHIVED">Archivado</SelectItem>
+                                                <SelectItem value="SCHEDULED">Programado</SelectItem>
+                                            </SelectContent>
                                         </Select>
                                     )}/>
                                 </div>

@@ -42,7 +42,7 @@ export async function PATCH(req: NextRequest, context: { params: { id: string } 
             await prisma.notification.createMany({
                 data: allUsers.map(user => ({
                     userId: user.id,
-                    title: `Nuevo Curso Disponible: ${updatedCourse.title}`,
+                    title: `Nuevo curso disponible: ${updatedCourse.title}`,
                     description: 'Explora el nuevo contenido que hemos preparado para ti.',
                     link: `/courses/${updatedCourse.id}`,
                 })),
