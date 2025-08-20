@@ -394,7 +394,7 @@ const ContentBlockItem = React.memo(({ moduleIndex, lessonIndex, blockIndex, dnd
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
     openQuizEditor: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void;
 }) => {
-    const { control, getValues, register, watch } = useFormContext<EditableCourse>();
+    const { control, getValues, watch } = useFormContext<EditableCourse>();
     const block = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}` as const);
 
     return (
@@ -1528,3 +1528,4 @@ export default function EditCoursePage() {
     
 
     
+
