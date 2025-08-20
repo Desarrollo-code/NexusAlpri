@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 // Get all courses a specific user is enrolled in
 export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
     const session = await getCurrentUser();
-    const userId = params.userId;
+    const { userId } = params;
 
     if (!session || session.id !== userId) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
