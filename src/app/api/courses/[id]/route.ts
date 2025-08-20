@@ -13,8 +13,8 @@ export async function GET(
     req: NextRequest, 
     { params }: { params: { id: string } }
 ) {
+  const courseId = params.id;
   try {
-    const { id: courseId } = params;
     const course = await prisma.course.findUnique({
       where: { id: courseId },
       include: {
@@ -34,7 +34,7 @@ export async function GET(
                           orderBy: { order: 'asc' },
                           include: {
                             options: {
-                              orderBy: { id: 'asc' }, // Consistent order
+                              orderBy: { id: 'asc' },
                             },
                           },
                         },
@@ -71,7 +71,7 @@ export async function PUT(
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id: courseId } = params;
+  const courseId = params.id;
   
   try {
     const courseToUpdate = await prisma.course.findUnique({ where: { id: courseId } });
@@ -232,7 +232,7 @@ export async function DELETE(
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id: courseId } = params;
+  const courseId = params.id;
   try {
     const courseToDelete = await prisma.course.findUnique({ where: { id: courseId } });
     if (!courseToDelete) {
