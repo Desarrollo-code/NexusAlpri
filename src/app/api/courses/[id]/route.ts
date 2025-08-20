@@ -53,8 +53,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
----
-
 // PUT (update) a course
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getCurrentUser();
@@ -319,8 +317,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ message: 'Error al actualizar el curso' }, { status: 500 });
   }
 }
-
----
 
 // DELETE a course
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
