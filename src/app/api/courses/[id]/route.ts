@@ -173,8 +173,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         where: { id: courseId },
         include: {
             instructor: { select: { id: true, name: true } },
-            modules: { include: { lessons: { include: { contentBlocks: { include: { quiz: { include: { questions: { include: { options: true }}}}}}}}}}}
-        }
+            modules: { include: { lessons: { include: { contentBlocks: { include: { quiz: { include: { questions: { include: { options: true }}}}}}}}}}
+        },
     });
 
     return NextResponse.json(finalUpdatedCourse);
