@@ -27,6 +27,16 @@ interface CourseCardProps {
 
 const TRUNCATE_LENGTH = 120;
 
+const getStatusInSpanish = (status: CourseStatus) => {
+    switch (status) {
+        case 'DRAFT': return 'Borrador';
+        case 'PUBLISHED': return 'Publicado';
+        case 'ARCHIVED': return 'Archivado';
+        case 'SCHEDULED': return 'Programado';
+        default: return status;
+    }
+}
+
 export function CourseCard({ 
   course, 
   userRole, 
@@ -120,8 +130,8 @@ export function CourseCard({
                     </div>
                 )}
                 {viewMode === 'management' && (
-                    <Badge className="absolute top-2 left-2 capitalize" variant={course.status === 'PUBLISHED' ? 'default' : 'secondary'}>
-                        {course.status.toLowerCase()}
+                    <Badge className="absolute top-2 left-2" variant={course.status === 'PUBLISHED' ? 'default' : 'secondary'}>
+                        {getStatusInSpanish(course.status)}
                     </Badge>
                 )}
             </div>
