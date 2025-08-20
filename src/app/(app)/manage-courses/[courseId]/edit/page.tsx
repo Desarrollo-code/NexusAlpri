@@ -1062,14 +1062,10 @@ export default function EditCoursePage() {
         if (type === 'MODULE') {
             moveModule(source.index, destination.index);
         } else if (type.startsWith('LESSONS-')) {
-            const sourceModuleIndex = parseInt(source.droppableId.replace('lessons-', ''));
-            const destinationModuleIndex = parseInt(destination.droppableId.replace('lessons-', ''));
-
-            if (sourceModuleIndex === destinationModuleIndex) {
-                const currentLessons = methods.getValues(`modules.${sourceModuleIndex}.lessons`);
-                const reorderedLessons = reorder(currentLessons, source.index, destination.index);
-                methods.setValue(`modules.${sourceModuleIndex}.lessons`, reorderedLessons, { shouldDirty: true });
-            }
+            const moduleIndex = parseInt(source.droppableId.replace('lessons-', ''));
+            const currentLessons = methods.getValues(`modules.${moduleIndex}.lessons`);
+            const reorderedLessons = reorder(currentLessons, source.index, destination.index);
+            methods.setValue(`modules.${moduleIndex}.lessons`, reorderedLessons, { shouldDirty: true });
         }
     };
 
