@@ -135,7 +135,6 @@ function OptionsEditor({ moduleIndex, lessonIndex, blockIndex, questionIndex }: 
     const { fields: optionFields, append: appendOption, remove: removeOption } = useFieldArray({
         control,
         name: optionsPath,
-        keyName: 'dndId'
     });
 
     const watchedOptions = watch(optionsPath);
@@ -159,9 +158,9 @@ function OptionsEditor({ moduleIndex, lessonIndex, blockIndex, questionIndex }: 
                 className="space-y-2"
             >
                 {optionFields.map((option, oIndex) => (
-                    <div key={option.dndId} className="flex items-start gap-2 p-3 border rounded-md bg-background">
+                    <div key={option.id} className="flex items-start gap-2 p-3 border rounded-md bg-background">
                         <div className="pt-2">
-                            <RadioGroupItem value={option.id} id={`is-correct-${option.dndId}`} />
+                            <RadioGroupItem value={option.id} id={`is-correct-${option.id}`} />
                         </div>
                         <div className="flex-grow space-y-2">
                             <Input
@@ -211,7 +210,6 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPr
     const { fields: questionFields, append: appendQuestion, remove: removeQuestion, move: moveQuestion } = useFieldArray({
         control,
         name: `${quizPath}.questions` as `${FormQuizPath}.questions`,
-        keyName: 'dndId'
     });
 
     const onQuestionDragEnd = (result: DropResult) => {
@@ -247,7 +245,7 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPr
                                 {(provided: DroppableProvided) => (
                                     <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
                                         {questionFields.map((question, qIndex) => (
-                                            <Draggable key={question.dndId} draggableId={question.dndId} index={qIndex}>
+                                            <Draggable key={question.id} draggableId={question.id} index={qIndex}>
                                                 {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
                                                     <div
                                                         ref={provided.innerRef}
@@ -264,8 +262,8 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPr
                                                                 </Button>
                                                             </CardHeader>
                                                             <CardContent className="p-4 pt-0">
-                                                                <Label htmlFor={`question-text-${question.dndId}`}>Texto de la Pregunta</Label>
-                                                                <Textarea id={`question-text-${question.dndId}`} {...register(`${quizPath}.questions.${qIndex}.text` as `${FormQuestionsPath}.text`)} placeholder="Escribe aquí el enunciado de la pregunta..." />
+                                                                <Label htmlFor={`question-text-${question.id}`}>Texto de la Pregunta</Label>
+                                                                <Textarea id={`question-text-${question.id}`} {...register(`${quizPath}.questions.${qIndex}.text` as `${FormQuestionsPath}.text`)} placeholder="Escribe aquí el enunciado de la pregunta..." />
                                                                 <OptionsEditor moduleIndex={moduleIndex} lessonIndex={lessonIndex} blockIndex={blockIndex} questionIndex={qIndex} />
                                                             </CardContent>
                                                         </Card>
@@ -324,20 +322,27 @@ const getBlockTypeIcon = (type: AppLessonType) => {
     }
 };
 
-const ContentBlockList = React.memo(({ moduleIndex, lessonIndex, setItemToDeleteDetails, isSaving, openQuizEditor, appendBlock }: {
+const ContentBlockList = React.memo(({ moduleIndex, lessonIndex, setItemToDeleteDetails, isSaving, openQuizEditor }: {
     moduleIndex: number;
     lessonIndex: number;
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
     isSaving: boolean;
     openQuizEditor: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void;
-    appendBlock: (moduleIndex: number, lessonIndex: number) => void;
 }) => {
-    const { control, getValues, watch } = useFormContext<EditableCourse>();
-    const { fields, move } = useFieldArray({
+    const { control, getValues, watch, setValue } = useFormContext<EditableCourse>();
+    const { fields, move, append } = useFieldArray({
         control,
         name: `modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks` as const,
-        keyName: 'dndId'
     });
+
+    const appendBlock = useCallback(() => {
+        append({
+            id: `new-block-${Date.now()}`,
+            type: 'TEXT',
+            content: '',
+            order: fields.length
+        });
+    }, [append, fields.length]);
 
     const onBlockDragEnd = (result: DropResult) => {
         if (!result.destination) return;
@@ -355,11 +360,11 @@ const ContentBlockList = React.memo(({ moduleIndex, lessonIndex, setItemToDelete
                                 if (!block || block._toBeDeleted) return null;
                                 return (
                                     <ContentBlockItem
-                                        key={blockItem.dndId}
+                                        key={blockItem.id}
                                         moduleIndex={moduleIndex}
                                         lessonIndex={lessonIndex}
                                         blockIndex={blockIndex}
-                                        dndId={blockItem.dndId}
+                                        dndId={blockItem.id}
                                         isSaving={isSaving}
                                         setItemToDeleteDetails={setItemToDeleteDetails}
                                         openQuizEditor={openQuizEditor}
@@ -375,7 +380,7 @@ const ContentBlockList = React.memo(({ moduleIndex, lessonIndex, setItemToDelete
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => appendBlock(moduleIndex, lessonIndex)}
+                onClick={appendBlock}
                 disabled={isSaving}
             >
                 <PlusCircle className="mr-2 h-4 w-4" /> Añadir Bloque
@@ -533,13 +538,12 @@ const BlockSpecificInput = React.memo(({ moduleIndex, lessonIndex, blockIndex, o
 });
 BlockSpecificInput.displayName = 'BlockSpecificInput';
 
-const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setItemToDeleteDetails, appendBlock }: {
+const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setItemToDeleteDetails }: {
     moduleIndex: number;
     lessonIndex: number;
     dndId: string;
     isSaving: boolean;
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
-    appendBlock: (moduleIndex: number, lessonIndex: number) => void;
 }) => {
     const { getValues, register, watch, setValue } = useFormContext<EditableCourse>();
     const [quizEditorDetails, setQuizEditorDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
@@ -642,7 +646,6 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                             setItemToDeleteDetails={setItemToDeleteDetails}
                             isSaving={isSaving}
                             openQuizEditor={openQuizEditor}
-                            appendBlock={appendBlock}
                         />
                     )}
                     {quizEditorDetails?.lessonIndex === lessonIndex && (
@@ -715,16 +718,15 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
 });
 LessonItem.displayName = 'LessonItem';
 
-const ModuleItem = ({ moduleIndex, provided, setItemToDeleteDetails, appendBlock }: { 
+const ModuleItem = ({ moduleIndex, provided, setItemToDeleteDetails }: { 
     moduleIndex: number, 
     provided: DraggableProvided,
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
-    appendBlock: (moduleIndex: number, lessonIndex: number) => void;
 }) => {
     const { control, getValues, register, watch } = useFormContext<EditableCourse>();
     const { fields: lessonFields, move, append: appendLesson } = useFieldArray({
         control,
-        name: `modules.${moduleIndex}.lessons`
+        name: `modules.${moduleIndex}.lessons`,
     });
     
     const [isSaving, setIsSaving] = useState(false);
@@ -846,7 +848,6 @@ const ModuleItem = ({ moduleIndex, provided, setItemToDeleteDetails, appendBlock
                                                               lessonIndex={lessonIndex}
                                                               isSaving={isSaving}
                                                               setItemToDeleteDetails={setItemToDeleteDetails}
-                                                              appendBlock={appendBlock}
                                                           />
                                                       </div>
                                                     )}
@@ -936,25 +937,12 @@ export default function EditCoursePage() {
     } = useFieldArray({
         control,
         name: 'modules',
-        keyName: 'dndId'
     });
     
     const watchedCourseStatus = watch('status');
     const watchedPublicationDate = watch('publicationDate');
     
     // --- LÓGICA DE MANIPULACIÓN DEL FORMULARIO ---
-    const appendBlock = useCallback((moduleIndex: number, lessonIndex: number) => {
-        const blocksArray = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`) || [];
-        const newBlock: EditableContentBlock = {
-            id: `new-block-${Date.now()}`,
-            type: 'TEXT',
-            content: '',
-            order: blocksArray.length
-        };
-        const updatedBlocks = [...blocksArray, newBlock];
-        setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`, updatedBlocks, { shouldDirty: true });
-    }, [getValues, setValue]);
-
 
     // === FUNCIONES DE CARGA Y GUARDADO ===
 
@@ -1302,13 +1290,12 @@ export default function EditCoursePage() {
                                                     const module = getValues(`modules.${moduleIndex}` as const);
                                                     if (module && module._toBeDeleted) return null;
                                                     return (
-                                                        <Draggable key={moduleItem.dndId} draggableId={moduleItem.dndId} index={moduleIndex}>
+                                                        <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
                                                           {(provided, snapshot) => (
                                                               <ModuleItem 
                                                                 moduleIndex={moduleIndex} 
                                                                 provided={provided} 
                                                                 setItemToDeleteDetails={setItemToDeleteDetails}
-                                                                appendBlock={appendBlock}
                                                               />
                                                           )}
                                                         </Draggable>
