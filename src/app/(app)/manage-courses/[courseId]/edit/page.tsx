@@ -917,7 +917,7 @@ export default function EditCoursePage() {
         mode: 'onChange'
     });
 
-    const { control, handleSubmit, reset, formState: { errors, dirtyFields, isDirty }, setValue, getValues, watch } = methods;
+    const { control, handleSubmit, reset, formState: { errors, dirtyFields, isDirty }, setValue, getValues, watch, register } = methods;
 
     const {
         fields: moduleFields,
@@ -1528,4 +1528,5 @@ export default function EditCoursePage() {
     
 
     
+
 
