@@ -9,10 +9,9 @@ export const dynamic = 'force-dynamic';
 
 // GET a specific course by ID
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
   try {
     const course = await prisma.course.findUnique({
-      where: { id },
+      where: { id: params.id },
       include: {
         instructor: { select: { id: true, name: true } },
         modules: {
@@ -63,7 +62,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id } = params;
+  const courseId = params.id;
 
   try {
     const courseData = await req.json();
@@ -74,7 +73,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         return NextResponse.json({ message: 'Título y descripción son requeridos' }, { status: 400 });
     }
 
-    const course = await prisma.course.findUnique({ where: { id } });
+    const course = await prisma.course.findUnique({ where: { id: courseId } });
     if (!course) {
       return NextResponse.json({ message: 'Curso no encontrado' }, { status: 404 });
     }
@@ -87,7 +86,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     await prisma.$transaction(async (tx) => {
       // 1. Update course basic details
       await tx.course.update({
-        where: { id },
+        where: { id: courseId },
         data: {
           title,
           description,
@@ -104,7 +103,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         
         await tx.module.deleteMany({
           where: {
-            courseId: id,
+            courseId: courseId,
             NOT: { id: { in: incomingModuleIds } },
           },
         });
@@ -120,7 +119,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           const modulePayload = {
             title: moduleData.title,
             order: moduleIndex,
-            courseId: id,
+            courseId: courseId,
           };
 
           const savedModule = await tx.module.upsert({
@@ -271,7 +270,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     
     // Fetch the fully populated course to return to the client
     const finalCourse = await prisma.course.findUnique({
-        where: { id },
+        where: { id: courseId },
         include: {
             instructor: { select: { id: true, name: true } },
             modules: {
@@ -315,10 +314,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const { id } = params;
+    const courseId = params.id;
 
     try {
-        const course = await prisma.course.findUnique({ where: { id } });
+        const course = await prisma.course.findUnique({ where: { id: courseId } });
         if (!course) {
             return NextResponse.json({ message: 'Curso no encontrado' }, { status: 404 });
         }
@@ -331,12 +330,12 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
             // Delete notifications related to this course
             await tx.notification.deleteMany({
                 where: {
-                    link: `/courses/${id}`
+                    link: `/courses/${courseId}`
                 }
             });
 
             // Delete the course itself
-            await tx.course.delete({ where: { id } });
+            await tx.course.delete({ where: { id: courseId } });
         });
 
 

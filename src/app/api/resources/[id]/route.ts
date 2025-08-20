@@ -1,3 +1,4 @@
+
 // src/app/api/resources/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -9,7 +10,7 @@ export const dynamic = 'force-dynamic';
 // GET a specific resource
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     try {
-        const { id } = params;
+        const id = params.id;
         const resource = await prisma.enterpriseResource.findUnique({
             where: { id },
             include: {
@@ -41,7 +42,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
     
     try {
-        const { id } = params;
+        const id = params.id;
         const resourceToUpdate = await prisma.enterpriseResource.findUnique({ where: { id } });
         if (!resourceToUpdate) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
@@ -79,7 +80,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     try {
-        const { id } = params;
+        const id = params.id;
         const resourceToDelete = await prisma.enterpriseResource.findUnique({ where: { id } });
         if (!resourceToDelete) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });

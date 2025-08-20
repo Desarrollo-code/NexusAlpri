@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -15,7 +16,7 @@ export async function PUT(
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id } = params;
+  const id = params.id;
 
   try {
     const existingEvent = await prisma.calendarEvent.findUnique({
@@ -88,7 +89,7 @@ export async function DELETE(
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const { id } = params;
+    const id = params.id;
 
     try {
         const existingEvent = await prisma.calendarEvent.findUnique({
