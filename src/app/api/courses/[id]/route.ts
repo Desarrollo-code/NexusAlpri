@@ -8,7 +8,8 @@ import type { Module, Lesson, ContentBlock } from '@/types';
 export const dynamic = 'force-dynamic';
 
 // GET a specific course by ID
-export async function GET(req: NextRequest, { params: { id: courseId } }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const courseId = params.id;
   try {
     const course = await prisma.course.findUnique({
       where: { id: courseId },
