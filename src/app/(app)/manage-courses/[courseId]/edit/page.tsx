@@ -541,6 +541,56 @@ const BlockSpecificInput = React.memo(({ moduleIndex, lessonIndex, blockIndex, o
 });
 BlockSpecificInput.displayName = 'BlockSpecificInput';
 
+const LessonList = ({ moduleIndex }: { moduleIndex: number }) => {
+    const { control, getValues, setValue } = useFormContext<EditableCourse>();
+    const { fields, append, remove, move } = useFieldArray({
+        control,
+        name: `modules.${moduleIndex}.lessons`,
+        keyName: 'dndId'
+    });
+    const isSaving = useWatch({ control, name: 'status' }) === 'PUBLISHED'; // Example condition, adapt as needed
+
+    const appendBlock = (mIndex: number, lIndex: number, newBlock: EditableContentBlock) => {
+        const currentBlocks = getValues(`modules.${mIndex}.lessons.${lIndex}.contentBlocks`) || [];
+        setValue(`modules.${mIndex}.lessons.${lIndex}.contentBlocks`, [...currentBlocks, newBlock], { shouldDirty: true });
+    };
+
+    const setItemToDeleteDetails = useState<ItemToDeleteDetails>(null)[1];
+
+    const onLessonDragEnd = (result: DropResult) => {
+        if (!result.destination) return;
+        move(result.source.index, result.destination.index);
+    }
+    
+    return (
+      <DragDropContext onDragEnd={onLessonDragEnd}>
+        <Droppable droppableId={`lessons-of-module-${moduleIndex}`} type={`LESSONS-${moduleIndex}`}>
+            {(provided) => (
+                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                    {fields.map((lessonItem, lessonIndex) => {
+                         const lesson = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
+                         if (lesson._toBeDeleted) return null;
+                        return (
+                            <LessonItem
+                                key={lessonItem.dndId}
+                                dndId={lessonItem.dndId}
+                                moduleIndex={moduleIndex}
+                                lessonIndex={lessonIndex}
+                                isSaving={isSaving}
+                                setItemToDeleteDetails={setItemToDeleteDetails}
+                                appendBlock={appendBlock}
+                            />
+                        )
+                    })}
+                    {provided.placeholder}
+                </div>
+            )}
+        </Droppable>
+      </DragDropContext>
+    );
+};
+
+
 const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setItemToDeleteDetails, appendBlock }: {
     moduleIndex: number;
     lessonIndex: number;
@@ -723,6 +773,175 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
 });
 LessonItem.displayName = 'LessonItem';
 
+const ModuleItem = ({ moduleIndex, provided }: { moduleIndex: number, provided: DraggableProvided }) => {
+    const { control, getValues, register } = useFormContext<EditableCourse>();
+    const { fields: lessonFields, append, remove, move } = useFieldArray({
+        control,
+        name: `modules.${moduleIndex}.lessons`
+    });
+    
+    const [isSaving, setIsSaving] = useState(false);
+    const [showTemplateModal, setShowTemplateModal] = useState(false);
+    const [templates, setTemplates] = useState<ApiTemplate[]>([]);
+    const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
+    const [itemToDeleteDetails, setItemToDeleteDetails] = useState<ItemToDeleteDetails | null>(null);
+    const { toast } = useToast();
+    
+    const appendLesson = (lessonData: Partial<EditableLesson>) => {
+        append({
+            id: `new-lesson-${Date.now()}`,
+            title: 'Nueva Lección',
+            contentBlocks: [],
+            order: lessonFields.length,
+            ...lessonData,
+        });
+    };
+
+    const appendBlock = (lessonIndex: number, newBlock: EditableContentBlock) => {
+        const currentBlocks = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`) || [];
+        setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`, [...currentBlocks, newBlock], { shouldDirty: true });
+    };
+
+    const fetchTemplates = async () => {
+        setIsLoadingTemplates(true);
+        try {
+            const res = await fetch('/api/templates');
+            if (!res.ok) throw new Error("Failed to fetch templates");
+            const data = await res.json();
+            setTemplates(data);
+        } catch (error) {
+            toast({ title: "Error", description: (error as Error).message, variant: "destructive" });
+        } finally {
+            setIsLoadingTemplates(false);
+        }
+    };
+    
+    const handleOpenTemplateModal = () => {
+        fetchTemplates();
+        setShowTemplateModal(true);
+    };
+
+    const handleSelectTemplate = (templateId: string) => {
+        const selectedTemplate = templates.find(t => t.id === templateId);
+        if (!selectedTemplate) return;
+
+        appendLesson({
+            title: selectedTemplate.name,
+            templateId: selectedTemplate.id,
+        });
+        setShowTemplateModal(false);
+        toast({ title: "Plantilla Aplicada", description: "Se ha creado una nueva lección con la estructura de la plantilla." });
+    };
+
+
+    const onLessonDragEnd = (result: DropResult) => {
+        if (!result.destination) return;
+        move(result.source.index, result.destination.index);
+    }
+    
+    const module = getValues(`modules.${moduleIndex}`);
+
+    return (
+        <div ref={provided.innerRef} {...provided.draggableProps}>
+            <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value={module.id} className="rounded-md border bg-card text-card-foreground shadow-sm">
+                    <div className="flex items-center p-4 font-semibold">
+                        <div {...provided.dragHandleProps} className="cursor-grab p-1">
+                            <GripVertical className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <AccordionTrigger className="flex-1 p-0 hover:no-underline">
+                            <div className="flex-grow">
+                                <Input {...register(`modules.${moduleIndex}.title`)} placeholder="Título del Módulo" className="text-base font-semibold border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-auto p-0" disabled={isSaving} onClick={(e) => e.stopPropagation()} />
+                            </div>
+                        </AccordionTrigger>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 ml-2" onClick={e => e.stopPropagation()}>
+                                    <MoreVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
+                                <DropdownMenuItem onSelect={() => appendLesson({})}>
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Añadir Lección
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={handleOpenTemplateModal}>
+                                    <FilePlus2 className="mr-2 h-4 w-4" /> Añadir desde Plantilla
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    className="text-destructive focus:bg-destructive/10"
+                                    onSelect={() => setItemToDeleteDetails({ type: 'module', id: module.id, name: module.title, moduleIndex, lessonIndex: -1 })}
+                                    disabled={isSaving}
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" /> Eliminar Módulo
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                    <AccordionContent className="p-4 border-t bg-muted/20">
+                        <div className="space-y-4">
+                            <h4 className="font-semibold text-sm">Lecciones:</h4>
+                             <DragDropContext onDragEnd={onLessonDragEnd}>
+                                <Droppable droppableId={`lessons-of-module-${moduleIndex}`} type={`LESSONS-${moduleIndex}`}>
+                                    {(provided) => (
+                                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                                            {(lessonFields || []).map((lessonItem, lessonIndex) => {
+                                                const lesson = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
+                                                if (lesson._toBeDeleted) return null;
+                                                return (
+                                                  <Draggable key={lessonItem.id} draggableId={lessonItem.id} index={lessonIndex}>
+                                                    {(provided) => (
+                                                      <div ref={provided.innerRef} {...provided.draggableProps}>
+                                                          <LessonItem
+                                                              key={lessonItem.id}
+                                                              dndId={lessonItem.id}
+                                                              moduleIndex={moduleIndex}
+                                                              lessonIndex={lessonIndex}
+                                                              isSaving={isSaving}
+                                                              setItemToDeleteDetails={setItemToDeleteDetails}
+                                                              appendBlock={appendBlock}
+                                                          />
+                                                      </div>
+                                                    )}
+                                                  </Draggable>
+                                                )
+                                            })}
+                                            {provided.placeholder}
+                                        </div>
+                                    )}
+                                </Droppable>
+                            </DragDropContext>
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+            </Accordion>
+             <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Seleccionar Plantilla de Lección</DialogTitle>
+                        <DialogDescription>Elige una plantilla para crear una nueva lección con una estructura predefinida.</DialogDescription>
+                    </DialogHeader>
+                    {isLoadingTemplates ? (
+                        <div className="flex justify-center items-center h-48"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                    ) : (
+                        <ScrollArea className="max-h-[60vh] mt-4">
+                            <div className="space-y-2 pr-4">
+                                {templates.length > 0 ? templates.map(template => (
+                                    <button key={template.id} onClick={() => handleSelectTemplate(template.id)} className="w-full text-left p-4 border rounded-lg hover:bg-accent transition-colors">
+                                        <h4 className="font-semibold">{template.name}</h4>
+                                        <p className="text-sm text-muted-foreground">{template.description || 'Sin descripción'}</p>
+                                        <p className="text-xs text-muted-foreground mt-2">Creador: {template.creator?.name || 'Sistema'} | Bloques: {template.templateBlocks.length}</p>
+                                    </button>
+                                )) : <p className="text-center text-muted-foreground">No hay plantillas disponibles.</p>}
+                            </div>
+                        </ScrollArea>
+                    )}
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
+};
+
 
 // === COMPONENTE PRINCIPAL DE LA PÁGINA (EditCoursePage) ===
 export default function EditCoursePage() {
@@ -776,24 +995,7 @@ export default function EditCoursePage() {
         name: 'modules',
         keyName: 'dndId'
     });
-
-    const appendLessonToModule = useCallback((moduleIndex: number, newLesson: EditableLesson) => {
-        const currentModules = methods.getValues('modules');
-        if (currentModules[moduleIndex]) {
-            const updatedLessons = [...(currentModules[moduleIndex].lessons || []), newLesson];
-            methods.setValue(`modules.${moduleIndex}.lessons` as const, updatedLessons, { shouldDirty: true });
-        }
-    }, [methods]);
     
-    const appendBlock = useCallback((moduleIndex: number, lessonIndex: number, newBlock: EditableContentBlock) => {
-        const currentLessons = methods.getValues(`modules.${moduleIndex}.lessons`);
-        if (currentLessons[lessonIndex]) {
-            const updatedBlocks = [...(currentLessons[lessonIndex].contentBlocks || []), newBlock];
-            setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`, updatedBlocks, { shouldDirty: true });
-        }
-    }, [methods, setValue]);
-
-
     const watchedCourseStatus = watch('status');
     const watchedPublicationDate = watch('publicationDate');
 
@@ -885,22 +1087,6 @@ export default function EditCoursePage() {
         fetchTemplates();
         setShowTemplateModal(moduleIndex);
     };
-
-    const handleSelectTemplate = (moduleIndex: number, templateId: string) => {
-        const selectedTemplate = templates.find(t => t.id === templateId);
-        if (!selectedTemplate) return;
-
-        appendLessonToModule(moduleIndex, {
-            id: `new-lesson-${Date.now()}`,
-            title: selectedTemplate.name,
-            contentBlocks: [], // Blocks will be added via templateId
-            order: methods.getValues(`modules.${moduleIndex}.lessons`)?.length || 0,
-            templateId: selectedTemplate.id,
-        });
-        setShowTemplateModal(null);
-        toast({ title: "Plantilla Aplicada", description: "Se ha creado una nueva lección con la estructura de la plantilla." });
-    };
-
 
     const onSubmit = useCallback(async (data: EditableCourse) => {
         setIsSaving(true);
@@ -1191,62 +1377,9 @@ export default function EditCoursePage() {
                                                     if (module && module._toBeDeleted) return null;
                                                     return (
                                                         <Draggable key={moduleItem.dndId} draggableId={moduleItem.dndId} index={moduleIndex}>
-                                                            {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
-                                                                <div ref={provided.innerRef} {...provided.draggableProps}>
-                                                                    <Accordion type="single" collapsible className="w-full">
-                                                                        <AccordionItem value={moduleItem.id} className={`rounded-md border bg-card text-card-foreground shadow-sm ${snapshot.isDragging ? 'shadow-lg bg-muted' : ''}`}>
-                                                                            <div className="flex items-center p-4 font-semibold">
-                                                                                <div {...provided.dragHandleProps} className="cursor-grab p-1">
-                                                                                    <GripVertical className="h-5 w-5 text-muted-foreground" />
-                                                                                </div>
-                                                                                <AccordionTrigger className="flex-1 p-0 hover:no-underline">
-                                                                                    <div className="flex-grow">
-                                                                                        <Input {...methods.register(`modules.${moduleIndex}.title` as FormModulesPath)} placeholder="Título del Módulo" className="text-base font-semibold border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-auto p-0" disabled={isSaving} onClick={(e) => e.stopPropagation()} />
-                                                                                    </div>
-                                                                                </AccordionTrigger>
-                                                                                <DropdownMenu>
-                                                                                    <DropdownMenuTrigger asChild>
-                                                                                        <Button variant="ghost" size="icon" className="h-8 w-8 ml-2" onClick={e => e.stopPropagation()}>
-                                                                                            <MoreVertical className="h-4 w-4" />
-                                                                                        </Button>
-                                                                                    </DropdownMenuTrigger>
-                                                                                    <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
-                                                                                        <DropdownMenuItem onSelect={() => appendLessonToModule(moduleIndex, { id: `new-lesson-${Date.now()}`, title: 'Nueva Lección', contentBlocks: [], order: methods.getValues(`modules.${moduleIndex}.lessons`)?.length || 0, })}>
-                                                                                            <PlusCircle className="mr-2 h-4 w-4" /> Añadir Lección
-                                                                                        </DropdownMenuItem>
-                                                                                        <DropdownMenuItem onSelect={() => handleOpenTemplateModal(moduleIndex)}>
-                                                                                            <FilePlus2 className="mr-2 h-4 w-4" /> Añadir desde Plantilla
-                                                                                        </DropdownMenuItem>
-                                                                                        <DropdownMenuSeparator />
-                                                                                        <DropdownMenuItem
-                                                                                            className="text-destructive focus:bg-destructive/10"
-                                                                                            onSelect={() => setItemToDeleteDetails({ type: 'module', id: module.id, name: module.title, moduleIndex, lessonIndex: -1 })}
-                                                                                            disabled={isSaving}
-                                                                                        >
-                                                                                            <Trash2 className="mr-2 h-4 w-4" /> Eliminar Módulo
-                                                                                        </DropdownMenuItem>
-                                                                                    </DropdownMenuContent>
-                                                                                </DropdownMenu>
-                                                                            </div>
-                                                                            <AccordionContent className="p-4 border-t bg-muted/20">
-                                                                                <div className="space-y-4">
-                                                                                    <h4 className="font-semibold text-sm">Lecciones:</h4>
-                                                                                    <Droppable droppableId={`lessons-${moduleIndex}`} type={`LESSONS-${moduleIndex}`}>
-                                                                                        {(provided: DroppableProvided) => (
-                                                                                            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                                                                                                {watch(`modules.${moduleIndex}.lessons`)?.filter(l => !l._toBeDeleted).map((lesson, lessonIndex) => (
-                                                                                                    <LessonItem key={lesson.id} moduleIndex={moduleIndex} lessonIndex={lessonIndex} dndId={lesson.id} isSaving={isSaving} setItemToDeleteDetails={setItemToDeleteDetails} appendBlock={appendBlock} />
-                                                                                                ))}
-                                                                                                {provided.placeholder}
-                                                                                            </div>
-                                                                                        )}
-                                                                                    </Droppable>
-                                                                                </div>
-                                                                            </AccordionContent>
-                                                                        </AccordionItem>
-                                                                    </Accordion>
-                                                                </div>
-                                                            )}
+                                                          {(provided, snapshot) => (
+                                                              <ModuleItem moduleIndex={moduleIndex} provided={provided} />
+                                                          )}
                                                         </Draggable>
                                                     );
                                                 })}
@@ -1428,7 +1561,23 @@ export default function EditCoursePage() {
                             <ScrollArea className="max-h-[60vh] mt-4">
                                 <div className="space-y-2 pr-4">
                                     {templates.length > 0 ? templates.map(template => (
-                                        <button key={template.id} onClick={() => handleSelectTemplate(showTemplateModal!, template.id)} className="w-full text-left p-4 border rounded-lg hover:bg-accent transition-colors">
+                                        <button key={template.id} onClick={() => {
+                                            const targetModuleIndex = showTemplateModal;
+                                            if (targetModuleIndex !== null) {
+                                               const lessonCount = methods.getValues(`modules.${targetModuleIndex}.lessons`)?.length || 0;
+                                               const newLesson = {
+                                                  id: `new-lesson-${Date.now()}`,
+                                                  title: template.name,
+                                                  contentBlocks: [],
+                                                  order: lessonCount,
+                                                  templateId: template.id
+                                               };
+                                               const currentLessons = methods.getValues(`modules.${targetModuleIndex}.lessons`);
+                                               methods.setValue(`modules.${targetModuleIndex}.lessons`, [...currentLessons, newLesson], { shouldDirty: true });
+                                               setShowTemplateModal(null);
+                                               toast({ title: "Plantilla Aplicada", description: "Se ha creado una nueva lección con la estructura de la plantilla." });
+                                            }
+                                        }} className="w-full text-left p-4 border rounded-lg hover:bg-accent transition-colors">
                                             <h4 className="font-semibold">{template.name}</h4>
                                             <p className="text-sm text-muted-foreground">{template.description || 'Sin descripción'}</p>
                                             <p className="text-xs text-muted-foreground mt-2">Creador: {template.creator?.name || 'Sistema'} | Bloques: {template.templateBlocks.length}</p>
