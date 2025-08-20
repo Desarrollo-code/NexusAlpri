@@ -885,7 +885,7 @@ export default function EditCoursePage() {
         mode: 'onChange'
     });
 
-    const { control, handleSubmit, reset, formState: { errors, isDirty }, setValue, getValues, watch } = methods;
+    const { control, handleSubmit, reset, formState: { errors, isDirty }, setValue, getValues, watch, register } = methods;
 
     const {
         fields: moduleFields,
@@ -940,19 +940,18 @@ export default function EditCoursePage() {
                 publicationDate: data.publicationDate ? new Date(data.publicationDate) : null,
                 instructorId: data.instructorId || user?.id || null,
                 instructorName: data.instructor?.name || user?.name || null,
-                modules: data.modules.map(module => ({
+                modules: (data.modules || []).map(module => ({
                     ...module,
                     description: '',
-                    lessons: module.lessons?.map(lesson => ({
+                    lessons: (module.lessons || []).map(lesson => ({
                         ...lesson,
                         order: lesson.order !== undefined ? lesson.order : null,
-                        contentBlocks: lesson.contentBlocks?.map(block => ({
+                        contentBlocks: (lesson.contentBlocks || []).map(block => ({
                           ...block,
                           order: block.order !== undefined ? block.order : null,
                           quiz: block.quiz || null,
-                        })) || [],
-                    })) || [],
-                    order: module.order !== undefined ? module.order : null
+                        }))
+                    }))
                 })),
             };
             reset(transformedData);
@@ -1218,12 +1217,12 @@ export default function EditCoursePage() {
                             <CardContent className="space-y-4">
                                 <div>
                                     <Label htmlFor="title">Título del Curso</Label>
-                                    <Input id="title" {...methods.register('title', { required: 'El título es obligatorio' })} placeholder="Título atractivo y descriptivo" disabled={isSaving} />
+                                    <Input id="title" {...register('title', { required: 'El título es obligatorio' })} placeholder="Título atractivo y descriptivo" disabled={isSaving} />
                                     {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
                                 </div>
                                 <div>
                                     <Label htmlFor="description">Descripción del Curso</Label>
-                                    <Textarea id="description" {...methods.register('description', { required: 'La descripción es obligatoria' })} placeholder="Describe el contenido, objetivos y a quién va dirigido el curso." rows={6} disabled={isSaving} />
+                                    <Textarea id="description" {...register('description', { required: 'La descripción es obligatoria' })} placeholder="Describe el contenido, objetivos y a quién va dirigido el curso." rows={6} disabled={isSaving} />
                                     {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
                                 </div>
                             </CardContent>
