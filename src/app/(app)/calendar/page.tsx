@@ -44,10 +44,10 @@ import { useTitle } from '@/contexts/title-context';
 
 
 const eventColors = [
-  { value: 'blue', label: 'Evento General', color: 'bg-event-blue' },
-  { value: 'green', label: 'Taller/Formación', color: 'bg-event-green' },
-  { value: 'red', label: 'Fecha Límite/Urgente', color: 'bg-event-red' },
-  { value: 'orange', label: 'Festivo/Vacaciones', color: 'bg-event-orange' },
+  { value: 'blue', label: 'Evento General', color: 'bg-blue-500' },
+  { value: 'green', label: 'Taller/Formación', color: 'bg-green-500' },
+  { value: 'red', label: 'Fecha Límite/Urgente', color: 'bg-red-500' },
+  { value: 'orange', label: 'Festivo/Vacaciones', color: 'bg-orange-500' },
 ];
 
 
@@ -401,7 +401,7 @@ export default function CalendarPage() {
                                 className={cn(
                                   "h-8 w-8 rounded-full border-2 flex items-center justify-center transition-all duration-200 ease-in-out cursor-pointer",
                                   color,
-                                  formColor === value ? 'border-primary scale-110 shadow-lg' : 'border-transparent'
+                                  formColor === value ? 'border-primary ring-2 ring-offset-2 ring-primary scale-110 shadow-lg' : 'border-transparent'
                                 )}
                               >
                                 {formColor === value && (<Check className="h-5 w-5 text-white" />)}
