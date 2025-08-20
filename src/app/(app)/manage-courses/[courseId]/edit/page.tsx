@@ -64,11 +64,6 @@ interface ApiTemplate extends LessonTemplate {
   creator: { name: string | null } | null;
 }
 
-interface QuizViewerProps {
-    quizData: AppQuiz | undefined | null;
-    onClose: () => void;
-}
-
 interface LocalInstructor {
     id: string;
     name: string;
@@ -646,7 +641,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
                             setItemToDeleteDetails={setItemToDeleteDetails}
                             isSaving={isSaving}
                             openQuizEditor={openQuizEditor}
-                            appendBlock={() => appendBlock(moduleIndex, lessonIndex)}
+                            appendBlock={appendBlock}
                         />
                     )}
                     {quizEditorDetails?.lessonIndex === lessonIndex && (
@@ -726,8 +721,8 @@ const ModuleItem = ({ moduleIndex, provided, appendLesson, setItemToDeleteDetail
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
     appendBlock: (moduleIndex: number, lessonIndex: number) => void;
 }) => {
-    const { control, getValues, register } = useFormContext<EditableCourse>();
-    const { fields: lessonFields, move } = useFieldArray({
+    const { control, getValues, register, watch } = useFormContext<EditableCourse>();
+    const { fields: lessonFields, move, append } = useFieldArray({
         control,
         name: `modules.${moduleIndex}.lessons`
     });
@@ -760,22 +755,30 @@ const ModuleItem = ({ moduleIndex, provided, appendLesson, setItemToDeleteDetail
     const handleSelectTemplate = (templateId: string) => {
         const selectedTemplate = templates.find(t => t.id === templateId);
         if (!selectedTemplate) return;
-
-        appendLesson(moduleIndex, {
+        
+        const newLesson: EditableLesson = {
+            id: `new-lesson-${Date.now()}`,
             title: selectedTemplate.name,
-            templateId: selectedTemplate.id,
-        });
+            order: lessonFields.length,
+            contentBlocks: selectedTemplate.templateBlocks.map(block => ({
+                id: `new-block-${Date.now()}-${block.order}`,
+                type: block.type,
+                content: '',
+                order: block.order,
+            }))
+        };
+        
+        append(newLesson);
         setShowTemplateModal(false);
         toast({ title: "Plantilla Aplicada", description: "Se ha creado una nueva lección con la estructura de la plantilla." });
     };
-
 
     const onLessonDragEnd = (result: DropResult) => {
         if (!result.destination) return;
         move(result.source.index, result.destination.index);
     }
     
-    const module = getValues(`modules.${moduleIndex}`);
+    const module = watch(`modules.${moduleIndex}`);
 
     return (
         <div ref={provided.innerRef} {...provided.draggableProps}>
@@ -816,7 +819,6 @@ const ModuleItem = ({ moduleIndex, provided, appendLesson, setItemToDeleteDetail
                     </div>
                     <AccordionContent className="p-4 border-t bg-muted/20">
                         <div className="space-y-4">
-                            <h4 className="font-semibold text-sm">Lecciones:</h4>
                              <DragDropContext onDragEnd={onLessonDragEnd}>
                                 <Droppable droppableId={`lessons-of-module-${moduleIndex}`} type={`LESSONS-${moduleIndex}`}>
                                     {(provided) => (
@@ -847,6 +849,7 @@ const ModuleItem = ({ moduleIndex, provided, appendLesson, setItemToDeleteDetail
                                     )}
                                 </Droppable>
                             </DragDropContext>
+                            {lessonFields.filter(l => !l._toBeDeleted).length === 0 && <p className="text-muted-foreground text-xs text-center py-2 italic">Aún no hay lecciones. ¡Añade una para empezar!</p>}
                         </div>
                     </AccordionContent>
                 </AccordionItem>
@@ -914,7 +917,7 @@ export default function EditCoursePage() {
         mode: 'onChange'
     });
 
-    const { control, handleSubmit, reset, watch, formState: { errors, dirtyFields, isDirty }, setValue } = methods;
+    const { control, handleSubmit, reset, watch, formState: { errors, dirtyFields, isDirty }, setValue, getValues } = methods;
 
     const {
         fields: moduleFields,
@@ -929,31 +932,32 @@ export default function EditCoursePage() {
 
     const watchedCourseStatus = watch('status');
     const watchedPublicationDate = watch('publicationDate');
+    
+    // --- LÓGICA DE MANIPULACIÓN DEL FORMULARIO ---
 
-    const appendLesson = useCallback((moduleIndex: number, lessonData: Partial<EditableLesson> = {}) => {
-        const lessons = methods.getValues(`modules.${moduleIndex}.lessons`) || [];
+    const appendLesson = useCallback((moduleIndex: number) => {
+        const lessonsArray = getValues(`modules.${moduleIndex}.lessons`) || [];
         const newLesson: EditableLesson = {
             id: `new-lesson-${Date.now()}`,
             title: 'Nueva Lección',
-            order: lessons.length,
-            contentBlocks: [],
-            ...lessonData
+            order: lessonsArray.length,
+            contentBlocks: []
         };
-        const updatedLessons = [...lessons, newLesson];
-        methods.setValue(`modules.${moduleIndex}.lessons`, updatedLessons, { shouldDirty: true });
-    }, [methods]);
+        const updatedLessons = [...lessonsArray, newLesson];
+        setValue(`modules.${moduleIndex}.lessons`, updatedLessons, { shouldDirty: true });
+    }, [getValues, setValue]);
 
     const appendBlock = useCallback((moduleIndex: number, lessonIndex: number) => {
-        const blocks = methods.getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`) || [];
+        const blocksArray = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`) || [];
         const newBlock: EditableContentBlock = {
             id: `new-block-${Date.now()}`,
             type: 'TEXT',
             content: '',
-            order: blocks.length,
+            order: blocksArray.length
         };
-        const updatedBlocks = [...blocks, newBlock];
-        methods.setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`, updatedBlocks, { shouldDirty: true });
-    }, [methods]);
+        const updatedBlocks = [...blocksArray, newBlock];
+        setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`, updatedBlocks, { shouldDirty: true });
+    }, [getValues, setValue]);
 
 
     // === FUNCIONES DE CARGA Y GUARDADO ===
@@ -1071,7 +1075,7 @@ export default function EditCoursePage() {
                 if (!res.ok) throw new Error((await res.json()).message || 'Error al guardar el curso.');
                 
                 const result = await res.json();
-                reset(result); 
+                reset(result, { keepDirty: false, keepValues: true }); // Resetea el estado dirty pero mantiene los valores
                 toast({ title: "Curso Guardado", description: "La información del curso se ha actualizado correctamente." });
                  setPageTitle(`Editando: ${result.title}`);
             }
@@ -1102,7 +1106,7 @@ export default function EditCoursePage() {
                 throw new Error(errorData.message || 'Error al cambiar el estado del curso.');
             }
             toast({ title: "Estado Actualizado", description: `El curso ahora está en estado: ${newStatus}` });
-            reset({ ...methods.getValues(), status: newStatus });
+            setValue('status', newStatus, { shouldDirty: true });
         } catch (error: any) {
             console.error('Error al cambiar el estado del curso:', error);
             toast({
@@ -1113,7 +1117,7 @@ export default function EditCoursePage() {
         } finally {
             setIsSaving(false);
         }
-    }, [courseId, toast, reset, methods]);
+    }, [courseId, toast, setValue]);
 
     const handleDeleteCourse = useCallback(async () => {
         setIsDeleting(true);
@@ -1156,12 +1160,12 @@ export default function EditCoursePage() {
     };
 
     const handleCropComplete = (croppedFileUrl: string) => {
-        methods.setValue('imageUrl', croppedFileUrl, { shouldDirty: true });
+        setValue('imageUrl', croppedFileUrl, { shouldDirty: true });
         setImageToCrop(null);
     };
 
     const removeCourseImage = () => {
-        methods.setValue('imageUrl', null, { shouldDirty: true });
+        setValue('imageUrl', null, { shouldDirty: true });
         toast({ title: "Imagen Eliminada", description: "La imagen del curso ha sido eliminada." });
     };
 
@@ -1170,30 +1174,17 @@ export default function EditCoursePage() {
 
     const handleDragEnd = (result: DropResult) => {
         const { source, destination, type } = result;
-
         if (!destination) return;
-
-        if (source.droppableId === destination.droppableId && source.index === destination.index) {
-            return;
-        }
-
         if (type === 'MODULE') {
             moveModule(source.index, destination.index);
-        } else if (type.startsWith('LESSONS-')) {
-            const moduleIndex = parseInt(source.droppableId.replace('lessons-', ''));
-            const currentLessons = methods.getValues(`modules.${moduleIndex}.lessons`);
-            const reorderedLessons = reorder(currentLessons, source.index, destination.index);
-            methods.setValue(`modules.${moduleIndex}.lessons`, reorderedLessons, { shouldDirty: true });
         }
     };
 
 
-    // === MANEJO DE MÓDULOS Y LECCIONES ===
-
     const handleAddModule = () => {
         appendModule({
             id: `new-module-${Date.now()}`,
-            title: '',
+            title: 'Nuevo Módulo',
             description: '',
             lessons: [],
             order: moduleFields.length,
@@ -1231,7 +1222,7 @@ export default function EditCoursePage() {
         );
     }
 
-    if (!isNewCourse && !isAuthLoading && user?.role !== 'ADMINISTRATOR' && user?.id !== methods.getValues('instructorId')) {
+    if (!isNewCourse && !isAuthLoading && user?.role !== 'ADMINISTRATOR' && user?.id !== getValues('instructorId')) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] text-center p-4">
                 <ShieldAlert className="h-20 w-20 text-red-500 mb-4" />
@@ -1280,12 +1271,12 @@ export default function EditCoursePage() {
                             <CardContent className="space-y-4">
                                 <div>
                                     <Label htmlFor="title">Título del Curso</Label>
-                                    <Input id="title" {...methods.register('title', { required: 'El título es obligatorio' })} placeholder="Título atractivo y descriptivo" disabled={isSaving} />
+                                    <Input id="title" {...register('title', { required: 'El título es obligatorio' })} placeholder="Título atractivo y descriptivo" disabled={isSaving} />
                                     {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
                                 </div>
                                 <div>
                                     <Label htmlFor="description">Descripción del Curso</Label>
-                                    <Textarea id="description" {...methods.register('description', { required: 'La descripción es obligatoria' })} placeholder="Describe el contenido, objetivos y a quién va dirigido el curso." rows={6} disabled={isSaving} />
+                                    <Textarea id="description" {...register('description', { required: 'La descripción es obligatoria' })} placeholder="Describe el contenido, objetivos y a quién va dirigido el curso." rows={6} disabled={isSaving} />
                                     {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
                                 </div>
                             </CardContent>
@@ -1306,8 +1297,8 @@ export default function EditCoursePage() {
                                     <Droppable droppableId="modules" type="MODULE">
                                         {(provided: DroppableProvided) => (
                                             <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-                                                {moduleFields.filter(mod => !(methods.getValues(`modules.${moduleFields.indexOf(mod)}._toBeDeleted` as const))).map((moduleItem, moduleIndex) => {
-                                                    const module = methods.getValues(`modules.${moduleIndex}` as const);
+                                                {moduleFields.filter(mod => !(getValues(`modules.${moduleFields.indexOf(mod)}._toBeDeleted` as const))).map((moduleItem, moduleIndex) => {
+                                                    const module = getValues(`modules.${moduleIndex}` as const);
                                                     if (module && module._toBeDeleted) return null;
                                                     return (
                                                         <Draggable key={moduleItem.dndId} draggableId={moduleItem.dndId} index={moduleIndex}>
@@ -1328,7 +1319,7 @@ export default function EditCoursePage() {
                                         )}
                                     </Droppable>
                                 </DragDropContext>
-                                {moduleFields.filter(mod => !(methods.getValues(`modules.${moduleFields.indexOf(mod)}._toBeDeleted` as const))).length === 0 && (
+                                {moduleFields.filter(mod => !(getValues(`modules.${moduleFields.indexOf(mod)}._toBeDeleted` as const))).length === 0 && (
                                     <p className="text-center text-muted-foreground py-8">No hay módulos. ¡Añade el primero para empezar!</p>
                                 )}
                             </CardContent>
@@ -1369,7 +1360,7 @@ export default function EditCoursePage() {
                                 <div>
                                     <Label htmlFor="status">Estado del Curso</Label>
                                     <Controller control={control} name="status" render={({ field }) => (
-                                        <Select onValueChange={(value: CourseStatus) => { field.onChange(value); if (value === 'PUBLISHED' && !watchedPublicationDate) { methods.setValue('publicationDate', new Date(), { shouldDirty: true }); } }} value={field.value} disabled={isSaving}>
+                                        <Select onValueChange={(value: CourseStatus) => { field.onChange(value); if (value === 'PUBLISHED' && !watchedPublicationDate) { setValue('publicationDate', new Date(), { shouldDirty: true }); } }} value={field.value} disabled={isSaving}>
                                             <SelectTrigger id="status"><SelectValue placeholder="Selecciona un estado" /></SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="DRAFT">Borrador</SelectItem>
@@ -1401,9 +1392,9 @@ export default function EditCoursePage() {
                                 <CardDescription>Sube una imagen representativa.</CardDescription>
                             </CardHeader>
                             <CardContent className="grid gap-4">
-                                {methods.watch('imageUrl') ? (
+                                {watch('imageUrl') ? (
                                     <div className="relative aspect-video rounded-md overflow-hidden border w-full">
-                                        <Image src={methods.watch('imageUrl') || '/placeholder-image.jpg'} alt="Imagen del Curso" fill className="object-cover" onError={() => methods.setValue('imageUrl', null)} data-ai-hint="online course" />
+                                        <Image src={watch('imageUrl') || '/placeholder-image.jpg'} alt="Imagen del Curso" fill className="object-cover" onError={() => setValue('imageUrl', null)} data-ai-hint="online course" />
                                         <div className="absolute top-2 right-2 z-10 flex gap-1">
                                             <Button 
                                                 type="button" 
@@ -1507,7 +1498,7 @@ export default function EditCoursePage() {
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
-                            <AlertDialogDescription>Esta acción no se puede deshacer. Se eliminará permanentemente el curso "<strong>{methods.getValues('title' as 'title')}</strong>" y todos sus datos (módulos, lecciones, inscripciones, progreso).</AlertDialogDescription>
+                            <AlertDialogDescription>Esta acción no se puede deshacer. Se eliminará permanentemente el curso "<strong>{getValues('title' as 'title')}</strong>" y todos sus datos (módulos, lecciones, inscripciones, progreso).</AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
                             <AlertDialogCancel onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>Cancelar</AlertDialogCancel>
@@ -1526,4 +1517,3 @@ export default function EditCoursePage() {
         </FormProvider>
     );
 }
-

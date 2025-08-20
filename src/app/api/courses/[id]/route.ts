@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -159,7 +160,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 });
               }
             
-              if (lessonData.templateId) {
+              if (lessonData.templateId && !lessonData.contentBlocks?.length) { // Apply template only if no blocks exist
                 const template = await tx.lessonTemplate.findUnique({
                     where: { id: lessonData.templateId },
                     include: { templateBlocks: { orderBy: { order: 'asc' } } }
