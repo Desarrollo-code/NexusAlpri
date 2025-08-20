@@ -1,4 +1,5 @@
 
+
 // En /home/user/studio/src/app/(app)/manage-courses/[courseId]/edit/page.tsx
 
 'use client';
@@ -1403,7 +1404,7 @@ export default function EditCoursePage() {
                             <CardContent className="grid gap-4">
                                 {watch('imageUrl') ? (
                                     <div className="relative aspect-video rounded-md overflow-hidden border w-full">
-                                        <Image src={watch('imageUrl') || '/placeholder-image.jpg'} alt="Imagen del Curso" fill className="object-cover" onError={() => setValue('imageUrl', null)} data-ai-hint="online course" />
+                                        <Image src={watch('imageUrl') || '/placeholder-image.jpg'} alt="Imagen del Curso" fill className="object-cover" onError={()={() => setValue('imageUrl', null)} data-ai-hint="online course" />
                                         <div className="absolute top-2 right-2 z-10 flex gap-1">
                                             <Button 
                                                 type="button" 
@@ -1453,7 +1454,7 @@ export default function EditCoursePage() {
                                     <DropdownMenuSeparator />
                                     {watchedCourseStatus !== 'DRAFT' && (
                                         <DropdownMenuItem
-                                            onClick={() => handleChangeCourseStatus('DRAFT')}
+                                            onClick={()={() => handleChangeCourseStatus('DRAFT')}
                                             disabled={isSaving}
                                         >
                                             <CircleOff className="mr-2 h-4 w-4" /> Marcar como Borrador
@@ -1461,7 +1462,7 @@ export default function EditCoursePage() {
                                     )}
                                     {watchedCourseStatus !== 'ARCHIVED' && (
                                         <DropdownMenuItem
-                                            onClick={() => handleChangeCourseStatus('ARCHIVED')}
+                                            onClick={()={() => handleChangeCourseStatus('ARCHIVED')}
                                             disabled={isSaving}
                                         >
                                             <Archive className="mr-2 h-4 w-4" /> Archivar Curso
@@ -1469,7 +1470,7 @@ export default function EditCoursePage() {
                                     )}
                                      <DropdownMenuSeparator />
                                     <DropdownMenuItem
-                                        onClick={() => setShowDeleteDialog(true)}
+                                        onClick={()={() => setShowDeleteDialog(true)}
                                         disabled={isSaving}
                                         className="text-destructive focus:bg-destructive/10"
                                     >
@@ -1527,3 +1528,6 @@ export default function EditCoursePage() {
     );
 }
 
+
+
+    
