@@ -89,7 +89,7 @@ export default function CalendarPage() {
   const [newAttachmentUrl, setNewAttachmentUrl] = useState('');
   
   const canCreateEvent = useMemo(() => user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR', [user]);
-  const canEditEvent = useMemo(() => {
+  const canEditSelectedEvent = useMemo(() => {
     if (!user || !selectedEvent) return false;
     if (user.role === 'ADMINISTRATOR') return true;
     if (user.role === 'INSTRUCTOR' && selectedEvent.creatorId === user.id) return true;
@@ -119,7 +119,7 @@ export default function CalendarPage() {
   const fetchUsers = useCallback(async () => {
     if (!canCreateEvent) return;
     try {
-      const res = await fetch('/api/users');
+      const res = await fetch('/api/users/list');
       if (!res.ok) throw new Error((await res.json()).message || "Failed to fetch users");
       const data = await res.json();
       setAllUsers(data.users || []);
@@ -238,7 +238,7 @@ export default function CalendarPage() {
   }
 
   const handleDeleteEvent = async (eventId: string) => {
-    if (!canEditEvent) return;
+    if (!canEditSelectedEvent) return;
     setIsSaving(true);
     try {
       const response = await fetch(`/api/events/${eventId}`, { method: 'DELETE' });
@@ -341,13 +341,13 @@ export default function CalendarPage() {
         )}
       
       <Dialog open={showEventModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowEventModal(isOpen); }}>
-        <DialogContent className={cn("w-[95vw] max-w-2xl overflow-hidden flex flex-col max-h-[90vh]", selectedEvent && user?.id === selectedEvent.creatorId && "border-primary shadow-primary/20")}>
+        <DialogContent className={cn("w-[95vw] max-w-2xl overflow-hidden flex flex-col max-h-[90vh]", selectedEvent && canEditSelectedEvent && "border-primary shadow-primary/20")}>
           <DialogHeader className="flex flex-row items-center justify-between">
             <div className="space-y-1.5">
                 <DialogTitle>{(selectedEvent && !isEditMode) ? selectedEvent.title : (isEditMode ? (selectedEvent ? "Editar Evento" : "Crear Evento") : "Detalles del Evento")}</DialogTitle>
                 <DialogDescription>{isEditMode ? "Completa los detalles para agendar un nuevo evento." : "Información detallada sobre el evento."}</DialogDescription>
             </div>
-            {canEditEvent && !isEditMode && (
+            {canEditSelectedEvent && !isEditMode && (
                 <Button variant="outline" size="icon" onClick={() => setIsEditMode(true)}>
                     <Edit className="h-4 w-4" />
                 </Button>
