@@ -1204,10 +1204,29 @@ export default function EditCoursePage() {
                                                                                         <Input {...methods.register(`modules.${moduleIndex}.title` as FormModulesPath)} placeholder="Título del Módulo" className="text-base font-semibold border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-auto p-0" disabled={isSaving} onClick={(e) => e.stopPropagation()} />
                                                                                     </div>
                                                                                 </AccordionTrigger>
-                                                                                <div role="button" aria-label="Eliminar módulo" onClick={(e) => { e.stopPropagation(); if (isSaving) return; setItemToDeleteDetails({ type: 'module', id: module.id, name: module.title, moduleIndex, lessonIndex: -1 }); }}
-                                                                                    className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-destructive transition-colors hover:bg-destructive/10", isSaving ? "cursor-not-allowed opacity-50" : "cursor-pointer")}>
-                                                                                    <Trash2 className="h-4 w-4" />
-                                                                                </div>
+                                                                                <DropdownMenu>
+                                                                                    <DropdownMenuTrigger asChild>
+                                                                                        <Button variant="ghost" size="icon" className="h-8 w-8 ml-2" onClick={e => e.stopPropagation()}>
+                                                                                            <MoreVertical className="h-4 w-4" />
+                                                                                        </Button>
+                                                                                    </DropdownMenuTrigger>
+                                                                                    <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
+                                                                                        <DropdownMenuItem onSelect={() => appendLessonToModule(moduleIndex, { id: `new-lesson-${Date.now()}`, title: 'Nueva Lección', contentBlocks: [], order: methods.getValues(`modules.${moduleIndex}.lessons`)?.length || 0, })}>
+                                                                                            <PlusCircle className="mr-2 h-4 w-4" /> Añadir Lección
+                                                                                        </DropdownMenuItem>
+                                                                                        <DropdownMenuItem onSelect={() => handleOpenTemplateModal(moduleIndex)}>
+                                                                                            <FilePlus2 className="mr-2 h-4 w-4" /> Añadir desde Plantilla
+                                                                                        </DropdownMenuItem>
+                                                                                        <DropdownMenuSeparator />
+                                                                                        <DropdownMenuItem
+                                                                                            className="text-destructive focus:bg-destructive/10"
+                                                                                            onSelect={() => setItemToDeleteDetails({ type: 'module', id: module.id, name: module.title, moduleIndex, lessonIndex: -1 })}
+                                                                                            disabled={isSaving}
+                                                                                        >
+                                                                                            <Trash2 className="mr-2 h-4 w-4" /> Eliminar Módulo
+                                                                                        </DropdownMenuItem>
+                                                                                    </DropdownMenuContent>
+                                                                                </DropdownMenu>
                                                                             </div>
                                                                             <AccordionContent className="p-4 border-t bg-muted/20">
                                                                                 <div className="space-y-4">
@@ -1219,14 +1238,6 @@ export default function EditCoursePage() {
                                                                                                     <LessonItem key={lesson.id} moduleIndex={moduleIndex} lessonIndex={lessonIndex} dndId={lesson.id} isSaving={isSaving} setItemToDeleteDetails={setItemToDeleteDetails} appendBlock={appendBlock} />
                                                                                                 ))}
                                                                                                 {provided.placeholder}
-                                                                                                <div className="flex gap-2 pt-2">
-                                                                                                    <Button type="button" variant="outline" size="sm" onClick={() => appendLessonToModule(moduleIndex, { id: `new-lesson-${Date.now()}`, title: 'Nueva Lección', contentBlocks: [], order: methods.getValues(`modules.${moduleIndex}.lessons`)?.length || 0, })} disabled={isSaving}>
-                                                                                                        <PlusCircle className="mr-2 h-4 w-4" /> Lección en Blanco
-                                                                                                    </Button>
-                                                                                                    <Button type="button" variant="outline" size="sm" onClick={() => handleOpenTemplateModal(moduleIndex)} disabled={isSaving}>
-                                                                                                        <FilePlus2 className="mr-2 h-4 w-4" /> Usar Plantilla
-                                                                                                    </Button>
-                                                                                                </div>
                                                                                             </div>
                                                                                         )}
                                                                                     </Droppable>
