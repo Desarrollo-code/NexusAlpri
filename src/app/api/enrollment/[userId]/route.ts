@@ -18,7 +18,7 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
 
     try {
         const enrollments = await prisma.enrollment.findMany({
-            where: { userId },
+            where: { userId: userId },
             include: {
                 course: {
                     include: {

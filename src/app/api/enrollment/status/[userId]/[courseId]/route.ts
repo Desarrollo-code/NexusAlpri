@@ -18,8 +18,8 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
         const enrollment = await prisma.enrollment.findUnique({
             where: {
                 userId_courseId: {
-                    userId,
-                    courseId,
+                    userId: userId,
+                    courseId: courseId,
                 },
             },
         });
