@@ -63,7 +63,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
       setIsExpanded(!isExpanded);
   }
 
-  const contentToShow = isExpanded ? announcement.content : `${announcement.content.substring(0, TRUNCATE_LENGTH)}${isTruncated ? '...' : ''}`;
+  const contentToShow = isExpanded ? announcement.content : `${''}${announcement.content.substring(0, TRUNCATE_LENGTH)}${isTruncated ? '...' : ''}`;
 
   return (
     <Card className="flex flex-col h-full group card-border-animated">

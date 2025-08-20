@@ -12,6 +12,16 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 
   try {
     const { id } = context.params;
+    const announcement = await prisma.announcement.findUnique({ where: { id } });
+
+    if (!announcement) {
+        return NextResponse.json({ message: 'Anuncio no encontrado' }, { status: 404 });
+    }
+    
+    if (session.role === 'INSTRUCTOR' && announcement.authorId !== session.id) {
+        return NextResponse.json({ message: 'No tienes permiso para editar este anuncio.' }, { status: 403 });
+    }
+
     const body = await req.json();
     const { title, content, audience } = body;
 
@@ -35,6 +45,16 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
 
   try {
     const { id } = context.params;
+    const announcement = await prisma.announcement.findUnique({ where: { id } });
+
+     if (!announcement) {
+        return NextResponse.json({ message: 'Anuncio no encontrado' }, { status: 404 });
+    }
+    
+    if (session.role === 'INSTRUCTOR' && announcement.authorId !== session.id) {
+        return NextResponse.json({ message: 'No tienes permiso para eliminar este anuncio.' }, { status: 403 });
+    }
+
     await prisma.announcement.delete({ where: { id } });
     return NextResponse.json({ message: 'Anuncio eliminado correctamente' });
   } catch (error) {
