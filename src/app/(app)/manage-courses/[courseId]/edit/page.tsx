@@ -108,7 +108,7 @@ type ItemToDeleteDetails = {
     id: string;
     name: string;
     moduleIndex: number;
-    lessonIndex: number;
+    lessonIndex?: number;
     blockIndex?: number;
 } | null;
 
@@ -201,15 +201,14 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPr
     setPreviewQuizDetails: (details: { moduleIndex: number; lessonIndex: number, blockIndex: number } | null) => void;
     setAnalyticsQuizId: (quizId: string | null) => void;
 }) {
-    const { control, register, watch, setValue, getValues } = useFormContext<EditableCourse>();
-    const { toast } = useToast();
-
-    const lessonTitle = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.title` as `${FormLessonsPath}.title`);
-    const quizPath = `modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.quiz`;
+    const { control, register, watch, getValues } = useFormContext<EditableCourse>();
+    
+    const lessonTitle = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.title`);
+    const quizPath = `modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.quiz` as const;
 
     const { fields: questionFields, append: appendQuestion, remove: removeQuestion, move: moveQuestion } = useFieldArray({
         control,
-        name: `${quizPath}.questions` as `${FormQuizPath}.questions`,
+        name: `${quizPath}.questions` as `${typeof quizPath}.questions`,
     });
 
     const onQuestionDragEnd = (result: DropResult) => {
@@ -217,7 +216,7 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPr
         moveQuestion(result.source.index, result.destination.index);
     }
 
-    const currentQuizData = watch(`${quizPath}` as `${FormQuizPath}`);
+    const currentQuizData = watch(quizPath);
 
 
     return (
@@ -230,11 +229,11 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPr
                 <div className="grid md:grid-cols-2 gap-4 px-6">
                     <div>
                         <Label htmlFor="quiz-title">Título del Quiz</Label>
-                        <Input id="quiz-title" {...register(`${quizPath}.title` as `${FormQuizPath}.title`)} placeholder="Título general del quiz" />
+                        <Input id="quiz-title" {...register(`${quizPath}.title` as const)} placeholder="Título general del quiz" />
                     </div>
                     <div>
                         <Label htmlFor="quiz-desc">Descripción del Quiz</Label>
-                        <Textarea id="quiz-desc" {...register(`${quizPath}.description` as `${FormQuizPath}.description`)} placeholder="Instrucciones o descripción breve" />
+                        <Textarea id="quiz-desc" {...register(`${quizPath}.description` as const)} placeholder="Instrucciones o descripción breve" />
                     </div>
                 </div>
                 <Separator className="my-4" />
@@ -263,7 +262,7 @@ function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPr
                                                             </CardHeader>
                                                             <CardContent className="p-4 pt-0">
                                                                 <Label htmlFor={`question-text-${question.id}`}>Texto de la Pregunta</Label>
-                                                                <Textarea id={`question-text-${question.id}`} {...register(`${quizPath}.questions.${qIndex}.text` as `${FormQuestionsPath}.text`)} placeholder="Escribe aquí el enunciado de la pregunta..." />
+                                                                <Textarea id={`question-text-${question.id}`} {...register(`${quizPath}.questions.${qIndex}.text` as const)} placeholder="Escribe aquí el enunciado de la pregunta..." />
                                                                 <OptionsEditor moduleIndex={moduleIndex} lessonIndex={lessonIndex} blockIndex={blockIndex} questionIndex={qIndex} />
                                                             </CardContent>
                                                         </Card>
@@ -322,74 +321,6 @@ const getBlockTypeIcon = (type: AppLessonType) => {
     }
 };
 
-const ContentBlockList = React.memo(({ moduleIndex, lessonIndex, setItemToDeleteDetails, isSaving, openQuizEditor }: {
-    moduleIndex: number;
-    lessonIndex: number;
-    setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
-    isSaving: boolean;
-    openQuizEditor: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void;
-}) => {
-    const { control, getValues, watch, setValue } = useFormContext<EditableCourse>();
-    const { fields, move, append } = useFieldArray({
-        control,
-        name: `modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks` as const,
-    });
-
-    const appendBlock = useCallback(() => {
-        append({
-            id: `new-block-${Date.now()}`,
-            type: 'TEXT',
-            content: '',
-            order: fields.length
-        });
-    }, [append, fields.length]);
-
-    const onBlockDragEnd = (result: DropResult) => {
-        if (!result.destination) return;
-        move(result.source.index, result.destination.index);
-    }
-    
-    return (
-        <div className="space-y-4 pt-4 border-t mt-4">
-            <DragDropContext onDragEnd={onBlockDragEnd}>
-                <Droppable droppableId={`blocks-${moduleIndex}-${lessonIndex}`} type={`BLOCKS-${moduleIndex}-${lessonIndex}`}>
-                    {(provided: DroppableProvided) => (
-                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                            {fields.map((blockItem, blockIndex) => {
-                                const block = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}` as const);
-                                if (!block || block._toBeDeleted) return null;
-                                return (
-                                    <ContentBlockItem
-                                        key={blockItem.id}
-                                        moduleIndex={moduleIndex}
-                                        lessonIndex={lessonIndex}
-                                        blockIndex={blockIndex}
-                                        dndId={blockItem.id}
-                                        isSaving={isSaving}
-                                        setItemToDeleteDetails={setItemToDeleteDetails}
-                                        openQuizEditor={openQuizEditor}
-                                    />
-                                );
-                            })}
-                            {provided.placeholder}
-                        </div>
-                    )}
-                </Droppable>
-            </DragDropContext>
-            <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={appendBlock}
-                disabled={isSaving}
-            >
-                <PlusCircle className="mr-2 h-4 w-4" /> Añadir Bloque
-            </Button>
-        </div>
-    );
-});
-ContentBlockList.displayName = 'ContentBlockList';
-
 const ContentBlockItem = React.memo(({ moduleIndex, lessonIndex, blockIndex, dndId, isSaving, setItemToDeleteDetails, openQuizEditor }: {
     moduleIndex: number;
     lessonIndex: number;
@@ -400,7 +331,7 @@ const ContentBlockItem = React.memo(({ moduleIndex, lessonIndex, blockIndex, dnd
     openQuizEditor: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void;
 }) => {
     const { control, getValues, watch } = useFormContext<EditableCourse>();
-    const block = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}` as const);
+    const block = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}`);
 
     return (
         <Draggable key={dndId} draggableId={dndId} index={blockIndex}>
@@ -420,7 +351,7 @@ const ContentBlockItem = React.memo(({ moduleIndex, lessonIndex, blockIndex, dnd
                             <div className="flex items-center gap-1">
                                 <Controller
                                     control={control}
-                                    name={`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.type` as const}
+                                    name={`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.type`}
                                     render={({ field }) => (
                                         <Select onValueChange={field.onChange} value={field.value} disabled={isSaving}>
                                             <SelectTrigger className="w-[120px] h-9 text-xs"><SelectValue placeholder="Tipo" /></SelectTrigger>
@@ -458,8 +389,8 @@ const BlockSpecificInput = React.memo(({ moduleIndex, lessonIndex, blockIndex, o
     const [progress, setProgress] = useState(0);
     const [error, setError] = useState<string | null>(null);
 
-    const blockType = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.type` as const);
-    const blockContent = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`) as string | undefined;
+    const blockType = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.type`);
+    const blockContent = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`);
 
     const handleFileSelected = async (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -492,15 +423,15 @@ const BlockSpecificInput = React.memo(({ moduleIndex, lessonIndex, blockIndex, o
     const isSaving = false;
 
     switch (blockType) {
-        case 'VIDEO': return (<><div className="mt-2 space-y-1"><Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content` as const)} placeholder="https://youtube.com/watch?v=..." className="h-8 text-xs" disabled={isSaving || isUploading} /></div></>);
-        case 'TEXT': return (<><div className="mt-2 space-y-1"><Textarea {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content` as const)} placeholder="Escribe aquí el contenido o pega un enlace https://..." className="min-h-[80px] text-xs" disabled={isSaving || isUploading} /></div></>);
+        case 'VIDEO': return (<><div className="mt-2 space-y-1"><Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`)} placeholder="https://youtube.com/watch?v=..." className="h-8 text-xs" disabled={isSaving || isUploading} /></div></>);
+        case 'TEXT': return (<><div className="mt-2 space-y-1"><Textarea {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`)} placeholder="Escribe aquí el contenido o pega un enlace https://..." className="min-h-[80px] text-xs" disabled={isSaving || isUploading} /></div></>);
         case 'QUIZ': {
             return (<div className="mt-2 space-y-2">
                 <Button type="button" variant="secondary" className="w-full" onClick={openQuizEditor}>
                     <Pencil className="mr-2 h-4 w-4" />
                     Configurar Quiz
                 </Button>
-                <Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`)} type="hidden" value="" />
+                <input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`)} type="hidden" value="" />
             </div>);
         }
         case 'FILE': {
@@ -538,14 +469,18 @@ const BlockSpecificInput = React.memo(({ moduleIndex, lessonIndex, blockIndex, o
 });
 BlockSpecificInput.displayName = 'BlockSpecificInput';
 
-const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setItemToDeleteDetails }: {
+const LessonItem = React.memo(({ moduleIndex, lessonIndex, provided, setItemToDeleteDetails }: {
     moduleIndex: number;
     lessonIndex: number;
-    dndId: string;
+    provided: DraggableProvided;
     isSaving: boolean;
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
 }) => {
-    const { getValues, register, watch, setValue } = useFormContext<EditableCourse>();
+    const { getValues, register, control, watch } = useFormContext<EditableCourse>();
+    const { fields: blockFields, append: appendBlock, remove: removeBlock, move: moveBlock } = useFieldArray({
+        control, name: `modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`
+    });
+
     const [quizEditorDetails, setQuizEditorDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
     const [previewQuizDetails, setPreviewQuizDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
     const [analyticsQuizId, setAnalyticsQuizId] = useState<string | null>(null);
@@ -555,12 +490,17 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
     const [isSavingTemplate, setIsSavingTemplate] = useState(false);
     const { toast } = useToast();
     const { user } = useAuth();
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(true);
+
+    const onBlockDragEnd = (result: DropResult) => {
+        if (!result.destination) return;
+        moveBlock(result.source.index, result.destination.index);
+    }
 
     const openQuizEditor = useCallback((mIndex: number, lIndex: number, bIndex: number) => setQuizEditorDetails({ moduleIndex: mIndex, lessonIndex: lIndex, blockIndex: bIndex }), []);
 
-    const course = watch();
-    const isCreatorPreview = user?.role === 'ADMINISTRATOR' || user?.id === course.instructorId;
+    const lesson = watch(`modules.${moduleIndex}.lessons.${lessonIndex}`);
+    const isSaving = false; // Placeholder
 
     const handleSaveAsTemplate = async () => {
         if (!templateName.trim()) {
@@ -591,142 +531,163 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, dndId, isSaving, setI
     };
 
     return (
-        <Draggable key={dndId} draggableId={dndId} index={lessonIndex}>
-            {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
-                 <div
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    className={`p-3 rounded-md border bg-card text-card-foreground shadow-sm ${snapshot.isDragging ? 'shadow-lg' : ''}`}
-                 >
-                    <div className="flex w-full items-start gap-3">
-                        <div {...provided.dragHandleProps} className="cursor-grab pt-1"><GripVertical className="h-4 w-4 text-muted-foreground" /></div>
-                        <div className="flex-grow space-y-2">
-                             <div className="flex-grow mr-2 w-full">
-                                <button type="button" onClick={() => setIsExpanded(!isExpanded)} className="flex items-center justify-between w-full text-left">
-                                  <div className="flex items-center gap-2">
-                                     <BookOpenText className="h-4 w-4 text-primary" />
-                                     <Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.title` as const)} className="text-sm font-medium h-9 w-full border-none p-0 focus-visible:ring-0" placeholder="Título de la lección" disabled={isSaving} onClick={(e) => e.stopPropagation()} />
-                                  </div>
-                                  <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isExpanded && "rotate-180")} />
-                                </button>
-                            </div>
-                        </div>
-                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                                    <MoreVertical className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                <DropdownMenuItem onClick={() => { setTemplateName(getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.title`)); setShowSaveTemplateModal(true); }}>
-                                    <Copy className="mr-2 h-4 w-4" /> Guardar como Plantilla
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    className="text-destructive focus:bg-destructive/10"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (isSaving) return;
-                                        const lessonValues = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
-                                        if (lessonValues) {
-                                            setItemToDeleteDetails({ type: 'lesson', id: lessonValues.id, name: lessonValues.title, moduleIndex, lessonIndex });
-                                        }
-                                    }}
-                                    disabled={isSaving}
-                                >
-                                    <Trash2 className="mr-2 h-4 w-4" /> Eliminar Lección
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+         <div ref={provided.innerRef} {...provided.draggableProps} className="p-3 rounded-md border bg-card text-card-foreground shadow-sm">
+            <div className="flex w-full items-start gap-3">
+                <div {...provided.dragHandleProps} className="cursor-grab pt-1"><GripVertical className="h-4 w-4 text-muted-foreground" /></div>
+                <div className="flex-grow space-y-2">
+                     <div className="flex-grow mr-2 w-full">
+                        <button type="button" onClick={() => setIsExpanded(!isExpanded)} className="flex items-center justify-between w-full text-left">
+                          <div className="flex items-center gap-2">
+                             <BookOpenText className="h-4 w-4 text-primary" />
+                             <Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.title`)} className="text-sm font-medium h-9 w-full border-none p-0 focus-visible:ring-0" placeholder="Título de la lección" disabled={isSaving} onClick={(e) => e.stopPropagation()} />
+                          </div>
+                          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isExpanded && "rotate-180")} />
+                        </button>
                     </div>
-                    {isExpanded && (
-                         <ContentBlockList
-                            moduleIndex={moduleIndex}
-                            lessonIndex={lessonIndex}
-                            setItemToDeleteDetails={setItemToDeleteDetails}
-                            isSaving={isSaving}
-                            openQuizEditor={openQuizEditor}
-                        />
-                    )}
-                    {quizEditorDetails?.lessonIndex === lessonIndex && (
-                        <QuizEditorDialog
-                            {...quizEditorDetails}
-                            onClose={() => setQuizEditorDetails(null)}
-                            setPreviewQuizDetails={setPreviewQuizDetails}
-                            setAnalyticsQuizId={setAnalyticsQuizId}
-                        />
-                    )}
-                    {previewQuizDetails?.lessonIndex === lessonIndex && (
-                        <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setPreviewQuizDetails(null)}>
-                          <DialogContent className="max-w-3xl">
-                             <DialogHeader>
-                                <DialogTitle>Vista Previa del Quiz</DialogTitle>
-                                <DialogDescription>
-                                    Así es como los estudiantes verán este quiz.
-                                </DialogDescription>
-                             </DialogHeader>
-                            <QuizViewer
-                                quiz={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.contentBlocks.${previewQuizDetails.blockIndex}.quiz`)}
-                                lessonId={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}
-                                isCreatorPreview={true}
-                            />
-                          </DialogContent>
-                        </Dialog>
-                    )}
-                    {analyticsQuizId && (
-                        <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setAnalyticsQuizId(null)}>
-                            <DialogContent className="max-w-4xl w-[95vw] h-[90vh] flex flex-col">
-                                <DialogHeader>
-                                    <DialogTitle>Analíticas del Quiz</DialogTitle>
-                                    <DialogDescription>Rendimiento detallado de los estudiantes en este quiz.</DialogDescription>
-                                </DialogHeader>
-                                <div className="flex-grow overflow-hidden">
-                                   <QuizAnalyticsView quizId={analyticsQuizId} />
+                </div>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                            <MoreVertical className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuItem onClick={() => { setTemplateName(getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.title`)); setShowSaveTemplateModal(true); }}>
+                            <Copy className="mr-2 h-4 w-4" /> Guardar como Plantilla
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            className="text-destructive focus:bg-destructive/10"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (isSaving) return;
+                                const lessonValues = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
+                                if (lessonValues) {
+                                    setItemToDeleteDetails({ type: 'lesson', id: lessonValues.id, name: lessonValues.title, moduleIndex, lessonIndex });
+                                }
+                            }}
+                            disabled={isSaving}
+                        >
+                            <Trash2 className="mr-2 h-4 w-4" /> Eliminar Lección
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+            {isExpanded && (
+                <div className="space-y-4 pt-4 border-t mt-4">
+                    <DragDropContext onDragEnd={onBlockDragEnd}>
+                        <Droppable droppableId={`blocks-${moduleIndex}-${lessonIndex}`} type={`BLOCKS-${moduleIndex}-${lessonIndex}`}>
+                            {(provided: DroppableProvided) => (
+                                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                                    {blockFields.map((blockItem, blockIndex) => {
+                                        const block = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}`);
+                                        if (block._toBeDeleted) return null;
+                                        return (
+                                            <ContentBlockItem
+                                                key={blockItem.id}
+                                                dndId={blockItem.id}
+                                                moduleIndex={moduleIndex}
+                                                lessonIndex={lessonIndex}
+                                                blockIndex={blockIndex}
+                                                isSaving={isSaving}
+                                                setItemToDeleteDetails={setItemToDeleteDetails}
+                                                openQuizEditor={openQuizEditor}
+                                            />
+                                        );
+                                    })}
+                                    {provided.placeholder}
                                 </div>
-                            </DialogContent>
-                        </Dialog>
-                    )}
-                     <Dialog open={showSaveTemplateModal} onOpenChange={setShowSaveTemplateModal}>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Guardar Lección como Plantilla</DialogTitle>
-                                <DialogDescription>Guarda la estructura de esta lección para reutilizarla en el futuro.</DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                                <div>
-                                    <Label htmlFor="template-name">Nombre de la Plantilla</Label>
-                                    <Input id="template-name" value={templateName} onChange={(e) => setTemplateName(e.target.value)} required disabled={isSavingTemplate} />
-                                </div>
-                                <div>
-                                    <Label htmlFor="template-description">Descripción (Opcional)</Label>
-                                    <Textarea id="template-description" value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} disabled={isSavingTemplate} />
-                                </div>
-                            </div>
-                            <DialogFooter>
-                                <Button variant="outline" onClick={() => setShowSaveTemplateModal(false)} disabled={isSavingTemplate}>Cancelar</Button>
-                                <Button onClick={handleSaveAsTemplate} disabled={isSavingTemplate}>
-                                    {isSavingTemplate && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Guardar Plantilla
-                                </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-                 </div>
+                            )}
+                        </Droppable>
+                    </DragDropContext>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => appendBlock({ id: `new-block-${Date.now()}`, type: 'TEXT', content: '', order: blockFields.length, _toBeDeleted: false, quiz: null })}
+                        disabled={isSaving}
+                    >
+                        <PlusCircle className="mr-2 h-4 w-4" /> Añadir Bloque
+                    </Button>
+                </div>
             )}
-        </Draggable>
+            {quizEditorDetails?.lessonIndex === lessonIndex && (
+                <QuizEditorDialog
+                    {...quizEditorDetails}
+                    onClose={() => setQuizEditorDetails(null)}
+                    setPreviewQuizDetails={setPreviewQuizDetails}
+                    setAnalyticsQuizId={setAnalyticsQuizId}
+                />
+            )}
+            {previewQuizDetails?.lessonIndex === lessonIndex && (
+                <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setPreviewQuizDetails(null)}>
+                  <DialogContent className="max-w-3xl">
+                     <DialogHeader>
+                        <DialogTitle>Vista Previa del Quiz</DialogTitle>
+                        <DialogDescription>
+                            Así es como los estudiantes verán este quiz.
+                        </DialogDescription>
+                     </DialogHeader>
+                    <QuizViewer
+                        quiz={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.contentBlocks.${previewQuizDetails.blockIndex}.quiz`)}
+                        lessonId={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}
+                        isCreatorPreview={true}
+                    />
+                  </DialogContent>
+                </Dialog>
+            )}
+            {analyticsQuizId && (
+                <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setAnalyticsQuizId(null)}>
+                    <DialogContent className="max-w-4xl w-[95vw] h-[90vh] flex flex-col">
+                        <DialogHeader>
+                            <DialogTitle>Analíticas del Quiz</DialogTitle>
+                            <DialogDescription>Rendimiento detallado de los estudiantes en este quiz.</DialogDescription>
+                        </DialogHeader>
+                        <div className="flex-grow overflow-hidden">
+                           <QuizAnalyticsView quizId={analyticsQuizId} />
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
+             <Dialog open={showSaveTemplateModal} onOpenChange={setShowSaveTemplateModal}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Guardar Lección como Plantilla</DialogTitle>
+                        <DialogDescription>Guarda la estructura de esta lección para reutilizarla en el futuro.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div>
+                            <Label htmlFor="template-name">Nombre de la Plantilla</Label>
+                            <Input id="template-name" value={templateName} onChange={(e) => setTemplateName(e.target.value)} required disabled={isSavingTemplate} />
+                        </div>
+                        <div>
+                            <Label htmlFor="template-description">Descripción (Opcional)</Label>
+                            <Textarea id="template-description" value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} disabled={isSavingTemplate} />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowSaveTemplateModal(false)} disabled={isSavingTemplate}>Cancelar</Button>
+                        <Button onClick={handleSaveAsTemplate} disabled={isSavingTemplate}>
+                            {isSavingTemplate && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Guardar Plantilla
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+         </div>
     );
 });
 LessonItem.displayName = 'LessonItem';
 
-const ModuleItem = ({ moduleIndex, provided, setItemToDeleteDetails }: { 
+const ModuleItem = React.memo(({ moduleIndex, provided, setItemToDeleteDetails }: { 
     moduleIndex: number, 
     provided: DraggableProvided,
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
 }) => {
     const { control, getValues, register, watch } = useFormContext<EditableCourse>();
-    const { fields: lessonFields, move, append: appendLesson } = useFieldArray({
+    const { fields: lessonFields, move: moveLesson, append: appendLesson } = useFieldArray({
         control,
-        name: `modules.${moduleIndex}.lessons`,
+        name: `modules.${moduleIndex}.lessons`
     });
     
     const [isSaving, setIsSaving] = useState(false);
@@ -786,7 +747,7 @@ const ModuleItem = ({ moduleIndex, provided, setItemToDeleteDetails }: {
 
     const onLessonDragEnd = (result: DropResult) => {
         if (!result.destination) return;
-        move(result.source.index, result.destination.index);
+        moveLesson(result.source.index, result.destination.index);
     }
     
     const module = watch(`modules.${moduleIndex}`);
@@ -820,7 +781,7 @@ const ModuleItem = ({ moduleIndex, provided, setItemToDeleteDetails }: {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                     className="text-destructive focus:bg-destructive/10"
-                                    onSelect={() => setItemToDeleteDetails({ type: 'module', id: module.id, name: module.title, moduleIndex, lessonIndex: -1 })}
+                                    onSelect={() => setItemToDeleteDetails({ type: 'module', id: module.id, name: module.title, moduleIndex })}
                                     disabled={isSaving}
                                 >
                                     <Trash2 className="mr-2 h-4 w-4" /> Eliminar Módulo
@@ -834,18 +795,21 @@ const ModuleItem = ({ moduleIndex, provided, setItemToDeleteDetails }: {
                                 <Droppable droppableId={`lessons-of-module-${moduleIndex}`} type={`LESSONS-${moduleIndex}`}>
                                     {(provided) => (
                                         <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                                            {(lessonFields || []).map((lessonItem, lessonIndex) => {
+                                            {lessonFields.map((lessonItem, lessonIndex) => {
                                                 const lesson = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
                                                 if (lesson._toBeDeleted) return null;
                                                 return (
-                                                  <LessonItem
-                                                      key={lessonItem.id}
-                                                      dndId={lessonItem.id}
-                                                      moduleIndex={moduleIndex}
-                                                      lessonIndex={lessonIndex}
-                                                      isSaving={isSaving}
-                                                      setItemToDeleteDetails={setItemToDeleteDetails}
-                                                  />
+                                                  <Draggable key={lessonItem.id} draggableId={lessonItem.id} index={lessonIndex}>
+                                                    {(provided) => (
+                                                      <LessonItem
+                                                          provided={provided}
+                                                          moduleIndex={moduleIndex}
+                                                          lessonIndex={lessonIndex}
+                                                          isSaving={isSaving}
+                                                          setItemToDeleteDetails={setItemToDeleteDetails}
+                                                      />
+                                                    )}
+                                                  </Draggable>
                                                 )
                                             })}
                                             {provided.placeholder}
@@ -883,8 +847,8 @@ const ModuleItem = ({ moduleIndex, provided, setItemToDeleteDetails }: {
             </Dialog>
         </div>
     );
-};
-
+});
+ModuleItem.displayName = 'ModuleItem';
 
 // === COMPONENTE PRINCIPAL DE LA PÁGINA (EditCoursePage) ===
 export default function EditCoursePage() {
@@ -921,7 +885,7 @@ export default function EditCoursePage() {
         mode: 'onChange'
     });
 
-    const { control, handleSubmit, reset, formState: { errors, dirtyFields, isDirty }, setValue, getValues, watch, register } = methods;
+    const { control, handleSubmit, reset, formState: { errors, isDirty }, setValue, getValues, watch } = methods;
 
     const {
         fields: moduleFields,
@@ -1158,7 +1122,7 @@ export default function EditCoursePage() {
     const handleDragEnd = (result: DropResult) => {
         const { source, destination, type } = result;
         if (!destination) return;
-        if (type === 'MODULE') {
+        if (type === 'MODULES') {
             moveModule(source.index, destination.index);
         }
     };
@@ -1176,14 +1140,14 @@ export default function EditCoursePage() {
 
     const confirmDeleteItemAction = useCallback(() => {
         if (!itemToDeleteDetails) return;
-        const { type, moduleIndex, lessonIndex, blockIndex } = itemToDeleteDetails;
+        const { type, moduleIndex, lessonIndex } = itemToDeleteDetails;
 
         if (type === 'module') {
             setValue(`modules.${moduleIndex}._toBeDeleted`, true, { shouldDirty: true });
         } else if (type === 'lesson' && lessonIndex !== undefined) {
             setValue(`modules.${moduleIndex}.lessons.${lessonIndex}._toBeDeleted`, true, { shouldDirty: true });
-        } else if (type === 'block' && lessonIndex !== undefined && blockIndex !== undefined) {
-            setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}._toBeDeleted`, true, { shouldDirty: true });
+        } else if (type === 'block' && itemToDeleteDetails.blockIndex !== undefined && lessonIndex !== undefined) {
+            setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${itemToDeleteDetails.blockIndex}._toBeDeleted`, true, { shouldDirty: true });
         }
 
         toast({
@@ -1254,12 +1218,12 @@ export default function EditCoursePage() {
                             <CardContent className="space-y-4">
                                 <div>
                                     <Label htmlFor="title">Título del Curso</Label>
-                                    <Input id="title" {...register('title', { required: 'El título es obligatorio' })} placeholder="Título atractivo y descriptivo" disabled={isSaving} />
+                                    <Input id="title" {...methods.register('title', { required: 'El título es obligatorio' })} placeholder="Título atractivo y descriptivo" disabled={isSaving} />
                                     {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
                                 </div>
                                 <div>
                                     <Label htmlFor="description">Descripción del Curso</Label>
-                                    <Textarea id="description" {...register('description', { required: 'La descripción es obligatoria' })} placeholder="Describe el contenido, objetivos y a quién va dirigido el curso." rows={6} disabled={isSaving} />
+                                    <Textarea id="description" {...methods.register('description', { required: 'La descripción es obligatoria' })} placeholder="Describe el contenido, objetivos y a quién va dirigido el curso." rows={6} disabled={isSaving} />
                                     {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
                                 </div>
                             </CardContent>
@@ -1277,15 +1241,15 @@ export default function EditCoursePage() {
                             </CardHeader>
                             <CardContent>
                                 <DragDropContext onDragEnd={handleDragEnd}>
-                                    <Droppable droppableId="modules" type="MODULE">
-                                        {(provided: DroppableProvided) => (
+                                    <Droppable droppableId="modules-droppable" type="MODULES">
+                                        {(provided) => (
                                             <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-                                                {moduleFields.filter(mod => !(getValues(`modules.${moduleFields.indexOf(mod)}._toBeDeleted` as const))).map((moduleItem, moduleIndex) => {
-                                                    const module = getValues(`modules.${moduleIndex}` as const);
+                                                {moduleFields.filter(mod => !getValues(`modules.${moduleFields.indexOf(mod)}._toBeDeleted`)).map((moduleItem, moduleIndex) => {
+                                                    const module = getValues(`modules.${moduleIndex}`);
                                                     if (module && module._toBeDeleted) return null;
                                                     return (
                                                         <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
-                                                          {(provided, snapshot) => (
+                                                          {(provided) => (
                                                               <ModuleItem 
                                                                 moduleIndex={moduleIndex} 
                                                                 provided={provided} 
@@ -1300,7 +1264,7 @@ export default function EditCoursePage() {
                                         )}
                                     </Droppable>
                                 </DragDropContext>
-                                {moduleFields.filter(mod => !(getValues(`modules.${moduleFields.indexOf(mod)}._toBeDeleted` as const))).length === 0 && (
+                                {moduleFields.filter(mod => !getValues(`modules.${moduleFields.indexOf(mod)}._toBeDeleted`)).length === 0 && (
                                     <p className="text-center text-muted-foreground py-8">No hay módulos. ¡Añade el primero para empezar!</p>
                                 )}
                             </CardContent>
@@ -1461,7 +1425,7 @@ export default function EditCoursePage() {
 
 
                 {/* Dialogs and Modals */}
-                <AlertDialog open={itemToDeleteDetails !== null} onOpenChange={setItemToDeleteDetails as any}>
+                <AlertDialog open={itemToDeleteDetails !== null} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
@@ -1479,7 +1443,7 @@ export default function EditCoursePage() {
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
-                            <AlertDialogDescription>Esta acción no se puede deshacer. Se eliminará permanentemente el curso "<strong>{getValues('title' as 'title')}</strong>" y todos sus datos (módulos, lecciones, inscripciones, progreso).</AlertDialogDescription>
+                            <AlertDialogDescription>Esta acción no se puede deshacer. Se eliminará permanentemente el curso "<strong>{getValues('title')}</strong>" y todos sus datos (módulos, lecciones, inscripciones, progreso).</AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
                             <AlertDialogCancel onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>Cancelar</AlertDialogCancel>
