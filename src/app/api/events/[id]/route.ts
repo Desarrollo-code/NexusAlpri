@@ -8,14 +8,14 @@ export const dynamic = 'force-dynamic';
 // PUT (update) an event
 export async function PUT(
   req: NextRequest, 
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id } = context.params;
+  const { id } = params;
 
   try {
     const existingEvent = await prisma.calendarEvent.findUnique({
@@ -81,14 +81,14 @@ export async function PUT(
 // DELETE an event
 export async function DELETE(
   req: NextRequest, 
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
     const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const { id } = context.params;
+    const { id } = params;
 
     try {
         const existingEvent = await prisma.calendarEvent.findUnique({
@@ -111,3 +111,4 @@ export async function DELETE(
         return NextResponse.json({ message: 'Error al eliminar el evento' }, { status: 500 });
     }
 }
+    
