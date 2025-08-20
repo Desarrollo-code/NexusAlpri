@@ -50,14 +50,12 @@ const UploadWidget = ({
   onFileSelect,
   onRemove,
   disabled,
-  useCropper = true,
 }: {
   label: string;
   currentImageUrl?: string | null;
   onFileSelect: (e: ChangeEvent<HTMLInputElement>) => void;
   onRemove: () => void;
   disabled: boolean;
-  useCropper?: boolean;
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -240,38 +238,18 @@ export default function SettingsPage() {
     setFormState(prev => prev ? { ...prev, [field]: checked } : null);
   };
   
-  const handleFileSelected = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl', e: ChangeEvent<HTMLInputElement>, useCropper: boolean) => {
+  const handleFileSelected = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl', e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = () => {
-            if (useCropper) {
-                setImageToCrop(reader.result as string);
-                setCropUploadUrl('/api/upload/course-image');
-                setCropField(field);
-            } else {
-                handleDirectUpload(field, file);
-            }
+          setImageToCrop(reader.result as string);
+          setCropUploadUrl('/api/upload/course-image'); 
+          setCropField(field);
         };
         reader.readAsDataURL(file);
     }
     if (e.target) e.target.value = '';
-  };
-  
-  const handleDirectUpload = async (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl', file: File) => {
-    setIsUploading(true);
-    setUploadProgress(0);
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-        const result: { url: string } = await uploadWithProgress('/api/upload/course-image', formData, setUploadProgress);
-        setFormState(prev => prev ? { ...prev, [field]: result.url } : null);
-        toast({ title: "Imagen Subida", description: "La imagen se ha subido correctamente." });
-    } catch (err) {
-        toast({ title: "Error de Subida", description: (err as Error).message, variant: "destructive" });
-    } finally {
-        setIsUploading(false);
-    }
   };
 
   const handleCropComplete = (croppedFileUrl: string) => {
@@ -281,7 +259,6 @@ export default function SettingsPage() {
     setImageToCrop(null);
     setCropField(null);
   };
-
 
   const handleRemoveImage = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl') => {
       setFormState(prev => prev ? { ...prev, [field]: null } : null);
@@ -392,12 +369,12 @@ export default function SettingsPage() {
                             <CardDescription>Logo, marca de agua e imágenes de las páginas públicas.</CardDescription>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                           <UploadWidget label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(e) => handleFileSelected('logoUrl', e, false)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving || isUploading} useCropper={false} />
-                           <UploadWidget label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(e) => handleFileSelected('watermarkUrl', e, false)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving || isUploading} useCropper={false}/>
-                           <UploadWidget label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(e) => handleFileSelected('landingImageUrl', e, true)} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving || isUploading} useCropper={true}/>
-                           <UploadWidget label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(e) => handleFileSelected('authImageUrl', e, true)} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving || isUploading} useCropper={true}/>
-                           <UploadWidget label="Imagen Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(e) => handleFileSelected('aboutImageUrl', e, true)} onRemove={() => handleRemoveImage('aboutImageUrl')} disabled={isSaving || isUploading} useCropper={true} />
-                           <UploadWidget label="Imagen Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(e) => handleFileSelected('benefitsImageUrl', e, true)} onRemove={() => handleRemoveImage('benefitsImageUrl')} disabled={isSaving || isUploading} useCropper={true} />
+                           <UploadWidget label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(e) => handleFileSelected('logoUrl', e)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving || isUploading} />
+                           <UploadWidget label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(e) => handleFileSelected('watermarkUrl', e)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving || isUploading}/>
+                           <UploadWidget label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(e) => handleFileSelected('landingImageUrl', e)} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving || isUploading}/>
+                           <UploadWidget label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(e) => handleFileSelected('authImageUrl', e)} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving || isUploading}/>
+                           <UploadWidget label="Imagen Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(e) => handleFileSelected('aboutImageUrl', e)} onRemove={() => handleRemoveImage('aboutImageUrl')} disabled={isSaving || isUploading} />
+                           <UploadWidget label="Imagen Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(e) => handleFileSelected('benefitsImageUrl', e)} onRemove={() => handleRemoveImage('benefitsImageUrl')} disabled={isSaving || isUploading} />
                            {isUploading && (
                                 <div className="md:col-span-2">
                                     <Progress value={uploadProgress} className="w-full" />

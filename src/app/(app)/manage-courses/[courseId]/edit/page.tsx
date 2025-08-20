@@ -741,8 +741,6 @@ export default function EditCoursePage() {
     const [itemToDeleteDetails, setItemToDeleteDetails] = useState<ItemToDeleteDetails | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
     const [imageToCrop, setImageToCrop] = useState<string | null>(null);
     
     // State for templates
@@ -1324,7 +1322,7 @@ export default function EditCoursePage() {
                                                 size="icon" 
                                                 className="rounded-full h-8 w-8" 
                                                 onClick={() => document.getElementById('image-upload')?.click()}
-                                                disabled={isSaving || isUploading}>
+                                                disabled={isSaving}>
                                                 <Replace className="h-4 w-4" />
                                             </Button>
                                             <Button 
@@ -1333,7 +1331,7 @@ export default function EditCoursePage() {
                                                 size="icon" 
                                                 className="rounded-full h-8 w-8" 
                                                 onClick={removeCourseImage} 
-                                                disabled={isSaving || isUploading}>
+                                                disabled={isSaving}>
                                                 <XCircle className="h-4 w-4" />
                                             </Button>
                                         </div>
@@ -1344,7 +1342,7 @@ export default function EditCoursePage() {
                                         <span className="text-sm text-muted-foreground">Haz clic para subir una imagen</span>
                                     </Label>
                                 )}
-                                <Input id="image-upload" type="file" className="sr-only" accept="image/*" onChange={handleCourseImageFileChange} disabled={isSaving || isUploading} />
+                                <Input id="image-upload" type="file" className="sr-only" accept="image/*" onChange={handleCourseImageFileChange} disabled={isSaving} />
                                 {errors.imageUrl && <p className="text-red-500 text-xs mt-1">{errors.imageUrl.message}</p>}
                             </CardContent>
                         </Card>
