@@ -838,20 +838,14 @@ const ModuleItem = ({ moduleIndex, provided, setItemToDeleteDetails }: {
                                                 const lesson = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
                                                 if (lesson._toBeDeleted) return null;
                                                 return (
-                                                  <Draggable key={lessonItem.id} draggableId={lessonItem.id} index={lessonIndex}>
-                                                    {(provided) => (
-                                                      <div ref={provided.innerRef} {...provided.draggableProps}>
-                                                          <LessonItem
-                                                              key={lessonItem.id}
-                                                              dndId={lessonItem.id}
-                                                              moduleIndex={moduleIndex}
-                                                              lessonIndex={lessonIndex}
-                                                              isSaving={isSaving}
-                                                              setItemToDeleteDetails={setItemToDeleteDetails}
-                                                          />
-                                                      </div>
-                                                    )}
-                                                  </Draggable>
+                                                  <LessonItem
+                                                      key={lessonItem.id}
+                                                      dndId={lessonItem.id}
+                                                      moduleIndex={moduleIndex}
+                                                      lessonIndex={lessonIndex}
+                                                      isSaving={isSaving}
+                                                      setItemToDeleteDetails={setItemToDeleteDetails}
+                                                  />
                                                 )
                                             })}
                                             {provided.placeholder}
