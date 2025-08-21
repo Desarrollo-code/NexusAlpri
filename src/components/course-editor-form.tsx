@@ -857,7 +857,7 @@ const ModuleItem = React.memo(({ moduleIndex, provided, setItemToDeleteDetails }
 ModuleItem.displayName = 'ModuleItem';
 
 // === COMPONENTE PRINCIPAL DE LA PÁGINA (CourseEditor) ===
-export function CourseEditor({ initialData, courseId }: { initialData: AppCourse | null, courseId: string }) {
+export function CourseEditor({ courseId }: { courseId: string }) {
     const router = useRouter();
     const { toast } = useToast();
     const { user, settings, isLoading: isAuthLoading } = useAuth();
@@ -865,7 +865,7 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
 
     const isNewCourse = courseId === 'new';
 
-    const [isLoading, setIsLoading] = useState(!initialData && !isNewCourse);
+    const [isLoading, setIsLoading] = useState(!isNewCourse);
     const [isSaving, setIsSaving] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [itemToDeleteDetails, setItemToDeleteDetails] = useState<ItemToDeleteDetails | null>(null);
@@ -885,36 +885,52 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
     const { control, handleSubmit, reset, formState: { errors, isDirty }, setValue, getValues, watch, register } = methods;
 
     useEffect(() => {
-        const courseData = initialData;
-        if (courseData) {
-             setPageTitle(`Editando: ${courseData.title}`);
-             reset({
-                ...courseData,
-                publicationDate: courseData.publicationDate ? new Date(courseData.publicationDate) : null,
-                instructorId: courseData.instructorId || user?.id || null,
-                instructorName: courseData.instructor || user?.name || null,
-                modules: (courseData.modules || []).map(module => ({
-                    ...module, description: '',
-                    lessons: (module.lessons || []).map(lesson => ({
-                        ...lesson, order: lesson.order ?? null,
-                        contentBlocks: (lesson.contentBlocks || []).map(block => ({
-                          ...block, order: block.order ?? null, quiz: block.quiz || null,
-                        }))
-                    }))
-                })),
-            });
-        } else if (isNewCourse) {
-            setPageTitle('Crear Nuevo Curso');
-            if (user) {
-                reset({
-                    instructorId: user.id,
-                    instructorName: user.name,
-                    modules: [],
-                    status: 'DRAFT',
-                });
+        const fetchInitialData = async () => {
+            if (isNewCourse) {
+                 if (user) {
+                    reset({
+                        instructorId: user.id,
+                        instructorName: user.name,
+                        modules: [],
+                        status: 'DRAFT',
+                        title: 'Nuevo Curso sin Título',
+                        description: 'Añade una descripción aquí.'
+                    });
+                }
+                setIsLoading(false);
+                setPageTitle('Crear Nuevo Curso');
+                return;
             }
-        }
-    }, [initialData, isNewCourse, reset, user, setPageTitle]);
+            
+            try {
+                const response = await fetch(`/api/courses/${courseId}`);
+                if (!response.ok) throw new Error("Course not found");
+                const courseData: AppCourse = await response.json();
+                setPageTitle(`Editando: ${courseData.title}`);
+                reset({
+                    ...courseData,
+                    publicationDate: courseData.publicationDate ? new Date(courseData.publicationDate) : null,
+                    instructorId: courseData.instructorId || user?.id || null,
+                    instructorName: courseData.instructor || user?.name || null,
+                    modules: (courseData.modules || []).map(module => ({
+                        ...module, description: '',
+                        lessons: (module.lessons || []).map(lesson => ({
+                            ...lesson, order: lesson.order ?? null,
+                            contentBlocks: (lesson.contentBlocks || []).map(block => ({
+                              ...block, order: block.order ?? null, quiz: block.quiz || null,
+                            }))
+                        }))
+                    })),
+                });
+            } catch (err) {
+                 toast({ title: "Error", description: "No se pudo cargar el curso para editar.", variant: "destructive" });
+                 router.push('/manage-courses');
+            } finally {
+                 setIsLoading(false);
+            }
+        };
+        fetchInitialData();
+    }, [courseId, isNewCourse, reset, user, router, toast, setPageTitle]);
 
 
     const {
