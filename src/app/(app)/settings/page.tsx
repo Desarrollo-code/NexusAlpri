@@ -532,7 +532,7 @@ export default function SettingsPage() {
             imageSrc={imageToCrop}
             onCropComplete={handleCropComplete}
             onClose={() => { setImageToCrop(null); setCropField(null); }}
-            uploadUrl={cropUploadUrl}
+            uploadUrl="/api/upload/course-image"
         />
       <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
         <AlertDialogContent>
