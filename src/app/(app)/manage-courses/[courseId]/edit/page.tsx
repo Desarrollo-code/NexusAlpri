@@ -1,5 +1,4 @@
 
-
 // En /home/user/studio/src/app/(app)/manage-courses/[courseId]/edit/page.tsx
 
 'use client';
@@ -480,7 +479,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, provided, setItemToDe
     isSaving: boolean;
     setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
 }) => {
-    const { getValues, register, control, watch } = useFormContext<EditableCourse>();
+    const { control, getValues, register, watch } = useFormContext<EditableCourse>();
     const { fields: blockFields, append: appendBlock, remove: removeBlock, move: moveBlock } = useFieldArray({
         control, name: `modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`
     });
