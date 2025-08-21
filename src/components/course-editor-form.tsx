@@ -170,12 +170,32 @@ LessonItem.displayName = 'LessonItem';
 
 const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock; onUpdate: (field: string, value: any) => void; isSaving: boolean; onDelete: () => void; }>(
     ({ block, onUpdate, isSaving, onDelete, ...rest }, ref) => {
+        const [showQuizAnalytics, setShowQuizAnalytics] = useState(false);
+
         const renderBlockContent = () => {
             switch(block.type) {
                 case 'TEXT': return <Textarea value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="Escribe aquí texto o pega un enlace..." rows={4} disabled={isSaving} />;
                 case 'VIDEO': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
                 case 'FILE': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del archivo (PDF, imagen, etc.)" disabled={isSaving} />;
-                case 'QUIZ': return <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />;
+                case 'QUIZ': return (
+                    <div className="flex items-center gap-2 w-full">
+                        <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />
+                        <Dialog open={showQuizAnalytics} onOpenChange={setShowQuizAnalytics}>
+                            <DialogTrigger asChild>
+                               <Button variant="outline" size="sm" className="shrink-0" disabled={!block.quiz?.id.startsWith('quiz-')}>
+                                  <BarChart3 className="mr-2 h-4 w-4" /> Analíticas
+                               </Button>
+                            </DialogTrigger>
+                             <DialogContent className="max-w-4xl h-[80vh]">
+                                <DialogHeader>
+                                    <DialogTitle>Analíticas del Quiz: {block.quiz?.title}</DialogTitle>
+                                    <DialogDescription>Revisa el rendimiento de los estudiantes en este quiz.</DialogDescription>
+                                </DialogHeader>
+                                {block.quiz?.id && <QuizAnalyticsView quizId={block.quiz.id} />}
+                            </DialogContent>
+                        </Dialog>
+                    </div>
+                );
                 default: return null;
             }
         };
@@ -475,7 +495,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     return (
         <div className="space-y-4 pb-24">
             <header className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b bg-background sticky top-[63px] sm:top-0 z-20 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
-                <div className="flex items-center gap-4 w-full sm:w-auto">
+                 <div className="flex items-center gap-4 w-full sm:w-auto">
                     <Button asChild variant="outline" type="button" size="sm" className="shrink-0"><Link href="/manage-courses"><ArrowLeft className="mr-2 h-4 w-4" /> Volver</Link></Button>
                     <h1 className="text-xl font-semibold truncate">{courseId === 'new' ? 'Crear Nuevo Curso' : 'Editar Curso'}</h1>
                 </div>

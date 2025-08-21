@@ -1,4 +1,3 @@
-
 // src/components/analytics/quiz-analytics-view.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
