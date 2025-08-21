@@ -12,6 +12,8 @@ export const SidebarHeader = () => {
   const { isCollapsed } = useSidebar();
   const { settings } = useAuth();
   
+  const logoSrc = settings?.logoUrl || "/uploads/images/logo-nexusalpri.png";
+
   return (
     <div className={cn(
       "flex items-center h-20 px-4", 
@@ -23,7 +25,7 @@ export const SidebarHeader = () => {
             "w-12 h-12 bg-card dark:bg-white/20",
             !settings?.logoUrl && "p-2"
         )}>
-          <Image src={settings?.logoUrl || "/uploads/images/logo-nexusalpri.png"} alt="Logo" width={48} height={48} data-ai-hint="logo" style={{objectFit: 'contain'}}/>
+          <Image src={logoSrc} alt="Logo" width={48} height={48} data-ai-hint="logo" style={{objectFit: 'contain'}}/>
         </div>
         {!isCollapsed && (
             <span className={cn("text-2xl font-bold font-headline tracking-wide whitespace-nowrap text-foreground transition-opacity duration-300")}>
