@@ -52,6 +52,7 @@ import {
 import { ImageCropper } from '@/components/image-cropper';
 import { useTitle } from '@/contexts/title-context';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
+import { Calendar } from '@/components/ui/calendar';
 
 
 // === TIPOS E INTERFACES ===
@@ -591,15 +592,13 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0">
-                                            <div data-ai-hint="calendar component">
-                                                <CalendarIcon 
-                                                    mode="single" 
-                                                    selected={course.publicationDate ? new Date(course.publicationDate) : undefined} 
-                                                    onSelect={d => updateCourseField('publicationDate', d)} 
-                                                    initialFocus 
-                                                    locale={es}
-                                                />
-                                            </div>
+                                            <Calendar 
+                                                mode="single" 
+                                                selected={course.publicationDate ? new Date(course.publicationDate) : undefined} 
+                                                onSelect={d => updateCourseField('publicationDate', d)} 
+                                                initialFocus 
+                                                locale={es}
+                                            />
                                         </PopoverContent>
                                     </Popover>
                                 </div>
