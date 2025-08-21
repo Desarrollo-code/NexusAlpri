@@ -39,7 +39,7 @@ import { cn } from '@/lib/utils';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { QuizViewer } from '@/components/quiz-viewer';
 import {
   DropdownMenu,
@@ -73,13 +73,13 @@ const generateUniqueId = (prefix: string) => {
 }
 
 
-const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: () => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; isSaving: boolean; onDelete: () => void; }>(
-    ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete: handleDelete, ...rest }, ref) => {
+const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: () => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
+    ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete: handleDelete, provided, ...rest }, ref) => {
         return (
-            <div ref={ref} {...rest}>
+            <div ref={ref} {...provided.draggableProps} {...rest}>
                 <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${module.id}`}>
                     <AccordionItem value={`item-${module.id}`} className="border-0">
-                         <div className="flex items-center px-4 py-2">
+                         <div className="flex items-center px-4 py-2" {...provided.dragHandleProps}>
                              <AccordionTrigger className="flex-grow hover:no-underline p-0">
                                 <div className="flex items-center gap-2 w-full">
                                     <GripVertical className="h-5 w-5 text-muted-foreground" />
@@ -96,7 +96,6 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                                             <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
                                                 {(provided) => (
                                                     <LessonItem
-                                                        provided={provided}
                                                         lesson={lesson}
                                                         onDelete={() => onLessonDelete(lessonIndex)}
                                                         onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
@@ -104,6 +103,7 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                                                         onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
                                                         onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
                                                         isSaving={isSaving}
+                                                        provided={provided}
                                                     />
                                                 )}
                                             </Draggable>
@@ -125,63 +125,66 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
 ModuleItem.displayName = 'ModuleItem';
 
 
-const LessonItem = ({ lesson, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete: handleDelete, provided }) => {
-    return (
-        <div ref={provided.innerRef} {...provided.draggableProps} className="bg-card p-3 rounded-md border">
-            <div className="flex items-center gap-2 mb-3" {...provided.dragHandleProps}>
-                <GripVertical className="h-5 w-5 text-muted-foreground" />
-                <Input value={lesson.title} onChange={e => onUpdate('title', e.target.value)} placeholder="Título de la lección" disabled={isSaving} />
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdate: (field: keyof AppLesson, value: any) => void; onAddBlock: (type: LessonType) => void; onBlockUpdate: (blockIndex: number, field: string, value: any) => void; onBlockDelete: (blockIndex: number) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
+    ({ lesson, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete: handleDelete, provided, ...rest }, ref) => {
+        return (
+            <div ref={ref} {...provided.draggableProps} {...rest} className="bg-card p-3 rounded-md border">
+                <div className="flex items-center gap-2 mb-3" {...provided.dragHandleProps}>
+                    <GripVertical className="h-5 w-5 text-muted-foreground" />
+                    <Input value={lesson.title} onChange={e => onUpdate('title', e.target.value)} placeholder="Título de la lección" disabled={isSaving} />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+                 <Droppable droppableId={lesson.id} type="BLOCKS">
+                    {(provided) => (
+                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                            {lesson.contentBlocks.map((block, blockIndex) => (
+                                <Draggable key={block.id} draggableId={block.id} index={blockIndex}>
+                                     {(provided) => (
+                                        <ContentBlockItem
+                                            block={block} 
+                                            onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)} 
+                                            onDelete={() => onBlockDelete(blockIndex)} 
+                                            isSaving={isSaving}
+                                            provided={provided}
+                                        />
+                                     )}
+                                </Draggable>
+                            ))}
+                            {provided.placeholder}
+                        </div>
+                    )}
+                 </Droppable>
+                 <div className="mt-2 border-t pt-2">
+                     <BlockTypeSelector onSelect={onAddBlock} />
+                 </div>
             </div>
-             <Droppable droppableId={lesson.id} type="BLOCKS">
-                {(provided) => (
-                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                        {lesson.contentBlocks.map((block, blockIndex) => (
-                            <Draggable key={block.id} draggableId={block.id} index={blockIndex}>
-                                 {(provided) => (
-                                    <ContentBlockItem
-                                        provided={provided}
-                                        block={block} 
-                                        onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)} 
-                                        onDelete={() => onBlockDelete(blockIndex)} 
-                                        isSaving={isSaving}
-                                    />
-                                 )}
-                            </Draggable>
-                        ))}
-                        {provided.placeholder}
-                    </div>
-                )}
-             </Droppable>
-             <div className="mt-2 border-t pt-2">
-                 <BlockTypeSelector onSelect={onAddBlock} />
-             </div>
-        </div>
-    )
-};
+        );
+    }
+);
 LessonItem.displayName = 'LessonItem';
 
 
-const ContentBlockItem = ({ block, onUpdate, isSaving, onDelete: handleDelete, provided }) => {
-    
-    const renderBlockContent = () => {
-        switch(block.type) {
-            case 'TEXT': return <Textarea value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="Escribe aquí texto o pega un enlace..." rows={4} disabled={isSaving} />;
-            case 'VIDEO': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
-            case 'FILE': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del archivo (PDF, imagen, etc.)" disabled={isSaving} />;
-            case 'QUIZ': return <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />;
-            default: return null;
-        }
-    };
+const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock; onUpdate: (field: string, value: any) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
+    ({ block, onUpdate, isSaving, onDelete: handleDelete, provided, ...rest }, ref) => {
+        const renderBlockContent = () => {
+            switch(block.type) {
+                case 'TEXT': return <Textarea value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="Escribe aquí texto o pega un enlace..." rows={4} disabled={isSaving} />;
+                case 'VIDEO': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
+                case 'FILE': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del archivo (PDF, imagen, etc.)" disabled={isSaving} />;
+                case 'QUIZ': return <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />;
+                default: return null;
+            }
+        };
 
-    return (
-        <div ref={provided.innerRef} {...provided.draggableProps} className="flex items-center gap-2 bg-muted/50 p-2 rounded">
-             <div {...provided.dragHandleProps}><GripVertical className="h-5 w-5 text-muted-foreground" /></div>
-             <div className="flex-grow">{renderBlockContent()}</div>
-             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
-        </div>
-    );
-};
+        return (
+            <div ref={ref} {...provided.draggableProps} {...rest} className="flex items-center gap-2 bg-muted/50 p-2 rounded">
+                 <div {...provided.dragHandleProps}><GripVertical className="h-5 w-5 text-muted-foreground" /></div>
+                 <div className="flex-grow">{renderBlockContent()}</div>
+                 <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+            </div>
+        );
+    }
+);
 ContentBlockItem.displayName = 'ContentBlockItem';
 
 
@@ -376,7 +379,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         const { source, destination, type } = result;
         if (!destination || !course) return;
 
-        const newModules = JSON.parse(JSON.stringify(course.modules));
+        const newCourseState = JSON.parse(JSON.stringify(course));
+        const newModules = newCourseState.modules;
 
         if (type === 'MODULES') {
             const [reorderedItem] = newModules.splice(source.index, 1);
@@ -387,23 +391,21 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
         if (type === 'LESSONS') {
             const sourceModule = newModules.find((m: AppModule) => m.id === source.droppableId);
-            const destModule = newModules.find((m: AppModule) => m.id === destination.droppableId);
-
-            if (!sourceModule || !destModule) return;
             
             if (source.droppableId === destination.droppableId) {
-                // Reorder within the same module
+                 if (!sourceModule) return;
                 const [reorderedItem] = sourceModule.lessons.splice(source.index, 1);
                 sourceModule.lessons.splice(destination.index, 0, reorderedItem);
             } else {
-                // Move from one module to another
+                const destModule = newModules.find((m: AppModule) => m.id === destination.droppableId);
+                if (!sourceModule || !destModule) return;
                 const [movedItem] = sourceModule.lessons.splice(source.index, 1);
                 destModule.lessons.splice(destination.index, 0, movedItem);
             }
             updateCourseField('modules', newModules);
         }
 
-        if (type.startsWith('BLOCKS-')) {
+        if (type === 'BLOCKS') {
              const lessonId = source.droppableId;
              const module = newModules.find((m: AppModule) => m.lessons.some((l: AppLesson) => l.id === lessonId));
              if (!module) return;
@@ -483,9 +485,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     <Button asChild variant="outline" type="button" size="sm"><Link href="/manage-courses"><ArrowLeft className="mr-2 h-4 w-4" /> Volver</Link></Button>
                     <div><h1 className="text-xl font-semibold">{courseId === 'new' ? 'Crear Nuevo Curso' : 'Editar Curso'}</h1></div>
                 </div>
-                 <div className="flex items-center gap-2">
-                    {courseId !== 'new' && <Button asChild variant="secondary" type="button" disabled={isSaving}><Link href={`/courses/${courseId}`} target="_blank"><Eye className="mr-2 h-4 w-4" /> Vista Previa</Link></Button>}
-                </div>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -512,9 +511,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                 <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
                                                     {(provided) => (
                                                         <ModuleItem
-                                                            ref={provided.innerRef}
-                                                            {...provided.draggableProps}
-                                                            {...provided.dragHandleProps}
                                                             module={moduleItem}
                                                             onDelete={() => handleRemoveModule(moduleIndex)}
                                                             onUpdate={(field, value) => updateModuleField(moduleIndex, field, value)}
@@ -525,6 +521,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                             onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
                                                             onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
                                                             isSaving={isSaving}
+                                                            provided={provided}
+                                                            ref={provided.innerRef}
                                                         />
                                                     )}
                                                 </Draggable>
@@ -541,15 +539,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
                 <div className="lg:col-span-1 space-y-6">
                      <Card>
-                        <CardHeader><CardTitle>Configuración</CardTitle></CardHeader>
+                        <CardHeader><CardTitle>Publicación</CardTitle><CardDescription>Controla la visibilidad y el estado del curso.</CardDescription></CardHeader>
                         <CardContent className="space-y-4">
-                            <div><Label htmlFor="category">Categoría</Label>
-                                <Select value={course.category || ''} onValueChange={v => updateCourseField('category', v)} disabled={isSaving}>
-                                <SelectTrigger id="category"><SelectValue placeholder="Selecciona" /></SelectTrigger>
-                                <SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent>
-                                </Select>
-                            </div>
-                            <div><Label htmlFor="status">Estado</Label>
+                             <div><Label htmlFor="status">Estado</Label>
                                 <Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}>
                                     <SelectTrigger id="status"><SelectValue /></SelectTrigger>
                                     <SelectContent>
@@ -568,14 +560,22 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                             {course.publicationDate ? format(new Date(course.publicationDate), "PPP", { locale: es }) : <span>Elige una fecha</span>}
                                         </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={course.publicationDate ? new Date(course.publicationDate) : undefined} onSelect={d => updateCourseField('publicationDate', d)} initialFocus locale={es}/></PopoverContent>
+                                    <PopoverContent className="w-auto p-0"><CalendarIcon mode="single" selected={course.publicationDate ? new Date(course.publicationDate) : undefined} onSelect={d => updateCourseField('publicationDate', d)} initialFocus locale={es}/></PopoverContent>
                                 </Popover>
                             </div>}
+                             {courseId !== 'new' && <Button asChild variant="secondary" type="button" disabled={isSaving} className="w-full"><Link href={`/courses/${courseId}`} target="_blank"><Eye className="mr-2 h-4 w-4" /> Vista Previa</Link></Button>}
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardHeader><CardTitle>Imagen del Curso</CardTitle><CardDescription>Sube una imagen.</CardDescription></CardHeader>
-                        <CardContent className="grid gap-4">
+                        <CardHeader><CardTitle>Categoría e Imagen</CardTitle></CardHeader>
+                         <CardContent className="space-y-4">
+                              <div><Label htmlFor="category">Categoría</Label>
+                                <Select value={course.category || ''} onValueChange={v => updateCourseField('category', v)} disabled={isSaving}>
+                                <SelectTrigger id="category"><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                                <SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent>
+                                </Select>
+                            </div>
+                           
                             {course.imageUrl ? (
                                 <div className="relative aspect-video rounded-md overflow-hidden border w-full">
                                     <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-cover" onError={() => updateCourseField('imageUrl', null)} data-ai-hint="online course" />
@@ -603,7 +603,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 </div>
             </div>
 
-            <div className="fixed bottom-0 left-0 md:left-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)] right-0 bg-background/95 backdrop-blur-sm border-t p-4 z-20">
+            <div className="fixed bottom-0 left-0 md:left-72 group-data-[collapsed=true]:md:left-20 right-0 bg-background/95 backdrop-blur-sm border-t p-4 z-20">
                 <div className="max-w-screen-2xl mx-auto flex flex-col sm:flex-row justify-end gap-2">
                     <Button type="button" onClick={handleSaveCourse} disabled={isSaving || !isDirty} className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4" />{isSaving ? 'Guardando...' : (courseId === 'new' ? 'Crear y Guardar' : 'Guardar Cambios')}</Button>
                 </div>
@@ -633,3 +633,4 @@ const BlockTypeSelector = ({ onSelect }) => (
         </DropdownMenuContent>
     </DropdownMenu>
 );
+
