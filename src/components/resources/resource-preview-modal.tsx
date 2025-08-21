@@ -320,6 +320,9 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     return (
         <Dialog open={!!resource} onOpenChange={(isOpen) => !isOpen && onClose()}>
             <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg">
+                 <DialogHeader className="p-0 absolute -top-40 -left-40">
+                     <DialogTitle className="sr-only">Previsualización de {resource.title}</DialogTitle>
+                 </DialogHeader>
                 <header className="flex-shrink-0 h-16 px-4 flex justify-between items-center border-b z-10 bg-background/70">
                     <div className="flex items-center gap-3 overflow-hidden">
                         {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0" })}
