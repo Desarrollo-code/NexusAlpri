@@ -66,12 +66,16 @@ interface LocalInstructor {
     name: string;
 }
 
-// === FORWARD-REF-WRAPPED COMPONENTS FOR DND ===
+const generateUniqueId = (prefix: string) => {
+    return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
 
+
+// === FORWARD-REF-WRAPPED COMPONENTS FOR DND ===
 const ModuleItem = React.forwardRef((props, ref) => {
-    const { module, moduleIndex, onDelete, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, onLessonDragEnd, onBlockDragEnd, isSaving, ...dndProps } = props;
+    const { module, moduleIndex, onDelete, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, onLessonDragEnd, onBlockDragEnd, isSaving, ...rest } = props;
     return (
-        <div ref={ref} {...dndProps}>
+        <div ref={ref} {...rest}>
             <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${moduleIndex}`}>
                 <AccordionItem value={`item-${moduleIndex}`} className="border-0">
                     <AccordionTrigger className="px-4 py-2 hover:no-underline">
@@ -89,8 +93,6 @@ const ModuleItem = React.forwardRef((props, ref) => {
                                             {(provided) => (
                                                 <LessonItem 
                                                     ref={provided.innerRef}
-                                                    {...provided.draggableProps}
-                                                    {...provided.dragHandleProps}
                                                     lesson={lesson} 
                                                     lessonIndex={lessonIndex}
                                                     moduleIndex={moduleIndex}
@@ -101,6 +103,8 @@ const ModuleItem = React.forwardRef((props, ref) => {
                                                     onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
                                                     onBlockDragEnd={(result, mIdx, lIdx) => onBlockDragEnd(result, mIdx, lIdx)}
                                                     isSaving={isSaving}
+                                                    {...provided.draggableProps}
+                                                    {...provided.dragHandleProps}
                                                 />
                                             )}
                                         </Draggable>
@@ -123,9 +127,9 @@ ModuleItem.displayName = 'ModuleItem';
 
 
 const LessonItem = React.forwardRef((props, ref) => {
-    const { lesson, lessonIndex, moduleIndex, onDelete, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, onBlockDragEnd, isSaving, ...dndProps } = props;
+    const { lesson, lessonIndex, moduleIndex, onDelete, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, onBlockDragEnd, isSaving, ...rest } = props;
     return (
-        <div ref={ref} {...dndProps} className="bg-card p-3 rounded-md border">
+        <div ref={ref} {...rest} className="bg-card p-3 rounded-md border">
             <div className="flex items-center gap-2 mb-3">
                 <GripVertical className="h-5 w-5 text-muted-foreground" />
                 <Input value={lesson.title} onChange={e => onUpdate('title', e.target.value)} placeholder="Título de la lección" disabled={isSaving} />
@@ -139,12 +143,12 @@ const LessonItem = React.forwardRef((props, ref) => {
                                  {(provided) => (
                                     <ContentBlockItem 
                                         ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        {...provided.dragHandleProps}
                                         block={block} 
                                         onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)} 
                                         onDelete={() => onBlockDelete(blockIndex)} 
                                         isSaving={isSaving}
+                                        {...provided.draggableProps}
+                                        {...provided.dragHandleProps}
                                     />
                                  )}
                             </Draggable>
@@ -163,7 +167,7 @@ LessonItem.displayName = 'LessonItem';
 
 
 const ContentBlockItem = React.forwardRef((props, ref) => {
-    const { block, onUpdate, onDelete, isSaving, ...dndProps } = props;
+    const { block, onUpdate, onDelete, isSaving, ...rest } = props;
     
     const renderBlockContent = () => {
         switch(block.type) {
@@ -176,7 +180,7 @@ const ContentBlockItem = React.forwardRef((props, ref) => {
     };
 
     return (
-        <div ref={ref} {...dndProps} className="flex items-center gap-2 bg-muted/50 p-2 rounded">
+        <div ref={ref} {...rest} className="flex items-center gap-2 bg-muted/50 p-2 rounded">
              <GripVertical className="h-5 w-5 text-muted-foreground" />
              <div className="flex-grow">{renderBlockContent()}</div>
              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
@@ -208,7 +212,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     useEffect(() => {
         if (isNewCourse) {
             setCourse({
-                id: `new-course-${Date.now()}`,
+                id: generateUniqueId('course'),
                 title: 'Nuevo Curso sin Título',
                 description: 'Añade una descripción aquí.',
                 instructor: user?.name || 'N/A',
@@ -284,7 +288,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     const handleAddModule = () => {
         const newModule: AppModule = {
-            id: `new-module-${Date.now()}`,
+            id: generateUniqueId('module'),
             title: 'Nuevo Módulo',
             order: course?.modules.length || 0,
             lessons: [],
@@ -295,7 +299,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
     const handleAddLesson = (moduleIndex: number) => {
         const newLesson: AppLesson = {
-            id: `new-lesson-${Date.now()}`,
+            id: generateUniqueId('lesson'),
             title: 'Nueva Lección',
             order: course?.modules[moduleIndex].lessons.length || 0,
             contentBlocks: [],
@@ -311,11 +315,11 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
      const handleAddBlock = (moduleIndex: number, lessonIndex: number, type: LessonType) => {
         const newBlock: ContentBlock = {
-            id: `new-block-${Date.now()}`,
+            id: generateUniqueId('block'),
             type: type,
             content: '',
             order: course?.modules[moduleIndex].lessons[lessonIndex].contentBlocks.length || 0,
-            quiz: type === 'QUIZ' ? { id: `new-quiz-${Date.now()}`, title: 'Nuevo Quiz', description: '', questions: [] } : undefined
+            quiz: type === 'QUIZ' ? { id: generateUniqueId('quiz'), title: 'Nuevo Quiz', description: '', questions: [] } : undefined
         };
          setCourse(prev => {
             if (!prev) return null;
@@ -485,8 +489,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                     {(provided) => (
                                                         <ModuleItem 
                                                             ref={provided.innerRef}
-                                                            {...provided.draggableProps}
-                                                            {...provided.dragHandleProps}
                                                             module={moduleItem} 
                                                             moduleIndex={moduleIndex} 
                                                             onDelete={() => handleRemoveModule(moduleIndex)}
@@ -500,6 +502,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                             onLessonDragEnd={onDragEnd}
                                                             onBlockDragEnd={onDragEnd}
                                                             isSaving={isSaving}
+                                                            {...provided.draggableProps}
+                                                            {...provided.dragHandleProps}
                                                         />
                                                     )}
                                                 </Draggable>
