@@ -74,11 +74,12 @@ async function getCourseData(courseId: string): Promise<AppCourse | null> {
 }
 
 export default async function EditCourseServerPage({ params }: { params: { courseId: string } }) {
-  const courseData = await getCourseData(params.courseId);
+  const courseId = params.courseId;
+  const courseData = await getCourseData(courseId);
 
-  if (!courseData && params.courseId !== 'new') {
+  if (!courseData && courseId !== 'new') {
     notFound();
   }
 
-  return <CourseEditor initialData={courseData} courseId={params.courseId} />;
+  return <CourseEditor initialData={courseData} courseId={courseId} />;
 }

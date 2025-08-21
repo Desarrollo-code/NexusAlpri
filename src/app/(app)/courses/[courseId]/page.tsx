@@ -90,7 +90,8 @@ async function getEnrollmentAndProgress(userId: string, courseId: string): Promi
 }
 
 export default async function CourseDetailPage({ params }: { params: { courseId: string } }) {
-  const courseData = await getCourseData(params.courseId);
+  const courseId = params.courseId;
+  const courseData = await getCourseData(courseId);
   const session = await getCurrentUser();
 
   if (!courseData) {
@@ -99,7 +100,7 @@ export default async function CourseDetailPage({ params }: { params: { courseId:
 
   let enrollmentData = { isEnrolled: false, progress: null };
   if(session?.id) {
-      enrollmentData = await getEnrollmentAndProgress(session.id, params.courseId);
+      enrollmentData = await getEnrollmentAndProgress(session.id, courseId);
   }
 
   return (
