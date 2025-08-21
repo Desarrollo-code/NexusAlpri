@@ -37,7 +37,11 @@ export async function GET(req: NextRequest) {
                 }
             },
             orderBy: {
-                updatedAt: 'desc'
+                lesson: {
+                    module: {
+                        courseId: 'asc'
+                    }
+                }
             }
         });
         return NextResponse.json(notes);
