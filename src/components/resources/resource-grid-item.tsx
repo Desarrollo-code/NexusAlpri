@@ -1,3 +1,4 @@
+
 // src/components/resources/resource-grid-item.tsx
 'use client';
 import React from 'react';
@@ -49,7 +50,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
         }
 
         if (isImage) {
-           return <Image src={resource.url!} alt={resource.title} fill className="object-cover" data-ai-hint="resource document"/>
+           return <Image src={resource.url!} alt={resource.title} fill className="object-contain" data-ai-hint="resource document"/>
         }
         if (youtubeId) {
             return <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail"/>

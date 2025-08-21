@@ -100,7 +100,7 @@ export function CourseCard({
   const isTruncated = course.description && course.description.length > TRUNCATE_LENGTH;
   const descriptionToShow = isExpanded
     ? course.description
-    : `${course.description?.substring(0, TRUNCATE_LENGTH)}`;
+    : `${''}${course.description?.substring(0, TRUNCATE_LENGTH)}`;
 
   const toggleExpand = (e: React.MouseEvent) => {
     e.preventDefault();

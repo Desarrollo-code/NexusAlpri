@@ -1,3 +1,4 @@
+
 // src/components/resources/resource-preview-modal.tsx
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
@@ -220,7 +221,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
         if (isPdf) {
             return (
                 <div className="w-full h-full relative">
-                    <iframe ref={iframeRef} src={`${displayUrl}#view=FitH`} className="w-full h-full" title={`PDF Preview: ${resource.title}`} style={{ width: `${zoomLevel}%`, height: `${zoomLevel}%` }}/>
+                    <iframe ref={iframeRef} src={`${displayUrl}#view=FitH`} className="w-full h-full" title={`PDF Preview: ${resource.title}`} style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'center center' }}/>
                     {isMobile && (
                         <div className="absolute bottom-4 right-4 flex flex-col gap-2">
                              <Button variant="secondary" size="icon" className="h-10 w-10 rounded-full shadow-lg" onClick={toggleFullScreen}><Expand /></Button>

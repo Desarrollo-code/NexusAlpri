@@ -1,3 +1,4 @@
+
 // src/app/(public)/page.tsx
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -104,7 +105,7 @@ export default async function LandingPage() {
                 width="600"
                 height="600"
                 alt="Hero"
-                className="mx-auto aspect-square overflow-hidden rounded-xl object-cover sm:w-full"
+                className="mx-auto aspect-square overflow-hidden rounded-xl object-contain sm:w-full"
                 data-ai-hint="team collaboration"
                 priority
               />
@@ -155,7 +156,7 @@ export default async function LandingPage() {
                         width="600"
                         height="400"
                         alt="Benefits"
-                        className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full shadow-2xl"
+                        className="mx-auto aspect-video overflow-hidden rounded-xl object-contain object-center sm:w-full shadow-2xl"
                         data-ai-hint="diverse team"
                       />
                     <div className="space-y-8">
