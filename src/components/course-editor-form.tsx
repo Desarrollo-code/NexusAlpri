@@ -76,7 +76,7 @@ const generateUniqueId = (prefix: string) => {
 
 
 // === FORWARD-REF-WRAPPED COMPONENTS FOR DND ===
-const ModuleItem = React.forwardRef(({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, ...rest }, ref) => {
+const ModuleItem = React.forwardRef(({ module, moduleIndex, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete, ...rest }, ref) => {
     return (
         <div ref={ref} {...rest}>
             <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${module.id}`}>
@@ -85,6 +85,7 @@ const ModuleItem = React.forwardRef(({ module, onUpdate, onAddLesson, onLessonUp
                         <div className="flex items-center gap-2 w-full">
                             <GripVertical className="h-5 w-5 text-muted-foreground" />
                             <Input value={module.title} onChange={e => onUpdate('title', e.target.value)} className="text-base font-semibold" disabled={isSaving} />
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(); }} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="p-4 border-t">
@@ -194,8 +195,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const { user, settings, isLoading: isAuthLoading } = useAuth();
     const { setPageTitle } = useTitle();
 
-    const isNewCourse = courseId === 'new';
-    
     const [course, setCourse] = useState<AppCourse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -208,7 +207,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     // --- Data Fetching ---
     useEffect(() => {
         const fetchCourseData = async () => {
-            if (isNewCourse) {
+            if (courseId === 'new') {
                 setCourse({
                     id: generateUniqueId('course'),
                     title: 'Nuevo Curso sin Título',
@@ -241,7 +240,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         };
         
         fetchCourseData();
-    }, [courseId, isNewCourse, user, router, toast, setPageTitle]);
+    }, [courseId, user, router, toast, setPageTitle]);
 
     // --- State Updaters ---
     const updateCourseField = (field: keyof AppCourse, value: any) => {
@@ -386,7 +385,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             return;
         }
 
-        if (type === 'LESSONS') {
+        if (type.startsWith('LESSONS')) {
             const sourceModuleId = source.droppableId;
             const destModuleId = destination.droppableId;
 
@@ -437,8 +436,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         });
         
         try {
-            const endpoint = isNewCourse ? '/api/courses' : `/api/courses/${courseId}`;
-            const method = isNewCourse ? 'POST' : 'PUT';
+            const endpoint = courseId === 'new' ? '/api/courses' : `/api/courses/${courseId}`;
+            const method = courseId === 'new' ? 'POST' : 'PUT';
 
             const response = await fetch(endpoint, {
                 method: method,
@@ -451,7 +450,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             
             toast({ title: "Curso Guardado", description: "La información del curso se ha guardado correctamente." });
             
-            if (isNewCourse) {
+            if (courseId === 'new') {
                 router.push(`/manage-courses/${savedCourse.id}/edit`);
             } else {
                 setCourse(savedCourse);
@@ -472,7 +471,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         return <div className="flex items-center justify-center min-h-[calc(100vh-80px)]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
     }
 
-    if (!isNewCourse && !isAuthLoading && user?.role !== 'ADMINISTRATOR' && user?.id !== course.instructorId) {
+    if (courseId !== 'new' && !isAuthLoading && user?.role !== 'ADMINISTRATOR' && user?.id !== course.instructorId) {
         return <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] text-center p-4"><ShieldAlert className="h-20 w-20 text-red-500 mb-4" /><h2 className="text-2xl font-bold mb-2">Acceso Denegado</h2><p className="text-muted-foreground mb-4">No tienes permiso para editar este curso.</p><Link href="/manage-courses" className={buttonVariants({ variant: "outline" })}>Volver</Link></div>;
     }
 
@@ -481,10 +480,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b bg-background sticky top-0 z-20 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
                 <div className="flex items-center gap-4">
                     <Button asChild variant="outline" type="button" size="sm"><Link href="/manage-courses"><ArrowLeft className="mr-2 h-4 w-4" /> Volver</Link></Button>
-                    <div><h1 className="text-xl font-semibold">{isNewCourse ? 'Crear Nuevo Curso' : 'Editar Curso'}</h1></div>
+                    <div><h1 className="text-xl font-semibold">{courseId === 'new' ? 'Crear Nuevo Curso' : 'Editar Curso'}</h1></div>
                 </div>
                  <div className="flex items-center gap-2">
-                    {!isNewCourse && <Button asChild variant="secondary" type="button" disabled={isSaving}><Link href={`/courses/${courseId}`} target="_blank"><Eye className="mr-2 h-4 w-4" /> Vista Previa</Link></Button>}
+                    {courseId !== 'new' && <Button asChild variant="secondary" type="button" disabled={isSaving}><Link href={`/courses/${courseId}`} target="_blank"><Eye className="mr-2 h-4 w-4" /> Vista Previa</Link></Button>}
                 </div>
             </div>
             
@@ -605,7 +604,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
             <div className="fixed bottom-0 left-0 md:left-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)] right-0 bg-background/95 backdrop-blur-sm border-t p-4 z-20">
                 <div className="max-w-screen-2xl mx-auto flex flex-col sm:flex-row justify-end gap-2">
-                    <Button type="button" onClick={handleSaveCourse} disabled={isSaving || !isDirty} className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4" />{isSaving ? 'Guardando...' : (isNewCourse ? 'Crear y Guardar' : 'Guardar Cambios')}</Button>
+                    <Button type="button" onClick={handleSaveCourse} disabled={isSaving || !isDirty} className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4" />{isSaving ? 'Guardando...' : (courseId === 'new' ? 'Crear y Guardar' : 'Guardar Cambios')}</Button>
                 </div>
             </div>
             
@@ -633,5 +632,3 @@ const BlockTypeSelector = ({ onSelect }) => (
         </DropdownMenuContent>
     </DropdownMenu>
 );
-
-    
