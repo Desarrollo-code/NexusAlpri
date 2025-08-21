@@ -104,6 +104,7 @@ export async function PUT(
             },
         });
 
+        // Correctly structured query to fetch current modules and their children
         const currentModules = await tx.module.findMany({ 
             where: { courseId }, 
             include: { 
@@ -222,7 +223,7 @@ export async function PUT(
         where: { id: courseId },
         include: {
             instructor: { select: { id: true, name: true } },
-            modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, include: { contentBlocks: { orderBy: { order: "asc" }, include: { quiz: { include: { questions: { orderBy: { order: "asc" }, include: { options: { orderBy: { id: "asc" } } }, }, }, }, }, }, }, }, },
+            modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, include: { contentBlocks: { orderBy: { order: "asc" }, include: { quiz: { include: { questions: { orderBy: { order: "asc" }, include: { options: { orderBy: { id: "asc" } } } } } } } } } } } }
         },
     });
 
