@@ -572,13 +572,13 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, provided, setItemToDe
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onClick={() => { setTemplateName(getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.title`)); setShowSaveTemplateModal(true); }}>
+                        <DropdownMenuItem onSelect={() => { setTemplateName(getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.title`)); setShowSaveTemplateModal(true); }}>
                             <Copy className="mr-2 h-4 w-4" /> Guardar como Plantilla
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="text-destructive focus:bg-destructive/10"
-                            onClick={(e) => {
+                            onSelect={(e) => {
                                 e.stopPropagation();
                                 if (isSaving) return;
                                 const lessonValues = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
