@@ -19,6 +19,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow the 2FA page to be accessed without a session
+  if (pathname.startsWith('/sign-in/2fa')) {
+      return NextResponse.next();
+  }
+
   const isProtectedRoute = PROTECTED_ROUTE_REGEX.test(pathname);
   const isAuthRoute = AUTH_ROUTES.some(route => pathname.startsWith(route));
 

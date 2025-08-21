@@ -1,4 +1,4 @@
-
+// src/app/api/auth/2fa/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { authenticator } from 'otplib';
@@ -95,7 +95,7 @@ async function handleDisable(req: NextRequest, userId: string, pass: string) {
     return NextResponse.json({ message: '2FA desactivado exitosamente', user: userToReturn });
 }
 
-async function handleLoginVerify(userId: string, token: string) {
+async function handleLoginVerify(req: NextRequest, userId: string, token: string) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.isTwoFactorEnabled || !user.twoFactorSecret) {
       return NextResponse.json({ message: '2FA no está habilitado para este usuario.' }, { status: 400 });
@@ -112,21 +112,36 @@ async function handleLoginVerify(userId: string, token: string) {
 
     const { password: _, twoFactorSecret, ...userToReturn } = user;
     await createSession(user.id);
+
+    // Log the successful 2FA login event
+    const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+    await prisma.securityLog.create({
+        data: {
+            event: 'SUCCESSFUL_LOGIN',
+            ipAddress: ip,
+            userId: user.id,
+            details: 'Login completado con 2FA',
+            userAgent: req.headers.get('user-agent'),
+            country: req.geo?.country,
+            city: req.geo?.city,
+        }
+    }).catch(console.error);
+
     return NextResponse.json({ user: userToReturn });
 }
 
 export async function POST(req: NextRequest) {
-    const body = await req.json();
     const { searchParams } = new URL(req.url);
     const action = searchParams.get('action');
 
     // For login verification, we don't need a session yet
     if (action === 'login') {
+        const body = await req.json();
         const { userId, token } = body;
         if (!userId || !token) {
             return NextResponse.json({ message: 'ID de usuario y token son requeridos para el login' }, { status: 400 });
         }
-        return await handleLoginVerify(userId, token);
+        return await handleLoginVerify(req, userId, token);
     }
 
     // For other actions, we require an active session
@@ -136,6 +151,7 @@ export async function POST(req: NextRequest) {
     }
   
     try {
+      const body = await req.json();
       const { userId, token, password } = body;
   
       if (session.id !== userId) {

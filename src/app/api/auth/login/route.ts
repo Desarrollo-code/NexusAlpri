@@ -1,4 +1,4 @@
-
+// src/app/api/auth/login/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
@@ -52,16 +52,20 @@ function recordFailedAttempt(req: NextRequest, email: string, userId?: string) {
 
 function recordSuccessfulLogin(req: NextRequest, userId: string) {
     const ip = getIp(req);
-    prisma.securityLog.create({
-        data: {
-            event: 'SUCCESSFUL_LOGIN',
-            ipAddress: ip,
-            userId: userId,
-            userAgent: req.headers.get('user-agent'),
-            country: req.geo?.country,
-            city: req.geo?.city,
-        }
-    }).catch(console.error);
+    const isInitialLogin = !req.nextUrl.searchParams.has('2fa'); // Check if it's the 2FA completion step
+    if (isInitialLogin) {
+        prisma.securityLog.create({
+            data: {
+                event: 'SUCCESSFUL_LOGIN',
+                ipAddress: ip,
+                userId: userId,
+                details: 'Credenciales validadas, pendiente 2FA si está activo.',
+                userAgent: req.headers.get('user-agent'),
+                country: req.geo?.country,
+                city: req.geo?.city,
+            }
+        }).catch(console.error);
+    }
 }
 
 // --- Login Route ---
@@ -95,19 +99,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Credenciales inválidas' }, { status: 401 });
     }
 
-    // Clear rate limit attempts on successful login
-    loginAttempts.delete(ip);
-    recordSuccessfulLogin(req, user.id);
-
-    // Don't include password in the returned user object
-    const { password: _, twoFactorSecret, ...userToReturn } = user;
-
+    // Don't clear rate limit or record full success until 2FA is passed
+    
     if (user.isTwoFactorEnabled) {
+      recordSuccessfulLogin(req, user.id); // Log first step success
       return NextResponse.json({
         twoFactorRequired: true,
         userId: user.id,
       });
     }
+    
+    // If no 2FA, clear rate limit, create session, and log full success
+    loginAttempts.delete(ip);
+    recordSuccessfulLogin(req, user.id); // Log success
+    
+    // Don't include password in the returned user object
+    const { password: _, twoFactorSecret, ...userToReturn } = user;
     
     // Create the session cookie
     await createSession(user.id);
