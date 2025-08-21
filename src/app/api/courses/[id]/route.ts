@@ -4,7 +4,6 @@ import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, ContentBlock, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption } from '@/types';
 
-
 export const dynamic = "force-dynamic";
 
 // GET a specific course by ID
@@ -90,11 +89,9 @@ export async function PUT(
       return NextResponse.json({ message: "No tienes permiso para actualizar este curso" }, { status: 403 });
     }
     
-    // De-structure course data from the rest of the nested structure
     const { modules, ...courseData } = body;
     
     await prisma.$transaction(async (tx) => {
-        // 1. Update basic course data
         await tx.course.update({
             where: { id: courseId },
             data: {
@@ -107,17 +104,14 @@ export async function PUT(
             },
         });
 
-        // Get current modules and lessons from DB for comparison
         const currentModules = await tx.module.findMany({ where: { courseId }, select: { id: true, lessons: { select: { id: true, contentBlocks: { select: { id: true, quiz: { select: { id: true } } } } } } } } });
         const incomingModuleIds = new Set(modules.filter(m => !m.id.startsWith('new-')).map(m => m.id));
         const modulesToDelete = currentModules.filter(m => !incomingModuleIds.has(m.id));
 
-        // Delete modules that are no longer present
         for (const moduleToDelete of modulesToDelete) {
             await tx.module.delete({ where: { id: moduleToDelete.id } });
         }
         
-        // Upsert Modules
         for (const [moduleIndex, moduleData] of modules.entries()) {
             const isNewModule = moduleData.id.startsWith('new-');
             const savedModule = await tx.module.upsert({
@@ -126,7 +120,6 @@ export async function PUT(
                 update: { title: moduleData.title, order: moduleIndex },
             });
 
-            // Handle lessons for the current module
             const currentLessonsInModule = currentModules.find(m => m.id === savedModule.id)?.lessons || [];
             const incomingLessonIds = new Set(moduleData.lessons.filter(l => !l.id.startsWith('new-')).map(l => l.id));
             const lessonsToDelete = currentLessonsInModule.filter(l => !incomingLessonIds.has(l.id));
@@ -135,7 +128,6 @@ export async function PUT(
                  await tx.lesson.delete({ where: { id: lessonToDelete.id } });
             }
 
-            // Upsert Lessons
             for (const [lessonIndex, lessonData] of moduleData.lessons.entries()) {
                 const isNewLesson = lessonData.id.startsWith('new-');
                 const savedLesson = await tx.lesson.upsert({
@@ -144,7 +136,6 @@ export async function PUT(
                     update: { title: lessonData.title, order: lessonIndex },
                 });
 
-                // Handle Content Blocks
                 const currentBlocksInLesson = currentLessonsInModule.find(l => l.id === savedLesson.id)?.contentBlocks || [];
                 const incomingBlockIds = new Set(lessonData.contentBlocks.filter(b => !b.id.startsWith('new-')).map(b => b.id));
                 const blocksToDelete = currentBlocksInLesson.filter(b => !incomingBlockIds.has(b.id));
@@ -153,7 +144,6 @@ export async function PUT(
                     await tx.contentBlock.delete({ where: { id: blockToDelete.id } });
                 }
                 
-                // Upsert Content Blocks
                 for (const [blockIndex, blockData] of lessonData.contentBlocks.entries()) {
                     const isNewBlock = blockData.id.startsWith('new-');
                     const savedBlock = await tx.contentBlock.upsert({
@@ -162,7 +152,6 @@ export async function PUT(
                         update: { type: blockData.type, content: blockData.content || '', order: blockIndex },
                     });
 
-                    // Handle Quizzes
                     if (blockData.type === 'QUIZ' && blockData.quiz) {
                         const isNewQuiz = blockData.quiz.id.startsWith('new-');
                         const quizData = { title: blockData.quiz.title, description: blockData.quiz.description || '', contentBlockId: savedBlock.id };
@@ -172,7 +161,6 @@ export async function PUT(
                              update: quizData,
                         });
 
-                        // Upsert questions and options
                         const currentQuestions = await tx.question.findMany({ where: { quizId: savedQuiz.id }, include: { options: true } });
                         const incomingQuestionIds = new Set(blockData.quiz.questions.filter(q => !q.id.startsWith('temp-q-')).map(q => q.id));
                         
@@ -206,7 +194,6 @@ export async function PUT(
                             }
                         }
                     } else {
-                        // If block is not a quiz, delete any quiz associated with it
                         const existingQuiz = currentBlocksInLesson.find(b => b.id === savedBlock.id)?.quiz;
                         if(existingQuiz) {
                             await tx.quiz.delete({ where: { id: existingQuiz.id }});
@@ -217,56 +204,23 @@ export async function PUT(
         }
     });
 
-
-    // Refetch the full course state to return to client
     const finalCourseState = await prisma.course.findUnique({
         where: { id: courseId },
         include: {
             instructor: { select: { id: true, name: true } },
-            modules: {
-                orderBy: { order: "asc" },
-                include: {
-                    lessons: {
-                        orderBy: { order: "asc" },
-                        include: {
-                            contentBlocks: {
-                                orderBy: { order: "asc" },
-                                include: {
-                                    quiz: {
-                                        include: {
-                                            questions: {
-                                                orderBy: { order: "asc" },
-                                                include: {
-                                                    options: { orderBy: { id: "asc" } },
-                                                },
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            },
+            modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, include: { contentBlocks: { orderBy: { order: "asc" }, include: { quiz: { include: { questions: { orderBy: { order: "asc" }, include: { options: { orderBy: { id: "asc" } } }, }, }, }, }, }, }, }, }, },
         },
     });
 
     return NextResponse.json(finalCourseState);
   } catch (error) {
     console.error(`[UPDATE_COURSE_ID: ${courseId}]`, error);
-    // Be more specific about the error if possible
-    if (error instanceof prisma.Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-            return NextResponse.json({ message: "Error de guardado: Uno de los elementos a actualizar no fue encontrado." }, { status: 404 });
-        }
+    if (error instanceof prisma.Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        return NextResponse.json({ message: "Error de guardado: Uno de los elementos a actualizar no fue encontrado." }, { status: 404 });
     }
-    return NextResponse.json(
-      { message: "Error al actualizar el curso" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Error al actualizar el curso" }, { status: 500 });
   }
 }
-
 
 // DELETE course by ID
 export async function DELETE(
@@ -274,10 +228,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const session = await getCurrentUser();
-  if (
-    !session ||
-    (session.role !== "ADMINISTRATOR" && session.role !== "INSTRUCTOR")
-  ) {
+  if (!session || (session.role !== "ADMINISTRATOR" && session.role !== "INSTRUCTOR")) {
     return NextResponse.json({ message: "No autorizado" }, { status: 403 });
   }
 
@@ -290,32 +241,18 @@ export async function DELETE(
     });
 
     if (!courseToDelete) {
-      return NextResponse.json(
-        { message: "Curso no encontrado" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Curso no encontrado" }, { status: 404 });
     }
 
-    if (
-      session.role === "INSTRUCTOR" &&
-      courseToDelete.instructorId !== session.id
-    ) {
-      return NextResponse.json(
-        { message: "No tienes permiso para eliminar este curso" },
-        { status: 403 }
-      );
+    if (session.role === "INSTRUCTOR" && courseToDelete.instructorId !== session.id) {
+      return NextResponse.json({ message: "No tienes permiso para eliminar este curso" }, { status: 403 });
     }
 
-    await prisma.course.delete({
-      where: { id: courseId },
-    });
+    await prisma.course.delete({ where: { id: courseId } });
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`[DELETE_COURSE_ID: ${courseId}]`, error);
-    return NextResponse.json(
-      { message: "Error al eliminar el curso" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Error al eliminar el curso" }, { status: 500 });
   }
 }

@@ -857,7 +857,7 @@ const ModuleItem = React.memo(({ moduleIndex, provided, setItemToDeleteDetails }
 ModuleItem.displayName = 'ModuleItem';
 
 // === COMPONENTE PRINCIPAL DE LA PÁGINA (CourseEditor) ===
-export function CourseEditor({ initialData, courseId }: { initialData: AppCourse | null, courseId: string }) {
+export function CourseEditor({ courseId }: { courseId: string }) {
     const router = useRouter();
     const { toast } = useToast();
     const { user, settings, isLoading: isAuthLoading } = useAuth();
@@ -865,7 +865,7 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
 
     const isNewCourse = courseId === 'new';
 
-    const [isLoading, setIsLoading] = useState(!initialData && !isNewCourse);
+    const [isLoadingData, setIsLoadingData] = useState(!isNewCourse);
     const [isSaving, setIsSaving] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [itemToDeleteDetails, setItemToDeleteDetails] = useState<ItemToDeleteDetails | null>(null);
@@ -873,54 +873,67 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
 
     const [imageToCrop, setImageToCrop] = useState<string | null>(null);
     
-    // React Hook Form methods
     const methods = useForm<EditableCourse>({
         defaultValues: {
-            title: '',
-            description: '',
-            imageUrl: null,
-            status: 'DRAFT',
-            category: '',
-            publicationDate: null,
-            modules: [],
-            instructorId: undefined,
-            instructorName: undefined,
+            title: '', description: '', imageUrl: null,
+            status: 'DRAFT', category: '', publicationDate: null,
+            modules: [], instructorId: undefined, instructorName: undefined,
         },
         mode: 'onChange'
     });
 
     const { control, handleSubmit, reset, formState: { errors, isDirty }, setValue, getValues, watch, register } = methods;
 
-    useEffect(() => {
-        if (initialData) {
+    const fetchCourseData = useCallback(async () => {
+        if (isNewCourse) {
+            setPageTitle('Crear Nuevo Curso');
+            if (user) {
+                reset({
+                    instructorId: user.id,
+                    instructorName: user.name,
+                    modules: [],
+                    status: 'DRAFT',
+                });
+            }
+            setIsLoadingData(false);
+            return;
+        }
+
+        setIsLoadingData(true);
+        try {
+            const res = await fetch(`/api/courses/${courseId}`);
+            if (!res.ok) throw new Error('No se pudo cargar el curso');
+            const initialData: AppCourse = await res.json();
+
             setPageTitle(`Editando: ${initialData.title}`);
             reset({
                 ...initialData,
                 publicationDate: initialData.publicationDate ? new Date(initialData.publicationDate) : null,
                 instructorId: initialData.instructorId || user?.id || null,
-                instructorName: initialData.instructor?.name || user?.name || null,
+                instructorName: initialData.instructor || user?.name || null,
                 modules: (initialData.modules || []).map(module => ({
-                    ...module,
-                    description: '',
+                    ...module, description: '',
                     lessons: (module.lessons || []).map(lesson => ({
-                        ...lesson,
-                        order: lesson.order !== undefined ? lesson.order : null,
+                        ...lesson, order: lesson.order ?? null,
                         contentBlocks: (lesson.contentBlocks || []).map(block => ({
-                          ...block,
-                          order: block.order !== undefined ? block.order : null,
-                          quiz: block.quiz || null,
+                          ...block, order: block.order ?? null, quiz: block.quiz || null,
                         }))
                     }))
                 })),
             });
-        } else if (isNewCourse) {
-             setPageTitle('Crear Nuevo Curso');
-            if (user) {
-                setValue('instructorId', user.id);
-                setValue('instructorName', user.name);
-            }
+        } catch (error) {
+            toast({ title: "Error", description: (error as Error).message, variant: "destructive" });
+            router.push('/manage-courses');
+        } finally {
+            setIsLoadingData(false);
         }
-    }, [initialData, isNewCourse, reset, user, setPageTitle, setValue]);
+    }, [courseId, isNewCourse, reset, user, setPageTitle, router, toast]);
+
+    useEffect(() => {
+        if (user) {
+            fetchCourseData();
+        }
+    }, [user, fetchCourseData]);
 
 
     const {
@@ -978,17 +991,13 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
             if (isNewCourse) {
                 router.push(`/manage-courses/${savedCourse.id}/edit`);
             } else {
-                reset(savedCourse); // Actualiza el formulario con los datos del servidor (IDs, etc.)
+                reset(savedCourse);
                 setPageTitle(`Editando: ${savedCourse.title}`);
             }
 
         } catch (error: any) {
             console.error('Error al guardar el curso:', error);
-            toast({
-                title: "Error al Guardar",
-                description: error.message || "No se pudo guardar la información del curso.",
-                variant: "destructive",
-            });
+            toast({ title: "Error al Guardar", description: error.message || "No se pudo guardar.", variant: "destructive" });
         } finally {
             setIsSaving(false);
         }
@@ -1003,19 +1012,11 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: newStatus }),
             });
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.message || 'Error al cambiar el estado del curso.');
-            }
-            toast({ title: "Estado Actualizado", description: `El curso ahora está en estado: ${newStatus}` });
+            if (!res.ok) throw new Error((await res.json()).message || 'Error al cambiar estado.');
+            toast({ title: "Estado Actualizado", description: `El curso ahora está: ${newStatus}` });
             setValue('status', newStatus, { shouldDirty: true });
         } catch (error: any) {
-            console.error('Error al cambiar el estado del curso:', error);
-            toast({
-                title: "Error de Estado",
-                description: error.message || "No se pudo cambiar el estado del curso.",
-                variant: "destructive",
-            });
+            toast({ title: "Error de Estado", description: error.message, variant: "destructive" });
         } finally {
             setIsSaving(false);
         }
@@ -1024,39 +1025,23 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
     const handleDeleteCourse = useCallback(async () => {
         setIsDeleting(true);
         try {
-            const res = await fetch(`/api/courses/${courseId}`, {
-                method: 'DELETE',
-            });
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.message || 'Error al eliminar el curso.');
-            }
-            toast({ title: "Curso Eliminado", description: "El curso ha sido eliminado permanentemente." });
+            const res = await fetch(`/api/courses/${courseId}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error((await res.json()).message || 'Error al eliminar.');
+            toast({ title: "Curso Eliminado", description: "El curso ha sido eliminado." });
             router.push('/manage-courses');
         } catch (error: any) {
-            console.error('Error al eliminar el curso:', error);
-            toast({
-                title: "Error de Eliminación",
-                description: error.message || "No se pudo eliminar el curso.",
-                variant: "destructive",
-            });
+            toast({ title: "Error de Eliminación", description: error.message, variant: "destructive" });
         } finally {
             setIsDeleting(false);
             setShowDeleteDialog(false);
         }
     }, [courseId, toast, router]);
 
-
-    // === MANEJO DE IMAGEN PRINCIPAL ===
-
     const handleCourseImageFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
             const reader = new FileReader();
-            reader.onload = () => {
-                setImageToCrop(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+            reader.onload = () => setImageToCrop(reader.result as string);
+            reader.readAsDataURL(e.target.files[0]);
         }
         if (e.target) e.target.value = '';
     };
@@ -1068,11 +1053,8 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
 
     const removeCourseImage = () => {
         setValue('imageUrl', null, { shouldDirty: true });
-        toast({ title: "Imagen Eliminada", description: "La imagen del curso ha sido eliminada." });
+        toast({ title: "Imagen Eliminada" });
     };
-
-
-    // === MANEJO DE DRAG & DROP ===
 
     const handleDragEnd = (result: DropResult) => {
         const { source, destination, type } = result;
@@ -1082,14 +1064,10 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
         }
     };
 
-
     const handleAddModule = () => {
         appendModule({
-            id: `new-module-${Date.now()}`,
-            title: 'Nuevo Módulo',
-            description: '',
-            lessons: [],
-            order: moduleFields.length,
+            id: `new-module-${Date.now()}`, title: 'Nuevo Módulo', description: '',
+            lessons: [], order: moduleFields.length,
         });
     };
 
@@ -1097,44 +1075,21 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
         if (!itemToDeleteDetails) return;
         const { type, moduleIndex, lessonIndex } = itemToDeleteDetails;
 
-        if (type === 'module') {
-            setValue(`modules.${moduleIndex}._toBeDeleted`, true, { shouldDirty: true });
-        } else if (type === 'lesson' && lessonIndex !== undefined) {
-            setValue(`modules.${moduleIndex}.lessons.${lessonIndex}._toBeDeleted`, true, { shouldDirty: true });
-        } else if (type === 'block' && itemToDeleteDetails.blockIndex !== undefined && lessonIndex !== undefined) {
-            setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${itemToDeleteDetails.blockIndex}._toBeDeleted`, true, { shouldDirty: true });
-        }
-
-        toast({
-            title: `${type.charAt(0).toUpperCase() + type.slice(1)} marcado para eliminación`,
-            description: `Se eliminará al guardar los cambios del curso.`,
-            variant: "default",
-        });
-
+        if (type === 'module') setValue(`modules.${moduleIndex}._toBeDeleted`, true, { shouldDirty: true });
+        else if (type === 'lesson' && lessonIndex !== undefined) setValue(`modules.${moduleIndex}.lessons.${lessonIndex}._toBeDeleted`, true, { shouldDirty: true });
+        else if (type === 'block' && itemToDeleteDetails.blockIndex !== undefined && lessonIndex !== undefined) setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${itemToDeleteDetails.blockIndex}._toBeDeleted`, true, { shouldDirty: true });
+        
+        toast({ title: "Marcado para eliminación", description: "Se eliminará al guardar los cambios." });
         setItemToDeleteDetails(null);
     }, [itemToDeleteDetails, setValue, toast]);
 
 
-    // === Renderizado ===
-    if (isLoading || isAuthLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
-                <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            </div>
-        );
+    if (isLoadingData || isAuthLoading) {
+        return <div className="flex items-center justify-center min-h-[calc(100vh-80px)]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
     }
 
     if (!isNewCourse && !isAuthLoading && user?.role !== 'ADMINISTRATOR' && user?.id !== getValues('instructorId')) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] text-center p-4">
-                <ShieldAlert className="h-20 w-20 text-red-500 mb-4" />
-                <h2 className="text-2xl font-bold mb-2">Acceso Denegado</h2>
-                <p className="text-muted-foreground mb-4">No tienes permiso para editar este curso.</p>
-                <Link href="/manage-courses" className={buttonVariants({ variant: "outline" })}>
-                    Volver a mis cursos
-                </Link>
-            </div>
-        );
+        return <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] text-center p-4"><ShieldAlert className="h-20 w-20 text-red-500 mb-4" /><h2 className="text-2xl font-bold mb-2">Acceso Denegado</h2><p className="text-muted-foreground mb-4">No tienes permiso para editar este curso.</p><Link href="/manage-courses" className={buttonVariants({ variant: "outline" })}>Volver</Link></div>;
     }
 
     return (
@@ -1142,57 +1097,28 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pb-24">
                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b bg-background sticky top-0 z-20 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
                     <div className="flex items-center gap-4">
-                        <Button asChild variant="outline" type="button" size="sm">
-                            <Link href="/manage-courses">
-                                <ArrowLeft className="mr-2 h-4 w-4" /> Volver
-                            </Link>
-                        </Button>
-                        <div>
-                            <h1 className="text-xl font-semibold">{isNewCourse ? 'Crear Nuevo Curso' : 'Editar Curso'}</h1>
-                            {errors.title && <p className="text-red-500 text-xs">{errors.title.message}</p>}
-                        </div>
+                        <Button asChild variant="outline" type="button" size="sm"><Link href="/manage-courses"><ArrowLeft className="mr-2 h-4 w-4" /> Volver</Link></Button>
+                        <div><h1 className="text-xl font-semibold">{isNewCourse ? 'Crear Nuevo Curso' : 'Editar Curso'}</h1>{errors.title && <p className="text-red-500 text-xs">{errors.title.message}</p>}</div>
                     </div>
                      <div className="flex items-center gap-2">
-                        {!isNewCourse && (
-                             <Button asChild variant="secondary" type="button" disabled={isSaving}>
-                                <Link href={`/courses/${courseId}`} target="_blank">
-                                    <Eye className="mr-2 h-4 w-4" /> Vista Previa
-                                </Link>
-                            </Button>
-                        )}
+                        {!isNewCourse && <Button asChild variant="secondary" type="button" disabled={isSaving}><Link href={`/courses/${courseId}`} target="_blank"><Eye className="mr-2 h-4 w-4" /> Vista Previa</Link></Button>}
                     </div>
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
                         <Card>
-                            <CardHeader>
-                                <CardTitle>Información General</CardTitle>
-                                <CardDescription>Detalles básicos y descripción del curso.</CardDescription>
-                            </CardHeader>
+                            <CardHeader><CardTitle>Información General</CardTitle><CardDescription>Detalles básicos y descripción.</CardDescription></CardHeader>
                             <CardContent className="space-y-4">
-                                <div>
-                                    <Label htmlFor="title">Título del Curso</Label>
-                                    <Input id="title" {...register('title', { required: 'El título es obligatorio' })} placeholder="Título atractivo y descriptivo" disabled={isSaving} />
-                                    {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
-                                </div>
-                                <div>
-                                    <Label htmlFor="description">Descripción del Curso</Label>
-                                    <Textarea id="description" {...register('description', { required: 'La descripción es obligatoria' })} placeholder="Describe el contenido, objetivos y a quién va dirigido el curso." rows={6} disabled={isSaving} />
-                                    {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
-                                </div>
+                                <div><Label htmlFor="title">Título del Curso</Label><Input id="title" {...register('title', { required: 'El título es obligatorio' })} placeholder="Título atractivo" disabled={isSaving} />{errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}</div>
+                                <div><Label htmlFor="description">Descripción</Label><Textarea id="description" {...register('description', { required: 'La descripción es obligatoria' })} placeholder="Describe el contenido y objetivos." rows={6} disabled={isSaving} />{errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}</div>
                             </CardContent>
                         </Card>
 
                         <Card>
                             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                                <div>
-                                    <CardTitle>Contenido del Curso</CardTitle>
-                                    <CardDescription>Arrastra los módulos para reordenarlos.</CardDescription>
-                                </div>
-                                <Button type="button" onClick={handleAddModule} disabled={isSaving} className="w-full sm:w-auto">
-                                    <PlusCircle className="mr-2 h-4 w-4" /> Añadir Módulo
-                                </Button>
+                                <div><CardTitle>Contenido del Curso</CardTitle><CardDescription>Arrastra los módulos para reordenarlos.</CardDescription></div>
+                                <Button type="button" onClick={handleAddModule} disabled={isSaving} className="w-full sm:w-auto"><PlusCircle className="mr-2 h-4 w-4" /> Añadir Módulo</Button>
                             </CardHeader>
                             <CardContent>
                                 <DragDropContext onDragEnd={handleDragEnd}>
@@ -1201,16 +1127,10 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
                                             <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
                                                 {moduleFields.filter(mod => !getValues(`modules.${moduleFields.indexOf(mod)}._toBeDeleted`)).map((moduleItem, moduleIndex) => {
                                                     const module = getValues(`modules.${moduleIndex}`);
-                                                    if (module && module._toBeDeleted) return null;
+                                                    if (module?._toBeDeleted) return null;
                                                     return (
                                                         <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
-                                                          {(provided) => (
-                                                              <ModuleItem 
-                                                                moduleIndex={moduleIndex} 
-                                                                provided={provided} 
-                                                                setItemToDeleteDetails={setItemToDeleteDetails}
-                                                              />
-                                                          )}
+                                                          {(provided) => (<ModuleItem provided={provided} moduleIndex={moduleIndex} setItemToDeleteDetails={setItemToDeleteDetails} />)}
                                                         </Draggable>
                                                     );
                                                 })}
@@ -1219,9 +1139,7 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
                                         )}
                                     </Droppable>
                                 </DragDropContext>
-                                {moduleFields.filter(mod => !getValues(`modules.${moduleFields.indexOf(mod)}._toBeDeleted`)).length === 0 && (
-                                    <p className="text-center text-muted-foreground py-8">No hay módulos. ¡Añade el primero para empezar!</p>
-                                )}
+                                {moduleFields.filter(mod => !getValues(`modules.${moduleFields.indexOf(mod)}._toBeDeleted`)).length === 0 && <p className="text-center text-muted-foreground py-8">No hay módulos.</p>}
                             </CardContent>
                         </Card>
                     </div>
@@ -1230,100 +1148,16 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
                          <Card>
                             <CardHeader><CardTitle>Configuración</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
-                                <div>
-                                    <Label htmlFor="category">Categoría</Label>
-                                    <Controller
-                                        control={control}
-                                        name="category"
-                                        rules={{ required: 'La categoría es obligatoria' }}
-                                        render={({ field }) => (
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                value={field.value || ''}
-                                                disabled={isSaving}
-                                            >
-                                                <SelectTrigger id="category">
-                                                    <SelectValue placeholder="Selecciona una categoría" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {(settings?.resourceCategories || []).sort().map(cat => (
-                                                        <SelectItem key={cat} value={cat}>
-                                                            {cat}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        )}
-                                    />
-                                    {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>}
-                                </div>
-                                <div>
-                                    <Label htmlFor="status">Estado del Curso</Label>
-                                    <Controller control={control} name="status" render={({ field }) => (
-                                        <Select onValueChange={(value: CourseStatus) => { field.onChange(value); if (value === 'PUBLISHED' && !watchedPublicationDate) { setValue('publicationDate', new Date(), { shouldDirty: true }); } }} value={field.value} disabled={isSaving}>
-                                            <SelectTrigger id="status"><SelectValue placeholder="Selecciona un estado" /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="DRAFT">Borrador</SelectItem>
-                                                <SelectItem value="PUBLISHED">Publicado</SelectItem>
-                                                <SelectItem value="ARCHIVED">Archivado</SelectItem>
-                                                <SelectItem value="SCHEDULED">Programado</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    )}/>
-                                </div>
-                                {watchedCourseStatus === 'PUBLISHED' && (
-                                    <div>
-                                        <Label htmlFor="publicationDate">Fecha de Publicación</Label>
-                                        <Controller control={control} name="publicationDate" render={({ field }) => (
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !field.value && "text-muted-foreground")} disabled={isSaving}><CalendarIcon className="mr-2 h-4 w-4" />{field.value ? format(field.value, "PPP", { locale: es }) : <span>Elige una fecha</span>}</Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} initialFocus locale={es}/></PopoverContent>
-                                            </Popover>
-                                        )}/>
-                                    </div>
-                                )}
+                                <div><Label htmlFor="category">Categoría</Label><Controller control={control} name="category" rules={{ required: 'La categoría es obligatoria' }} render={({ field }) => (<Select onValueChange={field.onChange} value={field.value || ''} disabled={isSaving}><SelectTrigger id="category"><SelectValue placeholder="Selecciona" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select>)}/>{errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>}</div>
+                                <div><Label htmlFor="status">Estado</Label><Controller control={control} name="status" render={({ field }) => (<Select onValueChange={(value: CourseStatus) => { field.onChange(value); if (value === 'PUBLISHED' && !watchedPublicationDate) setValue('publicationDate', new Date(), { shouldDirty: true }); }} value={field.value} disabled={isSaving}><SelectTrigger id="status"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="DRAFT">Borrador</SelectItem><SelectItem value="PUBLISHED">Publicado</SelectItem><SelectItem value="ARCHIVED">Archivado</SelectItem><SelectItem value="SCHEDULED">Programado</SelectItem></SelectContent></Select>)}/></div>
+                                {watchedCourseStatus === 'PUBLISHED' && <div><Label htmlFor="publicationDate">Fecha Publicación</Label><Controller control={control} name="publicationDate" render={({ field }) => (<Popover><PopoverTrigger asChild><Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !field.value && "text-muted-foreground")} disabled={isSaving}><CalendarIcon className="mr-2 h-4 w-4" />{field.value ? format(field.value, "PPP", { locale: es }) : <span>Elige una fecha</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} initialFocus locale={es}/></PopoverContent></Popover>)}/></div>}
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader>
-                                <CardTitle>Imagen del Curso</CardTitle>
-                                <CardDescription>Sube una imagen representativa.</CardDescription>
-                            </CardHeader>
+                            <CardHeader><CardTitle>Imagen del Curso</CardTitle><CardDescription>Sube una imagen.</CardDescription></CardHeader>
                             <CardContent className="grid gap-4">
-                                {watch('imageUrl') ? (
-                                    <div className="relative aspect-video rounded-md overflow-hidden border w-full">
-                                        <Image src={watch('imageUrl') || '/placeholder-image.jpg'} alt="Imagen del Curso" fill className="object-cover" onError={() => setValue('imageUrl', null)} data-ai-hint="online course" />
-                                        <div className="absolute top-2 right-2 z-10 flex gap-1">
-                                            <Button 
-                                                type="button" 
-                                                variant="secondary" 
-                                                size="icon" 
-                                                className="rounded-full h-8 w-8" 
-                                                onClick={() => document.getElementById('image-upload')?.click()}
-                                                disabled={isSaving}>
-                                                <Replace className="h-4 w-4" />
-                                            </Button>
-                                            <Button 
-                                                type="button" 
-                                                variant="destructive" 
-                                                size="icon" 
-                                                className="rounded-full h-8 w-8" 
-                                                onClick={removeCourseImage} 
-                                                disabled={isSaving}>
-                                                <XCircle className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <Label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-md cursor-pointer bg-muted/20 hover:bg-muted/30 transition-colors">
-                                        <UploadCloud className="h-8 w-8 text-muted-foreground mb-2" />
-                                        <span className="text-sm text-muted-foreground">Haz clic para subir una imagen</span>
-                                    </Label>
-                                )}
-                                <Input id="image-upload" type="file" className="sr-only" accept="image/*" onChange={handleCourseImageFileChange} disabled={isSaving} />
-                                {errors.imageUrl && <p className="text-red-500 text-xs mt-1">{errors.imageUrl.message}</p>}
+                                {watch('imageUrl') ? (<div className="relative aspect-video rounded-md overflow-hidden border w-full"><Image src={watch('imageUrl')!} alt="Imagen del Curso" fill className="object-cover" onError={() => setValue('imageUrl', null)} data-ai-hint="online course" /><div className="absolute top-2 right-2 z-10 flex gap-1"><Button type="button" variant="secondary" size="icon" className="rounded-full h-8 w-8" onClick={() => document.getElementById('image-upload')?.click()} disabled={isSaving}><Replace className="h-4 w-4" /></Button><Button type="button" variant="destructive" size="icon" className="rounded-full h-8 w-8" onClick={removeCourseImage} disabled={isSaving}><XCircle className="h-4 w-4" /></Button></div></div>) : (<Label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-md cursor-pointer bg-muted/20 hover:bg-muted/30 transition-colors"><UploadCloud className="h-8 w-8 text-muted-foreground mb-2" /><span className="text-sm text-muted-foreground">Haz clic para subir</span></Label>)}
+                                <Input id="image-upload" type="file" className="sr-only" accept="image/*" onChange={handleCourseImageFileChange} disabled={isSaving} />{errors.imageUrl && <p className="text-red-500 text-xs mt-1">{errors.imageUrl.message}</p>}
                             </CardContent>
                         </Card>
                     </div>
@@ -1331,90 +1165,15 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
 
                 <div className="fixed bottom-0 left-0 md:left-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)] right-0 bg-background/95 backdrop-blur-sm border-t p-4 z-20">
                     <div className="max-w-screen-2xl mx-auto flex flex-col sm:flex-row justify-end gap-2">
-                        {!isNewCourse && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" type="button" disabled={isSaving} className="w-full sm:w-auto">
-                                        Más Acciones
-                                        <MoreVertical className="ml-2 h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Otras Acciones</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    {watchedCourseStatus !== 'DRAFT' && (
-                                        <DropdownMenuItem
-                                            onSelect={() => handleChangeCourseStatus('DRAFT')}
-                                            disabled={isSaving}
-                                        >
-                                            <CircleOff className="mr-2 h-4 w-4" /> Marcar como Borrador
-                                        </DropdownMenuItem>
-                                    )}
-                                    {watchedCourseStatus !== 'ARCHIVED' && (
-                                        <DropdownMenuItem
-                                            onSelect={() => handleChangeCourseStatus('ARCHIVED')}
-                                            disabled={isSaving}
-                                        >
-                                            <Archive className="mr-2 h-4 w-4" /> Archivar Curso
-                                        </DropdownMenuItem>
-                                    )}
-                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                        onClick={() => setShowDeleteDialog(true)}
-                                        disabled={isSaving}
-                                        className="text-destructive focus:bg-destructive/10"
-                                    >
-                                        <Trash2 className="mr-2 h-4 w-4" /> Eliminar Curso
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
-
-                        <Button type="submit" disabled={isSaving || !isDirty} className="w-full sm:w-auto">
-                            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                             <Save className="mr-2 h-4 w-4" />
-                             { isNewCourse ? "Crear Curso" : "Guardar Cambios"}
-                        </Button>
+                        {!isNewCourse && (<DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline" type="button" disabled={isSaving} className="w-full sm:w-auto">Más Acciones<MoreVertical className="ml-2 h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuLabel>Otras Acciones</DropdownMenuLabel><DropdownMenuSeparator />{watchedCourseStatus !== 'DRAFT' && <DropdownMenuItem onSelect={() => handleChangeCourseStatus('DRAFT')} disabled={isSaving}><CircleOff className="mr-2 h-4 w-4" /> Marcar como Borrador</DropdownMenuItem>}{watchedCourseStatus !== 'ARCHIVED' && <DropdownMenuItem onSelect={() => handleChangeCourseStatus('ARCHIVED')} disabled={isSaving}><Archive className="mr-2 h-4 w-4" /> Archivar</DropdownMenuItem>}<DropdownMenuSeparator /><DropdownMenuItem onClick={() => setShowDeleteDialog(true)} disabled={isSaving} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem></DropdownMenuContent></DropdownMenu>)}
+                        <Button type="submit" disabled={isSaving || !isDirty} className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4" />{isSaving ? 'Guardando...' : (isNewCourse ? 'Crear Curso' : 'Guardar Cambios')}</Button>
                     </div>
                 </div>
 
-
-                {/* Dialogs and Modals */}
-                <AlertDialog open={itemToDeleteDetails !== null} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
-                            <AlertDialogDescription>¿Estás seguro de que quieres eliminar {itemToDeleteDetails?.type} "<strong>{itemToDeleteDetails?.name}</strong>"? Se eliminará al guardar los cambios del curso.</AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-                            <AlertDialogCancel onClick={() => setItemToDeleteDetails(null)}>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={confirmDeleteItemAction} className={buttonVariants({ variant: "destructive" })}>
-                                <Trash2 className="mr-2 h-4 w-4" /> Sí, eliminar
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-                <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
-                            <AlertDialogDescription>Esta acción no se puede deshacer. Se eliminará permanentemente el curso "<strong>{getValues('title')}</strong>" y todos sus datos (módulos, lecciones, inscripciones, progreso).</AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-                            <AlertDialogCancel onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleDeleteCourse} disabled={isDeleting} className={buttonVariants({ variant: "destructive" })}>{isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar permanentemente</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-                
-                <ImageCropper
-                    imageSrc={imageToCrop}
-                    onCropComplete={handleCropComplete}
-                    onClose={() => setImageToCrop(null)}
-                    uploadUrl="/api/upload/course-image"
-                />
+                <AlertDialog open={itemToDeleteDetails !== null} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro de que quieres eliminar {itemToDeleteDetails?.type} "<strong>{itemToDeleteDetails?.name}</strong>"? Se eliminará al guardar los cambios.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel onClick={() => setItemToDeleteDetails(null)}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={confirmDeleteItemAction} className={buttonVariants({ variant: "destructive" })}><Trash2 className="mr-2 h-4 w-4" /> Sí, eliminar</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
+                <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Absolutamente seguro?</AlertDialogTitle><AlertDialogDescription>Esta acción no se puede deshacer. Se eliminará permanentemente el curso "<strong>{getValues('title')}</strong>" y todos sus datos.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCourse} disabled={isDeleting} className={buttonVariants({ variant: "destructive" })}>{isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
+                <ImageCropper imageSrc={imageToCrop} onCropComplete={handleCropComplete} onClose={() => setImageToCrop(null)} uploadUrl="/api/upload/course-image" />
             </form>
         </FormProvider>
     );
 }
-

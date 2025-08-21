@@ -6,31 +6,9 @@ import { CourseViewer } from '@/components/course-viewer';
 import type { Course as AppCourse, CourseProgress } from '@/types';
 import { getCurrentUser } from '@/lib/auth';
 
-const transformPrismaToAppCourse = (prismaCourse: any): AppCourse => {
-  return {
-    ...prismaCourse,
-    publicationDate: prismaCourse.publicationDate ? prismaCourse.publicationDate.toISOString() : null,
-    instructor: prismaCourse.instructor?.name || 'N/A',
-    modules: prismaCourse.modules.map((mod: any) => ({
-      ...mod,
-      lessons: mod.lessons.map((less: any) => ({
-        ...less,
-        contentBlocks: (less.contentBlocks || []).map((block: any) => ({
-          ...block,
-          quiz: block.quiz ? {
-            ...block.quiz,
-            questions: (block.quiz.questions || []).map((q: any) => ({
-              ...q,
-              options: q.options || [],
-            })),
-          } : null,
-        })),
-      })),
-    })),
-  };
-};
+// This is now a Server Component that fetches data and passes it to the client component.
 
-async function getCourseData(courseId: string) {
+async function getCourseData(courseId: string): Promise<AppCourse | null> {
   const course = await prisma.course.findUnique({
       where: { id: courseId },
       include: {
@@ -64,8 +42,28 @@ async function getCourseData(courseId: string) {
     });
 
   if (!course) return null;
-  return transformPrismaToAppCourse(course);
-}
+  
+  // Basic transformation
+  return {
+    ...course,
+    instructor: course.instructor?.name || 'N/A',
+    publicationDate: course.publicationDate?.toISOString() || null,
+    modules: course.modules.map(mod => ({
+        ...mod,
+        lessons: mod.lessons.map(less => ({
+            ...less,
+            contentBlocks: less.contentBlocks.map(block => ({
+                ...block,
+                quiz: block.quiz ? {
+                    ...block.quiz,
+                    questions: (block.quiz.questions || []).map(q => ({...q, options: q.options || []})),
+                } : null
+            }))
+        }))
+    })),
+    modulesCount: course.modules.length,
+  };
+};
 
 async function getEnrollmentAndProgress(userId: string, courseId: string): Promise<{ isEnrolled: boolean; progress: CourseProgress | null }> {
     const enrollment = await prisma.enrollment.findUnique({
