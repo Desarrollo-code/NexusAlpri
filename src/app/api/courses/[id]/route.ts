@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 // GET a specific course by ID
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   context: { params: { id: string } }
 ) {
   const { id: courseId } = context.params;
@@ -60,8 +60,7 @@ export async function GET(
   }
 }
 
-
-// UPDATE course by ID (Re-architected for full nesting)
+// UPDATE course by ID
 export async function PUT(
   req: NextRequest,
   context: { params: { id: string } }
@@ -78,7 +77,7 @@ export async function PUT(
 
     const courseToUpdate = await prisma.course.findUnique({
       where: { id: courseId },
-      select: { instructorId: true, modules: { include: { lessons: { include: { contentBlocks: true } } } } },
+      select: { instructorId: true, modules: { include: { lessons: { include: { contentBlocks: { include: { quiz: true } } } } } } },
     });
 
     if (!courseToUpdate) {
@@ -89,7 +88,7 @@ export async function PUT(
       return NextResponse.json({ message: "No tienes permiso para actualizar este curso" }, { status: 403 });
     }
 
-    const { modules, ...courseData } = body;
+    const { modules: incomingModules, ...courseData } = body;
 
     await prisma.$transaction(async (tx) => {
       // 1. Update basic course data
@@ -101,109 +100,110 @@ export async function PUT(
         },
       });
 
-      // 2. Handle Modules, Lessons, and Content Blocks
-      const currentModules = courseToUpdate.modules;
-      const incomingModuleIds = new Set(modules.map((m: any) => m.id));
+      const currentModuleIds = new Set(courseToUpdate.modules.map(m => m.id));
+      const incomingModuleIds = new Set(incomingModules.map((m: any) => m.id));
 
-      // Delete modules that are no longer present
-      const modulesToDelete = currentModules.filter(m => !incomingModuleIds.has(m.id));
-      if (modulesToDelete.length > 0) {
-        await tx.module.deleteMany({ where: { id: { in: modulesToDelete.map(m => m.id) } } });
+      const moduleIdsToDelete = [...currentModuleIds].filter(id => !incomingModuleIds.has(id));
+      if (moduleIdsToDelete.length > 0) {
+        await tx.module.deleteMany({ where: { id: { in: moduleIdsToDelete } } });
       }
 
-      for (const [moduleIndex, module] of modules.entries()) {
-        const moduleUpsertData = { title: module.title, order: moduleIndex };
+      for (const [moduleIndex, module] of incomingModules.entries()) {
+        const moduleUpsertData = { title: module.title, order: moduleIndex, courseId };
+        
+        const isNewModule = module.id.startsWith('new-');
         const savedModule = await tx.module.upsert({
-          where: { id: module.id.startsWith("new-") ? "" : module.id },
-          create: { ...moduleUpsertData, courseId },
+          where: { id: isNewModule ? '' : module.id },
+          create: moduleUpsertData,
           update: moduleUpsertData,
         });
-
-        const currentLessons = currentModules.find(m => m.id === module.id)?.lessons || [];
+        
+        const currentLessons = courseToUpdate.modules.find(m => m.id === (isNewModule ? savedModule.id : module.id))?.lessons || [];
+        const currentLessonIds = new Set(currentLessons.map(l => l.id));
         const incomingLessonIds = new Set(module.lessons.map((l: any) => l.id));
-
-        // Delete lessons no longer present in the module
-        const lessonsToDelete = currentLessons.filter(l => !incomingLessonIds.has(l.id));
-        if (lessonsToDelete.length > 0) {
-          await tx.lesson.deleteMany({ where: { id: { in: lessonsToDelete.map(l => l.id) } } });
+        
+        const lessonIdsToDelete = [...currentLessonIds].filter(id => !incomingLessonIds.has(id));
+        if (lessonIdsToDelete.length > 0) {
+            await tx.lesson.deleteMany({ where: { id: { in: lessonIdsToDelete } } });
         }
 
         for (const [lessonIndex, lesson] of module.lessons.entries()) {
           const lessonUpsertData = { title: lesson.title, order: lessonIndex, moduleId: savedModule.id };
+          const isNewLesson = lesson.id.startsWith('new-');
           const savedLesson = await tx.lesson.upsert({
-            where: { id: lesson.id.startsWith("new-") ? "" : lesson.id },
+            where: { id: isNewLesson ? '' : lesson.id },
             create: lessonUpsertData,
             update: lessonUpsertData,
           });
 
-          const currentBlocks = currentLessons.find(l => l.id === lesson.id)?.contentBlocks || [];
+          const currentBlocks = currentLessons.find(l => l.id === (isNewLesson ? savedLesson.id : lesson.id))?.contentBlocks || [];
+          const currentBlockIds = new Set(currentBlocks.map(b => b.id));
           const incomingBlockIds = new Set(lesson.contentBlocks.map((b: any) => b.id));
 
-          // Delete blocks no longer present
-          const blocksToDelete = currentBlocks.filter(b => !incomingBlockIds.has(b.id));
-          if (blocksToDelete.length > 0) {
-            await tx.contentBlock.deleteMany({ where: { id: { in: blocksToDelete.map(b => b.id) } } });
-          }
+          const blockIdsToDelete = [...currentBlockIds].filter(id => !incomingBlockIds.has(id));
+           if (blockIdsToDelete.length > 0) {
+                await tx.contentBlock.deleteMany({ where: { id: { in: blockIdsToDelete } } });
+           }
 
           for (const [blockIndex, block] of lesson.contentBlocks.entries()) {
-            const blockUpsertData = {
-              type: block.type,
-              content: block.content,
-              order: blockIndex,
-              lessonId: savedLesson.id
-            };
+            const blockUpsertData = { type: block.type, content: block.content, order: blockIndex, lessonId: savedLesson.id };
+            const isNewBlock = block.id.startsWith('new-');
             const savedBlock = await tx.contentBlock.upsert({
-              where: { id: block.id.startsWith("new-") ? "" : block.id },
-              create: blockUpsertData,
-              update: blockUpsertData
+                where: { id: isNewBlock ? '' : block.id },
+                create: blockUpsertData,
+                update: blockUpsertData,
             });
 
-            // Handle Quiz data if the block is a QUIZ type
             if (block.type === 'QUIZ' && block.quiz) {
-              const quizData = {
-                title: block.quiz.title,
-                description: block.quiz.description || null,
-                contentBlockId: savedBlock.id,
-              };
-              const savedQuiz = await tx.quiz.upsert({
-                where: { id: block.quiz.id.startsWith("new-") ? "" : block.quiz.id },
-                create: quizData,
-                update: quizData,
-              });
-
-              const currentQuestions = await tx.question.findMany({ where: { quizId: savedQuiz.id }});
-              const incomingQuestionIds = new Set(block.quiz.questions.map((q: any) => q.id));
-              
-              const questionsToDelete = currentQuestions.filter(q => !incomingQuestionIds.has(q.id));
-              if (questionsToDelete.length > 0) {
-                  await tx.question.deleteMany({ where: { id: { in: questionsToDelete.map(q => q.id) } } });
-              }
-
-              for (const [qIndex, question] of block.quiz.questions.entries()) {
-                const questionUpsertData = { text: question.text, type: question.type, order: qIndex, quizId: savedQuiz.id };
-                const savedQuestion = await tx.question.upsert({
-                  where: { id: question.id.startsWith("temp-") ? "" : question.id },
-                  create: questionUpsertData,
-                  update: questionUpsertData,
+                const isNewQuiz = block.quiz.id.startsWith('new-');
+                const quizData = { title: block.quiz.title, description: block.quiz.description, contentBlockId: savedBlock.id };
+                const savedQuiz = await tx.quiz.upsert({
+                    where: { id: isNewQuiz ? '' : block.quiz.id },
+                    create: quizData,
+                    update: quizData,
                 });
                 
-                const currentOptions = await tx.answerOption.findMany({ where: { questionId: savedQuestion.id } });
-                const incomingOptionIds = new Set(question.options.map((o: any) => o.id));
-
-                const optionsToDelete = currentOptions.filter(o => !incomingOptionIds.has(o.id));
-                if (optionsToDelete.length > 0) {
-                    await tx.answerOption.deleteMany({ where: { id: { in: optionsToDelete.map(o => o.id) } } });
+                // Logic for questions and options remains complex but necessary
+                const currentQuestions = await tx.question.findMany({ where: { quizId: savedQuiz.id }, include: { options: true } });
+                const currentQuestionIds = new Set(currentQuestions.map(q => q.id));
+                const incomingQuestionIds = new Set(block.quiz.questions.map((q: any) => q.id));
+                const questionIdsToDelete = [...currentQuestionIds].filter(id => !incomingQuestionIds.has(id));
+                if (questionIdsToDelete.length > 0) {
+                    await tx.question.deleteMany({ where: { id: { in: questionIdsToDelete } } });
                 }
 
-                for (const option of question.options) {
-                  const optionUpsertData = { text: option.text, isCorrect: option.isCorrect, feedback: option.feedback, questionId: savedQuestion.id };
-                  await tx.answerOption.upsert({
-                    where: { id: option.id.startsWith("temp-") ? "" : option.id },
-                    create: optionUpsertData,
-                    update: optionUpsertData,
-                  });
+                for (const [qIndex, question] of block.quiz.questions.entries()) {
+                    const isNewQuestion = question.id.startsWith('temp-q-');
+                    const questionUpsertData = { text: question.text, type: question.type, order: qIndex, quizId: savedQuiz.id };
+                    const savedQuestion = await tx.question.upsert({
+                        where: { id: isNewQuestion ? '' : question.id },
+                        create: questionUpsertData,
+                        update: questionUpsertData,
+                    });
+
+                    const currentOptions = currentQuestions.find(q => q.id === (isNewQuestion ? savedQuestion.id : question.id))?.options || [];
+                    const currentOptionIds = new Set(currentOptions.map(o => o.id));
+                    const incomingOptionIds = new Set(question.options.map((o: any) => o.id));
+                    const optionIdsToDelete = [...currentOptionIds].filter(id => !incomingOptionIds.has(id));
+                    if(optionIdsToDelete.length > 0) {
+                        await tx.answerOption.deleteMany({ where: { id: { in: optionIdsToDelete } } });
+                    }
+                    
+                    for (const option of question.options) {
+                        const isNewOption = option.id.startsWith('temp-o-');
+                        const optionUpsertData = { text: option.text, isCorrect: option.isCorrect, feedback: option.feedback, questionId: savedQuestion.id };
+                        await tx.answerOption.upsert({
+                            where: { id: isNewOption ? '' : option.id },
+                            create: optionUpsertData,
+                            update: optionUpsertData,
+                        });
+                    }
                 }
-              }
+            } else {
+                 const currentBlock = currentBlocks.find(b => b.id === (isNewBlock ? savedBlock.id : block.id));
+                 if (currentBlock?.quiz) {
+                     await tx.quiz.delete({ where: { id: currentBlock.quiz.id }});
+                 }
             }
           }
         }
@@ -243,7 +243,7 @@ export async function PUT(
 
 // DELETE course by ID
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   context: { params: { id: string } }
 ) {
   const session = await getCurrentUser();
