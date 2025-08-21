@@ -34,7 +34,6 @@ import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided, D
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -71,12 +70,12 @@ const generateUniqueId = (prefix: string) => {
     if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
         return `${prefix}-${window.crypto.randomUUID()}`;
     }
+    // Fallback for older browsers or non-secure contexts
     return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
 
-// === FORWARD-REF-WRAPPED COMPONENTS FOR DND ===
-const ModuleItem = React.forwardRef<HTMLDivElement, any>(
+const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: Function; onAddLesson: () => void; onLessonUpdate: Function; onLessonDelete: (lessonIndex: number) => void; onAddBlock: Function; onBlockUpdate: Function; onBlockDelete: Function; isSaving: boolean; onDelete: () => void; }>(
     ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete, ...rest }, ref) => {
         return (
             <div ref={ref} {...rest}>
@@ -89,10 +88,10 @@ const ModuleItem = React.forwardRef<HTMLDivElement, any>(
                                     <Input value={module.title} onChange={e => onUpdate('title', e.target.value)} className="text-base font-semibold" disabled={isSaving} />
                                 </div>
                             </AccordionTrigger>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive ml-2 shrink-0" onClick={(e) => { e.stopPropagation(); onDelete(); }} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive ml-2 shrink-0" onClick={(e) => { e.stopPropagation(); onDelete(); }} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
                         </div>
                         <AccordionContent className="p-4 pt-0 border-t">
-                            <Droppable droppableId={module.id} type={`LESSONS`}>
+                            <Droppable droppableId={module.id} type="LESSONS">
                                 {(provided) => (
                                     <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
                                         {module.lessons.map((lesson, lessonIndex) => (
@@ -130,7 +129,7 @@ const ModuleItem = React.forwardRef<HTMLDivElement, any>(
 ModuleItem.displayName = 'ModuleItem';
 
 
-const LessonItem = React.forwardRef<HTMLDivElement, any>(({ lesson, onDelete, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, ...rest }, ref) => {
+const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onDelete: () => void; onUpdate: Function; onAddBlock: (type: LessonType) => void; onBlockUpdate: Function; onBlockDelete: (blockIndex: number) => void; isSaving: boolean; }>(({ lesson, onDelete, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, ...rest }, ref) => {
     return (
         <div ref={ref} {...rest} className="bg-card p-3 rounded-md border">
             <div className="flex items-center gap-2 mb-3">
@@ -169,7 +168,7 @@ const LessonItem = React.forwardRef<HTMLDivElement, any>(({ lesson, onDelete, on
 LessonItem.displayName = 'LessonItem';
 
 
-const ContentBlockItem = React.forwardRef<HTMLDivElement, any>(({ block, onUpdate, onDelete, isSaving, ...rest }, ref) => {
+const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock; onUpdate: (field: string, value: any) => void; onDelete: () => void; isSaving: boolean; }>(({ block, onUpdate, onDelete, isSaving, ...rest }, ref) => {
     
     const renderBlockContent = () => {
         switch(block.type) {
@@ -381,42 +380,37 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     // --- Drag and Drop ---
     const onDragEnd = (result: DropResult) => {
         const { source, destination, type } = result;
+
         if (!destination || !course) return;
 
+        // Reordering modules
         if (type === 'MODULES') {
-            const reorderedModules = Array.from(course.modules);
-            const [removed] = reorderedModules.splice(source.index, 1);
-            reorderedModules.splice(destination.index, 0, removed);
-            updateCourseField('modules', reorderedModules);
+            const items = Array.from(course.modules);
+            const [reorderedItem] = items.splice(source.index, 1);
+            items.splice(destination.index, 0, reorderedItem);
+            updateCourseField('modules', items);
             return;
         }
 
-        if (type.startsWith('LESSONS')) {
+        // Reordering lessons
+        if (type === 'LESSONS') {
             const sourceModuleId = source.droppableId;
             const destModuleId = destination.droppableId;
-
-            const newModules = [...course.modules];
-            const sourceModuleIndex = newModules.findIndex(m => m.id === sourceModuleId);
-            const destModuleIndex = newModules.findIndex(m => m.id === destModuleId);
             
-            if(sourceModuleIndex === -1 || destModuleIndex === -1) return;
+            const newModules = JSON.parse(JSON.stringify(course.modules)); // Deep copy to avoid mutation issues
+            
+            const sourceModule = newModules.find(m => m.id === sourceModuleId);
+            const destModule = newModules.find(m => m.id === destModuleId);
+            
+            if (!sourceModule || !destModule) return;
 
-            // Moving within the same module
-            if (sourceModuleId === destModuleId) {
-                const lessons = Array.from(newModules[sourceModuleIndex].lessons);
-                const [removed] = lessons.splice(source.index, 1);
-                lessons.splice(destination.index, 0, removed);
-                newModules[sourceModuleIndex] = { ...newModules[sourceModuleIndex], lessons };
-            } else { // Moving between different modules
-                const sourceLessons = Array.from(newModules[sourceModuleIndex].lessons);
-                const destLessons = Array.from(newModules[destModuleIndex].lessons);
-                const [removed] = sourceLessons.splice(source.index, 1);
-                destLessons.splice(destination.index, 0, removed);
-                newModules[sourceModuleIndex] = { ...newModules[sourceModuleIndex], lessons: sourceLessons };
-                newModules[destModuleIndex] = { ...newModules[destModuleIndex], lessons: destLessons };
-            }
-            setCourse({ ...course, modules: newModules });
-            setIsDirty(true);
+            // Take the lesson from the source module
+            const [movedLesson] = sourceModule.lessons.splice(source.index, 1);
+            
+            // Place it in the destination module
+            destModule.lessons.splice(destination.index, 0, movedLesson);
+
+            updateCourseField('modules', newModules);
         }
     };
     
@@ -510,7 +504,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                         </CardHeader>
                         <CardContent>
                             <DragDropContext onDragEnd={onDragEnd}>
-                                <Droppable droppableId="modules-droppable" type="MODULES">
+                                <Droppable droppableId="course-modules" type="MODULES">
                                     {(provided) => (
                                         <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
                                             {course.modules.map((moduleItem, moduleIndex) => (
@@ -638,4 +632,3 @@ const BlockTypeSelector = ({ onSelect }) => (
         </DropdownMenuContent>
     </DropdownMenu>
 );
-
