@@ -1,4 +1,3 @@
-
 // En /home/user/studio/src/app/(app)/manage-courses/[courseId]/edit/page.tsx
 
 'use client';
@@ -534,25 +533,21 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, provided, setItemToDe
     };
     
     const handleAppendBlock = (type: AppLessonType) => {
-        let newBlock: EditableContentBlock = {
+        const newBlockData: any = {
             id: `new-block-${Date.now()}`,
             type,
             content: '',
             order: blockFields.length,
-            quiz: null,
-            _toBeDeleted: false
         };
-
         if (type === 'QUIZ') {
-            newBlock.quiz = {
+            newBlockData.quiz = {
                 id: `new-quiz-${Date.now()}`,
                 title: 'Nuevo Quiz',
                 description: 'Descripción del quiz',
                 questions: []
             };
         }
-
-        appendBlock(newBlock);
+        appendBlock(newBlockData);
     };
 
     return (
@@ -1018,37 +1013,31 @@ export default function EditCoursePage() {
                                   .filter(block => !block._toBeDeleted)
                                   .map((block, blockIndex) => ({
                                       ...block,
-                                      order: blockIndex,
-                                      quiz: block.type === 'QUIZ' ? block.quiz : undefined,
+                                      order: blockIndex
                                   }))
                             }))
                     }))
             };
             
-            if (isNewCourse) {
-                const res = await fetch('/api/courses', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                });
-                if (!res.ok) throw new Error((await res.json()).message || 'Error al crear el curso.');
-                const newCourse = await res.json();
-                
-                toast({ title: "Curso Creado", description: "La información del curso se ha guardado correctamente." });
-                router.push(`/manage-courses/${newCourse.id}/edit`);
-            } else {
-                const res = await fetch(`/api/courses/${courseId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                });
+            const endpoint = isNewCourse ? '/api/courses' : `/api/courses/${courseId}`;
+            const method = isNewCourse ? 'POST' : 'PUT';
 
-                if (!res.ok) throw new Error((await res.json()).message || 'Error al guardar el curso.');
-                
-                const result = await res.json();
-                reset(result, { keepDirty: false, keepValues: true }); // Resetea el estado dirty pero mantiene los valores
-                toast({ title: "Curso Guardado", description: "La información del curso se ha actualizado correctamente." });
-                 setPageTitle(`Editando: ${result.title}`);
+            const response = await fetch(endpoint, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) throw new Error((await response.json()).message || 'Error al guardar el curso.');
+
+            const savedCourse = await response.json();
+            
+            toast({ title: "Curso Guardado", description: "La información del curso se ha guardado correctamente." });
+            
+            if (isNewCourse) {
+                router.push(`/manage-courses/${savedCourse.id}/edit`);
+            } else {
+                reset(savedCourse); // Actualiza el formulario con los datos del servidor (IDs, etc.)
+                setPageTitle(`Editando: ${savedCourse.title}`);
             }
 
         } catch (error: any) {

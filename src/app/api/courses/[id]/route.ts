@@ -2,6 +2,8 @@
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, ContentBlock, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption } from '@/types';
+
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +75,7 @@ export async function PUT(
   const courseId = params.id;
 
   try {
-    const body = await req.json();
+    const body: AppCourse = await req.json();
 
     const courseToUpdate = await prisma.course.findUnique({
       where: { id: courseId },
@@ -87,150 +89,178 @@ export async function PUT(
     if (session.role !== "ADMINISTRATOR" && courseToUpdate.instructorId !== session.id) {
       return NextResponse.json({ message: "No tienes permiso para actualizar este curso" }, { status: 403 });
     }
-
-    const { modules: incomingModules, ...courseData } = body;
     
-    // Explicitly handle modules/lessons/blocks to ensure data integrity
+    // De-structure course data from the rest of the nested structure
+    const { modules, ...courseData } = body;
+    
     await prisma.$transaction(async (tx) => {
-      // 1. Update basic course data
-      await tx.course.update({
-        where: { id: courseId },
-        data: {
-          ...courseData,
-          publicationDate: courseData.publicationDate ? new Date(courseData.publicationDate) : null,
-        },
-      });
+        // 1. Update basic course data
+        await tx.course.update({
+            where: { id: courseId },
+            data: {
+                title: courseData.title,
+                description: courseData.description,
+                imageUrl: courseData.imageUrl,
+                category: courseData.category,
+                status: courseData.status,
+                publicationDate: courseData.publicationDate ? new Date(courseData.publicationDate) : null,
+            },
+        });
 
-      const existingModules = await tx.module.findMany({ where: { courseId } });
-      const incomingModuleIds = new Set(incomingModules.map((m: any) => m.id).filter((id: string) => !id.startsWith('new-')));
-      
-      // Delete modules that are not in the incoming data
-      const moduleIdsToDelete = existingModules.filter(m => !incomingModuleIds.has(m.id)).map(m => m.id);
-      if (moduleIdsToDelete.length > 0) {
-        await tx.module.deleteMany({ where: { id: { in: moduleIdsToDelete } } });
-      }
+        // Get current modules and lessons from DB for comparison
+        const currentModules = await tx.module.findMany({ where: { courseId }, select: { id: true, lessons: { select: { id: true, contentBlocks: { select: { id: true, quiz: { select: { id: true } } } } } } } });
 
-      // Upsert modules
-      for (const [moduleIndex, module] of incomingModules.entries()) {
-          const isNewModule = module.id.startsWith('new-');
-          const savedModule = await tx.module.upsert({
-              where: { id: isNewModule ? '' : module.id }, // Provide a dummy ID for creation
-              create: { title: module.title, order: moduleIndex, courseId },
-              update: { title: module.title, order: moduleIndex },
-          });
+        const incomingModuleIds = new Set(modules.filter(m => !m.id.startsWith('new-')).map(m => m.id));
+        const modulesToDelete = currentModules.filter(m => !incomingModuleIds.has(m.id));
 
-          const existingLessons = await tx.lesson.findMany({ where: { moduleId: savedModule.id } });
-          const incomingLessonIds = new Set(module.lessons.map((l: any) => l.id).filter((id: string) => !id.startsWith('new-')));
-          
-          // Delete lessons not in incoming data for this module
-          const lessonIdsToDelete = existingLessons.filter(l => !incomingLessonIds.has(l.id)).map(l => l.id);
-          if (lessonIdsToDelete.length > 0) {
-              await tx.lesson.deleteMany({ where: { id: { in: lessonIdsToDelete } } });
-          }
+        // Delete modules that are no longer present
+        for (const moduleToDelete of modulesToDelete) {
+            await tx.module.delete({ where: { id: moduleToDelete.id } });
+        }
+        
+        // Upsert Modules
+        for (const [moduleIndex, moduleData] of modules.entries()) {
+            const isNewModule = moduleData.id.startsWith('new-');
+            const savedModule = await tx.module.upsert({
+                where: { id: isNewModule ? `_nonexistent_${moduleIndex}` : moduleData.id },
+                create: { title: moduleData.title, order: moduleIndex, courseId },
+                update: { title: moduleData.title, order: moduleIndex },
+            });
 
-          // Upsert lessons
-          for (const [lessonIndex, lesson] of module.lessons.entries()) {
-              const isNewLesson = lesson.id.startsWith('new-');
-              const savedLesson = await tx.lesson.upsert({
-                  where: { id: isNewLesson ? '' : lesson.id },
-                  create: { title: lesson.title, order: lessonIndex, moduleId: savedModule.id },
-                  update: { title: lesson.title, order: lessonIndex },
-              });
-              
-              // Handle content blocks
-              const existingBlocks = await tx.contentBlock.findMany({ where: { lessonId: savedLesson.id }});
-              const incomingBlockIds = new Set(lesson.contentBlocks.map((b: any) => b.id).filter((id: string) => !id.startsWith('new-')));
+            // Handle lessons for the current module
+            const currentLessonsInModule = currentModules.find(m => m.id === savedModule.id)?.lessons || [];
+            const incomingLessonIds = new Set(moduleData.lessons.filter(l => !l.id.startsWith('new-')).map(l => l.id));
+            const lessonsToDelete = currentLessonsInModule.filter(l => !incomingLessonIds.has(l.id));
 
-              const blockIdsToDelete = existingBlocks.filter(b => !incomingBlockIds.has(b.id)).map(b => b.id);
-              if (blockIdsToDelete.length > 0) {
-                  await tx.contentBlock.deleteMany({ where: { id: { in: blockIdsToDelete } } });
-              }
+            for (const lessonToDelete of lessonsToDelete) {
+                 await tx.lesson.delete({ where: { id: lessonToDelete.id } });
+            }
 
-              for (const [blockIndex, block] of lesson.contentBlocks.entries()) {
-                  const isNewBlock = block.id.startsWith('new-');
-                  const savedBlock = await tx.contentBlock.upsert({
-                      where: { id: isNewBlock ? '' : block.id },
-                      create: { type: block.type, content: block.content, order: blockIndex, lessonId: savedLesson.id },
-                      update: { type: block.type, content: block.content, order: blockIndex },
-                  });
-                  
-                  // Handle quiz within the block
-                  if (block.type === 'QUIZ' && block.quiz) {
-                      const isNewQuiz = block.quiz.id.startsWith('new-');
-                      const quizData = { title: block.quiz.title, description: block.quiz.description, contentBlockId: savedBlock.id };
-                      const savedQuiz = await tx.quiz.upsert({
-                          where: { id: isNewQuiz ? '' : block.quiz.id },
-                          create: quizData,
-                          update: quizData,
-                      });
-                      
-                      // Handle questions and options
-                      const existingQuestions = await tx.question.findMany({ where: { quizId: savedQuiz.id } });
-                      const incomingQuestionIds = new Set(block.quiz.questions.map((q: any) => q.id).filter((id: string) => !id.startsWith('temp-q-')));
-                      const questionIdsToDelete = existingQuestions.filter(q => !incomingQuestionIds.has(q.id)).map(q => q.id);
-                      if (questionIdsToDelete.length > 0) {
-                          await tx.question.deleteMany({ where: { id: { in: questionIdsToDelete } } });
-                      }
-                      
-                      for (const [qIndex, question] of block.quiz.questions.entries()) {
-                          const isNewQuestion = question.id.startsWith('temp-q-');
-                          const savedQuestion = await tx.question.upsert({
-                              where: { id: isNewQuestion ? '' : question.id },
-                              create: { text: question.text, type: 'MULTIPLE_CHOICE', order: qIndex, quizId: savedQuiz.id },
-                              update: { text: question.text, order: qIndex },
-                          });
-                          
-                          const existingOptions = await tx.answerOption.findMany({ where: { questionId: savedQuestion.id } });
-                          const incomingOptionIds = new Set(question.options.map((o: any) => o.id).filter((id: string) => !id.startsWith('temp-o-')));
-                          const optionIdsToDelete = existingOptions.filter(o => !incomingOptionIds.has(o.id)).map(o => o.id);
-                          if (optionIdsToDelete.length > 0) {
-                              await tx.answerOption.deleteMany({ where: { id: { in: optionIdsToDelete } } });
-                          }
+            // Upsert Lessons
+            for (const [lessonIndex, lessonData] of moduleData.lessons.entries()) {
+                const isNewLesson = lessonData.id.startsWith('new-');
+                const savedLesson = await tx.lesson.upsert({
+                    where: { id: isNewLesson ? `_nonexistent_lesson_${lessonIndex}` : lessonData.id },
+                    create: { title: lessonData.title, order: lessonIndex, moduleId: savedModule.id },
+                    update: { title: lessonData.title, order: lessonIndex },
+                });
 
-                          for (const option of question.options) {
-                              const isNewOption = option.id.startsWith('temp-o-');
-                              await tx.answerOption.upsert({
-                                  where: { id: isNewOption ? '' : option.id },
-                                  create: { text: option.text, isCorrect: option.isCorrect, feedback: option.feedback, questionId: savedQuestion.id },
-                                  update: { text: option.text, isCorrect: option.isCorrect, feedback: option.feedback },
-                              });
-                          }
-                      }
-                  } else {
-                     // If block is not a quiz, delete any existing quiz associated with it
-                     const existingQuiz = await tx.quiz.findFirst({ where: { contentBlockId: savedBlock.id }});
-                     if (existingQuiz) {
-                         await tx.quiz.delete({ where: { id: existingQuiz.id }});
-                     }
-                  }
-              }
-          }
-      }
+                // Handle Content Blocks
+                const currentBlocksInLesson = currentLessonsInModule.find(l => l.id === savedLesson.id)?.contentBlocks || [];
+                const incomingBlockIds = new Set(lessonData.contentBlocks.filter(b => !b.id.startsWith('new-')).map(b => b.id));
+                const blocksToDelete = currentBlocksInLesson.filter(b => !incomingBlockIds.has(b.id));
+
+                for (const blockToDelete of blocksToDelete) {
+                    await tx.contentBlock.delete({ where: { id: blockToDelete.id } });
+                }
+                
+                // Upsert Content Blocks
+                for (const [blockIndex, blockData] of lessonData.contentBlocks.entries()) {
+                    const isNewBlock = blockData.id.startsWith('new-');
+                    const savedBlock = await tx.contentBlock.upsert({
+                        where: { id: isNewBlock ? `_nonexistent_block_${blockIndex}` : blockData.id },
+                        create: { type: blockData.type, content: blockData.content || '', order: blockIndex, lessonId: savedLesson.id },
+                        update: { type: blockData.type, content: blockData.content || '', order: blockIndex },
+                    });
+
+                    // Handle Quizzes
+                    if (blockData.type === 'QUIZ' && blockData.quiz) {
+                        const isNewQuiz = blockData.quiz.id.startsWith('new-');
+                        const quizData = { title: blockData.quiz.title, description: blockData.quiz.description || '', contentBlockId: savedBlock.id };
+                        const savedQuiz = await tx.quiz.upsert({
+                             where: { id: isNewQuiz ? `_nonexistent_quiz_${blockIndex}` : blockData.quiz.id },
+                             create: quizData,
+                             update: quizData,
+                        });
+
+                        // Upsert questions and options
+                        const currentQuestions = await tx.question.findMany({ where: { quizId: savedQuiz.id }, include: { options: true } });
+                        const incomingQuestionIds = new Set(blockData.quiz.questions.filter(q => !q.id.startsWith('temp-q-')).map(q => q.id));
+                        
+                        const questionsToDelete = currentQuestions.filter(q => !incomingQuestionIds.has(q.id));
+                        for(const qToDelete of questionsToDelete) {
+                            await tx.question.delete({ where: { id: qToDelete.id } });
+                        }
+                        
+                        for (const [qIndex, questionData] of blockData.quiz.questions.entries()) {
+                            const isNewQuestion = questionData.id.startsWith('temp-q-');
+                            const savedQuestion = await tx.question.upsert({
+                                where: { id: isNewQuestion ? `_nonexistent_question_${qIndex}` : questionData.id },
+                                create: { text: questionData.text, type: 'MULTIPLE_CHOICE', order: qIndex, quizId: savedQuiz.id },
+                                update: { text: questionData.text, order: qIndex },
+                            });
+
+                            const currentOptions = currentQuestions.find(q => q.id === savedQuestion.id)?.options || [];
+                            const incomingOptionIds = new Set(questionData.options.filter(o => !o.id.startsWith('temp-o-')).map(o => o.id));
+                            const optionsToDelete = currentOptions.filter(o => !incomingOptionIds.has(o.id));
+                            for(const oToDelete of optionsToDelete) {
+                                await tx.answerOption.delete({ where: { id: oToDelete.id }});
+                            }
+                            
+                            for (const optionData of questionData.options) {
+                                const isNewOption = optionData.id.startsWith('temp-o-');
+                                await tx.answerOption.upsert({
+                                    where: { id: isNewOption ? `_nonexistent_option_${qIndex}` : optionData.id },
+                                    create: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback, questionId: savedQuestion.id },
+                                    update: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback },
+                                });
+                            }
+                        }
+                    } else {
+                        // If block is not a quiz, delete any quiz associated with it
+                        const existingQuiz = currentBlocksInLesson.find(b => b.id === savedBlock.id)?.quiz;
+                        if(existingQuiz) {
+                            await tx.quiz.delete({ where: { id: existingQuiz.id }});
+                        }
+                    }
+                }
+            }
+        }
     });
 
+
+    // Refetch the full course state to return to client
     const finalCourseState = await prisma.course.findUnique({
-      where: { id: courseId },
-      include: {
-        modules: {
-          orderBy: { order: "asc" },
-          include: {
-            lessons: {
-              orderBy: { order: "asc" },
-              include: {
-                contentBlocks: {
-                  orderBy: { order: "asc" },
-                  include: { quiz: { include: { questions: { orderBy: { order: "asc" }, include: { options: { orderBy: { id: "asc" } } } } } } }
-                }
-              }
-            }
-          }
-        }
-      },
+        where: { id: courseId },
+        include: {
+            instructor: { select: { id: true, name: true } },
+            modules: {
+                orderBy: { order: "asc" },
+                include: {
+                    lessons: {
+                        orderBy: { order: "asc" },
+                        include: {
+                            contentBlocks: {
+                                orderBy: { order: "asc" },
+                                include: {
+                                    quiz: {
+                                        include: {
+                                            questions: {
+                                                orderBy: { order: "asc" },
+                                                include: {
+                                                    options: { orderBy: { id: "asc" } },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
     });
 
     return NextResponse.json(finalCourseState);
   } catch (error) {
     console.error(`[UPDATE_COURSE_ID: ${courseId}]`, error);
+    // Be more specific about the error if possible
+    if (error instanceof prisma.Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+            return NextResponse.json({ message: "Error de guardado: Uno de los elementos a actualizar no fue encontrado." }, { status: 404 });
+        }
+    }
     return NextResponse.json(
       { message: "Error al actualizar el curso" },
       { status: 500 }
