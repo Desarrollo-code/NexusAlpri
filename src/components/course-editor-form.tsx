@@ -73,7 +73,7 @@ const generateUniqueId = (prefix: string) => {
 }
 
 
-const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: Function; onAddLesson: () => void; onLessonUpdate: Function; onLessonDelete: (lessonIndex: number) => void; onAddBlock: Function; onBlockUpdate: Function; onBlockDelete: Function; isSaving: boolean; onDelete: () => void; }>(
+const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: () => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; isSaving: boolean; onDelete: () => void; }>(
     ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete: handleDelete, ...rest }, ref) => {
         return (
             <div ref={ref} {...rest}>
@@ -96,7 +96,7 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                                             <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
                                                 {(provided) => (
                                                     <LessonItem
-                                                        ref={provided.innerRef}
+                                                        provided={provided}
                                                         lesson={lesson}
                                                         onDelete={() => onLessonDelete(lessonIndex)}
                                                         onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
@@ -104,8 +104,6 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                                                         onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
                                                         onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
                                                         isSaving={isSaving}
-                                                        {...provided.draggableProps}
-                                                        {...provided.dragHandleProps}
                                                     />
                                                 )}
                                             </Draggable>
@@ -127,10 +125,10 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
 ModuleItem.displayName = 'ModuleItem';
 
 
-const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdate: Function; onAddBlock: (type: LessonType) => void; onBlockUpdate: Function; onBlockDelete: (blockIndex: number) => void; isSaving: boolean; onDelete: () => void; }>(({ lesson, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete: handleDelete, ...props }, ref) => {
+const LessonItem = ({ lesson, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete: handleDelete, provided }) => {
     return (
-        <div ref={ref} {...props} className="bg-card p-3 rounded-md border">
-            <div className="flex items-center gap-2 mb-3">
+        <div ref={provided.innerRef} {...provided.draggableProps} className="bg-card p-3 rounded-md border">
+            <div className="flex items-center gap-2 mb-3" {...provided.dragHandleProps}>
                 <GripVertical className="h-5 w-5 text-muted-foreground" />
                 <Input value={lesson.title} onChange={e => onUpdate('title', e.target.value)} placeholder="Título de la lección" disabled={isSaving} />
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
@@ -142,13 +140,11 @@ const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdat
                             <Draggable key={block.id} draggableId={block.id} index={blockIndex}>
                                  {(provided) => (
                                     <ContentBlockItem
-                                        ref={provided.innerRef}
+                                        provided={provided}
                                         block={block} 
                                         onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)} 
                                         onDelete={() => onBlockDelete(blockIndex)} 
                                         isSaving={isSaving}
-                                        {...provided.draggableProps}
-                                        {...provided.dragHandleProps}
                                     />
                                  )}
                             </Draggable>
@@ -162,11 +158,11 @@ const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdat
              </div>
         </div>
     )
-});
+};
 LessonItem.displayName = 'LessonItem';
 
 
-const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock; onUpdate: (field: string, value: any) => void; isSaving: boolean; onDelete: () => void; }>(({ block, onUpdate, isSaving, onDelete: handleDelete, ...props }, ref) => {
+const ContentBlockItem = ({ block, onUpdate, isSaving, onDelete: handleDelete, provided }) => {
     
     const renderBlockContent = () => {
         switch(block.type) {
@@ -179,13 +175,13 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
     };
 
     return (
-        <div ref={ref} {...props} className="flex items-center gap-2 bg-muted/50 p-2 rounded">
-             <GripVertical className="h-5 w-5 text-muted-foreground" />
+        <div ref={provided.innerRef} {...provided.draggableProps} className="flex items-center gap-2 bg-muted/50 p-2 rounded">
+             <div {...provided.dragHandleProps}><GripVertical className="h-5 w-5 text-muted-foreground" /></div>
              <div className="flex-grow">{renderBlockContent()}</div>
              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
         </div>
     );
-});
+};
 ContentBlockItem.displayName = 'ContentBlockItem';
 
 
@@ -378,13 +374,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     // --- Drag and Drop ---
     const onDragEnd = (result: DropResult) => {
         const { source, destination, type } = result;
-
         if (!destination || !course) return;
 
-        // Create a deep copy to work with, preventing state mutation issues.
         const newModules = JSON.parse(JSON.stringify(course.modules));
 
-        // Reordering modules
         if (type === 'MODULES') {
             const [reorderedItem] = newModules.splice(source.index, 1);
             newModules.splice(destination.index, 0, reorderedItem);
@@ -392,38 +385,33 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             return;
         }
 
-        // Reordering lessons or blocks
-        const sourceModuleIndex = newModules.findIndex((m: AppModule) => m.id === source.droppableId);
-        const destModuleIndex = newModules.findIndex((m: AppModule) => m.id === destination.droppableId);
-
         if (type === 'LESSONS') {
-             if (sourceModuleIndex === -1 || destModuleIndex === -1) return;
+            const sourceModule = newModules.find((m: AppModule) => m.id === source.droppableId);
+            const destModule = newModules.find((m: AppModule) => m.id === destination.droppableId);
 
-             if (sourceModuleIndex === destModuleIndex) {
-                 // Reordering within the same module
-                 const module = newModules[sourceModuleIndex];
-                 const [reorderedItem] = module.lessons.splice(source.index, 1);
-                 module.lessons.splice(destination.index, 0, reorderedItem);
-             } else {
-                 // Moving to a different module
-                 const sourceModule = newModules[sourceModuleIndex];
-                 const destModule = newModules[destModuleIndex];
-                 const [movedItem] = sourceModule.lessons.splice(source.index, 1);
-                 destModule.lessons.splice(destination.index, 0, movedItem);
-             }
-             updateCourseField('modules', newModules);
+            if (!sourceModule || !destModule) return;
+            
+            if (source.droppableId === destination.droppableId) {
+                // Reorder within the same module
+                const [reorderedItem] = sourceModule.lessons.splice(source.index, 1);
+                sourceModule.lessons.splice(destination.index, 0, reorderedItem);
+            } else {
+                // Move from one module to another
+                const [movedItem] = sourceModule.lessons.splice(source.index, 1);
+                destModule.lessons.splice(destination.index, 0, movedItem);
+            }
+            updateCourseField('modules', newModules);
         }
 
-        if (type === 'BLOCKS') {
-            const moduleWithBlock = newModules.find((m: AppModule) => m.lessons.some((l: AppLesson) => l.id === source.droppableId));
-            if (!moduleWithBlock) return;
-
-            const lesson = moduleWithBlock.lessons.find((l: AppLesson) => l.id === source.droppableId);
-            if (!lesson) return;
-
-            const [reorderedItem] = lesson.contentBlocks.splice(source.index, 1);
-            lesson.contentBlocks.splice(destination.index, 0, reorderedItem);
-            updateCourseField('modules', newModules);
+        if (type.startsWith('BLOCKS-')) {
+             const lessonId = source.droppableId;
+             const module = newModules.find((m: AppModule) => m.lessons.some((l: AppLesson) => l.id === lessonId));
+             if (!module) return;
+             const lesson = module.lessons.find((l: AppLesson) => l.id === lessonId);
+             if (!lesson) return;
+             const [reorderedItem] = lesson.contentBlocks.splice(source.index, 1);
+             lesson.contentBlocks.splice(destination.index, 0, reorderedItem);
+             updateCourseField('modules', newModules);
         }
     };
     
@@ -525,6 +513,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                     {(provided) => (
                                                         <ModuleItem
                                                             ref={provided.innerRef}
+                                                            {...provided.draggableProps}
+                                                            {...provided.dragHandleProps}
                                                             module={moduleItem}
                                                             onDelete={() => handleRemoveModule(moduleIndex)}
                                                             onUpdate={(field, value) => updateModuleField(moduleIndex, field, value)}
@@ -535,8 +525,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                             onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
                                                             onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
                                                             isSaving={isSaving}
-                                                            {...provided.draggableProps}
-                                                            {...provided.dragHandleProps}
                                                         />
                                                     )}
                                                 </Draggable>
