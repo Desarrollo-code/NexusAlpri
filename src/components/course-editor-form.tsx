@@ -67,13 +67,17 @@ interface LocalInstructor {
 }
 
 const generateUniqueId = (prefix: string) => {
+    // crypto.randomUUID() is the modern, preferred way to get a UUID.
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+        return `${prefix}-${window.crypto.randomUUID()}`;
+    }
+    // Fallback for older environments.
     return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
 
 // === FORWARD-REF-WRAPPED COMPONENTS FOR DND ===
-const ModuleItem = React.forwardRef((props, ref) => {
-    const { module, moduleIndex, onDelete, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, onLessonDragEnd, onBlockDragEnd, isSaving, ...rest } = props;
+const ModuleItem = React.forwardRef(({ module, moduleIndex, onDelete, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, onBlockDragEnd, isSaving, ...rest }, ref) => {
     return (
         <div ref={ref} {...rest}>
             <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${moduleIndex}`}>
@@ -93,15 +97,12 @@ const ModuleItem = React.forwardRef((props, ref) => {
                                             {(provided) => (
                                                 <LessonItem 
                                                     ref={provided.innerRef}
-                                                    lesson={lesson} 
-                                                    lessonIndex={lessonIndex}
-                                                    moduleIndex={moduleIndex}
+                                                    lesson={lesson}
                                                     onDelete={() => onLessonDelete(lessonIndex)}
                                                     onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
                                                     onAddBlock={(type) => onAddBlock(lessonIndex, type)}
                                                     onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
                                                     onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
-                                                    onBlockDragEnd={(result, mIdx, lIdx) => onBlockDragEnd(result, mIdx, lIdx)}
                                                     isSaving={isSaving}
                                                     {...provided.draggableProps}
                                                     {...provided.dragHandleProps}
@@ -126,8 +127,7 @@ const ModuleItem = React.forwardRef((props, ref) => {
 ModuleItem.displayName = 'ModuleItem';
 
 
-const LessonItem = React.forwardRef((props, ref) => {
-    const { lesson, lessonIndex, moduleIndex, onDelete, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, onBlockDragEnd, isSaving, ...rest } = props;
+const LessonItem = React.forwardRef(({ lesson, onDelete, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, ...rest }, ref) => {
     return (
         <div ref={ref} {...rest} className="bg-card p-3 rounded-md border">
             <div className="flex items-center gap-2 mb-3">
@@ -135,7 +135,7 @@ const LessonItem = React.forwardRef((props, ref) => {
                 <Input value={lesson.title} onChange={e => onUpdate('title', e.target.value)} placeholder="Título de la lección" disabled={isSaving} />
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
             </div>
-             <Droppable droppableId={`blocks-${lesson.id}`} type={`BLOCKS-${moduleIndex}-${lessonIndex}`}>
+             <Droppable droppableId={`blocks-${lesson.id}`} type={`BLOCKS-${lesson.id}`}>
                 {(provided) => (
                     <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                         {lesson.contentBlocks.map((block, blockIndex) => (
@@ -166,8 +166,7 @@ const LessonItem = React.forwardRef((props, ref) => {
 LessonItem.displayName = 'LessonItem';
 
 
-const ContentBlockItem = React.forwardRef((props, ref) => {
-    const { block, onUpdate, onDelete, isSaving, ...rest } = props;
+const ContentBlockItem = React.forwardRef(({ block, onUpdate, onDelete, isSaving, ...rest }, ref) => {
     
     const renderBlockContent = () => {
         switch(block.type) {
@@ -200,7 +199,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const isNewCourse = courseId === 'new';
     
     const [course, setCourse] = useState<AppCourse | null>(null);
-    const [isLoading, setIsLoading] = useState(!isNewCourse);
+    const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
     
@@ -210,25 +209,26 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     // --- Data Fetching ---
     useEffect(() => {
-        if (isNewCourse) {
-            setCourse({
-                id: generateUniqueId('course'),
-                title: 'Nuevo Curso sin Título',
-                description: 'Añade una descripción aquí.',
-                instructor: user?.name || 'N/A',
-                instructorId: user?.id,
-                status: 'DRAFT',
-                category: '',
-                modules: [],
-                modulesCount: 0,
-            });
-            setIsLoading(false);
-            setPageTitle('Crear Nuevo Curso');
-            return;
-        }
-
         const fetchCourseData = async () => {
+            if (isNewCourse) {
+                setCourse({
+                    id: generateUniqueId('course'),
+                    title: 'Nuevo Curso sin Título',
+                    description: 'Añade una descripción aquí.',
+                    instructor: user?.name || 'N/A',
+                    instructorId: user?.id,
+                    status: 'DRAFT',
+                    category: '',
+                    modules: [],
+                    modulesCount: 0,
+                });
+                setIsLoading(false);
+                setPageTitle('Crear Nuevo Curso');
+                return;
+            }
+
             try {
+                setIsLoading(true);
                 const response = await fetch(`/api/courses/${courseId}`);
                 if (!response.ok) throw new Error("Course not found");
                 const courseData: AppCourse = await response.json();
@@ -241,6 +241,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                  setIsLoading(false);
             }
         };
+        
         fetchCourseData();
     }, [courseId, isNewCourse, user, router, toast, setPageTitle]);
 
