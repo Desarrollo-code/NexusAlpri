@@ -62,7 +62,7 @@ const UploadWidget = ({
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      <div className="relative min-h-[10rem] w-full border-2 border-dashed border-muted-foreground/30 rounded-lg flex items-center justify-center bg-muted/20 p-2">
+      <div className="relative h-40 w-full border-2 border-dashed border-muted-foreground/30 rounded-lg flex items-center justify-center bg-muted/20 p-2">
         {currentImageUrl ? (
           <>
             <Image
@@ -72,7 +72,6 @@ const UploadWidget = ({
                 height={150}
                 className="object-contain max-h-full max-w-full rounded-md"
                 data-ai-hint="logo company"
-                style={{ width: 'auto', height: 'auto' }}
             />
             <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
               <Button
@@ -162,14 +161,14 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label className="text-xs">Página de Inicio (Landing)</Label>
-                                <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
-                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" width="200" height="100" style={{objectFit: 'contain', width: 'auto', height: 'auto'}} className="max-w-full max-h-full" data-ai-hint="office workspace" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
+                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" width="200" height="100" className="object-contain max-w-full max-h-full" data-ai-hint="office workspace" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                              <div className="space-y-2">
                                 <Label className="text-xs">Página de Acceso (Login)</Label>
-                                <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
-                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" width="200" height="100" style={{objectFit: 'contain', width: 'auto', height: 'auto'}} className="max-w-full max-h-full" data-ai-hint="abstract background" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
+                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" width="200" height="100" className="object-contain max-w-full max-h-full" data-ai-hint="abstract background" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                         </div>
@@ -178,9 +177,9 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                     {settings.watermarkUrl && (
                         <div className="p-4 rounded-lg border bg-background">
                            <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Marca de Agua</h3>
-                           <div className="mt-2 h-20 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative">
+                           <div className="mt-2 h-20 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
                                 <span className="text-sm text-muted-foreground z-10">Contenido de la app</span>
-                                <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" width="100" height="50" style={{objectFit: 'contain', width: 'auto', height: 'auto'}} className="opacity-20 z-0 p-2 max-w-full max-h-full" data-ai-hint="logo company"/>
+                                <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" width="100" height="50" className="object-contain opacity-20 z-0 p-2 max-w-full max-h-full" data-ai-hint="logo company"/>
                            </div>
                         </div>
                     )}
