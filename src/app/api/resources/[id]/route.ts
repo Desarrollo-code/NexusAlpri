@@ -103,4 +103,3 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         return NextResponse.json({ message: 'Error al eliminar el recurso' }, { status: 500 });
     }
 }
-    

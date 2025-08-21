@@ -108,8 +108,7 @@ export async function PUT(
         });
 
         // Get current modules and lessons from DB for comparison
-        const currentModules = await tx.module.findMany({ where: { courseId }, select: { id: true, lessons: { select: { id: true, contentBlocks: { select: { id: true, quiz: { select: { id: true } } } } } } } });
-
+        const currentModules = await tx.module.findMany({ where: { courseId }, select: { id: true, lessons: { select: { id: true, contentBlocks: { select: { id: true, quiz: { select: { id: true } } } } } } } } });
         const incomingModuleIds = new Set(modules.filter(m => !m.id.startsWith('new-')).map(m => m.id));
         const modulesToDelete = currentModules.filter(m => !incomingModuleIds.has(m.id));
 
@@ -122,7 +121,7 @@ export async function PUT(
         for (const [moduleIndex, moduleData] of modules.entries()) {
             const isNewModule = moduleData.id.startsWith('new-');
             const savedModule = await tx.module.upsert({
-                where: { id: isNewModule ? `_nonexistent_${moduleIndex}` : moduleData.id },
+                where: { id: isNewModule ? `_nonexistent_${moduleData.id}` : moduleData.id },
                 create: { title: moduleData.title, order: moduleIndex, courseId },
                 update: { title: moduleData.title, order: moduleIndex },
             });
@@ -140,7 +139,7 @@ export async function PUT(
             for (const [lessonIndex, lessonData] of moduleData.lessons.entries()) {
                 const isNewLesson = lessonData.id.startsWith('new-');
                 const savedLesson = await tx.lesson.upsert({
-                    where: { id: isNewLesson ? `_nonexistent_lesson_${lessonIndex}` : lessonData.id },
+                    where: { id: isNewLesson ? `_nonexistent_lesson_${lessonData.id}` : lessonData.id },
                     create: { title: lessonData.title, order: lessonIndex, moduleId: savedModule.id },
                     update: { title: lessonData.title, order: lessonIndex },
                 });
@@ -158,7 +157,7 @@ export async function PUT(
                 for (const [blockIndex, blockData] of lessonData.contentBlocks.entries()) {
                     const isNewBlock = blockData.id.startsWith('new-');
                     const savedBlock = await tx.contentBlock.upsert({
-                        where: { id: isNewBlock ? `_nonexistent_block_${blockIndex}` : blockData.id },
+                        where: { id: isNewBlock ? `_nonexistent_block_${blockData.id}` : blockData.id },
                         create: { type: blockData.type, content: blockData.content || '', order: blockIndex, lessonId: savedLesson.id },
                         update: { type: blockData.type, content: blockData.content || '', order: blockIndex },
                     });
@@ -168,7 +167,7 @@ export async function PUT(
                         const isNewQuiz = blockData.quiz.id.startsWith('new-');
                         const quizData = { title: blockData.quiz.title, description: blockData.quiz.description || '', contentBlockId: savedBlock.id };
                         const savedQuiz = await tx.quiz.upsert({
-                             where: { id: isNewQuiz ? `_nonexistent_quiz_${blockIndex}` : blockData.quiz.id },
+                             where: { id: isNewQuiz ? `_nonexistent_quiz_${blockData.quiz.id}` : blockData.quiz.id },
                              create: quizData,
                              update: quizData,
                         });
@@ -185,7 +184,7 @@ export async function PUT(
                         for (const [qIndex, questionData] of blockData.quiz.questions.entries()) {
                             const isNewQuestion = questionData.id.startsWith('temp-q-');
                             const savedQuestion = await tx.question.upsert({
-                                where: { id: isNewQuestion ? `_nonexistent_question_${qIndex}` : questionData.id },
+                                where: { id: isNewQuestion ? `_nonexistent_question_${questionData.id}` : questionData.id },
                                 create: { text: questionData.text, type: 'MULTIPLE_CHOICE', order: qIndex, quizId: savedQuiz.id },
                                 update: { text: questionData.text, order: qIndex },
                             });
@@ -200,7 +199,7 @@ export async function PUT(
                             for (const optionData of questionData.options) {
                                 const isNewOption = optionData.id.startsWith('temp-o-');
                                 await tx.answerOption.upsert({
-                                    where: { id: isNewOption ? `_nonexistent_option_${qIndex}` : optionData.id },
+                                    where: { id: isNewOption ? `_nonexistent_option_${optionData.id}` : optionData.id },
                                     create: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback, questionId: savedQuestion.id },
                                     update: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback },
                                 });
