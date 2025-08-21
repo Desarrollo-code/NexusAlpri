@@ -13,7 +13,7 @@ export async function GET(
     context: { params: { id: string } }
 ) {
   try {
-    const { id: courseId } = context.params;
+    const courseId = context.params.id;
     const course = await prisma.course.findUnique({
       where: { id: courseId },
       include: {
@@ -70,7 +70,7 @@ export async function PUT(
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id: courseId } = context.params;
+  const courseId = context.params.id;
   
   try {
     const courseToUpdate = await prisma.course.findUnique({ where: { id: courseId } });
@@ -231,7 +231,7 @@ export async function DELETE(
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id: courseId } = context.params;
+  const courseId = context.params.id;
   try {
     const courseToDelete = await prisma.course.findUnique({ where: { id: courseId } });
     if (!courseToDelete) {
