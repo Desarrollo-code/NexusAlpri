@@ -38,6 +38,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import type { UserRole, UserAchievement } from '@/types';
 import { useTitle } from '@/contexts/title-context';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
+import { AnimatePresence } from 'framer-motion';
 
 const ProfileCardBackground = () => (
     <div className="card__img">
@@ -79,6 +81,7 @@ export default function ProfilePage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+  const [isNewPasswordFocused, setIsNewPasswordFocused] = useState(false);
   
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -694,6 +697,8 @@ export default function ProfilePage() {
                           type={showNewPassword ? "text" : "password"}
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
+                          onFocus={() => setIsNewPasswordFocused(true)}
+                          onBlur={() => !newPassword && setIsNewPasswordFocused(false)}
                           required
                           disabled={isChangingPassword}
                           className="pr-10"
@@ -702,6 +707,9 @@ export default function ProfilePage() {
                           {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
+                    <AnimatePresence>
+                        <PasswordStrengthIndicator password={newPassword} isVisible={isNewPasswordFocused || newPassword.length > 0} />
+                    </AnimatePresence>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="confirm-password">Confirmar Nueva Contraseña</Label>
