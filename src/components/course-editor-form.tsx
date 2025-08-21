@@ -74,9 +74,9 @@ const generateUniqueId = (prefix: string) => {
 
 
 const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: () => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
-    ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete: handleDelete, provided, ...rest }, ref) => {
+    ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete, provided }, ref) => {
         return (
-            <div ref={ref} {...provided.draggableProps} {...rest}>
+            <div ref={ref} {...provided.draggableProps}>
                 <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${module.id}`}>
                     <AccordionItem value={`item-${module.id}`} className="border-0">
                          <div className="flex items-center px-4 py-2" {...provided.dragHandleProps}>
@@ -86,7 +86,7 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                                     <Input value={module.title} onChange={e => onUpdate('title', e.target.value)} className="text-base font-semibold" disabled={isSaving} />
                                 </div>
                             </AccordionTrigger>
-                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive ml-2 shrink-0" onClick={(e) => { e.stopPropagation(); handleDelete(); }} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive ml-2 shrink-0" onClick={(e) => { e.stopPropagation(); onDelete(); }} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
                         </div>
                         <AccordionContent className="p-4 pt-0 border-t">
                             <Droppable droppableId={module.id} type="LESSONS">
@@ -126,13 +126,13 @@ ModuleItem.displayName = 'ModuleItem';
 
 
 const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdate: (field: keyof AppLesson, value: any) => void; onAddBlock: (type: LessonType) => void; onBlockUpdate: (blockIndex: number, field: string, value: any) => void; onBlockDelete: (blockIndex: number) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
-    ({ lesson, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete: handleDelete, provided, ...rest }, ref) => {
+    ({ lesson, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete, provided, ...rest }, ref) => {
         return (
             <div ref={ref} {...provided.draggableProps} {...rest} className="bg-card p-3 rounded-md border">
                 <div className="flex items-center gap-2 mb-3" {...provided.dragHandleProps}>
                     <GripVertical className="h-5 w-5 text-muted-foreground" />
                     <Input value={lesson.title} onChange={e => onUpdate('title', e.target.value)} placeholder="Título de la lección" disabled={isSaving} />
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
                 </div>
                  <Droppable droppableId={lesson.id} type="BLOCKS">
                     {(provided) => (
@@ -165,7 +165,7 @@ LessonItem.displayName = 'LessonItem';
 
 
 const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock; onUpdate: (field: string, value: any) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
-    ({ block, onUpdate, isSaving, onDelete: handleDelete, provided, ...rest }, ref) => {
+    ({ block, onUpdate, isSaving, onDelete, provided, ...rest }, ref) => {
         const renderBlockContent = () => {
             switch(block.type) {
                 case 'TEXT': return <Textarea value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="Escribe aquí texto o pega un enlace..." rows={4} disabled={isSaving} />;
@@ -180,7 +180,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
             <div ref={ref} {...provided.draggableProps} {...rest} className="flex items-center gap-2 bg-muted/50 p-2 rounded">
                  <div {...provided.dragHandleProps}><GripVertical className="h-5 w-5 text-muted-foreground" /></div>
                  <div className="flex-grow">{renderBlockContent()}</div>
-                 <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                 <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
             </div>
         );
     }
@@ -480,12 +480,26 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     return (
         <div className="space-y-4 pb-24">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b bg-background sticky top-0 z-20 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
-                <div className="flex items-center gap-4">
+            <header className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b bg-background sticky top-[63px] sm:top-0 z-20 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
+                <div className="flex items-center gap-4 w-full sm:w-auto">
                     <Button asChild variant="outline" type="button" size="sm"><Link href="/manage-courses"><ArrowLeft className="mr-2 h-4 w-4" /> Volver</Link></Button>
-                    <div><h1 className="text-xl font-semibold">{courseId === 'new' ? 'Crear Nuevo Curso' : 'Editar Curso'}</h1></div>
+                    <h1 className="text-xl font-semibold truncate">{courseId === 'new' ? 'Crear Nuevo Curso' : 'Editar Curso'}</h1>
                 </div>
-            </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <Button asChild variant="secondary" type="button" className="w-full sm:w-auto"><Link href={`/courses/${courseId}`} target="_blank"><Eye className="mr-2 h-4 w-4" /> Vista Previa</Link></Button>
+                    <div className="w-full sm:w-48">
+                         <Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}>
+                            <SelectTrigger id="status" className="w-full"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="DRAFT">Borrador</SelectItem>
+                                <SelectItem value="PUBLISHED">Publicado</SelectItem>
+                                <SelectItem value="ARCHIVED">Archivado</SelectItem>
+                                <SelectItem value="SCHEDULED">Programado</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+            </header>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
@@ -511,6 +525,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                 <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
                                                     {(provided) => (
                                                         <ModuleItem
+                                                            ref={provided.innerRef}
+                                                            provided={provided}
                                                             module={moduleItem}
                                                             onDelete={() => handleRemoveModule(moduleIndex)}
                                                             onUpdate={(field, value) => updateModuleField(moduleIndex, field, value)}
@@ -521,8 +537,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                             onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
                                                             onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
                                                             isSaving={isSaving}
-                                                            provided={provided}
-                                                            ref={provided.innerRef}
                                                         />
                                                     )}
                                                 </Draggable>
@@ -563,7 +577,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                     <PopoverContent className="w-auto p-0"><CalendarIcon mode="single" selected={course.publicationDate ? new Date(course.publicationDate) : undefined} onSelect={d => updateCourseField('publicationDate', d)} initialFocus locale={es}/></PopoverContent>
                                 </Popover>
                             </div>}
-                             {courseId !== 'new' && <Button asChild variant="secondary" type="button" disabled={isSaving} className="w-full"><Link href={`/courses/${courseId}`} target="_blank"><Eye className="mr-2 h-4 w-4" /> Vista Previa</Link></Button>}
                         </CardContent>
                     </Card>
                     <Card>
@@ -612,7 +625,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             <ImageCropper imageSrc={imageToCrop} onCropComplete={handleCropComplete} onClose={() => setImageToCrop(null)} uploadUrl="/api/upload/course-image" />
             <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
                 <AlertDialogContent>
-                    <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro? Esta acción eliminará "{itemToDeleteDetails?.name}" y su contenido. Se aplicará al guardar los cambios.</AlertDialogDescription></AlertDialogHeader>
+                    <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro? Esta acción eliminará "{itemToDeleteDetails?.name}" y su contenido.</AlertDialogDescription></AlertDialogHeader>
                     <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => { itemToDeleteDetails.onDelete(); setItemToDeleteDetails(null) }} className={buttonVariants({ variant: "destructive" })}>Sí, eliminar</AlertDialogAction></AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -633,4 +646,3 @@ const BlockTypeSelector = ({ onSelect }) => (
         </DropdownMenuContent>
     </DropdownMenu>
 );
-
