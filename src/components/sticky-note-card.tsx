@@ -7,9 +7,6 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 import { ExternalLink, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import localFont from 'next/font/local';
-
-const handwritingFont = localFont({ src: '../../public/fonts/Caveat-Regular.ttf' });
 
 interface NoteWithRelations extends UserNote {
   lesson: {
@@ -63,8 +60,8 @@ export const StickyNoteCard: React.FC<StickyNoteCardProps> = ({ note }) => {
             {note.lesson.module.title}
         </p>
       </div>
-      <div className={cn("p-4 flex-grow overflow-y-auto thin-scrollbar", handwritingFont.className)}>
-        <p className="text-lg leading-snug whitespace-pre-wrap text-foreground/90">{note.content}</p>
+      <div className="p-4 flex-grow overflow-y-auto thin-scrollbar">
+        <p className="text-base leading-snug whitespace-pre-wrap text-foreground/90 font-body">{note.content}</p>
       </div>
       <div className="p-2 border-t mt-auto flex justify-end bg-black/5 rounded-b-lg">
         <Button asChild variant="link" size="sm" className="p-0 h-auto text-xs">
