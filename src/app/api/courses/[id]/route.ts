@@ -9,9 +9,9 @@ export const dynamic = "force-dynamic";
 // GET a specific course by ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id: courseId } = await params;
+  const { id: courseId } = params;
   try {
     const course = await prisma.course.findUnique({
       where: { id: courseId },
@@ -64,14 +64,14 @@ export async function GET(
 // UPDATE course by ID
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const session = await getCurrentUser();
   if (!session) {
     return NextResponse.json({ message: "No autenticado" }, { status: 401 });
   }
 
-  const { id: courseId } = await params;
+  const { id: courseId } = params;
 
   try {
     const body: AppCourse = await req.json();
@@ -240,14 +240,14 @@ export async function PUT(
 // DELETE course by ID
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const session = await getCurrentUser();
   if (!session || (session.role !== "ADMINISTRATOR" && session.role !== "INSTRUCTOR")) {
     return NextResponse.json({ message: "No autorizado" }, { status: 403 });
   }
 
-  const { id: courseId } = await params;
+  const { id: courseId } = params;
 
   try {
     const courseToDelete = await prisma.course.findUnique({

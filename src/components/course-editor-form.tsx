@@ -580,17 +580,30 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            {course.status === 'PUBLISHED' && <div><Label htmlFor="publicationDate">Fecha Publicación</Label>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !course.publicationDate && "text-muted-foreground")} disabled={isSaving}>
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {course.publicationDate ? format(new Date(course.publicationDate), "PPP", { locale: es }) : <span>Elige una fecha</span>}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0"><CalendarIcon mode="single" selected={course.publicationDate ? new Date(course.publicationDate) : undefined} onSelect={d => updateCourseField('publicationDate', d)} initialFocus locale={es}/></PopoverContent>
-                                </Popover>
-                            </div>}
+                            {course.status === 'SCHEDULED' && 
+                                <div>
+                                    <Label htmlFor="publicationDate">Fecha de Publicación</Label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !course.publicationDate && "text-muted-foreground")} disabled={isSaving}>
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {course.publicationDate ? format(new Date(course.publicationDate), "PPP", { locale: es }) : <span>Elige una fecha</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <div data-ai-hint="calendar component">
+                                                <CalendarIcon 
+                                                    mode="single" 
+                                                    selected={course.publicationDate ? new Date(course.publicationDate) : undefined} 
+                                                    onSelect={d => updateCourseField('publicationDate', d)} 
+                                                    initialFocus 
+                                                    locale={es}
+                                                />
+                                            </div>
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                            }
                         </CardContent>
                     </Card>
                     <Card>
