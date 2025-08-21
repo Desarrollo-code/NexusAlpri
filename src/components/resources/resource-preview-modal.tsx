@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X } from 'lucide-react';
+import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X, ArrowUpRightSquare } from 'lucide-react';
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -138,6 +138,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     const [pin, setPin] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const isMobile = useIsMobile();
 
     const handlePinSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -203,7 +204,11 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
         if (youtubeId) return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>;
         if (isVideoFile) return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />;
         if (isImage) return <Image src={displayUrl} alt={resource.title} fill className="object-contain" data-ai-hint="document image" />;
-        if (isPdf) return <iframe src={displayUrl} className="w-full h-full" title={`PDF Preview: ${resource.title}`}/>;
+        if (isPdf) {
+            // Append #toolbar=0 for mobile to hide the default viewer controls
+            const pdfUrl = isMobile ? `${displayUrl}#toolbar=0` : displayUrl;
+            return <iframe src={pdfUrl} className="w-full h-full" title={`PDF Preview: ${resource.title}`}/>;
+        }
         if (isOfficeDoc) return <DocxPreviewer url={displayUrl} />;
         if (isZipFile) return <ZipPreviewer url={displayUrl} />;
     }
@@ -271,11 +276,18 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     }, [resource]);
     
     if (!resource) return null;
+    
+    const displayUrl = pinVerifiedUrl || resource.url;
+    const isPdfOnMobile = isMobile && displayUrl && displayUrl.toLowerCase().endsWith('.pdf');
+
 
     const DetailsComponent = () => (
         <div className="w-full sm:w-80 flex-shrink-0 border-l bg-background/50 flex flex-col">
-            <div className="p-4 border-b">
+            <div className="p-4 border-b flex items-center justify-between">
                 <h3 className="font-semibold">Detalles del Recurso</h3>
+                {isMobile && (
+                    <Button variant="ghost" size="icon" onClick={() => setShowDetails(false)}><X className="h-4 w-4" /></Button>
+                )}
             </div>
             <ScrollArea className="flex-grow p-4">
                 <ResourceDetailsContent resource={resource} />
@@ -292,17 +304,13 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                         <h2 className="font-semibold truncate text-foreground">{resource.title}</h2>
                     </div>
                      <div className="flex items-center gap-2">
-                         {resource.url && (
-                           <DownloadButton url={pinVerifiedUrl || resource.url} resourceId={resource.id} hasPin={resource.hasPin} />
-                         )}
                          {isMobile ? (
                             <Sheet open={showDetails} onOpenChange={setShowDetails}>
                                <SheetTrigger asChild>
-                                  <Button variant="outline" size="sm"><Info className="h-4 w-4" /><span className="hidden sm:inline ml-2">Detalles</span></Button>
+                                  <Button variant="outline" size="icon"><Info className="h-4 w-4" /></Button>
                                </SheetTrigger>
                                <SheetContent side="bottom" className="h-[60vh] flex flex-col p-0">
-                                   <SheetHeader className="p-4 border-b text-left"><SheetTitle>Detalles del Recurso</SheetTitle></SheetHeader>
-                                   <ScrollArea className="flex-grow p-4"><ResourceDetailsContent resource={resource} /></ScrollArea>
+                                   <DetailsComponent />
                                 </SheetContent>
                             </Sheet>
                          ) : (
@@ -329,6 +337,23 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                      </div>
                      {!isMobile && showDetails && <DetailsComponent />}
                 </div>
+
+                {isPdfOnMobile && displayUrl && (
+                    <div className="flex-shrink-0 p-2 border-t bg-background/70 flex justify-center items-center gap-2">
+                         <DownloadButton 
+                            url={displayUrl} 
+                            resourceId={resource.id} 
+                            hasPin={resource.hasPin} 
+                            variant="secondary"
+                            size="sm"
+                         />
+                         <Button variant="secondary" size="sm" asChild>
+                            <a href={displayUrl} target="_blank" rel="noopener noreferrer">
+                                <ArrowUpRightSquare className="mr-2 h-4 w-4" /> Abrir
+                            </a>
+                         </Button>
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
     );
