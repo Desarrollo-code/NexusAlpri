@@ -288,8 +288,8 @@ export function CourseViewer({ initialCourse, initialEnrollmentStatus, initialPr
                 quiz={block.quiz}
                 lessonId={selectedLessonId!}
                 courseId={courseId}
-                isCreatorPreview={isCreatorViewingCourse}
                 isEnrolled={isEnrolled}
+                isCreatorPreview={isCreatorViewingCourse}
                 onQuizCompleted={handleQuizSubmitted}
             />
         );
@@ -418,6 +418,15 @@ export function CourseViewer({ initialCourse, initialEnrollmentStatus, initialPr
     </div>
   );
   
+  if (!course) {
+    return (
+        <div className="flex flex-col items-center justify-center h-full text-center p-6">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <h3 className="text-xl font-semibold">Cargando curso...</h3>
+        </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
        <div className="flex items-center justify-between gap-4">

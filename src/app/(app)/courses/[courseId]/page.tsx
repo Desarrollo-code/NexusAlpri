@@ -101,6 +101,7 @@ export default async function CourseDetailPage({ params }: { params: { courseId:
       enrollmentData = await getEnrollmentAndProgress(session.id, courseId);
   }
 
+  // Pass initial data to the client component. It will handle the rest.
   return (
     <CourseViewer 
         initialCourse={courseData} 

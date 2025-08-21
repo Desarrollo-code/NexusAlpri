@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/auth';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
-    const { id } = params;
+    const id = params.id;
 
     if (!session || session.id !== id) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });

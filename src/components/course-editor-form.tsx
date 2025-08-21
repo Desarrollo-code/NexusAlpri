@@ -742,7 +742,7 @@ const ModuleItem = React.memo(({ moduleIndex, provided, setItemToDeleteDetails }
                 type: block.type,
                 content: '',
                 order: block.order,
-                quiz: null,
+                quiz: block.type === 'QUIZ' ? { id: `new-quiz-${Date.now()}`, title: 'Nuevo Quiz', description: 'Descripción del quiz', questions: [] } : null,
                 _toBeDeleted: false
             }))
         });

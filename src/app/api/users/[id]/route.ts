@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 // GET a specific user
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
-    const { id } = params;
+    const id = params.id;
     // Allow admins to get any user, and any user to get their own profile
     if (!session || (session.role !== 'ADMINISTRATOR' && session.id !== id)) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
@@ -35,7 +35,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
 
-    const { id } = params;
+    const id = params.id;
     // Admin can edit anyone. A user can edit their own profile.
     if (session.role !== 'ADMINISTRATOR' && session.id !== id) {
          return NextResponse.json({ message: 'No tienes permiso para actualizar este usuario.' }, { status: 403 });
@@ -109,7 +109,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
     
-    const { id } = params;
+    const id = params.id;
     if (session.id === id) {
         return NextResponse.json({ message: 'No puedes eliminar tu propia cuenta' }, { status: 400 });
     }

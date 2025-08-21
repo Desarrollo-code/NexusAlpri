@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
-    const { id: userId } = params;
+    const userId = params.id;
 
     if (!session || session.id !== userId) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });

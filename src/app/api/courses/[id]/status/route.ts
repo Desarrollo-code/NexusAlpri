@@ -10,7 +10,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
     
     try {
-        const { id } = params;
+        const id = params.id;
         const { status } = await req.json();
 
         if (!['DRAFT', 'PUBLISHED', 'ARCHIVED', 'SCHEDULED'].includes(status)) {
