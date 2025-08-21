@@ -1,3 +1,4 @@
+
 // src/app/api/courses/[id]/route.ts
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
@@ -106,15 +107,12 @@ export async function PUT(
 
         const currentModules = await tx.module.findMany({ 
             where: { courseId }, 
-            select: { 
-                id: true, 
+            include: { 
                 lessons: { 
-                    select: { 
-                        id: true, 
+                    include: { 
                         contentBlocks: { 
-                            select: { 
-                                id: true, 
-                                quiz: { select: { id: true } } 
+                            include: { 
+                                quiz: true
                             } 
                         } 
                     } 

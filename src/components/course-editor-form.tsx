@@ -37,7 +37,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { useForm, useFieldArray, Controller, FormProvider, useFormContext, useWatch } from 'react-hook-form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -67,795 +66,6 @@ interface LocalInstructor {
     name: string;
 }
 
-interface EditableContentBlock extends Omit<ContentBlock, 'quiz' | 'order'> {
-  quiz?: AppQuiz | null;
-  _toBeDeleted?: boolean;
-  order: number | null;
-}
-interface EditableLesson extends Omit<AppLesson, 'contentBlocks' | 'order'> {
-    contentBlocks: EditableContentBlock[];
-    _toBeDeleted?: boolean;
-    order: number | null;
-    templateId?: string; // For applying templates
-}
-interface EditableModule extends Omit<AppModule, 'lessons' | 'order' | 'description'> {
-    lessons: EditableLesson[];
-    _toBeDeleted?: boolean;
-    order: number | null;
-    description: string;
-}
-interface EditableCourse extends Omit<AppCourse, 'modules' | 'instructor' | 'status' | 'publicationDate' | 'category' | 'instructorId' | 'imageUrl' | 'price'> {
-    instructorId?: string | null;
-    instructorName?: string | null;
-    modules: EditableModule[];
-    status: CourseStatus;
-    publicationDate?: Date | null;
-    category?: string | null;
-    imageUrl?: string | null;
-}
-
-type ItemToDeleteDetails = {
-    type: 'module' | 'lesson' | 'block';
-    id: string;
-    name: string;
-    moduleIndex: number;
-    lessonIndex?: number;
-    blockIndex?: number;
-} | null;
-
-const reorder = <T,>(list: T[], startIndex: number, endIndex: number): T[] => {
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-    return result;
-};
-
-// === COMPONENTES AUXILIARES ===
-
-function OptionsEditor({ moduleIndex, lessonIndex, blockIndex, questionIndex }: { moduleIndex: number; lessonIndex: number; blockIndex: number; questionIndex: number }) {
-    const { control, register, watch, setValue, getValues } = useFormContext<EditableCourse>();
-
-    const optionsPath = `modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.quiz.questions.${questionIndex}.options` as const;
-    const { fields: optionFields, append: appendOption, remove: removeOption } = useFieldArray({
-        control,
-        name: optionsPath,
-    });
-
-    const watchedOptions = watch(optionsPath);
-    const correctOptionId = useMemo(() => watchedOptions?.find(opt => opt.isCorrect)?.id, [watchedOptions]);
-
-    const handleCorrectOptionChange = (selectedOptionId: string) => {
-        const currentOptions = getValues(optionsPath) || [];
-        const newOptions = currentOptions.map(opt => ({
-            ...opt,
-            isCorrect: opt.id === selectedOptionId
-        }));
-        setValue(optionsPath, newOptions, { shouldDirty: true });
-    };
-
-    return (
-        <div className="pl-4 mt-4 space-y-3">
-            <Label className="text-xs font-semibold text-muted-foreground">Opciones de Respuesta (selecciona la correcta)</Label>
-            <RadioGroup
-                value={correctOptionId}
-                onValueChange={handleCorrectOptionChange}
-                className="space-y-2"
-            >
-                {optionFields.map((option, oIndex) => (
-                    <div key={option.id} className="flex items-start gap-2 p-3 border rounded-md bg-background">
-                        <div className="pt-2">
-                            <RadioGroupItem value={option.id} id={`is-correct-${option.id}`} />
-                        </div>
-                        <div className="flex-grow space-y-2">
-                            <Input
-                                {...register(`${optionsPath}.${oIndex}.text` as const)}
-                                placeholder={`Texto de la opción ${oIndex + 1}`}
-                                className="h-9"
-                            />
-                            <Textarea
-                                {...register(`${optionsPath}.${oIndex}.feedback` as const)}
-                                placeholder="Retroalimentación para esta opción (ej: ¡Correcto! Esta es la respuesta porque...)"
-                                className="text-xs min-h-[60px]"
-                            />
-                        </div>
-                        <Button variant="ghost" size="icon" type="button" className="h-9 w-9 text-destructive shrink-0" onClick={() => removeOption(oIndex)}>
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    </div>
-                ))}
-            </RadioGroup>
-            <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => appendOption({ id: `temp-o-${Date.now()}`, text: '', feedback: '', isCorrect: optionFields.length === 0 })}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Añadir Opción
-            </Button>
-            <p className="text-xs text-muted-foreground">La primera opción que añadas será marcada como correcta por defecto. Puedes cambiarla en cualquier momento.</p>
-        </div>
-    );
-}
-OptionsEditor.displayName = 'OptionsEditor';
-
-function QuizEditorDialog({ moduleIndex, lessonIndex, blockIndex, onClose, setPreviewQuizDetails, setAnalyticsQuizId }: {
-    moduleIndex: number;
-    lessonIndex: number;
-    blockIndex: number;
-    onClose: () => void;
-    setPreviewQuizDetails: (details: { moduleIndex: number; lessonIndex: number, blockIndex: number } | null) => void;
-    setAnalyticsQuizId: (quizId: string | null) => void;
-}) {
-    const { control, register, watch, getValues } = useFormContext<EditableCourse>();
-    
-    const lessonTitle = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.title`);
-    const quizPath = `modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.quiz` as const;
-
-    const { fields: questionFields, append: appendQuestion, remove: removeQuestion, move: moveQuestion } = useFieldArray({
-        control,
-        name: `${quizPath}.questions` as `${typeof quizPath}.questions`,
-    });
-
-    const onQuestionDragEnd = (result: DropResult) => {
-        if (!result.destination) return;
-        moveQuestion(result.source.index, result.destination.index);
-    }
-
-    const currentQuizData = watch(quizPath);
-
-
-    return (
-        <Dialog open={true} onOpenChange={(isOpen) => !isOpen && onClose()}>
-            <DialogContent className="max-w-4xl w-[95vw] h-[90vh] flex flex-col">
-                <DialogHeader className="p-6">
-                    <DialogTitle>Editor de Quiz: {lessonTitle}</DialogTitle>
-                    <DialogDescription>Añade, edita y reordena las preguntas. Los cambios se guardan al presionar "Guardar Cambios" en la página principal.</DialogDescription>
-                </DialogHeader>
-                <div className="grid md:grid-cols-2 gap-4 px-6">
-                    <div>
-                        <Label htmlFor="quiz-title">Título del Quiz</Label>
-                        <Input id="quiz-title" {...register(`${quizPath}.title` as const)} placeholder="Título general del quiz" />
-                    </div>
-                    <div>
-                        <Label htmlFor="quiz-desc">Descripción del Quiz</Label>
-                        <Textarea id="quiz-desc" {...register(`${quizPath}.description` as const)} placeholder="Instrucciones o descripción breve" />
-                    </div>
-                </div>
-                <Separator className="my-4" />
-                <div className="flex-grow overflow-hidden px-2">
-                    <ScrollArea className="h-full px-4">
-                        <DragDropContext onDragEnd={onQuestionDragEnd}>
-                            <Droppable droppableId="quiz-questions">
-                                {(provided: DroppableProvided) => (
-                                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-                                        {questionFields.map((question, qIndex) => (
-                                            <Draggable key={question.id} draggableId={question.id} index={qIndex}>
-                                                {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
-                                                    <div
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                    >
-                                                        <Card className="bg-muted/30">
-                                                            <CardHeader className="flex flex-row items-center justify-between p-3 space-y-0">
-                                                                <div className="flex items-center gap-2">
-                                                                    <div {...provided.dragHandleProps} className="cursor-grab p-1"><GripVertical className="h-5 w-5 text-muted-foreground" /></div>
-                                                                    <h4 className="font-semibold">Pregunta {qIndex + 1}</h4>
-                                                                </div>
-                                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeQuestion(qIndex)} type="button">
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </Button>
-                                                            </CardHeader>
-                                                            <CardContent className="p-4 pt-0">
-                                                                <Label htmlFor={`question-text-${question.id}`}>Texto de la Pregunta</Label>
-                                                                <Textarea id={`question-text-${question.id}`} {...register(`${quizPath}.questions.${qIndex}.text` as const)} placeholder="Escribe aquí el enunciado de la pregunta..." />
-                                                                <OptionsEditor moduleIndex={moduleIndex} lessonIndex={lessonIndex} blockIndex={blockIndex} questionIndex={qIndex} />
-                                                            </CardContent>
-                                                        </Card>
-                                                    </div>
-                                                )}
-                                            </Draggable>
-                                        ))}
-                                        {provided.placeholder}
-                                    </div>
-                                )}
-                            </Droppable>
-                        </DragDropContext>
-                        {questionFields.length === 0 && <p className="text-center text-muted-foreground py-8">No hay preguntas. ¡Añade la primera para empezar!</p>}
-                    </ScrollArea>
-                </div>
-                <DialogFooter className="border-t pt-4 flex justify-between w-full">
-                    <div className="flex flex-wrap gap-2">
-                        <Button 
-                            type="button" 
-                            variant="outline" 
-                            onClick={() => appendQuestion({ id: `temp-q-${Date.now()}`, text: '', type: 'MULTIPLE_CHOICE', order: questionFields.length, options: [{ id: `temp-o-${Date.now()}`, text: '', feedback: '', isCorrect: true }] })}>
-                            <PlusCircle className="mr-2 h-4 w-4" /> Añadir Pregunta
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={() => setPreviewQuizDetails({ moduleIndex, lessonIndex, blockIndex })}
-                            disabled={!currentQuizData?.questions || currentQuizData.questions.length === 0}
-                        >
-                            <Eye className="mr-2 h-4 w-4" /> Previsualizar
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={() => setAnalyticsQuizId(currentQuizData?.id || null)}
-                            disabled={!currentQuizData?.id}
-                        >
-                            <BarChart3 className="mr-2 h-4 w-4" /> Analíticas
-                        </Button>
-                    </div>
-                    <Button onClick={onClose} type="button">Cerrar Editor</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-}
-QuizEditorDialog.displayName = 'QuizEditorDialog';
-
-const getBlockTypeIcon = (type: AppLessonType) => {
-    switch (type) {
-        case 'TEXT': return <FileText className="h-4 w-4 text-blue-500" />;
-        case 'VIDEO': return <Video className="h-4 w-4 text-red-500" />;
-        case 'FILE': return <FileGenericIcon className="h-4 w-4 text-green-500" />;
-        case 'QUIZ': return <Lightbulb className="h-4 w-4 text-yellow-500" />;
-        default: return <FileText className="h-4 w-4 text-gray-500" />;
-    }
-};
-
-const ContentBlockItem = React.memo(({ moduleIndex, lessonIndex, blockIndex, dndId, isSaving, setItemToDeleteDetails, openQuizEditor }: {
-    moduleIndex: number;
-    lessonIndex: number;
-    blockIndex: number;
-    dndId: string;
-    isSaving: boolean;
-    setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
-    openQuizEditor: (moduleIndex: number, lessonIndex: number, blockIndex: number) => void;
-}) => {
-    const { control, getValues, watch } = useFormContext<EditableCourse>();
-    const block = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}`);
-    
-    if (!block || block._toBeDeleted) {
-        return null;
-    }
-
-    return (
-        <Draggable key={dndId} draggableId={dndId} index={blockIndex}>
-            {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
-                <div
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    className={`p-3 rounded-md border flex gap-3 items-start ${snapshot.isDragging ? 'shadow-md bg-muted' : 'bg-muted/30'}`}
-                >
-                    <div {...provided.dragHandleProps} className="cursor-grab pt-1.5"><GripVertical className="h-4 w-4 text-muted-foreground" /></div>
-                    <div className="flex-grow space-y-2">
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2 font-medium text-sm">
-                                {getBlockTypeIcon(block?.type)}
-                                {block?.type === 'TEXT' ? "Texto / Enlace" : block?.type === 'VIDEO' ? "Video" : block?.type === 'FILE' ? "Archivo" : "Quiz"}
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <Controller
-                                    control={control}
-                                    name={`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.type`}
-                                    render={({ field }) => (
-                                        <Select onValueChange={field.onChange} value={field.value} disabled={isSaving}>
-                                            <SelectTrigger className="w-[120px] h-9 text-xs"><SelectValue placeholder="Tipo" /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="TEXT">Texto</SelectItem>
-                                                <SelectItem value="VIDEO">Video</SelectItem>
-                                                <SelectItem value="FILE">Archivo</SelectItem>
-                                                <SelectItem value="QUIZ">Quiz</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
-                                <Button variant="ghost" size="icon" type="button" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => {
-                                    const blockValues = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}`);
-                                    if (blockValues) {
-                                        setItemToDeleteDetails({ type: 'block', id: blockValues.id, name: `bloque de tipo ${blockValues.type}`, moduleIndex, lessonIndex, blockIndex });
-                                    }
-                                }} disabled={isSaving}><Trash2 className="h-3 w-3" /></Button>
-                            </div>
-                        </div>
-                        <BlockSpecificInput moduleIndex={moduleIndex} lessonIndex={lessonIndex} blockIndex={blockIndex} openQuizEditor={() => openQuizEditor(moduleIndex, lessonIndex, blockIndex)} />
-                    </div>
-                </div>
-            )}
-        </Draggable>
-    );
-});
-ContentBlockItem.displayName = 'ContentBlockItem';
-
-const BlockSpecificInput = React.memo(({ moduleIndex, lessonIndex, blockIndex, openQuizEditor }: { moduleIndex: number, lessonIndex: number, blockIndex: number, openQuizEditor: () => void; }) => {
-    const { control, setValue, watch, register } = useFormContext<EditableCourse>();
-    const { toast } = useToast();
-
-    const [isUploading, setIsUploading] = useState(false);
-    const [progress, setProgress] = useState(0);
-    const [error, setError] = useState<string | null>(null);
-
-    const blockType = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.type`);
-    const blockContent = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`);
-
-    const handleFileSelected = async (e: ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setIsUploading(true);
-            setProgress(0);
-            setError(null);
-            const formData = new FormData();
-            formData.append('file', file);
-            try {
-                const result: { url: string } = await uploadWithProgress('/api/upload/lesson-file', formData, setProgress);
-                setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`, result.url, { shouldValidate: true, shouldDirty: true });
-                toast({ title: "Archivo Subido", description: `${file.name} se ha subido correctamente.` });
-            } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : "No se pudo subir el archivo.";
-                setError(errorMessage);
-                toast({ title: "Error de Subida", description: errorMessage, variant: "destructive" });
-            } finally {
-                setIsUploading(false);
-            }
-        }
-        if (e.target) e.target.value = '';
-    };
-
-    const removeFile = () => {
-        setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`, '', { shouldDirty: true });
-        setError(null);
-    };
-
-    const isSaving = false; // Placeholder
-
-    switch (blockType) {
-        case 'VIDEO': return (<><div className="mt-2 space-y-1"><Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`)} placeholder="https://youtube.com/watch?v=..." className="h-8 text-xs" disabled={isSaving || isUploading} /></div></>);
-        case 'TEXT': return (<><div className="mt-2 space-y-1"><Textarea {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`)} placeholder="Escribe aquí el contenido o pega un enlace https://..." className="min-h-[80px] text-xs" disabled={isSaving || isUploading} /></div></>);
-        case 'QUIZ': {
-            return (<div className="mt-2 space-y-2">
-                <Button type="button" variant="secondary" className="w-full" onClick={openQuizEditor}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Configurar Quiz
-                </Button>
-                <input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`)} type="hidden" value="" />
-            </div>);
-        }
-        case 'FILE': {
-            const hasExistingFile = typeof blockContent === 'string' && !!blockContent;
-            return (<>
-                <div className="mt-2 space-y-2">
-                    {isUploading ? (
-                        <div className="space-y-1">
-                            <Progress value={progress} className="w-full h-1.5" />
-                            <p className="text-xs text-muted-foreground text-center">Subiendo... {progress}%</p>
-                        </div>
-                    ) : error ? (
-                        <div className="p-2 border rounded-md bg-destructive/10 border-destructive/20 text-xs text-destructive">
-                            <p>Error: {error}</p>
-                            <Button variant="link" size="sm" type="button" className="p-0 h-auto text-xs" onClick={removeFile}>Intentar de nuevo</Button>
-                        </div>
-                    ) : hasExistingFile ? (
-                        <div className="p-2 border rounded-md bg-muted/50 text-xs space-y-2">
-                            <p className="flex items-center gap-1"><Paperclip className="h-3 w-3" /> Archivo actual: <a href={blockContent} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate max-w-[200px]">{blockContent.split('/').pop()}</a></p>
-                            <Button variant="outline" size="sm" className="h-7 text-xs w-full" type="button" onClick={removeFile} disabled={isSaving}><Replace className="mr-1 h-3 w-3" />Reemplazar archivo</Button>
-                        </div>
-                    ) : (
-                        <Input
-                            type="file"
-                            onChange={handleFileSelected}
-                            className="h-8 text-xs file:text-xs"
-                            disabled={isSaving || isUploading}
-                        />
-                    )}
-                </div>
-            </>);
-        }
-        default: return null;
-    }
-});
-BlockSpecificInput.displayName = 'BlockSpecificInput';
-
-const LessonItem = React.memo(({ moduleIndex, lessonIndex, provided, setItemToDeleteDetails }: {
-    moduleIndex: number;
-    lessonIndex: number;
-    provided: DraggableProvided;
-    isSaving: boolean;
-    setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
-}) => {
-    const { control, getValues, register, watch } = useFormContext<EditableCourse>();
-    const { fields: blockFields, append: appendBlock, remove: removeBlock, move: moveBlock } = useFieldArray({
-        control, name: `modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks`
-    });
-
-    const [quizEditorDetails, setQuizEditorDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
-    const [previewQuizDetails, setPreviewQuizDetails] = useState<{ moduleIndex: number; lessonIndex: number, blockIndex: number } | null>(null);
-    const [analyticsQuizId, setAnalyticsQuizId] = useState<string | null>(null);
-    const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
-    const [templateName, setTemplateName] = useState('');
-    const [templateDescription, setTemplateDescription] = useState('');
-    const [isSavingTemplate, setIsSavingTemplate] = useState(false);
-    const { toast } = useToast();
-    const { user } = useAuth();
-    const [isExpanded, setIsExpanded] = useState(true);
-
-    const onBlockDragEnd = (result: DropResult) => {
-        if (!result.destination) return;
-        moveBlock(result.source.index, result.destination.index);
-    }
-
-    const openQuizEditor = useCallback((mIndex: number, lIndex: number, bIndex: number) => setQuizEditorDetails({ moduleIndex: mIndex, lessonIndex: lIndex, blockIndex: bIndex }), []);
-
-    const lesson = watch(`modules.${moduleIndex}.lessons.${lessonIndex}`);
-    const isSaving = false; // Placeholder
-
-    const handleSaveAsTemplate = async () => {
-        if (!templateName.trim()) {
-            toast({ title: "Error", description: "El nombre de la plantilla es obligatorio.", variant: "destructive" });
-            return;
-        }
-        setIsSavingTemplate(true);
-        const lessonToSave = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
-        try {
-            const payload = {
-                name: templateName,
-                description: templateDescription,
-                lessonId: lessonToSave.id
-            };
-            const response = await fetch('/api/templates', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            if (!response.ok) throw new Error((await response.json()).message);
-            toast({ title: "Plantilla Guardada", description: "La lección ha sido guardada como una nueva plantilla." });
-            setShowSaveTemplateModal(false);
-        } catch (error) {
-            toast({ title: "Error al guardar plantilla", description: (error as Error).message, variant: "destructive" });
-        } finally {
-            setIsSavingTemplate(false);
-        }
-    };
-    
-    const handleAppendBlock = (type: AppLessonType) => {
-        const newBlockData: any = {
-            id: `new-block-${Date.now()}`,
-            type,
-            content: '',
-            order: blockFields.length,
-        };
-        if (type === 'QUIZ') {
-            newBlockData.quiz = {
-                id: `new-quiz-${Date.now()}`,
-                title: 'Nuevo Quiz',
-                description: 'Descripción del quiz',
-                questions: []
-            };
-        }
-        appendBlock(newBlockData);
-    };
-
-    return (
-         <div ref={provided.innerRef} {...provided.draggableProps} className="p-3 rounded-md border bg-card text-card-foreground shadow-sm">
-            <div className="flex w-full items-start gap-3">
-                <div {...provided.dragHandleProps} className="cursor-grab pt-1"><GripVertical className="h-4 w-4 text-muted-foreground" /></div>
-                <div className="flex-grow space-y-2">
-                     <div className="flex-grow mr-2 w-full">
-                        <button type="button" onClick={() => setIsExpanded(!isExpanded)} className="flex items-center justify-between w-full text-left">
-                          <div className="flex items-center gap-2">
-                             <BookOpenText className="h-4 w-4 text-primary" />
-                             <Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.title`)} className="text-sm font-medium h-9 w-full border-none p-0 focus-visible:ring-0" placeholder="Título de la lección" disabled={isSaving} onClick={(e) => e.stopPropagation()} />
-                          </div>
-                          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isExpanded && "rotate-180")} />
-                        </button>
-                    </div>
-                </div>
-                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                            <MoreVertical className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); setTemplateName(getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.title`)); setShowSaveTemplateModal(true); }}>
-                            <Copy className="mr-2 h-4 w-4" /> Guardar como Plantilla
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            className="text-destructive focus:bg-destructive/10"
-                            onSelect={(e) => {
-                                e.stopPropagation();
-                                if (isSaving) return;
-                                const lessonValues = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
-                                if (lessonValues) {
-                                    setItemToDeleteDetails({ type: 'lesson', id: lessonValues.id, name: lessonValues.title, moduleIndex, lessonIndex });
-                                }
-                            }}
-                            disabled={isSaving}
-                        >
-                            <Trash2 className="mr-2 h-4 w-4" /> Eliminar Lección
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-            {isExpanded && (
-                <div className="space-y-4 pt-4 border-t mt-4">
-                    <DragDropContext onDragEnd={onBlockDragEnd}>
-                        <Droppable droppableId={`blocks-${moduleIndex}-${lessonIndex}`} type={`BLOCKS-${moduleIndex}-${lessonIndex}`}>
-                            {(provided: DroppableProvided) => (
-                                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                                    {blockFields.map((blockItem, blockIndex) => {
-                                        const block = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}`);
-                                        if (block._toBeDeleted) return null;
-                                        return (
-                                            <ContentBlockItem
-                                                key={blockItem.id}
-                                                dndId={blockItem.id}
-                                                moduleIndex={moduleIndex}
-                                                lessonIndex={lessonIndex}
-                                                blockIndex={blockIndex}
-                                                isSaving={isSaving}
-                                                setItemToDeleteDetails={setItemToDeleteDetails}
-                                                openQuizEditor={openQuizEditor}
-                                            />
-                                        );
-                                    })}
-                                    {provided.placeholder}
-                                </div>
-                            )}
-                        </Droppable>
-                    </DragDropContext>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleAppendBlock('TEXT')}
-                        disabled={isSaving}
-                    >
-                        <PlusCircle className="mr-2 h-4 w-4" /> Añadir Bloque
-                    </Button>
-                </div>
-            )}
-            {quizEditorDetails?.lessonIndex === lessonIndex && (
-                <QuizEditorDialog
-                    {...quizEditorDetails}
-                    onClose={() => setQuizEditorDetails(null)}
-                    setPreviewQuizDetails={setPreviewQuizDetails}
-                    setAnalyticsQuizId={setAnalyticsQuizId}
-                />
-            )}
-            {previewQuizDetails?.lessonIndex === lessonIndex && (
-                <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setPreviewQuizDetails(null)}>
-                  <DialogContent className="max-w-3xl">
-                     <DialogHeader>
-                        <DialogTitle>Vista Previa del Quiz</DialogTitle>
-                        <DialogDescription>
-                            Así es como los estudiantes verán este quiz.
-                        </DialogDescription>
-                     </DialogHeader>
-                    <QuizViewer
-                        quiz={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.contentBlocks.${previewQuizDetails.blockIndex}.quiz`)}
-                        lessonId={watch(`modules.${previewQuizDetails.moduleIndex}.lessons.${previewQuizDetails.lessonIndex}.id`)}
-                        isCreatorPreview={true}
-                    />
-                  </DialogContent>
-                </Dialog>
-            )}
-            {analyticsQuizId && (
-                <Dialog open={true} onOpenChange={(isOpen) => !isOpen && setAnalyticsQuizId(null)}>
-                    <DialogContent className="max-w-4xl w-[95vw] h-[90vh] flex flex-col">
-                        <DialogHeader>
-                            <DialogTitle>Analíticas del Quiz</DialogTitle>
-                            <DialogDescription>Rendimiento detallado de los estudiantes en este quiz.</DialogDescription>
-                        </DialogHeader>
-                        <div className="flex-grow overflow-hidden">
-                           <QuizAnalyticsView quizId={analyticsQuizId} />
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            )}
-             <Dialog open={showSaveTemplateModal} onOpenChange={setShowSaveTemplateModal}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Guardar Lección como Plantilla</DialogTitle>
-                        <DialogDescription>Guarda la estructura de esta lección para reutilizarla en el futuro.</DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div>
-                            <Label htmlFor="template-name">Nombre de la Plantilla</Label>
-                            <Input id="template-name" value={templateName} onChange={(e) => setTemplateName(e.target.value)} required disabled={isSavingTemplate} />
-                        </div>
-                        <div>
-                            <Label htmlFor="template-description">Descripción (Opcional)</Label>
-                            <Textarea id="template-description" value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} disabled={isSavingTemplate} />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowSaveTemplateModal(false)} disabled={isSavingTemplate}>Cancelar</Button>
-                        <Button onClick={handleSaveAsTemplate} disabled={isSavingTemplate}>
-                            {isSavingTemplate && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Guardar Plantilla
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-         </div>
-    );
-});
-LessonItem.displayName = 'LessonItem';
-
-const ModuleItem = React.memo(({ moduleIndex, provided, setItemToDeleteDetails }: { 
-    moduleIndex: number, 
-    provided: DraggableProvided,
-    setItemToDeleteDetails: React.Dispatch<React.SetStateAction<ItemToDeleteDetails>>;
-}) => {
-    const { control, getValues, register, watch } = useFormContext<EditableCourse>();
-    const { fields: lessonFields, move: moveLesson, append: appendLesson } = useFieldArray({
-        control,
-        name: `modules.${moduleIndex}.lessons`
-    });
-    
-    const [isSaving, setIsSaving] = useState(false);
-    const [showTemplateModal, setShowTemplateModal] = useState(false);
-    const [templates, setTemplates] = useState<ApiTemplate[]>([]);
-    const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
-    const { toast } = useToast();
-    
-    const fetchTemplates = async () => {
-        setIsLoadingTemplates(true);
-        try {
-            const res = await fetch('/api/templates');
-            if (!res.ok) throw new Error("Failed to fetch templates");
-            const data = await res.json();
-            setTemplates(data);
-        } catch (error) {
-            toast({ title: "Error", description: (error as Error).message, variant: "destructive" });
-        } finally {
-            setIsLoadingTemplates(false);
-        }
-    };
-    
-    const handleOpenTemplateModal = () => {
-        fetchTemplates();
-        setShowTemplateModal(true);
-    };
-
-    const handleCreateLesson = (lessonData: Partial<EditableLesson> = {}) => {
-        appendLesson({
-            id: `new-lesson-${Date.now()}`,
-            title: 'Nueva Lección',
-            order: lessonFields.length,
-            contentBlocks: [],
-            ...lessonData,
-        });
-    };
-
-    const handleSelectTemplate = (templateId: string) => {
-        const selectedTemplate = templates.find(t => t.id === templateId);
-        if (!selectedTemplate) return;
-        
-        handleCreateLesson({
-            title: selectedTemplate.name,
-            contentBlocks: selectedTemplate.templateBlocks.map(block => ({
-                id: `new-block-${Date.now()}-${block.order}`,
-                type: block.type,
-                content: '',
-                order: block.order,
-                quiz: block.type === 'QUIZ' ? { id: `new-quiz-${Date.now()}`, title: 'Nuevo Quiz', description: 'Descripción del quiz', questions: [] } : null,
-                _toBeDeleted: false
-            }))
-        });
-        
-        setShowTemplateModal(false);
-        toast({ title: "Plantilla Aplicada", description: "Se ha creado una nueva lección con la estructura de la plantilla." });
-    };
-
-    const onLessonDragEnd = (result: DropResult) => {
-        if (!result.destination) return;
-        moveLesson(result.source.index, result.destination.index);
-    }
-    
-    const module = watch(`modules.${moduleIndex}`);
-
-    return (
-        <div ref={provided.innerRef} {...provided.draggableProps}>
-            <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value={module.id} className="rounded-md border bg-card text-card-foreground shadow-sm">
-                    <div className="flex items-center p-4 font-semibold">
-                        <div {...provided.dragHandleProps} className="cursor-grab p-1">
-                            <GripVertical className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        <AccordionTrigger className="flex-1 p-0 hover:no-underline">
-                            <div className="flex-grow">
-                                <Input {...register(`modules.${moduleIndex}.title`)} placeholder="Título del Módulo" className="text-base font-semibold border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-auto p-0" disabled={isSaving} onClick={(e) => e.stopPropagation()} />
-                            </div>
-                        </AccordionTrigger>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 ml-2" onClick={e => e.stopPropagation()}>
-                                    <MoreVertical className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
-                                <DropdownMenuItem onSelect={() => handleCreateLesson()}>
-                                    <PlusCircle className="mr-2 h-4 w-4" /> Añadir Lección en Blanco
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={handleOpenTemplateModal}>
-                                    <FilePlus2 className="mr-2 h-4 w-4" /> Añadir desde Plantilla
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    className="text-destructive focus:bg-destructive/10"
-                                    onSelect={() => setItemToDeleteDetails({ type: 'module', id: module.id, name: module.title, moduleIndex })}
-                                    disabled={isSaving}
-                                >
-                                    <Trash2 className="mr-2 h-4 w-4" /> Eliminar Módulo
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                    <AccordionContent className="p-4 border-t bg-muted/20">
-                        <div className="space-y-4">
-                             <DragDropContext onDragEnd={onLessonDragEnd}>
-                                <Droppable droppableId={`lessons-of-module-${moduleIndex}`} type={`LESSONS-${moduleIndex}`}>
-                                    {(provided) => (
-                                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                                            {lessonFields.map((lessonItem, lessonIndex) => {
-                                                const lesson = getValues(`modules.${moduleIndex}.lessons.${lessonIndex}`);
-                                                if (lesson._toBeDeleted) return null;
-                                                return (
-                                                  <Draggable key={lessonItem.id} draggableId={lessonItem.id} index={lessonIndex}>
-                                                    {(provided) => (
-                                                      <LessonItem
-                                                          provided={provided}
-                                                          moduleIndex={moduleIndex}
-                                                          lessonIndex={lessonIndex}
-                                                          isSaving={isSaving}
-                                                          setItemToDeleteDetails={setItemToDeleteDetails}
-                                                      />
-                                                    )}
-                                                  </Draggable>
-                                                )
-                                            })}
-                                            {provided.placeholder}
-                                        </div>
-                                    )}
-                                </Droppable>
-                            </DragDropContext>
-                            {lessonFields.filter(l => !l._toBeDeleted).length === 0 && <p className="text-muted-foreground text-xs text-center py-2 italic">Aún no hay lecciones. ¡Añade una para empezar!</p>}
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-            </Accordion>
-             <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                        <DialogTitle>Seleccionar Plantilla de Lección</DialogTitle>
-                        <DialogDescription>Elige una plantilla para crear una nueva lección con una estructura predefinida.</DialogDescription>
-                    </DialogHeader>
-                    {isLoadingTemplates ? (
-                        <div className="flex justify-center items-center h-48"><Loader2 className="h-8 w-8 animate-spin" /></div>
-                    ) : (
-                        <ScrollArea className="max-h-[60vh] mt-4">
-                            <div className="space-y-2 pr-4">
-                                {templates.length > 0 ? templates.map(template => (
-                                    <button key={template.id} onClick={() => handleSelectTemplate(template.id)} className="w-full text-left p-4 border rounded-lg hover:bg-accent transition-colors">
-                                        <h4 className="font-semibold">{template.name}</h4>
-                                        <p className="text-sm text-muted-foreground">{template.description || 'Sin descripción'}</p>
-                                        <p className="text-xs text-muted-foreground mt-2">Creador: {template.creator?.name || 'Sistema'} | Bloques: {template.templateBlocks.length}</p>
-                                    </button>
-                                )) : <p className="text-center text-muted-foreground">No hay plantillas disponibles.</p>}
-                            </div>
-                        </ScrollArea>
-                    )}
-                </DialogContent>
-            </Dialog>
-        </div>
-    );
-});
-ModuleItem.displayName = 'ModuleItem';
-
 // === COMPONENTE PRINCIPAL DE LA PÁGINA (CourseEditor) ===
 export function CourseEditor({ courseId }: { courseId: string }) {
     const router = useRouter();
@@ -864,64 +74,43 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const { setPageTitle } = useTitle();
 
     const isNewCourse = courseId === 'new';
-
+    
+    const [course, setCourse] = useState<AppCourse | null>(null);
     const [isLoading, setIsLoading] = useState(!isNewCourse);
     const [isSaving, setIsSaving] = useState(false);
-    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-    const [itemToDeleteDetails, setItemToDeleteDetails] = useState<ItemToDeleteDetails | null>(null);
-    const [isDeleting, setIsDeleting] = useState(false);
-
-    const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+    const [isDirty, setIsDirty] = useState(false);
     
-    const methods = useForm<EditableCourse>({
-        defaultValues: {
-            title: '', description: '', imageUrl: null,
-            status: 'DRAFT', category: '', publicationDate: null,
-            modules: [], instructorId: undefined, instructorName: undefined,
-        },
-        mode: 'onChange'
-    });
+    const [itemToDeleteDetails, setItemToDeleteDetails] = useState<any>(null);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    
+    const [imageToCrop, setImageToCrop] = useState<string | null>(null);
 
-    const { control, handleSubmit, reset, formState: { errors, isDirty }, setValue, getValues, watch, register } = methods;
-
+    // --- Data Fetching ---
     useEffect(() => {
-        const fetchInitialData = async () => {
-            if (isNewCourse) {
-                 if (user) {
-                    reset({
-                        instructorId: user.id,
-                        instructorName: user.name,
-                        modules: [],
-                        status: 'DRAFT',
-                        title: 'Nuevo Curso sin Título',
-                        description: 'Añade una descripción aquí.'
-                    });
-                }
-                setIsLoading(false);
-                setPageTitle('Crear Nuevo Curso');
-                return;
-            }
-            
+        if (isNewCourse) {
+            setCourse({
+                id: `new-course-${Date.now()}`,
+                title: 'Nuevo Curso sin Título',
+                description: 'Añade una descripción aquí.',
+                instructor: user?.name || 'N/A',
+                instructorId: user?.id,
+                status: 'DRAFT',
+                category: '',
+                modules: [],
+                modulesCount: 0,
+            });
+            setIsLoading(false);
+            setPageTitle('Crear Nuevo Curso');
+            return;
+        }
+
+        const fetchCourseData = async () => {
             try {
                 const response = await fetch(`/api/courses/${courseId}`);
                 if (!response.ok) throw new Error("Course not found");
                 const courseData: AppCourse = await response.json();
+                setCourse(courseData);
                 setPageTitle(`Editando: ${courseData.title}`);
-                reset({
-                    ...courseData,
-                    publicationDate: courseData.publicationDate ? new Date(courseData.publicationDate) : null,
-                    instructorId: courseData.instructorId || user?.id || null,
-                    instructorName: courseData.instructor || user?.name || null,
-                    modules: (courseData.modules || []).map(module => ({
-                        ...module, description: '',
-                        lessons: (module.lessons || []).map(lesson => ({
-                            ...lesson, order: lesson.order ?? null,
-                            contentBlocks: (lesson.contentBlocks || []).map(block => ({
-                              ...block, order: block.order ?? null, quiz: block.quiz || null,
-                            }))
-                        }))
-                    })),
-                });
             } catch (err) {
                  toast({ title: "Error", description: "No se pudo cargar el curso para editar.", variant: "destructive" });
                  router.push('/manage-courses');
@@ -929,48 +118,188 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                  setIsLoading(false);
             }
         };
-        fetchInitialData();
-    }, [courseId, isNewCourse, reset, user, router, toast, setPageTitle]);
+        fetchCourseData();
+    }, [courseId, isNewCourse, user, router, toast, setPageTitle]);
 
+    // --- State Updaters ---
+    const updateCourseField = (field: keyof AppCourse, value: any) => {
+        setCourse(prev => prev ? { ...prev, [field]: value } : null);
+        setIsDirty(true);
+    };
 
-    const {
-        fields: moduleFields,
-        append: appendModule,
-        remove: removeModule,
-        move: moveModule
-    } = useFieldArray({
-        control,
-        name: 'modules',
-    });
+    const updateModuleField = (moduleIndex: number, field: keyof AppModule, value: any) => {
+        setCourse(prev => {
+            if (!prev) return null;
+            const newModules = [...prev.modules];
+            newModules[moduleIndex] = { ...newModules[moduleIndex], [field]: value };
+            return { ...prev, modules: newModules };
+        });
+        setIsDirty(true);
+    };
+
+    const updateLessonField = (moduleIndex: number, lessonIndex: number, field: keyof AppLesson, value: any) => {
+        setCourse(prev => {
+            if (!prev) return null;
+            const newModules = [...prev.modules];
+            const newLessons = [...newModules[moduleIndex].lessons];
+            newLessons[lessonIndex] = { ...newLessons[lessonIndex], [field]: value };
+            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
+            return { ...prev, modules: newModules };
+        });
+        setIsDirty(true);
+    };
+
+    const updateBlockField = (moduleIndex: number, lessonIndex: number, blockIndex: number, field: keyof ContentBlock, value: any) => {
+         setCourse(prev => {
+            if (!prev) return null;
+            const newModules = [...prev.modules];
+            const newLessons = [...newModules[moduleIndex].lessons];
+            const newBlocks = [...newLessons[lessonIndex].contentBlocks];
+            newBlocks[blockIndex] = { ...newBlocks[blockIndex], [field]: value };
+            newLessons[lessonIndex] = { ...newLessons[lessonIndex], contentBlocks: newBlocks };
+            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
+            return { ...prev, modules: newModules };
+        });
+        setIsDirty(true);
+    };
+
+    const handleAddModule = () => {
+        const newModule: AppModule = {
+            id: `new-module-${Date.now()}`,
+            title: 'Nuevo Módulo',
+            order: course?.modules.length || 0,
+            lessons: [],
+        };
+        setCourse(prev => prev ? { ...prev, modules: [...prev.modules, newModule] } : null);
+        setIsDirty(true);
+    };
     
-    const watchedCourseStatus = watch('status');
-    const watchedPublicationDate = watch('publicationDate');
+    const handleAddLesson = (moduleIndex: number) => {
+        const newLesson: AppLesson = {
+            id: `new-lesson-${Date.now()}`,
+            title: 'Nueva Lección',
+            order: course?.modules[moduleIndex].lessons.length || 0,
+            contentBlocks: [],
+        };
+        setCourse(prev => {
+            if (!prev) return null;
+            const newModules = [...prev.modules];
+            newModules[moduleIndex].lessons.push(newLesson);
+            return { ...prev, modules: newModules };
+        });
+        setIsDirty(true);
+    };
     
-    const onSubmit = useCallback(async (data: EditableCourse) => {
+     const handleAddBlock = (moduleIndex: number, lessonIndex: number, type: LessonType) => {
+        const newBlock: ContentBlock = {
+            id: `new-block-${Date.now()}`,
+            type: type,
+            content: '',
+            order: course?.modules[moduleIndex].lessons[lessonIndex].contentBlocks.length || 0,
+            quiz: type === 'QUIZ' ? { id: `new-quiz-${Date.now()}`, title: 'Nuevo Quiz', description: '', questions: [] } : undefined
+        };
+         setCourse(prev => {
+            if (!prev) return null;
+            const newModules = [...prev.modules];
+            newModules[moduleIndex].lessons[lessonIndex].contentBlocks.push(newBlock);
+            return { ...prev, modules: newModules };
+        });
+        setIsDirty(true);
+    };
+
+    const handleRemoveModule = (moduleIndex: number) => {
+        setCourse(prev => {
+            if (!prev) return null;
+            const newModules = prev.modules.filter((_, index) => index !== moduleIndex);
+            return { ...prev, modules: newModules };
+        });
+        setIsDirty(true);
+        setItemToDeleteDetails(null);
+    };
+
+    const handleRemoveLesson = (moduleIndex: number, lessonIndex: number) => {
+        setCourse(prev => {
+            if (!prev) return null;
+            const newModules = [...prev.modules];
+            const newLessons = newModules[moduleIndex].lessons.filter((_, index) => index !== lessonIndex);
+            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
+            return { ...prev, modules: newModules };
+        });
+        setIsDirty(true);
+        setItemToDeleteDetails(null);
+    };
+    
+    const handleRemoveBlock = (moduleIndex: number, lessonIndex: number, blockIndex: number) => {
+        setCourse(prev => {
+            if (!prev) return null;
+            const newModules = [...prev.modules];
+            const newLessons = [...newModules[moduleIndex].lessons];
+            const newBlocks = newLessons[lessonIndex].contentBlocks.filter((_, index) => index !== blockIndex);
+            newLessons[lessonIndex] = { ...newLessons[lessonIndex], contentBlocks: newBlocks };
+            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
+            return { ...prev, modules: newModules };
+        });
+        setIsDirty(true);
+        setItemToDeleteDetails(null);
+    };
+
+    const confirmDeleteItem = () => {
+        if (!itemToDeleteDetails) return;
+        const { type, moduleIndex, lessonIndex, blockIndex } = itemToDeleteDetails;
+        if (type === 'module') handleRemoveModule(moduleIndex);
+        if (type === 'lesson') handleRemoveLesson(moduleIndex, lessonIndex);
+        if (type === 'block') handleRemoveBlock(moduleIndex, lessonIndex, blockIndex);
+    };
+    
+    // --- Drag and Drop ---
+    const onDragEnd = (result: DropResult) => {
+        const { source, destination, type } = result;
+        if (!destination || !course) return;
+
+        if (type === 'MODULES') {
+            const reorderedModules = Array.from(course.modules);
+            const [removed] = reorderedModules.splice(source.index, 1);
+            reorderedModules.splice(destination.index, 0, removed);
+            updateCourseField('modules', reorderedModules);
+        } else if (type.startsWith('LESSONS')) {
+            const moduleIndex = parseInt(type.split('-')[1], 10);
+            const reorderedLessons = Array.from(course.modules[moduleIndex].lessons);
+            const [removed] = reorderedLessons.splice(source.index, 1);
+            reorderedLessons.splice(destination.index, 0, removed);
+            updateModuleField(moduleIndex, 'lessons', reorderedLessons);
+        } else if (type.startsWith('BLOCKS')) {
+            const [, moduleIndexStr, lessonIndexStr] = type.split('-');
+            const moduleIndex = parseInt(moduleIndexStr, 10);
+            const lessonIndex = parseInt(lessonIndexStr, 10);
+            const reorderedBlocks = Array.from(course.modules[moduleIndex].lessons[lessonIndex].contentBlocks);
+            const [removed] = reorderedBlocks.splice(source.index, 1);
+            reorderedBlocks.splice(destination.index, 0, removed);
+            updateLessonField(moduleIndex, lessonIndex, 'contentBlocks', reorderedBlocks);
+        }
+    };
+    
+    const handleCropComplete = (croppedFileUrl: string) => {
+        updateCourseField('imageUrl', croppedFileUrl);
+        setImageToCrop(null);
+    };
+
+    // --- Submission ---
+    const handleSaveCourse = async () => {
+        if (!course) return;
         setIsSaving(true);
+        
+        const payload = { ...course };
+        payload.modules.forEach((mod, mIdx) => {
+            mod.order = mIdx;
+            mod.lessons.forEach((les, lIdx) => {
+                les.order = lIdx;
+                les.contentBlocks.forEach((block, bIdx) => {
+                    block.order = bIdx;
+                });
+            });
+        });
+        
         try {
-            const payload = {
-                ...data,
-                modules: data.modules
-                    .filter(mod => !mod._toBeDeleted)
-                    .map((mod, moduleIndex) => ({
-                        ...mod,
-                        order: moduleIndex,
-                        lessons: (mod.lessons || [])
-                            .filter(lesson => !lesson._toBeDeleted)
-                            .map((lesson, lessonIndex) => ({
-                                ...lesson,
-                                order: lessonIndex,
-                                contentBlocks: (lesson.contentBlocks || [])
-                                  .filter(block => !block._toBeDeleted)
-                                  .map((block, blockIndex) => ({
-                                      ...block,
-                                      order: blockIndex
-                                  }))
-                            }))
-                    }))
-            };
-            
             const endpoint = isNewCourse ? '/api/courses' : `/api/courses/${courseId}`;
             const method = isNewCourse ? 'POST' : 'PUT';
 
@@ -988,8 +317,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             if (isNewCourse) {
                 router.push(`/manage-courses/${savedCourse.id}/edit`);
             } else {
-                reset(savedCourse);
+                setCourse(savedCourse);
                 setPageTitle(`Editando: ${savedCourse.title}`);
+                setIsDirty(false);
             }
 
         } catch (error: any) {
@@ -998,179 +328,141 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         } finally {
             setIsSaving(false);
         }
-    }, [isNewCourse, courseId, router, toast, reset, setPageTitle]);
+    }
 
 
-    const handleChangeCourseStatus = useCallback(async (newStatus: CourseStatus) => {
-        setIsSaving(true);
-        try {
-            const res = await fetch(`/api/courses/${courseId}/status`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus }),
-            });
-            if (!res.ok) throw new Error((await res.json()).message || 'Error al cambiar estado.');
-            toast({ title: "Estado Actualizado", description: `El curso ahora está: ${newStatus}` });
-            setValue('status', newStatus, { shouldDirty: true });
-        } catch (error: any) {
-            toast({ title: "Error de Estado", description: error.message, variant: "destructive" });
-        } finally {
-            setIsSaving(false);
-        }
-    }, [courseId, toast, setValue]);
-
-    const handleDeleteCourse = useCallback(async () => {
-        setIsDeleting(true);
-        try {
-            const res = await fetch(`/api/courses/${courseId}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error((await res.json()).message || 'Error al eliminar.');
-            toast({ title: "Curso Eliminado", description: "El curso ha sido eliminado." });
-            router.push('/manage-courses');
-        } catch (error: any) {
-            toast({ title: "Error de Eliminación", description: error.message, variant: "destructive" });
-        } finally {
-            setIsDeleting(false);
-            setShowDeleteDialog(false);
-        }
-    }, [courseId, toast, router]);
-
-    const handleCourseImageFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = () => setImageToCrop(reader.result as string);
-            reader.readAsDataURL(e.target.files[0]);
-        }
-        if (e.target) e.target.value = '';
-    };
-
-    const handleCropComplete = (croppedFileUrl: string) => {
-        setValue('imageUrl', croppedFileUrl, { shouldDirty: true });
-        setImageToCrop(null);
-    };
-
-    const removeCourseImage = () => {
-        setValue('imageUrl', null, { shouldDirty: true });
-        toast({ title: "Imagen Eliminada" });
-    };
-
-    const handleDragEnd = (result: DropResult) => {
-        const { source, destination, type } = result;
-        if (!destination) return;
-        if (type === 'MODULES') {
-            moveModule(source.index, destination.index);
-        }
-    };
-
-    const handleAddModule = () => {
-        appendModule({
-            id: `new-module-${Date.now()}`, title: 'Nuevo Módulo', description: '',
-            lessons: [], order: moduleFields.length,
-        });
-    };
-
-    const confirmDeleteItemAction = useCallback(() => {
-        if (!itemToDeleteDetails) return;
-        const { type, moduleIndex, lessonIndex } = itemToDeleteDetails;
-
-        if (type === 'module') setValue(`modules.${moduleIndex}._toBeDeleted`, true, { shouldDirty: true });
-        else if (type === 'lesson' && lessonIndex !== undefined) setValue(`modules.${moduleIndex}.lessons.${lessonIndex}._toBeDeleted`, true, { shouldDirty: true });
-        else if (type === 'block' && itemToDeleteDetails.blockIndex !== undefined && lessonIndex !== undefined) setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${itemToDeleteDetails.blockIndex}._toBeDeleted`, true, { shouldDirty: true });
-        
-        toast({ title: "Marcado para eliminación", description: "Se eliminará al guardar los cambios." });
-        setItemToDeleteDetails(null);
-    }, [itemToDeleteDetails, setValue, toast]);
-
-
-    if (isLoading || isAuthLoading) {
+    if (isLoading || isAuthLoading || !course) {
         return <div className="flex items-center justify-center min-h-[calc(100vh-80px)]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
     }
 
-    if (!isNewCourse && !isAuthLoading && user?.role !== 'ADMINISTRATOR' && user?.id !== getValues('instructorId')) {
+    if (!isNewCourse && !isAuthLoading && user?.role !== 'ADMINISTRATOR' && user?.id !== course.instructorId) {
         return <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] text-center p-4"><ShieldAlert className="h-20 w-20 text-red-500 mb-4" /><h2 className="text-2xl font-bold mb-2">Acceso Denegado</h2><p className="text-muted-foreground mb-4">No tienes permiso para editar este curso.</p><Link href="/manage-courses" className={buttonVariants({ variant: "outline" })}>Volver</Link></div>;
     }
 
     return (
-        <FormProvider {...methods}>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pb-24">
-                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b bg-background sticky top-0 z-20 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
-                    <div className="flex items-center gap-4">
-                        <Button asChild variant="outline" type="button" size="sm"><Link href="/manage-courses"><ArrowLeft className="mr-2 h-4 w-4" /> Volver</Link></Button>
-                        <div><h1 className="text-xl font-semibold">{isNewCourse ? 'Crear Nuevo Curso' : 'Editar Curso'}</h1>{errors.title && <p className="text-red-500 text-xs">{errors.title.message}</p>}</div>
-                    </div>
-                     <div className="flex items-center gap-2">
-                        {!isNewCourse && <Button asChild variant="secondary" type="button" disabled={isSaving}><Link href={`/courses/${courseId}`} target="_blank"><Eye className="mr-2 h-4 w-4" /> Vista Previa</Link></Button>}
-                    </div>
+        <div className="space-y-4 pb-24">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b bg-background sticky top-0 z-20 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
+                <div className="flex items-center gap-4">
+                    <Button asChild variant="outline" type="button" size="sm"><Link href="/manage-courses"><ArrowLeft className="mr-2 h-4 w-4" /> Volver</Link></Button>
+                    <div><h1 className="text-xl font-semibold">{isNewCourse ? 'Crear Nuevo Curso' : 'Editar Curso'}</h1></div>
                 </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 space-y-6">
-                        <Card>
-                            <CardHeader><CardTitle>Información General</CardTitle><CardDescription>Detalles básicos y descripción.</CardDescription></CardHeader>
-                            <CardContent className="space-y-4">
-                                <div><Label htmlFor="title">Título del Curso</Label><Input id="title" {...register('title', { required: 'El título es obligatorio' })} placeholder="Título atractivo" disabled={isSaving} />{errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}</div>
-                                <div><Label htmlFor="description">Descripción</Label><Textarea id="description" {...register('description', { required: 'La descripción es obligatoria' })} placeholder="Describe el contenido y objetivos." rows={6} disabled={isSaving} />{errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}</div>
-                            </CardContent>
-                        </Card>
+                 <div className="flex items-center gap-2">
+                    {!isNewCourse && <Button asChild variant="secondary" type="button" disabled={isSaving}><Link href={`/courses/${courseId}`} target="_blank"><Eye className="mr-2 h-4 w-4" /> Vista Previa</Link></Button>}
+                </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-6">
+                    <Card>
+                        <CardHeader><CardTitle>Información General</CardTitle><CardDescription>Detalles básicos y descripción.</CardDescription></CardHeader>
+                        <CardContent className="space-y-4">
+                            <div><Label htmlFor="title">Título del Curso</Label><Input id="title" value={course.title} onChange={e => updateCourseField('title', e.target.value)} placeholder="Título atractivo" disabled={isSaving} /></div>
+                            <div><Label htmlFor="description">Descripción</Label><Textarea id="description" value={course.description} onChange={e => updateCourseField('description', e.target.value)} placeholder="Describe el contenido y objetivos." rows={6} disabled={isSaving} /></div>
+                        </CardContent>
+                    </Card>
 
-                        <Card>
-                            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                                <div><CardTitle>Contenido del Curso</CardTitle><CardDescription>Arrastra los módulos para reordenarlos.</CardDescription></div>
-                                <Button type="button" onClick={handleAddModule} disabled={isSaving} className="w-full sm:w-auto"><PlusCircle className="mr-2 h-4 w-4" /> Añadir Módulo</Button>
-                            </CardHeader>
-                            <CardContent>
-                                <DragDropContext onDragEnd={handleDragEnd}>
-                                    <Droppable droppableId="modules-droppable" type="MODULES">
-                                        {(provided) => (
-                                            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-                                                {moduleFields.filter(mod => !getValues(`modules.${moduleFields.indexOf(mod)}._toBeDeleted`)).map((moduleItem, moduleIndex) => {
-                                                    const module = getValues(`modules.${moduleIndex}`);
-                                                    if (module?._toBeDeleted) return null;
-                                                    return (
-                                                        <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
-                                                          {(provided) => (<ModuleItem provided={provided} moduleIndex={moduleIndex} setItemToDeleteDetails={setItemToDeleteDetails} />)}
-                                                        </Draggable>
-                                                    );
-                                                })}
-                                                {provided.placeholder}
-                                            </div>
-                                        )}
-                                    </Droppable>
-                                </DragDropContext>
-                                {moduleFields.filter(mod => !getValues(`modules.${moduleFields.indexOf(mod)}._toBeDeleted`)).length === 0 && <p className="text-center text-muted-foreground py-8">No hay módulos.</p>}
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <div className="lg:col-span-1 space-y-6">
-                         <Card>
-                            <CardHeader><CardTitle>Configuración</CardTitle></CardHeader>
-                            <CardContent className="space-y-4">
-                                <div><Label htmlFor="category">Categoría</Label><Controller control={control} name="category" rules={{ required: 'La categoría es obligatoria' }} render={({ field }) => (<Select onValueChange={field.onChange} value={field.value || ''} disabled={isSaving}><SelectTrigger id="category"><SelectValue placeholder="Selecciona" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent></Select>)}/>{errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>}</div>
-                                <div><Label htmlFor="status">Estado</Label><Controller control={control} name="status" render={({ field }) => (<Select onValueChange={(value: CourseStatus) => { field.onChange(value); if (value === 'PUBLISHED' && !watchedPublicationDate) setValue('publicationDate', new Date(), { shouldDirty: true }); }} value={field.value} disabled={isSaving}><SelectTrigger id="status"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="DRAFT">Borrador</SelectItem><SelectItem value="PUBLISHED">Publicado</SelectItem><SelectItem value="ARCHIVED">Archivado</SelectItem><SelectItem value="SCHEDULED">Programado</SelectItem></SelectContent></Select>)}/></div>
-                                {watchedCourseStatus === 'PUBLISHED' && <div><Label htmlFor="publicationDate">Fecha Publicación</Label><Controller control={control} name="publicationDate" render={({ field }) => (<Popover><PopoverTrigger asChild><Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !field.value && "text-muted-foreground")} disabled={isSaving}><CalendarIcon className="mr-2 h-4 w-4" />{field.value ? format(field.value, "PPP", { locale: es }) : <span>Elige una fecha</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} initialFocus locale={es}/></PopoverContent></Popover>)}/></div>}
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader><CardTitle>Imagen del Curso</CardTitle><CardDescription>Sube una imagen.</CardDescription></CardHeader>
-                            <CardContent className="grid gap-4">
-                                {watch('imageUrl') ? (<div className="relative aspect-video rounded-md overflow-hidden border w-full"><Image src={watch('imageUrl')!} alt="Imagen del Curso" fill className="object-cover" onError={() => setValue('imageUrl', null)} data-ai-hint="online course" /><div className="absolute top-2 right-2 z-10 flex gap-1"><Button type="button" variant="secondary" size="icon" className="rounded-full h-8 w-8" onClick={() => document.getElementById('image-upload')?.click()} disabled={isSaving}><Replace className="h-4 w-4" /></Button><Button type="button" variant="destructive" size="icon" className="rounded-full h-8 w-8" onClick={removeCourseImage} disabled={isSaving}><XCircle className="h-4 w-4" /></Button></div></div>) : (<Label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-md cursor-pointer bg-muted/20 hover:bg-muted/30 transition-colors"><UploadCloud className="h-8 w-8 text-muted-foreground mb-2" /><span className="text-sm text-muted-foreground">Haz clic para subir</span></Label>)}
-                                <Input id="image-upload" type="file" className="sr-only" accept="image/*" onChange={handleCourseImageFileChange} disabled={isSaving} />{errors.imageUrl && <p className="text-red-500 text-xs mt-1">{errors.imageUrl.message}</p>}
-                            </CardContent>
-                        </Card>
-                    </div>
+                    <Card>
+                        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                            <div><CardTitle>Contenido del Curso</CardTitle><CardDescription>Arrastra los módulos para reordenarlos.</CardDescription></div>
+                            <Button type="button" onClick={handleAddModule} disabled={isSaving} className="w-full sm:w-auto"><PlusCircle className="mr-2 h-4 w-4" /> Añadir Módulo</Button>
+                        </CardHeader>
+                        <CardContent>
+                            <DragDropContext onDragEnd={onDragEnd}>
+                                <Droppable droppableId="modules-droppable" type="MODULES">
+                                    {(provided) => (
+                                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                                            {course.modules.map((moduleItem, moduleIndex) => (
+                                                <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
+                                                  {(provided) => (<div>Module Item placeholder</div>)}
+                                                </Draggable>
+                                            ))}
+                                            {provided.placeholder}
+                                        </div>
+                                    )}
+                                </Droppable>
+                            </DragDropContext>
+                            {course.modules.length === 0 && <p className="text-center text-muted-foreground py-8">No hay módulos.</p>}
+                        </CardContent>
+                    </Card>
                 </div>
 
-                <div className="fixed bottom-0 left-0 md:left-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)] right-0 bg-background/95 backdrop-blur-sm border-t p-4 z-20">
-                    <div className="max-w-screen-2xl mx-auto flex flex-col sm:flex-row justify-end gap-2">
-                        {!isNewCourse && (<DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline" type="button" disabled={isSaving} className="w-full sm:w-auto">Más Acciones<MoreVertical className="ml-2 h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuLabel>Otras Acciones</DropdownMenuLabel><DropdownMenuSeparator />{watchedCourseStatus !== 'DRAFT' && <DropdownMenuItem onSelect={() => handleChangeCourseStatus('DRAFT')} disabled={isSaving}><CircleOff className="mr-2 h-4 w-4" /> Marcar como Borrador</DropdownMenuItem>}{watchedCourseStatus !== 'ARCHIVED' && <DropdownMenuItem onSelect={() => handleChangeCourseStatus('ARCHIVED')} disabled={isSaving}><Archive className="mr-2 h-4 w-4" /> Archivar</DropdownMenuItem>}<DropdownMenuSeparator /><DropdownMenuItem onClick={() => setShowDeleteDialog(true)} disabled={isSaving} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</DropdownMenuItem></DropdownMenuContent></DropdownMenu>)}
-                        <Button type="submit" disabled={isSaving || !isDirty} className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4" />{isSaving ? 'Guardando...' : (isNewCourse ? 'Crear Curso' : 'Guardar Cambios')}</Button>
-                    </div>
+                <div className="lg:col-span-1 space-y-6">
+                     <Card>
+                        <CardHeader><CardTitle>Configuración</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            <div><Label htmlFor="category">Categoría</Label>
+                                <Select value={course.category || ''} onValueChange={v => updateCourseField('category', v)} disabled={isSaving}>
+                                <SelectTrigger id="category"><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                                <SelectContent>{(settings?.resourceCategories || []).sort().map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent>
+                                </Select>
+                            </div>
+                            <div><Label htmlFor="status">Estado</Label>
+                                <Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}>
+                                    <SelectTrigger id="status"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="DRAFT">Borrador</SelectItem>
+                                        <SelectItem value="PUBLISHED">Publicado</SelectItem>
+                                        <SelectItem value="ARCHIVED">Archivado</SelectItem>
+                                        <SelectItem value="SCHEDULED">Programado</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            {course.status === 'PUBLISHED' && <div><Label htmlFor="publicationDate">Fecha Publicación</Label>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !course.publicationDate && "text-muted-foreground")} disabled={isSaving}>
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {course.publicationDate ? format(new Date(course.publicationDate), "PPP", { locale: es }) : <span>Elige una fecha</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={course.publicationDate ? new Date(course.publicationDate) : undefined} onSelect={d => updateCourseField('publicationDate', d)} initialFocus locale={es}/></PopoverContent>
+                                </Popover>
+                            </div>}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader><CardTitle>Imagen del Curso</CardTitle><CardDescription>Sube una imagen.</CardDescription></CardHeader>
+                        <CardContent className="grid gap-4">
+                            {course.imageUrl ? (
+                                <div className="relative aspect-video rounded-md overflow-hidden border w-full">
+                                    <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-cover" onError={() => updateCourseField('imageUrl', null)} data-ai-hint="online course" />
+                                    <div className="absolute top-2 right-2 z-10 flex gap-1">
+                                        <Button type="button" variant="secondary" size="icon" className="rounded-full h-8 w-8" onClick={() => document.getElementById('image-upload')?.click()} disabled={isSaving}><Replace className="h-4 w-4" /></Button>
+                                        <Button type="button" variant="destructive" size="icon" className="rounded-full h-8 w-8" onClick={() => updateCourseField('imageUrl', null)} disabled={isSaving}><XCircle className="h-4 w-4" /></Button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <Label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-md cursor-pointer bg-muted/20 hover:bg-muted/30 transition-colors">
+                                    <UploadCloud className="h-8 w-8 text-muted-foreground mb-2" />
+                                    <span className="text-sm text-muted-foreground">Haz clic para subir</span>
+                                </Label>
+                            )}
+                            <Input id="image-upload" type="file" className="sr-only" accept="image/*" onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                    const reader = new FileReader();
+                                    reader.onload = () => setImageToCrop(reader.result as string);
+                                    reader.readAsDataURL(e.target.files[0]);
+                                }
+                                e.target.value = '';
+                            }} disabled={isSaving} />
+                        </CardContent>
+                    </Card>
                 </div>
+            </div>
 
-                <AlertDialog open={itemToDeleteDetails !== null} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro de que quieres eliminar {itemToDeleteDetails?.type} "<strong>{itemToDeleteDetails?.name}</strong>"? Se eliminará al guardar los cambios.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel onClick={() => setItemToDeleteDetails(null)}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={confirmDeleteItemAction} className={buttonVariants({ variant: "destructive" })}><Trash2 className="mr-2 h-4 w-4" /> Sí, eliminar</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
-                <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Absolutamente seguro?</AlertDialogTitle><AlertDialogDescription>Esta acción no se puede deshacer. Se eliminará permanentemente el curso "<strong>{getValues('title')}</strong>" y todos sus datos.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCourse} disabled={isDeleting} className={buttonVariants({ variant: "destructive" })}>{isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
-                <ImageCropper imageSrc={imageToCrop} onCropComplete={handleCropComplete} onClose={() => setImageToCrop(null)} uploadUrl="/api/upload/course-image" />
-            </form>
-        </FormProvider>
+            <div className="fixed bottom-0 left-0 md:left-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)] right-0 bg-background/95 backdrop-blur-sm border-t p-4 z-20">
+                <div className="max-w-screen-2xl mx-auto flex flex-col sm:flex-row justify-end gap-2">
+                    <Button type="button" onClick={handleSaveCourse} disabled={isSaving || !isDirty} className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4" />{isSaving ? 'Guardando...' : (isNewCourse ? 'Crear y Guardar' : 'Guardar Cambios')}</Button>
+                </div>
+            </div>
+            
+            <ImageCropper imageSrc={imageToCrop} onCropComplete={handleCropComplete} onClose={() => setImageToCrop(null)} uploadUrl="/api/upload/course-image" />
+            <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro? Esta acción eliminará "{itemToDeleteDetails?.name}" y su contenido. Se aplicará al guardar los cambios.</AlertDialogDescription></AlertDialogHeader>
+                    <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={confirmDeleteItem} className={buttonVariants({ variant: "destructive" })}>Sí, eliminar</AlertDialogAction></AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div>
     );
 }
