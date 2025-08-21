@@ -76,57 +76,61 @@ const generateUniqueId = (prefix: string) => {
 
 
 // === FORWARD-REF-WRAPPED COMPONENTS FOR DND ===
-const ModuleItem = React.forwardRef(({ module, moduleIndex, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete, ...rest }, ref) => {
-    return (
-        <div ref={ref} {...rest}>
-            <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${module.id}`}>
-                <AccordionItem value={`item-${module.id}`} className="border-0">
-                    <AccordionTrigger className="px-4 py-2 hover:no-underline">
-                        <div className="flex items-center gap-2 w-full">
-                            <GripVertical className="h-5 w-5 text-muted-foreground" />
-                            <Input value={module.title} onChange={e => onUpdate('title', e.target.value)} className="text-base font-semibold" disabled={isSaving} />
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(); }} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="p-4 border-t">
-                        <Droppable droppableId={module.id} type={`LESSONS`}>
-                            {(provided) => (
-                                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
-                                    {module.lessons.map((lesson, lessonIndex) => (
-                                        <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
-                                            {(provided) => (
-                                                <LessonItem 
-                                                    ref={provided.innerRef}
-                                                    lesson={lesson}
-                                                    onDelete={() => onLessonDelete(lessonIndex)}
-                                                    onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
-                                                    onAddBlock={(type) => onAddBlock(lessonIndex, type)}
-                                                    onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
-                                                    onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
-                                                    isSaving={isSaving}
-                                                    {...provided.draggableProps}
-                                                    {...provided.dragHandleProps}
-                                                />
-                                            )}
-                                        </Draggable>
-                                    ))}
-                                    {provided.placeholder}
+const ModuleItem = React.forwardRef<HTMLDivElement, any>(
+    ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete, ...rest }, ref) => {
+        return (
+            <div ref={ref} {...rest}>
+                <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${module.id}`}>
+                    <AccordionItem value={`item-${module.id}`} className="border-0">
+                        <div className="flex items-center px-4 py-2">
+                             <AccordionTrigger className="flex-grow hover:no-underline p-0">
+                                <div className="flex items-center gap-2 w-full">
+                                    <GripVertical className="h-5 w-5 text-muted-foreground" />
+                                    <Input value={module.title} onChange={e => onUpdate('title', e.target.value)} className="text-base font-semibold" disabled={isSaving} />
                                 </div>
-                            )}
-                        </Droppable>
-                        <div className="mt-4 flex gap-2">
-                            <Button size="sm" variant="secondary" onClick={onAddLesson} disabled={isSaving}><PlusCircle className="mr-2 h-4 w-4" />Añadir Lección</Button>
+                            </AccordionTrigger>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive ml-2 shrink-0" onClick={(e) => { e.stopPropagation(); onDelete(); }} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
                         </div>
-                    </AccordionContent>
-                </AccordionItem>
-            </Accordion>
-        </div>
-    )
-});
+                        <AccordionContent className="p-4 pt-0 border-t">
+                            <Droppable droppableId={module.id} type={`LESSONS`}>
+                                {(provided) => (
+                                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
+                                        {module.lessons.map((lesson, lessonIndex) => (
+                                            <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
+                                                {(provided) => (
+                                                    <LessonItem
+                                                        ref={provided.innerRef}
+                                                        lesson={lesson}
+                                                        onDelete={() => onLessonDelete(lessonIndex)}
+                                                        onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
+                                                        onAddBlock={(type) => onAddBlock(lessonIndex, type)}
+                                                        onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
+                                                        onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
+                                                        isSaving={isSaving}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                    />
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                        {provided.placeholder}
+                                    </div>
+                                )}
+                            </Droppable>
+                            <div className="mt-4 flex gap-2">
+                                <Button size="sm" variant="secondary" onClick={onAddLesson} disabled={isSaving}><PlusCircle className="mr-2 h-4 w-4" />Añadir Lección</Button>
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            </div>
+        )
+    }
+);
 ModuleItem.displayName = 'ModuleItem';
 
 
-const LessonItem = React.forwardRef(({ lesson, onDelete, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, ...rest }, ref) => {
+const LessonItem = React.forwardRef<HTMLDivElement, any>(({ lesson, onDelete, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, ...rest }, ref) => {
     return (
         <div ref={ref} {...rest} className="bg-card p-3 rounded-md border">
             <div className="flex items-center gap-2 mb-3">
@@ -140,7 +144,7 @@ const LessonItem = React.forwardRef(({ lesson, onDelete, onUpdate, onAddBlock, o
                         {lesson.contentBlocks.map((block, blockIndex) => (
                             <Draggable key={block.id} draggableId={block.id} index={blockIndex}>
                                  {(provided) => (
-                                    <ContentBlockItem 
+                                    <ContentBlockItem
                                         ref={provided.innerRef}
                                         block={block} 
                                         onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)} 
@@ -165,7 +169,7 @@ const LessonItem = React.forwardRef(({ lesson, onDelete, onUpdate, onAddBlock, o
 LessonItem.displayName = 'LessonItem';
 
 
-const ContentBlockItem = React.forwardRef(({ block, onUpdate, onDelete, isSaving, ...rest }, ref) => {
+const ContentBlockItem = React.forwardRef<HTMLDivElement, any>(({ block, onUpdate, onDelete, isSaving, ...rest }, ref) => {
     
     const renderBlockContent = () => {
         switch(block.type) {
@@ -239,7 +243,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             }
         };
         
-        fetchCourseData();
+        if (user) {
+            fetchCourseData();
+        }
     }, [courseId, user, router, toast, setPageTitle]);
 
     // --- State Updaters ---
@@ -510,7 +516,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                             {course.modules.map((moduleItem, moduleIndex) => (
                                                 <Draggable key={moduleItem.id} draggableId={moduleItem.id} index={moduleIndex}>
                                                     {(provided) => (
-                                                        <ModuleItem 
+                                                        <ModuleItem
                                                             ref={provided.innerRef}
                                                             module={moduleItem}
                                                             onDelete={() => handleRemoveModule(moduleIndex)}
@@ -632,3 +638,4 @@ const BlockTypeSelector = ({ onSelect }) => (
         </DropdownMenuContent>
     </DropdownMenu>
 );
+
