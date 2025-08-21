@@ -3,8 +3,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, KeyRound, UserCog, Monitor, Globe } from 'lucide-react';
@@ -18,6 +18,8 @@ import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTitle } from '@/contexts/title-context';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+
 
 interface SecurityLogWithUser extends AppSecurityLog {
   user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
@@ -29,6 +31,8 @@ interface SecurityStats {
     twoFactorEvents: number;
     roleChanges: number;
 }
+
+const PAGE_SIZE = 20;
 
 const MetricCard = ({ title, value, icon: Icon, description }: { title: string; value: number; icon: React.ElementType; description?: string }) => {
     const animatedValue = useAnimatedCounter(value);
@@ -49,13 +53,19 @@ const MetricCard = ({ title, value, icon: Icon, description }: { title: string; 
 export default function SecurityAuditPage() {
     const { user: currentUser } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const { toast } = useToast();
     const { setPageTitle } = useTitle();
 
     const [logs, setLogs] = useState<SecurityLogWithUser[]>([]);
+    const [totalLogs, setTotalLogs] = useState(0);
     const [stats, setStats] = useState<SecurityStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const currentPage = Number(searchParams.get('page')) || 1;
+    const totalPages = Math.ceil(totalLogs / PAGE_SIZE);
 
     useEffect(() => {
         setPageTitle('Auditoría de Seguridad');
@@ -65,20 +75,30 @@ export default function SecurityAuditPage() {
         setIsLoading(true);
         setError(null);
         try {
+            const logsParams = new URLSearchParams({
+                page: String(currentPage),
+                pageSize: String(PAGE_SIZE),
+            });
+
             const [logsResponse, statsResponse] = await Promise.all([
-                fetch('/api/security/logs'),
+                fetch(`/api/security/logs?${logsParams.toString()}`),
                 fetch('/api/security/stats')
             ]);
             
-            if (!logsResponse.ok || !statsResponse.ok) {
-                 const errorData = !logsResponse.ok ? await logsResponse.json() : await statsResponse.json();
-                 throw new Error(errorData.message || 'Failed to fetch security data');
+            if (!logsResponse.ok) {
+                 const errorData = await logsResponse.json();
+                 throw new Error(errorData.message || 'Failed to fetch security logs');
+            }
+            if (!statsResponse.ok) {
+                 const errorData = await statsResponse.json();
+                 throw new Error(errorData.message || 'Failed to fetch security stats');
             }
 
-            const logsData: { logs: SecurityLogWithUser[] } = await logsResponse.json();
+            const logsData: { logs: SecurityLogWithUser[], totalLogs: number } = await logsResponse.json();
             const statsData: SecurityStats = await statsResponse.json();
 
             setLogs(logsData.logs || []);
+            setTotalLogs(logsData.totalLogs || 0);
             setStats(statsData);
 
         } catch (err) {
@@ -87,7 +107,7 @@ export default function SecurityAuditPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [toast]);
+    }, [toast, currentPage]);
 
     useEffect(() => {
         if (currentUser?.role !== 'ADMINISTRATOR') {
@@ -95,7 +115,7 @@ export default function SecurityAuditPage() {
             return;
         }
         fetchData();
-    }, [currentUser, router, fetchData]);
+    }, [currentUser, router, fetchData, currentPage]);
 
 
     if (currentUser?.role !== 'ADMINISTRATOR') {
@@ -105,6 +125,13 @@ export default function SecurityAuditPage() {
             </div>
         );
     }
+    
+    const handlePageChange = (page: number) => {
+        if (page > 0 && page <= totalPages) {
+            router.push(`${pathname}?page=${page}`);
+        }
+    };
+
 
     return (
         <div className="space-y-8">
@@ -112,7 +139,7 @@ export default function SecurityAuditPage() {
                 <p className="text-muted-foreground">Revisa los eventos de seguridad importantes de la plataforma.</p>
             </div>
             
-            {isLoading && !stats ? (
+            {(isLoading && !stats) ? (
                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Skeleton className="h-28" />
                     <Skeleton className="h-28" />
@@ -131,7 +158,7 @@ export default function SecurityAuditPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Registro de Eventos</CardTitle>
-                    <CardDescription>Mostrando los últimos 100 eventos registrados en la plataforma.</CardDescription>
+                    <CardDescription>Mostrando los últimos registros de seguridad de la plataforma.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {isLoading && logs.length === 0 ? (
@@ -228,6 +255,35 @@ export default function SecurityAuditPage() {
                         </div>
                     )}
                 </CardContent>
+                 {totalPages > 1 && (
+                    <CardFooter>
+                        <Pagination>
+                            <PaginationContent>
+                                <PaginationItem>
+                                    <PaginationPrevious
+                                        href="#"
+                                        onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
+                                        className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
+                                    />
+                                </PaginationItem>
+                                {[...Array(totalPages)].map((_, i) => (
+                                    <PaginationItem key={i}>
+                                        <PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>
+                                            {i + 1}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                ))}
+                                <PaginationItem>
+                                    <PaginationNext
+                                        href="#"
+                                        onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
+                                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}
+                                    />
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
+                    </CardFooter>
+                )}
             </Card>
         </div>
     );
