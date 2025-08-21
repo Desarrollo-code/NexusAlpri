@@ -423,7 +423,7 @@ const BlockSpecificInput = React.memo(({ moduleIndex, lessonIndex, blockIndex, o
         setError(null);
     };
 
-    const isSaving = false;
+    const isSaving = false; // Placeholder
 
     switch (blockType) {
         case 'VIDEO': return (<><div className="mt-2 space-y-1"><Input {...register(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}.content`)} placeholder="https://youtube.com/watch?v=..." className="h-8 text-xs" disabled={isSaving || isUploading} /></div></>);
@@ -532,6 +532,28 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, provided, setItemToDe
             setIsSavingTemplate(false);
         }
     };
+    
+    const handleAppendBlock = (type: AppLessonType) => {
+        let newBlock: EditableContentBlock = {
+            id: `new-block-${Date.now()}`,
+            type,
+            content: '',
+            order: blockFields.length,
+            quiz: null,
+            _toBeDeleted: false
+        };
+
+        if (type === 'QUIZ') {
+            newBlock.quiz = {
+                id: `new-quiz-${Date.now()}`,
+                title: 'Nuevo Quiz',
+                description: 'Descripción del quiz',
+                questions: []
+            };
+        }
+
+        appendBlock(newBlock);
+    };
 
     return (
          <div ref={provided.innerRef} {...provided.draggableProps} className="p-3 rounded-md border bg-card text-card-foreground shadow-sm">
@@ -607,7 +629,7 @@ const LessonItem = React.memo(({ moduleIndex, lessonIndex, provided, setItemToDe
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => appendBlock({ id: `new-block-${Date.now()}`, type: 'TEXT', content: '', order: blockFields.length, _toBeDeleted: false, quiz: null })}
+                        onClick={() => handleAppendBlock('TEXT')}
                         disabled={isSaving}
                     >
                         <PlusCircle className="mr-2 h-4 w-4" /> Añadir Bloque
