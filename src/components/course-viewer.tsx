@@ -432,7 +432,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                                     )}
                                 >
                                     <BookOpenText className="h-4 w-4 text-primary flex-shrink-0" />
-                                    <span className="flex-grow truncate">{lesson.title}</span>
+                                    <span className="flex-grow">{lesson.title}</span>
                                     {isCompleted && <CheckCircle className="h-4 w-4 text-green-500 shrink-0"/>}
                                 </button>
                             </li>
