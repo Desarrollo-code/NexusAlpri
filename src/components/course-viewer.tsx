@@ -129,44 +129,74 @@ const LessonNotes = ({ lessonId }: { lessonId: string }) => {
 
 // --- MAIN COMPONENT ---
 interface CourseViewerProps {
-    initialCourse: AppCourse;
-    initialEnrollmentStatus: boolean;
-    initialProgress: CourseProgress | null;
+    courseId: string;
 }
 
-export function CourseViewer({ initialCourse, initialEnrollmentStatus, initialProgress }: CourseViewerProps) {
+export function CourseViewer({ courseId }: CourseViewerProps) {
   const router = useRouter();
-  const params = useParams();
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { setPageTitle } = useTitle();
-  
-  const courseId = params.courseId as string;
-  const course = initialCourse;
 
-  const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(initialProgress);
-  const [provisionalProgress, setProvisionalProgress] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
-    if (initialProgress?.completedLessons) {
-      initialProgress.completedLessons.forEach(record => {
-          initial[record.lessonId] = true;
-      });
-    }
-    return initial;
-  });
+  const [course, setCourse] = useState<AppCourse | null>(null);
+  const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(null);
+  const [provisionalProgress, setProvisionalProgress] = useState<Record<string, boolean>>({});
   
-  const [isEnrolled, setIsEnrolled] = useState<boolean>(initialEnrollmentStatus);
+  const [isEnrolled, setIsEnrolled] = useState<boolean>(false);
   const [isConsolidating, setIsConsolidating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   const lessonIdFromQuery = searchParams.get('lesson');
   const firstLessonId = course?.modules?.[0]?.lessons?.[0]?.id;
 
-  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(lessonIdFromQuery || firstLessonId || null);
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(lessonIdFromQuery || null);
   const [sidebarSearch, setSidebarSearch] = useState('');
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const courseRes = await fetch(`/api/courses/${courseId}`);
+            if (!courseRes.ok) throw new Error("Course not found");
+            const courseData = await courseRes.json();
+            setCourse(courseData);
+            setPageTitle(courseData.title);
+
+            if (user) {
+                const enrollmentRes = await fetch(`/api/enrollment/status/${user.id}/${courseId}`);
+                if (enrollmentRes.ok) {
+                    const { isEnrolled: enrolledStatus } = await enrollmentRes.json();
+                    setIsEnrolled(enrolledStatus);
+
+                    if (enrolledStatus) {
+                        const progressRes = await fetch(`/api/progress/${user.id}/${courseId}`);
+                        if (progressRes.ok) {
+                            const progressData = await progressRes.json();
+                            setCourseProgress(progressData);
+                            const initialProgress: Record<string, boolean> = {};
+                            if (progressData?.completedLessons) {
+                                progressData.completedLessons.forEach((record: LessonCompletionRecord) => {
+                                    initialProgress[record.lessonId] = true;
+                                });
+                            }
+                            setProvisionalProgress(initialProgress);
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Failed to fetch course data", error);
+            toast({ title: 'Error', description: 'No se pudo cargar el curso.', variant: 'destructive' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    fetchData();
+  }, [courseId, user, toast, setPageTitle]);
 
   const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
   const totalLessonsCount = allLessons.length;
@@ -197,16 +227,19 @@ export function CourseViewer({ initialCourse, initialEnrollmentStatus, initialPr
   }, [user, courseId, isEnrolled, provisionalProgress, isCreatorViewingCourse]);
   
   useEffect(() => {
-    setPageTitle(course.title);
-    // If a lesson ID is in the query, select it. Otherwise, select the first lesson.
+    if (isLoading) return;
     const lessonToSelect = lessonIdFromQuery || firstLessonId;
     if (lessonToSelect) {
-      setSelectedLessonId(lessonToSelect);
+      if(selectedLessonId !== lessonToSelect) {
+        setSelectedLessonId(lessonToSelect);
+      }
       if (user && isEnrolled && !isCreatorViewingCourse) {
         recordInteraction(lessonToSelect, 'view');
       }
+    } else if (!selectedLessonId && firstLessonId) {
+        setSelectedLessonId(firstLessonId);
     }
-  }, [course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, setPageTitle]);
+  }, [isLoading, course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, selectedLessonId]);
   
   const handleQuizSubmitted = useCallback((lessonId: string, score: number) => {
     recordInteraction(lessonId, 'quiz', score);
@@ -268,6 +301,7 @@ export function CourseViewer({ initialCourse, initialEnrollmentStatus, initialPr
         setIsMobileSheetOpen(false);
       }
       recordInteraction(lesson.id, 'view');
+      router.push(`/courses/${courseId}?lesson=${lesson.id}`, { scroll: false });
   };
   
   const renderContentBlock = (block: ContentBlock) => {
@@ -418,7 +452,7 @@ export function CourseViewer({ initialCourse, initialEnrollmentStatus, initialPr
     </div>
   );
   
-  if (!course) {
+  if (isLoading || !course) {
     return (
         <div className="flex flex-col items-center justify-center h-full text-center p-6">
             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
