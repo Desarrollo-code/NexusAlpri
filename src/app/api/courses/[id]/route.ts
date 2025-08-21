@@ -104,7 +104,24 @@ export async function PUT(
             },
         });
 
-        const currentModules = await tx.module.findMany({ where: { courseId }, select: { id: true, lessons: { select: { id: true, contentBlocks: { select: { id: true, quiz: { select: { id: true } } } } } } } } });
+        const currentModules = await tx.module.findMany({ 
+            where: { courseId }, 
+            select: { 
+                id: true, 
+                lessons: { 
+                    select: { 
+                        id: true, 
+                        contentBlocks: { 
+                            select: { 
+                                id: true, 
+                                quiz: { select: { id: true } } 
+                            } 
+                        } 
+                    } 
+                } 
+            } 
+        });
+
         const incomingModuleIds = new Set(modules.filter(m => !m.id.startsWith('new-')).map(m => m.id));
         const modulesToDelete = currentModules.filter(m => !incomingModuleIds.has(m.id));
 
