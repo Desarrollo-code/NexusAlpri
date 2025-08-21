@@ -74,7 +74,7 @@ const generateUniqueId = (prefix: string) => {
 
 
 const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: Function; onAddLesson: () => void; onLessonUpdate: Function; onLessonDelete: (lessonIndex: number) => void; onAddBlock: Function; onBlockUpdate: Function; onBlockDelete: Function; isSaving: boolean; onDelete: () => void; }>(
-    ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete, ...rest }, ref) => {
+    ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete: handleDelete, ...rest }, ref) => {
         return (
             <div ref={ref} {...rest}>
                 <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${module.id}`}>
@@ -86,7 +86,7 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                                     <Input value={module.title} onChange={e => onUpdate('title', e.target.value)} className="text-base font-semibold" disabled={isSaving} />
                                 </div>
                             </AccordionTrigger>
-                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive ml-2 shrink-0" onClick={(e) => { e.stopPropagation(); onDelete(); }} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive ml-2 shrink-0" onClick={(e) => { e.stopPropagation(); handleDelete(); }} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
                         </div>
                         <AccordionContent className="p-4 pt-0 border-t">
                             <Droppable droppableId={module.id} type="LESSONS">
@@ -127,19 +127,15 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
 ModuleItem.displayName = 'ModuleItem';
 
 
-const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdate: Function; onAddBlock: (type: LessonType) => void; onBlockUpdate: Function; onBlockDelete: (blockIndex: number) => void; isSaving: boolean; }>(({ lesson, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, ...props }, ref) => {
-    
-    // We remove `onDelete` from the props passed to the DOM element
-    const { onDelete, ...rest } = props;
-
+const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdate: Function; onAddBlock: (type: LessonType) => void; onBlockUpdate: Function; onBlockDelete: (blockIndex: number) => void; isSaving: boolean; onDelete: () => void; }>(({ lesson, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete: handleDelete, ...props }, ref) => {
     return (
-        <div ref={ref} {...rest} className="bg-card p-3 rounded-md border">
+        <div ref={ref} {...props} className="bg-card p-3 rounded-md border">
             <div className="flex items-center gap-2 mb-3">
                 <GripVertical className="h-5 w-5 text-muted-foreground" />
                 <Input value={lesson.title} onChange={e => onUpdate('title', e.target.value)} placeholder="Título de la lección" disabled={isSaving} />
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
             </div>
-             <Droppable droppableId={lesson.id} type={`BLOCKS`}>
+             <Droppable droppableId={lesson.id} type="BLOCKS">
                 {(provided) => (
                     <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                         {lesson.contentBlocks.map((block, blockIndex) => (
@@ -170,10 +166,8 @@ const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdat
 LessonItem.displayName = 'LessonItem';
 
 
-const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock; onUpdate: (field: string, value: any) => void; isSaving: boolean; }>(({ block, onUpdate, isSaving, ...props }, ref) => {
+const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock; onUpdate: (field: string, value: any) => void; isSaving: boolean; onDelete: () => void; }>(({ block, onUpdate, isSaving, onDelete: handleDelete, ...props }, ref) => {
     
-    const { onDelete, ...rest } = props;
-
     const renderBlockContent = () => {
         switch(block.type) {
             case 'TEXT': return <Textarea value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="Escribe aquí texto o pega un enlace..." rows={4} disabled={isSaving} />;
@@ -185,10 +179,10 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
     };
 
     return (
-        <div ref={ref} {...rest} className="flex items-center gap-2 bg-muted/50 p-2 rounded">
+        <div ref={ref} {...props} className="flex items-center gap-2 bg-muted/50 p-2 rounded">
              <GripVertical className="h-5 w-5 text-muted-foreground" />
              <div className="flex-grow">{renderBlockContent()}</div>
-             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
         </div>
     );
 });
@@ -387,54 +381,48 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
         if (!destination || !course) return;
 
+        // Create a deep copy to work with, preventing state mutation issues.
+        const newModules = JSON.parse(JSON.stringify(course.modules));
+
         // Reordering modules
         if (type === 'MODULES') {
-            const items = Array.from(course.modules);
-            const [reorderedItem] = items.splice(source.index, 1);
-            items.splice(destination.index, 0, reorderedItem);
-            updateCourseField('modules', items);
+            const [reorderedItem] = newModules.splice(source.index, 1);
+            newModules.splice(destination.index, 0, reorderedItem);
+            updateCourseField('modules', newModules);
             return;
         }
 
-        // Reordering lessons
+        // Reordering lessons or blocks
+        const sourceModuleIndex = newModules.findIndex((m: AppModule) => m.id === source.droppableId);
+        const destModuleIndex = newModules.findIndex((m: AppModule) => m.id === destination.droppableId);
+
         if (type === 'LESSONS') {
-            const sourceModuleIndex = course.modules.findIndex(m => m.id === source.droppableId);
-            const destModuleIndex = course.modules.findIndex(m => m.id === destination.droppableId);
-            
-            if (sourceModuleIndex === -1 || destModuleIndex === -1) return;
+             if (sourceModuleIndex === -1 || destModuleIndex === -1) return;
 
-            const newModules = JSON.parse(JSON.stringify(course.modules));
-
-            if (sourceModuleIndex === destModuleIndex) {
-                // Moving within the same module
-                const items = newModules[sourceModuleIndex].lessons;
-                const [reorderedItem] = items.splice(source.index, 1);
-                items.splice(destination.index, 0, reorderedItem);
-            } else {
-                // Moving to a different module
-                const sourceModule = newModules[sourceModuleIndex];
-                const destModule = newModules[destModuleIndex];
-                const [movedItem] = sourceModule.lessons.splice(source.index, 1);
-                destModule.lessons.splice(destination.index, 0, movedItem);
-            }
-            updateCourseField('modules', newModules);
+             if (sourceModuleIndex === destModuleIndex) {
+                 // Reordering within the same module
+                 const module = newModules[sourceModuleIndex];
+                 const [reorderedItem] = module.lessons.splice(source.index, 1);
+                 module.lessons.splice(destination.index, 0, reorderedItem);
+             } else {
+                 // Moving to a different module
+                 const sourceModule = newModules[sourceModuleIndex];
+                 const destModule = newModules[destModuleIndex];
+                 const [movedItem] = sourceModule.lessons.splice(source.index, 1);
+                 destModule.lessons.splice(destination.index, 0, movedItem);
+             }
+             updateCourseField('modules', newModules);
         }
-        
-        // Reordering content blocks
-        if (type === 'BLOCKS') {
-            // Logic to reorder blocks within a lesson
-            const module = course.modules.find(m => m.lessons.some(l => l.id === source.droppableId));
-            if (!module) return;
 
-            const lesson = module.lessons.find(l => l.id === source.droppableId);
+        if (type === 'BLOCKS') {
+            const moduleWithBlock = newModules.find((m: AppModule) => m.lessons.some((l: AppLesson) => l.id === source.droppableId));
+            if (!moduleWithBlock) return;
+
+            const lesson = moduleWithBlock.lessons.find((l: AppLesson) => l.id === source.droppableId);
             if (!lesson) return;
 
-            const items = Array.from(lesson.contentBlocks);
-            const [reorderedItem] = items.splice(source.index, 1);
-            items.splice(destination.index, 0, reorderedItem);
-            
-            const newLessons = module.lessons.map(l => l.id === lesson.id ? {...l, contentBlocks: items} : l);
-            const newModules = course.modules.map(m => m.id === module.id ? {...m, lessons: newLessons} : m);
+            const [reorderedItem] = lesson.contentBlocks.splice(source.index, 1);
+            lesson.contentBlocks.splice(destination.index, 0, reorderedItem);
             updateCourseField('modules', newModules);
         }
     };
