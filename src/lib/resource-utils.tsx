@@ -1,7 +1,7 @@
 // src/lib/resource-utils.tsx
 import React from 'react';
 import type { AppResourceType } from '@/types';
-import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon } from 'lucide-react';
+import { FolderIcon, FileQuestion, Video as VideoIcon, FileText as FileTextIcon, Info, Notebook, Shield, Link as LinkIcon, Archive as ZipIcon } from 'lucide-react';
 import { cn } from './utils';
 
 // Enhanced getIconForType with colors

@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -126,6 +126,52 @@ const LessonNotes = ({ lessonId }: { lessonId: string }) => {
     );
 };
 
+const VideoPlayer = ({ videoUrl, lessonTitle }: { videoUrl: string, lessonTitle?: string }) => {
+    const videoId = getYouTubeVideoId(videoUrl);
+    const [showRotateHint, setShowRotateHint] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < window.innerHeight) { // Portrait mode
+                setShowRotateHint(true);
+                const timer = setTimeout(() => setShowRotateHint(false), 3000);
+                return () => clearTimeout(timer);
+            } else {
+                setShowRotateHint(false);
+            }
+        };
+
+        if (containerRef.current) {
+            handleResize(); // Initial check
+            window.addEventListener('resize', handleResize);
+        }
+        
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    if (!videoId) return null;
+
+    return (
+        <div ref={containerRef} className="aspect-video w-full max-w-4xl mx-auto my-4 rounded-lg overflow-hidden shadow-md relative group">
+            <iframe 
+                className="w-full h-full" 
+                src={`https://www.youtube.com/embed/${videoId}?rel=0&showinfo=0&modestbranding=1`} 
+                title={`YouTube video: ${lessonTitle}`} 
+                frameBorder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen
+            ></iframe>
+            {showRotateHint && (
+                <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white pointer-events-none transition-opacity duration-300 opacity-100 group-hover:opacity-0">
+                    <ScreenShare className="h-12 w-12 mb-2 animate-pulse" />
+                    <p className="font-semibold">Gira tu dispositivo</p>
+                    <p className="text-sm">para una mejor experiencia</p>
+                </div>
+            )}
+        </div>
+    );
+}
 
 // --- MAIN COMPONENT ---
 interface CourseViewerProps {
@@ -305,14 +351,8 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   };
   
   const renderContentBlock = (block: ContentBlock) => {
-    const videoId = getYouTubeVideoId(block.content);
-
-    if (block.type === 'VIDEO' && videoId) {
-        return (
-            <div key={block.id} className="aspect-video w-full max-w-4xl mx-auto my-4 rounded-lg overflow-hidden shadow-md">
-                <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${videoId}`} title={`YouTube video: ${selectedLesson?.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
-            </div>
-        );
+    if (block.type === 'VIDEO') {
+        return <VideoPlayer key={block.id} videoUrl={block.content || ''} lessonTitle={selectedLesson?.title} />
     }
     
     if (block.type === 'QUIZ') {
@@ -464,7 +504,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   return (
     <div className="space-y-4">
        <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
                 {!isMobile && (
                     <Button variant="ghost" size="icon" onClick={() => setIsSidebarVisible(!isSidebarVisible)}>
                         <PanelLeft />

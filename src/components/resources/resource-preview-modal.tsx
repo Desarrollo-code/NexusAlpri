@@ -1,10 +1,10 @@
 // src/components/resources/resource-preview-modal.tsx
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X, ArrowUpRightSquare } from 'lucide-react';
+import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X, ArrowUpRightSquare, ZoomIn, ZoomOut, Expand } from 'lucide-react';
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -139,6 +139,8 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const isMobile = useIsMobile();
+    const iframeRef = useRef<HTMLIFrameElement>(null);
+    const [zoomLevel, setZoomLevel] = useState(100);
 
     const handlePinSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -164,8 +166,19 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     useEffect(() => {
         setPin('');
         setError(null);
+        setZoomLevel(100);
     }, [resource]);
     
+    const toggleFullScreen = () => {
+        if (iframeRef.current) {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                iframeRef.current.requestFullscreen();
+            }
+        }
+    };
+
     if (resource.hasPin && !pinVerifiedUrl) {
        return (
          <div className="flex flex-col items-center justify-center h-full p-4 bg-muted/30">
@@ -205,9 +218,18 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
         if (isVideoFile) return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />;
         if (isImage) return <Image src={displayUrl} alt={resource.title} fill className="object-contain" data-ai-hint="document image" />;
         if (isPdf) {
-            // Append #toolbar=0 for mobile to hide the default viewer controls
-            const pdfUrl = isMobile ? `${displayUrl}#toolbar=0` : displayUrl;
-            return <iframe src={pdfUrl} className="w-full h-full" title={`PDF Preview: ${resource.title}`}/>;
+            return (
+                <div className="w-full h-full relative">
+                    <iframe ref={iframeRef} src={`${displayUrl}#view=FitH`} className="w-full h-full" title={`PDF Preview: ${resource.title}`} style={{ width: `${zoomLevel}%`, height: `${zoomLevel}%` }}/>
+                    {isMobile && (
+                        <div className="absolute bottom-4 right-4 flex flex-col gap-2">
+                             <Button variant="secondary" size="icon" className="h-10 w-10 rounded-full shadow-lg" onClick={toggleFullScreen}><Expand /></Button>
+                             <Button variant="secondary" size="icon" className="h-10 w-10 rounded-full shadow-lg" onClick={() => setZoomLevel(z => Math.min(z + 10, 200))}><ZoomIn /></Button>
+                             <Button variant="secondary" size="icon" className="h-10 w-10 rounded-full shadow-lg" onClick={() => setZoomLevel(z => Math.max(z - 10, 50))}><ZoomOut /></Button>
+                        </div>
+                    )}
+                </div>
+            );
         }
         if (isOfficeDoc) return <DocxPreviewer url={displayUrl} />;
         if (isZipFile) return <ZipPreviewer url={displayUrl} />;
@@ -304,6 +326,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                         <h2 className="font-semibold truncate text-foreground">{resource.title}</h2>
                     </div>
                      <div className="flex items-center gap-2">
+                          <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} variant="secondary" size="sm" />
                          {isMobile ? (
                             <Sheet open={showDetails} onOpenChange={setShowDetails}>
                                <SheetTrigger asChild>
@@ -316,7 +339,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                          ) : (
                             <Button variant="outline" size="sm" onClick={() => setShowDetails(!showDetails)}>
                                 <Info className="h-4 w-4" />
-                                <span className="hidden sm:inline ml-2">Detalles</span>
+                                <span className="hidden sm:inline ml-2">{showDetails ? 'Ocultar Detalles' : 'Ver Detalles'}</span>
                             </Button>
                          )}
                           <DialogClose asChild>
@@ -330,30 +353,13 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                 <div className="flex-grow flex relative overflow-hidden">
                      <div className="flex-grow relative">
                         <Button variant="ghost" size="icon" onClick={() => onNavigate('prev')} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronLeft/></Button>
-                        <div className="absolute inset-0 flex items-center justify-center p-2">
+                        <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
                             <ContentPreview resource={resource} pinVerifiedUrl={pinVerifiedUrl} onPinVerified={setPinVerifiedUrl} />
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => onNavigate('next')} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronRight/></Button>
                      </div>
                      {!isMobile && showDetails && <DetailsComponent />}
                 </div>
-
-                {isPdfOnMobile && displayUrl && (
-                    <div className="flex-shrink-0 p-2 border-t bg-background/70 flex justify-center items-center gap-2">
-                         <DownloadButton 
-                            url={displayUrl} 
-                            resourceId={resource.id} 
-                            hasPin={resource.hasPin} 
-                            variant="secondary"
-                            size="sm"
-                         />
-                         <Button variant="secondary" size="sm" asChild>
-                            <a href={displayUrl} target="_blank" rel="noopener noreferrer">
-                                <ArrowUpRightSquare className="mr-2 h-4 w-4" /> Abrir
-                            </a>
-                         </Button>
-                    </div>
-                )}
             </DialogContent>
         </Dialog>
     );
