@@ -1,10 +1,10 @@
 // src/components/resources/resource-preview-modal.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List } from 'lucide-react';
+import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X } from 'lucide-react';
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -286,10 +286,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     return (
         <Dialog open={!!resource} onOpenChange={(isOpen) => !isOpen && onClose()}>
             <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg">
-                <DialogHeader className="sr-only">
-                    <DialogTitle>Vista previa de: {resource.title}</DialogTitle>
-                </DialogHeader>
-                 <header className="flex-shrink-0 h-16 px-4 flex justify-between items-center border-b z-10 bg-background/70">
+                <header className="flex-shrink-0 h-16 px-4 flex justify-between items-center border-b z-10 bg-background/70">
                     <div className="flex items-center gap-3 overflow-hidden">
                         {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0" })}
                         <h2 className="font-semibold truncate text-foreground">{resource.title}</h2>
@@ -301,7 +298,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                          {isMobile ? (
                             <Sheet open={showDetails} onOpenChange={setShowDetails}>
                                <SheetTrigger asChild>
-                                  <Button variant="outline" size="sm"><Info className="h-4 w-4" /><span className="hidden sm:inline ml-2">Ver Detalles</span></Button>
+                                  <Button variant="outline" size="sm"><Info className="h-4 w-4" /><span className="hidden sm:inline ml-2">Detalles</span></Button>
                                </SheetTrigger>
                                <SheetContent side="bottom" className="h-[60vh] flex flex-col p-0">
                                    <SheetHeader className="p-4 border-b text-left"><SheetTitle>Detalles del Recurso</SheetTitle></SheetHeader>
@@ -311,9 +308,15 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                          ) : (
                             <Button variant="outline" size="sm" onClick={() => setShowDetails(!showDetails)}>
                                 <Info className="h-4 w-4" />
-                                <span className="hidden sm:inline ml-2">Ver Detalles</span>
+                                <span className="hidden sm:inline ml-2">Detalles</span>
                             </Button>
                          )}
+                          <DialogClose asChild>
+                             <Button variant="ghost" size="icon" className="h-9 w-9">
+                                <X className="h-5 w-5" />
+                                <span className="sr-only">Cerrar</span>
+                            </Button>
+                         </DialogClose>
                     </div>
                 </header>
                 <div className="flex-grow flex relative overflow-hidden">
