@@ -857,7 +857,7 @@ const ModuleItem = React.memo(({ moduleIndex, provided, setItemToDeleteDetails }
 ModuleItem.displayName = 'ModuleItem';
 
 // === COMPONENTE PRINCIPAL DE LA PÁGINA (CourseEditor) ===
-export function CourseEditor({ courseId }: { courseId: string }) {
+export function CourseEditor({ initialData, courseId }: { initialData: AppCourse | null, courseId: string }) {
     const router = useRouter();
     const { toast } = useToast();
     const { user, settings, isLoading: isAuthLoading } = useAuth();
@@ -865,7 +865,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     const isNewCourse = courseId === 'new';
 
-    const [isLoadingData, setIsLoadingData] = useState(!isNewCourse);
+    const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [itemToDeleteDetails, setItemToDeleteDetails] = useState<ItemToDeleteDetails | null>(null);
@@ -884,34 +884,16 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     const { control, handleSubmit, reset, formState: { errors, isDirty }, setValue, getValues, watch, register } = methods;
 
-    const fetchCourseData = useCallback(async () => {
-        if (isNewCourse) {
-            setPageTitle('Crear Nuevo Curso');
-            if (user) {
-                reset({
-                    instructorId: user.id,
-                    instructorName: user.name,
-                    modules: [],
-                    status: 'DRAFT',
-                });
-            }
-            setIsLoadingData(false);
-            return;
-        }
-
-        setIsLoadingData(true);
-        try {
-            const res = await fetch(`/api/courses/${courseId}`);
-            if (!res.ok) throw new Error('No se pudo cargar el curso');
-            const initialData: AppCourse = await res.json();
-
-            setPageTitle(`Editando: ${initialData.title}`);
-            reset({
-                ...initialData,
-                publicationDate: initialData.publicationDate ? new Date(initialData.publicationDate) : null,
-                instructorId: initialData.instructorId || user?.id || null,
-                instructorName: initialData.instructor || user?.name || null,
-                modules: (initialData.modules || []).map(module => ({
+    useEffect(() => {
+        const courseData = initialData;
+        if (courseData) {
+             setPageTitle(`Editando: ${courseData.title}`);
+             reset({
+                ...courseData,
+                publicationDate: courseData.publicationDate ? new Date(courseData.publicationDate) : null,
+                instructorId: courseData.instructorId || user?.id || null,
+                instructorName: courseData.instructor || user?.name || null,
+                modules: (courseData.modules || []).map(module => ({
                     ...module, description: '',
                     lessons: (module.lessons || []).map(lesson => ({
                         ...lesson, order: lesson.order ?? null,
@@ -921,19 +903,18 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     }))
                 })),
             });
-        } catch (error) {
-            toast({ title: "Error", description: (error as Error).message, variant: "destructive" });
-            router.push('/manage-courses');
-        } finally {
-            setIsLoadingData(false);
+        } else if (isNewCourse) {
+            setPageTitle('Crear Nuevo Curso');
+            if (user) {
+                reset({
+                    instructorId: user.id,
+                    instructorName: user.name,
+                    modules: [],
+                    status: 'DRAFT',
+                });
+            }
         }
-    }, [courseId, isNewCourse, reset, user, setPageTitle, router, toast]);
-
-    useEffect(() => {
-        if (user) {
-            fetchCourseData();
-        }
-    }, [user, fetchCourseData]);
+    }, [initialData, isNewCourse, reset, user, setPageTitle]);
 
 
     const {
@@ -1084,7 +1065,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     }, [itemToDeleteDetails, setValue, toast]);
 
 
-    if (isLoadingData || isAuthLoading) {
+    if (isLoading || isAuthLoading) {
         return <div className="flex items-center justify-center min-h-[calc(100vh-80px)]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
     }
 
