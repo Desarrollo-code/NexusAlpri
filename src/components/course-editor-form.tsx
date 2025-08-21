@@ -77,7 +77,7 @@ const generateUniqueId = (prefix: string) => {
 
 
 // === FORWARD-REF-WRAPPED COMPONENTS FOR DND ===
-const ModuleItem = React.forwardRef(({ module, moduleIndex, onDelete, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, onBlockDragEnd, isSaving, ...rest }, ref) => {
+const ModuleItem = React.forwardRef(({ module, moduleIndex, onDelete, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, ...rest }, ref) => {
     return (
         <div ref={ref} {...rest}>
             <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${moduleIndex}`}>
@@ -490,8 +490,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                     {(provided) => (
                                                         <ModuleItem 
                                                             ref={provided.innerRef}
-                                                            module={moduleItem} 
-                                                            moduleIndex={moduleIndex} 
+                                                            module={moduleItem}
                                                             onDelete={() => handleRemoveModule(moduleIndex)}
                                                             onUpdate={(field, value) => updateModuleField(moduleIndex, field, value)}
                                                             onAddLesson={() => handleAddLesson(moduleIndex)}
@@ -500,8 +499,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                             onAddBlock={(lessonIndex, type) => handleAddBlock(moduleIndex, lessonIndex, type)}
                                                             onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
                                                             onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
-                                                            onLessonDragEnd={onDragEnd}
-                                                            onBlockDragEnd={onDragEnd}
                                                             isSaving={isSaving}
                                                             {...provided.draggableProps}
                                                             {...provided.dragHandleProps}
