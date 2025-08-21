@@ -62,7 +62,7 @@ const UploadWidget = ({
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      <div className="relative h-40 w-full border-2 border-dashed border-muted-foreground/30 rounded-lg flex items-center justify-center bg-muted/20 p-2">
+      <div className="relative w-full border-2 border-dashed border-muted-foreground/30 rounded-lg flex items-center justify-center bg-muted/20 p-2 min-h-[10rem]">
         {currentImageUrl ? (
           <>
             <Image
@@ -70,7 +70,7 @@ const UploadWidget = ({
                 alt={`Previsualización de ${label}`}
                 width={300}
                 height={150}
-                className="object-contain max-h-full max-w-full rounded-md"
+                className="object-contain w-full h-auto max-h-48 rounded-md"
                 data-ai-hint="logo company"
             />
             <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
@@ -162,13 +162,13 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                             <div className="space-y-2">
                                 <Label className="text-xs">Página de Inicio (Landing)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
-                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" width="200" height="100" className="object-contain max-w-full max-h-full" data-ai-hint="office workspace" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" width="200" height="100" className="object-contain w-auto h-auto max-w-full max-h-full" data-ai-hint="office workspace" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                              <div className="space-y-2">
                                 <Label className="text-xs">Página de Acceso (Login)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
-                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" width="200" height="100" className="object-contain max-w-full max-h-full" data-ai-hint="abstract background" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" width="200" height="100" className="object-contain w-auto h-auto max-w-full max-h-full" data-ai-hint="abstract background" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                         </div>
@@ -179,7 +179,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                            <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Marca de Agua</h3>
                            <div className="mt-2 h-20 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
                                 <span className="text-sm text-muted-foreground z-10">Contenido de la app</span>
-                                <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" width="100" height="50" className="object-contain opacity-20 z-0 p-2 max-w-full max-h-full" data-ai-hint="logo company"/>
+                                <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" width="100" height="50" className="object-contain w-auto h-auto opacity-20 z-0 p-2 max-w-full max-h-full" data-ai-hint="logo company"/>
                            </div>
                         </div>
                     )}
