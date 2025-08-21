@@ -865,7 +865,7 @@ export function CourseEditor({ initialData, courseId }: { initialData: AppCourse
 
     const isNewCourse = courseId === 'new';
 
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(!initialData && !isNewCourse);
     const [isSaving, setIsSaving] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [itemToDeleteDetails, setItemToDeleteDetails] = useState<ItemToDeleteDetails | null>(null);

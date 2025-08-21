@@ -5,12 +5,12 @@ import type { Course as AppCourse } from '@/types';
 import { notFound } from 'next/navigation';
 import React from 'react';
 
-// This page is now a pure Server Component responsible for fetching data.
-
+// The data fetching logic is now co-located with the Server Component page.
 async function getCourseData(courseId: string): Promise<AppCourse | null> {
   if (courseId === 'new') {
     return null; // Return null for a new course, the editor will handle defaults.
   }
+  
   const course = await prisma.course.findUnique({
       where: { id: courseId },
       include: {
@@ -45,7 +45,7 @@ async function getCourseData(courseId: string): Promise<AppCourse | null> {
 
   if (!course) return null;
   
-  // Basic transformation
+  // Basic transformation to match the AppCourse type expected by the client component
   return {
     ...course,
     instructor: course.instructor?.name || 'N/A',
@@ -69,13 +69,12 @@ async function getCourseData(courseId: string): Promise<AppCourse | null> {
 
 
 export default async function EditCourseServerPage({ params }: { params: { courseId: string } }) {
-  const courseId = params.courseId;
-  const courseData = await getCourseData(courseId);
+  const courseData = await getCourseData(params.courseId);
 
-  if (!courseData && courseId !== 'new') {
+  if (!courseData && params.courseId !== 'new') {
     notFound();
   }
 
   // The CourseEditor component receives the initial data directly as a prop.
-  return <CourseEditor initialData={courseData} courseId={courseId} />;
+  return <CourseEditor initialData={courseData} courseId={params.courseId} />;
 }
