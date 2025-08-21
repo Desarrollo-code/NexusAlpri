@@ -4,9 +4,9 @@ import type { NextRequest } from 'next/server';
 import { consolidateCourseProgress } from '@/lib/progress';
 import { addXp, checkAndAwardCourseCompletionAchievements, XP_CONFIG } from '@/lib/gamification';
 
-export async function POST(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
     const session = await getCurrentUser();
-    const { userId, courseId } = context.params;
+    const { userId, courseId } = params;
 
     if (!session || session.id !== userId) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });

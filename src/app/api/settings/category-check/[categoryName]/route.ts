@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
     req: NextRequest, 
-    context: { params: { categoryName: string } }
+    { params }: { params: { categoryName: string } }
 ) {
     const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
@@ -14,7 +14,7 @@ export async function GET(
     }
 
     try {
-        const { categoryName: encodedCategoryName } = context.params;
+        const { categoryName: encodedCategoryName } = params;
         const categoryName = decodeURIComponent(encodedCategoryName);
 
         const courseCount = await prisma.course.count({

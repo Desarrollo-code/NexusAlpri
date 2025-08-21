@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest, context: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest, context: { params: { id: string } }
         }
 
         const resource = await prisma.resource.findUnique({
-            where: { id: context.params.id },
+            where: { id: params.id },
             select: { pin: true, url: true }
         });
 

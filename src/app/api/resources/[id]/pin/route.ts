@@ -21,8 +21,8 @@ async function checkAuth(req: NextRequest, resourceId: string) {
 }
 
 // Set a PIN
-export async function POST(req: NextRequest, context: { params: { id: string } }) {
-    const { id } = context.params;
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+    const { id } = params;
     const authResult = await checkAuth(req, id);
     if (!authResult.authorized) return authResult.error;
     
@@ -48,8 +48,8 @@ export async function POST(req: NextRequest, context: { params: { id: string } }
 }
 
 // Remove a PIN
-export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
-    const { id } = context.params;
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+    const { id } = params;
     const authResult = await checkAuth(req, id);
     if (!authResult.authorized) return authResult.error;
 

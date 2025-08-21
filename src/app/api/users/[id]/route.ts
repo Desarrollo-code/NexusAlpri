@@ -6,9 +6,9 @@ import { getCurrentUser } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
 // GET a specific user
-export async function GET(req: NextRequest, context: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
-    const { id } = context.params;
+    const { id } = params;
     // Allow admins to get any user, and any user to get their own profile
     if (!session || (session.role !== 'ADMINISTRATOR' && session.id !== id)) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
@@ -29,13 +29,13 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
 }
 
 // PUT (update) a user
-export async function PUT(req: NextRequest, context: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
 
-    const { id } = context.params;
+    const { id } = params;
     // Admin can edit anyone. A user can edit their own profile.
     if (session.role !== 'ADMINISTRATOR' && session.id !== id) {
          return NextResponse.json({ message: 'No tienes permiso para actualizar este usuario.' }, { status: 403 });
@@ -103,13 +103,13 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 
 
 // DELETE a user
-export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
     
-    const { id } = context.params;
+    const { id } = params;
     if (session.id === id) {
         return NextResponse.json({ message: 'No puedes eliminar tu propia cuenta' }, { status: 400 });
     }

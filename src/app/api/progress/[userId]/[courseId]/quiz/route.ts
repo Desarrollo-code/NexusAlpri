@@ -7,9 +7,9 @@ import prisma from '@/lib/prisma';
 import { addXp, awardAchievement, XP_CONFIG, ACHIEVEMENT_SLUGS } from '@/lib/gamification';
 
 // Records a 'quiz' interaction with its score and individual answers
-export async function POST(req: NextRequest, context: { params: { userId: string, courseId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
     const session = await getCurrentUser();
-    const { userId, courseId } = context.params;
+    const { userId, courseId } = params;
 
     if (!session || session.id !== userId) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
