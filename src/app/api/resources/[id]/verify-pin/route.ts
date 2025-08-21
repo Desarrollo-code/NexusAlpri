@@ -5,20 +5,21 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
 
     try {
+        const { id } = await params;
         const { pin } = await req.json();
         if (!pin) {
             return NextResponse.json({ message: 'PIN es requerido' }, { status: 400 });
         }
 
         const resource = await prisma.resource.findUnique({
-            where: { id: params.id },
+            where: { id: id },
             select: { pin: true, url: true }
         });
 

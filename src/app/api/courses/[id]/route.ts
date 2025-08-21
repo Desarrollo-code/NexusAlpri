@@ -1,4 +1,3 @@
-
 // src/app/api/courses/[id]/route.ts
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
@@ -10,9 +9,9 @@ export const dynamic = "force-dynamic";
 // GET a specific course by ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const courseId = params.id;
+  const { id: courseId } = await params;
   try {
     const course = await prisma.course.findUnique({
       where: { id: courseId },
@@ -65,14 +64,14 @@ export async function GET(
 // UPDATE course by ID
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getCurrentUser();
   if (!session) {
     return NextResponse.json({ message: "No autenticado" }, { status: 401 });
   }
 
-  const courseId = params.id;
+  const { id: courseId } = await params;
 
   try {
     const body: AppCourse = await req.json();
@@ -223,7 +222,7 @@ export async function PUT(
         where: { id: courseId },
         include: {
             instructor: { select: { id: true, name: true } },
-            modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, include: { contentBlocks: { orderBy: { order: "asc" }, include: { quiz: { include: { questions: { orderBy: { order: "asc" }, include: { options: { orderBy: { id: "asc" } } }, }, }, }, }, }, }, }, }, },
+            modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, include: { contentBlocks: { orderBy: { order: "asc" }, include: { quiz: { include: { questions: { orderBy: { order: "asc" }, include: { options: { orderBy: { id: "asc" } } }, }, }, }, }, }, }, }, },
         },
     });
 
@@ -240,14 +239,14 @@ export async function PUT(
 // DELETE course by ID
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getCurrentUser();
   if (!session || (session.role !== "ADMINISTRATOR" && session.role !== "INSTRUCTOR")) {
     return NextResponse.json({ message: "No autorizado" }, { status: 403 });
   }
 
-  const courseId = params.id;
+  const { id: courseId } = await params;
 
   try {
     const courseToDelete = await prisma.course.findUnique({

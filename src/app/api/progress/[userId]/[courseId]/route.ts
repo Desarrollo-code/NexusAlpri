@@ -7,9 +7,9 @@ import type { LessonCompletionRecord as AppLessonCompletionRecord } from '@/type
 export const dynamic = 'force-dynamic';
 
 // Get progress for a specific user in a course
-export async function GET(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ userId: string, courseId: string }> }) {
     const session = await getCurrentUser();
-    const { userId, courseId } = params;
+    const { userId, courseId } = await params;
 
     // A user can only see their own progress. Admins/instructors might have different authorization logic.
     if (!session || (session.id !== userId && session.role === 'STUDENT')) {

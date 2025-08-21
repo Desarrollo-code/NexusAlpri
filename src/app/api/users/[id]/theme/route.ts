@@ -5,9 +5,9 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getCurrentUser();
-    const id = params.id;
+    const { id } = await params;
 
     if (!session || session.id !== id) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });

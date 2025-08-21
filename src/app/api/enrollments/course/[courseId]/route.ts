@@ -6,14 +6,14 @@ import type { NextRequest } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 // GET enrollments for a specific course
-export async function GET(req: NextRequest, { params }: { params: { courseId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ courseId: string }> }) {
     const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
     try {
-        const { courseId } = params;
+        const { courseId } = await params;
         const enrollments = await prisma.enrollment.findMany({
             where: { courseId },
             include: {

@@ -6,13 +6,13 @@ import { getCurrentUser } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
 // GET a specific note for a lesson
-export async function GET(req: NextRequest, { params }: { params: { lessonId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ lessonId: string }> }) {
     const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
 
-    const { lessonId } = params;
+    const { lessonId } = await params;
 
     try {
         const note = await prisma.userNote.findUnique({

@@ -3,9 +3,9 @@ import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getCurrentUser();
-    const id = params.id;
+    const { id } = await params;
 
     if (!session || session.id !== id) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
