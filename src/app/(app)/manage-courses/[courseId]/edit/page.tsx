@@ -332,6 +332,11 @@ const ContentBlockItem = React.memo(({ moduleIndex, lessonIndex, blockIndex, dnd
 }) => {
     const { control, getValues, watch } = useFormContext<EditableCourse>();
     const block = watch(`modules.${moduleIndex}.lessons.${lessonIndex}.contentBlocks.${blockIndex}`);
+    
+    // Si el bloque está marcado para ser eliminado, no lo renderices.
+    if (!block || block._toBeDeleted) {
+        return null;
+    }
 
     return (
         <Draggable key={dndId} draggableId={dndId} index={blockIndex}>
