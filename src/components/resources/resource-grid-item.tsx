@@ -73,9 +73,9 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                 </div>
                 <div className="p-3">
                     <div className="flex justify-between items-start gap-2">
-                        <div className="flex items-center gap-2 flex-grow overflow-hidden">
-                          {React.createElement(getIconForType(resource.type), { className: "h-4 w-4 shrink-0" })}
-                          <p className="font-medium text-sm leading-tight truncate">{resource.title}</p>
+                        <div className="flex items-start gap-2 flex-grow overflow-hidden">
+                          {React.createElement(getIconForType(resource.type), { className: "h-4 w-4 shrink-0 mt-0.5" })}
+                          <p className="font-medium text-sm leading-tight break-words">{resource.title}</p>
                         </div>
                         {canModify && (
                             <DropdownMenu>
