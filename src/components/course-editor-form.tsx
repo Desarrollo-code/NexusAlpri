@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -67,21 +68,19 @@ interface LocalInstructor {
 }
 
 const generateUniqueId = (prefix: string) => {
-    // crypto.randomUUID() is the modern, preferred way to get a UUID.
     if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
         return `${prefix}-${window.crypto.randomUUID()}`;
     }
-    // Fallback for older environments.
     return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
 
 // === FORWARD-REF-WRAPPED COMPONENTS FOR DND ===
-const ModuleItem = React.forwardRef(({ module, moduleIndex, onDelete, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, ...rest }, ref) => {
+const ModuleItem = React.forwardRef(({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, ...rest }, ref) => {
     return (
         <div ref={ref} {...rest}>
-            <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${moduleIndex}`}>
-                <AccordionItem value={`item-${moduleIndex}`} className="border-0">
+            <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${module.id}`}>
+                <AccordionItem value={`item-${module.id}`} className="border-0">
                     <AccordionTrigger className="px-4 py-2 hover:no-underline">
                         <div className="flex items-center gap-2 w-full">
                             <GripVertical className="h-5 w-5 text-muted-foreground" />
@@ -89,7 +88,7 @@ const ModuleItem = React.forwardRef(({ module, moduleIndex, onDelete, onUpdate, 
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="p-4 border-t">
-                        <Droppable droppableId={`lessons-${module.id}`} type={`LESSONS-${moduleIndex}`}>
+                        <Droppable droppableId={module.id} type={`LESSONS`}>
                             {(provided) => (
                                 <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
                                     {module.lessons.map((lesson, lessonIndex) => (
@@ -116,7 +115,6 @@ const ModuleItem = React.forwardRef(({ module, moduleIndex, onDelete, onUpdate, 
                         </Droppable>
                         <div className="mt-4 flex gap-2">
                             <Button size="sm" variant="secondary" onClick={onAddLesson} disabled={isSaving}><PlusCircle className="mr-2 h-4 w-4" />Añadir Lección</Button>
-                            <Button size="sm" variant="destructive" onClick={onDelete} disabled={isSaving}><Trash2 className="mr-2 h-4 w-4" />Eliminar Módulo</Button>
                         </div>
                     </AccordionContent>
                 </AccordionItem>
@@ -135,7 +133,7 @@ const LessonItem = React.forwardRef(({ lesson, onDelete, onUpdate, onAddBlock, o
                 <Input value={lesson.title} onChange={e => onUpdate('title', e.target.value)} placeholder="Título de la lección" disabled={isSaving} />
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
             </div>
-             <Droppable droppableId={`blocks-${lesson.id}`} type={`BLOCKS-${lesson.id}`}>
+             <Droppable droppableId={lesson.id} type={`BLOCKS-${lesson.id}`}>
                 {(provided) => (
                     <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                         {lesson.contentBlocks.map((block, blockIndex) => (
@@ -332,23 +330,33 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     };
 
     const handleRemoveModule = (moduleIndex: number) => {
-        setCourse(prev => {
-            if (!prev) return null;
-            const newModules = prev.modules.filter((_, index) => index !== moduleIndex);
-            return { ...prev, modules: newModules };
-        });
-        setIsDirty(true);
+         setItemToDeleteDetails({
+            name: course?.modules[moduleIndex].title,
+            onDelete: () => {
+                setCourse(prev => {
+                    if (!prev) return null;
+                    const newModules = prev.modules.filter((_, index) => index !== moduleIndex);
+                    return { ...prev, modules: newModules };
+                });
+                setIsDirty(true);
+            }
+        })
     };
 
     const handleRemoveLesson = (moduleIndex: number, lessonIndex: number) => {
-        setCourse(prev => {
-            if (!prev) return null;
-            const newModules = [...prev.modules];
-            const newLessons = newModules[moduleIndex].lessons.filter((_, index) => index !== lessonIndex);
-            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
-            return { ...prev, modules: newModules };
-        });
-        setIsDirty(true);
+         setItemToDeleteDetails({
+            name: course?.modules[moduleIndex].lessons[lessonIndex].title,
+            onDelete: () => {
+                setCourse(prev => {
+                    if (!prev) return null;
+                    const newModules = [...prev.modules];
+                    const newLessons = newModules[moduleIndex].lessons.filter((_, index) => index !== lessonIndex);
+                    newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
+                    return { ...prev, modules: newModules };
+                });
+                setIsDirty(true);
+            }
+        })
     };
     
     const handleRemoveBlock = (moduleIndex: number, lessonIndex: number, blockIndex: number) => {
@@ -375,20 +383,35 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             const [removed] = reorderedModules.splice(source.index, 1);
             reorderedModules.splice(destination.index, 0, removed);
             updateCourseField('modules', reorderedModules);
-        } else if (type.startsWith('LESSONS')) {
-            const moduleIndex = parseInt(type.split('-')[1], 10);
-            const reorderedLessons = Array.from(course.modules[moduleIndex].lessons);
-            const [removed] = reorderedLessons.splice(source.index, 1);
-            reorderedLessons.splice(destination.index, 0, removed);
-            updateModuleField(moduleIndex, 'lessons', reorderedLessons);
-        } else if (type.startsWith('BLOCKS')) {
-            const [, moduleIndexStr, lessonIndexStr] = type.split('-');
-            const moduleIndex = parseInt(moduleIndexStr, 10);
-            const lessonIndex = parseInt(lessonIndexStr, 10);
-            const reorderedBlocks = Array.from(course.modules[moduleIndex].lessons[lessonIndex].contentBlocks);
-            const [removed] = reorderedBlocks.splice(source.index, 1);
-            reorderedBlocks.splice(destination.index, 0, removed);
-            updateLessonField(moduleIndex, lessonIndex, 'contentBlocks', reorderedBlocks);
+            return;
+        }
+
+        if (type === 'LESSONS') {
+            const sourceModuleId = source.droppableId;
+            const destModuleId = destination.droppableId;
+
+            const newModules = [...course.modules];
+            const sourceModuleIndex = newModules.findIndex(m => m.id === sourceModuleId);
+            const destModuleIndex = newModules.findIndex(m => m.id === destModuleId);
+            
+            if(sourceModuleIndex === -1 || destModuleIndex === -1) return;
+
+            // Moving within the same module
+            if (sourceModuleId === destModuleId) {
+                const lessons = Array.from(newModules[sourceModuleIndex].lessons);
+                const [removed] = lessons.splice(source.index, 1);
+                lessons.splice(destination.index, 0, removed);
+                newModules[sourceModuleIndex] = { ...newModules[sourceModuleIndex], lessons };
+            } else { // Moving between different modules
+                const sourceLessons = Array.from(newModules[sourceModuleIndex].lessons);
+                const destLessons = Array.from(newModules[destModuleIndex].lessons);
+                const [removed] = sourceLessons.splice(source.index, 1);
+                destLessons.splice(destination.index, 0, removed);
+                newModules[sourceModuleIndex] = { ...newModules[sourceModuleIndex], lessons: sourceLessons };
+                newModules[destModuleIndex] = { ...newModules[destModuleIndex], lessons: destLessons };
+            }
+            setCourse({ ...course, modules: newModules });
+            setIsDirty(true);
         }
     };
     
@@ -610,3 +633,5 @@ const BlockTypeSelector = ({ onSelect }) => (
         </DropdownMenuContent>
     </DropdownMenu>
 );
+
+    
