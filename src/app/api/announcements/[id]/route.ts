@@ -10,7 +10,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   try {
-    const { id } = params;
+    const id = params.id;
     const announcement = await prisma.announcement.findUnique({ where: { id } });
 
     if (!announcement) {
@@ -43,7 +43,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 
   try {
-    const { id } = params;
+    const id = params.id;
     const announcement = await prisma.announcement.findUnique({ where: { id } });
 
      if (!announcement) {
