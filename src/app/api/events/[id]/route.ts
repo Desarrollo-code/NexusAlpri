@@ -15,7 +15,7 @@ export async function PUT(
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const id = params.id;
+  const { id } = params;
 
   try {
     const existingEvent = await prisma.calendarEvent.findUnique({
@@ -88,7 +88,7 @@ export async function DELETE(
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const id = params.id;
+    const { id } = params;
 
     try {
         const existingEvent = await prisma.calendarEvent.findUnique({
