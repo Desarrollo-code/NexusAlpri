@@ -95,26 +95,27 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                             <Droppable droppableId={module.id} type="LESSONS">
                                 {(provided) => (
                                     <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
-                                        {module.lessons.map((lesson, lessonIndex) => (
-                                            <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
-                                                {(provided) => (
-                                                    <LessonItem
-                                                        lesson={lesson}
-                                                        onDelete={() => onLessonDelete(lessonIndex)}
-                                                        onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
-                                                        onAddBlock={(type) => onAddBlock(lessonIndex, type)}
-                                                        onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
-                                                        onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
-                                                        isSaving={isSaving}
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                        {...provided.dragHandleProps}
-                                                    />
-                                                )}
-                                            </Draggable>
-                                        ))}
-                                        {provided.placeholder}
-                                    </div>
+  {module.lessons.map((lesson, lessonIndex) => (
+    <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
+      {(provided) => (
+        <LessonItem
+          lesson={lesson}
+          onDelete={() => onLessonDelete(lessonIndex)}
+          onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
+          onAddBlock={(type) => onAddBlock(lessonIndex, type)}
+          onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
+          onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
+          isSaving={isSaving}
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+        />
+      )}
+    </Draggable>
+  ))}
+  {provided.placeholder}
+</div>
+
                                 )}
                             </Droppable>
                             <div className="mt-4 flex gap-2">
