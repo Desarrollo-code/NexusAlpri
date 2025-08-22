@@ -67,13 +67,9 @@ interface LocalInstructor {
     name: string;
 }
 
-const generateUniqueId = (prefix: string) => {
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
-        return `${prefix}-${window.crypto.randomUUID()}`;
-    }
-    // Fallback for older browsers or non-secure contexts
-    return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-}
+// Custom counter for unique temporary IDs
+let tempIdCounter = 0;
+const generateTempId = (prefix: string) => `${prefix}-${Date.now()}-${tempIdCounter++}`;
 
 
 const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: () => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
@@ -236,7 +232,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         const fetchCourseData = async () => {
             if (courseId === 'new') {
                 setCourse({
-                    id: generateUniqueId('course'),
+                    id: generateTempId('course'),
                     title: 'Nuevo Curso sin Título',
                     description: 'Añade una descripción aquí.',
                     instructor: user?.name || 'N/A',
@@ -315,7 +311,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     const handleAddModule = () => {
         const newModule: AppModule = {
-            id: generateUniqueId('module'),
+            id: generateTempId('module'),
             title: 'Nuevo Módulo',
             order: course?.modules.length || 0,
             lessons: [],
@@ -326,7 +322,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
     const handleAddLesson = (moduleIndex: number) => {
         const newLesson: AppLesson = {
-            id: generateUniqueId('lesson'),
+            id: generateTempId('lesson'),
             title: 'Nueva Lección',
             order: course?.modules[moduleIndex].lessons.length || 0,
             contentBlocks: [],
@@ -342,11 +338,11 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
      const handleAddBlock = (moduleIndex: number, lessonIndex: number, type: LessonType) => {
         const newBlock: ContentBlock = {
-            id: generateUniqueId('block'),
+            id: generateTempId('block'),
             type: type,
             content: '',
             order: course?.modules[moduleIndex].lessons[lessonIndex].contentBlocks.length || 0,
-            quiz: type === 'QUIZ' ? { id: generateUniqueId('quiz'), title: 'Nuevo Quiz', description: '', questions: [] } : undefined
+            quiz: type === 'QUIZ' ? { id: generateTempId('quiz'), title: 'Nuevo Quiz', description: '', questions: [] } : undefined
         };
          setCourse(prev => {
             if (!prev) return null;
