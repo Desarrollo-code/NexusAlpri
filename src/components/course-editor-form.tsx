@@ -335,18 +335,26 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     };
     
     const handleAddLesson = (moduleIndex: number) => {
+        if (!course) return;
         const newLesson: AppLesson = {
             id: generateUniqueId('lesson'),
             title: 'Nueva Lección',
-            order: course?.modules[moduleIndex].lessons.length || 0,
+            order: course.modules[moduleIndex].lessons.length,
             contentBlocks: [],
         };
-        setCourse(prev => {
-            if (!prev) return null;
-            const newModules = [...prev.modules];
-            newModules[moduleIndex].lessons.push(newLesson);
-            return { ...prev, modules: newModules };
+    
+        const newModules = course.modules.map((module, index) => {
+            if (index === moduleIndex) {
+                // Crea una copia inmutable del módulo y añade la nueva lección
+                return {
+                    ...module,
+                    lessons: [...module.lessons, newLesson]
+                };
+            }
+            return module;
         });
+    
+        setCourse({ ...course, modules: newModules });
         setIsDirty(true);
     };
     
@@ -415,27 +423,26 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const onDragEnd = (result: DropResult) => {
         const { source, destination, type } = result;
         if (!destination || !course) return;
-
+    
         if (type === 'MODULES') {
             const newModules = Array.from(course.modules);
             const [reorderedItem] = newModules.splice(source.index, 1);
             newModules.splice(destination.index, 0, reorderedItem);
             updateCourseField('modules', newModules);
         } else if (type === 'LESSONS') {
-             const sourceModuleId = source.droppableId;
+            const sourceModuleId = source.droppableId;
             const destModuleId = destination.droppableId;
-
-            const newModules = JSON.parse(JSON.stringify(course.modules));
-
-            const sourceModule = newModules.find(m => m.id === sourceModuleId);
-            const destModule = newModules.find(m => m.id === destModuleId);
-
+    
+            const tempModules = JSON.parse(JSON.stringify(course.modules));
+            const sourceModule = tempModules.find(m => m.id === sourceModuleId);
+            const destModule = tempModules.find(m => m.id === destModuleId);
+    
             if (!sourceModule || !destModule) return;
-
+    
             const [movedItem] = sourceModule.lessons.splice(source.index, 1);
             destModule.lessons.splice(destination.index, 0, movedItem);
-
-            setCourse(prev => prev ? { ...prev, modules: newModules } : null);
+    
+            setCourse(prev => ({ ...prev, modules: tempModules }));
             setIsDirty(true);
         }
     };
