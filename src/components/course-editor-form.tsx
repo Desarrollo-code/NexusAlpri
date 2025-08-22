@@ -71,8 +71,8 @@ const generateUniqueId = (prefix: string) => {
     if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
         return `${prefix}-${window.crypto.randomUUID()}`;
     }
-    // Fallback for older browsers or non-secure contexts
-    return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    // Fallback robusto para entornos sin crypto.randomUUID
+    return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 }
 
 
@@ -403,54 +403,30 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
     // --- Drag and Drop ---
     const onDragEnd = (result: DropResult) => {
-        console.log('--- Drag End Information ---');
-        console.log(`[File]: src/components/course-editor-form.tsx, Line: ~280 (onDragEnd function)`);
-        console.log(`[Event]: DragEnd, Type: ${result.type}`);
-        console.log(`[Source]: droppableId=${result.source.droppableId}, index=${result.source.index}`);
-        
         const { source, destination, type } = result;
+
         if (!destination || !course) {
-            console.warn('[Drag Cancelled]: No destination or course data.');
             return;
         }
 
-        console.log(`[Destination]: droppableId=${destination.droppableId}, index=${destination.index}`);
-        console.log('[State Before]:', JSON.parse(JSON.stringify(course.modules)));
-
-
-        let newModules = [...course.modules];
+        let newModules = JSON.parse(JSON.stringify(course.modules));
 
         if (type === 'MODULES') {
             const [reorderedItem] = newModules.splice(source.index, 1);
             newModules.splice(destination.index, 0, reorderedItem);
+
         } else if (type === 'LESSONS') {
             const sourceModuleIndex = newModules.findIndex(m => m.id === source.droppableId);
             const destModuleIndex = newModules.findIndex(m => m.id === destination.droppableId);
             
-            if (sourceModuleIndex === -1 || destModuleIndex === -1) {
-                console.error("[Drag Error]: Source or destination module not found.");
-                return;
-            }
+            if (sourceModuleIndex === -1 || destModuleIndex === -1) return;
 
-            const sourceModule = { ...newModules[sourceModuleIndex] };
-            const sourceLessons = [...sourceModule.lessons];
-            const [movedItem] = sourceLessons.splice(source.index, 1);
+            const sourceModule = newModules[sourceModuleIndex];
+            const destModule = newModules[destModuleIndex];
+            const [movedItem] = sourceModule.lessons.splice(source.index, 1);
+            
+            destModule.lessons.splice(destination.index, 0, movedItem);
 
-            if (source.droppableId === destination.droppableId) {
-                sourceLessons.splice(destination.index, 0, movedItem);
-                sourceModule.lessons = sourceLessons;
-                newModules[sourceModuleIndex] = sourceModule;
-            } else {
-                const destModule = { ...newModules[destModuleIndex] };
-                const destLessons = [...destModule.lessons];
-                destLessons.splice(destination.index, 0, movedItem);
-
-                sourceModule.lessons = sourceLessons;
-                destModule.lessons = destLessons;
-
-                newModules[sourceModuleIndex] = sourceModule;
-                newModules[destModuleIndex] = destModule;
-            }
         } else if (type === 'BLOCKS') {
             let sourceModuleIndex = -1, sourceLessonIndex = -1;
             for(let i=0; i < newModules.length; i++) {
@@ -461,21 +437,14 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     break;
                 }
             }
-            if(sourceModuleIndex === -1 || sourceLessonIndex === -1) {
-                 console.error("[Drag Error]: Source lesson for block not found.");
-                 return;
-            }
+            if(sourceModuleIndex === -1 || sourceLessonIndex === -1) return;
             
-            const items = Array.from(newModules[sourceModuleIndex].lessons[sourceLessonIndex].contentBlocks);
+            const items = newModules[sourceModuleIndex].lessons[sourceLessonIndex].contentBlocks;
             const [reorderedItem] = items.splice(source.index, 1);
             items.splice(destination.index, 0, reorderedItem);
-            
-            newModules[sourceModuleIndex].lessons[sourceLessonIndex].contentBlocks = items;
         }
 
         updateCourseField('modules', newModules);
-        console.log('[State After]:', JSON.parse(JSON.stringify(newModules)));
-        console.log('--- End Drag Info ---');
     };
     
     const handleCropComplete = (croppedFileUrl: string) => {
@@ -488,6 +457,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         if (!course) return;
         setIsSaving(true);
         
+        // Re-assign order based on current array index before saving
         const payload = { ...course };
         payload.modules.forEach((mod, mIdx) => {
             mod.order = mIdx;
@@ -517,7 +487,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             if (courseId === 'new') {
                 router.push(`/manage-courses/${savedCourse.id}/edit`);
             } else {
-                setCourse(savedCourse);
+                setCourse(savedCourse); // Sync state with the saved data from DB
                 setPageTitle(`Editando: ${savedCourse.title}`);
                 setIsDirty(false);
             }
@@ -721,4 +691,5 @@ const BlockTypeSelector = ({ onSelect }) => (
 
 
     
+
 
