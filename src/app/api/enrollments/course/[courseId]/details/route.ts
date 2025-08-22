@@ -5,14 +5,14 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: { courseId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ courseId: string }> }) {
     const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
     try {
-        const { courseId } = params;
+        const { courseId } = await params;
 
         const course = await prisma.course.findUnique({
             where: { id: courseId },
@@ -20,11 +20,6 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
                 _count: {
                     select: { 
                         enrollments: true,
-                        modules: {
-                            include: {
-                                lessons: true
-                            }
-                        }
                     },
                 },
                 enrollments: {
@@ -40,12 +35,15 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
             return NextResponse.json({ message: "Curso no encontrado" }, { status: 404 });
         }
         
-        // Calculate total lessons for the course
-        const modulesWithLessons = await prisma.module.findMany({
-            where: { courseId: courseId },
-            include: { _count: { select: { lessons: true } } }
+        // Calculate total lessons for the course in a separate query
+        const lessonsCountResult = await prisma.lesson.count({
+            where: {
+                module: {
+                    courseId: courseId,
+                },
+            },
         });
-        const totalLessons = modulesWithLessons.reduce((sum, module) => sum + module._count.lessons, 0);
+        const totalLessons = lessonsCountResult;
 
         // Calculate average progress
         const progressRecords = course.enrollments.map(e => e.progress?.progressPercentage).filter(p => p !== null && p !== undefined) as number[];
