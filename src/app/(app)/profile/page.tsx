@@ -117,7 +117,7 @@ export default function ProfilePage() {
     }
   };
   
-  const avatarSrc = avatarPreview || user?.avatar || settings?.logoUrl;
+  const avatarSrc = avatarPreview || user?.avatar || null;
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
