@@ -56,30 +56,34 @@ const FormCard = ({ form, onAction }: { form: AppForm, onAction: (action: 'edit'
     
     return (
         <Card className="flex flex-col h-full group card-border-animated">
-            <CardHeader>
-                <div className="flex justify-between items-start gap-2">
-                    <CardTitle className="text-base font-headline leading-tight mb-1 line-clamp-2">{form.title}</CardTitle>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                           <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4"/></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => onAction('edit', form)}><FilePen className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onAction('results', form)}><BarChart className="mr-2 h-4 w-4"/>Resultados</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onAction('share', form)}><Share2 className="mr-2 h-4 w-4"/>Compartir</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onAction('delete', form)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-                <CardDescription className="text-xs line-clamp-2 h-8">{form.description || 'Sin descripción.'}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-grow"></CardContent>
+             <Link href={`/forms/${form.id}/edit`} className="flex flex-col flex-grow">
+                <CardHeader>
+                    <div className="flex justify-between items-start gap-2">
+                        <CardTitle className="text-base font-headline leading-tight mb-1 line-clamp-2">{form.title}</CardTitle>
+                    </div>
+                    <CardDescription className="text-xs line-clamp-2 h-8">{form.description || 'Sin descripción.'}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-grow"></CardContent>
+            </Link>
             <CardFooter className="flex justify-between items-center text-xs text-muted-foreground border-t pt-3">
                 <div className="flex items-center gap-1.5">
                     <div className={cn("w-2 h-2 rounded-full", statusDetails.color)} />
                     <span>{statusDetails.label}</span>
                 </div>
-                <span>{form._count.responses} respuesta{form._count.responses !== 1 && 's'}</span>
+                 <div className="flex items-center gap-4">
+                    <span>{form._count.responses} respuesta{form._count.responses !== 1 && 's'}</span>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                           <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 -mr-2"><MoreVertical className="h-4 w-4"/></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onAction('edit', form)}><FilePen className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onAction('results', form)}><BarChart className="mr-2 h-4 w-4"/>Resultados</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onAction('share', form)}><Share2 className="mr-2 h-4 w-4"/>Compartir</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onAction('delete', form)} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                 </div>
             </CardFooter>
         </Card>
     );
@@ -106,7 +110,7 @@ const FormCreationModal = ({ open, onOpenChange, onFormCreated }: { open: boolea
             });
             if (!res.ok) throw new Error((await res.json()).message || 'No se pudo crear el formulario.');
             const newForm = await res.json();
-            toast({ title: '¡Éxito!', description: 'El formulario ha sido creado.' });
+            toast({ title: '¡Éxito!', description: 'El formulario ha sido creado. Ahora puedes añadirle preguntas.' });
             onFormCreated(newForm);
             setTitle('');
             setDescription('');
@@ -137,7 +141,7 @@ const FormCreationModal = ({ open, onOpenChange, onFormCreated }: { open: boolea
                         <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancelar</Button>
                         <Button type="submit" disabled={isSubmitting}>
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                            Crear Formulario
+                            Crear y Continuar
                         </Button>
                     </DialogFooter>
                 </form>
@@ -203,12 +207,14 @@ export default function FormsPage() {
     
     const handleFormCreated = (newForm: AppForm) => {
         setShowCreateModal(false);
-        fetchForms();
-        // Maybe navigate to edit page in the future
-        // router.push(`/forms/${newForm.id}/edit`);
+        router.push(`/forms/${newForm.id}/edit`);
     };
 
     const handleFormAction = (action: 'edit' | 'delete' | 'share' | 'results', form: AppForm) => {
+       if (action === 'edit') {
+           router.push(`/forms/${form.id}/edit`);
+           return;
+       }
        toast({ title: 'Próximamente', description: `La acción "${action}" para el formulario "${form.title}" estará disponible pronto.` });
     };
 
