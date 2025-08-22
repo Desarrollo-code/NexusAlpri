@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { useTitle } from '@/contexts/title-context';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, PlusCircle, Save, Loader2, FilePen, GripVertical, Trash2 } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Save, Loader2, FilePen, GripVertical, Trash2, List, CaseSensitive, CheckSquare, ListChecks, Pilcrow, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,30 +14,88 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { Form, FormField, FormFieldType } from '@prisma/client';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Switch } from '../ui/switch';
+import { X } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../ui/dropdown-menu';
 
 type FullForm = Form & { fields: FormField[] };
 let tempIdCounter = 0;
 const generateTempId = (prefix: string) => `${prefix}-${Date.now()}-${tempIdCounter++}`;
 
 const FieldEditor = ({ field, onUpdate, onDelete, isSaving, provided }: { field: FormField; onUpdate: (id: string, updates: Partial<FormField>) => void; onDelete: (id: string) => void; isSaving: boolean; provided: any }) => {
+    
+    const handleAddOption = () => {
+        const newOptions = [...(field.options as string[] || []), `Opción ${ (field.options as string[]).length + 1}`];
+        onUpdate(field.id, { options: newOptions });
+    };
+
+    const handleOptionChange = (index: number, value: string) => {
+        const newOptions = [...(field.options as string[])];
+        newOptions[index] = value;
+        onUpdate(field.id, { options: newOptions });
+    }
+    
+    const handleRemoveOption = (index: number) => {
+        const newOptions = (field.options as string[]).filter((_, i) => i !== index);
+        onUpdate(field.id, { options: newOptions });
+    }
+
+    const renderOptionsEditor = () => {
+        if (field.type !== 'SINGLE_CHOICE' && field.type !== 'MULTIPLE_CHOICE') return null;
+        return (
+            <div className="space-y-2 mt-2 pl-6">
+                {(field.options as string[]).map((option, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                        <Input value={option} onChange={e => handleOptionChange(index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemoveOption(index)} disabled={isSaving || (field.options as string[]).length <= 1}><X className="h-4 w-4"/></Button>
+                    </div>
+                ))}
+                <Button variant="link" size="sm" onClick={handleAddOption} disabled={isSaving}>+ Añadir opción</Button>
+            </div>
+        )
+    };
+
     return (
         <div ref={provided.innerRef} {...provided.draggableProps} className="flex items-start gap-2 bg-muted/50 p-4 rounded-lg border">
             <div {...provided.dragHandleProps} className="pt-2 cursor-grab">
                 <GripVertical className="h-5 w-5 text-muted-foreground" />
             </div>
             <div className="flex-grow space-y-2">
-                <Input 
-                    placeholder="Escribe tu pregunta" 
-                    value={field.label}
-                    onChange={(e) => onUpdate(field.id, { label: e.target.value })}
-                    className="text-base"
+                <div className="flex items-center gap-2">
+                     <Input 
+                        placeholder="Escribe tu pregunta" 
+                        value={field.label}
+                        onChange={(e) => onUpdate(field.id, { label: e.target.value })}
+                        className="text-base flex-grow"
+                        disabled={isSaving}
+                    />
+                    <Select value={field.type} onValueChange={(v) => onUpdate(field.id, { type: v as FormFieldType})}>
+                        <SelectTrigger className="w-[180px]"><SelectValue/></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="SHORT_TEXT">Respuesta Corta</SelectItem>
+                            <SelectItem value="LONG_TEXT">Párrafo</SelectItem>
+                            <SelectItem value="SINGLE_CHOICE">Opción Múltiple</SelectItem>
+                            <SelectItem value="MULTIPLE_CHOICE">Casillas de Verificación</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                 <Input 
+                    placeholder="Texto de ayuda o placeholder (opcional)" 
+                    value={field.placeholder || ''}
+                    onChange={(e) => onUpdate(field.id, { placeholder: e.target.value })}
+                    className="text-sm"
                     disabled={isSaving}
                 />
-                {field.type === 'SHORT_TEXT' && (
-                    <Input placeholder="Texto de respuesta corta" disabled />
-                )}
+                {renderOptionsEditor()}
+                <div className="flex items-center justify-end gap-4 pt-2">
+                    <div className="flex items-center gap-2">
+                       <Label htmlFor={`required-${field.id}`} className="text-sm">Obligatorio</Label>
+                       <Switch id={`required-${field.id}`} checked={field.required} onCheckedChange={(c) => onUpdate(field.id, { required: c })} />
+                    </div>
+                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(field.id)} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                </div>
             </div>
-             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(field.id)} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
         </div>
     );
 };
@@ -56,7 +114,6 @@ export function FormEditor({ formId }: { formId: string }) {
     useEffect(() => {
         const fetchForm = async () => {
             if (formId === 'new') {
-                // This case should ideally be handled by creating a draft first and then redirecting
                 toast({ title: "Error", description: "Formulario no válido.", variant: "destructive"});
                 router.push('/forms');
                 return;
@@ -78,7 +135,7 @@ export function FormEditor({ formId }: { formId: string }) {
         fetchForm();
     }, [formId, router, toast, setPageTitle]);
     
-    const updateFormField = (field: keyof FullForm, value: any) => {
+    const updateFormFieldData = (field: keyof FullForm, value: any) => {
         setForm(prev => prev ? { ...prev, [field]: value } : null);
         setIsDirty(true);
     }
@@ -100,7 +157,7 @@ export function FormEditor({ formId }: { formId: string }) {
             type: type,
             required: false,
             placeholder: null,
-            options: [],
+            options: type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' ? ['Opción 1'] : [],
             order: form?.fields.length || 0,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -123,7 +180,7 @@ export function FormEditor({ formId }: { formId: string }) {
         const [reorderedItem] = items.splice(result.source.index, 1);
         items.splice(result.destination.index, 0, reorderedItem);
         
-        updateFormField('fields', items);
+        updateFormFieldData('fields', items);
     };
     
     const handleSaveChanges = async () => {
@@ -152,7 +209,6 @@ export function FormEditor({ formId }: { formId: string }) {
             setIsSaving(false);
         }
     };
-
 
     if (isLoading) {
         return <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>;
@@ -183,7 +239,7 @@ export function FormEditor({ formId }: { formId: string }) {
                                 <Input 
                                     id="form-title"
                                     value={form.title}
-                                    onChange={(e) => updateFormField('title', e.target.value)}
+                                    onChange={(e) => updateFormFieldData('title', e.target.value)}
                                     className="text-2xl font-bold h-auto p-2 border-0 shadow-none focus-visible:ring-1"
                                     placeholder="Título del Formulario"
                                 />
@@ -193,7 +249,7 @@ export function FormEditor({ formId }: { formId: string }) {
                                 <Textarea 
                                     id="form-description"
                                     value={form.description || ''}
-                                    onChange={(e) => updateFormField('description', e.target.value)}
+                                    onChange={(e) => updateFormFieldData('description', e.target.value)}
                                     className="text-base border-0 shadow-none focus-visible:ring-1"
                                     placeholder="Añade una descripción para tu formulario (opcional)"
                                     rows={2}
@@ -224,6 +280,12 @@ export function FormEditor({ formId }: { formId: string }) {
                             )}
                         </Droppable>
                     </DragDropContext>
+                     {form.fields.length === 0 && (
+                        <div className="text-center border-2 border-dashed rounded-lg p-12">
+                            <h3 className="text-lg font-semibold">Formulario Vacío</h3>
+                            <p className="text-muted-foreground mt-1">Añade tu primera pregunta desde la caja de herramientas.</p>
+                        </div>
+                     )}
                 </div>
                 <aside className="lg:col-span-1 lg:sticky top-24">
                      <Card>
@@ -231,10 +293,17 @@ export function FormEditor({ formId }: { formId: string }) {
                             <CardTitle className="flex items-center gap-2"><FilePen className="h-5 w-5 text-primary"/> Caja de Herramientas</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
-                             <Button className="w-full justify-start" variant="ghost" onClick={() => addField('SHORT_TEXT')}>
-                                <PlusCircle className="mr-2 h-4 w-4"/> Respuesta Corta
-                            </Button>
-                             <p className="text-xs text-muted-foreground text-center pt-2">Más tipos de pregunta próximamente...</p>
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button className="w-full justify-start" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Añadir Pregunta</Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem onSelect={() => addField('SHORT_TEXT')}><CaseSensitive className="mr-2 h-4 w-4"/>Respuesta Corta</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => addField('LONG_TEXT')}><Pilcrow className="mr-2 h-4 w-4"/>Párrafo</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => addField('SINGLE_CHOICE')}><ListChecks className="mr-2 h-4 w-4"/>Opción Múltiple</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => addField('MULTIPLE_CHOICE')}><CheckSquare className="mr-2 h-4 w-4"/>Casillas de Verificación</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </CardContent>
                      </Card>
                 </aside>
