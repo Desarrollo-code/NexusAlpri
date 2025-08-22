@@ -1,5 +1,5 @@
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form, FormStatus } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -282,3 +282,11 @@ export type UserAchievement = Prisma.UserAchievementGetPayload<{
         achievement: true;
     }
 }>;
+
+// --- FORMS ---
+export type AppForm = Form & {
+    _count: {
+        responses: number;
+    };
+};
+export { type FormStatus };

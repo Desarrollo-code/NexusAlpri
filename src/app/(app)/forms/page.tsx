@@ -1,48 +1,294 @@
 // src/app/(app)/forms/page.tsx
 'use client';
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { FileText, PlusCircle } from 'lucide-react';
-import { useTitle } from '@/contexts/title-context';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { PlusCircle, FileText, Share2, Users, FilePen, Trash2, Eye, BarChart, MoreVertical, Loader2, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import type { AppForm, FormStatus } from '@/types';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from '@/components/ui/skeleton';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { useTitle } from '@/contexts/title-context';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+
+const PAGE_SIZE = 9;
+
+const getStatusDetails = (status: FormStatus) => {
+    switch (status) {
+        case 'DRAFT': return { label: 'Borrador', color: 'bg-yellow-500' };
+        case 'PUBLISHED': return { label: 'Publicado', color: 'bg-green-500' };
+        case 'CLOSED': return { label: 'Cerrado', color: 'bg-red-500' };
+        default: return { label: 'Desconocido', color: 'bg-gray-500' };
+    }
+};
+
+const FormCard = ({ form, onAction }: { form: AppForm, onAction: (action: 'edit' | 'delete' | 'share' | 'results', form: AppForm) => void }) => {
+    const statusDetails = getStatusDetails(form.status);
+    
+    return (
+        <Card className="flex flex-col h-full group card-border-animated">
+            <CardHeader>
+                <div className="flex justify-between items-start gap-2">
+                    <CardTitle className="text-base font-headline leading-tight mb-1 line-clamp-2">{form.title}</CardTitle>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                           <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4"/></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onAction('edit', form)}><FilePen className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onAction('results', form)}><BarChart className="mr-2 h-4 w-4"/>Resultados</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onAction('share', form)}><Share2 className="mr-2 h-4 w-4"/>Compartir</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onAction('delete', form)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+                <CardDescription className="text-xs line-clamp-2 h-8">{form.description || 'Sin descripción.'}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-grow"></CardContent>
+            <CardFooter className="flex justify-between items-center text-xs text-muted-foreground border-t pt-3">
+                <div className="flex items-center gap-1.5">
+                    <div className={cn("w-2 h-2 rounded-full", statusDetails.color)} />
+                    <span>{statusDetails.label}</span>
+                </div>
+                <span>{form._count.responses} respuesta{form._count.responses !== 1 && 's'}</span>
+            </CardFooter>
+        </Card>
+    );
+};
+
+const FormCreationModal = ({ open, onOpenChange, onFormCreated }: { open: boolean, onOpenChange: (open: boolean) => void, onFormCreated: (newForm: AppForm) => void }) => {
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { toast } = useToast();
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!title.trim()) {
+            toast({ title: 'Error', description: 'El título es obligatorio.', variant: 'destructive' });
+            return;
+        }
+        setIsSubmitting(true);
+        try {
+            const res = await fetch('/api/forms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description }),
+            });
+            if (!res.ok) throw new Error((await res.json()).message || 'No se pudo crear el formulario.');
+            const newForm = await res.json();
+            toast({ title: '¡Éxito!', description: 'El formulario ha sido creado.' });
+            onFormCreated(newForm);
+            setTitle('');
+            setDescription('');
+        } catch (err) {
+            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Error desconocido', variant: 'destructive' });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Crear Nuevo Formulario</DialogTitle>
+                    <DialogDescription>Comienza con un título y una descripción. Podrás añadir las preguntas después.</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4 py-4">
+                    <div className="space-y-1">
+                        <Label htmlFor="form-title">Título del Formulario</Label>
+                        <Input id="form-title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isSubmitting} />
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor="form-description">Descripción (Opcional)</Label>
+                        <Textarea id="form-description" value={description} onChange={(e) => setDescription(e.target.value)} disabled={isSubmitting} />
+                    </div>
+                     <DialogFooter>
+                        <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancelar</Button>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            Crear Formulario
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+};
 
 export default function FormsPage() {
-    const { setPageTitle } = useTitle();
     const { user } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const { setPageTitle } = useTitle();
+    const { toast } = useToast();
 
-    React.useEffect(() => {
+    const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'my-forms');
+    const [forms, setForms] = useState<AppForm[]>([]);
+    const [totalForms, setTotalForms] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [formToAction, setFormToAction] = useState<AppForm | null>(null);
+
+    const currentPage = Number(searchParams.get('page')) || 1;
+    const totalPages = Math.ceil(totalForms / PAGE_SIZE);
+
+    useEffect(() => {
         setPageTitle('Formularios');
     }, [setPageTitle]);
-    
-    // Redirect if user is not an admin or instructor
-    React.useEffect(() => {
-        if (user && user.role !== 'ADMINISTRATOR' && user.role !== 'INSTRUCTOR') {
-            router.push('/dashboard');
+
+    const fetchForms = useCallback(async () => {
+        if (!user) return;
+        setIsLoading(true);
+        setError(null);
+        try {
+            const params = new URLSearchParams({ tab: activeTab, page: String(currentPage), pageSize: String(PAGE_SIZE) });
+            const res = await fetch(`/api/forms?${params.toString()}`);
+            if (!res.ok) throw new Error((await res.json()).message || 'No se pudieron cargar los formularios.');
+            const data = await res.json();
+            setForms(data.forms);
+            setTotalForms(data.totalForms);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error desconocido');
+        } finally {
+            setIsLoading(false);
         }
-    }, [user, router]);
+    }, [user, activeTab, currentPage]);
+
+    useEffect(() => {
+        fetchForms();
+    }, [fetchForms]);
+    
+    const handleTabChange = (tab: string) => {
+        setActiveTab(tab);
+        router.push(`${pathname}?tab=${tab}&page=1`);
+    }
+
+    const handlePageChange = (page: number) => {
+        router.push(`${pathname}?tab=${activeTab}&page=${page}`);
+    };
+    
+    const handleFormCreated = (newForm: AppForm) => {
+        setShowCreateModal(false);
+        fetchForms();
+        // Maybe navigate to edit page in the future
+        // router.push(`/forms/${newForm.id}/edit`);
+    };
+
+    const handleFormAction = (action: 'edit' | 'delete' | 'share' | 'results', form: AppForm) => {
+       toast({ title: 'Próximamente', description: `La acción "${action}" para el formulario "${form.title}" estará disponible pronto.` });
+    };
+
+    const FormList = ({ formsList }: { formsList: AppForm[] }) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {formsList.map(form => <FormCard key={form.id} form={form} onAction={handleFormAction} />)}
+        </div>
+    );
+    
+    const SkeletonGrid = () => (
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+                <Card key={i} className="flex flex-col h-full"><CardHeader><Skeleton className="h-5 w-3/4"/><Skeleton className="h-4 w-1/2 mt-2"/></CardHeader><CardContent className="flex-grow"></CardContent><CardFooter className="border-t pt-3 flex justify-between"><Skeleton className="h-5 w-16"/><Skeleton className="h-5 w-24"/></CardFooter></Card>
+            ))}
+        </div>
+    );
+
+    const EmptyState = ({ tab }: { tab: string }) => {
+      let message = "No hay formularios que mostrar en esta sección.";
+      if (tab === 'my-forms') message = "Aún no has creado ningún formulario. ¡Crea el primero!";
+      if (tab === 'shared-with-me') message = "Nadie ha compartido formularios contigo todavía.";
+
+      return (
+        <div className="text-center border-2 border-dashed rounded-lg p-12">
+            <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Sección Vacía</h3>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">{message}</p>
+        </div>
+      )
+    };
+
+    if (user?.role === 'STUDENT') {
+        return (
+             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
+                <ShieldAlert className="h-12 w-12 text-destructive mb-4" />
+                <h2 className="text-2xl font-semibold mb-2">Acceso Denegado</h2>
+                <p className="text-muted-foreground max-w-md">
+                    Actualmente, esta sección solo está disponible para administradores e instructores.
+                </p>
+                <Button asChild className="mt-6"><Link href="/dashboard">Volver al Panel Principal</Link></Button>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">
-            <div>
-                <p className="text-muted-foreground">
-                    Crea, gestiona y analiza encuestas, evaluaciones y formularios personalizados.
-                </p>
-            </div>
-            
-            <div className="text-center border-2 border-dashed rounded-lg p-12">
-                <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Bienvenido a Formularios</h3>
-                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                    Aquí podrás ver todos tus formularios. ¡Crea el primero para empezar a recolectar información!
-                </p>
-                <Button>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <p className="text-muted-foreground">
+                        Crea, gestiona y analiza encuestas, evaluaciones y formularios personalizados.
+                    </p>
+                </div>
+                 <Button onClick={() => setShowCreateModal(true)}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Crear Nuevo Formulario
                 </Button>
             </div>
+            
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 md:w-auto md:grid-cols-none">
+                    <TabsTrigger value="my-forms">Mis Formularios</TabsTrigger>
+                    <TabsTrigger value="shared-with-me">Compartidos Conmigo</TabsTrigger>
+                    {user?.role === 'ADMINISTRATOR' && <TabsTrigger value="all">Todos</TabsTrigger>}
+                </TabsList>
+                <div className="mt-6">
+                    {isLoading ? <SkeletonGrid /> 
+                     : error ? <div className="text-destructive text-center py-10">{error}</div>
+                     : forms.length === 0 ? <EmptyState tab={activeTab} /> 
+                     : <FormList formsList={forms} />}
+                </div>
+            </Tabs>
+            
+            {totalPages > 1 && !isLoading && (
+                <Pagination>
+                    <PaginationContent>
+                        <PaginationItem><PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined} /></PaginationItem>
+                        {[...Array(totalPages)].map((_, i) => <PaginationItem key={i}><PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>{i + 1}</PaginationLink></PaginationItem>)}
+                        <PaginationItem><PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined} /></PaginationItem>
+                    </PaginationContent>
+                </Pagination>
+            )}
+
+            <FormCreationModal open={showCreateModal} onOpenChange={setShowCreateModal} onFormCreated={handleFormCreated} />
         </div>
     );
 }
