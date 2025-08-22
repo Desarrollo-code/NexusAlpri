@@ -127,6 +127,8 @@ export default function ProfilePage() {
       default: return role;
     }
   };
+  
+  const avatarSrc = avatarPreview || settings?.logoUrl || `https://placehold.co/128x128.png?text=${getInitials(user?.name)}`;
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -309,7 +311,7 @@ export default function ProfilePage() {
             <ProfileCardBackground />
             <div className="card__avatar">
                  <Avatar className="avatar">
-                  <AvatarImage src={avatarPreview || `https://placehold.co/100x100.png?text=${getInitials(user.name)}`} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
+                  <AvatarImage src={avatarSrc} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
                   <AvatarFallback className="text-4xl">{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
                 <Button 
@@ -442,7 +444,7 @@ export default function ProfilePage() {
                     <ProfileCardBackground />
                     <div className="card__avatar">
                         <Avatar className="avatar">
-                            <AvatarImage src={avatarPreview || `https://placehold.co/128x128.png?text=${getInitials(user.name)}`} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
+                            <AvatarImage src={avatarSrc} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
                             <AvatarFallback className="text-4xl">{getInitials(user.name)}</AvatarFallback>
                         </Avatar>
                         <Button 
