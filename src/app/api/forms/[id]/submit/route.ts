@@ -5,14 +5,14 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     // Allow unauthenticated users if form is public in the future, for now require login
     if (!session) {
         return NextResponse.json({ message: 'Debes iniciar sesión para responder' }, { status: 401 });
     }
     
-    const { id: formId } = await params;
+    const { id: formId } = params;
 
     try {
         const body = await req.json();

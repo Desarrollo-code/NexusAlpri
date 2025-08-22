@@ -215,6 +215,10 @@ export default function FormsPage() {
            router.push(`/forms/${form.id}/edit`);
            return;
        }
+       if (action === 'results') {
+           router.push(`/forms/${form.id}/results`);
+           return;
+       }
        toast({ title: 'Próximamente', description: `La acción "${action}" para el formulario "${form.title}" estará disponible pronto.` });
     };
 

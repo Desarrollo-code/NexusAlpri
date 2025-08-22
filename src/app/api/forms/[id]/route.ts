@@ -24,13 +24,13 @@ async function checkPermissions(formId: string, session: any) {
 }
 
 // GET a specific form by ID with its fields
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
     
-    const { id: formId } = await params;
+    const { id: formId } = params;
 
     try {
         const form = await prisma.form.findUnique({
@@ -64,13 +64,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 
 // PUT (update) a form, including its fields
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
     
-    const { id: formId } = await params;
+    const { id: formId } = params;
     const authResult = await checkPermissions(formId, session);
     if (!authResult.authorized) return authResult.error;
 
@@ -136,13 +136,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
 
 // DELETE a form
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
 
-    const { id: formId } = await params;
+    const { id: formId } = params;
     const authResult = await checkPermissions(formId, session);
     if (!authResult.authorized) return authResult.error;
 
