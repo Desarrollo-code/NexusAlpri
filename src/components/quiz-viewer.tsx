@@ -89,7 +89,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
             const response = await fetch(`/api/progress/${user.id}/${courseId}/quiz`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lessonId, score }),
+                body: JSON.stringify({ lessonId, score, answers: selectedAnswers }),
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || 'Error al guardar el resultado');
@@ -181,7 +181,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
                                     </div>
                                     <div className="flex-grow">
                                         <p>{option.text}</p>
-                                        {option.feedback && (isCorrectAnswer || isSelectedAnswer) && (
+                                        {option.feedback && isSelectedAnswer && (
                                             <p className={cn(
                                                 "text-xs mt-1 p-2 rounded-md",
                                                 isCorrectAnswer ? "bg-green-200/50 dark:bg-green-800/40" : "bg-red-200/50 dark:bg-red-800/40"

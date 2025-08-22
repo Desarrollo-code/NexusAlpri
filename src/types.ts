@@ -68,7 +68,7 @@ export interface AnswerOption {
     id: string;
     text: string;
     isCorrect: boolean;
-    feedback?: string;
+    feedback?: string | null;
 }
 
 export interface Question {

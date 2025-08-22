@@ -306,11 +306,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
     const updateLessonField = (moduleIndex: number, lessonIndex: number, field: keyof AppLesson, value: any) => {
         handleStateUpdate(prev => {
-            const newModules = [...prev.modules];
-            const newLessons = [...newModules[moduleIndex].lessons];
-            newLessons[lessonIndex] = { ...newLessons[lessonIndex], [field]: value };
-            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
-            return { ...prev, modules: newModules };
+            const newCourse = JSON.parse(JSON.stringify(prev));
+            newCourse.modules[moduleIndex].lessons[lessonIndex][field] = value;
+            return newCourse;
         });
     };
     
@@ -696,9 +694,9 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
         setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
     };
 
-    const handleOptionChange = (qIndex: number, oIndex: number, text: string) => {
+    const handleOptionChange = (qIndex: number, oIndex: number, field: 'text' | 'feedback', value: string) => {
         const newQuestions = [...localQuiz.questions];
-        newQuestions[qIndex].options[oIndex].text = text;
+        newQuestions[qIndex].options[oIndex][field] = value;
         setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
     };
     
@@ -779,14 +777,17 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0">
                                     <RadioGroup value={q.options.find(opt => opt.isCorrect)?.id} onValueChange={(val) => handleSetCorrect(qIndex, val)}>
-                                        <div className="space-y-2">
+                                        <div className="space-y-3">
                                             {q.options.map((opt, oIndex) => (
-                                                <div key={opt.id} className="flex items-center gap-2">
-                                                    <RadioGroupItem value={opt.id} id={`q${qIndex}-o${oIndex}`} />
-                                                    <Label htmlFor={`q${qIndex}-o${oIndex}`} className="flex-grow">
-                                                        <Input value={opt.text} onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)} />
-                                                    </Label>
-                                                     <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70" onClick={() => deleteOption(qIndex, oIndex)}><XCircle className="h-4 w-4"/></Button>
+                                                <div key={opt.id} className="p-3 bg-card border rounded-md space-y-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <RadioGroupItem value={opt.id} id={`q${qIndex}-o${oIndex}`} />
+                                                        <Label htmlFor={`q${qIndex}-o${oIndex}`} className="flex-grow">
+                                                            <Input value={opt.text} placeholder="Texto de la opción" onChange={(e) => handleOptionChange(qIndex, oIndex, 'text', e.target.value)} />
+                                                        </Label>
+                                                         <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70" onClick={() => deleteOption(qIndex, oIndex)}><XCircle className="h-4 w-4"/></Button>
+                                                    </div>
+                                                    <Input value={opt.feedback || ''} placeholder="Retroalimentación para esta opción (opcional)" onChange={(e) => handleOptionChange(qIndex, oIndex, 'feedback', e.target.value)} className="text-xs h-8"/>
                                                 </div>
                                             ))}
                                         </div>
