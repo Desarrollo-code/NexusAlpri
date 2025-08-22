@@ -406,32 +406,57 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         const { source, destination, type } = result;
         if (!destination || !course) return;
 
-        const newCourseState = JSON.parse(JSON.stringify(course));
-        const newModules: AppModule[] = newCourseState.modules;
+        let newModules = [...course.modules];
 
         if (type === 'MODULES') {
             const [reorderedItem] = newModules.splice(source.index, 1);
             newModules.splice(destination.index, 0, reorderedItem);
             updateCourseField('modules', newModules);
-            return;
+        } else if (type === 'LESSONS') {
+            const sourceModuleIndex = newModules.findIndex(m => m.id === source.droppableId);
+            const destModuleIndex = newModules.findIndex(m => m.id === destination.droppableId);
+            
+            if (sourceModuleIndex === -1 || destModuleIndex === -1) return;
+
+            if (source.droppableId === destination.droppableId) {
+                // Reorder within the same module
+                const items = Array.from(newModules[sourceModuleIndex].lessons);
+                const [reorderedItem] = items.splice(source.index, 1);
+                items.splice(destination.index, 0, reorderedItem);
+                newModules[sourceModuleIndex] = { ...newModules[sourceModuleIndex], lessons: items };
+            } else {
+                // Move between modules
+                const sourceItems = Array.from(newModules[sourceModuleIndex].lessons);
+                const destItems = Array.from(newModules[destModuleIndex].lessons);
+                const [movedItem] = sourceItems.splice(source.index, 1);
+                destItems.splice(destination.index, 0, movedItem);
+                
+                newModules[sourceModuleIndex] = { ...newModules[sourceModuleIndex], lessons: sourceItems };
+                newModules[destModuleIndex] = { ...newModules[destModuleIndex], lessons: destItems };
+            }
+             updateCourseField('modules', newModules);
+        } else if (type === 'BLOCKS') {
+            // Find which module and lesson the drag happened in
+            let sourceModuleIndex = -1;
+            let sourceLessonIndex = -1;
+
+            for(let i=0; i < newModules.length; i++) {
+                const lessonIdx = newModules[i].lessons.findIndex(l => l.id === source.droppableId);
+                if (lessonIdx !== -1) {
+                    sourceModuleIndex = i;
+                    sourceLessonIndex = lessonIdx;
+                    break;
+                }
+            }
+            if(sourceModuleIndex === -1 || sourceLessonIndex === -1) return;
+            
+            const items = Array.from(newModules[sourceModuleIndex].lessons[sourceLessonIndex].contentBlocks);
+            const [reorderedItem] = items.splice(source.index, 1);
+            items.splice(destination.index, 0, reorderedItem);
+            
+            newModules[sourceModuleIndex].lessons[sourceLessonIndex] = { ...newModules[sourceModuleIndex].lessons[sourceLessonIndex], contentBlocks: items };
+            updateCourseField('modules', newModules);
         }
-
-        const sourceModule = newModules.find(m => m.id === source.droppableId);
-        const destModule = newModules.find(m => m.id === destination.droppableId);
-
-        if (!sourceModule || !destModule) return;
-
-        if (source.droppableId === destination.droppableId) {
-            // Reordering within the same lesson list
-            const [reorderedItem] = sourceModule.lessons.splice(source.index, 1);
-            sourceModule.lessons.splice(destination.index, 0, reorderedItem);
-        } else {
-            // Moving from one lesson list to another
-            const [movedItem] = sourceModule.lessons.splice(source.index, 1);
-            destModule.lessons.splice(destination.index, 0, movedItem);
-        }
-
-        updateCourseField('modules', newModules);
     };
     
     const handleCropComplete = (croppedFileUrl: string) => {
@@ -664,7 +689,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 const BlockTypeSelector = ({ onSelect }) => (
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm"><PlusCircle className="mr-2 h-4 w-4"/>Añadir Bloque</Button>
+            <Button variant="outline" size="sm"><PlusCircle className="mr-2 h-4 w-4"/>Añadir Contenido</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
              <DropdownMenuItem onSelect={() => onSelect('TEXT')}><FileText className="mr-2 h-4 w-4"/>Texto/Enlace</DropdownMenuItem>
