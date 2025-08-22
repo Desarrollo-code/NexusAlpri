@@ -76,9 +76,9 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-xs pt-1">
             <div className="flex items-center gap-1.5">
                 <Avatar className="h-5 w-5">
-                    <AvatarImage src={undefined} alt={announcement.author?.name || 'Sistema'} />
+                    {announcement.author?.id ? <AvatarImage src={undefined} alt={announcement.author?.name || 'Sistema'} /> : null}
                     <AvatarFallback className="text-xs">
-                        {announcement.author ? <Identicon userId={announcement.author.id} /> : 'S'}
+                        {announcement.author?.id ? <Identicon userId={announcement.author.id} /> : 'S'}
                     </AvatarFallback>
                 </Avatar>
                 <span>{announcement.author?.name || 'Sistema'}</span>
