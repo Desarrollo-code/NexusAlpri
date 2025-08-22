@@ -343,13 +343,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             contentBlocks: [],
         };
     
-        const newModules = course.modules.map((module, index) => {
+         const newModules = course.modules.map((module, index) => {
             if (index === moduleIndex) {
-                // Crea una copia inmutable del módulo y añade la nueva lección
-                return {
-                    ...module,
-                    lessons: [...module.lessons, newLesson]
-                };
+                return { ...module, lessons: [...module.lessons, newLesson] };
             }
             return module;
         });
@@ -423,27 +419,42 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const onDragEnd = (result: DropResult) => {
         const { source, destination, type } = result;
         if (!destination || !course) return;
-    
+
         if (type === 'MODULES') {
             const newModules = Array.from(course.modules);
             const [reorderedItem] = newModules.splice(source.index, 1);
             newModules.splice(destination.index, 0, reorderedItem);
             updateCourseField('modules', newModules);
         } else if (type === 'LESSONS') {
-            const sourceModuleId = source.droppableId;
-            const destModuleId = destination.droppableId;
-    
-            const tempModules = JSON.parse(JSON.stringify(course.modules));
-            const sourceModule = tempModules.find(m => m.id === sourceModuleId);
-            const destModule = tempModules.find(m => m.id === destModuleId);
-    
-            if (!sourceModule || !destModule) return;
-    
-            const [movedItem] = sourceModule.lessons.splice(source.index, 1);
-            destModule.lessons.splice(destination.index, 0, movedItem);
-    
-            setCourse(prev => ({ ...prev, modules: tempModules }));
-            setIsDirty(true);
+             const tempCourse = JSON.parse(JSON.stringify(course));
+             const sourceModule = tempCourse.modules.find(m => m.id === source.droppableId);
+             const destModule = tempCourse.modules.find(m => m.id === destination.droppableId);
+             if (!sourceModule || !destModule) return;
+
+             const [movedItem] = sourceModule.lessons.splice(source.index, 1);
+             destModule.lessons.splice(destination.index, 0, movedItem);
+             
+             setCourse(tempCourse);
+             setIsDirty(true);
+        } else if (type === 'BLOCKS') {
+             const tempCourse = JSON.parse(JSON.stringify(course));
+             let sourceLesson: AppLesson | null = null;
+             let destLesson: AppLesson | null = null;
+
+             for (const module of tempCourse.modules) {
+                const foundSource = module.lessons.find(l => l.id === source.droppableId);
+                if (foundSource) sourceLesson = foundSource;
+                const foundDest = module.lessons.find(l => l.id === destination.droppableId);
+                if (foundDest) destLesson = foundDest;
+             }
+
+             if (!sourceLesson || !destLesson) return;
+
+             const [movedBlock] = sourceLesson.contentBlocks.splice(source.index, 1);
+             destLesson.contentBlocks.splice(destination.index, 0, movedBlock);
+
+             setCourse(tempCourse);
+             setIsDirty(true);
         }
     };
     
@@ -484,10 +495,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             
             toast({ title: "Curso Guardado", description: "La información del curso se ha guardado correctamente." });
             
-            // CRITICAL: Sync local state with the state returned from the server
             setCourse(savedCourse); 
             setPageTitle(`Editando: ${savedCourse.title}`);
-            setIsDirty(false); // Reset dirty state after successful save & sync
+            setIsDirty(false); 
             
             if (courseId === 'new') {
                 router.replace(`/manage-courses/${savedCourse.id}/edit`, { scroll: false });
