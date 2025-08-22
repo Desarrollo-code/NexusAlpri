@@ -2,12 +2,10 @@
 import { CourseEditor } from '@/components/course-editor-form';
 import React from 'react';
 
-// This is now a simple Server Component that only extracts the courseId
-// and passes it to the client component.
-
+// Server Component que solo extrae el courseId
 export default async function EditCourseServerPage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = await params;
 
-  // The CourseEditor component will handle all data fetching, state management, and logic.
+  // El CourseEditor maneja la lógica interna
   return <CourseEditor courseId={courseId} />;
 }
