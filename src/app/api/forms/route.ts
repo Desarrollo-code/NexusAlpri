@@ -90,6 +90,11 @@ export async function POST(req: NextRequest) {
                 creatorId: session.id,
                 status: 'DRAFT',
             },
+             include: {
+                _count: {
+                    select: { responses: true }
+                }
+            }
         });
 
         return NextResponse.json(newForm, { status: 201 });

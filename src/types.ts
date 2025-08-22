@@ -288,5 +288,8 @@ export type AppForm = Form & {
     _count: {
         responses: number;
     };
+    creator?: {
+        name: string | null;
+    } | null;
 };
 export { type FormStatus };

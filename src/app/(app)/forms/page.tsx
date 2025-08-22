@@ -36,6 +36,8 @@ import { useTitle } from '@/contexts/title-context';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const PAGE_SIZE = 9;
 
@@ -43,7 +45,7 @@ const getStatusDetails = (status: FormStatus) => {
     switch (status) {
         case 'DRAFT': return { label: 'Borrador', color: 'bg-yellow-500' };
         case 'PUBLISHED': return { label: 'Publicado', color: 'bg-green-500' };
-        case 'CLOSED': return { label: 'Cerrado', color: 'bg-red-500' };
+        case 'ARCHIVED': return { label: 'Archivado', color: 'bg-red-500' };
         default: return { label: 'Desconocido', color: 'bg-gray-500' };
     }
 };
