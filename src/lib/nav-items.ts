@@ -1,4 +1,3 @@
-
 import type { NavItem, UserRole } from '@/types';
 import {
   LayoutDashboard,
@@ -18,6 +17,7 @@ import {
   GitCommitHorizontal,
   LayoutGrid,
   Notebook,
+  FileText, // Added for Forms
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -69,6 +69,13 @@ const NAVIGATION_ITEMS: NavItem[] = [
     icon: CalendarDays,
     path: '/calendar',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+  },
+   {
+    id: 'forms',
+    label: 'Formularios',
+    icon: FileText,
+    path: '/forms',
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
   },
   {
     id: 'admin',
