@@ -24,5 +24,6 @@ const CourseEditor = dynamic(
 export default function EditCoursePage({ params }: { params: { courseId: string } }) {
   const { courseId } = params;
 
+  // El CourseEditor maneja la lógica interna
   return <CourseEditor courseId={courseId} />;
 }
