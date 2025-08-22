@@ -40,6 +40,7 @@ import { useTitle } from '@/contexts/title-context';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 import { AnimatePresence } from 'framer-motion';
+import { Identicon } from '@/components/ui/identicon';
 
 const ProfileCardBackground = () => (
     <div className="card__img">
@@ -107,18 +108,6 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  const getInitials = (name?: string | null): string => {
-    if (!name) return '??';
-    const names = name.split(' ');
-    if (names.length > 1 && names[0] && names[names.length - 1]) {
-      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-    }
-    if (names.length === 1 && names[0]) {
-      return names[0].substring(0, 2).toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-  };
-  
   const getRoleInSpanish = (role: UserRole) => {
     switch (role) {
       case 'ADMINISTRATOR': return 'Administrador';
@@ -128,7 +117,7 @@ export default function ProfilePage() {
     }
   };
   
-  const avatarSrc = avatarPreview || user?.avatar || settings?.logoUrl || '/uploads/images/default-avatar.png';
+  const avatarSrc = avatarPreview || user?.avatar || settings?.logoUrl;
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -311,8 +300,10 @@ export default function ProfilePage() {
             <ProfileCardBackground />
             <div className="card__avatar">
                  <Avatar className="avatar">
-                  <AvatarImage src={avatarSrc} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
-                  <AvatarFallback className="text-4xl">{getInitials(user.name)}</AvatarFallback>
+                    {avatarSrc ? <AvatarImage src={avatarSrc} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" /> : null}
+                    <AvatarFallback className="text-4xl">
+                        <Identicon userId={user.id} />
+                    </AvatarFallback>
                 </Avatar>
                 <Button 
                     variant="outline" 
@@ -444,8 +435,10 @@ export default function ProfilePage() {
                     <ProfileCardBackground />
                     <div className="card__avatar">
                         <Avatar className="avatar">
-                            <AvatarImage src={avatarSrc} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" />
-                            <AvatarFallback className="text-4xl">{getInitials(user.name)}</AvatarFallback>
+                            {avatarSrc ? <AvatarImage src={avatarSrc} alt={user.name || 'Avatar de usuario'} data-ai-hint="user avatar" /> : null}
+                            <AvatarFallback className="text-4xl">
+                                <Identicon userId={user.id} />
+                            </AvatarFallback>
                         </Avatar>
                         <Button 
                             variant="outline" 

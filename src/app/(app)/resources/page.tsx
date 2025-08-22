@@ -37,12 +37,12 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getInitials } from '@/lib/security-log-utils';
 import { Textarea } from '@/components/ui/textarea';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Identicon } from '@/components/ui/identicon';
 
 
 // --- Main Page Component ---
@@ -531,7 +531,10 @@ export default function ResourcesPage() {
                                         <div key={u.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
                                             <Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={c => handleUserShareToggle(u.id, !!c)} />
                                             <Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer">
-                                                <Avatar className="h-7 w-7"><AvatarImage src={u.avatar || undefined} /><AvatarFallback>{getInitials(u.name)}</AvatarFallback></Avatar>
+                                                <Avatar className="h-7 w-7">
+                                                    {u.avatar ? <AvatarImage src={u.avatar} /> : null}
+                                                    <AvatarFallback><Identicon userId={u.id}/></AvatarFallback>
+                                                </Avatar>
                                                 {u.name}
                                             </Label>
                                         </div>
@@ -602,7 +605,10 @@ export default function ResourcesPage() {
                                           <div key={u.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
                                               <Checkbox id={`share-folder-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={c => handleUserShareToggle(u.id, !!c)} />
                                               <Label htmlFor={`share-folder-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer">
-                                                  <Avatar className="h-7 w-7"><AvatarImage src={u.avatar || undefined} /><AvatarFallback>{getInitials(u.name)}</AvatarFallback></Avatar>
+                                                  <Avatar className="h-7 w-7">
+                                                      {u.avatar ? <AvatarImage src={u.avatar} /> : null}
+                                                      <AvatarFallback><Identicon userId={u.id}/></AvatarFallback>
+                                                  </Avatar>
                                                   {u.name}
                                               </Label>
                                           </div>

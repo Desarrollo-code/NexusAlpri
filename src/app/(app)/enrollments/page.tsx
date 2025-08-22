@@ -1,5 +1,4 @@
-
-
+// src/app/(app)/enrollments/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -20,6 +19,7 @@ import type { Course as PrismaCourse } from '@prisma/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Separator } from '@/components/ui/separator';
 import { useTitle } from '@/contexts/title-context';
+import { Identicon } from '@/components/ui/identicon';
 
 interface ApiCourseForEnrollments extends Omit<PrismaCourse, 'instructor' | 'modules' | 'enrollments' | 'progress' | 'createdAt' | 'updatedAt' | '_count'> {
   instructor: { id: string; name: string | null; } | null;
@@ -185,14 +185,6 @@ export default function EnrollmentsPage() {
     setSelectedCourse(course || null);
   };
   
-  const getInitials = (name?: string | null) => {
-    if (!name) return '??';
-    const names = name.split(' ');
-    if (names.length > 1 && names[0] && names[names.length - 1]) return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-    if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
-    return name.substring(0, 2).toUpperCase();
-  };
-
   const filteredEnrollments = useMemo(() => {
     return enrollments.filter(enrollment => 
       enrollment.user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -232,8 +224,10 @@ export default function EnrollmentsPage() {
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={enrollment.user.avatar || undefined} alt={enrollment.user.name || 'User'} />
-                    <AvatarFallback>{getInitials(enrollment.user.name)}</AvatarFallback>
+                    {enrollment.user.avatar ? <AvatarImage src={enrollment.user.avatar} alt={enrollment.user.name || 'User'} /> : null}
+                    <AvatarFallback>
+                        <Identicon userId={enrollment.user.id}/>
+                    </AvatarFallback>
                   </Avatar>
                   <span className="font-medium">{enrollment.user.name || 'N/A'}</span>
                 </div>
@@ -270,8 +264,10 @@ export default function EnrollmentsPage() {
           <Card key={enrollment.user.id} className="card-border-animated">
             <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
                <Avatar className="h-10 w-10">
-                  <AvatarImage src={enrollment.user.avatar || undefined} alt={enrollment.user.name || 'User'} />
-                  <AvatarFallback>{getInitials(enrollment.user.name)}</AvatarFallback>
+                  {enrollment.user.avatar ? <AvatarImage src={enrollment.user.avatar} alt={enrollment.user.name || 'User'} /> : null}
+                  <AvatarFallback>
+                    <Identicon userId={enrollment.user.id}/>
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex-grow overflow-hidden">
                     <p className="font-semibold truncate">{enrollment.user.name || 'N/A'}</p>

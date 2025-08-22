@@ -13,12 +13,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
-import { getEventDetails, getInitials, parseUserAgent } from '@/lib/security-log-utils';
+import { getEventDetails, parseUserAgent } from '@/lib/security-log-utils';
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTitle } from '@/contexts/title-context';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Identicon } from '@/components/ui/identicon';
 
 
 interface SecurityLogWithUser extends AppSecurityLog {
@@ -207,8 +208,10 @@ export default function SecurityAuditPage() {
                                                         {log.user ? (
                                                             <div className="flex items-center gap-2">
                                                                 <Avatar className="h-8 w-8">
-                                                                    <AvatarImage src={log.user.avatar || undefined} alt={log.user.name || 'User'} />
-                                                                    <AvatarFallback>{getInitials(log.user.name)}</AvatarFallback>
+                                                                    {log.user.avatar ? <AvatarImage src={log.user.avatar} alt={log.user.name || 'User'} /> : null}
+                                                                    <AvatarFallback>
+                                                                        <Identicon userId={log.user.id} />
+                                                                    </AvatarFallback>
                                                                 </Avatar>
                                                                 <Link href={`/users?search=${encodeURIComponent(log.user.name || '')}`} className="font-medium hover:underline">{log.user.name}</Link>
                                                             </div>

@@ -56,6 +56,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { GradientIcon } from '@/components/ui/gradient-icon';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useTitle } from '@/contexts/title-context';
+import { Identicon } from '@/components/ui/identicon';
 
 const PAGE_SIZE = 10;
 
@@ -164,15 +165,6 @@ export default function UsersPage() {
          router.push(`${pathname}?${newQueryString}`);
      }
   }, [debouncedSearchTerm, pathname, router, createQueryString, searchParams]);
-  
-  
-  const getInitials = (name?: string | null) => {
-    if (!name) return '??';
-    const names = name.split(' ');
-    if (names.length > 1 && names[0] && names[names.length - 1]) return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-    if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
-    return name.substring(0, 2).toUpperCase();
-  };
   
   const getRoleInSpanish = (role: UserRole) => {
     switch (role) {
@@ -382,8 +374,10 @@ export default function UsersPage() {
               <TableCell>
                 <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
-                        <AvatarImage src={u.avatar || settings?.logoUrl || '/uploads/images/default-avatar.png'} alt={u.name} />
-                        <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
+                        {u.avatar ? <AvatarImage src={u.avatar} alt={u.name} /> : null}
+                        <AvatarFallback>
+                            <Identicon userId={u.id}/>
+                        </AvatarFallback>
                     </Avatar>
                     <div className="font-medium">{u.name}</div>
                 </div>
@@ -457,8 +451,10 @@ export default function UsersPage() {
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={u.avatar || settings?.logoUrl || '/uploads/images/default-avatar.png'} alt={u.name} />
-                <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
+                {u.avatar ? <AvatarImage src={u.avatar} alt={u.name} /> : null}
+                <AvatarFallback>
+                    <Identicon userId={u.id}/>
+                </AvatarFallback>
               </Avatar>
               <div>
                 <p className="font-semibold">{u.name}</p>

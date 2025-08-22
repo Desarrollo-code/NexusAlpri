@@ -1,4 +1,4 @@
-
+// src/components/layout/user-avatar-dropdown.tsx
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
@@ -9,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuPortal,
@@ -23,6 +22,7 @@ import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { UserRole } from '@/types';
 import { AVAILABLE_THEMES } from '../theme-provider';
+import { Identicon } from '../ui/identicon';
 
 
 function ThemeToggle() {
@@ -60,15 +60,6 @@ export function UserAvatarDropdown() {
   const { user, logout, settings } = useAuth();
 
   if (!user) return null;
-
-  const getInitials = (name: string) => {
-    if (!name) return '??';
-    const names = name.split(' ');
-    if (names.length > 1 && names[0] && names[names.length - 1]) {
-      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-  };
   
   const getRoleInSpanish = (role: UserRole) => {
     switch (role) {
@@ -82,7 +73,7 @@ export function UserAvatarDropdown() {
   const userDisplayName = user.name || "Usuario";
   const userDisplayEmail = user.email || "No email";
   const userAppRole = user.role;
-  const avatarSrc = user.avatar || settings?.logoUrl || '/uploads/images/default-avatar.png';
+  const avatarSrc = user.avatar || settings?.logoUrl;
 
 
   return (
@@ -90,8 +81,10 @@ export function UserAvatarDropdown() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-primary/10 p-0">
           <Avatar className="h-9 w-9 bg-primary/20 text-primary-foreground">
-            <AvatarImage src={avatarSrc} alt={userDisplayName} data-ai-hint="user avatar" />
-            <AvatarFallback>{getInitials(userDisplayName)}</AvatarFallback>
+            {avatarSrc ? <AvatarImage src={avatarSrc} alt={userDisplayName} data-ai-hint="user avatar" /> : null}
+            <AvatarFallback>
+                <Identicon userId={user.id} />
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
