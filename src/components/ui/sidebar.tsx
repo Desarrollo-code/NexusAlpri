@@ -1,3 +1,4 @@
+
 'use client';
 
 // Sidebar-layout-enhanced 🌈 Creativo & juvenil
@@ -17,6 +18,8 @@ import { GradientIcon } from "./gradient-icon";
 import type { NavItem } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
 import { SidebarHeader } from "../layout/sidebar-header";
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
+import { Identicon } from "./identicon";
 
 const SidebarContext = React.createContext<any>(null);
 
@@ -134,6 +137,7 @@ const SidebarSectionHeader = ({ label }: { label: string }) => {
 
 const SidebarMenuItem = ({ item }: { item: NavItem }) => {
   const { activeItem, isCollapsed, isMobile } = useSidebar();
+  const { user } = useAuth();
 
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
@@ -152,7 +156,16 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
           ? "bg-primary/10 text-primary"
           : "text-muted-foreground hover:bg-muted hover:text-foreground"
       )}>
-        <GradientIcon icon={item.icon || Shield} isActive={isActive} />
+        {item.id === 'profile' && user ? (
+             <Avatar className="h-6 w-6">
+                 {user.avatar ? <AvatarImage src={user.avatar} alt={user.name || 'User'}/> : null}
+                 <AvatarFallback className="text-xs">
+                     <Identicon userId={user.id}/>
+                 </AvatarFallback>
+            </Avatar>
+        ) : (
+            <GradientIcon icon={item.icon || Shield} isActive={isActive} />
+        )}
         {showText && <span className="whitespace-nowrap">{item.label}</span>}
       </div>
   );
