@@ -71,6 +71,7 @@ const generateUniqueId = (prefix: string) => {
     if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
         return `${prefix}-${window.crypto.randomUUID()}`;
     }
+    // Fallback for older browsers or non-secure contexts
     return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
@@ -673,3 +674,6 @@ const BlockTypeSelector = ({ onSelect }) => (
         </DropdownMenuContent>
     </DropdownMenu>
 );
+
+
+    
