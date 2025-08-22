@@ -390,7 +390,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             const newLessons = [...newModules[moduleIndex].lessons];
             const newBlocks = newLessons[lessonIndex].contentBlocks.filter((_, index) => index !== blockIndex);
             newLessons[lessonIndex] = { ...newLessons[lessonIndex], contentBlocks: newBlocks };
-            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
+            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newModules };
             return { ...prev, modules: newModules };
         });
         setIsDirty(true);
@@ -660,7 +660,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 const BlockTypeSelector = ({ onSelect }) => (
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm"><PlusCircle className="mr-2 h-4 w-4"/>Añadir Bloque</Button>
+            <Button variant="outline" size="sm"><PlusCircle className="mr-2 h-4 w-4"/>Añadir Contenido</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
              <DropdownMenuItem onSelect={() => onSelect('TEXT')}><FileText className="mr-2 h-4 w-4"/>Texto/Enlace</DropdownMenuItem>
