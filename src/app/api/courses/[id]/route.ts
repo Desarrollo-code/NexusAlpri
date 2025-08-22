@@ -1,4 +1,3 @@
-
 // src/app/api/courses/[id]/route.ts
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
@@ -106,7 +105,7 @@ export async function PUT(
             },
         });
         
-        const existingModules = await tx.module.findMany({ where: { courseId }, select: { id: true } });
+        const existingModules = await tx.module.findMany({ where: { courseId }, select: { id: true, lessons: { select: { id: true } } } });
         const incomingModuleIds = new Set(modules.map(m => !m.id.startsWith('new-') ? m.id : undefined).filter(Boolean));
         
         // 2. Delete modules that are no longer present
@@ -146,7 +145,7 @@ export async function PUT(
                 const incomingBlockIds = new Set(lessonData.contentBlocks.map(b => !b.id.startsWith('new-') ? b.id : undefined).filter(Boolean));
                 
                 // 5. Delete blocks no longer in the lesson
-                const blocksToDelete = existingBlocks.filter(b => !incomingBlockIds.has(b.id));
+                 const blocksToDelete = existingBlocks.filter(b => !incomingBlockIds.has(b.id));
                  if (blocksToDelete.length > 0) {
                     await tx.contentBlock.deleteMany({ where: { id: { in: blocksToDelete.map(b => b.id) } }});
                 }

@@ -91,7 +91,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             // Handle fields
             if (fields && Array.isArray(fields)) {
                 const currentFields = await tx.formField.findMany({ where: { formId } });
-                const incomingFieldIds = new Set(fields.map((f: FormField) => f.id).filter(id => !id.startsWith('new-')));
+                const incomingFieldIds = new Set(fields.map((f: FormField) => f.id).filter((id: string) => !id.startsWith('new-')));
                 
                 // Delete fields that are no longer present
                 const fieldsToDelete = currentFields.filter(f => !incomingFieldIds.has(f.id));
