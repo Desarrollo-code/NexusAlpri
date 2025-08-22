@@ -68,13 +68,15 @@ interface LocalInstructor {
     name: string;
 }
 
-const generateUniqueId = (prefix: string) => {
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+const generateUniqueId = (prefix: string): string => {
+    if (typeof window !== 'undefined' && window.crypto?.randomUUID) {
         return `${prefix}-${window.crypto.randomUUID()}`;
     }
-    // Fallback robusto para entornos sin crypto.randomUUID
-    return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-}
+    // Fallback robusto para entornos sin crypto.randomUUID (muy improbable en navegadores modernos)
+    const timestamp = Date.now();
+    const randomPart = Math.random().toString(36).substring(2, 9);
+    return `${prefix}-${timestamp}-${randomPart}`;
+};
 
 
 const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: () => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
@@ -307,18 +309,14 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             if (!prev) return null;
             const newModules = prev.modules.map((module, mIdx) => {
                 if (mIdx !== moduleIndex) return module;
-                
                 const newLessons = module.lessons.map((lesson, lIdx) => {
                     if (lIdx !== lessonIndex) return lesson;
-                    
                     const newBlocks = lesson.contentBlocks.map((block, bIdx) => {
                         if (bIdx !== blockIndex) return block;
                         return { ...block, [field]: value };
                     });
-                    
                     return { ...lesson, contentBlocks: newBlocks };
                 });
-                
                 return { ...module, lessons: newLessons };
             });
             return { ...prev, modules: newModules };
@@ -349,7 +347,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
          const newModules = course.modules.map((module, index) => {
             if (index === moduleIndex) {
-                // Crear una nueva copia de las lecciones y añadir la nueva
                 const updatedLessons = [...module.lessons, newLesson];
                 return { ...module, lessons: updatedLessons };
             }
@@ -444,11 +441,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
              setIsDirty(true);
         } else if (type === 'BLOCKS') {
             const tempCourse = JSON.parse(JSON.stringify(course));
-            
             let sourceLesson;
             let destLesson;
-
-            for(const module of tempCourse.modules) {
+            
+            for (const module of tempCourse.modules) {
                 const sLesson = module.lessons.find(l => l.id === source.droppableId);
                 if (sLesson) sourceLesson = sLesson;
                 const dLesson = module.lessons.find(l => l.id === destination.droppableId);
@@ -456,7 +452,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             }
 
             if (!sourceLesson || !destLesson) return;
-
+            
             const [movedBlock] = sourceLesson.contentBlocks.splice(source.index, 1);
             destLesson.contentBlocks.splice(destination.index, 0, movedBlock);
 
@@ -707,3 +703,5 @@ const BlockTypeSelector = ({ onSelect }) => (
         </DropdownMenuContent>
     </DropdownMenu>
 );
+
+    
