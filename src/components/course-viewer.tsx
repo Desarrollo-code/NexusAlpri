@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -24,6 +23,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useTitle } from '@/contexts/title-context';
 import { Textarea } from '@/components/ui/textarea';
 import { useDebounce } from '@/hooks/use-debounce';
+import { RichTextEditor } from './ui/rich-text-editor';
 
 
 // --- Helper types and functions ---
@@ -114,7 +114,7 @@ const LessonNotes = ({ lessonId }: { lessonId: string }) => {
                             <Loader2 className="h-6 w-6 animate-spin text-primary" />
                         </div>
                     ) : (
-                       <Textarea
+                       <RichTextEditor
                             value={noteContent}
                             onChange={(e) => setNoteContent(e.target.value)}
                             placeholder="Escribe tus notas privadas para esta lección aquí. Se guardarán automáticamente..."

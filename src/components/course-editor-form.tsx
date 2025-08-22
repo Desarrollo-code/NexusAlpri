@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -54,6 +53,7 @@ import { ImageCropper } from '@/components/image-cropper';
 import { useTitle } from '@/contexts/title-context';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Calendar } from '@/components/ui/calendar';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
 
 // === TIPOS E INTERFACES ===
@@ -176,7 +176,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
 
         const renderBlockContent = () => {
             switch(block.type) {
-                case 'TEXT': return <Textarea value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="Escribe aquí texto o pega un enlace..." rows={4} disabled={isSaving} />;
+                case 'TEXT': return <RichTextEditor value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="Escribe aquí texto o pega un enlace..." rows={4} disabled={isSaving} />;
                 case 'VIDEO': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
                 case 'FILE': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del archivo (PDF, imagen, etc.)" disabled={isSaving} />;
                 case 'QUIZ': return (
