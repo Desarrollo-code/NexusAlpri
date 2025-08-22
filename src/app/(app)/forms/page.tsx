@@ -268,7 +268,7 @@ export default function FormsPage() {
             </div>
             
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 md:w-auto md:grid-cols-none">
+                <TabsList className="grid w-full grid-cols-2 md:inline-flex md:w-auto">
                     <TabsTrigger value="my-forms">Mis Formularios</TabsTrigger>
                     <TabsTrigger value="shared-with-me">Compartidos Conmigo</TabsTrigger>
                     {user?.role === 'ADMINISTRATOR' && <TabsTrigger value="all">Todos</TabsTrigger>}
