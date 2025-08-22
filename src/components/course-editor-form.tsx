@@ -71,7 +71,7 @@ const generateUniqueId = (prefix: string): string => {
     if (typeof window !== 'undefined' && window.crypto?.randomUUID) {
         return `${prefix}-${window.crypto.randomUUID()}`;
     }
-    // Fallback robusto para entornos sin crypto.randomUUID (muy improbable en navegadores modernos)
+    // Fallback robusto para entornos sin crypto.randomUUID
     const timestamp = Date.now();
     const randomPart = Math.random().toString(36).substring(2, 9);
     return `${prefix}-${timestamp}-${randomPart}`;
@@ -339,28 +339,33 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             contentBlocks: [],
         };
         handleStateUpdate(prev => {
-            const newModules = prev.modules.map((module, index) => {
-                if (index === moduleIndex) {
-                    return { ...module, lessons: [...module.lessons, newLesson] };
-                }
-                return module;
+             const newModules = prev.modules.map((module, mIdx) => {
+                if (mIdx !== moduleIndex) return module;
+                return { ...module, lessons: [...module.lessons, newLesson] };
             });
             return { ...prev, modules: newModules };
         });
     };
     
-     const handleAddBlock = (moduleIndex: number, lessonIndex: number, type: LessonType) => {
+    const handleAddBlock = (moduleIndex: number, lessonIndex: number, type: LessonType) => {
+        if (!course) return;
         const newBlock: ContentBlock = {
             id: generateUniqueId('block'),
             type: type,
             content: '',
-            order: course?.modules[moduleIndex].lessons[lessonIndex].contentBlocks.length || 0,
+            order: course.modules[moduleIndex].lessons[lessonIndex].contentBlocks.length || 0,
             quiz: type === 'QUIZ' ? { id: generateUniqueId('quiz'), title: 'Nuevo Quiz', description: '', questions: [] } : undefined
         };
+        
         handleStateUpdate(prev => {
-            const newModules = [...prev.modules];
-            newModules[moduleIndex].lessons[lessonIndex].contentBlocks.push(newBlock);
-            return { ...prev, modules: newModules };
+            const newCourse = { ...prev };
+            const newModules = [...newCourse.modules];
+            const newLessons = [...newModules[moduleIndex].lessons];
+            const newBlocks = [...newLessons[lessonIndex].contentBlocks, newBlock];
+            newLessons[lessonIndex] = { ...newLessons[lessonIndex], contentBlocks: newBlocks };
+            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
+            newCourse.modules = newModules;
+            return newCourse;
         });
     };
 
@@ -400,79 +405,41 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         const { source, destination, type } = result;
         if (!destination || !course) return;
 
-        let newCourseState = { ...course };
-
         if (type === 'MODULES') {
-            const newModules = Array.from(newCourseState.modules);
+            const newModules = Array.from(course.modules);
             const [reorderedItem] = newModules.splice(source.index, 1);
             newModules.splice(destination.index, 0, reorderedItem);
-            newCourseState.modules = newModules;
+            handleStateUpdate(c => ({...c, modules: newModules}));
         } else if (type === 'LESSONS') {
-            const sourceModule = newCourseState.modules.find(m => m.id === source.droppableId);
-            const destModule = newCourseState.modules.find(m => m.id === destination.droppableId);
-            if (!sourceModule || !destModule) return;
-            
-            if (sourceModule.id === destModule.id) {
-                const newLessons = Array.from(sourceModule.lessons);
-                const [reorderedItem] = newLessons.splice(source.index, 1);
-                newLessons.splice(destination.index, 0, reorderedItem);
-                const moduleIndex = newCourseState.modules.findIndex(m => m.id === sourceModule.id);
-                newCourseState.modules[moduleIndex].lessons = newLessons;
-            } else {
-                const sourceLessons = Array.from(sourceModule.lessons);
-                const destLessons = Array.from(destModule.lessons);
-                const [movedItem] = sourceLessons.splice(source.index, 1);
-                destLessons.splice(destination.index, 0, movedItem);
-                
-                const sourceModuleIndex = newCourseState.modules.findIndex(m => m.id === sourceModule.id);
-                const destModuleIndex = newCourseState.modules.findIndex(m => m.id === destModule.id);
-                
-                newCourseState.modules[sourceModuleIndex].lessons = sourceLessons;
-                newCourseState.modules[destModuleIndex].lessons = destLessons;
-            }
+             const newCourse = JSON.parse(JSON.stringify(course));
+             const sourceModule = newCourse.modules.find(m => m.id === source.droppableId);
+             const destModule = newCourse.modules.find(m => m.id === destination.droppableId);
+             if (!sourceModule || !destModule) return;
+
+             const [movedItem] = sourceModule.lessons.splice(source.index, 1);
+             destModule.lessons.splice(destination.index, 0, movedItem);
+             
+             handleStateUpdate(c => newCourse);
+
         } else if (type === 'BLOCKS') {
+            const newCourseState = JSON.parse(JSON.stringify(course));
             let sourceLesson;
             let destLesson;
-            let sourceModuleIndex;
-            let sourceLessonIndex;
-            let destModuleIndex;
-            let destLessonIndex;
-            
-            for (let mIdx = 0; mIdx < newCourseState.modules.length; mIdx++) {
-                for (let lIdx = 0; lIdx < newCourseState.modules[mIdx].lessons.length; lIdx++) {
-                    if (newCourseState.modules[mIdx].lessons[lIdx].id === source.droppableId) {
-                        sourceLesson = newCourseState.modules[mIdx].lessons[lIdx];
-                        sourceModuleIndex = mIdx;
-                        sourceLessonIndex = lIdx;
-                    }
-                    if (newCourseState.modules[mIdx].lessons[lIdx].id === destination.droppableId) {
-                        destLesson = newCourseState.modules[mIdx].lessons[lIdx];
-                        destModuleIndex = mIdx;
-                        destLessonIndex = lIdx;
-                    }
-                }
+
+            for (const module of newCourseState.modules) {
+                const sLesson = module.lessons.find(l => l.id === source.droppableId);
+                if (sLesson) sourceLesson = sLesson;
+                const dLesson = module.lessons.find(l => l.id === destination.droppableId);
+                if (dLesson) destLesson = dLesson;
             }
 
             if (!sourceLesson || !destLesson) return;
 
-            if (sourceLesson.id === destLesson.id) {
-                const newBlocks = Array.from(sourceLesson.contentBlocks);
-                const [reorderedItem] = newBlocks.splice(source.index, 1);
-                newBlocks.splice(destination.index, 0, reorderedItem);
-                newCourseState.modules[sourceModuleIndex!].lessons[sourceLessonIndex!].contentBlocks = newBlocks;
-            } else {
-                const sourceBlocks = Array.from(sourceLesson.contentBlocks);
-                const destBlocks = Array.from(destLesson.contentBlocks);
-                const [movedItem] = sourceBlocks.splice(source.index, 1);
-                destBlocks.splice(destination.index, 0, movedItem);
-
-                newCourseState.modules[sourceModuleIndex!].lessons[sourceLessonIndex!].contentBlocks = sourceBlocks;
-                newCourseState.modules[destModuleIndex!].lessons[destLessonIndex!].contentBlocks = destBlocks;
-            }
+            const [movedItem] = sourceLesson.contentBlocks.splice(source.index, 1);
+            destLesson.contentBlocks.splice(destination.index, 0, movedItem);
+            
+            handleStateUpdate(c => newCourseState);
         }
-
-        setCourse(newCourseState);
-        setIsDirty(true);
     };
 
     const handleCropComplete = (croppedFileUrl: string) => {
@@ -717,3 +684,4 @@ const BlockTypeSelector = ({ onSelect }) => (
 );
 
     
+
