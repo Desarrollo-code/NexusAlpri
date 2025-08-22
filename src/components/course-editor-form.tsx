@@ -78,8 +78,8 @@ const generateUniqueId = (prefix: string): string => {
 };
 
 
-const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: () => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
-    ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete, provided }, ref) => {
+const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: () => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; onQuizUpdate: (lessonIndex: number, blockIndex: number, updatedQuiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
+    ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, onQuizUpdate, isSaving, onDelete, provided }, ref) => {
         return (
             <div ref={ref} {...provided.draggableProps}>
                 <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${module.id}`}>
@@ -107,6 +107,7 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                                 onAddBlock={(type) => onAddBlock(lessonIndex, type)}
                                 onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
                                 onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
+                                onQuizUpdate={(blockIndex, updatedQuiz) => onQuizUpdate(lessonIndex, blockIndex, updatedQuiz)}
                                 isSaving={isSaving}
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
@@ -134,8 +135,8 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
 ModuleItem.displayName = 'ModuleItem';
 
 
-const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdate: (field: keyof AppLesson, value: any) => void; onAddBlock: (type: LessonType) => void; onBlockUpdate: (blockIndex: number, field: string, value: any) => void; onBlockDelete: (blockIndex: number) => void; isSaving: boolean; onDelete: () => void; }>(
-    ({ lesson, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, isSaving, onDelete, ...rest }, ref) => {
+const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdate: (field: keyof AppLesson, value: any) => void; onAddBlock: (type: LessonType) => void; onBlockUpdate: (blockIndex: number, field: string, value: any) => void; onBlockDelete: (blockIndex: number) => void; onQuizUpdate: (blockIndex: number, updatedQuiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; }>(
+    ({ lesson, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, onQuizUpdate, isSaving, onDelete, ...rest }, ref) => {
         return (
             <div ref={ref} {...rest} className="bg-card p-3 rounded-md border">
                 <div className="flex items-center gap-2 mb-3">
@@ -153,6 +154,7 @@ const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdat
                                             block={block} 
                                             onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)} 
                                             onDelete={() => onBlockDelete(blockIndex)} 
+                                            onQuizUpdate={(updatedQuiz) => onQuizUpdate(blockIndex, updatedQuiz)}
                                             isSaving={isSaving}
                                             ref={provided.innerRef}
                                             {...provided.draggableProps}
@@ -175,9 +177,10 @@ const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdat
 LessonItem.displayName = 'LessonItem';
 
 
-const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock; onUpdate: (field: string, value: any) => void; isSaving: boolean; onDelete: () => void; }>(
-    ({ block, onUpdate, isSaving, onDelete, ...rest }, ref) => {
+const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock; onUpdate: (field: string, value: any) => void; onQuizUpdate: (updatedQuiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; }>(
+    ({ block, onUpdate, onQuizUpdate, isSaving, onDelete, ...rest }, ref) => {
         const [showQuizAnalytics, setShowQuizAnalytics] = useState(false);
+        const [showQuizEditor, setShowQuizEditor] = useState(false);
 
         const renderBlockContent = () => {
             switch(block.type) {
@@ -185,11 +188,20 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
                 case 'VIDEO': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
                 case 'FILE': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del archivo (PDF, imagen, etc.)" disabled={isSaving} />;
                 case 'QUIZ': return (
-                    <div className="flex items-center gap-2 w-full">
+                     <div className="flex items-center gap-2 w-full">
                         <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />
-                        <Dialog open={showQuizAnalytics} onOpenChange={setShowQuizAnalytics}>
+                        <Button variant="outline" size="sm" className="shrink-0" onClick={() => setShowQuizEditor(true)}>
+                            <Pencil className="mr-2 h-4 w-4" /> Editar Quiz
+                        </Button>
+                        <QuizEditorModal 
+                            isOpen={showQuizEditor} 
+                            onClose={() => setShowQuizEditor(false)} 
+                            quiz={block.quiz}
+                            onSave={onQuizUpdate}
+                        />
+                         <Dialog open={showQuizAnalytics} onOpenChange={setShowQuizAnalytics}>
                             <DialogTrigger asChild>
-                               <Button variant="outline" size="sm" className="shrink-0" disabled={!block.quiz?.id || block.quiz.id.startsWith('new-quiz-')}>
+                               <Button variant="outline" size="sm" className="shrink-0" disabled={!block.quiz?.id || block.quiz.id.startsWith('new-')}>
                                   <BarChart3 className="mr-2 h-4 w-4" /> Analíticas
                                </Button>
                             </DialogTrigger>
@@ -304,19 +316,17 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
     const updateBlockField = (moduleIndex: number, lessonIndex: number, blockIndex: number, field: string, value: any) => {
         handleStateUpdate(prev => {
-            const newModules = prev.modules.map((module, mIdx) => {
-                if (mIdx !== moduleIndex) return module;
-                const newLessons = module.lessons.map((lesson, lIdx) => {
-                    if (lIdx !== lessonIndex) return lesson;
-                    const newBlocks = lesson.contentBlocks.map((block, bIdx) => {
-                        if (bIdx !== blockIndex) return block;
-                        return { ...block, [field]: value };
-                    });
-                    return { ...lesson, contentBlocks: newBlocks };
-                });
-                return { ...module, lessons: newLessons };
-            });
-            return { ...prev, modules: newModules };
+            const newCourse = JSON.parse(JSON.stringify(prev));
+            newCourse.modules[moduleIndex].lessons[lessonIndex].contentBlocks[blockIndex][field] = value;
+            return newCourse;
+        });
+    };
+
+    const updateQuizForBlock = (moduleIndex: number, lessonIndex: number, blockIndex: number, updatedQuiz: AppQuiz) => {
+        handleStateUpdate(prev => {
+            const newCourse = JSON.parse(JSON.stringify(prev));
+            newCourse.modules[moduleIndex].lessons[lessonIndex].contentBlocks[blockIndex].quiz = updatedQuiz;
+            return newCourse;
         });
     };
 
@@ -341,14 +351,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         };
 
         handleStateUpdate(prev => {
-            const newModules = prev.modules.map((module, mIdx) => {
-                if (mIdx !== moduleIndex) return { ...module };
-                return { 
-                    ...module, 
-                    lessons: [...module.lessons, newLesson] 
-                };
-            });
-            return { ...prev, modules: newModules };
+            const newCourse = JSON.parse(JSON.stringify(prev));
+            newCourse.modules[moduleIndex].lessons.push(newLesson);
+            return newCourse;
         });
     }, [course, handleStateUpdate]);
     
@@ -369,18 +374,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         };
         
         handleStateUpdate(prev => {
-            const newModules = prev.modules.map((mod, mIdx) => {
-                if (mIdx !== moduleIndex) return mod;
-                const newLessons = mod.lessons.map((les, lIdx) => {
-                    if (lIdx !== lessonIndex) return les;
-                    return {
-                        ...les,
-                        contentBlocks: [...les.contentBlocks, newBlock]
-                    };
-                });
-                return { ...mod, lessons: newLessons };
-            });
-            return { ...prev, modules: newModules };
+            const newCourse = JSON.parse(JSON.stringify(prev));
+            newCourse.modules[moduleIndex].lessons[lessonIndex].contentBlocks.push(newBlock);
+            return newCourse;
         });
     }, [course, handleStateUpdate]);
 
@@ -420,40 +416,28 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         const { source, destination, type } = result;
         if (!destination || !course) return;
 
+        const newCourse = JSON.parse(JSON.stringify(course));
+
         if (type === 'MODULES') {
-            const newModules = Array.from(course.modules);
-            const [reorderedItem] = newModules.splice(source.index, 1);
-            newModules.splice(destination.index, 0, reorderedItem);
-            handleStateUpdate(c => ({...c, modules: newModules}));
+            const [reorderedItem] = newCourse.modules.splice(source.index, 1);
+            newCourse.modules.splice(destination.index, 0, reorderedItem);
         } else if (type === 'LESSONS') {
-             const newCourse = JSON.parse(JSON.stringify(course));
              const sourceModule = newCourse.modules.find(m => m.id === source.droppableId);
              const destModule = newCourse.modules.find(m => m.id === destination.droppableId);
              if (!sourceModule || !destModule) return;
 
              const [movedItem] = sourceModule.lessons.splice(source.index, 1);
              destModule.lessons.splice(destination.index, 0, movedItem);
-             
-             handleStateUpdate(() => newCourse);
         } else if (type === 'BLOCKS') {
-            handleStateUpdate(prev => {
-                const newCourseState = JSON.parse(JSON.stringify(prev));
-                let sourceLesson, destLesson;
-                for (const module of newCourseState.modules) {
-                    const foundSource = module.lessons.find(l => l.id === source.droppableId);
-                    if (foundSource) sourceLesson = foundSource;
-                    const foundDest = module.lessons.find(l => l.id === destination.droppableId);
-                    if (foundDest) destLesson = foundDest;
-                }
+             const sourceLesson = newCourse.modules.flatMap(m => m.lessons).find(l => l.id === source.droppableId);
+             const destLesson = newCourse.modules.flatMap(m => m.lessons).find(l => l.id === destination.droppableId);
+             if (!sourceLesson || !destLesson) return;
 
-                if (!sourceLesson || !destLesson) return prev;
-
-                const [movedItem] = sourceLesson.contentBlocks.splice(source.index, 1);
-                destLesson.contentBlocks.splice(destination.index, 0, movedItem);
-                
-                return newCourseState;
-            });
+             const [movedItem] = sourceLesson.contentBlocks.splice(source.index, 1);
+             destLesson.contentBlocks.splice(destination.index, 0, movedItem);
         }
+        
+        handleStateUpdate(() => newCourse);
     };
 
     const handleCropComplete = (croppedFileUrl: string) => {
@@ -573,6 +557,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                             onAddBlock={(lessonIndex, type) => handleAddBlock(moduleIndex, lessonIndex, type)}
                                                             onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
                                                             onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
+                                                            onQuizUpdate={(lessonIndex, blockIndex, updatedQuiz) => updateQuizForBlock(moduleIndex, lessonIndex, blockIndex, updatedQuiz)}
                                                             isSaving={isSaving}
                                                             provided={provided}
                                                             ref={provided.innerRef}
@@ -697,6 +682,129 @@ const BlockTypeSelector = ({ onSelect }) => (
     </DropdownMenu>
 );
 
+// === COMPONENTE PARA EL MODAL DE EDICIÓN DE QUIZ ===
+function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, onClose: () => void, quiz: AppQuiz, onSave: (updatedQuiz: AppQuiz) => void }) {
+    const [localQuiz, setLocalQuiz] = useState(quiz);
+
+    useEffect(() => {
+        setLocalQuiz(quiz);
+    }, [quiz, isOpen]);
+
+    const handleQuestionChange = (qIndex: number, text: string) => {
+        const newQuestions = [...localQuiz.questions];
+        newQuestions[qIndex].text = text;
+        setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
+    };
+
+    const handleOptionChange = (qIndex: number, oIndex: number, text: string) => {
+        const newQuestions = [...localQuiz.questions];
+        newQuestions[qIndex].options[oIndex].text = text;
+        setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
+    };
     
+    const handleSetCorrect = (qIndex: number, correctOptionId: string) => {
+        const newQuestions = [...localQuiz.questions];
+        newQuestions[qIndex].options = newQuestions[qIndex].options.map(opt => ({
+            ...opt,
+            isCorrect: opt.id === correctOptionId
+        }));
+        setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
+    };
 
+    const addQuestion = () => {
+        const newQuestion: AppQuestion = {
+            id: generateUniqueId('question'),
+            text: 'Nueva Pregunta',
+            order: localQuiz.questions.length,
+            options: [
+                { id: generateUniqueId('option'), text: 'Opción 1', isCorrect: true, feedback: '' },
+                { id: generateUniqueId('option'), text: 'Opción 2', isCorrect: false, feedback: '' }
+            ]
+        };
+        setLocalQuiz(prev => ({ ...prev, questions: [...prev.questions, newQuestion] }));
+    };
+    
+    const addOption = (qIndex: number) => {
+        const newOption: AppAnswerOption = {
+             id: generateUniqueId('option'),
+             text: `Opción ${localQuiz.questions[qIndex].options.length + 1}`,
+             isCorrect: false,
+             feedback: ''
+        };
+        const newQuestions = [...localQuiz.questions];
+        newQuestions[qIndex].options.push(newOption);
+        setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
+    };
 
+    const deleteQuestion = (qIndex: number) => {
+         setLocalQuiz(prev => ({ ...prev, questions: prev.questions.filter((_, i) => i !== qIndex) }));
+    };
+
+    const deleteOption = (qIndex: number, oIndex: number) => {
+        if (localQuiz.questions[qIndex].options.length <= 2) return; // Must have at least 2 options
+        const newQuestions = [...localQuiz.questions];
+        newQuestions[qIndex].options = newQuestions[qIndex].options.filter((_, i) => i !== oIndex);
+        
+        // If the deleted option was the correct one, set the first one as correct
+        if (!newQuestions[qIndex].options.some(opt => opt.isCorrect)) {
+            newQuestions[qIndex].options[0].isCorrect = true;
+        }
+
+        setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
+    };
+
+    const handleSaveChanges = () => {
+        onSave(localQuiz);
+        onClose();
+    };
+
+    if (!localQuiz) return null;
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+                <DialogHeader>
+                    <DialogTitle>Editor de Quiz: {localQuiz.title}</DialogTitle>
+                    <DialogDescription>Añade, edita y gestiona las preguntas y respuestas de este quiz.</DialogDescription>
+                </DialogHeader>
+                <ScrollArea className="flex-grow pr-6 -mr-6">
+                    <div className="space-y-6 py-4">
+                        {localQuiz.questions.map((q, qIndex) => (
+                            <Card key={q.id} className="bg-muted/30">
+                                <CardHeader className="flex flex-row items-center justify-between p-4">
+                                     <CardTitle className="text-base flex-grow">
+                                        <Input value={q.text} onChange={(e) => handleQuestionChange(qIndex, e.target.value)} className="font-semibold"/>
+                                     </CardTitle>
+                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteQuestion(qIndex)}><Trash2 className="h-4 w-4"/></Button>
+                                </CardHeader>
+                                <CardContent className="p-4 pt-0">
+                                    <RadioGroup value={q.options.find(opt => opt.isCorrect)?.id} onValueChange={(val) => handleSetCorrect(qIndex, val)}>
+                                        <div className="space-y-2">
+                                            {q.options.map((opt, oIndex) => (
+                                                <div key={opt.id} className="flex items-center gap-2">
+                                                    <RadioGroupItem value={opt.id} id={`q${qIndex}-o${oIndex}`} />
+                                                    <Label htmlFor={`q${qIndex}-o${oIndex}`} className="flex-grow">
+                                                        <Input value={opt.text} onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)} />
+                                                    </Label>
+                                                     <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70" onClick={() => deleteOption(qIndex, oIndex)}><XCircle className="h-4 w-4"/></Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </RadioGroup>
+                                    <Button size="sm" variant="link" onClick={() => addOption(qIndex)} className="mt-2 p-0 h-auto">+ Añadir Opción</Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                        <Button variant="outline" onClick={addQuestion} className="w-full">
+                            <PlusCircle className="mr-2 h-4 w-4"/> Añadir Pregunta
+                        </Button>
+                    </div>
+                </ScrollArea>
+                <DialogFooter>
+                    <Button variant="outline" onClick={onClose}>Cancelar</Button>
+                    <Button onClick={handleSaveChanges}>Guardar Cambios del Quiz</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}

@@ -9,9 +9,9 @@ export const dynamic = "force-dynamic";
 // GET a specific course by ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id: courseId } = await params;
+  const { id: courseId } = params;
   try {
     const course = await prisma.course.findUnique({
       where: { id: courseId },
@@ -64,14 +64,14 @@ export async function GET(
 // UPDATE course by ID
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const session = await getCurrentUser();
   if (!session) {
     return NextResponse.json({ message: "No autenticado" }, { status: 401 });
   }
 
-  const { id: courseId } = await params;
+  const { id: courseId } = params;
 
   try {
     const body: AppCourse = await req.json();
@@ -105,7 +105,7 @@ export async function PUT(
             },
         });
         
-        const existingModules = await tx.module.findMany({ where: { courseId }, select: { id: true, lessons: { select: { id: true } } } });
+        const existingModules = await tx.module.findMany({ where: { courseId }, select: { id: true } });
         const incomingModuleIds = new Set(modules.map(m => !m.id.startsWith('new-') ? m.id : undefined).filter(Boolean));
         
         // 2. Delete modules that are no longer present
@@ -117,7 +117,6 @@ export async function PUT(
         // 3. Upsert modules and their nested content
         for (const [moduleIndex, moduleData] of modules.entries()) {
             const isNewModule = moduleData.id.startsWith('new-');
-            
             const savedModule = await tx.module.upsert({
                 where: { id: isNewModule ? `__NEVER_FIND__${moduleData.id}` : moduleData.id },
                 create: { title: moduleData.title, order: moduleIndex, courseId },
@@ -127,11 +126,8 @@ export async function PUT(
             const existingLessons = await tx.lesson.findMany({ where: { moduleId: savedModule.id }, select: { id: true } });
             const incomingLessonIds = new Set(moduleData.lessons.map(l => !l.id.startsWith('new-') ? l.id : undefined).filter(Boolean));
 
-            // 4. Delete lessons no longer in the module
             const lessonsToDelete = existingLessons.filter(l => !incomingLessonIds.has(l.id));
-            if (lessonsToDelete.length > 0) {
-                await tx.lesson.deleteMany({ where: { id: { in: lessonsToDelete.map(l => l.id) } }});
-            }
+            if (lessonsToDelete.length > 0) await tx.lesson.deleteMany({ where: { id: { in: lessonsToDelete.map(l => l.id) } }});
 
             for (const [lessonIndex, lessonData] of moduleData.lessons.entries()) {
                 const isNewLesson = lessonData.id.startsWith('new-');
@@ -144,11 +140,8 @@ export async function PUT(
                 const existingBlocks = await tx.contentBlock.findMany({ where: { lessonId: savedLesson.id }, select: { id: true }});
                 const incomingBlockIds = new Set(lessonData.contentBlocks.map(b => !b.id.startsWith('new-') ? b.id : undefined).filter(Boolean));
                 
-                // 5. Delete blocks no longer in the lesson
                  const blocksToDelete = existingBlocks.filter(b => !incomingBlockIds.has(b.id));
-                 if (blocksToDelete.length > 0) {
-                    await tx.contentBlock.deleteMany({ where: { id: { in: blocksToDelete.map(b => b.id) } }});
-                }
+                 if (blocksToDelete.length > 0) await tx.contentBlock.deleteMany({ where: { id: { in: blocksToDelete.map(b => b.id) } }});
 
                 for (const [blockIndex, blockData] of lessonData.contentBlocks.entries()) {
                     const isNewBlock = blockData.id.startsWith('new-');
@@ -160,13 +153,39 @@ export async function PUT(
 
                     if (blockData.type === 'QUIZ' && blockData.quiz) {
                         const isNewQuiz = blockData.quiz.id.startsWith('new-');
-                        const quizData = { title: blockData.quiz.title, description: blockData.quiz.description || '', contentBlockId: savedBlock.id };
                         const savedQuiz = await tx.quiz.upsert({
                              where: { id: isNewQuiz ? `__NEVER_FIND__${blockData.quiz.id}` : blockData.quiz.id },
-                             create: quizData,
-                             update: quizData,
+                             create: { title: blockData.quiz.title, description: blockData.quiz.description || '', contentBlockId: savedBlock.id },
+                             update: { title: blockData.quiz.title, description: blockData.quiz.description || '' },
                         });
-                        // Placeholder: Handle quiz questions and options with similar delete/upsert logic if needed
+                        
+                        const existingQuestions = await tx.question.findMany({where: { quizId: savedQuiz.id }, select: { id: true }});
+                        const incomingQuestionIds = new Set(blockData.quiz.questions.map(q => !q.id.startsWith('new-') ? q.id : undefined).filter(Boolean));
+                        const questionsToDelete = existingQuestions.filter(q => !incomingQuestionIds.has(q.id));
+                        if(questionsToDelete.length > 0) await tx.question.deleteMany({where: {id: {in: questionsToDelete.map(q=>q.id)}}});
+
+                        for(const [qIndex, questionData] of blockData.quiz.questions.entries()){
+                            const isNewQuestion = questionData.id.startsWith('new-');
+                            const savedQuestion = await tx.question.upsert({
+                                where: { id: isNewQuestion ? `__NEVER_FIND__${questionData.id}` : questionData.id },
+                                create: { text: questionData.text, order: qIndex, quizId: savedQuiz.id },
+                                update: { text: questionData.text, order: qIndex },
+                            });
+
+                            const existingOptions = await tx.answerOption.findMany({where: {questionId: savedQuestion.id}, select: {id: true}});
+                            const incomingOptionIds = new Set(questionData.options.map(o => !o.id.startsWith('new-') ? o.id : undefined).filter(Boolean));
+                            const optionsToDelete = existingOptions.filter(o => !incomingOptionIds.has(o.id));
+                            if(optionsToDelete.length > 0) await tx.answerOption.deleteMany({where: {id: {in: optionsToDelete.map(o=>o.id)}}});
+
+                            for(const optionData of questionData.options){
+                                const isNewOption = optionData.id.startsWith('new-');
+                                await tx.answerOption.upsert({
+                                    where: {id: isNewOption ? `__NEVER_FIND__${optionData.id}` : optionData.id},
+                                    create: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback, questionId: savedQuestion.id },
+                                    update: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback },
+                                });
+                            }
+                        }
                     }
                 }
             }
@@ -194,14 +213,14 @@ export async function PUT(
 // DELETE course by ID
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const session = await getCurrentUser();
   if (!session || (session.role !== "ADMINISTRATOR" && session.role !== "INSTRUCTOR")) {
     return NextResponse.json({ message: "No autorizado" }, { status: 403 });
   }
 
-  const { id: courseId } = await params;
+  const { id: courseId } = params;
 
   try {
     const courseToDelete = await prisma.course.findUnique({
