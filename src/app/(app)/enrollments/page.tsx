@@ -3,16 +3,16 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import type { Course as AppCourse, User, UserRole } from '@/types';
+import type { Course as AppCourse, User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, Target, FileText } from 'lucide-react';
+import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, Target, FileText, Search } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { useTitle } from '@/contexts/title-context';
 import { Identicon } from '@/components/ui/identicon';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -59,19 +59,142 @@ const StatCard = ({ icon: Icon, title, value, unit = '' }: { icon: React.Element
     </Card>
 );
 
+const CourseSelector = ({ courses, onSelect, selectedCourseId, isLoading }: { courses: AppCourse[], onSelect: (id: string) => void, selectedCourseId: string, isLoading: boolean }) => {
+    const [open, setOpen] = useState(false);
+    const selectedCourseTitle = courses.find(c => c.id === selectedCourseId)?.title || "Selecciona un curso";
+
+    return (
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+                <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-full sm:w-[350px] justify-between"
+                    disabled={isLoading || courses.length === 0}
+                >
+                    <span className="truncate">{selectedCourseTitle}</span>
+                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[350px] p-0">
+                <Command>
+                    <CommandInput placeholder="Buscar curso..." />
+                    <CommandList>
+                        <CommandEmpty>No se encontraron cursos.</CommandEmpty>
+                        <CommandGroup>
+                            {courses.map((course) => (
+                                <CommandItem
+                                    key={course.id}
+                                    value={course.title}
+                                    onSelect={() => {
+                                        onSelect(course.id);
+                                        setOpen(false);
+                                    }}
+                                >
+                                    {course.title}
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
+                    </CommandList>
+                </Command>
+            </PopoverContent>
+        </Popover>
+    );
+};
+
+const EnrolledStudentList = ({ enrollments, onAction }: { enrollments: CourseEnrollmentInfo['enrollments'], onAction: (user: any) => void }) => {
+    const isMobile = useIsMobile();
+    
+    if (isMobile) {
+        return (
+            <div className="space-y-4">
+                {enrollments.map(enrollment => (
+                  <Card key={enrollment.user.id} className="card-border-animated">
+                    <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
+                       <Avatar className="h-10 w-10"><AvatarImage src={enrollment.user.avatar || undefined} /><AvatarFallback><Identicon userId={enrollment.user.id}/></AvatarFallback></Avatar>
+                        <div className="flex-grow overflow-hidden">
+                            <p className="font-semibold truncate">{enrollment.user.name || 'N/A'}</p>
+                            <p className="text-sm text-muted-foreground truncate">{enrollment.user.email}</p>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0 space-y-2">
+                       <Separator/>
+                       <div className="pt-2 flex justify-between items-center">
+                         <div>
+                            <Label className="text-xs text-muted-foreground">Progreso</Label>
+                            <div className="flex items-center gap-2 mt-1">
+                                <CircularProgress value={enrollment.progress?.progressPercentage || 0} size={32} strokeWidth={3} />
+                                <span className="text-lg font-bold">{Math.round(enrollment.progress?.progressPercentage || 0)}%</span>
+                            </div>
+                         </div>
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                            <DropdownMenuContent><DropdownMenuItem onClick={() => onAction(enrollment.user)}>Ver Detalles</DropdownMenuItem></DropdownMenuContent>
+                         </DropdownMenu>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+            </div>
+        );
+    }
+
+    return (
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead className="w-[300px]">Estudiante</TableHead>
+                    <TableHead>Progreso</TableHead>
+                    <TableHead className="text-right">Inscrito el</TableHead>
+                    <TableHead className="w-[50px]"><span className="sr-only">Acciones</span></TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {enrollments.map(enrollment => (
+                    <TableRow key={enrollment.user.id}>
+                        <TableCell>
+                            <div className="flex items-center gap-3">
+                                <Avatar className="h-9 w-9"><AvatarImage src={enrollment.user.avatar || undefined} /><AvatarFallback><Identicon userId={enrollment.user.id}/></AvatarFallback></Avatar>
+                                <div>
+                                    <div className="font-medium">{enrollment.user.name || 'N/A'}</div>
+                                    <div className="text-xs text-muted-foreground">{enrollment.user.email}</div>
+                                </div>
+                            </div>
+                        </TableCell>
+                        <TableCell>
+                            <div className="flex items-center gap-3">
+                                <CircularProgress value={enrollment.progress?.progressPercentage || 0} size={36} strokeWidth={4} />
+                                <span className="text-sm font-medium text-muted-foreground">{Math.round(enrollment.progress?.progressPercentage || 0)}%</span>
+                            </div>
+                        </TableCell>
+                        <TableCell className="text-right text-sm text-muted-foreground">
+                            {new Date(enrollment.enrolledAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
+                        </TableCell>
+                        <TableCell>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                <DropdownMenuContent><DropdownMenuItem onClick={() => onAction(enrollment.user)}>Ver Detalles</DropdownMenuItem></DropdownMenuContent>
+                            </DropdownMenu>
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    );
+};
+
+
 export default function EnrollmentsPage() {
   const { user: currentUser, isLoading: isAuthLoading } = useAuth();
   const { toast } = useToast();
-  const isMobile = useIsMobile();
   const { setPageTitle } = useTitle();
-
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [courses, setCourses] = useState<AppCourse[]>([]);
   const [selectedCourseInfo, setSelectedCourseInfo] = useState<CourseEnrollmentInfo | null>(null);
-  
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -158,6 +281,13 @@ export default function EnrollmentsPage() {
       router.push(`${pathname}?${createQueryString({ search: e.target.value, page: 1 })}`);
   }
 
+  const handleStudentAction = (student: User) => {
+      toast({
+          title: "Próximamente",
+          description: `La vista detallada para ${student.name} estará disponible pronto.`
+      });
+  }
+
   const filteredEnrollments = useMemo(() => {
     if (!selectedCourseInfo) return [];
     return selectedCourseInfo.enrollments.filter(e => 
@@ -181,75 +311,6 @@ export default function EnrollmentsPage() {
   if (!currentUser || (currentUser.role !== 'ADMINISTRATOR' && currentUser.role !== 'INSTRUCTOR')) {
     return <div className="text-center py-10">Acceso denegado a esta sección.</div>;
   }
-  
-  const DesktopTable = () => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[300px]">Estudiante</TableHead>
-          <TableHead>Progreso</TableHead>
-          <TableHead className="text-right">Inscrito el</TableHead>
-          <TableHead className="w-[50px]"><span className="sr-only">Acciones</span></TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {paginatedEnrollments.map(enrollment => (
-            <TableRow key={enrollment.user.id}>
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-9 w-9"><AvatarImage src={enrollment.user.avatar || undefined} /><AvatarFallback><Identicon userId={enrollment.user.id}/></AvatarFallback></Avatar>
-                  <div>
-                     <div className="font-medium">{enrollment.user.name || 'N/A'}</div>
-                     <div className="text-xs text-muted-foreground">{enrollment.user.email}</div>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                  <div className="flex items-center gap-3">
-                      <CircularProgress value={enrollment.progress?.progressPercentage || 0} size={36} strokeWidth={4} />
-                      <span className="text-sm font-medium text-muted-foreground">{Math.round(enrollment.progress?.progressPercentage || 0)}%</span>
-                  </div>
-              </TableCell>
-              <TableCell className="text-right text-sm text-muted-foreground">
-                  {new Date(enrollment.enrolledAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
-              </TableCell>
-              <TableCell>
-                 <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem disabled>Ver Detalles</DropdownMenuItem><DropdownMenuItem disabled>Enviar Mensaje</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
-              </TableCell>
-            </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-  
-  const MobileCardList = () => (
-    <div className="space-y-4">
-      {paginatedEnrollments.map(enrollment => (
-          <Card key={enrollment.user.id} className="card-border-animated">
-            <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
-               <Avatar className="h-10 w-10"><AvatarImage src={enrollment.user.avatar || undefined} /><AvatarFallback><Identicon userId={enrollment.user.id}/></AvatarFallback></Avatar>
-                <div className="flex-grow overflow-hidden">
-                    <p className="font-semibold truncate">{enrollment.user.name || 'N/A'}</p>
-                    <p className="text-sm text-muted-foreground truncate">{enrollment.user.email}</p>
-                </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 space-y-2">
-               <Separator/>
-               <div className="pt-2 flex justify-between items-center">
-                 <div>
-                    <Label className="text-xs text-muted-foreground">Progreso</Label>
-                    <div className="flex items-center gap-2 mt-1">
-                        <CircularProgress value={enrollment.progress?.progressPercentage || 0} size={32} strokeWidth={3} />
-                        <span className="text-lg font-bold">{Math.round(enrollment.progress?.progressPercentage || 0)}%</span>
-                    </div>
-                 </div>
-                 <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem disabled>Ver Detalles</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
-              </div>
-            </CardContent>
-          </Card>
-      ))}
-    </div>
-  );
 
   return (
     <div className="space-y-8">
@@ -261,16 +322,7 @@ export default function EnrollmentsPage() {
                     <CardDescription>Selecciona un curso para ver los estudiantes inscritos y su progreso.</CardDescription>
                 </div>
                 <div className="w-full sm:w-auto">
-                {isLoadingCourses ? <Loader2 className="animate-spin my-2"/> : courses.length > 0 ? (
-                    <Select onValueChange={handleCourseSelection} value={selectedCourseId}>
-                    <SelectTrigger id="course-selector" className="w-full sm:w-[300px]">
-                        <SelectValue placeholder="Elige un curso" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {courses.map(course => <SelectItem key={course.id} value={course.id}>{course.title}</SelectItem>)}
-                    </SelectContent>
-                    </Select>
-                ) : <p className="text-muted-foreground mt-1 text-sm">{currentUser.role === 'INSTRUCTOR' ? 'No tienes cursos asignados.' : 'No hay cursos en la plataforma.'}</p>}
+                    <CourseSelector courses={courses} onSelect={handleCourseSelection} selectedCourseId={selectedCourseId} isLoading={isLoadingCourses} />
                 </div>
             </div>
         </CardHeader>
@@ -300,7 +352,7 @@ export default function EnrollmentsPage() {
                     </CardHeader>
                     <CardContent>
                         {paginatedEnrollments.length > 0 ? (
-                            isMobile ? <MobileCardList /> : <DesktopTable />
+                           <EnrolledStudentList enrollments={paginatedEnrollments} onAction={handleStudentAction} />
                         ) : <p className="text-center text-muted-foreground py-6">{searchTerm ? "Ningún estudiante coincide con tu búsqueda." : "No hay estudiantes inscritos en este curso aún."}</p>}
                     </CardContent>
                     {totalPages > 1 && (
