@@ -307,14 +307,18 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             if (!prev) return null;
             const newModules = prev.modules.map((module, mIdx) => {
                 if (mIdx !== moduleIndex) return module;
+                
                 const newLessons = module.lessons.map((lesson, lIdx) => {
                     if (lIdx !== lessonIndex) return lesson;
+                    
                     const newBlocks = lesson.contentBlocks.map((block, bIdx) => {
                         if (bIdx !== blockIndex) return block;
                         return { ...block, [field]: value };
                     });
+                    
                     return { ...lesson, contentBlocks: newBlocks };
                 });
+                
                 return { ...module, lessons: newLessons };
             });
             return { ...prev, modules: newModules };
@@ -345,7 +349,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
          const newModules = course.modules.map((module, index) => {
             if (index === moduleIndex) {
-                return { ...module, lessons: [...module.lessons, newLesson] };
+                // Crear una nueva copia de las lecciones y añadir la nueva
+                const updatedLessons = [...module.lessons, newLesson];
+                return { ...module, lessons: updatedLessons };
             }
             return module;
         });
@@ -437,24 +443,25 @@ export function CourseEditor({ courseId }: { courseId: string }) {
              setCourse(tempCourse);
              setIsDirty(true);
         } else if (type === 'BLOCKS') {
-             const tempCourse = JSON.parse(JSON.stringify(course));
-             let sourceLesson: AppLesson | null = null;
-             let destLesson: AppLesson | null = null;
+            const tempCourse = JSON.parse(JSON.stringify(course));
+            
+            let sourceLesson;
+            let destLesson;
 
-             for (const module of tempCourse.modules) {
-                const foundSource = module.lessons.find(l => l.id === source.droppableId);
-                if (foundSource) sourceLesson = foundSource;
-                const foundDest = module.lessons.find(l => l.id === destination.droppableId);
-                if (foundDest) destLesson = foundDest;
-             }
+            for(const module of tempCourse.modules) {
+                const sLesson = module.lessons.find(l => l.id === source.droppableId);
+                if (sLesson) sourceLesson = sLesson;
+                const dLesson = module.lessons.find(l => l.id === destination.droppableId);
+                if (dLesson) destLesson = dLesson;
+            }
 
-             if (!sourceLesson || !destLesson) return;
+            if (!sourceLesson || !destLesson) return;
 
-             const [movedBlock] = sourceLesson.contentBlocks.splice(source.index, 1);
-             destLesson.contentBlocks.splice(destination.index, 0, movedBlock);
+            const [movedBlock] = sourceLesson.contentBlocks.splice(source.index, 1);
+            destLesson.contentBlocks.splice(destination.index, 0, movedBlock);
 
-             setCourse(tempCourse);
-             setIsDirty(true);
+            setCourse(tempCourse);
+            setIsDirty(true);
         }
     };
     
