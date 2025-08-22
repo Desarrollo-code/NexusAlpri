@@ -2,11 +2,10 @@
 import { FormEditor } from '@/components/forms/form-editor';
 import React from 'react';
 
-// This is a simple Server Component that only extracts the formId
-// and passes it to the client component.
+// Este es un Server Component. Los parámetros se acceden directamente.
 export default function EditFormPage({ params }: { params: { formId: string } }) {
   const { formId } = params;
 
-  // The FormEditor component will handle all data fetching, state management, and logic.
+  // El FormEditor es un Client Component que manejará toda la lógica.
   return <FormEditor formId={formId} />;
 }

@@ -19,10 +19,11 @@ const CourseEditor = dynamic(
   }
 );
 
-// Este componente ahora es un Client Component para poder usar 'dynamic'.
-// Extrae el courseId de los parámetros y lo pasa al editor.
-export default function EditCoursePage({ params }: { params: { courseId: string } }) {
-  const { courseId } = params;
+// Este componente ahora es un Client Component para poder usar 'dynamic' y React.use()
+// para desenvolver la promesa de los parámetros.
+export default function EditCoursePage({ params }: { params: Promise<{ courseId: string }> }) {
+  // Se utiliza React.use() para acceder a los parámetros de forma síncrona en un Client Component
+  const { courseId } = React.use(params);
 
   // El CourseEditor maneja la lógica interna
   return <CourseEditor courseId={courseId} />;
