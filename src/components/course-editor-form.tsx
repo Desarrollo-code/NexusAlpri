@@ -26,7 +26,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from '@/components/ui/badge';
 import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided, DraggableStateSnapshot, DroppableProvided } from '@hello-pangea/dnd';
@@ -275,10 +275,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         }
     }, [courseId, user, router, toast, setPageTitle]);
 
-    const handleStateUpdate = (updater: (prev: AppCourse) => AppCourse) => {
+    const handleStateUpdate = useCallback((updater: (prev: AppCourse) => AppCourse) => {
         setCourse(prev => prev ? updater(prev) : null);
         setIsDirty(true);
-    };
+    }, []);
 
     const updateCourseField = (field: keyof AppCourse, value: any) => {
         handleStateUpdate(prev => ({ ...prev, [field]: value }));
@@ -330,44 +330,59 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         handleStateUpdate(prev => ({ ...prev, modules: [...prev.modules, newModule] }));
     };
     
-    const handleAddLesson = (moduleIndex: number) => {
+    const handleAddLesson = useCallback((moduleIndex: number) => {
         if (!course) return;
+
         const newLesson: AppLesson = {
             id: generateUniqueId('lesson'),
             title: 'Nueva Lección',
             order: course.modules[moduleIndex].lessons.length,
             contentBlocks: [],
         };
+
         handleStateUpdate(prev => {
-             const newModules = prev.modules.map((module, mIdx) => {
-                if (mIdx !== moduleIndex) return module;
-                return { ...module, lessons: [...module.lessons, newLesson] };
+            const newModules = prev.modules.map((module, mIdx) => {
+                if (mIdx !== moduleIndex) return { ...module };
+                return { 
+                    ...module, 
+                    lessons: [...module.lessons, newLesson] 
+                };
             });
             return { ...prev, modules: newModules };
         });
-    };
+    }, [course, handleStateUpdate]);
     
-    const handleAddBlock = (moduleIndex: number, lessonIndex: number, type: LessonType) => {
+     const handleAddBlock = useCallback((moduleIndex: number, lessonIndex: number, type: LessonType) => {
         if (!course) return;
+
         const newBlock: ContentBlock = {
             id: generateUniqueId('block'),
             type: type,
             content: '',
-            order: course.modules[moduleIndex].lessons[lessonIndex].contentBlocks.length || 0,
-            quiz: type === 'QUIZ' ? { id: generateUniqueId('quiz'), title: 'Nuevo Quiz', description: '', questions: [] } : undefined
+            order: course.modules[moduleIndex].lessons[lessonIndex].contentBlocks.length,
+            quiz: type === 'QUIZ' ? { 
+                id: generateUniqueId('quiz'), 
+                title: 'Nuevo Quiz', 
+                description: '', 
+                questions: [] 
+            } : undefined
         };
         
         handleStateUpdate(prev => {
-            const newCourse = { ...prev };
-            const newModules = [...newCourse.modules];
-            const newLessons = [...newModules[moduleIndex].lessons];
-            const newBlocks = [...newLessons[lessonIndex].contentBlocks, newBlock];
-            newLessons[lessonIndex] = { ...newLessons[lessonIndex], contentBlocks: newBlocks };
-            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
-            newCourse.modules = newModules;
-            return newCourse;
+            const newModules = prev.modules.map((mod, mIdx) => {
+                if (mIdx !== moduleIndex) return mod;
+                const newLessons = mod.lessons.map((les, lIdx) => {
+                    if (lIdx !== lessonIndex) return les;
+                    return {
+                        ...les,
+                        contentBlocks: [...les.contentBlocks, newBlock]
+                    };
+                });
+                return { ...mod, lessons: newLessons };
+            });
+            return { ...prev, modules: newModules };
         });
-    };
+    }, [course, handleStateUpdate]);
 
     const handleRemoveModule = (moduleIndex: number) => {
          setItemToDeleteDetails({
@@ -419,26 +434,25 @@ export function CourseEditor({ courseId }: { courseId: string }) {
              const [movedItem] = sourceModule.lessons.splice(source.index, 1);
              destModule.lessons.splice(destination.index, 0, movedItem);
              
-             handleStateUpdate(c => newCourse);
-
+             handleStateUpdate(() => newCourse);
         } else if (type === 'BLOCKS') {
-            const newCourseState = JSON.parse(JSON.stringify(course));
-            let sourceLesson;
-            let destLesson;
+            handleStateUpdate(prev => {
+                const newCourseState = JSON.parse(JSON.stringify(prev));
+                let sourceLesson, destLesson;
+                for (const module of newCourseState.modules) {
+                    const foundSource = module.lessons.find(l => l.id === source.droppableId);
+                    if (foundSource) sourceLesson = foundSource;
+                    const foundDest = module.lessons.find(l => l.id === destination.droppableId);
+                    if (foundDest) destLesson = foundDest;
+                }
 
-            for (const module of newCourseState.modules) {
-                const sLesson = module.lessons.find(l => l.id === source.droppableId);
-                if (sLesson) sourceLesson = sLesson;
-                const dLesson = module.lessons.find(l => l.id === destination.droppableId);
-                if (dLesson) destLesson = dLesson;
-            }
+                if (!sourceLesson || !destLesson) return prev;
 
-            if (!sourceLesson || !destLesson) return;
-
-            const [movedItem] = sourceLesson.contentBlocks.splice(source.index, 1);
-            destLesson.contentBlocks.splice(destination.index, 0, movedItem);
-            
-            handleStateUpdate(c => newCourseState);
+                const [movedItem] = sourceLesson.contentBlocks.splice(source.index, 1);
+                destLesson.contentBlocks.splice(destination.index, 0, movedItem);
+                
+                return newCourseState;
+            });
         }
     };
 
@@ -684,4 +698,5 @@ const BlockTypeSelector = ({ onSelect }) => (
 );
 
     
+
 
