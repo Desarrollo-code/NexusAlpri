@@ -404,33 +404,34 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     // --- Drag and Drop ---
     const onDragEnd = (result: DropResult) => {
         const { source, destination, type } = result;
-
-        if (!destination || !course) {
-            return;
-        }
+        if (!destination || !course) return;
 
         let newModules = JSON.parse(JSON.stringify(course.modules));
 
         if (type === 'MODULES') {
             const [reorderedItem] = newModules.splice(source.index, 1);
             newModules.splice(destination.index, 0, reorderedItem);
-
         } else if (type === 'LESSONS') {
-            const sourceModuleIndex = newModules.findIndex(m => m.id === source.droppableId);
-            const destModuleIndex = newModules.findIndex(m => m.id === destination.droppableId);
-            
-            if (sourceModuleIndex === -1 || destModuleIndex === -1) return;
+            const sourceModuleIndex = newModules.findIndex((m: AppModule) => m.id === source.droppableId);
+            const destModuleIndex = newModules.findIndex((m: AppModule) => m.id === destination.droppableId);
+
+            if (sourceModuleIndex < 0 || destModuleIndex < 0) return;
 
             const sourceModule = newModules[sourceModuleIndex];
-            const destModule = newModules[destModuleIndex];
             const [movedItem] = sourceModule.lessons.splice(source.index, 1);
             
-            destModule.lessons.splice(destination.index, 0, movedItem);
-
+            if (sourceModuleIndex === destModuleIndex) {
+                 sourceModule.lessons.splice(destination.index, 0, movedItem);
+            } else {
+                 const destModule = newModules[destModuleIndex];
+                 destModule.lessons.splice(destination.index, 0, movedItem);
+            }
         } else if (type === 'BLOCKS') {
-            let sourceModuleIndex = -1, sourceLessonIndex = -1;
+            let sourceModuleIndex = -1;
+            let sourceLessonIndex = -1;
+            
             for(let i=0; i < newModules.length; i++) {
-                const lessonIdx = newModules[i].lessons.findIndex(l => l.id === source.droppableId);
+                const lessonIdx = newModules[i].lessons.findIndex((l: AppLesson) => l.id === source.droppableId);
                 if (lessonIdx !== -1) {
                     sourceModuleIndex = i;
                     sourceLessonIndex = lessonIdx;
@@ -438,7 +439,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 }
             }
             if(sourceModuleIndex === -1 || sourceLessonIndex === -1) return;
-            
+
             const items = newModules[sourceModuleIndex].lessons[sourceLessonIndex].contentBlocks;
             const [reorderedItem] = items.splice(source.index, 1);
             items.splice(destination.index, 0, reorderedItem);
@@ -691,5 +692,6 @@ const BlockTypeSelector = ({ onSelect }) => (
 
 
     
+
 
 
