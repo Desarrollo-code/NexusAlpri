@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState } from 'react';
@@ -10,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { Announcement, UserRole } from '@/types';
 import { User, Clock, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
+import { Identicon } from './ui/identicon';
 
 interface AnnouncementCardProps {
   announcement: Announcement;
@@ -79,7 +78,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
                 <Avatar className="h-5 w-5">
                     <AvatarImage src={undefined} alt={announcement.author?.name || 'Sistema'} />
                     <AvatarFallback className="text-xs">
-                        {announcement.author?.name ? announcement.author.name.charAt(0).toUpperCase() : 'S'}
+                        {announcement.author ? <Identicon userId={announcement.author.id} /> : 'S'}
                     </AvatarFallback>
                 </Avatar>
                 <span>{announcement.author?.name || 'Sistema'}</span>
