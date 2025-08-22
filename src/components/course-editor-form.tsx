@@ -408,54 +408,26 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         const { source, destination, type } = result;
         if (!destination || !course) return;
 
-        // Use a deep copy to avoid direct state mutation issues.
-        const newModules = JSON.parse(JSON.stringify(course.modules));
+        let newModules = JSON.parse(JSON.stringify(course.modules));
 
         if (type === 'MODULES') {
             const [reorderedItem] = newModules.splice(source.index, 1);
             newModules.splice(destination.index, 0, reorderedItem);
         } else if (type === 'LESSONS') {
-             if (source.droppableId === destination.droppableId) {
-                // Reordering lessons within the same module
-                const moduleIndex = newModules.findIndex((m: AppModule) => m.id === source.droppableId);
-                if (moduleIndex === -1) return;
-                
-                const module = newModules[moduleIndex];
-                const [reorderedItem] = module.lessons.splice(source.index, 1);
-                module.lessons.splice(destination.index, 0, reorderedItem);
+            const sourceModuleIndex = newModules.findIndex((m: AppModule) => m.id === source.droppableId);
+            const destModuleIndex = newModules.findIndex((m: AppModule) => m.id === destination.droppableId);
 
+            if (sourceModuleIndex === -1 || destModuleIndex === -1) return;
+
+            const sourceModule = newModules[sourceModuleIndex];
+            const [movedItem] = sourceModule.lessons.splice(source.index, 1);
+
+            if (source.droppableId === destination.droppableId) {
+                sourceModule.lessons.splice(destination.index, 0, movedItem);
             } else {
-                // Moving lesson between different modules
-                const sourceModuleIndex = newModules.findIndex((m: AppModule) => m.id === source.droppableId);
-                const destModuleIndex = newModules.findIndex((m: AppModule) => m.id === destination.droppableId);
-
-                if (sourceModuleIndex === -1 || destModuleIndex === -1) return;
-
-                const sourceModule = newModules[sourceModuleIndex];
                 const destModule = newModules[destModuleIndex];
-
-                const [movedItem] = sourceModule.lessons.splice(source.index, 1);
                 destModule.lessons.splice(destination.index, 0, movedItem);
             }
-        } else if (type === 'BLOCKS') {
-            let sourceModuleIndex = -1, sourceLessonIndex = -1;
-            let destModuleIndex = -1, destLessonIndex = -1;
-
-            // This logic assumes blocks can only be moved within the same lesson for now.
-            // A more complex logic would be needed to move blocks between lessons.
-            for(let i=0; i < newModules.length; i++) {
-                const lessonIdx = newModules[i].lessons.findIndex((l: AppLesson) => l.id === source.droppableId);
-                if (lessonIdx !== -1) {
-                    sourceModuleIndex = i;
-                    sourceLessonIndex = lessonIdx;
-                    break;
-                }
-            }
-            if(sourceModuleIndex === -1 || sourceLessonIndex === -1) return;
-
-            const items = newModules[sourceModuleIndex].lessons[sourceLessonIndex].contentBlocks;
-            const [reorderedItem] = items.splice(source.index, 1);
-            items.splice(destination.index, 0, reorderedItem);
         }
 
         updateCourseField('modules', newModules);
@@ -498,14 +470,12 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             
             toast({ title: "Curso Guardado", description: "La información del curso se ha guardado correctamente." });
             
-            // CRITICAL: Sync local state with the state returned from the server,
-            // which now has permanent DB IDs for any new items.
+            // CRITICAL: Sync local state with the state returned from the server
             setCourse(savedCourse); 
             setPageTitle(`Editando: ${savedCourse.title}`);
             setIsDirty(false); // Reset dirty state after successful save & sync
             
             if (courseId === 'new') {
-                // If it was a new course, update the URL to reflect its new permanent ID
                 router.replace(`/manage-courses/${savedCourse.id}/edit`, { scroll: false });
             }
 
@@ -706,11 +676,3 @@ const BlockTypeSelector = ({ onSelect }) => (
         </DropdownMenuContent>
     </DropdownMenu>
 );
-
-
-    
-
-
-
-
-
