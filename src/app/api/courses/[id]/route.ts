@@ -10,9 +10,9 @@ export const dynamic = "force-dynamic";
 // GET a specific course by ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: courseId } = params;
+  const { id: courseId } = await params;
   try {
     const course = await prisma.course.findUnique({
       where: { id: courseId },
@@ -65,14 +65,14 @@ export async function GET(
 // UPDATE course by ID
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getCurrentUser();
   if (!session) {
     return NextResponse.json({ message: "No autenticado" }, { status: 401 });
   }
 
-  const { id: courseId } = params;
+  const { id: courseId } = await params;
 
   try {
     const body: AppCourse = await req.json();
@@ -106,7 +106,7 @@ export async function PUT(
             },
         });
         
-        const existingModules = await tx.module.findMany({ where: { courseId }});
+        const existingModules = await tx.module.findMany({ where: { courseId }, select: { id: true } });
         const incomingModuleIds = new Set(modules.map(m => !m.id.startsWith('new-') ? m.id : undefined).filter(Boolean));
         
         // 2. Delete modules that are no longer present
@@ -125,7 +125,7 @@ export async function PUT(
                 update: { title: moduleData.title, order: moduleIndex },
             });
             
-            const existingLessons = await tx.lesson.findMany({ where: { moduleId: savedModule.id } });
+            const existingLessons = await tx.lesson.findMany({ where: { moduleId: savedModule.id }, select: { id: true } });
             const incomingLessonIds = new Set(moduleData.lessons.map(l => !l.id.startsWith('new-') ? l.id : undefined).filter(Boolean));
 
             // 4. Delete lessons no longer in the module
@@ -142,7 +142,7 @@ export async function PUT(
                     update: { title: lessonData.title, order: lessonIndex },
                 });
                 
-                const existingBlocks = await tx.contentBlock.findMany({ where: { lessonId: savedLesson.id }, include: { quiz: true }});
+                const existingBlocks = await tx.contentBlock.findMany({ where: { lessonId: savedLesson.id }, select: { id: true }});
                 const incomingBlockIds = new Set(lessonData.contentBlocks.map(b => !b.id.startsWith('new-') ? b.id : undefined).filter(Boolean));
                 
                 // 5. Delete blocks no longer in the lesson
@@ -167,8 +167,7 @@ export async function PUT(
                              create: quizData,
                              update: quizData,
                         });
-                        
-                        // Handle quiz questions and options with similar delete/upsert logic
+                        // Placeholder: Handle quiz questions and options with similar delete/upsert logic if needed
                     }
                 }
             }
@@ -196,14 +195,14 @@ export async function PUT(
 // DELETE course by ID
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getCurrentUser();
   if (!session || (session.role !== "ADMINISTRATOR" && session.role !== "INSTRUCTOR")) {
     return NextResponse.json({ message: "No autorizado" }, { status: 403 });
   }
 
-  const { id: courseId } = params;
+  const { id: courseId } = await params;
 
   try {
     const courseToDelete = await prisma.course.findUnique({
