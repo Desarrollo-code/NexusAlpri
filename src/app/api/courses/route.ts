@@ -5,6 +5,10 @@ import type { UserRole, CourseStatus } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
+// Tipos para evitar subrayados rojos
+type ModuleLite = { id: string; courseId: string };
+type LessonGroup = { moduleId: string; _count: { _all: number } };
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getCurrentUser();
@@ -29,68 +33,63 @@ export async function GET(req: NextRequest) {
         whereClause.instructorId = userId;
       }
       if (tab && tab !== 'all') {
-          whereClause.status = tab as CourseStatus;
+        whereClause.status = tab as CourseStatus;
       }
     } else {
       whereClause.status = 'PUBLISHED';
     }
 
     const [courses, totalCourses] = await prisma.$transaction([
-        prisma.course.findMany({
-            where: whereClause,
-            include: {
-                instructor: {
-                    select: { id: true, name: true },
-                },
-                _count: {
-                    select: { modules: true },
-                },
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-            ...(isPaginated && { skip, take: pageSize })
-        }),
-        prisma.course.count({ where: whereClause })
+      prisma.course.findMany({
+        where: whereClause,
+        include: {
+          instructor: { select: { id: true, name: true } },
+          _count: { select: { modules: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        ...(isPaginated && { skip, take: pageSize }),
+      }),
+      prisma.course.count({ where: whereClause }),
     ]);
     
-    // Enrich with lesson counts for management view
+    // Enriquecer con número de lecciones (solo en vista de gestión)
     if (manageView) {
-        const courseIds = courses.map(c => c.id);
-        if (courseIds.length > 0) {
-            const lessonsCountRaw = await prisma.lesson.groupBy({
-                by: ['moduleId'],
-                _count: { _all: true },
-                where: { module: { courseId: { in: courseIds } } }
-            });
-            const modules = await prisma.module.findMany({
-                where: { courseId: { in: courseIds } },
-                select: { id: true, courseId: true }
-            });
+      const courseIds = courses.map((c: { id: string }) => c.id);
 
-            const courseLessonsMap = new Map<string, number>();
-            modules.forEach(module => {
-                const lessonCount = lessonsCountRaw.find(lc => lc.moduleId === module.id)?._count._all || 0;
-                courseLessonsMap.set(module.courseId, (courseLessonsMap.get(module.courseId) || 0) + lessonCount);
-            });
-            
-            const enrichedCourses = courses.map(course => ({
-                ...course,
-                lessonsCount: courseLessonsMap.get(course.id) || 0,
-            }));
+      if (courseIds.length > 0) {
+        const lessonsCountRaw: LessonGroup[] = await prisma.lesson.groupBy({
+          by: ['moduleId'],
+          _count: { _all: true },
+          where: { module: { courseId: { in: courseIds } } },
+        });
 
-            if (isPaginated) {
-              return NextResponse.json({ courses: enrichedCourses, totalCourses });
-            }
-            return NextResponse.json(enrichedCourses);
-        }
+        const modules: ModuleLite[] = await prisma.module.findMany({
+          where: { courseId: { in: courseIds } },
+          select: { id: true, courseId: true },
+        });
+
+        const courseLessonsMap = new Map<string, number>();
+
+        modules.forEach((module: ModuleLite) => {
+          const lessonCount =
+            lessonsCountRaw.find((lc: LessonGroup) => lc.moduleId === module.id)?._count._all || 0;
+
+          courseLessonsMap.set(
+            module.courseId,
+            (courseLessonsMap.get(module.courseId) || 0) + lessonCount,
+          );
+        });
+
+        const enrichedCourses = courses.map((course: any) => ({
+          ...course,
+          lessonsCount: courseLessonsMap.get(course.id) || 0,
+        }));
+
+        return NextResponse.json({ courses: enrichedCourses, totalCourses });
+      }
     }
     
-    if (isPaginated) {
-        return NextResponse.json({ courses, totalCourses });
-    }
-
-    return NextResponse.json({ courses, totalCourses: courses.length });
+    return NextResponse.json({ courses, totalCourses });
     
   } catch (error) {
     console.error('[COURSES_GET_ERROR]', error);
@@ -99,39 +98,33 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const session = await getCurrentUser();
-    if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
-        return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
+  const session = await getCurrentUser();
+  if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
+    return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
+  }
+
+  try {
+    const body = await req.json();
+    const { title, description, category } = body;
+    
+    if (!title || !description) {
+      return NextResponse.json({ message: 'Título y descripción son requeridos' }, { status: 400 });
     }
 
-    try {
-        const body = await req.json();
-        const { title, description, category } = body;
-        
-        if (!title || !description) {
-            return NextResponse.json({ message: 'Título y descripción son requeridos' }, { status: 400 });
-        }
+    const newCourse = await prisma.course.create({
+      data: {
+        title,
+        description,
+        category: category || 'General',
+        status: 'DRAFT',
+        instructor: { connect: { id: session.id } },
+      },
+      include: { instructor: true },
+    });
 
-        const newCourse = await prisma.course.create({
-            data: {
-                title,
-                description,
-                category: category || 'General',
-                status: 'DRAFT',
-                instructor: {
-                    connect: {
-                        id: session.id,
-                    },
-                },
-            },
-            include: {
-                instructor: true,
-            }
-        });
-
-        return NextResponse.json(newCourse, { status: 201 });
-    } catch (error) {
-        console.error('[COURSE_POST_ERROR]', error);
-        return NextResponse.json({ message: 'Error al crear el curso' }, { status: 500 });
-    }
+    return NextResponse.json(newCourse, { status: 201 });
+  } catch (error) {
+    console.error('[COURSE_POST_ERROR]', error);
+    return NextResponse.json({ message: 'Error al crear el curso' }, { status: 500 });
+  }
 }
