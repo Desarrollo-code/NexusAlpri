@@ -95,26 +95,26 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                             <Droppable droppableId={module.id} type="LESSONS">
                                 {(provided) => (
                                     <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
-  {module.lessons.map((lesson, lessonIndex) => (
-    <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
-      {(provided) => (
-        <LessonItem
-          lesson={lesson}
-          onDelete={() => onLessonDelete(lessonIndex)}
-          onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
-          onAddBlock={(type) => onAddBlock(lessonIndex, type)}
-          onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
-          onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
-          isSaving={isSaving}
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-        />
-      )}
-    </Draggable>
-  ))}
-  {provided.placeholder}
-</div>
+                                      {module.lessons.map((lesson, lessonIndex) => (
+                                        <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
+                                          {(provided) => (
+                                            <LessonItem
+                                              lesson={lesson}
+                                              onDelete={() => onLessonDelete(lessonIndex)}
+                                              onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
+                                              onAddBlock={(type) => onAddBlock(lessonIndex, type)}
+                                              onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
+                                              onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
+                                              isSaving={isSaving}
+                                              ref={provided.innerRef}
+                                              {...provided.draggableProps}
+                                              {...provided.dragHandleProps}
+                                            />
+                                          )}
+                                        </Draggable>
+                                      ))}
+                                      {provided.placeholder}
+                                    </div>
 
                                 )}
                             </Droppable>
@@ -413,20 +413,24 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             const [reorderedItem] = newModules.splice(source.index, 1);
             newModules.splice(destination.index, 0, reorderedItem);
         } else if (type === 'LESSONS') {
-            const sourceModuleIndex = newModules.findIndex((m: AppModule) => m.id === source.droppableId);
-            const destModuleIndex = newModules.findIndex((m: AppModule) => m.id === destination.droppableId);
-
-            if (sourceModuleIndex < 0 || destModuleIndex < 0) return;
-
-            const sourceModule = newModules[sourceModuleIndex];
-            const [movedItem] = sourceModule.lessons.splice(source.index, 1);
-            
-            if (sourceModuleIndex === destModuleIndex) {
-                 sourceModule.lessons.splice(destination.index, 0, movedItem);
-            } else {
-                 const destModule = newModules[destModuleIndex];
-                 destModule.lessons.splice(destination.index, 0, movedItem);
+             // Deep copy to avoid direct state mutation
+            const modulesCopy = JSON.parse(JSON.stringify(course.modules));
+            const sourceModule = modulesCopy.find((m: AppModule) => m.id === source.droppableId);
+            const destModule = modulesCopy.find((m: AppModule) => m.id === destination.droppableId);
+    
+            if (!sourceModule) return;
+    
+            // Remove lesson from source
+            const [movedLesson] = sourceModule.lessons.splice(source.index, 1);
+    
+            // Add lesson to destination
+            if (destModule) {
+                destModule.lessons.splice(destination.index, 0, movedLesson);
+            } else { // This case should ideally not happen if dnd is set up correctly
+                sourceModule.lessons.splice(source.index, 0, movedLesson); // put it back
+                return;
             }
+            newModules = modulesCopy;
         } else if (type === 'BLOCKS') {
             let sourceModuleIndex = -1;
             let sourceLessonIndex = -1;
@@ -693,6 +697,7 @@ const BlockTypeSelector = ({ onSelect }) => (
 
 
     
+
 
 
 
