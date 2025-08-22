@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
+  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -73,7 +74,7 @@ export function UserAvatarDropdown() {
   const userDisplayName = user.name || "Usuario";
   const userDisplayEmail = user.email || "No email";
   const userAppRole = user.role;
-  const avatarSrc = user.avatar || settings?.logoUrl;
+  const avatarSrc = user.avatar;
 
 
   return (
