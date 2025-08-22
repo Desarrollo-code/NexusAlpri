@@ -93,36 +93,42 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive ml-2 shrink-0" onClick={(e) => { e.stopPropagation(); onDelete(); }} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
                         </div>
                         <AccordionContent className="p-4 pt-0 border-t">
-                            <Droppable droppableId={module.id} type="LESSONS">
-                                {(provided) => (
-                                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
-                                      {module.lessons.map((lesson, lessonIndex) => (
-                                        <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
-                                          {(provided) => (
-                                            <LessonItem
-                                              lesson={lesson}
-                                              onDelete={() => onLessonDelete(lessonIndex)}
-                                              onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
-                                              onAddBlock={(type) => onAddBlock(lessonIndex, type)}
-                                              onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
-                                              onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
-                                              isSaving={isSaving}
-                                              ref={provided.innerRef}
-                                              {...provided.draggableProps}
-                                              {...provided.dragHandleProps}
-                                            />
-                                          )}
-                                        </Draggable>
-                                      ))}
-                                      {provided.placeholder}
-                                    </div>
-
-                                )}
-                            </Droppable>
-                            <div className="mt-4 flex gap-2">
-                                <Button size="sm" variant="secondary" onClick={onAddLesson} disabled={isSaving}><PlusCircle className="mr-2 h-4 w-4" />Añadir Lección</Button>
-                            </div>
-                        </AccordionContent>
+    <Droppable droppableId={module.id} type="LESSONS">
+        {(provided) => (
+            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
+                {
+                    // ¡Aquí está el console.log!
+                    // Esto imprimirá todo el array 'module.lessons' en tu consola.
+                    console.log('Contenido de module.lessons:', module.lessons)
+                }
+                {module.lessons.map((lesson, lessonIndex) => (
+                    <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
+                        {(provided) => (
+                            <LessonItem
+                                lesson={lesson}
+                                onDelete={() => onLessonDelete(lessonIndex)}
+                                onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
+                                onAddBlock={(type) => onAddBlock(lessonIndex, type)}
+                                onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
+                                onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
+                                isSaving={isSaving}
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                            />
+                        )}
+                    </Draggable>
+                ))}
+                {provided.placeholder}
+            </div>
+        )}
+    </Droppable>
+    <div className="mt-4 flex gap-2">
+        <Button size="sm" variant="secondary" onClick={onAddLesson} disabled={isSaving}>
+            <PlusCircle className="mr-2 h-4 w-4" />Añadir Lección
+        </Button>
+    </div>
+</AccordionContent>
                     </AccordionItem>
                 </Accordion>
             </div>
