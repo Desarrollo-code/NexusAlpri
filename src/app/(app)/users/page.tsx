@@ -60,7 +60,7 @@ import { useTitle } from '@/contexts/title-context';
 const PAGE_SIZE = 10;
 
 export default function UsersPage() {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, settings } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -382,7 +382,7 @@ export default function UsersPage() {
               <TableCell>
                 <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
-                        <AvatarImage src={u.avatar || undefined} alt={u.name} />
+                        <AvatarImage src={u.avatar || settings?.logoUrl || '/uploads/images/default-avatar.png'} alt={u.name} />
                         <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
                     </Avatar>
                     <div className="font-medium">{u.name}</div>
@@ -457,7 +457,7 @@ export default function UsersPage() {
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={u.avatar || undefined} alt={u.name} />
+                <AvatarImage src={u.avatar || settings?.logoUrl || '/uploads/images/default-avatar.png'} alt={u.name} />
                 <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
               </Avatar>
               <div>

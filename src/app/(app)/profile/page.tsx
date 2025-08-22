@@ -128,7 +128,7 @@ export default function ProfilePage() {
     }
   };
   
-  const avatarSrc = avatarPreview || settings?.logoUrl || `https://placehold.co/128x128.png?text=${getInitials(user?.name)}`;
+  const avatarSrc = avatarPreview || user?.avatar || settings?.logoUrl || '/uploads/images/default-avatar.png';
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
