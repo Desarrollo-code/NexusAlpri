@@ -96,11 +96,6 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
     <Droppable droppableId={module.id} type="LESSONS">
         {(provided) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
-                {
-                    // ¡Aquí está el console.log!
-                    // Esto imprimirá todo el array 'module.lessons' en tu consola.
-                    console.log('Contenido de module.lessons:', module.lessons)
-                }
                 {module.lessons.map((lesson, lessonIndex) => (
                     <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
                         {(provided) => (
@@ -307,19 +302,26 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         setIsDirty(true);
     };
 
-    const updateBlockField = (moduleIndex: number, lessonIndex: number, blockIndex: number, field: keyof ContentBlock, value: any) => {
-         setCourse(prev => {
+    const updateBlockField = (moduleIndex: number, lessonIndex: number, blockIndex: number, field: string, value: any) => {
+        setCourse(prev => {
             if (!prev) return null;
-            const newModules = [...prev.modules];
-            const newLessons = [...newModules[moduleIndex].lessons];
-            const newBlocks = [...newLessons[lessonIndex].contentBlocks];
-            newBlocks[blockIndex] = { ...newBlocks[blockIndex], [field]: value };
-            newLessons[lessonIndex] = { ...newLessons[lessonIndex], contentBlocks: newBlocks };
-            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
+            const newModules = prev.modules.map((module, mIdx) => {
+                if (mIdx !== moduleIndex) return module;
+                const newLessons = module.lessons.map((lesson, lIdx) => {
+                    if (lIdx !== lessonIndex) return lesson;
+                    const newBlocks = lesson.contentBlocks.map((block, bIdx) => {
+                        if (bIdx !== blockIndex) return block;
+                        return { ...block, [field]: value };
+                    });
+                    return { ...lesson, contentBlocks: newBlocks };
+                });
+                return { ...module, lessons: newLessons };
+            });
             return { ...prev, modules: newModules };
         });
         setIsDirty(true);
     };
+
 
     const handleAddModule = () => {
         const newModule: AppModule = {
@@ -414,29 +416,28 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         const { source, destination, type } = result;
         if (!destination || !course) return;
 
-        let newModules = JSON.parse(JSON.stringify(course.modules));
-
         if (type === 'MODULES') {
+            const newModules = Array.from(course.modules);
             const [reorderedItem] = newModules.splice(source.index, 1);
             newModules.splice(destination.index, 0, reorderedItem);
+            updateCourseField('modules', newModules);
         } else if (type === 'LESSONS') {
-            const sourceModuleIndex = newModules.findIndex((m: AppModule) => m.id === source.droppableId);
-            const destModuleIndex = newModules.findIndex((m: AppModule) => m.id === destination.droppableId);
+             const sourceModuleId = source.droppableId;
+            const destModuleId = destination.droppableId;
 
-            if (sourceModuleIndex === -1 || destModuleIndex === -1) return;
+            const newModules = JSON.parse(JSON.stringify(course.modules));
 
-            const sourceModule = newModules[sourceModuleIndex];
+            const sourceModule = newModules.find(m => m.id === sourceModuleId);
+            const destModule = newModules.find(m => m.id === destModuleId);
+
+            if (!sourceModule || !destModule) return;
+
             const [movedItem] = sourceModule.lessons.splice(source.index, 1);
+            destModule.lessons.splice(destination.index, 0, movedItem);
 
-            if (source.droppableId === destination.droppableId) {
-                sourceModule.lessons.splice(destination.index, 0, movedItem);
-            } else {
-                const destModule = newModules[destModuleIndex];
-                destModule.lessons.splice(destination.index, 0, movedItem);
-            }
+            setCourse(prev => prev ? { ...prev, modules: newModules } : null);
+            setIsDirty(true);
         }
-
-        updateCourseField('modules', newModules);
     };
     
     const handleCropComplete = (croppedFileUrl: string) => {
