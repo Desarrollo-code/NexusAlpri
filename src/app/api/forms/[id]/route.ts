@@ -24,7 +24,7 @@ async function checkPermissions(formId: string, session: any) {
 }
 
 // GET a specific form by ID with its fields
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   const { id: formId } = await params;
 
   try {
@@ -76,9 +76,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   try {
     const body = await req.json();
-    const { title, description, status, fields } = body;
+    const { title, description, status, isQuiz, fields } = body;
 
-    const dataToUpdate: any = { title, description, status };
+    const dataToUpdate: any = { title, description, status, isQuiz };
 
     await prisma.$transaction(async (tx) => {
       // Update the main form data
@@ -156,3 +156,4 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ message: 'Error al eliminar el formulario' }, { status: 500 });
   }
 }
+    

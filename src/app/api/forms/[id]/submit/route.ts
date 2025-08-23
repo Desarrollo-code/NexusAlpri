@@ -7,7 +7,6 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getCurrentUser();
-    // Allow unauthenticated users if form is public in the future, for now require login
     if (!session) {
         return NextResponse.json({ message: 'Debes iniciar sesión para responder' }, { status: 401 });
     }
@@ -30,13 +29,39 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         if (!form || form.status !== 'PUBLISHED') {
             return NextResponse.json({ message: 'Este formulario no está aceptando respuestas.' }, { status: 403 });
         }
+        
+        let totalScore: number | null = null;
+        if (form.isQuiz) {
+            totalScore = 0;
+            for (const field of form.fields) {
+                if (field.type === 'SINGLE_CHOICE' || field.type === 'MULTIPLE_CHOICE') {
+                    const fieldAnswer = answers[field.id];
+                    if (!fieldAnswer) continue;
 
-        // TODO: Add check to see if user has already responded if needed
+                    const correctOptions = (field.options as any[]).filter(o => o.isCorrect);
+                    
+                    if (field.type === 'SINGLE_CHOICE') {
+                        const selectedOption = (field.options as any[]).find(o => o.id === fieldAnswer);
+                        if (selectedOption?.isCorrect) {
+                            totalScore += selectedOption.points || 0;
+                        }
+                    } else { // MULTIPLE_CHOICE
+                        const selectedOptionIds = new Set(Array.isArray(fieldAnswer) ? fieldAnswer : []);
+                        correctOptions.forEach(correctOpt => {
+                            if (selectedOptionIds.has(correctOpt.id)) {
+                                totalScore! += correctOpt.points || 0;
+                            }
+                        });
+                    }
+                }
+            }
+        }
         
         const newResponse = await prisma.formResponse.create({
             data: {
                 formId,
                 userId: session.id,
+                score: totalScore,
                 answers: {
                     create: Object.entries(answers).map(([fieldId, value]) => {
                         const fieldValue = Array.isArray(value) ? JSON.stringify(value) : String(value);
@@ -56,3 +81,4 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         return NextResponse.json({ message: 'Error al enviar la respuesta' }, { status: 500 });
     }
 }
+    

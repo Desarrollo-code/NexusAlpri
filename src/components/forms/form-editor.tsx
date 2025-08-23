@@ -1,3 +1,4 @@
+// src/components/forms/form-editor.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -34,11 +35,12 @@ import Link from 'next/link';
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
 // Componente para editar un campo individual
-const FieldEditor = ({ field, onUpdate, onDelete, onOptionChange, onOptionAdd, onOptionDelete, onCorrectChange, isSaving }: { 
-    field: FormField, 
+const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChange, onOptionAdd, onOptionDelete, onCorrectChange, isSaving }: { 
+    field: FormField,
+    isScoringEnabled: boolean,
     onUpdate: (id: string, updates: Partial<FormField>) => void, 
     onDelete: (id: string) => void,
-    onOptionChange: (fieldId: string, optionIndex: number, newText: string) => void,
+    onOptionChange: (fieldId: string, optionIndex: number, updates: Partial<{text: string; points: number}>) => void,
     onOptionAdd: (fieldId: string) => void,
     onOptionDelete: (fieldId: string, optionIndex: number) => void,
     onCorrectChange: (fieldId: string, optionId: string, isCorrect: boolean) => void,
@@ -53,72 +55,75 @@ const FieldEditor = ({ field, onUpdate, onDelete, onOptionChange, onOptionAdd, o
         onUpdate(field.id, { [name]: checked });
     };
     
-    const renderOptionsEditor = () => {
-      const options = (field.options || []) as { id: string, text: string, isCorrect: boolean }[];
-    
-      if (field.type === 'SINGLE_CHOICE') {
-        return (
-          <RadioGroup 
-            className="space-y-2 mt-2 pl-6" 
-            onValueChange={(val) => onCorrectChange(field.id, val, true)} 
-            value={(field.options as any[])?.find(opt => opt.isCorrect)?.id}
-          >
-            {options.map((option, index) => {
-              const optionId = `opt-${field.id}-${option.id}`;
-              return (
-                <div key={option.id} className="flex items-center gap-2 font-normal">
-                  <RadioGroupItem value={option.id} id={optionId} />
-                  <Label htmlFor={optionId} className="flex-grow font-normal">
-                    <Input 
-                      value={option.text ?? ''} // CORRECCIÓN 2: Asegura un valor definido
-                      onChange={e => onOptionChange(field.id, index, e.target.value)} 
-                      placeholder={`Opción ${index + 1}`} 
-                      disabled={isSaving}
-                    />
-                  </Label>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={(e) => { e.preventDefault(); onOptionDelete(field.id, index)}} disabled={isSaving}>
-                      <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              );
-            })}
-             <Button variant="link" size="sm" type="button" onClick={() => onOptionAdd(field.id)} className="ml-0 p-0 h-auto">
-                + Añadir opción
-            </Button>
-          </RadioGroup>
-        );
-      }
-    
-      if (field.type === 'MULTIPLE_CHOICE') {
-        return (
-          <div className="space-y-2 mt-2 pl-6">
-            {options.map((option, index) => {
-              const optionId = `opt-${field.id}-${option.id}`;
-              return (
-                <div key={option.id} className="flex items-center gap-2">
-                  <Checkbox id={optionId} checked={option.isCorrect} onCheckedChange={(checked) => onCorrectChange(field.id, option.id, !!checked)} />
-                  <Label htmlFor={optionId} className="flex-grow font-normal">
-                    <Input 
-                      value={option.text ?? ''} // CORRECCIÓN 2: Asegura un valor definido
-                      onChange={e => onOptionChange(field.id, index, e.target.value)} 
-                      placeholder={`Opción ${index + 1}`} 
-                      disabled={isSaving}
-                    />
-                  </Label>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => onOptionDelete(field.id, index)} disabled={isSaving}>
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              );
-            })}
-             <Button variant="link" size="sm" type="button" onClick={() => onOptionAdd(field.id)} className="p-0 h-auto">
-                + Añadir opción
-            </Button>
-          </div>
-        );
-      }
-      return null;
+   const renderOptionsEditor = () => {
+    const options = (field.options || []) as { id: string, text: string, isCorrect: boolean, points?: number }[];
+
+    const handlePointsChange = (optionIndex: number, value: string) => {
+        const points = parseInt(value, 10);
+        onOptionChange(field.id, optionIndex, { points: isNaN(points) ? 0 : points });
     };
+
+    const renderOption = (option: typeof options[0], index: number) => {
+        const optionId = `opt-${field.id}-${option.id}`;
+        return (
+            <div className="flex items-center gap-2" key={option.id}>
+                {field.type === 'SINGLE_CHOICE' ? (
+                    <RadioGroupItem value={option.id} id={optionId} />
+                ) : (
+                    <Checkbox id={optionId} checked={option.isCorrect} onCheckedChange={(checked) => onCorrectChange(field.id, option.id, !!checked)} />
+                )}
+                <Label htmlFor={optionId} className="flex-grow font-normal">
+                    <Input 
+                        value={option.text} 
+                        onChange={e => onOptionChange(field.id, index, { text: e.target.value })} 
+                        placeholder={`Opción ${index + 1}`} 
+                        disabled={isSaving}
+                    />
+                </Label>
+                {isScoringEnabled && (
+                    <Input
+                        type="number"
+                        value={option.points || 0}
+                        onChange={(e) => handlePointsChange(index, e.target.value)}
+                        className="w-20 h-9"
+                        disabled={isSaving}
+                    />
+                )}
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={(e) => { e.preventDefault(); onOptionDelete(field.id, index)}} disabled={isSaving}>
+                    <X className="h-4 w-4" />
+                </Button>
+            </div>
+        );
+    };
+
+    if (field.type === 'SINGLE_CHOICE') {
+        return (
+            <RadioGroup 
+                className="space-y-2 mt-2 pl-6" 
+                onValueChange={(val) => onCorrectChange(field.id, val, true)} 
+                value={options.find(opt => opt.isCorrect)?.id}
+            >
+                {options.map(renderOption)}
+                <Button variant="link" size="sm" type="button" onClick={() => onOptionAdd(field.id)} className="ml-0 p-0 h-auto">
+                    + Añadir opción
+                </Button>
+            </RadioGroup>
+        );
+    }
+    
+    if (field.type === 'MULTIPLE_CHOICE') {
+        return (
+            <div className="space-y-2 mt-2 pl-6">
+                {options.map(renderOption)}
+                <Button variant="link" size="sm" type="button" onClick={() => onOptionAdd(field.id)} className="p-0 h-auto">
+                    + Añadir opción
+                </Button>
+            </div>
+        );
+    }
+
+    return null;
+};
 
 
     return (
@@ -136,7 +141,7 @@ const FieldEditor = ({ field, onUpdate, onDelete, onOptionChange, onOptionAdd, o
                   />
                   <Input 
                       name="placeholder"
-                      value={field.placeholder ?? ''} // CORRECCIÓN 2: Asegura un valor definido
+                      value={field.placeholder ?? ''}
                       onChange={handleInputChange}
                       placeholder="Texto de ejemplo o ayuda (opcional)"
                       className="text-xs h-8"
@@ -203,7 +208,7 @@ export function FormEditor({ formId }: { formId: string }) {
             label: `Nueva Pregunta (${type.replace('_', ' ')})`,
             type,
             required: false,
-            options: type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' ? [{id: generateUniqueId('opt'), text: 'Opción 1', isCorrect: false}] : [],
+            options: type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' ? [{id: generateUniqueId('opt'), text: 'Opción 1', isCorrect: false, points: 0}] : [],
             placeholder: '',
             order: form ? form.fields.length : 0,
             formId: formId,
@@ -225,7 +230,7 @@ export function FormEditor({ formId }: { formId: string }) {
     
     // --- Edición de opciones ---
     const handleOptionAdd = (fieldId: string) => {
-        const newOption = { id: generateUniqueId('opt'), text: 'Nueva Opción', isCorrect: false };
+        const newOption = { id: generateUniqueId('opt'), text: 'Nueva Opción', isCorrect: false, points: 0 };
         const updatedFields = form!.fields.map(f => {
             if (f.id === fieldId) {
                 return { ...f, options: [...(f.options as any[]), newOption] };
@@ -235,11 +240,11 @@ export function FormEditor({ formId }: { formId: string }) {
         handleFormUpdate({ fields: updatedFields });
     };
 
-    const handleOptionChange = (fieldId: string, optionIndex: number, newText: string) => {
+    const handleOptionChange = (fieldId: string, optionIndex: number, updates: Partial<{text: string, points: number}>) => {
         const updatedFields = form!.fields.map(f => {
             if (f.id === fieldId) {
                 const newOptions = [...(f.options as any[])];
-                newOptions[optionIndex].text = newText;
+                newOptions[optionIndex] = { ...newOptions[optionIndex], ...updates };
                 return { ...f, options: newOptions };
             }
             return f;
@@ -286,6 +291,7 @@ export function FormEditor({ formId }: { formId: string }) {
                 title: form.title,
                 description: form.description,
                 status: form.status,
+                isQuiz: form.isQuiz,
                 fields: form.fields.map((f, index) => ({...f, order: index}))
             };
             const res = await fetch(`/api/forms/${formId}`, {
@@ -364,6 +370,7 @@ export function FormEditor({ formId }: { formId: string }) {
                                                  <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
                                                      <FieldEditor 
                                                          field={field} 
+                                                         isScoringEnabled={!!form.isQuiz}
                                                          onUpdate={handleFieldUpdate} 
                                                          onDelete={deleteField}
                                                          onOptionChange={handleOptionChange}
@@ -396,6 +403,13 @@ export function FormEditor({ formId }: { formId: string }) {
                          <CardHeader><CardTitle>Publicación</CardTitle></CardHeader>
                          <CardContent className="space-y-4">
                             <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="isQuiz" className="font-semibold">Habilitar Puntuación</Label>
+                                    <Switch id="isQuiz" checked={!!form.isQuiz} onCheckedChange={(c) => handleFormUpdate({ isQuiz: c })} />
+                                </div>
+                                <p className="text-xs text-muted-foreground">Convierte este formulario en una evaluación con puntos por respuesta.</p>
+                            </div>
+                            <div className="space-y-2">
                                  <Label>Estado del Formulario</Label>
                                  <Select value={form.status} onValueChange={(s) => handleFormUpdate({ status: s as FormStatus })}>
                                      <SelectTrigger><SelectValue/></SelectTrigger>
@@ -425,3 +439,4 @@ export function FormEditor({ formId }: { formId: string }) {
         </div>
     );
 }
+    

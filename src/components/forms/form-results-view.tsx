@@ -2,13 +2,20 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle, Users, ListChecks, MessageSquare, BarChart, FileText } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Loader2, AlertTriangle, Users, ListChecks, MessageSquare, BarChart, FileText, CheckCircle } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Bar, XAxis, YAxis, CartesianGrid, ComposedChart } from 'recharts';
 import { ScrollArea } from '../ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Identicon } from '../ui/identicon';
 
 interface FormResults {
+    formTitle: string;
+    isQuiz: boolean;
     totalResponses: number;
+    averageScore?: number;
+    responses?: any[]; // To show individual scores
     fields: {
         id: string;
         label: string;
@@ -138,15 +145,60 @@ export const FormResultsView: React.FC<FormResultsViewProps> = ({ formId }) => {
     return (
         <div className="space-y-6">
             <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <CardHeader>
                     <CardTitle>Resumen General</CardTitle>
-                    <Users className="h-5 w-5 text-primary" />
                 </CardHeader>
-                <CardContent>
-                    <p className="text-3xl font-bold">{results.totalResponses}</p>
-                    <p className="text-xs text-muted-foreground">respuesta{results.totalResponses !== 1 && 's'} en total</p>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-4 p-4 border rounded-lg">
+                        <Users className="h-8 w-8 text-primary" />
+                        <div>
+                            <p className="text-3xl font-bold">{results.totalResponses}</p>
+                            <p className="text-xs text-muted-foreground">respuesta{results.totalResponses !== 1 && 's'} en total</p>
+                        </div>
+                    </div>
+                    {results.isQuiz && (
+                         <div className="flex items-center gap-4 p-4 border rounded-lg">
+                            <CheckCircle className="h-8 w-8 text-green-500" />
+                            <div>
+                                <p className="text-3xl font-bold">{results.averageScore?.toFixed(1) || '0.0'}%</p>
+                                <p className="text-xs text-muted-foreground">Puntuación Promedio</p>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
+
+            {results.isQuiz && results.responses && (
+                <Card>
+                    <CardHeader><CardTitle>Resultados Individuales</CardTitle></CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Usuario</TableHead>
+                                    <TableHead className="text-right">Puntuación</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {results.responses.map(res => (
+                                    <TableRow key={res.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <Avatar className="h-8 w-8">
+                                                    <AvatarImage src={res.user.avatar || undefined} />
+                                                    <AvatarFallback><Identicon userId={res.user.id} /></AvatarFallback>
+                                                </Avatar>
+                                                {res.user.name}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-right font-semibold">{res.score?.toFixed(1) || 'N/A'}%</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {results.fields.map(field => (
@@ -156,3 +208,4 @@ export const FormResultsView: React.FC<FormResultsViewProps> = ({ formId }) => {
         </div>
     );
 };
+    

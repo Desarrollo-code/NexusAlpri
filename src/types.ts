@@ -1,5 +1,5 @@
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form, FormField, FormFieldType, FormStatus } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form, FormField as PrismaFormField, FormFieldType, FormStatus } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -284,6 +284,19 @@ export type UserAchievement = Prisma.UserAchievementGetPayload<{
 }>;
 
 // --- FORMS ---
+// Extend the Prisma FormField to include a potential points property in its options
+// This is done by intersecting with a new type for options
+type FormFieldOption = {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+  points?: number; // Optional points per option
+};
+
+export interface FormField extends Omit<PrismaFormField, 'options'> {
+  options: FormFieldOption[];
+}
+
 export type AppForm = Form & {
     fields: FormField[];
     _count: {
@@ -294,4 +307,5 @@ export type AppForm = Form & {
     } | null;
 };
 
-export { type FormStatus, type FormField, type FormFieldType };
+export { type FormStatus, type FormFieldType };
+    

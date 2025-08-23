@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
@@ -20,7 +20,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                 fields: { orderBy: { order: 'asc' } },
                 responses: {
                     include: {
-                        answers: true
+                        answers: true,
+                        user: { select: { id: true, name: true, avatar: true }}
+                    },
+                    orderBy: {
+                        submittedAt: 'desc'
                     }
                 }
             }
@@ -35,6 +39,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         }
 
         const totalResponses = form.responses.length;
+        
+        let averageScore: number | undefined = undefined;
+        if (form.isQuiz) {
+            const scores = form.responses.map(r => r.score).filter(s => s !== null) as number[];
+            if (scores.length > 0) {
+                averageScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+            }
+        }
+
 
         const fieldResults = form.fields.map(field => {
             const fieldAnswers = form.responses.flatMap(res => res.answers.filter(ans => ans.fieldId === field.id));
@@ -54,22 +67,25 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                     allOptions.forEach(opt => counts.set(opt, 0));
 
                     fieldAnswers.forEach(ans => {
+                        const selectedOptionIds: string[] = [];
                         if (field.type === 'SINGLE_CHOICE') {
-                            const value = (field.options as any[]).find(opt => opt.id === ans.value)?.text;
-                            if (value && counts.has(value)) {
-                               counts.set(value, (counts.get(value) || 0) + 1);
-                            }
+                             selectedOptionIds.push(ans.value);
                         } else { // MULTIPLE_CHOICE
                             try {
-                                const selectedOptionIds: string[] = JSON.parse(ans.value);
-                                selectedOptionIds.forEach(optId => {
-                                    const value = (field.options as any[]).find(opt => opt.id === optId)?.text;
-                                     if (value && counts.has(value)) {
-                                        counts.set(value, counts.get(value)! + 1);
-                                    }
-                                });
+                                const parsed = JSON.parse(ans.value);
+                                if (Array.isArray(parsed)) {
+                                    selectedOptionIds.push(...parsed);
+                                }
                             } catch (e) { /* ignore malformed data */ }
                         }
+                        
+                         selectedOptionIds.forEach(optId => {
+                            const value = (field.options as any[]).find(opt => opt.id === optId)?.text;
+                             if (value && counts.has(value)) {
+                                counts.set(value, counts.get(value)! + 1);
+                            }
+                        });
+
                     });
                     stats = Array.from(counts.entries()).map(([option, count]) => ({ option, count }));
                     break;
@@ -87,7 +103,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
         return NextResponse.json({
             formTitle: form.title,
+            isQuiz: form.isQuiz,
             totalResponses: totalResponses,
+            averageScore: averageScore,
+            responses: form.isQuiz ? form.responses.map(r => ({ id: r.id, user: r.user, score: r.score })) : undefined,
             fields: fieldResults,
         });
 
@@ -96,3 +115,4 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         return NextResponse.json({ message: 'Error al obtener los resultados del formulario' }, { status: 500 });
     }
 }
+    
