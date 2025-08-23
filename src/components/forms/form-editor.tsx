@@ -67,15 +67,13 @@ const FieldEditor = ({ field, onUpdate, onDelete, onOptionChange, onOptionAdd, o
             {options.map((option, index) => {
               const optionId = `opt-${field.id}-${option.id}`;
               return (
-                <div key={option.id} className="flex items-center gap-2">
-                  <RadioGroupItem value={option.id} id={optionId} />
-                  <Label htmlFor={optionId} className="flex-grow font-normal">
+                <Label key={option.id} htmlFor={optionId} className="flex items-center gap-2 font-normal">
+                    <RadioGroupItem value={option.id} id={optionId} />
                     <Input value={option.text} onChange={e => onOptionChange(field.id, index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
-                  </Label>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => onOptionDelete(field.id, index)} disabled={isSaving}>
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={(e) => { e.preventDefault(); onOptionDelete(field.id, index)}} disabled={isSaving}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                </Label>
               );
             })}
              <Button variant="link" size="sm" type="button" onClick={() => onOptionAdd(field.id)} className="ml-0 p-0 h-auto">
