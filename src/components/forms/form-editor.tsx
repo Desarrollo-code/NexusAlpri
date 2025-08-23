@@ -73,31 +73,45 @@ const FieldEditor = ({ field, onUpdate, onDelete, isSaving, provided }: { field:
         
         return (
             <div className="space-y-2 mt-2 pl-6">
-                <RadioGroup 
-                    value={isSingleChoice ? options.find(o => o.isCorrect)?.id : undefined} 
-                    onValueChange={(val) => isSingleChoice && handleCorrectChange(val, true)}
-                >
-                    {(options).map((option, index) => {
-                         const optionId = `opt-${field.id}-${option.id}`;
-                         return (
-                            <div key={option.id} className="flex items-center gap-2">
-                                {isSingleChoice ? (
+                {isSingleChoice ? (
+                     <RadioGroup 
+                        value={options.find(o => o.isCorrect)?.id} 
+                        onValueChange={(val) => handleCorrectChange(val, true)}
+                     >
+                        {options.map((option, index) => {
+                            const optionId = `opt-${field.id}-${option.id}`;
+                            return (
+                                <div key={option.id} className="flex items-center gap-2">
                                     <RadioGroupItem value={option.id} id={optionId} />
-                                ) : (
+                                    <Label htmlFor={optionId} className="flex-grow font-normal">
+                                        <Input value={option.text} onChange={e => handleOptionChange(index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
+                                    </Label>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemoveOption(index)} disabled={isSaving || options.length <= 1}><X className="h-4 w-4"/></Button>
+                                </div>
+                            );
+                        })}
+                     </RadioGroup>
+                ) : (
+                    <div className="space-y-2">
+                        {options.map((option, index) => {
+                             const optionId = `opt-${field.id}-${option.id}`;
+                             return (
+                                 <div key={option.id} className="flex items-center gap-2">
                                     <Checkbox
                                         id={optionId}
                                         checked={option.isCorrect}
                                         onCheckedChange={() => handleCorrectChange(option.id, false)}
                                     />
-                                )}
-                                <Label htmlFor={optionId} className="flex-grow font-normal">
-                                    <Input value={option.text} onChange={e => handleOptionChange(index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
-                                </Label>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemoveOption(index)} disabled={isSaving || options.length <= 1}><X className="h-4 w-4"/></Button>
-                            </div>
-                         )
-                    })}
-                </RadioGroup>
+                                     <Label htmlFor={optionId} className="flex-grow font-normal">
+                                        <Input value={option.text} onChange={e => handleOptionChange(index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
+                                    </Label>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemoveOption(index)} disabled={isSaving || options.length <= 1}><X className="h-4 w-4"/></Button>
+                                 </div>
+                             );
+                        })}
+                    </div>
+                )}
+
                 <Button variant="link" size="sm" onClick={handleAddOption} disabled={isSaving}>+ Añadir opción</Button>
             </div>
         )
