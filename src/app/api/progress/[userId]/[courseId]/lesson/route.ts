@@ -5,7 +5,7 @@ import { recordLessonInteraction } from '@/lib/progress';
 import { addXp, XP_CONFIG } from '@/lib/gamification';
 
 // Records a 'view' interaction for a lesson
-export async function POST(req: NextRequest, { params }: { params: Promise<{ userId: string, courseId: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
     const session = await getCurrentUser();
     const { userId, courseId } = await params;
 

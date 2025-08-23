@@ -54,13 +54,6 @@ export async function awardAchievement({ userId, slug }: AwardAchievementParams)
     
     try {
         // Verificar si el usuario ya tiene el logro
-        const existingAchievement = await prisma.userAchievement.findUnique({
-            where: { userId_achievementId: { userId, achievementId: slug } }, // Usa el slug como ID temporalmente
-        });
-        if (existingAchievement) {
-            return; // El usuario ya tiene este logro
-        }
-
         const achievement = await prisma.achievement.findUnique({
             where: { slug: slug }
         });
@@ -68,6 +61,14 @@ export async function awardAchievement({ userId, slug }: AwardAchievementParams)
         if (!achievement) {
             console.warn(`Se intentó otorgar un logro con slug inexistente: "${slug}"`);
             return;
+        }
+
+        const existingAchievement = await prisma.userAchievement.findUnique({
+            where: { userId_achievementId: { userId, achievementId: achievement.id } },
+        });
+
+        if (existingAchievement) {
+            return; // El usuario ya tiene este logro
         }
 
         // Otorgar el logro y los puntos asociados
