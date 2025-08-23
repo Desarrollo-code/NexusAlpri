@@ -82,7 +82,7 @@ const FieldEditor = ({ field, onUpdate, onDelete, isSaving, provided }: { field:
                             const optionId = `opt-${field.id}-${option.id}`;
                             return (
                                 <div key={option.id} className="flex items-center gap-2">
-                                    <RadioGroupItem value={option.id} id={optionId} />
+                                    <RadioGroupItem value={option.id} id={optionId} key={option.id} />
                                     <Label htmlFor={optionId} className="flex-grow font-normal">
                                         <Input value={option.text} onChange={e => handleOptionChange(index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
                                     </Label>
