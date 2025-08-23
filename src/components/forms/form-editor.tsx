@@ -1,182 +1,396 @@
-// src/app/api/forms/[id]/route.ts
-import { NextResponse, NextRequest } from 'next/server';
-import prisma from '@/lib/prisma';
-import { getCurrentUser } from '@/lib/auth';
-import type { FormField, FormFieldType } from '@prisma/client';
+// src/components/forms/form-editor.tsx
+'use client';
 
-export const dynamic = 'force-dynamic';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/contexts/auth-context';
+import { useToast } from '@/hooks/use-toast';
+import { useTitle } from '@/contexts/title-context';
+import { useRouter } from 'next/navigation';
+import { Loader2, AlertTriangle, Save, PlusCircle, Trash2, GripVertical, Check, Eye, BarChart, Share2, FilePen, MoreVertical, Settings, Copy, Shield, X, CheckSquare, ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import type { AppForm, FormField, FormFieldType, FormStatus } from '@/types';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Checkbox } from '../ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
-/**
- * Checks if a user has permission to modify a form.
- *
- * @param {string} formId - The ID of the form.
- * @param {any} session - The user session object.
- * @returns {Promise<NextResponse | null>} A NextResponse with an error if unauthorized, or null if authorized.
- */
-async function checkPermissions(formId: string, session: any): Promise<NextResponse | null> {
-  const form = await prisma.form.findUnique({
-    where: { id: formId },
-    select: { creatorId: true }
-  });
+const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
-  if (!form) {
-    return NextResponse.json({ message: 'Formulario no encontrado' }, { status: 404 });
-  }
+// Componente para editar un campo individual
+const FieldEditor = ({ field, onUpdate, onDelete, onOptionChange, onOptionAdd, onOptionDelete, onCorrectChange, isSaving }: { 
+    field: FormField, 
+    onUpdate: (id: string, updates: Partial<FormField>) => void, 
+    onDelete: (id: string) => void,
+    onOptionChange: (fieldId: string, optionIndex: number, newText: string) => void,
+    onOptionAdd: (fieldId: string) => void,
+    onOptionDelete: (fieldId: string, optionIndex: number) => void,
+    onCorrectChange: (fieldId: string, optionId: string, isCorrect: boolean) => void,
+    isSaving: boolean 
+}) => {
+    
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        onUpdate(field.id, { [e.target.name]: e.target.value });
+    };
 
-  if (session.role !== 'ADMINISTRATOR' && form.creatorId !== session.id) {
-    return NextResponse.json({ message: 'No tienes permiso para modificar este formulario' }, { status: 403 });
-  }
+    const handleSwitchChange = (checked: boolean, name: string) => {
+        onUpdate(field.id, { [name]: checked });
+    };
+    
+    const renderOptionsEditor = () => {
+        const options = (field.options || []) as { id: string, text: string, isCorrect: boolean }[];
+        const isSingleChoice = field.type === 'SINGLE_CHOICE';
+        const isMultipleChoice = field.type === 'MULTIPLE_CHOICE';
 
-  return null; // Returns null if successful
-}
+        if (!isSingleChoice && !isMultipleChoice) return null;
 
-/**
- * GET a specific form by ID with its fields.
- *
- * @param {Request} request - The incoming request.
- * @param {{ params: { id: string } }} { params } - The route parameters.
- * @returns {Promise<NextResponse>} The form data or an error response.
- */
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const { id: formId } = params;
+        return (
+            <div className="space-y-2 mt-2 pl-6">
+                 {options.map((option, index) => {
+                    const optionId = `opt-${field.id}-${option.id}`;
+                    return (
+                        <div key={option.id} className="flex items-center gap-2">
+                            {isSingleChoice ? (
+                                <RadioGroupItem value={option.id} id={optionId} onClick={() => onCorrectChange(field.id, option.id, true)} />
+                            ) : (
+                                <Checkbox id={optionId} checked={option.isCorrect} onCheckedChange={(checked) => onCorrectChange(field.id, option.id, !!checked)} />
+                            )}
+                            <Label htmlFor={optionId} className="flex-grow font-normal">
+                                <Input value={option.text} onChange={e => onOptionChange(field.id, index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
+                            </Label>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => onOptionDelete(field.id, index)} disabled={isSaving}>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    )
+                 })}
+                 <Button variant="link" size="sm" type="button" onClick={() => onOptionAdd(field.id)}>
+                     + Añadir opción
+                 </Button>
+            </div>
+        );
+    };
 
-  try {
-    const session = await getCurrentUser();
-    if (!session) {
-      return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
-    }
+    return (
+        <Card className="bg-muted/30 p-4 border relative">
+            <div className="flex items-center gap-2 mb-4">
+                <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+                <div className="flex-grow space-y-2">
+                    <Input 
+                        name="label"
+                        value={field.label}
+                        onChange={handleInputChange}
+                        placeholder="Escribe tu pregunta aquí..."
+                        className="text-base font-semibold border-transparent focus:border-input"
+                        disabled={isSaving}
+                    />
+                    <Input 
+                        name="placeholder"
+                        value={field.placeholder || ''}
+                        onChange={handleInputChange}
+                        placeholder="Texto de ejemplo o ayuda (opcional)"
+                        className="text-xs h-8"
+                        disabled={isSaving}
+                    />
+                </div>
+                 <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => onDelete(field.id)} disabled={isSaving}>
+                    <Trash2 className="h-4 w-4" />
+                </Button>
+            </div>
+            
+            {renderOptionsEditor()}
 
-    const form = await prisma.form.findUnique({
-      where: { id: formId },
-      include: {
-        fields: {
-          orderBy: { order: 'asc' },
-        },
-      },
-    });
+            <Separator className="my-4"/>
 
-    if (!form) {
-      return NextResponse.json({ message: 'Formulario no encontrado' }, { status: 404 });
-    }
+            <div className="flex justify-between items-center text-sm">
+                <div className="flex items-center space-x-2">
+                    <Switch id={`required-${field.id}`} checked={field.required} onCheckedChange={(c) => handleSwitchChange(c, 'required')} disabled={isSaving}/>
+                    <Label htmlFor={`required-${field.id}`}>Requerido</Label>
+                </div>
+                 <Select value={field.type} onValueChange={(type) => onUpdate(field.id, { type: type as FormFieldType })}>
+                    <SelectTrigger className="w-[180px] h-9">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="SHORT_TEXT">Texto Corto</SelectItem>
+                        <SelectItem value="LONG_TEXT">Párrafo</SelectItem>
+                        <SelectItem value="SINGLE_CHOICE">Opción Múltiple</SelectItem>
+                        <SelectItem value="MULTIPLE_CHOICE">Casillas</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+        </Card>
+    );
+};
 
-    const isCreator = form.creatorId === session.id;
-    const isAdmin = session.role === 'ADMINISTRATOR';
 
-    if (!isCreator && !isAdmin) {
-      return NextResponse.json({ message: 'No tienes permiso para ver este formulario' }, { status: 403 });
-    }
+// Componente principal del editor de formularios
+export function FormEditor({ formId }: { formId: string }) {
+    const { user } = useAuth();
+    const router = useRouter();
+    const { toast } = useToast();
+    const { setPageTitle } = useTitle();
 
-    return NextResponse.json(form);
-  } catch (error) {
-    console.error(`[GET_FORM_ID: ${formId}] Error al obtener el formulario:`, error);
-    return NextResponse.json({ message: 'Error al obtener el formulario' }, { status: 500 });
-  }
-}
+    const [form, setForm] = useState<AppForm | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDirty, setIsDirty] = useState(false);
+    
+    const [activeTab, setActiveTab] = useState('editor');
 
-/**
- * PUT (update) a form, including its fields.
- *
- * @param {NextRequest} req - The incoming request.
- * @param {{ params: { id: string } }} { params } - The route parameters.
- * @returns {Promise<NextResponse>} The updated form data or an error response.
- */
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id: formId } = params;
+    const handleFormUpdate = (updates: Partial<AppForm>) => {
+        setForm(prev => prev ? { ...prev, ...updates } : null);
+        setIsDirty(true);
+    };
 
-  const session = await getCurrentUser();
-  if (!session) {
-    return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
-  }
+    const handleFieldUpdate = (fieldId: string, updates: Partial<FormField>) => {
+       handleFormUpdate({
+           fields: form!.fields.map(f => f.id === fieldId ? {...f, ...updates} : f)
+       });
+    };
 
-  const authError = await checkPermissions(formId, session);
-  if (authError) return authError;
-
-  try {
-    const body = await req.json();
-    const { title, description, status, fields } = body;
-
-    const dataToUpdate: any = { title, description, status };
-
-    await prisma.$transaction(async (tx) => {
-      // Update the main form data
-      await tx.form.update({
-        where: { id: formId },
-        data: dataToUpdate,
-      });
-
-      // Handle fields
-      if (fields && Array.isArray(fields)) {
-        const incomingFieldIds = new Set(fields.map((f: FormField) => f.id).filter((id: string) => !id.startsWith('new-')));
-
-        // Delete fields that are no longer present
-        await tx.formField.deleteMany({
-          where: {
-            formId,
-            id: { notIn: Array.from(incomingFieldIds) }
-          }
-        });
-
-        // Create or update incoming fields
-        for (const [index, fieldData] of fields.entries()) {
-          const isNew = fieldData.id.startsWith('new-');
-          const fieldPayload = {
-            label: fieldData.label,
-            type: fieldData.type as FormFieldType,
-            options: fieldData.options || [],
-            required: fieldData.required || false,
-            placeholder: fieldData.placeholder || null,
-            order: index,
+    const addField = (type: FormFieldType) => {
+        const newField: FormField = {
+            id: generateUniqueId('field'),
+            label: `Nueva Pregunta (${type.replace('_', ' ')})`,
+            type,
+            required: false,
+            options: type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' ? [{id: generateUniqueId('opt'), text: 'Opción 1', isCorrect: false}] : [],
+            placeholder: '',
+            order: form ? form.fields.length : 0,
             formId: formId,
-          };
+        };
+        handleFormUpdate({ fields: [...(form?.fields || []), newField] });
+    };
 
-          if (isNew) {
-            await tx.formField.create({ data: fieldPayload });
-          } else {
-            await tx.formField.update({
-              where: { id: fieldData.id },
-              data: fieldPayload,
+    const deleteField = (id: string) => {
+        handleFormUpdate({ fields: form!.fields.filter(f => f.id !== id) });
+    };
+
+    const onDragEnd = (result: DropResult) => {
+        if (!result.destination || !form) return;
+        const items = Array.from(form.fields);
+        const [reorderedItem] = items.splice(result.source.index, 1);
+        items.splice(result.destination.index, 0, reorderedItem);
+        handleFormUpdate({ fields: items });
+    };
+    
+    // --- Edición de opciones ---
+    const handleOptionAdd = (fieldId: string) => {
+        const newOption = { id: generateUniqueId('opt'), text: 'Nueva Opción', isCorrect: false };
+        const updatedFields = form!.fields.map(f => {
+            if (f.id === fieldId) {
+                return { ...f, options: [...(f.options as any[]), newOption] };
+            }
+            return f;
+        });
+        handleFormUpdate({ fields: updatedFields });
+    };
+
+    const handleOptionChange = (fieldId: string, optionIndex: number, newText: string) => {
+        const updatedFields = form!.fields.map(f => {
+            if (f.id === fieldId) {
+                const newOptions = [...(f.options as any[])];
+                newOptions[optionIndex].text = newText;
+                return { ...f, options: newOptions };
+            }
+            return f;
+        });
+        handleFormUpdate({ fields: updatedFields });
+    };
+    
+     const handleCorrectChange = (fieldId: string, optionId: string, isCorrect: boolean) => {
+        const updatedFields = form!.fields.map(f => {
+            if (f.id === fieldId) {
+                const newOptions = (f.options as any[]).map(opt => {
+                    if (f.type === 'SINGLE_CHOICE') {
+                        return { ...opt, isCorrect: opt.id === optionId };
+                    }
+                    if (opt.id === optionId) {
+                        return { ...opt, isCorrect: isCorrect };
+                    }
+                    return opt;
+                });
+                return { ...f, options: newOptions };
+            }
+            return f;
+        });
+        handleFormUpdate({ fields: updatedFields });
+    };
+
+
+    const handleOptionDelete = (fieldId: string, optionIndex: number) => {
+        const updatedFields = form!.fields.map(f => {
+            if (f.id === fieldId) {
+                 const newOptions = (f.options as any[]).filter((_, i) => i !== optionIndex);
+                 return { ...f, options: newOptions };
+            }
+            return f;
+        });
+        handleFormUpdate({ fields: updatedFields });
+    };
+    
+    const handleSaveChanges = async () => {
+        if (!form) return;
+        setIsSaving(true);
+        try {
+            const payload = {
+                title: form.title,
+                description: form.description,
+                status: form.status,
+                fields: form.fields.map((f, index) => ({...f, order: index}))
+            };
+            const res = await fetch(`/api/forms/${formId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
             });
-          }
+            if (!res.ok) throw new Error((await res.json()).message || 'No se pudo guardar el formulario.');
+            
+            const updatedForm = await res.json();
+            setForm(updatedForm);
+            setIsDirty(false);
+            toast({ title: '¡Guardado!', description: 'Tus cambios en el formulario han sido guardados.' });
+        } catch (err) {
+            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Error desconocido', variant: 'destructive' });
+        } finally {
+            setIsSaving(false);
         }
-      }
-    });
+    };
 
-    const updatedForm = await prisma.form.findUnique({
-      where: { id: formId },
-      include: { fields: { orderBy: { order: 'asc' } } }
-    });
 
-    return NextResponse.json(updatedForm);
+    useEffect(() => {
+        const fetchForm = async () => {
+            if (!formId) return;
+            setIsLoading(true);
+            try {
+                const res = await fetch(`/api/forms/${formId}`);
+                if (!res.ok) throw new Error('No se pudo cargar el formulario o no tienes permiso.');
+                const data = await res.json();
+                setForm(data);
+                setPageTitle(`Editando: ${data.title}`);
+            } catch (err) {
+                toast({ title: 'Error', description: err instanceof Error ? err.message : 'Error desconocido', variant: 'destructive' });
+                router.push('/forms');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchForm();
+    }, [formId, router, toast, setPageTitle]);
 
-  } catch (error) {
-    console.error(`[UPDATE_FORM_ID: ${formId}] Error al actualizar el formulario:`, error);
-    return NextResponse.json({ message: 'Error al actualizar el formulario' }, { status: 500 });
-  }
-}
+    if (isLoading || !form) {
+        return <div className="flex items-center justify-center min-h-[calc(100vh-80px)]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
+    }
 
-/**
- * DELETE a form.
- *
- * @param {NextRequest} req - The incoming request.
- * @param {{ params: { id: string } }} { params } - The route parameters.
- * @returns {Promise<NextResponse>} A success or error response.
- */
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id: formId } = params;
+    return (
+        <div className="space-y-6">
+            <header className="flex items-center justify-between gap-4">
+                 <div className="flex-grow space-y-1">
+                    <Input value={form.title} onChange={e => handleFormUpdate({ title: e.target.value })} className="text-2xl font-bold h-auto p-0 border-none focus-visible:ring-0" />
+                    <Textarea value={form.description || ''} onChange={e => handleFormUpdate({ description: e.target.value })} placeholder="Añade una descripción para tu formulario..." className="text-muted-foreground border-none p-0 focus-visible:ring-0 h-auto resize-none"/>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Link href={`/forms/${formId}/results`} className={cn(buttonVariants({variant: 'outline'}))}>
+                        <BarChart className="mr-2 h-4 w-4"/>Resultados
+                    </Link>
+                    <Link href={`/forms/${formId}/view`} target="_blank" className={cn(buttonVariants({variant: 'outline'}))}>
+                       <Eye className="mr-2 h-4 w-4"/>Vista Previa
+                    </Link>
+                    <Button onClick={handleSaveChanges} disabled={isSaving || !isDirty}>
+                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+                        Guardar
+                    </Button>
+                </div>
+            </header>
 
-  const session = await getCurrentUser();
-  if (!session) {
-    return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
-  }
-
-  const authError = await checkPermissions(formId, session);
-  if (authError) return authError;
-
-  try {
-    await prisma.form.delete({ where: { id: formId } });
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error(`[DELETE_FORM_ID: ${formId}] Error al eliminar el formulario:`, error);
-    return NextResponse.json({ message: 'Error al eliminar el formulario' }, { status: 500 });
-  }
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <main className="lg:col-span-2 space-y-4">
+                    <DragDropContext onDragEnd={onDragEnd}>
+                        <Droppable droppableId="form-fields">
+                            {(provided) => (
+                                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                                    {form.fields.map((field, index) => (
+                                         <Draggable key={field.id} draggableId={field.id} index={index}>
+                                             {(provided) => (
+                                                <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                                   <FieldEditor 
+                                                      field={field} 
+                                                      onUpdate={handleFieldUpdate} 
+                                                      onDelete={deleteField}
+                                                      onOptionChange={handleOptionChange}
+                                                      onOptionAdd={handleOptionAdd}
+                                                      onOptionDelete={handleOptionDelete}
+                                                      onCorrectChange={handleCorrectChange}
+                                                      isSaving={isSaving}
+                                                    />
+                                                </div>
+                                             )}
+                                         </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                </div>
+                            )}
+                        </Droppable>
+                    </DragDropContext>
+                </main>
+                <aside className="lg:sticky lg:top-24 space-y-4">
+                     <Card>
+                        <CardHeader><CardTitle>Añadir Campo</CardTitle></CardHeader>
+                        <CardContent className="grid grid-cols-2 gap-2">
+                           <Button variant="outline" onClick={() => addField('SHORT_TEXT')}>Texto Corto</Button>
+                           <Button variant="outline" onClick={() => addField('LONG_TEXT')}>Párrafo</Button>
+                           <Button variant="outline" onClick={() => addField('SINGLE_CHOICE')}>Opción Única</Button>
+                           <Button variant="outline" onClick={() => addField('MULTIPLE_CHOICE')}>Múltiples Opciones</Button>
+                        </CardContent>
+                     </Card>
+                      <Card>
+                        <CardHeader><CardTitle>Publicación</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                           <div className="space-y-2">
+                                <Label>Estado del Formulario</Label>
+                                <Select value={form.status} onValueChange={(s) => handleFormUpdate({ status: s as FormStatus })}>
+                                    <SelectTrigger><SelectValue/></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="DRAFT">Borrador</SelectItem>
+                                        <SelectItem value="PUBLISHED">Publicado</emove>
+                                        <SelectItem value="ARCHIVED">Archivado</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                           </div>
+                           {form.status === 'PUBLISHED' && (
+                            <div className="space-y-2">
+                                <Label>Enlace para Compartir</Label>
+                                <div className="flex items-center gap-2">
+                                  <Input readOnly value={`${window.location.origin}/forms/${formId}/view`} />
+                                  <Button size="icon" variant="ghost" onClick={() => {
+                                      navigator.clipboard.writeText(`${window.location.origin}/forms/${formId}/view`);
+                                      toast({title: 'Copiado', description: 'El enlace ha sido copiado al portapapeles.'});
+                                  }}><Copy className="h-4 w-4"/></Button>
+                                </div>
+                            </div>
+                           )}
+                        </CardContent>
+                     </Card>
+                </aside>
+            </div>
+        </div>
+    );
 }
