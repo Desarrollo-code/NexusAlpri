@@ -5,13 +5,13 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
     
-    const { id: formId } = params;
+    const { id: formId } = await params;
 
     try {
         const form = await prisma.form.findUnique({
@@ -48,20 +48,24 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
                 case 'SINGLE_CHOICE':
                 case 'MULTIPLE_CHOICE':
                     const counts = new Map<string, number>();
-                    const allOptions = (field.options as string[]) || [];
+                    const allOptions = (field.options as any[]).map(opt => opt.text) || [];
 
                     // Initialize all options with 0 count
                     allOptions.forEach(opt => counts.set(opt, 0));
 
                     fieldAnswers.forEach(ans => {
                         if (field.type === 'SINGLE_CHOICE') {
-                            counts.set(ans.value, (counts.get(ans.value) || 0) + 1);
+                            const value = (field.options as any[]).find(opt => opt.id === ans.value)?.text;
+                            if (value && counts.has(value)) {
+                               counts.set(value, (counts.get(value) || 0) + 1);
+                            }
                         } else { // MULTIPLE_CHOICE
                             try {
-                                const selectedOptions: string[] = JSON.parse(ans.value);
-                                selectedOptions.forEach(opt => {
-                                     if (counts.has(opt)) {
-                                        counts.set(opt, counts.get(opt)! + 1);
+                                const selectedOptionIds: string[] = JSON.parse(ans.value);
+                                selectedOptionIds.forEach(optId => {
+                                    const value = (field.options as any[]).find(opt => opt.id === optId)?.text;
+                                     if (value && counts.has(value)) {
+                                        counts.set(value, counts.get(value)! + 1);
                                     }
                                 });
                             } catch (e) { /* ignore malformed data */ }
