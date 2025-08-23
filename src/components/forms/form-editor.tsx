@@ -1,3 +1,4 @@
+
 // src/components/forms/form-editor.tsx
 'use client';
 
@@ -64,17 +65,17 @@ const FieldEditor = ({ field, onUpdate, onDelete, onOptionChange, onOptionAdd, o
         return (
             <div className="space-y-2 mt-2 pl-6">
                  {options.map((option, index) => {
-                    const optionId = `opt-${field.id}-${option.id}`;
-                    return (
+                     const optionId = `opt-${field.id}-${option.id}`;
+                     return (
                         <div key={option.id} className="flex items-center gap-2">
-                            {isSingleChoice ? (
+                             {isSingleChoice ? (
                                 <RadioGroupItem value={option.id} id={optionId} onClick={() => onCorrectChange(field.id, option.id, true)} />
-                            ) : (
+                             ) : (
                                 <Checkbox id={optionId} checked={option.isCorrect} onCheckedChange={(checked) => onCorrectChange(field.id, option.id, !!checked)} />
-                            )}
-                            <Label htmlFor={optionId} className="flex-grow font-normal">
+                             )}
+                             <Label htmlFor={optionId} className="flex-grow font-normal">
                                 <Input value={option.text} onChange={e => onOptionChange(field.id, index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
-                            </Label>
+                             </Label>
                              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => onOptionDelete(field.id, index)} disabled={isSaving}>
                                 <X className="h-4 w-4" />
                             </Button>
@@ -117,9 +118,7 @@ const FieldEditor = ({ field, onUpdate, onDelete, onOptionChange, onOptionAdd, o
             
             {renderOptionsEditor()}
 
-            <Separator className="my-4"/>
-
-            <div className="flex justify-between items-center text-sm">
+            <div className="mt-4 pt-4 border-t flex justify-between items-center text-sm">
                 <div className="flex items-center space-x-2">
                     <Switch id={`required-${field.id}`} checked={field.required} onCheckedChange={(c) => handleSwitchChange(c, 'required')} disabled={isSaving}/>
                     <Label htmlFor={`required-${field.id}`}>Requerido</Label>
@@ -370,7 +369,7 @@ export function FormEditor({ formId }: { formId: string }) {
                                     <SelectTrigger><SelectValue/></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="DRAFT">Borrador</SelectItem>
-                                        <SelectItem value="PUBLISHED">Publicado</emove>
+                                        <SelectItem value="PUBLISHED">Publicado</SelectItem>
                                         <SelectItem value="ARCHIVED">Archivado</SelectItem>
                                     </SelectContent>
                                 </Select>
