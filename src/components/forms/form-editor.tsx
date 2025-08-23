@@ -1,4 +1,3 @@
-
 // src/components/forms/form-editor.tsx
 'use client';
 
@@ -57,45 +56,62 @@ const FieldEditor = ({ field, onUpdate, onDelete, onOptionChange, onOptionAdd, o
     
     const renderOptionsEditor = () => {
         const options = (field.options || []) as { id: string, text: string, isCorrect: boolean }[];
-        const isSingleChoice = field.type === 'SINGLE_CHOICE';
-        const isMultipleChoice = field.type === 'MULTIPLE_CHOICE';
-
-        if (!isSingleChoice && !isMultipleChoice) return null;
         
-        const content = options.map((option, index) => {
-            const optionId = `opt-${field.id}-${option.id}`;
+        if (field.type === 'SINGLE_CHOICE') {
             return (
-                <div key={option.id} className="flex items-center gap-2">
-                    {isSingleChoice ? (
-                        <RadioGroupItem value={option.id} id={optionId} />
-                    ) : (
-                        <Checkbox id={optionId} checked={option.isCorrect} onCheckedChange={(checked) => onCorrectChange(field.id, option.id, !!checked)} />
-                    )}
-                    <Label htmlFor={optionId} className="flex-grow font-normal">
-                        <Input value={option.text} onChange={e => onOptionChange(field.id, index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
-                    </Label>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => onOptionDelete(field.id, index)} disabled={isSaving}>
-                        <X className="h-4 w-4" />
+                <RadioGroup 
+                    className="space-y-2 mt-2 pl-6" 
+                    onValueChange={(val) => onCorrectChange(field.id, val, true)} 
+                    value={(field.options as any[])?.find(opt => opt.isCorrect)?.id}
+                >
+                    {options.map((option, index) => {
+                        const optionId = `opt-${field.id}-${option.id}`;
+                        return (
+                            <div key={option.id} className="flex items-center gap-2">
+                                <RadioGroupItem value={option.id} id={optionId} />
+                                <Label htmlFor={optionId} className="flex-grow font-normal">
+                                    <Input value={option.text} onChange={e => onOptionChange(field.id, index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
+                                </Label>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => onOptionDelete(field.id, index)} disabled={isSaving}>
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        );
+                    })}
+                     <Button variant="link" size="sm" type="button" onClick={() => onOptionAdd(field.id)} className="ml-0 p-0 h-auto">
+                        + Añadir opción
+                    </Button>
+                </RadioGroup>
+            );
+        }
+
+        if (field.type === 'MULTIPLE_CHOICE') {
+            return (
+                <div className="space-y-2 mt-2 pl-6">
+                    {options.map((option, index) => {
+                         const optionId = `opt-${field.id}-${option.id}`;
+                         return (
+                            <div key={option.id} className="flex items-center gap-2">
+                               <Checkbox id={optionId} checked={option.isCorrect} onCheckedChange={(checked) => onCorrectChange(field.id, option.id, !!checked)} />
+                               <Label htmlFor={optionId} className="flex-grow font-normal">
+                                   <Input value={option.text} onChange={e => onOptionChange(field.id, index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
+                               </Label>
+                               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => onOptionDelete(field.id, index)} disabled={isSaving}>
+                                   <X className="h-4 w-4" />
+                               </Button>
+                            </div>
+                         );
+                    })}
+                     <Button variant="link" size="sm" type="button" onClick={() => onOptionAdd(field.id)} className="p-0 h-auto">
+                        + Añadir opción
                     </Button>
                 </div>
-            )
-        });
+            );
+        }
 
-        return (
-            <div className="space-y-2 mt-2 pl-6">
-                 {isSingleChoice ? (
-                     <RadioGroup onValueChange={(val) => onCorrectChange(field.id, val, true)} value={(field.options as any[]).find(opt => opt.isCorrect)?.id}>
-                        {content}
-                    </RadioGroup>
-                 ) : (
-                    <div>{content}</div>
-                 )}
-                 <Button variant="link" size="sm" type="button" onClick={() => onOptionAdd(field.id)}>
-                     + Añadir opción
-                 </Button>
-            </div>
-        );
+        return null;
     };
+
 
     return (
         <Card className="bg-muted/30 p-4 border relative">
