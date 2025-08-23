@@ -1,4 +1,3 @@
-// src/components/forms/form-editor.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -67,13 +66,20 @@ const FieldEditor = ({ field, onUpdate, onDelete, onOptionChange, onOptionAdd, o
             {options.map((option, index) => {
               const optionId = `opt-${field.id}-${option.id}`;
               return (
-                <Label key={option.id} htmlFor={optionId} className="flex items-center gap-2 font-normal">
-                    <RadioGroupItem value={option.id} id={optionId} />
-                    <Input value={option.text} onChange={e => onOptionChange(field.id, index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={(e) => { e.preventDefault(); onOptionDelete(field.id, index)}} disabled={isSaving}>
+                <div key={option.id} className="flex items-center gap-2 font-normal">
+                  <RadioGroupItem value={option.id} id={optionId} />
+                  <Label htmlFor={optionId} className="flex-grow font-normal">
+                    <Input 
+                      value={option.text ?? ''} // CORRECCIÓN 2: Asegura un valor definido
+                      onChange={e => onOptionChange(field.id, index, e.target.value)} 
+                      placeholder={`Opción ${index + 1}`} 
+                      disabled={isSaving}
+                    />
+                  </Label>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={(e) => { e.preventDefault(); onOptionDelete(field.id, index)}} disabled={isSaving}>
                       <X className="h-4 w-4" />
-                    </Button>
-                </Label>
+                  </Button>
+                </div>
               );
             })}
              <Button variant="link" size="sm" type="button" onClick={() => onOptionAdd(field.id)} className="ml-0 p-0 h-auto">
@@ -92,7 +98,12 @@ const FieldEditor = ({ field, onUpdate, onDelete, onOptionChange, onOptionAdd, o
                 <div key={option.id} className="flex items-center gap-2">
                   <Checkbox id={optionId} checked={option.isCorrect} onCheckedChange={(checked) => onCorrectChange(field.id, option.id, !!checked)} />
                   <Label htmlFor={optionId} className="flex-grow font-normal">
-                    <Input value={option.text} onChange={e => onOptionChange(field.id, index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
+                    <Input 
+                      value={option.text ?? ''} // CORRECCIÓN 2: Asegura un valor definido
+                      onChange={e => onOptionChange(field.id, index, e.target.value)} 
+                      placeholder={`Opción ${index + 1}`} 
+                      disabled={isSaving}
+                    />
                   </Label>
                   <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => onOptionDelete(field.id, index)} disabled={isSaving}>
                     <X className="h-4 w-4" />
@@ -111,52 +122,52 @@ const FieldEditor = ({ field, onUpdate, onDelete, onOptionChange, onOptionAdd, o
 
 
     return (
-        <Card className="bg-muted/30 p-4 border relative">
-            <div className="flex items-center gap-2 mb-4">
-                <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
-                <div className="flex-grow space-y-2">
-                    <Input 
-                        name="label"
-                        value={field.label}
-                        onChange={handleInputChange}
-                        placeholder="Escribe tu pregunta aquí..."
-                        className="text-base font-semibold border-transparent focus:border-input"
-                        disabled={isSaving}
-                    />
-                    <Input 
-                        name="placeholder"
-                        value={field.placeholder || ''}
-                        onChange={handleInputChange}
-                        placeholder="Texto de ejemplo o ayuda (opcional)"
-                        className="text-xs h-8"
-                        disabled={isSaving}
-                    />
-                </div>
-                 <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => onDelete(field.id)} disabled={isSaving}>
-                    <Trash2 className="h-4 w-4" />
-                </Button>
-            </div>
-            
-            {renderOptionsEditor()}
+      <Card className="bg-muted/30 p-4 border relative">
+          <div className="flex items-center gap-2 mb-4">
+              <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+              <div className="flex-grow space-y-2">
+                  <Input 
+                      name="label"
+                      value={field.label}
+                      onChange={handleInputChange}
+                      placeholder="Escribe tu pregunta aquí..."
+                      className="text-base font-semibold border-transparent focus:border-input"
+                      disabled={isSaving}
+                  />
+                  <Input 
+                      name="placeholder"
+                      value={field.placeholder ?? ''} // CORRECCIÓN 2: Asegura un valor definido
+                      onChange={handleInputChange}
+                      placeholder="Texto de ejemplo o ayuda (opcional)"
+                      className="text-xs h-8"
+                      disabled={isSaving}
+                  />
+              </div>
+               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => onDelete(field.id)} disabled={isSaving}>
+                  <Trash2 className="h-4 w-4" />
+              </Button>
+          </div>
+          
+          {renderOptionsEditor()}
 
-            <div className="mt-4 pt-4 border-t flex justify-between items-center text-sm">
-                <div className="flex items-center space-x-2">
-                    <Switch id={`required-${field.id}`} checked={field.required} onCheckedChange={(c) => handleSwitchChange(c, 'required')} disabled={isSaving}/>
-                    <Label htmlFor={`required-${field.id}`}>Requerido</Label>
-                </div>
-                 <Select value={field.type} onValueChange={(type) => onUpdate(field.id, { type: type as FormFieldType, options: type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' ? field.options : [] })}>
-                    <SelectTrigger className="w-[180px] h-9">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="SHORT_TEXT">Texto Corto</SelectItem>
-                        <SelectItem value="LONG_TEXT">Párrafo</SelectItem>
-                        <SelectItem value="SINGLE_CHOICE">Opción Única</SelectItem>
-                        <SelectItem value="MULTIPLE_CHOICE">Casillas</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-        </Card>
+          <div className="mt-4 pt-4 border-t flex justify-between items-center text-sm">
+              <div className="flex items-center space-x-2">
+                  <Switch id={`required-${field.id}`} checked={field.required} onCheckedChange={(c) => handleSwitchChange(c, 'required')} disabled={isSaving}/>
+                  <Label htmlFor={`required-${field.id}`}>Requerido</Label>
+              </div>
+               <Select value={field.type} onValueChange={(type) => onUpdate(field.id, { type: type as FormFieldType, options: type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' ? field.options : [] })}>
+                  <SelectTrigger className="w-[180px] h-9">
+                      <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="SHORT_TEXT">Texto Corto</SelectItem>
+                      <SelectItem value="LONG_TEXT">Párrafo</SelectItem>
+                      <SelectItem value="SINGLE_CHOICE">Opción Única</SelectItem>
+                      <SelectItem value="MULTIPLE_CHOICE">Casillas</SelectItem>
+                  </SelectContent>
+              </Select>
+          </div>
+      </Card>
     );
 };
 
@@ -236,7 +247,7 @@ export function FormEditor({ formId }: { formId: string }) {
         handleFormUpdate({ fields: updatedFields });
     };
     
-     const handleCorrectChange = (fieldId: string, optionId: string, isCorrect: boolean) => {
+      const handleCorrectChange = (fieldId: string, optionId: string, isCorrect: boolean) => {
         const updatedFields = form!.fields.map(f => {
             if (f.id === fieldId) {
                 const newOptions = (f.options as any[]).map(opt => {
@@ -324,21 +335,21 @@ export function FormEditor({ formId }: { formId: string }) {
         <div className="space-y-6">
             <header className="flex items-center justify-between gap-4">
                  <div className="flex-grow space-y-1">
-                    <Input value={form.title} onChange={e => handleFormUpdate({ title: e.target.value })} className="text-2xl font-bold h-auto p-0 border-none focus-visible:ring-0" />
-                    <Textarea value={form.description || ''} onChange={e => handleFormUpdate({ description: e.target.value })} placeholder="Añade una descripción para tu formulario..." className="text-muted-foreground border-none p-0 focus-visible:ring-0 h-auto resize-none"/>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Link href={`/forms/${formId}/results`} className={cn(buttonVariants({variant: 'outline'}))}>
-                        <BarChart className="mr-2 h-4 w-4"/>Resultados
-                    </Link>
-                    <Link href={`/forms/${formId}/view`} target="_blank" className={cn(buttonVariants({variant: 'outline'}))}>
-                       <Eye className="mr-2 h-4 w-4"/>Vista Previa
-                    </Link>
-                    <Button onClick={handleSaveChanges} disabled={isSaving || !isDirty}>
-                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                        Guardar
-                    </Button>
-                </div>
+                     <Input value={form.title} onChange={e => handleFormUpdate({ title: e.target.value })} className="text-2xl font-bold h-auto p-0 border-none focus-visible:ring-0" />
+                     <Textarea value={form.description ?? ''} onChange={e => handleFormUpdate({ description: e.target.value })} placeholder="Añade una descripción para tu formulario..." className="text-muted-foreground border-none p-0 focus-visible:ring-0 h-auto resize-none"/>
+                 </div>
+                 <div className="flex items-center gap-2">
+                     <Link href={`/forms/${formId}/results`} className={cn(buttonVariants({variant: 'outline'}))}>
+                         <BarChart className="mr-2 h-4 w-4"/>Resultados
+                     </Link>
+                     <Link href={`/forms/${formId}/view`} target="_blank" className={cn(buttonVariants({variant: 'outline'}))}>
+                        <Eye className="mr-2 h-4 w-4"/>Vista Previa
+                     </Link>
+                     <Button onClick={handleSaveChanges} disabled={isSaving || !isDirty}>
+                         {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+                         Guardar
+                     </Button>
+                 </div>
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -350,22 +361,22 @@ export function FormEditor({ formId }: { formId: string }) {
                                     {form.fields.map((field, index) => (
                                          <Draggable key={field.id} draggableId={field.id} index={index}>
                                              {(provided) => (
-                                                <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                                                   <FieldEditor 
-                                                      field={field} 
-                                                      onUpdate={handleFieldUpdate} 
-                                                      onDelete={deleteField}
-                                                      onOptionChange={handleOptionChange}
-                                                      onOptionAdd={handleOptionAdd}
-                                                      onOptionDelete={handleOptionDelete}
-                                                      onCorrectChange={handleCorrectChange}
-                                                      isSaving={isSaving}
-                                                    />
-                                                </div>
-                                             )}
+                                                 <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                                     <FieldEditor 
+                                                         field={field} 
+                                                         onUpdate={handleFieldUpdate} 
+                                                         onDelete={deleteField}
+                                                         onOptionChange={handleOptionChange}
+                                                         onOptionAdd={handleOptionAdd}
+                                                         onOptionDelete={handleOptionDelete}
+                                                         onCorrectChange={handleCorrectChange}
+                                                         isSaving={isSaving}
+                                                     />
+                                                 </div>
+                                              )}
                                          </Draggable>
-                                    ))}
-                                    {provided.placeholder}
+                                     ))}
+                                     {provided.placeholder}
                                 </div>
                             )}
                         </Droppable>
@@ -373,42 +384,42 @@ export function FormEditor({ formId }: { formId: string }) {
                 </main>
                 <aside className="lg:sticky lg:top-24 space-y-4">
                      <Card>
-                        <CardHeader><CardTitle>Añadir Campo</CardTitle></CardHeader>
-                        <CardContent className="grid grid-cols-2 gap-2">
-                           <Button variant="outline" onClick={() => addField('SHORT_TEXT')}>Texto Corto</Button>
-                           <Button variant="outline" onClick={() => addField('LONG_TEXT')}>Párrafo</Button>
-                           <Button variant="outline" onClick={() => addField('SINGLE_CHOICE')}>Opción Única</Button>
-                           <Button variant="outline" onClick={() => addField('MULTIPLE_CHOICE')}>Múltiples Opciones</Button>
-                        </CardContent>
+                         <CardHeader><CardTitle>Añadir Campo</CardTitle></CardHeader>
+                         <CardContent className="grid grid-cols-2 gap-2">
+                            <Button variant="outline" onClick={() => addField('SHORT_TEXT')}>Texto Corto</Button>
+                            <Button variant="outline" onClick={() => addField('LONG_TEXT')}>Párrafo</Button>
+                            <Button variant="outline" onClick={() => addField('SINGLE_CHOICE')}>Opción Única</Button>
+                            <Button variant="outline" onClick={() => addField('MULTIPLE_CHOICE')}>Múltiples Opciones</Button>
+                         </CardContent>
                      </Card>
                       <Card>
-                        <CardHeader><CardTitle>Publicación</CardTitle></CardHeader>
-                        <CardContent className="space-y-4">
-                           <div className="space-y-2">
-                                <Label>Estado del Formulario</Label>
-                                <Select value={form.status} onValueChange={(s) => handleFormUpdate({ status: s as FormStatus })}>
-                                    <SelectTrigger><SelectValue/></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="DRAFT">Borrador</SelectItem>
-                                        <SelectItem value="PUBLISHED">Publicado</SelectItem>
-                                        <SelectItem value="ARCHIVED">Archivado</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                           </div>
-                           {form.status === 'PUBLISHED' && (
+                         <CardHeader><CardTitle>Publicación</CardTitle></CardHeader>
+                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Enlace para Compartir</Label>
-                                <div className="flex items-center gap-2">
-                                  <Input readOnly value={`${window.location.origin}/forms/${formId}/view`} />
-                                  <Button size="icon" variant="ghost" onClick={() => {
-                                      navigator.clipboard.writeText(`${window.location.origin}/forms/${formId}/view`);
-                                      toast({title: 'Copiado', description: 'El enlace ha sido copiado al portapapeles.'});
-                                  }}><Copy className="h-4 w-4"/></Button>
-                                </div>
+                                 <Label>Estado del Formulario</Label>
+                                 <Select value={form.status} onValueChange={(s) => handleFormUpdate({ status: s as FormStatus })}>
+                                     <SelectTrigger><SelectValue/></SelectTrigger>
+                                     <SelectContent>
+                                         <SelectItem value="DRAFT">Borrador</SelectItem>
+                                         <SelectItem value="PUBLISHED">Publicado</SelectItem>
+                                         <SelectItem value="ARCHIVED">Archivado</SelectItem>
+                                     </SelectContent>
+                                 </Select>
                             </div>
-                           )}
-                        </CardContent>
-                     </Card>
+                            {form.status === 'PUBLISHED' && (
+                             <div className="space-y-2">
+                                 <Label>Enlace para Compartir</Label>
+                                 <div className="flex items-center gap-2">
+                                   <Input readOnly value={`${window.location.origin}/forms/${formId}/view`} />
+                                   <Button size="icon" variant="ghost" onClick={() => {
+                                       navigator.clipboard.writeText(`${window.location.origin}/forms/${formId}/view`);
+                                       toast({title: 'Copiado', description: 'El enlace ha sido copiado al portapapeles.'});
+                                     }}><Copy className="h-4 w-4"/></Button>
+                                 </div>
+                             </div>
+                            )}
+                         </CardContent>
+                      </Card>
                 </aside>
             </div>
         </div>
