@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { useTitle } from '@/contexts/title-context';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, PlusCircle, Save, Loader2, FilePen, GripVertical, Trash2, List, CaseSensitive, CheckSquare, ListChecks, Pilcrow, MessageSquare } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Save, Loader2, FilePen, GripVertical, Trash2, List, CaseSensitive, CheckSquare, ListChecks, Pilcrow, MessageSquare, Check, Circle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,37 +18,80 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Switch } from '../ui/switch';
 import { X } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '../ui/dropdown-menu';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { Checkbox } from '../ui/checkbox';
+import { cn } from '@/lib/utils';
 
 type FullForm = Form & { fields: FormField[] };
 let tempIdCounter = 0;
 const generateTempId = (prefix: string) => `${prefix}-${Date.now()}-${tempIdCounter++}`;
 
+interface FormOption {
+    id: string;
+    text: string;
+    isCorrect: boolean;
+}
+
 const FieldEditor = ({ field, onUpdate, onDelete, isSaving, provided }: { field: FormField; onUpdate: (id: string, updates: Partial<FormField>) => void; onDelete: (id: string) => void; isSaving: boolean; provided: any }) => {
     
+    const options = (Array.isArray(field.options) ? field.options : []) as FormOption[];
+
     const handleAddOption = () => {
-        const newOptions = [...(field.options as string[] || []), `Opción ${ (field.options as string[]).length + 1}`];
-        onUpdate(field.id, { options: newOptions });
+        const newOption: FormOption = {
+            id: generateTempId('opt'),
+            text: `Opción ${options.length + 1}`,
+            isCorrect: false,
+        };
+        onUpdate(field.id, { options: [...options, newOption] });
     };
 
     const handleOptionChange = (index: number, value: string) => {
-        const newOptions = [...(field.options as string[])];
-        newOptions[index] = value;
+        const newOptions = [...options];
+        newOptions[index].text = value;
         onUpdate(field.id, { options: newOptions });
-    }
+    };
     
-    const handleRemoveOption = (index: number) => {
-        const newOptions = (field.options as string[]).filter((_, i) => i !== index);
+    const handleCorrectChange = (index: number, isSingleChoice: boolean) => {
+        let newOptions = [...options];
+        if (isSingleChoice) {
+            newOptions = newOptions.map((opt, i) => ({ ...opt, isCorrect: i === index }));
+        } else {
+            newOptions[index].isCorrect = !newOptions[index].isCorrect;
+        }
         onUpdate(field.id, { options: newOptions });
-    }
+    };
+
+    const handleRemoveOption = (index: number) => {
+        const newOptions = options.filter((_, i) => i !== index);
+        onUpdate(field.id, { options: newOptions });
+    };
 
     const renderOptionsEditor = () => {
         if (field.type !== 'SINGLE_CHOICE' && field.type !== 'MULTIPLE_CHOICE') return null;
+
+        const isSingleChoice = field.type === 'SINGLE_CHOICE';
+        const correctValue = isSingleChoice ? options.find(o => o.isCorrect)?.id : undefined;
+
         return (
             <div className="space-y-2 mt-2 pl-6">
-                {(field.options as string[]).map((option, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                        <Input value={option} onChange={e => handleOptionChange(index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemoveOption(index)} disabled={isSaving || (field.options as string[]).length <= 1}><X className="h-4 w-4"/></Button>
+                 {(options).map((option, index) => (
+                    <div key={option.id} className="flex items-center gap-2">
+                        {isSingleChoice ? (
+                            <input
+                                type="radio"
+                                name={`correct-opt-${field.id}`}
+                                className="h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                                checked={option.isCorrect}
+                                onChange={() => handleCorrectChange(index, true)}
+                            />
+                        ) : (
+                            <Checkbox
+                                checked={option.isCorrect}
+                                onCheckedChange={() => handleCorrectChange(index, false)}
+                            />
+                        )}
+                        <Input value={option.text} onChange={e => handleOptionChange(index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemoveOption(index)} disabled={isSaving || options.length <= 1}><X className="h-4 w-4"/></Button>
                     </div>
                 ))}
                 <Button variant="link" size="sm" onClick={handleAddOption} disabled={isSaving}>+ Añadir opción</Button>
@@ -157,7 +200,7 @@ export function FormEditor({ formId }: { formId: string }) {
             type: type,
             required: false,
             placeholder: null,
-            options: type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' ? ['Opción 1'] : [],
+            options: type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' ? [{ id: generateTempId('opt'), text: 'Opción 1', isCorrect: true }] : [],
             order: form?.fields.length || 0,
             createdAt: new Date(),
             updatedAt: new Date(),
