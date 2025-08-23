@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTitle } from '@/contexts/title-context';
 import { useRouter } from 'next/navigation';
 import { Loader2, AlertTriangle, Save, PlusCircle, Trash2, GripVertical, Check, Eye, BarChart, Share2, FilePen, MoreVertical, Settings, Copy, Shield, X, CheckSquare, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -61,27 +61,35 @@ const FieldEditor = ({ field, onUpdate, onDelete, onOptionChange, onOptionAdd, o
         const isMultipleChoice = field.type === 'MULTIPLE_CHOICE';
 
         if (!isSingleChoice && !isMultipleChoice) return null;
+        
+        const content = options.map((option, index) => {
+            const optionId = `opt-${field.id}-${option.id}`;
+            return (
+                <div key={option.id} className="flex items-center gap-2">
+                    {isSingleChoice ? (
+                        <RadioGroupItem value={option.id} id={optionId} />
+                    ) : (
+                        <Checkbox id={optionId} checked={option.isCorrect} onCheckedChange={(checked) => onCorrectChange(field.id, option.id, !!checked)} />
+                    )}
+                    <Label htmlFor={optionId} className="flex-grow font-normal">
+                        <Input value={option.text} onChange={e => onOptionChange(field.id, index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
+                    </Label>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => onOptionDelete(field.id, index)} disabled={isSaving}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
+            )
+        });
 
         return (
             <div className="space-y-2 mt-2 pl-6">
-                 {options.map((option, index) => {
-                     const optionId = `opt-${field.id}-${option.id}`;
-                     return (
-                        <div key={option.id} className="flex items-center gap-2">
-                             {isSingleChoice ? (
-                                <RadioGroupItem value={option.id} id={optionId} onClick={() => onCorrectChange(field.id, option.id, true)} />
-                             ) : (
-                                <Checkbox id={optionId} checked={option.isCorrect} onCheckedChange={(checked) => onCorrectChange(field.id, option.id, !!checked)} />
-                             )}
-                             <Label htmlFor={optionId} className="flex-grow font-normal">
-                                <Input value={option.text} onChange={e => onOptionChange(field.id, index, e.target.value)} placeholder={`Opción ${index + 1}`} disabled={isSaving}/>
-                             </Label>
-                             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => onOptionDelete(field.id, index)} disabled={isSaving}>
-                                <X className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    )
-                 })}
+                 {isSingleChoice ? (
+                     <RadioGroup onValueChange={(val) => onCorrectChange(field.id, val, true)} value={(field.options as any[]).find(opt => opt.isCorrect)?.id}>
+                        {content}
+                    </RadioGroup>
+                 ) : (
+                    <div>{content}</div>
+                 )}
                  <Button variant="link" size="sm" type="button" onClick={() => onOptionAdd(field.id)}>
                      + Añadir opción
                  </Button>
@@ -123,14 +131,14 @@ const FieldEditor = ({ field, onUpdate, onDelete, onOptionChange, onOptionAdd, o
                     <Switch id={`required-${field.id}`} checked={field.required} onCheckedChange={(c) => handleSwitchChange(c, 'required')} disabled={isSaving}/>
                     <Label htmlFor={`required-${field.id}`}>Requerido</Label>
                 </div>
-                 <Select value={field.type} onValueChange={(type) => onUpdate(field.id, { type: type as FormFieldType })}>
+                 <Select value={field.type} onValueChange={(type) => onUpdate(field.id, { type: type as FormFieldType, options: type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' ? field.options : [] })}>
                     <SelectTrigger className="w-[180px] h-9">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="SHORT_TEXT">Texto Corto</SelectItem>
                         <SelectItem value="LONG_TEXT">Párrafo</SelectItem>
-                        <SelectItem value="SINGLE_CHOICE">Opción Múltiple</SelectItem>
+                        <SelectItem value="SINGLE_CHOICE">Opción Única</SelectItem>
                         <SelectItem value="MULTIPLE_CHOICE">Casillas</SelectItem>
                     </SelectContent>
                 </Select>
