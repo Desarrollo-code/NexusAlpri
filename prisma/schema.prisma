@@ -333,25 +333,25 @@ model UserAchievement {
 
 // --- ENTERPRISE RESOURCES ---
 model EnterpriseResource {
-  id          String   @id @default(cuid())
-  title       String
-  description String?  @db.Text
-  type        ResourceType
-  url         String?  @db.Text
-  category    String?
-  tags        String?
-  uploadDate  DateTime @default(now())
-  pin         String?  // Hashed PIN
-  ispublic    Boolean  @default(true)
-  // Relations
-  uploaderId  String
-  uploader    User     @relation("UploadedResources", fields: [uploaderId], references: [id])
-  parentId    String?
-  parent      EnterpriseResource?  @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
-  children    EnterpriseResource[] @relation("FolderChildren")
-  sharedWith  User[]               @relation("SharedResources")
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  type        ResourceType
+  url         String?  @db.Text
+  category    String?
+  tags        String?
+  uploadDate  DateTime @default(now())
+  pin         String?  // Hashed PIN
+  ispublic    Boolean  @default(true)
+  // Relations
+  uploaderId  String
+  uploader    User     @relation("UploadedResources", fields: [uploaderId], references: [id])
+  parentId    String?
+  parent      EnterpriseResource?  @relation("FolderChildren", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction) // <-- ¡El cambio está aquí!
+  children    EnterpriseResource[] @relation("FolderChildren")
+  sharedWith  User[]               @relation("SharedResources")
 
-  @@index([parentId])
+  @@index([parentId])
 }
 
 enum ResourceType {
