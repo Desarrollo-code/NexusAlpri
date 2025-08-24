@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Edit3, Mail, Shield, User, Camera, KeyRound, Save, Loader2, Check, Eye, EyeOff, Award, Star } from 'lucide-react';
+import { Edit3, Mail, Shield, User, Camera, KeyRound, Save, Loader2, Check, Eye, EyeOff, Award, Star, Replace, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -41,6 +41,7 @@ import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/comp
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 import { AnimatePresence } from 'framer-motion';
 import { Identicon } from '@/components/ui/identicon';
+import { ImageCropper } from '@/components/image-cropper';
 
 const ProfileCardBackground = () => (
     <div className="card__img">
@@ -83,6 +84,9 @@ export default function ProfilePage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [isNewPasswordFocused, setIsNewPasswordFocused] = useState(false);
+
+  // Image Cropper State
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -122,64 +126,53 @@ export default function ProfilePage() {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setAvatarFile(file);
-      setAvatarPreview(URL.createObjectURL(file));
-      handleSaveChanges({ selectedFile: file });
+      const reader = new FileReader();
+      reader.onload = () => setImageToCrop(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+    // Reset input value to allow re-selecting the same file
+    if (e.target) e.target.value = '';
+  };
+  
+  const handleCropComplete = async (croppedFileUrl: string) => {
+    setAvatarPreview(croppedFileUrl);
+    setImageToCrop(null);
+    setIsSaving(true);
+    try {
+        const response = await fetch(`/api/users/${user.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ avatar: croppedFileUrl })
+        });
+        if (!response.ok) throw new Error((await response.json()).message || 'Error al actualizar el avatar');
+        const savedUser = await response.json();
+        updateUser(savedUser);
+        toast({ title: 'Avatar Actualizado', description: 'Tu nueva foto de perfil ha sido guardada.' });
+    } catch (error) {
+        toast({ title: 'Error al Guardar', description: (error as Error).message, variant: 'destructive' });
+        setAvatarPreview(user?.avatar || null); // Revert on failure
+    } finally {
+        setIsSaving(false);
     }
   };
 
-  const handleSaveChanges = async ({ selectedFile }: { selectedFile?: File } = {}) => {
-      if (!user) return;
-      setIsSaving(true);
-      
-      let avatarUrl = user.avatar;
-      const fileToUpload = selectedFile || avatarFile;
 
-      if (fileToUpload) {
-          setIsUploading(true);
-          const formData = new FormData();
-          formData.append('file', fileToUpload);
-          try {
-              const result: { url: string } = await uploadWithProgress('/api/upload/avatar', formData, setUploadProgress);
-              avatarUrl = result.url;
-          } catch (err) {
-              toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
-              setIsSaving(false);
-              setIsUploading(false);
-              setAvatarPreview(user.avatar || null); // Revert on failure
-              return;
-          }
-          setIsUploading(false);
-      }
-
-      const updatedUserData: any = {};
-      if (editableName !== user.name) {
-        updatedUserData.name = editableName;
-      }
-      if (avatarUrl !== user.avatar) {
-        updatedUserData.avatar = avatarUrl;
-      }
-      
-      if (Object.keys(updatedUserData).length === 0) {
-          toast({ title: 'Sin cambios', description: 'No se detectaron cambios para guardar.' });
-          setIsSaving(false);
+  const handleSaveChanges = async () => {
+      if (!user || editableName === user.name) {
+          toast({ title: 'Sin cambios', description: 'No se detectaron cambios en el nombre para guardar.' });
           return;
       }
-      
+      setIsSaving(true);
       try {
           const response = await fetch(`/api/users/${user.id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(updatedUserData)
+              body: JSON.stringify({ name: editableName })
           });
-          if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.message || 'Error al actualizar el perfil');
-          }
+          if (!response.ok) throw new Error((await response.json()).message || 'Error al actualizar el perfil');
           const savedUser = await response.json();
-          updateUser(savedUser); // Update context
-          setAvatarFile(null); // Clear file after successful upload
-          toast({ title: 'Perfil Actualizado', description: 'Tus cambios han sido guardados.' });
+          updateUser(savedUser);
+          toast({ title: 'Perfil Actualizado', description: 'Tu nombre ha sido guardado.' });
       } catch (error) {
           toast({ title: 'Error al Guardar', description: (error as Error).message, variant: 'destructive' });
       } finally {
@@ -310,10 +303,10 @@ export default function ProfilePage() {
                     size="icon" 
                     className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-background"
                     onClick={() => avatarInputRef.current?.click()}
-                    disabled={isSaving || isUploading}
+                    disabled={isSaving}
                     aria-label="Cambiar foto de perfil"
                 >
-                    {isUploading ? <Loader2 className="h-4 w-4 animate-spin"/> : <Camera className="h-4 w-4 text-primary" />}
+                    <Camera className="h-4 w-4 text-primary" />
                 </Button>
                 <input 
                     type="file" 
@@ -347,20 +340,14 @@ export default function ProfilePage() {
       {isMobile ? (
         <div className="flex flex-col items-center gap-8">
             <MobileProfileView />
-             {isUploading && (
-                <div className="w-full px-4">
-                  <Progress value={uploadProgress} className="h-1.5" />
-                  <p className="text-xs mt-1 text-muted-foreground text-center">{uploadProgress}%</p>
-                </div>
-              )}
             <div id="info-card" className="w-full">
                 <Card className="card-border-animated">
                     <CardHeader><CardTitle>Información Personal</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
-                      <div><Label htmlFor="fullNameMobile">Nombre Completo</Label><Input id="fullNameMobile" name="fullNameMobile" value={editableName} onChange={(e) => setEditableName(e.target.value)} disabled={isSaving || isUploading}/></div>
-                      <Button onClick={() => handleSaveChanges()} disabled={isSaving || isUploading} className="w-full" variant="primary-gradient">
-                          {isSaving || isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                          {isSaving ? 'Guardando...' : (isUploading ? 'Subiendo...' : 'Guardar Información')}
+                      <div><Label htmlFor="fullNameMobile">Nombre Completo</Label><Input id="fullNameMobile" name="fullNameMobile" value={editableName} onChange={(e) => setEditableName(e.target.value)} disabled={isSaving}/></div>
+                      <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full" variant="primary-gradient">
+                          {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                          {isSaving ? 'Guardando...' : 'Guardar Información'}
                       </Button>
                     </CardContent>
                 </Card>
@@ -445,10 +432,10 @@ export default function ProfilePage() {
                             size="icon" 
                             className="absolute bottom-1 right-1 h-8 w-8 rounded-full bg-background/50 backdrop-blur-sm"
                             onClick={() => avatarInputRef.current?.click()}
-                            disabled={isSaving || isUploading}
+                            disabled={isSaving}
                             aria-label="Cambiar foto de perfil"
                         >
-                            {isUploading ? <Loader2 className="h-4 w-4 animate-spin"/> : <Camera className="h-4 w-4 text-primary" />}
+                           <Camera className="h-4 w-4 text-primary" />
                         </Button>
                         <input 
                             type="file" 
@@ -461,12 +448,6 @@ export default function ProfilePage() {
                         />
                     </div>
                      <div className="p-6">
-                        {isUploading && (
-                            <div className="px-4 mb-4">
-                                <Progress value={uploadProgress} className="h-1.5" />
-                                <p className="text-xs mt-1 text-muted-foreground">{uploadProgress}%</p>
-                            </div>
-                        )}
                         <h2 className="text-2xl font-bold">{user.name}</h2>
                          <div className="card__subtitle mt-2 space-y-2">
                              {user.name?.toLowerCase() !== getRoleInSpanish(user.role).toLowerCase() && (
@@ -521,7 +502,7 @@ export default function ProfilePage() {
                       name="fullName"
                       value={editableName} 
                       onChange={(e) => setEditableName(e.target.value)}
-                      disabled={isSaving || isUploading}
+                      disabled={isSaving}
                     />
                   </div>
                   <div>
@@ -530,8 +511,8 @@ export default function ProfilePage() {
                     <p className="text-xs text-muted-foreground mt-1">El correo electrónico no se puede cambiar desde aquí.</p>
                   </div>
                    <div className="pt-2">
-                      <Button onClick={() => handleSaveChanges()} disabled={isSaving || isUploading} className="w-full" variant="primary-gradient">
-                          {isSaving || isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                      <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full" variant="primary-gradient">
+                          {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                           {isSaving ? 'Guardando...' : 'Guardar Información'}
                       </Button>
                   </div>
@@ -582,6 +563,13 @@ export default function ProfilePage() {
             </div>
           </div>
       )}
+      
+      <ImageCropper
+        imageSrc={imageToCrop}
+        onCropComplete={handleCropComplete}
+        onClose={() => setImageToCrop(null)}
+        uploadUrl="/api/upload/avatar"
+      />
       
       <Dialog open={show2faSetup} onOpenChange={setShow2faSetup}>
         <DialogContent className="w-[95vw] max-w-md rounded-lg">
