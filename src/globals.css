@@ -196,3 +196,13 @@
     opacity: 0;
   }
 }
+
+.quill-editor .ql-toolbar {
+  @apply rounded-t-lg border-b bg-muted/50;
+}
+.quill-editor .ql-container {
+  @apply rounded-b-lg text-base;
+}
+.quill-editor .ql-editor {
+  @apply min-h-[150px] resize-y;
+}

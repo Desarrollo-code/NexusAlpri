@@ -2,47 +2,68 @@
 'use client';
 
 import React from 'react';
-import { Bold, Italic, Underline, Strikethrough, List, ListOrdered, Link, Image, Quote, Code } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { Loader2 } from 'lucide-react';
+import 'react-quill/dist/quill.snow.css'; // Importa los estilos del editor
 import { cn } from '@/lib/utils';
-import { Separator } from './separator';
-import { Button } from './button';
-import { Textarea } from './textarea';
 
-interface RichTextEditorProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  // We can add more props here in the future for a real implementation
-}
-
-const EditorToolbar = () => (
-    <div className="flex items-center gap-1 p-2 border-b bg-muted/50 rounded-t-lg">
-        <Button variant="ghost" size="icon" className="h-8 w-8" disabled title="Negrita (Próximamente)"><Bold className="h-4 w-4" /></Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8" disabled title="Cursiva (Próximamente)"><Italic className="h-4 w-4" /></Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8" disabled title="Subrayado (Próximamente)"><Underline className="h-4 w-4" /></Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8" disabled title="Tachado (Próximamente)"><Strikethrough className="h-4 w-4" /></Button>
-        <Separator orientation="vertical" className="h-6 mx-1" />
-        <Button variant="ghost" size="icon" className="h-8 w-8" disabled title="Lista con Viñetas (Próximamente)"><List className="h-4 w-4" /></Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8" disabled title="Lista Numerada (Próximamente)"><ListOrdered className="h-4 w-4" /></Button>
-         <Separator orientation="vertical" className="h-6 mx-1" />
-        <Button variant="ghost" size="icon" className="h-8 w-8" disabled title="Citar (Próximamente)"><Quote className="h-4 w-4" /></Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8" disabled title="Código (Próximamente)"><Code className="h-4 w-4" /></Button>
-    </div>
+// Carga dinámica de ReactQuill para que solo se renderice en el cliente
+const ReactQuill = dynamic(
+    () => import('react-quill'), 
+    { 
+        ssr: false,
+        loading: () => (
+            <div className="flex items-center justify-center h-40 border rounded-md bg-muted/50">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+        )
+    }
 );
 
+interface RichTextEditorProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+}
 
-export const RichTextEditor = React.forwardRef<HTMLTextAreaElement, RichTextEditorProps>(
-  ({ className, ...props }, ref) => {
+const modules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],        // Estilos básicos
+    [{'list': 'ordered'}, {'list': 'bullet'}],
+    ['link'],                                          // Enlace
+    ['clean']                                         // Limpiar formato
+  ],
+};
+
+const formats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike',
+  'list', 'bullet',
+  'link'
+];
+
+export const RichTextEditor: React.FC<RichTextEditorProps> = ({ 
+    value, 
+    onChange, 
+    placeholder, 
+    disabled, 
+    className 
+}) => {
     return (
-        <div className="w-full rounded-lg border bg-background focus-within:ring-2 focus-within:ring-ring">
-            <EditorToolbar />
-            <Textarea
-                ref={ref}
-                className={cn(
-                    "w-full min-h-[150px] rounded-t-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-4 text-base",
-                    className
-                )}
-                {...props}
+        <div className={cn("bg-card text-foreground rounded-md border", className)}>
+             <ReactQuill 
+                theme="snow"
+                value={value}
+                onChange={onChange}
+                modules={modules}
+                formats={formats}
+                placeholder={placeholder}
+                readOnly={disabled}
+                className="quill-editor" // Clase para estilos personalizados si es necesario
             />
         </div>
     );
-  }
-);
-RichTextEditor.displayName = 'RichTextEditor';
+};

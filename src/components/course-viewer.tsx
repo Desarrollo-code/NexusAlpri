@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -117,7 +116,7 @@ const LessonNotes = ({ lessonId }: { lessonId: string }) => {
                     ) : (
                        <RichTextEditor
                             value={noteContent}
-                            onChange={(e) => setNoteContent(e.target.value)}
+                            onChange={(value) => setNoteContent(value)}
                             placeholder="Escribe tus notas privadas para esta lección aquí. Se guardarán automáticamente..."
                             className="w-full min-h-[200px] bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-4"
                         />
@@ -398,8 +397,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             );
         }
         return (
-            <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card whitespace-pre-wrap" style={{ maxHeight: '500px', overflowY: 'auto' }}>
-                {block.content}
+            <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" style={{ maxHeight: '500px', overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: block.content }}>
             </div>
         );
     }
