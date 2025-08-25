@@ -29,7 +29,7 @@ interface ColorfulCalendarProps {
     className?: string;
 }
 
-const MAX_LANES = 2;
+const MAX_LANES = 2; // Show 2 lanes, then "+X more"
 
 export default function ColorfulCalendar({ month, events, selectedDay, onDateSelect, onEventClick, className }: ColorfulCalendarProps) {
   const today = new Date();
@@ -55,25 +55,27 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
           );
           
           eventsInWeek.sort((a, b) => {
-              const diffA = differenceInDays(new Date(a.end), new Date(a.start));
-              const diffB = differenceInDays(new Date(b.end), new Date(b.start));
-              if (diffA !== diffB) return diffB - diffA;
+              const diffA = differenceInDays(new Date(b.end), new Date(a.start));
+              const diffB = differenceInDays(new Date(a.end), new Date(b.start));
+              if (diffA !== diffB) return diffA - diffB;
               return new Date(a.start).getTime() - new Date(b.start).getTime();
           });
           
-          const lanes: (CalendarEvent | null)[][] = Array.from({ length: 10 }, () => Array(7).fill(null)); // More lanes to avoid overflow issues
+          const lanes: (CalendarEvent | null)[][] = Array.from({ length: 10 }, () => Array(7).fill(null));
           const positionedEvents: any[] = [];
-          
-          // --- Start of Corrected Logic ---
           const dailyEventCounts: Record<string, number> = {};
+
           eventsInWeek.forEach(event => {
-              for (let d = new Date(event.start); d <= new Date(event.end); d.setDate(d.getDate() + 1)) {
-                  if (d >= weekStart && d <= weekEnd) {
-                      const dayKey = format(d, 'yyyy-MM-dd');
-                      dailyEventCounts[dayKey] = (dailyEventCounts[dayKey] || 0) + 1;
-                  }
-              }
-          });
+            const start = new Date(event.start);
+            const end = new Date(event.end);
+            
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                if (d >= weekStart && d <= weekEnd) {
+                    const dayKey = format(d, 'yyyy-MM-dd');
+                    dailyEventCounts[dayKey] = (dailyEventCounts[dayKey] || 0) + 1;
+                }
+            }
+        });
 
           eventsInWeek.forEach(event => {
               const start = new Date(event.start);
@@ -91,27 +93,24 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                       }
                   }
                   if (canPlace) {
-                      if(laneIndex < MAX_LANES) {
-                        for (let i = eventStartDay; i <= eventEndDay; i++) {
-                            lanes[laneIndex][i] = event;
-                        }
-                        positionedEvents.push({
-                            ...event,
-                            startDay: eventStartDay,
-                            span: eventEndDay - eventStartDay + 1,
-                            isStart: start >= weekStart,
-                            isEnd: end <= weekEnd,
-                            lane: laneIndex,
-                        });
+                      for (let i = eventStartDay; i <= eventEndDay; i++) {
+                          lanes[laneIndex][i] = event;
                       }
+                      positionedEvents.push({
+                          ...event,
+                          startDay: eventStartDay,
+                          span: eventEndDay - eventStartDay + 1,
+                          isStart: start >= weekStart,
+                          isEnd: end <= weekEnd,
+                          lane: laneIndex,
+                      });
                       placed = true;
                       break;
                   }
               }
           });
-          // --- End of Corrected Logic ---
 
-          return { positionedEvents, dailyEventCounts };
+          return { positionedEvents, moreCounts: dailyEventCounts };
       });
   }, [weeks, events]);
 
@@ -129,16 +128,15 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                         {week.map((day) => {
                              const dayKey = format(day, 'yyyy-MM-dd');
                              const holiday = isHoliday(day, 'CO');
-                             const { dailyEventCounts } = positionedEventsByWeek[weekIndex];
-                             const totalEventsToday = dailyEventCounts[dayKey] || 0;
-                             const moreCount = totalEventsToday > MAX_LANES ? totalEventsToday - MAX_LANES : 0;
+                             const { moreCounts } = positionedEventsByWeek[weekIndex];
+                             const moreCount = moreCounts[dayKey] ? moreCounts[dayKey] - MAX_LANES : 0;
 
                              return (
                                  <div
                                     key={day.toString()}
                                     onClick={() => onDateSelect(day)}
                                     className={cn(
-                                        "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer h-full border-b border-r",
+                                        "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[120px] sm:min-h-[140px] border-b border-r",
                                         !isSameMonth(day, month) && "bg-muted/30 text-muted-foreground/50",
                                         isSameDay(day, selectedDay) && "bg-primary/10"
                                     )}
@@ -159,32 +157,29 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                                             {holiday && <TooltipContent><p>{holiday.name}</p></TooltipContent>}
                                         </Tooltip>
                                     </div>
-                                    <div className="flex-grow min-h-[70px] relative">
-                                        {/* Event Layer will be rendered on top of this */}
-                                    </div>
                                     {moreCount > 0 && (
-                                        <div className="text-xs text-primary font-semibold pl-1 mt-auto z-10 hover:underline">{moreCount} más...</div>
+                                        <div className="text-xs text-primary font-semibold pl-1 mt-auto absolute bottom-1 left-1 z-10 hover:underline">{moreCount} más...</div>
                                     )}
                                 </div>
                              )
                         })}
 
                         {/* Events Layer for the week */}
-                         <div className="absolute top-8 left-0 right-0 h-[calc(100%-2rem)] pointer-events-none grid grid-cols-7 gap-px">
-                            {positionedEventsByWeek[weekIndex].positionedEvents.map(event => (
+                         <div className="absolute top-8 left-0 right-0 h-auto pointer-events-none grid grid-cols-7 gap-px p-1">
+                            {positionedEventsByWeek[weekIndex].positionedEvents.filter(e => e.lane < MAX_LANES).map(event => (
                                 <div
                                     key={event.id}
                                     onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
                                     className={cn(
-                                        "absolute h-6 pointer-events-auto cursor-pointer px-1 text-xs font-semibold flex items-center truncate",
+                                        "h-6 pointer-events-auto cursor-pointer px-1 text-xs font-semibold flex items-center truncate",
                                         getEventColorClass(event.color),
                                         event.isStart && 'rounded-l-lg',
                                         event.isEnd && 'rounded-r-lg',
                                     )}
                                     style={{
                                         top: `${(event.lane || 0) * 1.75}rem`, // 1.5rem height + 0.25rem gap
-                                        left: `calc(${(event.startDay / 7) * 100}% + 1px)`,
-                                        width: `calc(${(event.span / 7) * 100}% - 2px)`,
+                                        gridColumnStart: event.startDay + 1,
+                                        gridColumnEnd: `span ${event.span}`,
                                     }}
                                 >
                                     {event.isStart && event.title}
