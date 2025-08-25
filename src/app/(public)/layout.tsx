@@ -7,6 +7,8 @@ import React from 'react';
 import prisma from '@/lib/prisma';
 import Image from 'next/image';
 
+// Este layout se aplica a las páginas públicas como la landing page y "acerca de".
+// Forzamos la clase 'light' en el div principal para asegurar un tema consistente.
 export default async function PublicLayout({
   children,
 }: {
