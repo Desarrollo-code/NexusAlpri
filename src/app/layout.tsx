@@ -7,7 +7,6 @@ import { TitleProvider } from '@/contexts/title-context';
 import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
 
-
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -15,12 +14,11 @@ export default async function RootLayout({
 }>) {
   const fontVariables = await getFontVariables();
   
+  // El ThemeProvider se ha movido a los layouts específicos (app y public)
+  // para un control más granular. El layout raíz ya no gestiona el tema.
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body className={cn(
-          "font-body flex flex-col min-h-screen bg-background",
-          fontVariables
-      )}>
+    <html lang="es" suppressHydrationWarning className={fontVariables}>
+      <body className={cn("font-body flex flex-col min-h-screen bg-background")}>
         <AuthProvider>
             <TitleProvider>
                 {children}

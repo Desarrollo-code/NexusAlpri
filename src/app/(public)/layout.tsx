@@ -6,18 +6,22 @@ import { DecorativeHeaderBackground } from '@/components/layout/decorative-heade
 import React from 'react';
 import prisma from '@/lib/prisma';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
+import { getFontVariables } from '@/lib/fonts';
 
 // Este layout se aplica a las páginas públicas como la landing page y "acerca de".
-// Forzamos la clase 'light' en el div principal para asegurar un tema consistente.
+// Se gestiona el tema directamente en el layout raíz para estas páginas.
 export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const settings = await prisma.platformSettings.findFirst();
+  const fontVariables = await getFontVariables();
 
   return (
-      <div className='flex flex-col min-h-screen bg-background relative isolate light'>
+    <html lang="es" suppressHydrationWarning className={cn("light", fontVariables)}>
+      <body className="flex flex-col min-h-screen bg-background relative isolate">
         <DecorativeHeaderBackground />
         <PublicTopBar />
         <main className="flex-1 flex flex-col items-center justify-center pb-16 md:pb-0">
@@ -43,6 +47,7 @@ export default async function PublicLayout({
             />
           </div>
         )}
-      </div>
+      </body>
+    </html>
   );
 }
