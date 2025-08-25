@@ -30,8 +30,8 @@ export const SidebarHeader = () => {
             width={56} 
             height={56} 
             data-ai-hint="logo" 
-            className={cn(!settings?.logoUrl && "p-1")}
-            style={{objectFit: 'contain'}}
+            className="rounded-md"
+            style={{objectFit: 'cover'}}
           />
         </div>
         {!isCollapsed && (
