@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek, isWithinInterval, subDays } from 'date-fns';
+import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek, isWithinInterval, getDay, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
@@ -29,51 +29,23 @@ interface ColorfulCalendarProps {
     className?: string;
 }
 
-const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEventClick, events, selectedDay }: {
+const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, selectedDay }: {
     day: Date,
     isCurrentMonth: boolean,
     isToday: boolean,
     onDateSelect: (d: Date) => void,
-    onEventClick: (e: CalendarEvent) => void,
-    events: CalendarEvent[],
     selectedDay: Date,
 }) => {
     const dayKey = format(day, 'yyyy-MM-dd');
     const holiday = isHoliday(day, 'CO');
     
-    const daySpecificEvents = useMemo(() => {
-        return events
-            .filter(event => {
-                 try {
-                    const eventStart = new Date(event.start);
-                    const eventEnd = new Date(event.end);
-                    // Asegura que los eventos que terminan a medianoche se incluyan en el día anterior.
-                    const adjustedEnd = eventEnd.getHours() === 0 && eventEnd.getMinutes() === 0 ? subDays(eventEnd, 1) : eventEnd;
-                    return isWithinInterval(day, { start: eventStart, end: adjustedEnd });
-                } catch (e) {
-                    // Si las fechas son inválidas, no mostrar el evento.
-                    return false;
-                }
-            })
-            .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-    }, [events, day]);
-
-
-    const dotEvents = useMemo(() => {
-        const uniqueColors = new Set<string>();
-        daySpecificEvents.forEach(event => {
-            if (event.color) uniqueColors.add(event.color);
-        });
-        return Array.from(uniqueColors).slice(0, 4);
-    }, [daySpecificEvents]);
-
     return (
         <div
             onClick={() => onDateSelect(day)}
             className={cn(
-                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer",
-                !isCurrentMonth && "bg-muted/30 text-muted-foreground/50",
-                isSameDay(day, selectedDay) && "bg-accent/40"
+                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer h-full",
+                 !isCurrentMonth && "bg-muted/30 text-muted-foreground/50",
+                 isSameDay(day, selectedDay) && "bg-accent/40"
             )}
         >
             <div className="flex justify-end items-start mb-1 flex-shrink-0">
@@ -92,26 +64,7 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
                     {holiday && <TooltipContent><p>{holiday.name}</p></TooltipContent>}
                 </Tooltip>
             </div>
-            
-             <div className="flex-grow overflow-y-auto space-y-1 min-h-0 pr-1 thin-scrollbar">
-                {daySpecificEvents.map(event => (
-                    <div 
-                        key={event.id}
-                        className={cn("text-xs p-1 rounded-md truncate text-white", getEventColorClass(event.color, 'bg'))}
-                        onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
-                    >
-                        {event.title}
-                    </div>
-                ))}
-            </div>
-
-            {dotEvents.length > 0 && (
-                 <div className="flex justify-center items-center gap-1 pt-1 flex-shrink-0 md:hidden">
-                    {dotEvents.map((color, index) => (
-                         <div key={index} className={cn("h-1.5 w-1.5 rounded-full", getEventColorClass(color, 'bg'))}></div>
-                    ))}
-                 </div>
-            )}
+            <div className="flex-grow min-h-[60px]" />
         </div>
     );
 });
@@ -121,30 +74,48 @@ DayCell.displayName = "DayCell";
 export default function ColorfulCalendar({ month, events, selectedDay, onDateSelect, onEventClick, className }: ColorfulCalendarProps) {
   const today = new Date();
 
-  const { weeks } = useMemo(() => {
+  const { weeks, firstDayOfCalendar } = useMemo(() => {
     const start = startOfWeek(startOfMonth(month), { weekStartsOn: 0 });
     const end = endOfWeek(endOfMonth(month), { weekStartsOn: 0 });
     const days = eachDayOfInterval({ start, end });
     
     const weeksArray: Date[][] = [];
-    let weekIndex = 0;
     while (days.length) {
-        // Ensure the last week is filled up to 7 days
-        const weekSlice = days.splice(0, 7);
-        weeksArray.push(weekSlice);
-        weekIndex++;
-    }
-    // Fill the last week if it's not a full 7 days
-    if(weeksArray.length > 0) {
-        const lastWeek = weeksArray[weeksArray.length - 1];
-        while(lastWeek.length < 7) {
-            lastWeek.push(new Date(lastWeek[lastWeek.length - 1].getTime() + 24 * 60 * 60 * 1000));
-        }
+        weeksArray.push(days.splice(0, 7));
     }
     
-    return { weeks: weeksArray };
+    return { weeks: weeksArray, firstDayOfCalendar: start };
   }, [month]);
   
+  const weeklyEvents = useMemo(() => {
+      return weeks.map(week => {
+          const weekStart = week[0];
+          const weekEnd = week[6];
+          const weekEvents = events.filter(event => 
+              new Date(event.start) <= weekEnd && new Date(event.end) >= weekStart
+          );
+          
+          weekEvents.sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+
+          const layout: CalendarEvent[][] = [];
+          for (const event of weekEvents) {
+              let placed = false;
+              for (const row of layout) {
+                  const lastEvent = row[row.length - 1];
+                  if (new Date(event.start) > new Date(lastEvent.end)) {
+                      row.push(event);
+                      placed = true;
+                      break;
+                  }
+              }
+              if (!placed) {
+                  layout.push([event]);
+              }
+          }
+          return layout;
+      });
+  }, [weeks, events]);
+
   return (
     <TooltipProvider delayDuration={100}>
       <div className={cn("grid grid-cols-7 grid-rows-[auto_repeat(6,minmax(0,1fr))] h-full gap-px bg-border rounded-lg relative overflow-hidden", className)}>
@@ -156,8 +127,41 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                  {week.map((day) => {
                     const isCurrentMonth = day.getMonth() === month.getMonth();
                     const isToday = isSameDay(day, today);
-                    return <DayCell key={day.toString()} day={day} isCurrentMonth={isCurrentMonth} isToday={isToday} onDateSelect={onDateSelect} onEventClick={onEventClick} events={events} selectedDay={selectedDay} />;
+                    return <DayCell key={day.toString()} day={day} isCurrentMonth={isCurrentMonth} isToday={isToday} onDateSelect={onDateSelect} selectedDay={selectedDay} />;
                  })}
+                  <div className="col-span-7 row-start-2 row-end-[8] grid grid-cols-7 grid-rows-6 pointer-events-none">
+                     {weeklyEvents[weekIndex]?.map((row, rowIndex) => (
+                         row.map(event => {
+                             const eventStart = new Date(event.start);
+                             const eventEnd = new Date(event.end);
+                             const weekStart = week[0];
+                             const weekEnd = week[6];
+                             
+                             const startDayIndex = eventStart < weekStart ? 0 : getDay(eventStart);
+                             const endDayIndex = eventEnd > weekEnd ? 6 : getDay(eventEnd);
+                             
+                             const span = endDayIndex - startDayIndex + 1;
+                             
+                             return (
+                                <div
+                                    key={event.id}
+                                    className="absolute p-1 pointer-events-auto cursor-pointer"
+                                    style={{
+                                        top: `${(weekIndex * (100/6)) + (rowIndex * 1.5)}%`,
+                                        left: `${startDayIndex * (100/7)}%`,
+                                        width: `${span * (100/7)}%`,
+                                        marginTop: '3.5rem', 
+                                    }}
+                                    onClick={() => onEventClick(event)}
+                                >
+                                    <div className={cn("w-full h-full text-xs p-1 rounded-md truncate text-white", getEventColorClass(event.color, 'bg'))}>
+                                        {event.title}
+                                    </div>
+                                </div>
+                             )
+                         })
+                     ))}
+                 </div>
             </React.Fragment>
         ))}
       </div>
