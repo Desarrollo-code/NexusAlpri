@@ -1,5 +1,5 @@
 
-
+// src/app/(app)/dashboard/page.tsx
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
@@ -258,16 +258,194 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
   );
 }
 
+function StudentDashboard({ stats, announcements, myCourses }: { stats: { enrolled: number, completed: number }, announcements: DisplayAnnouncement[], myCourses: EnrolledCourse[] }) {
+  return (
+    <div className="space-y-8">
+      <section>
+        <h2 className="text-2xl font-semibold mb-4">Tu Progreso</h2>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+          <Card className="card-border-animated">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Cursos Inscritos</CardTitle>
+              <BookOpen className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.enrolled}</div>
+            </CardContent>
+          </Card>
+          <Card className="card-border-animated">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Cursos Completados</CardTitle>
+              <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.completed}</div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <main className="lg:col-span-2 space-y-6">
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-semibold">Continuar Aprendiendo</h2>
+              <Button asChild variant="link">
+                <Link href="/my-courses">Ver todos <ArrowRight className="ml-2 h-4 w-4"/></Link>
+              </Button>
+            </div>
+            {myCourses.length > 0 ? (
+              <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                {myCourses.map((course, index) => (
+                  <CourseCard key={course.id} course={course} userRole="STUDENT" priority={index < 2}/>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="pt-6 text-center text-muted-foreground">
+                  <p>No estás inscrito en ningún curso. ¡Explora el catálogo!</p>
+                  <Button asChild className="mt-4"><Link href="/courses">Ir al Catálogo</Link></Button>
+                </CardContent>
+              </Card>
+            )}
+          </section>
+
+          <section>
+            <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold">Anuncios Recientes</h2>
+                 <Button asChild variant="link">
+                    <Link href="/announcements">Ver todos <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                </Button>
+            </div>
+            {announcements.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {announcements.map(announcement => (
+                  <AnnouncementCard key={announcement.id} announcement={announcement} />
+                ))}
+              </div>
+            ) : (
+              <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
+            )}
+          </section>
+        </main>
+        
+        <aside className="lg:col-span-1">
+          <Card className="card-border-animated sticky top-24">
+            <CardHeader><CardTitle>Accesos Rápidos</CardTitle></CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                <li><Link href="/courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><BookOpen className="h-5 w-5 text-primary"/>Catálogo de Cursos</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
+                <li><Link href="/my-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><GraduationCap className="h-5 w-5 text-primary"/>Mis Cursos</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
+                <li><Link href="/my-notes" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><BookMarked className="h-5 w-5 text-primary"/>Mis Apuntes</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
+              </ul>
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+
+function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: { taught: number }, announcements: DisplayAnnouncement[], taughtCourses: AppCourseType[] }) {
+  return (
+    <div className="space-y-8">
+      <section>
+        <h2 className="text-2xl font-semibold mb-4">Resumen de Instructor</h2>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+          <Card className="card-border-animated">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Cursos Impartidos</CardTitle>
+              <BookMarked className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.taught}</div>
+            </CardContent>
+          </Card>
+          <Card className="card-border-animated">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Estudiantes</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-muted-foreground">N/A</div>
+              <p className="text-xs text-muted-foreground">Próximamente</p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <main className="lg:col-span-2 space-y-6">
+            <section>
+                 <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-2xl font-semibold">Mis Cursos Impartidos</h2>
+                    <Button asChild variant="link">
+                        <Link href="/manage-courses">Gestionar todos <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                    </Button>
+                </div>
+              {taughtCourses.length > 0 ? (
+                <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                    {taughtCourses.map(course => (
+                      <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow card-border-animated">
+                        {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} width={600} height={400} className="w-full h-auto object-contain" data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
+                        <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
+                        <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2"/> Editar Contenido</Link></Button></CardFooter>
+                      </Card>
+                    ))}
+                </div>
+              ) : (
+                 <Card>
+                    <CardContent className="pt-6 text-center text-muted-foreground">
+                      <p>No has creado cursos aún.</p>
+                       <Button asChild className="mt-4"><Link href="/manage-courses">Crear mi primer curso</Link></Button>
+                    </CardContent>
+                 </Card>
+              )}
+            </section>
+            
+             <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold">Anuncios Recientes</h2>
+                 <Button asChild variant="link">
+                    <Link href="/announcements">Ver todos <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                </Button>
+              </div>
+              {announcements.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {announcements.map(announcement => (
+                    <AnnouncementCard key={announcement.id} announcement={announcement} />
+                  ))}
+                </div>
+              ) : (
+                <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
+              )}
+            </section>
+        </main>
+        
+        <aside className="lg:col-span-1">
+          <Card className="card-border-animated sticky top-24">
+            <CardHeader><CardTitle>Accesos Rápidos</CardTitle></CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                <li><Link href="/manage-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><BookMarked className="h-5 w-5 text-primary"/>Gestionar Cursos</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
+                <li><Link href="/enrollments" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50"><span className="flex items-center gap-3"><Users className="h-5 w-5 text-primary"/>Ver Inscripciones</span><ArrowRight className="h-4 w-4 text-muted-foreground" /></Link></li>
+              </ul>
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const { setPageTitle } = useTitle();
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const shouldSetup2fa = useMemo(() => {
-    return user?.role === 'ADMINISTRATOR' && !user.isTwoFactorEnabled;
-  }, [user]);
 
   useEffect(() => {
     setPageTitle('Panel Principal');
@@ -279,14 +457,14 @@ export default function DashboardPage() {
     setIsLoading(true);
     setError(null);
     try {
-        const promises: Promise<any>[] = [fetch('/api/announcements?pageSize=4')];
+        const promises: Promise<any>[] = [fetch('/api/announcements?pageSize=2')];
         
         if (user.role === 'ADMINISTRATOR') {
             promises.push(fetch('/api/dashboard/admin-stats'));
-            promises.push(fetch('/api/security/logs'));
+            promises.push(fetch('/api/security/logs?pageSize=5'));
         }
         if (user.role === 'INSTRUCTOR') {
-            const queryParams = new URLSearchParams({ manageView: 'true', userId: user.id, userRole: user.role });
+            const queryParams = new URLSearchParams({ manageView: 'true', userId: user.id, userRole: user.role, pageSize: '4' });
             promises.push(fetch(`/api/courses?${queryParams.toString()}`));
         }
         if (user.role === 'STUDENT') {
@@ -320,18 +498,20 @@ export default function DashboardPage() {
             securityLogs: [],
         };
 
-        if (user.role === 'ADMINISTRATOR' && roleSpecificRes[0]) {
-            dashboardPayload.adminStats = await roleSpecificRes[0].json();
-        }
-        if (user.role === 'ADMINISTRATOR' && roleSpecificRes[1]) {
-            const securityLogsJson = await roleSpecificRes[1].json();
-            dashboardPayload.securityLogs = securityLogsJson.logs || [];
+        let resIndex = 0;
+        if (user.role === 'ADMINISTRATOR') {
+            if (roleSpecificRes[resIndex]) dashboardPayload.adminStats = await roleSpecificRes[resIndex].json();
+            resIndex++;
+            if (roleSpecificRes[resIndex]) {
+                const securityLogsJson = await roleSpecificRes[resIndex].json();
+                dashboardPayload.securityLogs = securityLogsJson.logs || [];
+            }
         }
         if (user.role === 'INSTRUCTOR' && roleSpecificRes[0]) {
             const taughtCoursesResponse = await roleSpecificRes[0].json();
             const taughtCoursesData = Array.isArray(taughtCoursesResponse.courses) ? taughtCoursesResponse.courses : [];
-            dashboardPayload.instructorStats = { taught: taughtCoursesData.length };
-            dashboardPayload.taughtCourses = taughtCoursesData.map(mapApiCourseToAppCourse).slice(0, 4);
+            dashboardPayload.instructorStats = { taught: taughtCoursesResponse.totalCourses || 0 };
+            dashboardPayload.taughtCourses = taughtCoursesData.map(mapApiCourseToAppCourse);
         }
         if (user.role === 'STUDENT' && roleSpecificRes[0]) {
             const enrolledData: any[] = await roleSpecificRes[0].json();
@@ -369,30 +549,25 @@ export default function DashboardPage() {
         return false;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 2); 
   }, [data?.recentAnnouncements, user]);
 
-  if (!user) {
-    return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /> Cargando...</div>;
+  if (!user || isLoading) {
+    return (
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+                <Skeleton className="h-96" />
+                <Skeleton className="h-64" />
+            </div>
+            <div className="lg:col-span-1"><Skeleton className="h-[400px]" /></div>
+        </div>
+    </div>
+    );
   }
   
-  if (isLoading) {
-      return (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
-                    <Skeleton className="h-96" />
-                    <Skeleton className="h-64" />
-                </div>
-                <div className="lg:col-span-1"><Skeleton className="h-[400px]" /></div>
-            </div>
-        </div>
-      )
-  }
-
   if (error) {
     return (
         <div className="flex flex-col items-center justify-center py-12 text-destructive">
@@ -404,6 +579,20 @@ export default function DashboardPage() {
     )
   }
 
+  const renderContentForRole = () => {
+    switch (user.role) {
+      case 'ADMINISTRATOR':
+        return data?.adminStats ? <AdminDashboard stats={data.adminStats} logs={data.securityLogs} announcements={filteredAnnouncements} /> : null;
+      case 'INSTRUCTOR':
+        return data?.instructorStats ? <InstructorDashboard stats={data.instructorStats} announcements={filteredAnnouncements} taughtCourses={data.taughtCourses} /> : null;
+      case 'STUDENT':
+        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={filteredAnnouncements} myCourses={data.myDashboardCourses} /> : null;
+      default:
+        return <p>Rol de usuario no reconocido.</p>;
+    }
+  };
+  
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -412,146 +601,9 @@ export default function DashboardPage() {
           <p className="text-muted-foreground">Bienvenido de nuevo a tu plataforma de aprendizaje.</p>
         </div>
       </div>
-
-      {user.role === 'STUDENT' && data?.studentStats && (
-        <section>
-            <h2 className="text-2xl font-semibold mb-4">Tu Progreso</h2>
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-              <Card className="card-border-animated">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Cursos Inscritos</CardTitle>
-                  <BookOpen className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{data.studentStats.enrolled}</div>
-                </CardContent>
-              </Card>
-              <Card className="card-border-animated">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Cursos Completados</CardTitle>
-                  <CheckCircle className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{data.studentStats.completed}</div>
-                </CardContent>
-              </Card>
-            </div>
-        </section>
-      )}
-
-      {user.role === 'INSTRUCTOR' && data?.instructorStats && (
-         <section>
-            <h2 className="text-2xl font-semibold mb-4">Resumen de Instructor</h2>
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-               <Card className="card-border-animated">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Cursos Impartidos</CardTitle>
-                  <BookMarked className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{data.instructorStats.taught}</div>
-                </CardContent>
-              </Card>
-               <Card className="card-border-animated">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Estudiantes</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-muted-foreground">N/A</div>
-                  <p className="text-xs text-muted-foreground">Próximamente</p>
-                </CardContent>
-              </Card>
-            </div>
-        </section>
-      )}
       
-      {user.role === 'ADMINISTRATOR' && data?.adminStats && <AdminDashboard stats={data.adminStats} logs={data.securityLogs} announcements={filteredAnnouncements}/>}
+      {renderContentForRole()}
 
-      {user.role !== 'ADMINISTRATOR' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            {user.role === 'INSTRUCTOR' && (
-                <section>
-                  <h2 className="text-2xl font-semibold mb-4">Mis Cursos Impartidos Recientemente</h2>
-                  {data?.taughtCourses && data.taughtCourses.length > 0 ? (
-                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                        {data.taughtCourses.map(course => (
-                          <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow card-border-animated">
-                            {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} width={600} height={400} className="w-full h-auto object-contain" data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
-                            <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
-                            <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2"/> Editar Contenido</Link></Button></CardFooter>
-                          </Card>
-                        ))}
-                    </div>
-                  ) : (
-                    <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No has creado cursos aún.</p></CardContent></Card>
-                  )}
-                </section>
-            )}
-
-            {user.role === 'STUDENT' && (
-                <section>
-                  <h2 className="text-2xl font-semibold mb-4">Continuar Aprendiendo</h2>
-                  {data?.myDashboardCourses && data.myDashboardCourses.length > 0 ? (
-                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                      {data.myDashboardCourses.map((course, index) => (
-                        <CourseCard key={course.id} course={course} userRole={user.role} priority={index < 2}/>
-                      ))}
-                    </div>
-                  ) : (
-                    <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No estás inscrito en ningún curso.</p></CardContent></Card>
-                  )}
-                </section>
-            )}
-            
-              <section>
-                <h2 className="text-2xl font-semibold mb-4">Anuncios Recientes</h2>
-                {filteredAnnouncements.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {filteredAnnouncements.map(announcement => (
-                      <AnnouncementCard key={announcement.id} announcement={announcement} />
-                    ))}
-                  </div>
-                ) : (
-                  <Card><CardContent className="pt-6 text-center text-muted-foreground"><p>No hay anuncios recientes.</p></CardContent></Card>
-                )}
-              </section>
-          </div>
-          
-              <div className="lg:col-span-1">
-                  <Card className="card-border-animated">
-                      <CardHeader>
-                      <CardTitle>Accesos Rápidos</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                      <ul className="space-y-3">
-                          <li>
-                          <Link href="/courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                              <span className="flex items-center gap-3"><BookOpen className="h-5 w-5 text-primary"/>Catálogo de Cursos</span>
-                              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                          </Link>
-                          </li>
-                          <li>
-                          <Link href="/my-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                              <span className="flex items-center gap-3"><GraduationCap className="h-5 w-5 text-primary"/>Mis Cursos</span>
-                              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                          </Link>
-                          </li>
-                          {(user.role === 'ADMINISTRATOR' || user.role === 'INSTRUCTOR') && (
-                              <li>
-                                  <Link href="/manage-courses" className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
-                                      <span className="flex items-center gap-3"><BookMarked className="h-5 w-5 text-primary"/>Gestionar Cursos</span>
-                                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                                  </Link>
-                              </li>
-                          )}
-                      </ul>
-                      </CardContent>
-                  </Card>
-              </div>
-        </div>
-      )}
     </div>
   );
 }

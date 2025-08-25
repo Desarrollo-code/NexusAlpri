@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
         const announcements = await prisma.announcement.findMany({
             orderBy: { date: 'desc' },
             include: { author: { select: { id: true, name: true } } },
-            take: 3, 
+            take: 4, // Fetch 4 for dashboards
         });
         return NextResponse.json({ announcements, totalAnnouncements: announcements.length });
     }

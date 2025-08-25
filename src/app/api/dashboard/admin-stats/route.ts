@@ -1,4 +1,5 @@
-// Importaciones
+
+// src/app/api/dashboard/admin-stats/route.ts
 import prisma from '@/lib/prisma';
 import { NextResponse, type NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
@@ -10,7 +11,7 @@ export const dynamic = 'force-dynamic';
 // Función auxiliar para crear un rango de fechas para el análisis de tendencias
 const createDateRange = (startDate: Date, endDate: Date) => {
     const dates = [];
-    let currentDate = startDate;
+    let currentDate = new Date(startDate);
     while (currentDate <= endDate) {
         dates.push(new Date(currentDate));
         currentDate.setDate(currentDate.getDate() + 1);
@@ -26,8 +27,8 @@ export async function GET(req: NextRequest) {
 
     try {
         const today = new Date();
-        const thirtyDaysAgo = startOfDay(subDays(today, 30));
-        const sevenDaysAgo = startOfDay(subDays(today, 7));
+        const thirtyDaysAgo = startOfDay(subDays(today, 29)); // Include today
+        const sevenDaysAgo = startOfDay(subDays(today, 6)); // Include today
 
         // --- Ejecutar todas las consultas en paralelo ---
         const [
@@ -64,8 +65,7 @@ export async function GET(req: NextRequest) {
                 select: { courseId: true, progressPercentage: true, userId: true } 
             }),
             prisma.course.findMany({ where: { status: 'PUBLISHED' }, select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } }, orderBy: { enrollments: { _count: 'desc' } }, take: 5 }),
-            // LÍNEA CORREGIDA: Eliminada la cláusula 'where'
-            prisma.course.groupBy({ by: ['instructorId'], _count: { id: true }, orderBy: { _count: { id: 'desc' } }, take: 5 }),
+            prisma.course.groupBy({ by: ['instructorId'], where: { instructorId: { not: null }}, _count: { id: true }, orderBy: { _count: { id: 'desc' } }, take: 5 }),
             prisma.user.groupBy({ by: ['registeredDate'], where: { registeredDate: { gte: thirtyDaysAgo } }, _count: { _all: true }, orderBy: { registeredDate: 'asc' } }),
             prisma.course.groupBy({ by: ['createdAt'], where: { createdAt: { gte: thirtyDaysAgo } }, _count: { _all: true }, orderBy: { createdAt: 'asc' } }),
             prisma.course.groupBy({ by: ['publicationDate'], where: { status: 'PUBLISHED', publicationDate: { gte: thirtyDaysAgo } }, _count: { _all: true }, orderBy: { publicationDate: 'asc' } }),
@@ -76,15 +76,15 @@ export async function GET(req: NextRequest) {
 
         const dateRange = createDateRange(thirtyDaysAgo, today);
 
-        const formatTrendData = (data: { registeredDate?: Date | null, createdAt?: Date, publicationDate?: Date | null, enrolledAt?: Date, _count: { _all: number }} []) => {
-            const dateKey = data.length > 0 && 'registeredDate' in data[0] ? 'registeredDate' : data.length > 0 && 'createdAt' in data[0] ? 'createdAt' : data.length > 0 && 'publicationDate' in data[0] ? 'publicationDate' : 'enrolledAt';
-            const map = new Map(data.map(item => [startOfDay((item as any)[dateKey]!).toISOString().split('T')[0], item._count._all]));
+        const formatTrendData = (data: { date: Date | null, count: number }[]) => {
+            const map = new Map(data.map(item => [startOfDay(item.date!).toISOString().split('T')[0], item.count]));
             return dateRange.map(date => {
                 const dayString = date.toISOString().split('T')[0];
                 return { date: dayString, count: map.get(dayString) || 0 };
             });
         };
-        const userRegistrationTrend = userRegistrationsByDay.length > 0 ? formatTrendData(userRegistrationsByDay as any) : [];
+        
+        const userRegistrationTrend = formatTrendData(userRegistrationsByDay.map(d => ({ date: d.registeredDate, count: d._count._all })));
 
         const courseActivity = dateRange.map(date => {
             const dayString = date.toISOString().split('T')[0];
@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
         });
         
         const instructorIds = topInstructorsByCourses.map(i => i.instructorId).filter(Boolean) as string[];
-        const topInstructorsInfo = await prisma.user.findMany({ where: { id: { in: instructorIds } }, select: { id: true, name: true, avatar: true } });
+        const topInstructorsInfo = instructorIds.length > 0 ? await prisma.user.findMany({ where: { id: { in: instructorIds } }, select: { id: true, name: true, avatar: true } }) : [];
         
         const topInstructorsData = topInstructorsByCourses.map(i => {
             const instructor = topInstructorsInfo.find(info => info.id === i.instructorId);
@@ -106,10 +106,12 @@ export async function GET(req: NextRequest) {
 
         const completionRatesByCourse = new Map<string, { total: number, sum: number }>();
         allCourseProgressRaw.forEach(p => {
-            const rate = completionRatesByCourse.get(p.courseId) || { total: 0, sum: 0 };
-            rate.total++;
-            rate.sum += p.progressPercentage || 0;
-            completionRatesByCourse.set(p.courseId, rate);
+            if (p.courseId) {
+                const rate = completionRatesByCourse.get(p.courseId) || { total: 0, sum: 0 };
+                rate.total++;
+                rate.sum += p.progressPercentage || 0;
+                completionRatesByCourse.set(p.courseId, rate);
+            }
         });
 
         const avgCompletionByCourse = new Map<string, number>();
@@ -131,12 +133,12 @@ export async function GET(req: NextRequest) {
 
         const topStudentsByEnrollmentRaw = await prisma.enrollment.groupBy({ by: ['userId'], _count: { userId: true }, orderBy: { _count: { userId: 'desc' } }, take: 5 });
         const studentEnrollmentIds = topStudentsByEnrollmentRaw.map(s => s.userId);
-        const topStudentsEnrollmentInfo = await prisma.user.findMany({ where: { id: { in: studentEnrollmentIds } }, select: { id: true, name: true, avatar: true }});
+        const topStudentsEnrollmentInfo = studentEnrollmentIds.length > 0 ? await prisma.user.findMany({ where: { id: { in: studentEnrollmentIds } }, select: { id: true, name: true, avatar: true }}) : [];
         const topStudentsByEnrollment = topStudentsByEnrollmentRaw.map(s => ({...topStudentsEnrollmentInfo.find(u => u.id === s.userId), value: s._count.userId }));
 
         const topStudentsByCompletionRaw = await prisma.courseProgress.groupBy({ by: ['userId'], where: { progressPercentage: 100 }, _count: { userId: true }, orderBy: { _count: { userId: 'desc' } }, take: 5 });
         const studentCompletionIds = topStudentsByCompletionRaw.map(s => s.userId);
-        const topStudentsCompletionInfo = await prisma.user.findMany({ where: { id: { in: studentCompletionIds } }, select: { id: true, name: true, avatar: true }});
+        const topStudentsCompletionInfo = studentCompletionIds.length > 0 ? await prisma.user.findMany({ where: { id: { in: studentCompletionIds } }, select: { id: true, name: true, avatar: true }}) : [];
         const topStudentsByCompletion = topStudentsByCompletionRaw.map(s => ({...topStudentsCompletionInfo.find(u => u.id === s.userId), value: s._count.userId }));
 
         const totalProgressRecords = await prisma.courseProgress.count();
