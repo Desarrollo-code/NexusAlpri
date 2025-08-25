@@ -39,12 +39,12 @@
     --event-orange: hsl(var(--chart-2));
 
     /* Variables de la barra lateral (mantienen un estilo consistente) */
-    --sidebar-background: 220 40% 10%; 
+    --sidebar-background: 220 40% 5%; 
     --sidebar-foreground: 45 80% 70%;
     --sidebar-muted-foreground: 45 50% 55%;
     --sidebar-accent: hsl(var(--primary));
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: 220 40% 15%;
+    --sidebar-border: 220 40% 10%;
   }
  
   .dark {
