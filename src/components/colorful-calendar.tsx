@@ -9,6 +9,8 @@ import type { CalendarEvent } from '@/types';
 import { isHoliday } from '@/lib/holidays';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+const MAX_LANES = 2; // Show 2 lanes, then "+X more"
+
 const getEventColorClass = (color?: string): string => {
   const colorMap = {
     blue: 'bg-event-blue border-blue-600 text-white',
@@ -28,8 +30,6 @@ interface ColorfulCalendarProps {
     onEventClick: (event: CalendarEvent) => void;
     className?: string;
 }
-
-const MAX_LANES = 2; // Show 2 lanes, then "+X more"
 
 export default function ColorfulCalendar({ month, events, selectedDay, onDateSelect, onEventClick, className }: ColorfulCalendarProps) {
   const today = new Date();
@@ -122,21 +122,22 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                 <div key={`${day}-${i}`} className="p-2 text-center text-xs font-semibold text-muted-foreground border-b border-r">{day}</div>
                 ))}
             </div>
-            <div className="grid grid-rows-6 flex-grow">
+            <div className="flex flex-col flex-grow">
                 {weeks.map((week, weekIndex) => (
-                    <div key={weekIndex} className="grid grid-cols-7 h-full relative">
+                    <div key={weekIndex} className="grid grid-cols-7 h-full relative border-b">
                         {week.map((day) => {
                              const dayKey = format(day, 'yyyy-MM-dd');
                              const holiday = isHoliday(day, 'CO');
                              const { moreCounts } = positionedEventsByWeek[weekIndex];
-                             const moreCount = moreCounts[dayKey] ? moreCounts[dayKey] - MAX_LANES : 0;
+                             const totalEventsToday = moreCounts[dayKey] || 0;
+                             const moreCount = totalEventsToday > MAX_LANES ? totalEventsToday - MAX_LANES : 0;
 
                              return (
                                  <div
                                     key={day.toString()}
                                     onClick={() => onDateSelect(day)}
                                     className={cn(
-                                        "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[120px] sm:min-h-[140px] border-b border-r",
+                                        "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[120px] sm:min-h-[140px] border-r",
                                         !isSameMonth(day, month) && "bg-muted/30 text-muted-foreground/50",
                                         isSameDay(day, selectedDay) && "bg-primary/10"
                                     )}
