@@ -49,7 +49,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ImageCropper } from '@/components/image-cropper';
 import { useTitle } from '@/contexts/title-context';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Calendar } from '@/components/ui/calendar';
@@ -230,7 +229,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
     const [itemToDeleteDetails, setItemToDeleteDetails] = useState<any>(null);
     
-    const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     // --- Data Fetching ---
     useEffect(() => {
@@ -423,10 +423,27 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         handleStateUpdate(() => newCourse);
     };
 
-    const handleCropComplete = (croppedFileUrl: string) => {
-        updateCourseField('imageUrl', croppedFileUrl);
-        setImageToCrop(null);
+    const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            setIsUploading(true);
+            setUploadProgress(0);
+
+            try {
+                const result: { url: string } = await uploadWithProgress('/api/upload/course-image', formData, setUploadProgress);
+                updateCourseField('imageUrl', result.url);
+                toast({ title: "Imagen Subida", description: "La imagen de portada ha sido actualizada." });
+            } catch (err) {
+                toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
+            } finally {
+                setIsUploading(false);
+            }
+        }
     };
+
 
     const handleSaveCourse = async () => {
         if (!course) return;
@@ -623,14 +640,13 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                     </Label>
                                 )}
                             </div>
-                            <Input id="image-upload" type="file" className="sr-only" accept="image/*" onChange={(e) => {
-                                if (e.target.files && e.target.files[0]) {
-                                    const reader = new FileReader();
-                                    reader.onload = () => setImageToCrop(reader.result as string);
-                                    reader.readAsDataURL(e.target.files[0]);
-                                }
-                                e.target.value = '';
-                            }} disabled={isSaving} />
+                            <Input id="image-upload" type="file" className="sr-only" accept="image/*" onChange={handleFileChange} disabled={isUploading || isSaving} />
+                            {isUploading && (
+                                <div className="space-y-1">
+                                    <p className="text-xs text-muted-foreground text-center">Subiendo...</p>
+                                    <Progress value={uploadProgress} />
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
@@ -642,13 +658,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 </div>
             </div>
             
-            <ImageCropper 
-              imageSrc={imageToCrop} 
-              onCropComplete={handleCropComplete} 
-              onClose={() => setImageToCrop(null)} 
-              uploadUrl="/api/upload/course-image" 
-              aspectRatio={16 / 9}
-            />
             <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro? Esta acción eliminará "{itemToDeleteDetails?.name}" y su contenido.</AlertDialogDescription></AlertDialogHeader>

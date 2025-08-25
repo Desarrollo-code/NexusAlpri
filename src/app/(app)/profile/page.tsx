@@ -41,7 +41,6 @@ import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/comp
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 import { AnimatePresence } from 'framer-motion';
 import { Identicon } from '@/components/ui/identicon';
-import { ImageCropper } from '@/components/image-cropper';
 
 const ProfileCardBackground = () => (
     <div className="card__img">
@@ -59,7 +58,6 @@ export default function ProfilePage() {
 
   const [editableName, setEditableName] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
   
   const [isSaving, setIsSaving] = useState(false);
@@ -85,9 +83,6 @@ export default function ProfilePage() {
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [isNewPasswordFocused, setIsNewPasswordFocused] = useState(false);
 
-  // Image Cropper State
-  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
-  
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -123,37 +118,40 @@ export default function ProfilePage() {
   
   const avatarSrc = avatarPreview || user?.avatar || null;
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+ const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = () => setImageToCrop(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-    // Reset input value to allow re-selecting the same file
-    if (e.target) e.target.value = '';
-  };
-  
-  const handleCropComplete = async (croppedFileUrl: string) => {
-    setAvatarPreview(croppedFileUrl);
-    setImageToCrop(null);
-    setIsSaving(true);
-    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      setIsUploading(true);
+      setIsSaving(true);
+      setUploadProgress(0);
+
+      try {
+        const result: { url: string } = await uploadWithProgress('/api/upload/avatar', formData, setUploadProgress);
+        
         const response = await fetch(`/api/users/${user.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ avatar: croppedFileUrl })
+            body: JSON.stringify({ avatar: result.url })
         });
         if (!response.ok) throw new Error((await response.json()).message || 'Error al actualizar el avatar');
+        
         const savedUser = await response.json();
         updateUser(savedUser);
+        setAvatarPreview(savedUser.avatar);
+
         toast({ title: 'Avatar Actualizado', description: 'Tu nueva foto de perfil ha sido guardada.' });
-    } catch (error) {
-        toast({ title: 'Error al Guardar', description: (error as Error).message, variant: 'destructive' });
-        setAvatarPreview(user?.avatar || null); // Revert on failure
-    } finally {
+      } catch (error) {
+        toast({ title: 'Error al Subir', description: (error as Error).message, variant: 'destructive' });
+      } finally {
+        setIsUploading(false);
         setIsSaving(false);
+      }
     }
+    // Reset input value to allow re-selecting the same file
+    if (e.target) e.target.value = '';
   };
 
 
@@ -337,6 +335,15 @@ export default function ProfilePage() {
         <p className="text-muted-foreground">Visualiza y actualiza tu información personal y de cuenta.</p>
       </div>
       
+      {isUploading && (
+        <Card>
+            <CardContent className="pt-6">
+                <p className="text-sm text-center text-muted-foreground mb-2">Subiendo avatar...</p>
+                <Progress value={uploadProgress}/>
+            </CardContent>
+        </Card>
+      )}
+
       {isMobile ? (
         <div className="flex flex-col items-center gap-8">
             <MobileProfileView />
@@ -564,13 +571,6 @@ export default function ProfilePage() {
           </div>
       )}
       
-      <ImageCropper
-        imageSrc={imageToCrop}
-        onCropComplete={handleCropComplete}
-        onClose={() => setImageToCrop(null)}
-        uploadUrl="/api/upload/avatar"
-      />
-      
       <Dialog open={show2faSetup} onOpenChange={setShow2faSetup}>
         <DialogContent className="w-[95vw] max-w-md rounded-lg">
             <DialogHeader>
@@ -581,7 +581,7 @@ export default function ProfilePage() {
             </DialogHeader>
             <div className="flex flex-col items-center gap-4 py-4">
                 {qrCodeUrl ? (
-                    <Image src={qrCodeUrl} alt="Código QR para 2FA" fill className="object-contain" data-ai-hint="qr code"/>
+                    <div className="relative w-48 h-48"><Image src={qrCodeUrl} alt="Código QR para 2FA" fill className="object-contain" data-ai-hint="qr code"/></div>
                 ) : <Loader2 className="h-8 w-8 animate-spin"/>}
                  <div className="w-full flex justify-center">
                     <InputOTP

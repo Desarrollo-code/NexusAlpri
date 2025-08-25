@@ -31,7 +31,6 @@ import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { fontMap } from '@/lib/fonts';
-import { ImageCropper } from '@/components/image-cropper';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 
@@ -69,8 +68,9 @@ const UploadWidget = ({
                 <Image
                     src={currentImageUrl}
                     alt={`Previsualización de ${label}`}
-                    fill
-                    className="object-contain rounded-md p-2"
+                    width={200}
+                    height={120}
+                    className="w-full h-auto object-contain rounded-md p-2"
                     data-ai-hint="logo company"
                 />
             </div>
@@ -147,7 +147,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                         <div className="mt-2 p-4 rounded-md shadow-sm" style={{ backgroundColor: settings.backgroundColorLight || '#FFFFFF' }}>
                             <div className="flex items-center gap-2 mb-4">
                                 <div className="relative w-8 h-8">
-                                    {settings.logoUrl ? <Image src={settings.logoUrl} alt="logo" fill data-ai-hint="logo company" className="object-contain"/> : <div className="w-8 h-8 rounded-md bg-muted" />}
+                                    {settings.logoUrl ? <Image src={settings.logoUrl} alt="logo" width={32} height={32} data-ai-hint="logo company" className="object-contain"/> : <div className="w-8 h-8 rounded-md bg-muted" />}
                                 </div>
                                 <h4 className="font-headline text-base font-bold" style={{ color: settings.primaryColor }}>{settings.platformName}</h4>
                             </div>
@@ -165,13 +165,13 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                             <div className="space-y-2">
                                 <Label className="text-xs">Página de Inicio (Landing)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
-                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" fill className="object-contain" data-ai-hint="office workspace" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" width={100} height={100} className="object-contain" data-ai-hint="office workspace" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                              <div className="space-y-2">
                                 <Label className="text-xs">Página de Acceso (Login)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
-                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" fill className="object-contain" data-ai-hint="abstract background" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" width={100} height={100} className="object-contain" data-ai-hint="abstract background" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                         </div>
@@ -183,7 +183,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                            <div className="mt-2 h-20 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
                                 <span className="text-sm text-muted-foreground z-10">Contenido de la app</span>
                                 <div className="absolute inset-0 p-2">
-                                    <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" fill className="object-contain opacity-20 z-0" data-ai-hint="logo company"/>
+                                    <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" width={100} height={100} className="object-contain opacity-20 z-0" data-ai-hint="logo company"/>
                                 </div>
                            </div>
                         </div>
@@ -209,10 +209,6 @@ export default function SettingsPage() {
   
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [isCheckingCategory, setIsCheckingCategory] = useState(false);
-
-  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
-  const [cropUploadUrl, setCropUploadUrl] = useState('');
-  const [cropField, setCropField] = useState<'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | null>(null);
 
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -244,26 +240,26 @@ export default function SettingsPage() {
     setFormState(prev => prev ? { ...prev, [field]: checked } : null);
   };
   
-  const handleFileSelected = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl', e: ChangeEvent<HTMLInputElement>) => {
+ const handleFileSelected = async (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl', e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
         const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = () => {
-          setImageToCrop(reader.result as string);
-          setCropUploadUrl('/api/upload/course-image'); 
-          setCropField(field);
-        };
-        reader.readAsDataURL(file);
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        try {
+            const result: { url: string } = await uploadWithProgress('/api/upload/course-image', formData, setUploadProgress);
+            setFormState(prev => prev ? { ...prev, [field]: result.url } : null);
+            toast({ title: "Imagen Subida", description: "La imagen ha sido subida con éxito." });
+        } catch (error) {
+            toast({ title: 'Error de Subida', description: (error as Error).message, variant: 'destructive' });
+        } finally {
+            setIsUploading(false);
+        }
     }
     if (e.target) e.target.value = '';
-  };
-
-  const handleCropComplete = (croppedFileUrl: string) => {
-    if (cropField) {
-        setFormState(prev => prev ? { ...prev, [cropField]: croppedFileUrl } : null);
-    }
-    setImageToCrop(null);
-    setCropField(null);
   };
 
   const handleRemoveImage = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl') => {
@@ -534,13 +530,6 @@ export default function SettingsPage() {
             </Card>
         </div>
       </div>
-       <ImageCropper
-            imageSrc={imageToCrop}
-            onCropComplete={handleCropComplete}
-            onClose={() => { setImageToCrop(null); setCropField(null); }}
-            uploadUrl="/api/upload/course-image"
-            aspectRatio={cropField === 'logoUrl' || cropField === 'watermarkUrl' ? undefined : 16 / 9}
-        />
       <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
         <AlertDialogContent>
             <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>
