@@ -1,13 +1,10 @@
+
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { UserRole, CourseStatus } from '@/types';
 
 export const dynamic = 'force-dynamic';
-
-// Tipos para evitar subrayados rojos
-type ModuleLite = { id: string; courseId: string };
-type LessonGroup = { moduleId: string; _count: { _all: number } };
 
 export async function GET(req: NextRequest) {
   try {
@@ -44,7 +41,7 @@ export async function GET(req: NextRequest) {
         where: whereClause,
         include: {
           instructor: { select: { id: true, name: true } },
-          _count: { select: { modules: true } },
+          _count: { select: { modules: true } }, // Mantengo el conteo de módulos aquí
         },
         orderBy: { createdAt: 'desc' },
         ...(isPaginated && { skip, take: pageSize }),
@@ -52,44 +49,15 @@ export async function GET(req: NextRequest) {
       prisma.course.count({ where: whereClause }),
     ]);
     
-    // Enriquecer con número de lecciones (solo en vista de gestión)
-    if (manageView) {
-      const courseIds = courses.map((c: { id: string }) => c.id);
+    // El conteo de lecciones ya no es necesario aquí, se simplifica el proceso.
+    // La información de `_count.modules` ya es correcta y se pasa directamente.
+    const enrichedCourses = courses.map((course: any) => ({
+      ...course,
+      modulesCount: course._count?.modules ?? 0, // Usamos el conteo directo de Prisma
+      lessonsCount: 0, // Este campo ya no se usa en la tarjeta pero lo mantenemos por consistencia del tipo
+    }));
 
-      if (courseIds.length > 0) {
-        const lessonsCountRaw: LessonGroup[] = await prisma.lesson.groupBy({
-          by: ['moduleId'],
-          _count: { _all: true },
-          where: { module: { courseId: { in: courseIds } } },
-        });
-
-        const modules: ModuleLite[] = await prisma.module.findMany({
-          where: { courseId: { in: courseIds } },
-          select: { id: true, courseId: true },
-        });
-
-        const courseLessonsMap = new Map<string, number>();
-
-        modules.forEach((module: ModuleLite) => {
-          const lessonCount =
-            lessonsCountRaw.find((lc: LessonGroup) => lc.moduleId === module.id)?._count._all || 0;
-
-          courseLessonsMap.set(
-            module.courseId,
-            (courseLessonsMap.get(module.courseId) || 0) + lessonCount,
-          );
-        });
-
-        const enrichedCourses = courses.map((course: any) => ({
-          ...course,
-          lessonsCount: courseLessonsMap.get(course.id) || 0,
-        }));
-
-        return NextResponse.json({ courses: enrichedCourses, totalCourses });
-      }
-    }
-    
-    return NextResponse.json({ courses, totalCourses });
+    return NextResponse.json({ courses: enrichedCourses, totalCourses });
     
   } catch (error) {
     console.error('[COURSES_GET_ERROR]', error);
