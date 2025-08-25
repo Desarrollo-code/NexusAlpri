@@ -158,18 +158,18 @@ export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY'
 export interface EnterpriseResource {
     id: string;
     title: string;
-    description?: string;
+    description?: string | null;
     type: ResourceType;
-    category: string;
+    category: string | null;
     tags: string[];
-    url?: string;
+    url?: string | null;
     uploadDate: string;
-    uploaderId?: string;
+    uploaderId?: string | null;
     uploaderName: string;
     hasPin: boolean;
     parentId: string | null;
     ispublic: boolean;
-    sharedWith: Pick<User, 'id' | 'name' | 'avatar'>[];
+    sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
 }
 
 // --- ANNOUNCEMENTS ---
@@ -308,4 +308,3 @@ export type AppForm = Form & {
 };
 
 export { type FormStatus, type FormFieldType };
-    
