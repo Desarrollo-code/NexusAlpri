@@ -80,7 +80,7 @@ export const Identicon: React.FC<IdenticonProps> = ({ userId, size = 128 }) => {
                 {/* Person Silhouette */}
                 <g fill={color3} transform={`translate(0, ${personTranslate})`}>
                     <circle cx="50" cy="40" r="9" />
-                    <path d="M50 51 a18 18 0 0 1-18 18 h36 a18 18 0 0 1-18-18 z" />
+                    <path d="M32 69 a18 18 0 0 1 36 0 z" />
                 </g>
             </g>
         </svg>
