@@ -7,10 +7,10 @@ import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
 import { isHoliday } from '@/lib/holidays';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const MAX_LANES = 2; // Número de eventos a mostrar antes del "+X más"
+const MAX_LANES_DESKTOP = 2;
+const MAX_LANES_MOBILE = 2; 
 
 const getEventColorClass = (color?: string): string => {
   const colorMap: Record<string, string> = {
@@ -22,7 +22,6 @@ const getEventColorClass = (color?: string): string => {
   return colorMap[color as string] || 'bg-primary border-primary/80 text-primary-foreground';
 };
 
-// --- Lógica de Posicionamiento de Eventos ---
 const processEventsForWeek = (week: Date[], allEvents: CalendarEvent[]) => {
     const weekStart = week[0];
     const weekEnd = week[6];
@@ -32,18 +31,21 @@ const processEventsForWeek = (week: Date[], allEvents: CalendarEvent[]) => {
         .sort((a, b) => {
             const durationA = new Date(a.end).getTime() - new Date(a.start).getTime();
             const durationB = new Date(b.end).getTime() - new Date(b.start).getTime();
-            if (durationA !== durationB) return durationB - durationA; // Más largos primero
-            return new Date(a.start).getTime() - new Date(b.start).getTime(); // Luego por fecha de inicio
+            if (durationA !== durationB) return durationB - durationA;
+            return new Date(a.start).getTime() - new Date(b.start).getTime();
         });
 
     const positionedEvents: any[] = [];
-    const lanes: (Date | null)[] = Array(10).fill(null); // Aumentar carriles posibles
+    const lanes: (Date | null)[] = Array(10).fill(null);
     const dailyEventCounts: Record<string, number> = {};
     week.forEach(day => dailyEventCounts[format(day, 'yyyy-MM-dd')] = 0);
 
     relevantEvents.forEach(event => {
         const eventStart = new Date(event.start);
-        dailyEventCounts[format(eventStart, 'yyyy-MM-dd')]++;
+        const dayKey = format(eventStart, 'yyyy-MM-dd');
+        if (dailyEventCounts[dayKey] !== undefined) {
+          dailyEventCounts[dayKey]++;
+        }
 
         let startCol = isBefore(eventStart, weekStart) ? 0 : getDay(eventStart);
         let endCol = isBefore(weekEnd, new Date(event.end)) ? 6 : getDay(new Date(event.end));
@@ -77,15 +79,7 @@ const processEventsForWeek = (week: Date[], allEvents: CalendarEvent[]) => {
         }
     });
 
-    const moreCounts: Record<string, number> = {};
-    Object.keys(dailyEventCounts).forEach(dayKey => {
-        const count = dailyEventCounts[dayKey];
-        if (count > MAX_LANES) {
-            moreCounts[dayKey] = count;
-        }
-    });
-    
-    return { positionedEvents: positionedEvents.filter(e => e.lane < MAX_LANES), moreCounts };
+    return { positionedEvents, dailyEventCounts };
 };
 
 
@@ -94,11 +88,10 @@ interface DayCellProps {
   month: Date;
   selectedDay: Date;
   onDateSelect: (date: Date) => void;
-  isMobile: boolean;
   moreCount: number;
 }
 
-const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect, isMobile, moreCount }) => {
+const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect, moreCount }) => {
     const today = new Date();
     const dayKey = format(day, 'yyyy-MM-dd');
     const holiday = isHoliday(day, 'CO');
@@ -107,7 +100,7 @@ const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect
         <div
             onClick={() => onDateSelect(day)}
             className={cn(
-                "relative p-1 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[120px] border-r border-b",
+                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[120px] border-r border-b",
                 !isSameMonth(day, month) && "bg-muted/30 text-muted-foreground/50",
                 isSameDay(day, selectedDay) && "bg-primary/10"
             )}
@@ -123,7 +116,7 @@ const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect
                     {format(day, 'd')}
                 </time>
             </div>
-             {moreCount > 0 && !isMobile && (
+             {moreCount > 0 && (
                 <div className="text-xs font-semibold text-primary mt-auto pl-1">+ {moreCount} más</div>
             )}
         </div>
@@ -142,9 +135,10 @@ interface ColorfulCalendarProps {
 
 export default function ColorfulCalendar({ month, events, selectedDay, onDateSelect, onEventClick, className }: ColorfulCalendarProps) {
   const isMobile = useIsMobile();
+  const MAX_LANES = isMobile ? MAX_LANES_MOBILE : MAX_LANES_DESKTOP;
   
   const weeks = React.useMemo(() => {
-    const start = startOfWeek(startOfMonth(month), { weekStartsOn: 0 }); // Dom-Sab
+    const start = startOfWeek(startOfMonth(month), { weekStartsOn: 0 });
     const end = endOfWeek(endOfMonth(month), { weekStartsOn: 0 });
     const days = eachDayOfInterval({ start, end });
     const weeksArray: Date[][] = [];
@@ -157,60 +151,59 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
   const positionedEventsByWeek = React.useMemo(() => weeks.map(week => processEventsForWeek(week, events)), [weeks, events]);
 
   return (
-    <TooltipProvider delayDuration={100}>
-        <div className={cn("flex flex-col h-full bg-card border-l border-t rounded-lg", className)}>
-            <div className="grid grid-cols-7 flex-shrink-0">
-                {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
-                    <div key={day} className="p-2 text-center text-xs font-semibold text-muted-foreground border-b border-r">{day}</div>
-                ))}
-            </div>
-            <div className="flex-grow grid grid-cols-1" style={{ gridTemplateRows: `repeat(${weeks.length}, minmax(0, 1fr))` }}>
-                {weeks.map((week, weekIndex) => (
-                    <div key={weekIndex} className="grid grid-cols-7 relative border-b">
-                         {week.map((day) => {
-                             const dayKey = format(day, 'yyyy-MM-dd');
-                             const { moreCounts } = positionedEventsByWeek[weekIndex];
-                             const moreCount = moreCounts[dayKey] ? moreCounts[dayKey] - MAX_LANES : 0;
-                             
-                             return (
-                                 <DayCell
-                                     key={day.toString()}
-                                     day={day}
-                                     month={month}
-                                     selectedDay={selectedDay}
-                                     onDateSelect={onDateSelect}
-                                     isMobile={isMobile}
-                                     moreCount={moreCount}
-                                 />
-                             )
-                         })}
-                          {!isMobile && (
-                             <div className="absolute inset-0 grid grid-cols-7 pointer-events-none p-1 gap-1" style={{gridTemplateRows: `repeat(${MAX_LANES + 1}, minmax(0, auto))`}}>
-                                 {positionedEventsByWeek[weekIndex].positionedEvents.map(event => (
-                                     <div
-                                        key={event.id}
-                                        onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
-                                        className={cn(
-                                            "pointer-events-auto cursor-pointer px-2 text-xs font-semibold flex items-center truncate transition-colors",
-                                            getEventColorClass(event.color),
-                                            event.startsInWeek && "rounded-l-lg",
-                                            event.endsInWeek && "rounded-r-lg"
-                                        )}
-                                        style={{
-                                            gridColumnStart: event.startCol,
-                                            gridColumnEnd: `span ${event.span}`,
-                                            gridRowStart: event.lane + 1,
-                                        }}
-                                    >
-                                        {event.title}
-                                    </div>
-                                 ))}
-                             </div>
-                          )}
-                    </div>
-                ))}
-            </div>
+    <div className={cn("flex flex-col h-full bg-card border-l border-t rounded-lg", className)}>
+        <div className="grid grid-cols-7 flex-shrink-0">
+            {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
+                <div key={day} className="p-2 text-center text-xs font-semibold text-muted-foreground border-b border-r">{day}</div>
+            ))}
         </div>
-    </TooltipProvider>
+        <div className="flex-grow grid grid-cols-1" style={{ gridTemplateRows: `repeat(${weeks.length}, 1fr)` }}>
+            {weeks.map((week, weekIndex) => (
+                <div key={weekIndex} className="grid grid-cols-7 relative">
+                     {week.map((day) => {
+                         const dayKey = format(day, 'yyyy-MM-dd');
+                         const { dailyEventCounts } = positionedEventsByWeek[weekIndex];
+                         const totalEventsToday = dailyEventCounts[dayKey] || 0;
+                         const moreCount = totalEventsToday > MAX_LANES ? totalEventsToday - MAX_LANES : 0;
+                         
+                         return (
+                             <DayCell
+                                 key={day.toString()}
+                                 day={day}
+                                 month={month}
+                                 selectedDay={selectedDay}
+                                 onDateSelect={onDateSelect}
+                                 moreCount={moreCount}
+                             />
+                         )
+                     })}
+                     <div className="absolute inset-0 grid grid-cols-7 pointer-events-none p-1 pt-10 gap-y-1">
+                         {positionedEventsByWeek[weekIndex].positionedEvents
+                            .filter(event => event.lane < MAX_LANES)
+                            .map(event => (
+                                 <div
+                                    key={event.id}
+                                    onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
+                                    className={cn(
+                                        "pointer-events-auto cursor-pointer px-2 py-0.5 text-xs font-semibold flex items-center truncate transition-colors h-6",
+                                        getEventColorClass(event.color),
+                                        event.startsInWeek && "rounded-l-md",
+                                        event.endsInWeek && "rounded-r-md"
+                                    )}
+                                    style={{
+                                        gridColumnStart: event.startCol,
+                                        gridColumnEnd: `span ${event.span}`,
+                                        gridRowStart: 1, // Start from the first row
+                                        marginTop: `${event.lane * 1.75}rem` // 1.5rem for height + 0.25rem for gap
+                                    }}
+                                >
+                                    {event.title}
+                                </div>
+                             ))}
+                     </div>
+                </div>
+            ))}
+        </div>
+    </div>
   );
 }
