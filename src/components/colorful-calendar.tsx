@@ -9,7 +9,7 @@ import type { CalendarEvent } from '@/types';
 import { isHoliday } from '@/lib/holidays';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const MAX_LANES_DESKTOP = 2;
+const MAX_LANES_DESKTOP = 3;
 const MAX_LANES_MOBILE = 2; 
 
 const getEventColorClass = (color?: string): string => {
