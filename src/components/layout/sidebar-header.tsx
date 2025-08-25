@@ -22,13 +22,13 @@ export const SidebarHeader = () => {
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
          <div className={cn(
             "flex items-center justify-center flex-shrink-0 rounded-lg transition-all duration-300",
-            "w-14 h-14 bg-card dark:bg-white/20"
+            "w-12 h-12 bg-card dark:bg-white/20"
         )}>
           <Image 
             src={logoSrc} 
             alt="Logo" 
-            width={56} 
-            height={56} 
+            width={48} 
+            height={48} 
             data-ai-hint="logo" 
             className="rounded-md"
             style={{objectFit: 'cover'}}
