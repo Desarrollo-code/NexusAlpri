@@ -29,6 +29,7 @@ interface ColorfulCalendarProps {
     className?: string;
 }
 
+// Celda de día simplificada: solo renderiza el fondo y el número.
 const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, selectedDay }: {
     day: Date,
     isCurrentMonth: boolean,
@@ -74,8 +75,9 @@ DayCell.displayName = "DayCell";
 export default function ColorfulCalendar({ month, events, selectedDay, onDateSelect, onEventClick, className }: ColorfulCalendarProps) {
   const today = new Date();
 
-  const { weeks, firstDayOfGrid } = useMemo(() => {
-    const start = startOfWeek(startOfMonth(month), { weekStartsOn: 0 });
+  // Genera las semanas del calendario.
+  const weeks = useMemo(() => {
+    const start = startOfWeek(startOfMonth(month), { weekStartsOn: 0 }); // Dom-Sab
     const end = endOfWeek(endOfMonth(month), { weekStartsOn: 0 });
     const days = eachDayOfInterval({ start, end });
     
@@ -84,14 +86,16 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
         weeksArray.push(days.splice(0, 7));
     }
     
-    return { weeks: weeksArray, firstDayOfGrid: start };
+    return weeksArray;
   }, [month]);
   
+  // Lógica mejorada para distribuir los eventos en carriles.
   const weeklyEventsLayout = useMemo(() => {
     return weeks.map(week => {
       const weekStart = week[0];
       const weekEnd = week[6];
 
+      // Filtra y ordena los eventos para la semana actual.
       const weekEvents = events
         .filter(event => {
           const eventStart = new Date(event.start);
@@ -104,13 +108,13 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
           const aDuration = differenceInDays(new Date(a.end), aStart);
           const bDuration = differenceInDays(new Date(b.end), bStart);
           if (bDuration !== aDuration) {
-            return bDuration - aDuration; // Eventos más largos primero
+            return bDuration - aDuration; // Eventos más largos primero.
           }
-          return aStart.getTime() - bStart.getTime(); // Luego por fecha de inicio
+          return aStart.getTime() - bStart.getTime();
         });
 
       const layout: { event: CalendarEvent; startCol: number; span: number; lane: number }[] = [];
-      const lanes: (Date | null)[][] = Array(7).fill(null).map(() => []); // Carriles por día
+      const lanes: (Date | null)[][] = []; // Un array de carriles (arrays de fechas de fin)
 
       for (const event of weekEvents) {
         const eventStart = new Date(event.start);
@@ -120,26 +124,28 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
         const endDayIndex = eventEnd > weekEnd ? 6 : getDay(eventEnd);
         
         let laneIndex = 0;
-        // Encontrar el primer carril disponible
+        // Encuentra el primer carril disponible.
         while (true) {
+            if (!lanes[laneIndex]) {
+                lanes[laneIndex] = [];
+            }
+            
             let isLaneFree = true;
-            for (let i = startDayIndex; i <= endDayIndex; i++) {
-                if (lanes[i][laneIndex]) {
+            for (let i = 0; i < lanes[laneIndex].length; i++) {
+                // Comprueba si el nuevo evento se superpone con un evento existente en el carril.
+                if (eventStart <= lanes[laneIndex][i]!) {
                     isLaneFree = false;
                     break;
                 }
             }
+
             if (isLaneFree) {
+                lanes[laneIndex].push(eventEnd);
                 break;
             }
             laneIndex++;
         }
         
-        // Marcar el carril como ocupado para los días del evento
-        for (let i = startDayIndex; i <= endDayIndex; i++) {
-            lanes[i][laneIndex] = eventEnd;
-        }
-
         layout.push({ 
             event, 
             startCol: startDayIndex + 1,
@@ -162,21 +168,22 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
             <div className="grid grid-rows-6 flex-grow relative">
                 {weeks.map((week, weekIndex) => (
                     <div key={weekIndex} className="grid grid-cols-7 relative h-full">
-                        {/* Day cells as background */}
+                        {/* Capa de celdas de día (fondo) */}
                         {week.map((day) => {
                             const isCurrentMonth = day.getMonth() === month.getMonth();
                             const isToday = isSameDay(day, today);
                             return <DayCell key={day.toString()} day={day} isCurrentMonth={isCurrentMonth} isToday={isToday} onDateSelect={onDateSelect} selectedDay={selectedDay} />;
                         })}
-                        {/* Event layer */}
-                        <div className="absolute inset-0 grid grid-cols-7 grid-rows-1 pointer-events-none">
+                        {/* Capa de eventos superpuesta */}
+                        <div className="absolute inset-0 grid grid-cols-7 grid-rows-1 pointer-events-none p-1">
                             {weeklyEventsLayout[weekIndex].map(({ event, startCol, span, lane }) => (
                                 <div
                                     key={event.id}
                                     className="p-px pointer-events-auto"
                                     style={{
                                         gridColumn: `${startCol} / span ${span}`,
-                                        top: `${3.2 + lane * 1.5}rem`, // Posicionamiento vertical en carriles
+                                        // Empuja el evento hacia abajo según su carril.
+                                        marginTop: `${2.8 + lane * 1.5}rem`,
                                         zIndex: 10 + lane,
                                     }}
                                 >
