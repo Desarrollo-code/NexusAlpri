@@ -26,7 +26,7 @@
     --ring: 262 84% 58%;
     --radius: 0.75rem;
     
-    /* Colores para gráficos y eventos */
+    /* Colores para gráficos y eventos como fallback */
     --chart-1: 220 80% 60%; 
     --chart-2: 40 90% 60%; 
     --chart-3: 160 70% 50%;
@@ -39,12 +39,12 @@
     --event-orange: hsl(var(--chart-2));
 
     /* Variables de la barra lateral (mantienen un estilo consistente) */
-    --sidebar-background: 220 40% 10%; 
+    --sidebar-background: 220 40% 5%; 
     --sidebar-foreground: 45 80% 70%;
     --sidebar-muted-foreground: 45 50% 55%;
     --sidebar-accent: hsl(var(--primary));
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: 220 40% 15%;
+    --sidebar-border: 220 40% 10%;
   }
  
   .dark {
@@ -112,12 +112,6 @@
   }
   .profile-card .card__img {
     @apply h-28 w-full relative;
-  }
-  .profile-card .card__img--gradient {
-    @apply absolute inset-0 bg-gradient-to-br from-primary via-accent to-secondary opacity-80;
-  }
-  .profile-card .card__img--pattern {
-    @apply absolute inset-0 bg-[url('/static/patterns/circuit-board.svg')] bg-repeat opacity-10;
   }
   .profile-card .card__avatar {
     @apply relative w-32 h-32 mx-auto -mt-20;
