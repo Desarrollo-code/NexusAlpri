@@ -179,7 +179,6 @@ LessonItem.displayName = 'LessonItem';
 
 const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock; onUpdate: (field: string, value: any) => void; onQuizUpdate: (updatedQuiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; }>(
     ({ block, onUpdate, onQuizUpdate, isSaving, onDelete, ...rest }, ref) => {
-        const [showQuizAnalytics, setShowQuizAnalytics] = useState(false);
         const [showQuizEditor, setShowQuizEditor] = useState(false);
 
         const renderBlockContent = () => {
@@ -199,20 +198,6 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
                             quiz={block.quiz}
                             onSave={onQuizUpdate}
                         />
-                         <Dialog open={showQuizAnalytics} onOpenChange={setShowQuizAnalytics}>
-                            <DialogTrigger asChild>
-                               <Button variant="outline" size="sm" className="shrink-0" disabled={!block.quiz?.id || block.quiz.id.startsWith('new-')}>
-                                  <BarChart3 className="mr-2 h-4 w-4" /> Analíticas
-                               </Button>
-                            </DialogTrigger>
-                             <DialogContent className="max-w-4xl h-[80vh]">
-                                <DialogHeader>
-                                    <DialogTitle>Analíticas del Quiz: {block.quiz?.title}</DialogTitle>
-                                    <DialogDescription>Revisa el rendimiento de los estudiantes en este quiz.</DialogDescription>
-                                </DialogHeader>
-                                {block.quiz?.id && <QuizAnalyticsView quizId={block.quiz.id} />}
-                            </DialogContent>
-                        </Dialog>
                     </div>
                 );
                 default: return null;

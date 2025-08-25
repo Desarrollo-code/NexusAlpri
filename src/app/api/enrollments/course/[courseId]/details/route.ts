@@ -5,14 +5,14 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ courseId: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: { courseId: string } }) {
     const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
     try {
-        const { courseId } = await params;
+        const { courseId } = params;
 
         const course = await prisma.course.findUnique({
             where: { id: courseId },

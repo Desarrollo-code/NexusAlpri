@@ -229,10 +229,11 @@ export default function EnrollmentsPage() {
                 let url = `/api/courses?manageView=true&userId=${currentUser.id}&userRole=${currentUser.role}`;
                 const response = await fetch(url, { cache: 'no-store' });
                 if (!response.ok) throw new Error('Failed to fetch courses');
-                const data: AppCourse[] = await response.json();
-                setCourses(data);
-                if (!selectedCourseId && data.length > 0) {
-                    router.replace(`${pathname}?${createQueryString({ courseId: data[0].id, page: 1, search: null })}`);
+                const data = await response.json();
+                const coursesArray = data.courses || data;
+                setCourses(coursesArray);
+                if (!selectedCourseId && coursesArray.length > 0) {
+                    router.replace(`${pathname}?${createQueryString({ courseId: coursesArray[0].id, page: 1, search: null })}`);
                 }
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Unknown error fetching courses');
