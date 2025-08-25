@@ -21,7 +21,7 @@ export const SidebarHeader = () => {
     )}>
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
          <div className={cn(
-            "flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg transition-all duration-300",
+            "flex items-center justify-center flex-shrink-0 rounded-lg transition-all duration-300",
             "w-14 h-14 bg-card dark:bg-white/20"
         )}>
           <Image 
