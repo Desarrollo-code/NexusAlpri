@@ -19,7 +19,7 @@ import { getInitials } from '@/lib/security-log-utils';
 import { ScrollArea } from '../ui/scroll-area';
 import mammoth from 'mammoth';
 import JSZip from 'jszip';
-import { useIsMobile } from '../use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
 
 
