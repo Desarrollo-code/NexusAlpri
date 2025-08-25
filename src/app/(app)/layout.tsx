@@ -1,5 +1,4 @@
-// AppLayout-enhanced.tsx 🌈 Visual creativo & juvenil
-
+// src/app/(app)/layout.tsx
 'use client';
 
 import React from 'react';
