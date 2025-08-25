@@ -6,34 +6,32 @@ import { DecorativeHeaderBackground } from '@/components/layout/decorative-heade
 import React from 'react';
 import prisma from '@/lib/prisma';
 import Image from 'next/image';
-import { cn } from '@/lib/utils';
-import { getFontVariables } from '@/lib/fonts';
 
 // Este layout se aplica a las páginas públicas como la landing page y "acerca de".
-// Se gestiona el tema directamente en el layout raíz para estas páginas.
+// Ya no necesita gestionar el tema, ya que el RootLayout lo maneja por defecto.
 export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const settings = await prisma.platformSettings.findFirst();
-  const fontVariables = await getFontVariables();
 
+  // El layout público no debe renderizar las etiquetas <html> o <body>.
+  // Debe devolver directamente los componentes que envuelven al {children}.
   return (
-    <html lang="es" suppressHydrationWarning className={cn("light", fontVariables)}>
-      <body className="flex flex-col min-h-screen bg-background relative isolate">
-        <DecorativeHeaderBackground />
-        <PublicTopBar />
-        <main className="flex-1 flex flex-col items-center justify-center pb-16 md:pb-0">
-          {children}
-        </main>
-        <div className="hidden md:block">
-          <Footer />
-        </div>
-        <div className="md:hidden">
-          <BottomNav />
-        </div>
-        {settings?.watermarkUrl && (
+    <>
+      <DecorativeHeaderBackground />
+      <PublicTopBar />
+      <main className="flex-1 flex flex-col items-center justify-center pb-16 md:pb-0">
+        {children}
+      </main>
+      <div className="hidden md:block">
+        <Footer />
+      </div>
+      <div className="md:hidden">
+        <BottomNav />
+      </div>
+      {settings?.watermarkUrl && (
           <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
             <Image
                 src={settings.watermarkUrl}
@@ -46,8 +44,7 @@ export default async function PublicLayout({
                 style={{ width: 'auto', height: 'auto' }}
             />
           </div>
-        )}
-      </body>
-    </html>
+      )}
+    </>
   );
 }
