@@ -104,13 +104,13 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
           const aDuration = differenceInDays(new Date(a.end), aStart);
           const bDuration = differenceInDays(new Date(b.end), bStart);
           if (bDuration !== aDuration) {
-            return bDuration - aDuration;
+            return bDuration - aDuration; // Eventos más largos primero
           }
-          return aStart.getTime() - bStart.getTime();
+          return aStart.getTime() - bStart.getTime(); // Luego por fecha de inicio
         });
 
       const layout: { event: CalendarEvent; startCol: number; span: number; lane: number }[] = [];
-      const lanes: (Date | null)[] = []; // Tracks the end date of the event in each lane
+      const lanes: (Date | null)[][] = Array(7).fill(null).map(() => []); // Carriles por día
 
       for (const event of weekEvents) {
         const eventStart = new Date(event.start);
@@ -119,26 +119,33 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
         const startDayIndex = eventStart < weekStart ? 0 : getDay(eventStart);
         const endDayIndex = eventEnd > weekEnd ? 6 : getDay(eventEnd);
         
-        const startCol = startDayIndex + 1;
-        const span = endDayIndex - startDayIndex + 1;
-
-        let laneIndex = lanes.findIndex(
-          laneEndDate => laneEndDate === null || laneEndDate < eventStart
-        );
-        if (laneIndex === -1) {
-          laneIndex = lanes.length;
-        }
-
-        lanes[laneIndex] = eventEnd;
-        // Fill the lanes this event occupies
-        for(let i=0; i<laneIndex; i++){
-            if(lanes[i] === null || lanes[i] < eventStart) {
-                lanes[i] = new Date(0); // Occupied but available for next events
+        let laneIndex = 0;
+        // Encontrar el primer carril disponible
+        while (true) {
+            let isLaneFree = true;
+            for (let i = startDayIndex; i <= endDayIndex; i++) {
+                if (lanes[i][laneIndex]) {
+                    isLaneFree = false;
+                    break;
+                }
             }
+            if (isLaneFree) {
+                break;
+            }
+            laneIndex++;
+        }
+        
+        // Marcar el carril como ocupado para los días del evento
+        for (let i = startDayIndex; i <= endDayIndex; i++) {
+            lanes[i][laneIndex] = eventEnd;
         }
 
-
-        layout.push({ event, startCol, span, lane: laneIndex });
+        layout.push({ 
+            event, 
+            startCol: startDayIndex + 1,
+            span: endDayIndex - startDayIndex + 1, 
+            lane: laneIndex 
+        });
       }
       return layout;
     });
@@ -169,7 +176,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                                     className="p-px pointer-events-auto"
                                     style={{
                                         gridColumn: `${startCol} / span ${span}`,
-                                        marginTop: `${3.2 + lane * 1.5}rem`,
+                                        top: `${3.2 + lane * 1.5}rem`, // Posicionamiento vertical en carriles
                                         zIndex: 10 + lane,
                                     }}
                                 >
