@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, FileText, Share2, Users, FilePen, Trash2, Eye, BarChart, MoreVertical, Loader2, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { PlusCircle, FileText, Share2, Users, FilePen, Trash2, Eye, BarChart, MoreVertical, Loader2, AlertTriangle, ShieldAlert, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import type { AppForm, FormStatus } from '@/types';
@@ -158,7 +158,7 @@ export default function FormsPage() {
     const { setPageTitle } = useTitle();
     const { toast } = useToast();
 
-    const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'my-forms');
+    const [activeTab, setActiveTab] = useState(user?.role === 'STUDENT' ? 'for-student' : (searchParams.get('tab') || 'my-forms'));
     const [forms, setForms] = useState<AppForm[]>([]);
     const [totalForms, setTotalForms] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
@@ -222,11 +222,35 @@ export default function FormsPage() {
        toast({ title: 'Próximamente', description: `La acción "${action}" para el formulario "${form.title}" estará disponible pronto.` });
     };
 
-    const FormList = ({ formsList }: { formsList: AppForm[] }) => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {formsList.map(form => <FormCard key={form.id} form={form} onAction={handleFormAction} />)}
-        </div>
-    );
+    const FormList = ({ formsList, view }: { formsList: AppForm[], view: 'management' | 'student' }) => {
+        if (view === 'management') {
+            return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {formsList.map(form => <FormCard key={form.id} form={form} onAction={handleFormAction} />)}
+                </div>
+            );
+        }
+        
+        return (
+             <div className="space-y-4">
+                {formsList.map(form => (
+                    <Card key={form.id} className="hover:border-primary/50 transition-colors">
+                        <CardHeader>
+                            <CardTitle>{form.title}</CardTitle>
+                             <CardDescription>{form.description || 'Completa este formulario.'}</CardDescription>
+                        </CardHeader>
+                        <CardFooter>
+                            <Button asChild>
+                                <Link href={`/forms/${form.id}/view`}>
+                                    Responder Formulario <ArrowRight className="ml-2 h-4 w-4"/>
+                                </Link>
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                ))}
+             </div>
+        )
+    };
     
     const SkeletonGrid = () => (
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -235,11 +259,20 @@ export default function FormsPage() {
             ))}
         </div>
     );
+    
+    const SkeletonList = () => (
+         <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+                <Card key={i}><CardHeader><Skeleton className="h-6 w-3/4"/><Skeleton className="h-4 w-1/2 mt-2"/></CardHeader><CardFooter><Skeleton className="h-10 w-48"/></CardFooter></Card>
+            ))}
+         </div>
+    );
 
     const EmptyState = ({ tab }: { tab: string }) => {
       let message = "No hay formularios que mostrar en esta sección.";
       if (tab === 'my-forms') message = "Aún no has creado ningún formulario. ¡Crea el primero!";
       if (tab === 'shared-with-me') message = "Nadie ha compartido formularios contigo todavía.";
+      if (tab === 'for-student') message = "No hay formularios públicos disponibles en este momento.";
 
       return (
         <div className="text-center border-2 border-dashed rounded-lg p-12">
@@ -249,22 +282,10 @@ export default function FormsPage() {
         </div>
       )
     };
-
-    if (user?.role === 'STUDENT') {
-        return (
-             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
-                <ShieldAlert className="h-12 w-12 text-destructive mb-4" />
-                <h2 className="text-2xl font-semibold mb-2">Acceso Denegado</h2>
-                <p className="text-muted-foreground max-w-md">
-                    Actualmente, esta sección solo está disponible para administradores e instructores.
-                </p>
-                <Button asChild className="mt-6"><Link href="/dashboard">Volver al Panel Principal</Link></Button>
-            </div>
-        );
-    }
-
-    return (
-        <div className="space-y-8">
+    
+    // Management View for Admins/Instructors
+    const ManagementView = () => (
+        <>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <p className="text-muted-foreground">
@@ -287,9 +308,32 @@ export default function FormsPage() {
                     {isLoading ? <SkeletonGrid /> 
                      : error ? <div className="text-destructive text-center py-10">{error}</div>
                      : forms.length === 0 ? <EmptyState tab={activeTab} /> 
-                     : <FormList formsList={forms} />}
+                     : <FormList formsList={forms} view="management" />}
                 </div>
             </Tabs>
+        </>
+    );
+
+    // Student-facing view
+    const StudentView = () => (
+        <>
+           <div>
+              <p className="text-muted-foreground">
+                  Completa los formularios y encuestas disponibles para ti.
+              </p>
+           </div>
+           <div className="mt-6">
+                 {isLoading ? <SkeletonList /> 
+                 : error ? <div className="text-destructive text-center py-10">{error}</div>
+                 : forms.length === 0 ? <EmptyState tab="for-student" /> 
+                 : <FormList formsList={forms} view="student" />}
+           </div>
+        </>
+    );
+
+    return (
+        <div className="space-y-8">
+            {user?.role === 'STUDENT' ? <StudentView /> : <ManagementView />}
             
             {totalPages > 1 && !isLoading && (
                 <Pagination>

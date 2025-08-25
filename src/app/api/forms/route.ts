@@ -93,6 +93,9 @@ export async function POST(req: NextRequest) {
              include: {
                 _count: {
                     select: { responses: true }
+                },
+                creator: {
+                    select: { name: true }
                 }
             }
         });

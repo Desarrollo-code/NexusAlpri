@@ -75,7 +75,7 @@ const NAVIGATION_ITEMS: NavItem[] = [
     label: 'Formularios',
     icon: FileText,
     path: '/forms',
-    roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'], // Now available to students
   },
   {
     id: 'admin',
