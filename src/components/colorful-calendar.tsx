@@ -74,7 +74,7 @@ DayCell.displayName = "DayCell";
 export default function ColorfulCalendar({ month, events, selectedDay, onDateSelect, onEventClick, className }: ColorfulCalendarProps) {
   const today = new Date();
 
-  const { weeks } = useMemo(() => {
+  const { weeks, firstDayOfGrid } = useMemo(() => {
     const start = startOfWeek(startOfMonth(month), { weekStartsOn: 0 });
     const end = endOfWeek(endOfMonth(month), { weekStartsOn: 0 });
     const days = eachDayOfInterval({ start, end });
@@ -84,53 +84,63 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
         weeksArray.push(days.splice(0, 7));
     }
     
-    return { weeks: weeksArray };
+    return { weeks: weeksArray, firstDayOfGrid: start };
   }, [month]);
   
-  const weeklyEvents = useMemo(() => {
+  const weeklyEventsLayout = useMemo(() => {
     return weeks.map(week => {
-        const weekStart = week[0];
-        const weekEnd = week[6];
-        const weekEvents = events.filter(event => 
-            new Date(event.start) <= weekEnd && new Date(event.end) >= weekStart
-        );
-        
-        weekEvents.sort((a, b) => {
-            const diff = differenceInDays(new Date(b.end), new Date(b.start)) - differenceInDays(new Date(a.end), new Date(a.start));
-            if (diff !== 0) return diff;
-            return new Date(a.start).getTime() - new Date(b.start).getTime();
+      const weekStart = week[0];
+      const weekEnd = week[6];
+
+      const weekEvents = events
+        .filter(event => {
+          const eventStart = new Date(event.start);
+          const eventEnd = new Date(event.end);
+          return eventStart <= weekEnd && eventEnd >= weekStart;
+        })
+        .sort((a, b) => {
+          const aStart = new Date(a.start);
+          const bStart = new Date(b.start);
+          const aDuration = differenceInDays(new Date(a.end), aStart);
+          const bDuration = differenceInDays(new Date(b.end), bStart);
+          if (bDuration !== aDuration) {
+            return bDuration - aDuration;
+          }
+          return aStart.getTime() - bStart.getTime();
         });
 
-        const layout: { event: CalendarEvent, lane: number }[] = [];
-        const lanes: (Date | null)[][] = Array(10).fill(null).map(() => Array(7).fill(null));
+      const layout: { event: CalendarEvent; startCol: number; span: number; lane: number }[] = [];
+      const lanes: (Date | null)[] = []; // Tracks the end date of the event in each lane
 
-        for (const event of weekEvents) {
-            const eventStart = new Date(event.start);
-            const eventEnd = new Date(event.end);
-            
-            const startDayIndex = eventStart < weekStart ? 0 : getDay(eventStart);
-            const endDayIndex = eventEnd > weekEnd ? 6 : getDay(eventEnd);
-            
-            let placed = false;
-            for (let i = 0; i < lanes.length; i++) {
-                let canPlace = true;
-                for (let j = startDayIndex; j <= endDayIndex; j++) {
-                    if (lanes[i][j]) {
-                        canPlace = false;
-                        break;
-                    }
-                }
-                if (canPlace) {
-                    for (let j = startDayIndex; j <= endDayIndex; j++) {
-                       lanes[i][j] = eventEnd;
-                    }
-                    layout.push({ event, lane: i });
-                    placed = true;
-                    break;
-                }
+      for (const event of weekEvents) {
+        const eventStart = new Date(event.start);
+        const eventEnd = new Date(event.end);
+
+        const startDayIndex = eventStart < weekStart ? 0 : getDay(eventStart);
+        const endDayIndex = eventEnd > weekEnd ? 6 : getDay(eventEnd);
+        
+        const startCol = startDayIndex + 1;
+        const span = endDayIndex - startDayIndex + 1;
+
+        let laneIndex = lanes.findIndex(
+          laneEndDate => laneEndDate === null || laneEndDate < eventStart
+        );
+        if (laneIndex === -1) {
+          laneIndex = lanes.length;
+        }
+
+        lanes[laneIndex] = eventEnd;
+        // Fill the lanes this event occupies
+        for(let i=0; i<laneIndex; i++){
+            if(lanes[i] === null || lanes[i] < eventStart) {
+                lanes[i] = new Date(0); // Occupied but available for next events
             }
         }
-        return layout;
+
+
+        layout.push({ event, startCol, span, lane: laneIndex });
+      }
+      return layout;
     });
   }, [weeks, events]);
 
@@ -138,46 +148,43 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
     <TooltipProvider delayDuration={100}>
         <div className="flex flex-col h-full bg-card border-l border-t rounded-lg">
             <div className="grid grid-cols-7 flex-shrink-0">
-                {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((day, i) => (
+                {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day, i) => (
                 <div key={`${day}-${i}`} className="p-2 text-center text-xs font-semibold text-muted-foreground border-b border-r">{day}</div>
                 ))}
             </div>
             <div className="grid grid-rows-6 flex-grow relative">
                 {weeks.map((week, weekIndex) => (
                     <div key={weekIndex} className="grid grid-cols-7 relative h-full">
+                        {/* Day cells as background */}
                         {week.map((day) => {
                             const isCurrentMonth = day.getMonth() === month.getMonth();
                             const isToday = isSameDay(day, today);
                             return <DayCell key={day.toString()} day={day} isCurrentMonth={isCurrentMonth} isToday={isToday} onDateSelect={onDateSelect} selectedDay={selectedDay} />;
                         })}
-                         {weeklyEvents[weekIndex].map(({ event, lane }) => {
-                             const eventStart = new Date(event.start);
-                             const eventEnd = new Date(event.end);
-                             const weekStart = week[0];
-                             const weekEnd = week[6];
-
-                             const startCol = eventStart < weekStart ? 1 : getDay(eventStart) + 1;
-                             const endCol = eventEnd > weekEnd ? 8 : getDay(eventEnd) + 2;
-
-                             return (
+                        {/* Event layer */}
+                        <div className="absolute inset-0 grid grid-cols-7 grid-rows-1 pointer-events-none">
+                            {weeklyEventsLayout[weekIndex].map(({ event, startCol, span, lane }) => (
                                 <div
-                                    key={event.id + weekIndex}
-                                    onClick={() => onEventClick(event)}
-                                    className="absolute p-px cursor-pointer"
+                                    key={event.id}
+                                    className="p-px pointer-events-auto"
                                     style={{
-                                        gridColumnStart: startCol,
-                                        gridColumnEnd: endCol,
-                                        gridRowStart: 1,
-                                        top: `${2.2 + (lane * 1.5)}rem`,
+                                        gridColumn: `${startCol} / span ${span}`,
+                                        marginTop: `${3.2 + lane * 1.5}rem`,
                                         zIndex: 10 + lane,
                                     }}
                                 >
-                                    <div className={cn("w-full h-5 text-xs px-1 rounded truncate text-white flex items-center", getEventColorClass(event.color))}>
+                                    <div
+                                        onClick={() => onEventClick(event)}
+                                        className={cn(
+                                            "w-full h-5 text-xs px-1.5 rounded truncate text-white flex items-center cursor-pointer hover:opacity-80 transition-opacity",
+                                            getEventColorClass(event.color)
+                                        )}
+                                    >
                                         {event.title}
                                     </div>
                                 </div>
-                             )
-                         })}
+                            ))}
+                        </div>
                     </div>
                 ))}
             </div>
