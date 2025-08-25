@@ -16,7 +16,7 @@ export default async function RootLayout({
   const fontVariables = await getFontVariables();
   
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es">
       <body className={cn(
           "font-body flex flex-col min-h-screen bg-background",
           fontVariables
