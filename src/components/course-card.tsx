@@ -117,9 +117,9 @@ export function CourseCard({
                 <Image
                     src={course.imageUrl || `https://placehold.co/600x400.png`}
                     alt={course.title}
-                    fill
-                    className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    width={600}
+                    height={400}
+                    className="w-full h-auto object-contain p-2 transition-transform duration-300 group-hover:scale-105"
                     data-ai-hint="online course abstract"
                     priority={priority}
                 />

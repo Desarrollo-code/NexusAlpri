@@ -34,8 +34,7 @@ export const SidebarHeader = () => {
                 width={48} 
                 height={48} 
                 data-ai-hint="logo" 
-                className="z-10 rounded-md p-1"
-                style={{objectFit: 'contain'}}
+                className="z-10 rounded-md p-1 object-contain"
               />
             </>
           ) : (

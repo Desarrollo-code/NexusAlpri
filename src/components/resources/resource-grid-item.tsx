@@ -50,10 +50,10 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
         }
 
         if (isImage) {
-           return <Image src={resource.url!} alt={resource.title} fill className="object-contain p-1" data-ai-hint="resource document"/>
+           return <Image src={resource.url!} alt={resource.title} width={300} height={168} className="w-full h-auto object-contain p-1" data-ai-hint="resource document"/>
         }
         if (youtubeId) {
-            return <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail"/>
+            return <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} width={300} height={168} className="w-full h-full object-cover" data-ai-hint="video thumbnail"/>
         }
         return <FallbackIcon resource={resource} />;
     };

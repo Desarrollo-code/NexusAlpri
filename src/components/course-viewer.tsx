@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -410,7 +411,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         if (isImage) {
             return (
                 <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center">
-                    <Image src={block.content} alt={`Preview: ${selectedLesson?.title}`} width={800} height={600} className="rounded-md object-contain max-h-[600px] w-full h-auto" onError={(e) => { e.currentTarget.src="https://placehold.co/800x600.png"; }} data-ai-hint="lesson file" />
+                    <Image src={block.content} alt={`Preview: ${selectedLesson?.title}`} width={800} height={600} className="max-w-full h-auto object-contain max-h-[600px]" onError={(e) => { e.currentTarget.src="https://placehold.co/800x600.png"; }} data-ai-hint="lesson file" />
                 </div>
             );
         }
