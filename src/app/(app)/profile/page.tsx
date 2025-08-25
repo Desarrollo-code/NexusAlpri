@@ -1,4 +1,3 @@
-
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -726,5 +725,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    

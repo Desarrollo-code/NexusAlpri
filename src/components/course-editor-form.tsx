@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -643,7 +642,13 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 </div>
             </div>
             
-            <ImageCropper imageSrc={imageToCrop} onCropComplete={handleCropComplete} onClose={() => setImageToCrop(null)} uploadUrl="/api/upload/course-image" />
+            <ImageCropper 
+              imageSrc={imageToCrop} 
+              onCropComplete={handleCropComplete} 
+              onClose={() => setImageToCrop(null)} 
+              uploadUrl="/api/upload/course-image" 
+              aspectRatio={16 / 9}
+            />
             <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro? Esta acción eliminará "{itemToDeleteDetails?.name}" y su contenido.</AlertDialogDescription></AlertDialogHeader>

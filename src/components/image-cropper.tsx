@@ -17,9 +17,10 @@ interface ImageCropperProps {
   onCropComplete: (croppedFileUrl: string) => void;
   onClose: () => void;
   uploadUrl: string;
+  aspectRatio?: number; // Aspect ratio is now optional
 }
 
-export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComplete, onClose, uploadUrl }) => {
+export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComplete, onClose, uploadUrl, aspectRatio }) => {
   const { toast } = useToast();
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -91,7 +92,7 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
             crop={crop}
             zoom={zoom}
             rotation={rotation}
-            aspect={16 / 9}
+            aspect={aspectRatio} // Use the optional aspect ratio
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onRotationChange={setRotation}
