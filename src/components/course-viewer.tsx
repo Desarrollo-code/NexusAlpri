@@ -419,8 +419,8 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         }
         if (isPdf) {
             return (
-                <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ maxHeight: '600px', overflowY: 'auto' }}>
-                    <iframe src={block.content} className="w-full h-[600px] border rounded-md" title={`PDF Preview: ${selectedLesson?.title}`}/>
+                <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ height: '70vh', minHeight: '500px' }}>
+                    <iframe src={block.content} className="w-full h-full border rounded-md" title={`PDF Preview: ${selectedLesson?.title}`}/>
                 </div>
             );
         }
