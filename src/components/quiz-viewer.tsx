@@ -1,14 +1,14 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { Quiz as AppQuiz, AnswerOption as AppAnswerOption, Question as AppQuestion } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, Award, MessageCircleQuestion, Loader2, PlayCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Award, MessageCircleQuestion, Loader2, PlayCircle, ShieldAlert } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
@@ -43,6 +43,27 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
   const [result, setResult] = useState<Result | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
+  const [userAttempts, setUserAttempts] = useState(0);
+  const [isCheckingAttempts, setIsCheckingAttempts] = useState(true);
+
+  const maxAttempts = quiz?.maxAttempts;
+  const canRetry = maxAttempts === null || userAttempts < maxAttempts;
+
+  useEffect(() => {
+    if (quiz && user && !isCreatorPreview) {
+        setIsCheckingAttempts(true);
+        fetch(`/api/quizzes/${quiz.id}/attempts?userId=${user.id}`)
+            .then(res => res.json())
+            .then(data => {
+                setUserAttempts(data.count || 0);
+            })
+            .catch(() => setUserAttempts(0))
+            .finally(() => setIsCheckingAttempts(false));
+    } else {
+        setIsCheckingAttempts(false);
+    }
+  }, [quiz, user, isCreatorPreview]);
+
 
   const handleOptionChange = (questionId: string, optionId: string) => {
     setSelectedAnswers(prev => ({ ...prev, [questionId]: optionId }));
@@ -89,7 +110,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
             const response = await fetch(`/api/progress/${user.id}/${courseId}/quiz`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lessonId, score, answers: selectedAnswers }),
+                body: JSON.stringify({ lessonId, quizId: quiz?.id, score, answers: selectedAnswers }),
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || 'Error al guardar el resultado');
@@ -98,6 +119,8 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
                 title: score >= 80 ? "¡Quiz Aprobado!" : "Quiz Enviado",
                 description: `Has obtenido una puntuación de ${Math.round(score)}%. Tu progreso se ha actualizado.`,
             });
+            
+            setUserAttempts(prev => prev + 1);
 
             if (onQuizCompleted) {
                 onQuizCompleted(lessonId, score); 
@@ -119,6 +142,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
   };
   
   const resetQuiz = () => {
+    if (!canRetry && !isCreatorPreview) return;
     setSelectedAnswers({});
     setResult(null);
     setQuizStarted(false);
@@ -195,12 +219,20 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
                     );
                 })}
             </div>
-            <Button onClick={resetQuiz}>
-                Volver a intentar
-            </Button>
+             {canRetry || isCreatorPreview ? (
+                <Button onClick={resetQuiz}>
+                    {isCreatorPreview ? 'Volver a intentar (Vista Previa)' : 'Volver a intentar'}
+                </Button>
+             ) : (
+                <p className="text-sm text-destructive font-medium">Has alcanzado el número máximo de intentos.</p>
+             )}
         </CardFooter>
       </Card>
     );
+  }
+  
+  if (isCheckingAttempts) {
+    return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin"/></div>
   }
 
   // New intro screen
@@ -212,14 +244,32 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
                 <CardTitle className="text-2xl font-headline mt-2">{quiz.title}</CardTitle>
                 <CardDescription className="max-w-prose mx-auto">{quiz.description || "Prepárate para probar tus conocimientos."}</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-2">
                 <p className="text-sm text-muted-foreground">Este quiz contiene {quiz.questions.length} pregunta{quiz.questions.length !== 1 ? 's' : ''}.</p>
+                {!isCreatorPreview && (
+                     <p className="text-sm text-muted-foreground">
+                        {maxAttempts !== null 
+                            ? `Te quedan ${maxAttempts - userAttempts} de ${maxAttempts} intentos.`
+                            : `Intentos ilimitados.`
+                        }
+                    </p>
+                )}
             </CardContent>
             <CardFooter>
-                <Button className="w-full" onClick={() => setQuizStarted(true)}>
-                    <PlayCircle className="mr-2 h-4 w-4"/>
-                    {isCreatorPreview ? 'Comenzar (Vista Previa)' : 'Comenzar Quiz'}
-                </Button>
+                 {!canRetry && !isCreatorPreview ? (
+                     <Alert variant="destructive">
+                         <ShieldAlert className="h-4 w-4" />
+                         <AlertTitle>Límite Alcanzado</AlertTitle>
+                         <AlertDescription>
+                           Has alcanzado el número máximo de intentos para este quiz.
+                         </AlertDescription>
+                    </Alert>
+                 ) : (
+                    <Button className="w-full" onClick={() => setQuizStarted(true)}>
+                        <PlayCircle className="mr-2 h-4 w-4"/>
+                        {isCreatorPreview ? 'Comenzar (Vista Previa)' : 'Comenzar Quiz'}
+                    </Button>
+                 )}
             </CardFooter>
         </Card>
     )

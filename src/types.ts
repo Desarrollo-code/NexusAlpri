@@ -1,3 +1,4 @@
+
 // src/types.ts
 import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form, FormField as PrismaFormField, FormFieldType, FormStatus } from "@prisma/client";
 
@@ -83,6 +84,7 @@ export interface Quiz {
     id: string;
     title: string;
     description?: string;
+    maxAttempts?: number | null;
     questions: Question[];
 }
 

@@ -385,7 +385,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 id: generateUniqueId('quiz'), 
                 title: 'Nuevo Quiz', 
                 description: '', 
-                questions: [] 
+                questions: [],
+                maxAttempts: null,
             } : undefined
         };
         
@@ -723,6 +724,10 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
         setLocalQuiz(quiz);
     }, [quiz, isOpen]);
 
+    const handleQuizMetaChange = (field: 'title' | 'description' | 'maxAttempts', value: string | number | null) => {
+        setLocalQuiz(prev => ({...prev, [field]: value}));
+    };
+
     const handleQuestionChange = (qIndex: number, text: string) => {
         const newQuestions = [...localQuiz.questions];
         newQuestions[qIndex].text = text;
@@ -797,9 +802,26 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
                 <DialogHeader>
-                    <DialogTitle>Editor de Quiz: {localQuiz.title}</DialogTitle>
+                    <DialogTitle>Editor de Quiz</DialogTitle>
                     <DialogDescription>Añade, edita y gestiona las preguntas y respuestas de este quiz.</DialogDescription>
                 </DialogHeader>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-1 py-2">
+                    <div className="space-y-1">
+                        <Label>Título del Quiz</Label>
+                        <Input value={localQuiz.title} onChange={(e) => handleQuizMetaChange('title', e.target.value)} />
+                    </div>
+                     <div className="space-y-1">
+                        <Label>Nº Máximo de Intentos</Label>
+                        <Input 
+                            type="number"
+                            value={localQuiz.maxAttempts === null ? '' : localQuiz.maxAttempts} 
+                            onChange={(e) => handleQuizMetaChange('maxAttempts', e.target.value === '' ? null : parseInt(e.target.value, 10))} 
+                            placeholder="Ilimitados"
+                            min="1"
+                        />
+                        <p className="text-xs text-muted-foreground">Deja en blanco para intentos ilimitados.</p>
+                    </div>
+                </div>
                 <ScrollArea className="flex-grow pr-6 -mr-6">
                     <div className="space-y-6 py-4">
                         {localQuiz.questions.map((q, qIndex) => (

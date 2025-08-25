@@ -1,3 +1,4 @@
+
 // src/app/api/progress/[userId]/[courseId]/quiz/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
@@ -21,6 +22,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
         if (!lessonId || !quizId || !answers) {
             return NextResponse.json({ message: 'lessonId, quizId y answers son requeridos.' }, { status: 400 });
         }
+        
+        // Check attempt limit
+        const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
+        if (quiz?.maxAttempts !== null) {
+            const attemptCount = await prisma.quizAttempt.count({ where: { userId, quizId }});
+            if (attemptCount >= quiz.maxAttempts) {
+                return NextResponse.json({ message: 'Has alcanzado el número máximo de intentos para este quiz.' }, { status: 403 });
+            }
+        }
 
         const questions = await prisma.question.findMany({
             where: { quizId: quizId },
@@ -41,6 +51,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
         }
         
         const score = (correctCount / questions.length) * 100;
+        
+        const currentAttempts = await prisma.quizAttempt.count({ where: { userId, quizId } });
 
         // Record the general lesson interaction (for overall course progress)
         await recordLessonInteraction({
@@ -66,6 +78,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
             data: {
                 userId,
                 quizId,
+                attemptNumber: currentAttempts + 1,
                 score,
                 answers: {
                     create: Object.entries(answers).map(([questionId, selectedOptionId]) => ({
