@@ -24,14 +24,24 @@ export async function POST(req: NextRequest) {
             const existingEnrollment = await prisma.enrollment.findUnique({
                 where: { userId_courseId: { userId: session.id, courseId } },
             });
+
             if (existingEnrollment) {
                 return NextResponse.json({ message: 'Ya estás inscrito en este curso.' }, { status: 409 });
             }
+            
+            // Create enrollment and progress record atomically
             await prisma.enrollment.create({
                 data: {
-                    userId: session.id,
-                    courseId,
+                    user: { connect: { id: session.id } },
+                    course: { connect: { id: courseId } },
                     enrolledAt: new Date(),
+                    progress: {
+                        create: {
+                            userId: session.id,
+                            courseId,
+                            progressPercentage: 0,
+                        }
+                    }
                 },
             });
 
@@ -47,7 +57,7 @@ export async function POST(req: NextRequest) {
                 where: { userId_courseId: { userId: session.id, courseId } }
             });
             if (enrollmentToDelete) {
-                // Delete progress first, then enrollment
+                // Delete progress first (optional, but good for cleanup), then enrollment
                 await prisma.courseProgress.deleteMany({
                     where: { enrollmentId: enrollmentToDelete.id }
                 });

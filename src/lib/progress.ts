@@ -46,28 +46,27 @@ async function calculateWeightedProgress(completedRecords: AppLessonCompletionRe
 export async function recordLessonInteraction({ userId, courseId, lessonId, type, score }: RecordInteractionParams) {
     const enrollment = await prisma.enrollment.findUnique({
         where: { userId_courseId: { userId, courseId } },
+        include: { progress: true } // Include progress to get its ID
     });
 
     if (!enrollment) {
         throw new Error("User is not enrolled in this course.");
     }
+    
+    // The progress record should now always exist, as it's created on enrollment.
+    if (!enrollment.progress) {
+        // This case should ideally not be reached. Log an error if it does.
+        console.error(`Error: No CourseProgress found for enrollmentId ${enrollment.id}. This should have been created on enrollment.`);
+        throw new Error(`Inconsistencia de datos: No se encontró el registro de progreso para la inscripción.`);
+    }
 
-    const progress = await prisma.courseProgress.upsert({
-        where: { enrollmentId: enrollment.id },
-        update: {},
-        create: {
-            userId: userId,
-            courseId: courseId,
-            enrollmentId: enrollment.id,
-            progressPercentage: 0,
-        },
-    });
+    const progressId = enrollment.progress.id;
 
     // Upsert the lesson completion record
     await prisma.lessonCompletionRecord.upsert({
         where: {
             progressId_lessonId: {
-                progressId: progress.id,
+                progressId: progressId,
                 lessonId: lessonId,
             }
         },
@@ -76,7 +75,7 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
             score: score
         },
         create: {
-            progressId: progress.id,
+            progressId: progressId,
             lessonId: lessonId,
             type: type,
             score: score,
