@@ -39,7 +39,7 @@ export default async function AboutPage() {
                 width="600"
                 height="400"
                 alt="About Us"
-                className="mx-auto aspect-video overflow-hidden rounded-xl object-contain object-center sm:w-full shadow-2xl p-2"
+                className="mx-auto aspect-video overflow-hidden rounded-xl object-contain object-center sm:w-full shadow-2xl"
                 data-ai-hint="team collaboration"
               />
             </div>
@@ -79,5 +79,4 @@ export default async function AboutPage() {
     </>
   );
 }
-
     

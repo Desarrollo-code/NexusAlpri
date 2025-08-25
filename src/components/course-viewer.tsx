@@ -615,5 +615,4 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     </div>
   );
 }
-
     

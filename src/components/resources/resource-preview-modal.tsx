@@ -368,5 +368,4 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
         </Dialog>
     );
 };
-
     

@@ -145,7 +145,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                         <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Apariencia General</h3>
                         <div className="mt-2 p-4 rounded-md shadow-sm" style={{ backgroundColor: settings.backgroundColorLight || '#FFFFFF' }}>
                             <div className="flex items-center gap-2 mb-4">
-                                {settings.logoUrl ? <div className="relative w-8 h-8"><Image src={settings.logoUrl} alt="logo" fill data-ai-hint="logo company" style={{objectFit: 'contain'}}/></div> : <div className="w-8 h-8 rounded-md bg-muted" />}
+                                {settings.logoUrl ? <div className="relative w-8 h-8"><Image src={settings.logoUrl} alt="logo" fill data-ai-hint="logo company" className="object-contain"/></div> : <div className="w-8 h-8 rounded-md bg-muted" />}
                                 <h4 className="font-headline text-base font-bold" style={{ color: settings.primaryColor }}>{settings.platformName}</h4>
                             </div>
                             <p className="font-body text-sm" style={{ color: '#000000' }}>Este es un texto de párrafo para previsualizar la fuente del cuerpo.</p>
@@ -544,5 +544,4 @@ export default function SettingsPage() {
     </div>
   );
 }
-
     
