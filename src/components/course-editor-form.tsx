@@ -53,6 +53,7 @@ import { useTitle } from '@/contexts/title-context';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Calendar } from '@/components/ui/calendar';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { UploadArea } from '../ui/upload-area';
 
 
 // === TIPOS E INTERFACES ===
@@ -179,12 +180,43 @@ LessonItem.displayName = 'LessonItem';
 const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock; onUpdate: (field: string, value: any) => void; onQuizUpdate: (updatedQuiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; }>(
     ({ block, onUpdate, onQuizUpdate, isSaving, onDelete, ...rest }, ref) => {
         const [showQuizEditor, setShowQuizEditor] = useState(false);
+        const [isFileUploading, setIsFileUploading] = useState(false);
+        const [fileUploadProgress, setFileUploadProgress] = useState(0);
+        const { toast } = useToast();
+
+        const handleFileSelect = async (file: File | null) => {
+            if (!file) return;
+            setIsFileUploading(true);
+            setFileUploadProgress(0);
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+                const result = await uploadWithProgress('/api/upload/lesson-file', formData, setFileUploadProgress);
+                onUpdate('content', result.url);
+                toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
+            } catch (err) {
+                 toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
+            } finally {
+                setIsFileUploading(false);
+            }
+        };
 
         const renderBlockContent = () => {
             switch(block.type) {
                 case 'TEXT': return <RichTextEditor value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="Escribe aquí texto o pega un enlace..." rows={4} disabled={isSaving} />;
                 case 'VIDEO': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
-                case 'FILE': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del archivo (PDF, imagen, etc.)" disabled={isSaving} />;
+                case 'FILE': return (
+                     <div className="w-full space-y-2">
+                        <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} />
+                        {isFileUploading && <Progress value={fileUploadProgress} />}
+                        {block.content && (
+                            <div className="text-xs text-muted-foreground flex items-center gap-2">
+                                <FileGenericIcon className="h-3 w-3" />
+                                <span className="truncate">URL actual: {block.content}</span>
+                            </div>
+                        )}
+                    </div>
+                );
                 case 'QUIZ': return (
                      <div className="flex items-center gap-2 w-full">
                         <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />
@@ -627,7 +659,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                             <div className="relative aspect-video w-full rounded-md border overflow-hidden p-2 bg-muted/20">
                                 {course.imageUrl ? (
                                     <>
-                                        <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-contain" onError={() => updateCourseField('imageUrl', null)} data-ai-hint="online course" />
+                                        <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-contain p-2" onError={() => updateCourseField('imageUrl', null)} data-ai-hint="online course" />
                                         <div className="absolute top-2 right-2 z-10 flex gap-1">
                                             <Button type="button" variant="secondary" size="icon" className="rounded-full h-8 w-8" onClick={() => document.getElementById('image-upload')?.click()} disabled={isSaving}><Replace className="h-4 w-4" /></Button>
                                             <Button type="button" variant="destructive" size="icon" className="rounded-full h-8 w-8" onClick={() => updateCourseField('imageUrl', null)} disabled={isSaving}><XCircle className="h-4 w-4" /></Button>
