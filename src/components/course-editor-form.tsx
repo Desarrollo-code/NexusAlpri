@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -53,7 +54,7 @@ import { useTitle } from '@/contexts/title-context';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Calendar } from '@/components/ui/calendar';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { UploadArea } from '../ui/upload-area';
+import { UploadArea } from '@/components/ui/upload-area';
 
 
 // === TIPOS E INTERFACES ===
