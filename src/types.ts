@@ -211,7 +211,7 @@ export interface CalendarEvent {
     description?: string | null;
     location?: string | null;
     audienceType: EventAudienceType;
-    attendees: { id: string, name: string | null, email: string }[];
+    attendees: Pick<User, 'id' | 'name' | 'email'>[];
     color: string;
     creatorId: string;
     creator?: { id: string, name: string | null };

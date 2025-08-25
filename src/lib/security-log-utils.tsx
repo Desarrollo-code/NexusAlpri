@@ -59,7 +59,7 @@ export const getEventDetails = (event: SecurityLogEvent, details?: string | null
     }
 };
 
-export const getInitials = (name?: string | null) => {
+export const getInitials = (name?: string | null): string => {
   if (!name) return '??';
   const names = name.split(' ');
   if (names.length > 1 && names[0] && names[names.length - 1]) {

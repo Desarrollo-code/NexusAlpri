@@ -20,6 +20,15 @@ const getEventColorClass = (color?: string, type: 'bg' | 'text' = 'bg'): string 
   return (colorMap[colorKey] && colorMap[colorKey][type]) || (type === 'bg' ? 'bg-primary' : 'text-primary');
 };
 
+interface ColorfulCalendarProps {
+    month: Date;
+    events: CalendarEvent[];
+    selectedDay: Date;
+    onDateSelect: (date: Date) => void;
+    onEventClick: (event: CalendarEvent) => void;
+    className?: string;
+}
+
 const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEventClick, events, selectedDay }: {
     day: Date,
     isCurrentMonth: boolean,
@@ -62,7 +71,7 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
                             dateTime={dayKey}
                             className={cn("flex items-center justify-center h-7 w-7 rounded-full text-sm",
                                 isToday && "bg-primary text-primary-foreground",
-                                holiday && "text-event-orange font-bold"
+                                holiday && "text-orange-500 font-bold"
                             )}
                         >
                             {format(day, 'd')}

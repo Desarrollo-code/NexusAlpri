@@ -6,14 +6,6 @@ const config: Config = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  safelist: [
-    {
-      pattern: /bg-event-(blue|green|red|orange)/,
-    },
-    {
-      pattern: /text-event-(blue|green|red|orange)/,
-    },
-  ],
   darkMode: ["class"],
   theme: {
     container: {

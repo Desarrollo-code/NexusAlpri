@@ -7,14 +7,8 @@ import { es } from 'date-fns/locale';
 import { Calendar as CalendarIcon, Video, MapPin, User, Users, Link as LinkIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { getInitials } from '@/lib/security-log-utils';
 
-function getInitials(name?: string | null) {
-  if (!name) return '??';
-  const names = name.split(' ');
-  if (names.length > 1 && names[0] && names[names.length - 1]) return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-  if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
-  return name.substring(0, 2).toUpperCase();
-};
 
 const getAudienceLabel = (audienceType: EventAudienceType) => {
     const labels = { ALL: "Todos", ADMINISTRATOR: "Administradores", INSTRUCTOR: "Instructores", STUDENT: "Estudiantes", SPECIFIC: "Asistentes Específicos" };
