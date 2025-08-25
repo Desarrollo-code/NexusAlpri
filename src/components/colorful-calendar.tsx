@@ -209,9 +209,9 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                              />
                          )
                      })}
-                    <div className="absolute inset-0 grid-cols-7 pointer-events-none p-1 pt-10 gap-y-1 hidden md:grid">
+                    <div className="absolute inset-0 grid-cols-7 pointer-events-none p-1 pt-10 gap-y-1 hidden md:grid" style={{ gridTemplateRows: `repeat(${MAX_LANES}, minmax(0, 1fr))` }}>
                         {positionedEventsByWeek[weekIndex]
-                          .filter(event => event.lane < MAX_LANES_DESKTOP)
+                          .filter(event => event.lane < MAX_LANES)
                           .map(event => (
                               <div
                                   key={event.id}
@@ -223,7 +223,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                                   style={{
                                       gridColumnStart: event.startCol,
                                       gridColumnEnd: `span ${event.span}`,
-                                      marginTop: `${event.lane * 1.75}rem`, // 1.75rem = h-7 (h-6 + gap-y-1)
+                                      gridRowStart: event.lane + 1,
                                   }}
                               >
                                   {event.title}
