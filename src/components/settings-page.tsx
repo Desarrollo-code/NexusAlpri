@@ -69,8 +69,9 @@ const UploadWidget = ({
             <Image
                 src={currentImageUrl}
                 alt={`Previsualización de ${label}`}
-                fill
-                className="object-contain p-2"
+                width={300}
+                height={150}
+                className="object-contain w-full h-auto max-h-48 rounded-md"
                 data-ai-hint="logo company"
             />
             <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
@@ -145,7 +146,9 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                         <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Apariencia General</h3>
                         <div className="mt-2 p-4 rounded-md shadow-sm" style={{ backgroundColor: settings.backgroundColorLight || '#FFFFFF' }}>
                             <div className="flex items-center gap-2 mb-4">
-                                {settings.logoUrl ? <div className="relative w-8 h-8"><Image src={settings.logoUrl} alt="logo" fill data-ai-hint="logo company" className="object-contain"/></div> : <div className="w-8 h-8 rounded-md bg-muted" />}
+                                <div className="relative w-8 h-8">
+                                    {settings.logoUrl ? <Image src={settings.logoUrl} alt="logo" fill data-ai-hint="logo company" className="object-contain"/> : <div className="w-8 h-8 rounded-md bg-muted" />}
+                                </div>
                                 <h4 className="font-headline text-base font-bold" style={{ color: settings.primaryColor }}>{settings.platformName}</h4>
                             </div>
                             <p className="font-body text-sm" style={{ color: '#000000' }}>Este es un texto de párrafo para previsualizar la fuente del cuerpo.</p>
@@ -179,7 +182,9 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                            <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Marca de Agua</h3>
                            <div className="mt-2 h-20 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
                                 <span className="text-sm text-muted-foreground z-10">Contenido de la app</span>
-                                <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" fill className="object-contain opacity-20 z-0 p-2" data-ai-hint="logo company"/>
+                                <div className="absolute inset-0 p-2">
+                                    <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" fill className="object-contain opacity-20 z-0" data-ai-hint="logo company"/>
+                                </div>
                            </div>
                         </div>
                     )}
@@ -544,5 +549,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    

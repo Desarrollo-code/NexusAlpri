@@ -418,7 +418,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
              if (!sourceLesson || !destLesson) return;
 
              const [movedItem] = sourceLesson.contentBlocks.splice(source.index, 1);
-             destLesson.contentBlocks.splice(destination.index, 0, movedItem);
+             destModule.contentBlocks.splice(destination.index, 0, movedItem);
         }
         
         handleStateUpdate(() => newCourse);
@@ -797,5 +797,3 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
         </Dialog>
     );
 }
-
-    

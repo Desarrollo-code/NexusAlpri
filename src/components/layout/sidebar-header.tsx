@@ -26,16 +26,15 @@ export const SidebarHeader = () => {
             "w-12 h-12 bg-card dark:bg-white/20"
         )}>
           {logoSrc ? (
-            <>
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))] opacity-70"></div>
+            <div className="relative w-full h-full p-1">
               <Image 
                 src={logoSrc} 
                 alt="Logo" 
                 fill
                 data-ai-hint="logo" 
-                className="z-10 rounded-md p-1 object-contain"
+                className="object-contain"
               />
-            </>
+            </div>
           ) : (
              <div className="w-full h-full bg-muted" />
           )}
@@ -49,5 +48,3 @@ export const SidebarHeader = () => {
     </div>
   );
 };
-
-    
