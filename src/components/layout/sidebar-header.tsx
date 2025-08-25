@@ -12,7 +12,7 @@ export const SidebarHeader = () => {
   const { isCollapsed } = useSidebar();
   const { settings } = useAuth();
   
-  const logoSrc = settings?.logoUrl || "/uploads/images/logo-nexusalpri.png";
+  const logoSrc = settings?.logoUrl; // No hay fallback, depende 100% de la config.
 
   return (
     <div className={cn(
@@ -22,18 +22,24 @@ export const SidebarHeader = () => {
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
          <div className={cn(
             "flex items-center justify-center flex-shrink-0 rounded-lg transition-all duration-300 relative overflow-hidden",
-            "w-12 h-12 bg-gray-900"
+            "w-12 h-12 bg-card dark:bg-white/20"
         )}>
-           <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))] opacity-70"></div>
-          <Image 
-            src={logoSrc} 
-            alt="Logo" 
-            width={48} 
-            height={48} 
-            data-ai-hint="logo" 
-            className="z-10"
-            style={{objectFit: 'cover'}}
-          />
+          {logoSrc ? (
+            <>
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))] opacity-70"></div>
+              <Image 
+                src={logoSrc} 
+                alt="Logo" 
+                width={48} 
+                height={48} 
+                data-ai-hint="logo" 
+                className="z-10 rounded-md"
+                style={{objectFit: 'cover'}}
+              />
+            </>
+          ) : (
+             <div className="w-full h-full bg-muted" />
+          )}
         </div>
         {!isCollapsed && (
             <span className={cn("text-2xl font-bold font-headline tracking-wide whitespace-nowrap text-foreground transition-opacity duration-300")}>
