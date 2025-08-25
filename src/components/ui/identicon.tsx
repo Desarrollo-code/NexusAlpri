@@ -5,13 +5,14 @@ import React from 'react';
 const PALETTES = [
     ["#fde047", "#facc15", "#eab308"], // Yellow
     ["#f87171", "#ef4444", "#dc2626"], // Red
+    ["#a7f3d0", "#4ade80", "#22c55e"], // Green
     ["#fca5a5", "#f87171", "#ef4444"], // Red Light
-    ["#60a5fa", "#3b82f6", "#2563eb"], // Blue
-    ["#818cf8", "#6366f1", "#4f46e5"], // Indigo
-    ["#a78bfa", "#8b5cf6", "#7c3aed"], // Purple
-    ["#f472b6", "#ec4899", "#db2777"], // Pink
-    ["#4ade80", "#22c55e", "#16a34a"], // Green
-    ["#2dd4bf", "#14b8a6", "#0d9488"], // Teal
+    ["#93c5fd", "#60a5fa", "#3b82f6"], // Blue
+    ["#a5b4fc", "#818cf8", "#6366f1"], // Indigo
+    ["#d8b4fe", "#c084fc", "#a855f7"], // Purple
+    ["#f9a8d4", "#f472b6", "#ec4899"], // Pink
+    ["#6ee7b7", "#34d399", "#10b981"], // Emerald
+    ["#5eead4", "#2dd4bf", "#14b8a6"], // Teal
 ];
 
 const stringToHash = (str: string): number => {
@@ -48,7 +49,7 @@ export const Identicon: React.FC<IdenticonProps> = ({ userId, size = 128 }) => {
             viewBox="0 0 100 100"
             xmlns="http://www.w3.org/2000/svg"
         >
-            <g transform={`translate(0, ${personTranslate})`}>
+            <g>
                 <circle cx="50" cy="50" r="48" fill="none" />
                 
                 {/* Background Circle */}
@@ -73,11 +74,11 @@ export const Identicon: React.FC<IdenticonProps> = ({ userId, size = 128 }) => {
                     stroke={color3}
                     strokeWidth="1.5"
                     strokeDasharray={`${innerRingDash}, 3`}
-                     transform={`rotate(-${hash % 180} 50 50)`}
+                     transform={`rotate(-${(hash + 180) % 360} 50 50)`}
                 />
                 
                 {/* Person Silhouette */}
-                <g fill={color3}>
+                <g fill={color3} transform={`translate(0, ${personTranslate})`}>
                     <circle cx="50" cy="40" r="9" />
                     <path d="M50 51 a18 18 0 0 1-18 18 h36 a18 18 0 0 1-18-18 z" />
                 </g>
