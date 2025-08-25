@@ -9,7 +9,7 @@ import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriang
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { Input } from '../input';
+import { Input } from '../ui/input';
 import { DownloadButton } from '../ui/download-button';
 import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
@@ -368,5 +368,3 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
         </Dialog>
     );
 };
-
-    
