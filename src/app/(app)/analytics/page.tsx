@@ -1,5 +1,4 @@
 
-
 // src/app/(app)/analytics/page.tsx
 'use client';
 

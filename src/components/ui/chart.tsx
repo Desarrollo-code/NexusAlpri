@@ -366,6 +366,12 @@ const PieChart = RechartsPrimitive.PieChart
 const Pie = RechartsPrimitive.Pie
 const ComposedChart = RechartsPrimitive.ComposedChart
 const Line = RechartsPrimitive.Line
+const Sector = RechartsPrimitive.Sector;
+const Label = RechartsPrimitive.Label;
+const CartesianGrid = RechartsPrimitive.CartesianGrid;
+const XAxis = RechartsPrimitive.XAxis;
+const YAxis = RechartsPrimitive.YAxis;
+const Legend = RechartsPrimitive.Legend;
 
 export {
   ChartContainer,
@@ -384,4 +390,10 @@ export {
   Pie,
   ComposedChart,
   Line,
+  Sector,
+  Label,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Legend,
 }
