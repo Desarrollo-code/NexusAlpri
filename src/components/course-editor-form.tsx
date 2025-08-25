@@ -608,20 +608,22 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                 </Select>
                             </div>
                            
-                            {course.imageUrl ? (
-                                <div className="relative aspect-video rounded-md overflow-hidden border w-full">
-                                    <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-contain p-2" onError={() => updateCourseField('imageUrl', null)} data-ai-hint="online course" />
-                                    <div className="absolute top-2 right-2 z-10 flex gap-1">
-                                        <Button type="button" variant="secondary" size="icon" className="rounded-full h-8 w-8" onClick={() => document.getElementById('image-upload')?.click()} disabled={isSaving}><Replace className="h-4 w-4" /></Button>
-                                        <Button type="button" variant="destructive" size="icon" className="rounded-full h-8 w-8" onClick={() => updateCourseField('imageUrl', null)} disabled={isSaving}><XCircle className="h-4 w-4" /></Button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <Label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-md cursor-pointer bg-muted/20 hover:bg-muted/30 transition-colors">
-                                    <UploadCloud className="h-8 w-8 text-muted-foreground mb-2" />
-                                    <span className="text-sm text-muted-foreground">Haz clic para subir</span>
-                                </Label>
-                            )}
+                            <div className="relative aspect-video w-full rounded-md border overflow-hidden p-2 bg-muted/20">
+                                {course.imageUrl ? (
+                                    <>
+                                        <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-contain" onError={() => updateCourseField('imageUrl', null)} data-ai-hint="online course" />
+                                        <div className="absolute top-2 right-2 z-10 flex gap-1">
+                                            <Button type="button" variant="secondary" size="icon" className="rounded-full h-8 w-8" onClick={() => document.getElementById('image-upload')?.click()} disabled={isSaving}><Replace className="h-4 w-4" /></Button>
+                                            <Button type="button" variant="destructive" size="icon" className="rounded-full h-8 w-8" onClick={() => updateCourseField('imageUrl', null)} disabled={isSaving}><XCircle className="h-4 w-4" /></Button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <Label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-muted/30 transition-colors">
+                                        <UploadCloud className="h-8 w-8 text-muted-foreground mb-2" />
+                                        <span className="text-sm text-muted-foreground">Haz clic para subir</span>
+                                    </Label>
+                                )}
+                            </div>
                             <Input id="image-upload" type="file" className="sr-only" accept="image/*" onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {
                                     const reader = new FileReader();
@@ -795,4 +797,5 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
         </Dialog>
     );
 }
+
     

@@ -70,7 +70,7 @@ const UploadWidget = ({
                 src={currentImageUrl}
                 alt={`Previsualización de ${label}`}
                 fill
-                className="object-contain w-full h-auto max-h-48 rounded-md p-2"
+                className="object-contain p-2"
                 data-ai-hint="logo company"
             />
             <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
@@ -544,4 +544,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
     

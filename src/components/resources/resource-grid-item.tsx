@@ -50,7 +50,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
         }
 
         if (isImage) {
-           return <Image src={resource.url!} alt={resource.title} fill className="object-contain p-1" data-ai-hint="resource document"/>
+           return <Image src={resource.url!} alt={resource.title} fill className="object-contain p-2" data-ai-hint="resource document"/>
         }
         if (youtubeId) {
             return <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail"/>
@@ -64,7 +64,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                 className={cn("group w-full h-full transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg", isFolder ? "hover:-translate-y-1" : "")}
                 onClick={handleClick}
             >
-                <div className="aspect-video w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg">
+                <div className="aspect-video w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg bg-muted/20">
                     <Thumbnail />
                      {resource.hasPin && !isFolder && (
                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
