@@ -246,22 +246,22 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
             </CardHeader>
             <CardContent className="space-y-2">
                 <p className="text-sm text-muted-foreground">Este quiz contiene {quiz.questions.length} pregunta{quiz.questions.length !== 1 ? 's' : ''}.</p>
-                {!isCreatorPreview && (
+                {!isCreatorPreview && maxAttempts !== null && (
                      <p className="text-sm text-muted-foreground">
-                        {maxAttempts !== null 
-                            ? `Te quedan ${maxAttempts - userAttempts} de ${maxAttempts} intentos.`
-                            : `Intentos ilimitados.`
-                        }
+                        Te quedan {maxAttempts - userAttempts} de {maxAttempts} intentos.
                     </p>
                 )}
+                 {!isCreatorPreview && maxAttempts === null && (
+                    <p className="text-sm text-muted-foreground">Intentos ilimitados.</p>
+                 )}
             </CardContent>
             <CardFooter>
                  {!canRetry && !isCreatorPreview ? (
-                     <Alert variant="destructive">
+                     <Alert variant="destructive" className="w-full">
                          <ShieldAlert className="h-4 w-4" />
-                         <AlertTitle>Límite Alcanzado</AlertTitle>
+                         <AlertTitle>Límite de Intentos Alcanzado</AlertTitle>
                          <AlertDescription>
-                           Has alcanzado el número máximo de intentos para este quiz.
+                           Ya no puedes volver a realizar este quiz.
                          </AlertDescription>
                     </Alert>
                  ) : (
