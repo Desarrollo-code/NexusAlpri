@@ -31,6 +31,7 @@ interface ColorfulCalendarProps {
 
 export default function ColorfulCalendar({ month, events, selectedDay, onDateSelect, onEventClick, className }: ColorfulCalendarProps) {
   const today = new Date();
+  const MAX_LANES = 2; // Show max 2 events + "more" indicator
 
   const weeks = useMemo(() => {
     const start = startOfWeek(startOfMonth(month), { weekStartsOn: 0 }); // Dom-Sab
@@ -44,7 +45,6 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
   }, [month]);
   
   const positionedEventsByWeek = useMemo(() => {
-      const MAX_LANES = 2; // Show max 2 events + "more" indicator
       return weeks.map(week => {
           const weekStart = week[0];
           const weekEnd = week[6];
@@ -60,57 +60,51 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
               return new Date(a.start).getTime() - new Date(b.start).getTime();
           });
 
-          const lanes: (CalendarEvent | null)[][] = [];
+          const lanes: (CalendarEvent | null)[][] = Array.from({ length: MAX_LANES }, () => Array(7).fill(null));
           const positionedEvents: any[] = [];
+          const moreCounts: Record<string, number> = {};
           
           eventsInWeek.forEach(event => {
+              const start = new Date(event.start);
+              const end = new Date(event.end);
+              const eventStartDay = start < weekStart ? 0 : getDay(start);
+              const eventEndDay = end > weekEnd ? 6 : getDay(end);
+              
               let placed = false;
-              for (let i = 0; i < lanes.length; i++) {
-                  if (lanes[i].every(laneEvent => !laneEvent || new Date(event.start) > new Date(laneEvent.end) || new Date(event.end) < new Date(laneEvent.start))) {
-                      // Found a free slot in this lane
-                      lanes[i].push(event);
-                      event.lane = i;
+              for (let laneIndex = 0; laneIndex < MAX_LANES; laneIndex++) {
+                  let canPlace = true;
+                  for (let i = eventStartDay; i <= eventEndDay; i++) {
+                      if (lanes[laneIndex][i]) {
+                          canPlace = false;
+                          break;
+                      }
+                  }
+                  if (canPlace) {
+                      for (let i = eventStartDay; i <= eventEndDay; i++) {
+                          lanes[laneIndex][i] = event;
+                      }
+                      positionedEvents.push({
+                          ...event,
+                          startDay: eventStartDay,
+                          span: eventEndDay - eventStartDay + 1,
+                          isStart: start >= weekStart,
+                          isEnd: end <= weekEnd,
+                          lane: laneIndex,
+                      });
                       placed = true;
                       break;
                   }
               }
+
               if (!placed) {
-                  // No free slots, create a new lane
-                  event.lane = lanes.length;
-                  lanes.push([event]);
+                   for (let i = eventStartDay; i <= eventEndDay; i++) {
+                       const dayKey = format(week[i], 'yyyy-MM-dd');
+                       moreCounts[dayKey] = (moreCounts[dayKey] || 0) + 1;
+                   }
               }
           });
 
-          const finalPositions: any[] = [];
-          const moreCounts: Record<string, number> = {};
-
-          lanes.forEach((lane, laneIndex) => {
-              lane.forEach(event => {
-                   const start = new Date(event.start);
-                   const end = new Date(event.end);
-                   const eventStartDay = start < weekStart ? 0 : getDay(start);
-                   const eventEndDay = end > weekEnd ? 6 : getDay(end);
-                   
-                   for(let i = eventStartDay; i <= eventEndDay; i++) {
-                       if (laneIndex >= MAX_LANES) {
-                           const dayKey = format(week[i], 'yyyy-MM-dd');
-                           moreCounts[dayKey] = (moreCounts[dayKey] || MAX_LANES) + 1;
-                       }
-                   }
-
-                   if (laneIndex < MAX_LANES) {
-                       finalPositions.push({
-                           ...event,
-                           startDay: eventStartDay,
-                           span: eventEndDay - eventStartDay + 1,
-                           isStart: start >= weekStart,
-                           isEnd: end <= weekEnd,
-                       });
-                   }
-              });
-          });
-
-          return { positionedEvents: finalPositions, moreCounts };
+          return { positionedEvents, moreCounts };
       });
   }, [weeks, events]);
 
@@ -129,7 +123,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                              const dayKey = format(day, 'yyyy-MM-dd');
                              const holiday = isHoliday(day, 'CO');
                              const { moreCounts } = positionedEventsByWeek[weekIndex];
-                             const moreCount = moreCounts[dayKey] ? moreCounts[dayKey] - MAX_LANES : 0;
+                             const moreCount = moreCounts[dayKey] || 0;
 
                              return (
                                  <div
