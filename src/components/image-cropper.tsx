@@ -36,10 +36,10 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
     if (!imageSrc || !croppedAreaPixels) {
       return;
     }
-    if (croppedAreaPixels.width < 10 || croppedAreaPixels.height < 10) {
+    if (croppedAreaPixels.width < 1 || croppedAreaPixels.height < 1) {
         toast({
-            title: "Área de Recorte Pequeña",
-            description: "Por favor, selecciona un área más grande para recortar.",
+            title: "Área de Recorte No Válida",
+            description: "Por favor, selecciona un área válida para recortar.",
             variant: "destructive"
         });
         return;
