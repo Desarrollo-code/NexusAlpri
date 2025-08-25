@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import type { CalendarEvent, Attachment } from '@/types';
-import { PlusCircle, Edit, CalendarPlus, Video, Link as LinkIcon } from 'lucide-react';
+import { PlusCircle, Edit, CalendarPlus, Video, Link as LinkIcon, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -17,10 +17,11 @@ interface EventSidebarProps {
   events: CalendarEvent[];
   onCreateEvent: (date: Date) => void;
   onEditEvent: (event: CalendarEvent) => void;
+  onDeleteEvent: (event: CalendarEvent) => void;
   canCreate: boolean;
 }
 
-export function EventSidebar({ selectedDate, events, onCreateEvent, onEditEvent, canCreate }: EventSidebarProps) {
+export function EventSidebar({ selectedDate, events, onCreateEvent, onEditEvent, onDeleteEvent, canCreate }: EventSidebarProps) {
   const { user } = useAuth();
   
   const getEventColorClass = (color?: string): string => {
@@ -61,7 +62,7 @@ export function EventSidebar({ selectedDate, events, onCreateEvent, onEditEvent,
         {events.length > 0 ? (
           <ul className="space-y-4">
             {events.map(event => {
-               const canEditEvent = user?.role === 'ADMINISTRATOR' || (user?.role === 'INSTRUCTOR' && user.id === event.creatorId);
+               const canModifyEvent = user?.role === 'ADMINISTRATOR' || (user?.role === 'INSTRUCTOR' && user.id === event.creatorId);
                return (
                   <li key={event.id} className="cursor-pointer group" onClick={() => onEditEvent(event)}>
                     <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors relative">
@@ -82,10 +83,15 @@ export function EventSidebar({ selectedDate, events, onCreateEvent, onEditEvent,
                             </div>
                         )}
                       </div>
-                      {canEditEvent && (
-                          <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Edit className="h-4 w-4 text-muted-foreground" />
-                          </Button>
+                      {canModifyEvent && (
+                           <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); onEditEvent(event); }}>
+                                    <Edit className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); onDeleteEvent(event); }}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                           </div>
                       )}
                     </div>
                   </li>
