@@ -14,10 +14,10 @@ const MAX_LANES_MOBILE = 2;
 
 const getEventColorClass = (color?: string): string => {
   const colorMap: Record<string, string> = {
-    blue: 'bg-event-blue border-blue-600 text-white',
-    green: 'bg-event-green border-green-600 text-white',
-    red: 'bg-event-red border-red-600 text-white',
-    orange: 'bg-event-orange border-orange-600 text-white',
+    blue: 'bg-blue-500 border-blue-600 text-white',
+    green: 'bg-green-500 border-green-600 text-white',
+    red: 'bg-red-500 border-red-600 text-white',
+    orange: 'bg-orange-500 border-orange-600 text-white',
   };
   return colorMap[color as string] || 'bg-primary border-primary/80 text-primary-foreground';
 };
