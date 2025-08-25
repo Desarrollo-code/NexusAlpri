@@ -36,22 +36,11 @@ const processEventsForWeek = (week: Date[], allEvents: CalendarEvent[]) => {
         });
 
     const positionedEvents: any[] = [];
-    const lanes: (Date | null)[] = Array(10).fill(null);
-    const dailyEventCounts: Record<string, number> = {};
-    week.forEach(day => dailyEventCounts[format(day, 'yyyy-MM-dd')] = 0);
-
+    const lanes: (Date | null)[] = Array(10).fill(null); // Max 10 lanes for collision detection
+    
     relevantEvents.forEach(event => {
         const eventStart = new Date(event.start);
         
-        let currentDay = new Date(eventStart < weekStart ? weekStart : eventStart);
-        while (currentDay <= weekEnd && currentDay <= new Date(event.end)) {
-            const dayKey = format(currentDay, 'yyyy-MM-dd');
-            if (dailyEventCounts[dayKey] !== undefined) {
-              dailyEventCounts[dayKey]++;
-            }
-            currentDay.setDate(currentDay.getDate() + 1);
-        }
-
         let startCol = isBefore(eventStart, weekStart) ? 0 : getDay(eventStart);
         let endCol = isBefore(weekEnd, new Date(event.end)) ? 6 : getDay(new Date(event.end));
         let span = endCol - startCol + 1;
@@ -86,7 +75,20 @@ const processEventsForWeek = (week: Date[], allEvents: CalendarEvent[]) => {
         }
     });
 
-    return { positionedEvents, dailyEventCounts };
+    return positionedEvents;
+};
+
+const getDailyEventCounts = (week: Date[], allEvents: CalendarEvent[]): Record<string, number> => {
+    const dailyEventCounts: Record<string, number> = {};
+    week.forEach(day => {
+        const dayKey = format(day, 'yyyy-MM-dd');
+        dailyEventCounts[dayKey] = allEvents.filter(event => 
+            isSameDay(day, new Date(event.start)) || 
+            isSameDay(day, new Date(event.end)) || 
+            (isBefore(new Date(event.start), day) && isBefore(day, new Date(event.end)))
+        ).length;
+    });
+    return dailyEventCounts;
 };
 
 
@@ -158,6 +160,8 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
   }, [month]);
 
   const positionedEventsByWeek = React.useMemo(() => weeks.map(week => processEventsForWeek(week, events)), [weeks, events]);
+  const dailyEventCountsByWeek = React.useMemo(() => weeks.map(week => getDailyEventCounts(week, events)), [weeks, events]);
+
 
   return (
     <div className={cn("flex flex-col h-full bg-card border-l border-t rounded-lg", className)}>
@@ -171,8 +175,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                 <div key={weekIndex} className="grid grid-cols-7 relative">
                      {week.map((day) => {
                          const dayKey = format(day, 'yyyy-MM-dd');
-                         const { dailyEventCounts } = positionedEventsByWeek[weekIndex];
-                         const totalEventsToday = dailyEventCounts[dayKey] || 0;
+                         const totalEventsToday = dailyEventCountsByWeek[weekIndex][dayKey] || 0;
                          const moreCount = totalEventsToday > MAX_LANES ? totalEventsToday - MAX_LANES : 0;
                          
                          return (
@@ -187,17 +190,15 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                          )
                      })}
                      <div className="absolute inset-0 grid grid-cols-7 pointer-events-none p-1 pt-10 gap-y-1">
-                         {positionedEventsByWeek[weekIndex].positionedEvents
+                         {positionedEventsByWeek[weekIndex]
                             .filter(event => event.lane < MAX_LANES)
                             .map(event => (
                                  <div
                                     key={event.id}
                                     onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
                                     className={cn(
-                                        "pointer-events-auto cursor-pointer px-2 py-0.5 text-xs font-semibold flex items-center truncate transition-colors h-6",
-                                        getEventColorClass(event.color),
-                                        event.startsInWeek && "rounded-l-md",
-                                        event.endsInWeek && "rounded-r-md"
+                                        "pointer-events-auto cursor-pointer px-2 text-xs font-semibold flex items-center truncate transition-colors h-6 rounded-md",
+                                        getEventColorClass(event.color)
                                     )}
                                     style={{
                                         gridColumn: `${event.startCol} / span ${event.span}`,
