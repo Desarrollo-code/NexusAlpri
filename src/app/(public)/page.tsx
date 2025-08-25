@@ -1,4 +1,3 @@
-
 // src/app/(public)/page.tsx
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -136,6 +135,12 @@ export default async function LandingPage() {
                           "bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:-translate-y-2"
                         )}
                       >
+                       <div 
+                        className={cn(
+                            "absolute inset-0 bg-gradient-to-br opacity-10 blur-xl",
+                            feature.gradient
+                        )}
+                       />
                        <div className="relative z-10 flex flex-col items-center justify-center h-full">
                          <div className="mb-4">
                             {feature.icon}

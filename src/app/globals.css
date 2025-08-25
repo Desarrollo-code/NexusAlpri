@@ -11,19 +11,17 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 262 84% 58%;
+    --primary: 174 78% 39%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 5% 65%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
-    --accent: 342 91% 65%;
+    --accent: 35 92% 58%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 6% 90%;
     --input: 240 6% 90%;
-    --ring: 262 84% 58%;
+    --ring: 174 78% 39%;
     --radius: 0.75rem;
     
     /* Colores para gráficos y eventos como fallback */
@@ -195,4 +193,14 @@
   20%, 50% {
     opacity: 0;
   }
+}
+
+.quill-editor .ql-toolbar {
+  @apply rounded-t-lg border-b bg-muted/50;
+}
+.quill-editor .ql-container {
+  @apply rounded-b-lg text-base;
+}
+.quill-editor .ql-editor {
+  @apply min-h-[150px] resize-y;
 }

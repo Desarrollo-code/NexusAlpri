@@ -1,10 +1,10 @@
-
 // src/app/(public)/about/page.tsx
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Database, Code, Wind, Feather } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
 import prisma from '@/lib/prisma';
+import { cn } from '@/lib/utils';
 
 export default async function AboutPage() {
   const settings = await prisma.platformSettings.findFirst();
@@ -64,8 +64,8 @@ export default async function AboutPage() {
               {techStack.map((tech) => (
                 <Card key={tech.name} className="hover:border-primary/50 transition-colors bg-card/80 backdrop-blur-sm">
                   <CardHeader className="flex flex-row items-center gap-4">
-                    <div className={'bg-primary/20 p-3 rounded-full text-primary'}>
-                        {React.cloneElement(tech.icon, { className: "h-6 w-6" })}
+                    <div className={'bg-primary/20 p-3 rounded-full'}>
+                        {React.cloneElement(tech.icon, { className: cn("h-6 w-6", tech.color) })}
                     </div>
                     <CardTitle className="text-foreground">{tech.name}</CardTitle>
                   </CardHeader>
