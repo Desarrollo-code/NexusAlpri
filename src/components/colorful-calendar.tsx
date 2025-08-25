@@ -114,7 +114,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
         });
 
       const layout: { event: CalendarEvent; startCol: number; span: number; lane: number }[] = [];
-      const lanes: (Date | null)[][] = []; // Un array de carriles (arrays de fechas de fin)
+      const lanes: boolean[][] = []; // Un array de carriles (arrays de días de la semana [0-6])
 
       for (const event of weekEvents) {
         const eventStart = new Date(event.start);
@@ -127,20 +127,21 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
         // Encuentra el primer carril disponible.
         while (true) {
             if (!lanes[laneIndex]) {
-                lanes[laneIndex] = [];
+                lanes[laneIndex] = new Array(7).fill(false);
             }
             
             let isLaneFree = true;
-            for (let i = 0; i < lanes[laneIndex].length; i++) {
-                // Comprueba si el nuevo evento se superpone con un evento existente en el carril.
-                if (eventStart <= lanes[laneIndex][i]!) {
+            for (let i = startDayIndex; i <= endDayIndex; i++) {
+                if (lanes[laneIndex][i]) {
                     isLaneFree = false;
                     break;
                 }
             }
-
+            
             if (isLaneFree) {
-                lanes[laneIndex].push(eventEnd);
+                 for (let i = startDayIndex; i <= endDayIndex; i++) {
+                    lanes[laneIndex][i] = true;
+                }
                 break;
             }
             laneIndex++;
