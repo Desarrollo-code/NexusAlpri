@@ -52,7 +52,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                 alt="Alprigrama Watermark"
                 width={60}
                 height={60}
-                className="opacity-20"
+                className="opacity-50"
                 data-ai-hint="logo company"
                 priority
                 style={{ width: 'auto', height: 'auto' }}
