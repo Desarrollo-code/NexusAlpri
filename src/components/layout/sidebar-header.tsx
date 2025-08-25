@@ -1,3 +1,4 @@
+
 // src/components/layout/sidebar-header.tsx
 
 'use client';
@@ -33,8 +34,8 @@ export const SidebarHeader = () => {
                 width={48} 
                 height={48} 
                 data-ai-hint="logo" 
-                className="z-10 rounded-md"
-                style={{objectFit: 'cover'}}
+                className="z-10 rounded-md p-1"
+                style={{objectFit: 'contain'}}
               />
             </>
           ) : (

@@ -388,7 +388,7 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
                 <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                     {taughtCourses.map(course => (
                       <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow card-border-animated">
-                        {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} width={600} height={400} className="w-full h-auto object-contain" data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
+                        {course.imageUrl && <div className="aspect-video relative w-full rounded-t-lg overflow-hidden"><Image src={course.imageUrl} alt={course.title} width={600} height={400} className="w-full h-auto object-contain p-2" data-ai-hint="online learning teacher" sizes="(max-width: 768px) 100vw, 50vw"/></div>}
                         <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
                         <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2"/> Editar Contenido</Link></Button></CardFooter>
                       </Card>

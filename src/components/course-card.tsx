@@ -113,17 +113,17 @@ export function CourseCard({
   return (
     <Card className="group flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out">
         <Link href={mainLinkHref}>
-            <div className="aspect-video w-full relative overflow-hidden">
+            <div className="aspect-video w-full relative overflow-hidden bg-muted/30">
                 <Image
                     src={course.imageUrl || `https://placehold.co/600x400.png`}
                     alt={course.title}
                     fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     data-ai-hint="online course abstract"
                     priority={priority}
                 />
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
+                <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-colors" />
                 {typeof progress === 'number' && (
                     <div className="absolute top-2 right-2 bg-background/50 backdrop-blur-sm rounded-full">
                         <CircularProgress value={progress} size={40} strokeWidth={4} valueTextClass="text-xs font-semibold" />
