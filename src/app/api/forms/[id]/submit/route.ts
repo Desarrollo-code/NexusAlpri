@@ -81,4 +81,3 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         return NextResponse.json({ message: 'Error al enviar la respuesta' }, { status: 500 });
     }
 }
-    

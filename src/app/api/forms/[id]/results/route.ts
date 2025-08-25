@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
@@ -115,4 +115,3 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         return NextResponse.json({ message: 'Error al obtener los resultados del formulario' }, { status: 500 });
     }
 }
-    

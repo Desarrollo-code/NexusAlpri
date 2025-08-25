@@ -24,7 +24,7 @@ async function checkPermissions(formId: string, session: any) {
 }
 
 // GET a specific form by ID with its fields
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: formId } = await params;
 
   try {
@@ -45,15 +45,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
     if (!form) {
       return NextResponse.json({ message: 'Formulario no encontrado' }, { status: 404 });
     }
-
-    // La lógica de permisos es compleja; por ahora, permitimos que cualquiera que esté logueado
-    // pueda ver un formulario si conoce la URL. La seguridad para las respuestas se maneja por separado.
-    // Un chequeo más estricto podría ser:
-    // const isCreator = form.creatorId === session.id;
-    // const isAdmin = session.role === 'ADMINISTRATOR';
-    // if (form.status !== 'PUBLISHED' && !isCreator && !isAdmin) {
-    //   return NextResponse.json({ message: 'Este formulario no está aceptando respuestas actualmente' }, { status: 403 });
-    // }
 
     return NextResponse.json(form);
   } catch (error) {
@@ -156,4 +147,3 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ message: 'Error al eliminar el formulario' }, { status: 500 });
   }
 }
-    
