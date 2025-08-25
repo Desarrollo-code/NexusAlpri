@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek, isWithinInterval } from 'date-fns';
+import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek, isWithinInterval, getDay, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
@@ -11,13 +11,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 const getEventColorClass = (color?: string): string => {
   const colorMap = {
-    blue: 'bg-blue-500',
-    green: 'bg-green-500',
-    red: 'bg-red-500',
-    orange: 'bg-orange-500',
+    blue: 'bg-blue-500 border-blue-600',
+    green: 'bg-green-500 border-green-600',
+    red: 'bg-red-500 border-red-600',
+    orange: 'bg-orange-500 border-orange-600',
   };
   const colorKey = color as keyof typeof colorMap;
-  return colorMap[colorKey] || 'bg-primary';
+  return colorMap[colorKey] || 'bg-primary border-primary/80';
 };
 
 interface ColorfulCalendarProps {
@@ -29,15 +29,12 @@ interface ColorfulCalendarProps {
     className?: string;
 }
 
-// Celda de día que ahora maneja sus propios eventos y scroll.
-const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, selectedDay, eventsForDay, onEventClick }: {
+const DayCell = ({ day, isCurrentMonth, isToday, onDateSelect, selectedDay }: {
     day: Date,
     isCurrentMonth: boolean,
     isToday: boolean,
     onDateSelect: (d: Date) => void,
-    selectedDay: Date,
-    eventsForDay: CalendarEvent[],
-    onEventClick: (e: CalendarEvent) => void,
+    selectedDay: Date
 }) => {
     const dayKey = format(day, 'yyyy-MM-dd');
     const holiday = isHoliday(day, 'CO');
@@ -67,23 +64,9 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, select
                     {holiday && <TooltipContent><p>{holiday.name}</p></TooltipContent>}
                 </Tooltip>
             </div>
-            {/* Contenedor de eventos con scroll */}
-            <div className="flex-grow overflow-y-auto space-y-1 thin-scrollbar">
-                {eventsForDay.map(event => (
-                    <div
-                        key={event.id}
-                        onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
-                        className={cn("w-full text-xs px-1.5 py-0.5 rounded truncate text-white cursor-pointer hover:opacity-80 transition-opacity", getEventColorClass(event.color))}
-                    >
-                        {event.title}
-                    </div>
-                ))}
-            </div>
         </div>
     );
-});
-DayCell.displayName = "DayCell";
-
+};
 
 export default function ColorfulCalendar({ month, events, selectedDay, onDateSelect, onEventClick, className }: ColorfulCalendarProps) {
   const today = new Date();
@@ -102,6 +85,88 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
     return weeksArray;
   }, [month]);
   
+  const weeklyEvents = useMemo(() => {
+    return weeks.map(week => {
+      const weekStart = week[0];
+      const weekEnd = week[6];
+
+      const eventsInWeek = events.filter(event => 
+          new Date(event.start) <= weekEnd && new Date(event.end) >= weekStart
+      );
+      
+      const sortedEvents = eventsInWeek.sort((a, b) => {
+          const diffA = differenceInDays(new Date(a.end), new Date(a.start));
+          const diffB = differenceInDays(new Date(b.end), new Date(b.start));
+          if (diffA !== diffB) return diffB - diffA; // Longer events first
+          return new Date(a.start).getTime() - new Date(b.start).getTime(); // Then by start date
+      });
+
+      const layout: any[][] = []; // This will hold the event layout for the week
+
+      for (const event of sortedEvents) {
+        let placed = false;
+        for (let lane = 0; lane < layout.length; lane++) {
+          let isLaneFree = true;
+          for (let i = 0; i < 7; i++) {
+            const day = week[i];
+            if (isWithinInterval(day, { start: new Date(event.start), end: new Date(event.end) }) && layout[lane][i]) {
+              isLaneFree = false;
+              break;
+            }
+          }
+          if (isLaneFree) {
+            for (let i = 0; i < 7; i++) {
+              const day = week[i];
+              if (isWithinInterval(day, { start: new Date(event.start), end: new Date(event.end) })) {
+                layout[lane][i] = event;
+              }
+            }
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) {
+          const newLane = new Array(7).fill(null);
+          for (let i = 0; i < 7; i++) {
+            const day = week[i];
+            if (isWithinInterval(day, { start: new Date(event.start), end: new Date(event.end) })) {
+              newLane[i] = event;
+            }
+          }
+          layout.push(newLane);
+        }
+      }
+
+      const positionedEvents = [];
+      const processedEventIds = new Set();
+      
+      for(let laneIndex = 0; laneIndex < layout.length; laneIndex++) {
+        for(let dayIndex = 0; dayIndex < 7; dayIndex++) {
+            const event = layout[laneIndex][dayIndex];
+            if(event && !processedEventIds.has(event.id)) {
+                let span = 1;
+                for(let i = dayIndex + 1; i < 7; i++) {
+                    if(layout[laneIndex][i]?.id === event.id) {
+                        span++;
+                    } else {
+                        break;
+                    }
+                }
+                positionedEvents.push({
+                    event,
+                    startCol: dayIndex + 1,
+                    span,
+                    lane: laneIndex,
+                });
+                processedEventIds.add(event.id);
+            }
+        }
+      }
+
+      return positionedEvents;
+    });
+  }, [weeks, events]);
+
   return (
     <TooltipProvider delayDuration={100}>
         <div className={cn("flex flex-col h-full bg-card border-l border-t rounded-lg", className)}>
@@ -110,14 +175,13 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                 <div key={`${day}-${i}`} className="p-2 text-center text-xs font-semibold text-muted-foreground border-b border-r">{day}</div>
                 ))}
             </div>
-            <div className="grid grid-rows-6 flex-grow">
+            <div className="grid grid-rows-6 flex-grow relative">
+                {/* Day Grid Layer */}
                 {weeks.map((week, weekIndex) => (
                     <div key={weekIndex} className="grid grid-cols-7 h-full">
                         {week.map((day) => {
                             const isCurrentMonth = day.getMonth() === month.getMonth();
                             const isToday = isSameDay(day, today);
-                            const eventsForDay = events.filter(e => isSameDay(new Date(e.start), day));
-                            
                             return (
                                 <DayCell 
                                     key={day.toString()} 
@@ -126,13 +190,34 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                                     isToday={isToday} 
                                     onDateSelect={onDateSelect} 
                                     selectedDay={selectedDay}
-                                    eventsForDay={eventsForDay}
-                                    onEventClick={onEventClick}
                                 />
                             );
                         })}
                     </div>
                 ))}
+                {/* Events Layer */}
+                 <div className="absolute inset-0 grid grid-rows-6 pointer-events-none">
+                     {weeklyEvents.map((weekLayout, weekIndex) => (
+                         <div key={weekIndex} className="relative grid grid-cols-7 h-full pt-8">
+                             {weekLayout.map(({ event, startCol, span, lane }) => (
+                                <div
+                                    key={event.id + weekIndex}
+                                    className="absolute h-6 pointer-events-auto cursor-pointer px-1"
+                                    style={{
+                                        gridColumnStart: startCol,
+                                        gridColumnEnd: `span ${span}`,
+                                        top: `${lane * 1.65}rem` // 1.5rem for height + 0.15rem for gap
+                                    }}
+                                    onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
+                                >
+                                     <div className={cn("w-full h-full rounded text-white text-xs truncate flex items-center px-2", getEventColorClass(event.color))}>
+                                        {event.title}
+                                    </div>
+                                </div>
+                             ))}
+                         </div>
+                     ))}
+                 </div>
             </div>
         </div>
     </TooltipProvider>
