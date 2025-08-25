@@ -21,8 +21,8 @@ export const SidebarHeader = () => {
     )}>
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
          <div className={cn(
-            "flex items-center justify-center flex-shrink-0 rounded-lg transition-all duration-300 relative",
-            "w-12 h-12 bg-gray-900" 
+            "flex items-center justify-center flex-shrink-0 rounded-lg transition-all duration-300 relative overflow-hidden", // Added overflow-hidden
+            "w-12 h-12 bg-gray-900" // Added background
         )}>
            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))] opacity-70"></div>
           <Image 
@@ -31,7 +31,7 @@ export const SidebarHeader = () => {
             width={48} 
             height={48} 
             data-ai-hint="logo" 
-            className="rounded-md z-10"
+            className="z-10" // Removed rounded-md from image, it's on the parent now
             style={{objectFit: 'cover'}}
           />
         </div>
