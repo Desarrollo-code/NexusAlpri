@@ -175,7 +175,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                 <div key={weekIndex} className="grid grid-cols-7 relative">
                      {week.map((day) => {
                          const dayKey = format(day, 'yyyy-MM-dd');
-                         const totalEventsToday = dailyEventCountsByWeek[weekIndex][dayKey] || 0;
+                         const totalEventsToday = dailyEventCountsByWeek[weekIndex]?.[dayKey] || 0;
                          const moreCount = totalEventsToday > MAX_LANES ? totalEventsToday - MAX_LANES : 0;
                          
                          return (
@@ -189,26 +189,27 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                              />
                          )
                      })}
-                     <div className="absolute inset-0 grid grid-cols-7 pointer-events-none p-1 pt-10 gap-y-1">
-                         {positionedEventsByWeek[weekIndex]
-                            .filter(event => event.lane < MAX_LANES)
-                            .map(event => (
-                                 <div
-                                    key={event.id}
-                                    onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
-                                    className={cn(
-                                        "pointer-events-auto cursor-pointer px-2 text-xs font-semibold flex items-center truncate transition-colors h-6 rounded-md",
-                                        getEventColorClass(event.color)
-                                    )}
-                                    style={{
-                                        gridColumn: `${event.startCol} / span ${event.span}`,
-                                        marginTop: `${event.lane * 1.75}rem`
-                                    }}
-                                >
-                                    {event.title}
-                                </div>
-                             ))}
-                     </div>
+                     <div className="absolute inset-0 grid grid-cols-7 pointer-events-none p-1 pt-10 gap-y-1" style={{ gridTemplateRows: `repeat(${MAX_LANES}, minmax(0, 1fr))` }}>
+                        {positionedEventsByWeek[weekIndex]
+                          .filter(event => event.lane < MAX_LANES)
+                          .map(event => (
+                              <div
+                                  key={event.id}
+                                  onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
+                                  className={cn(
+                                      "pointer-events-auto cursor-pointer px-2 text-xs font-semibold flex items-center truncate transition-colors h-6 rounded-md",
+                                      getEventColorClass(event.color)
+                                  )}
+                                  style={{
+                                      gridColumn: `${event.startCol} / span ${event.span}`,
+                                      gridRowStart: event.lane + 1,
+                                  }}
+                              >
+                                  {event.title}
+                              </div>
+                          ))
+                        }
+                    </div>
                 </div>
             ))}
         </div>
