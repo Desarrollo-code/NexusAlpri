@@ -100,15 +100,16 @@ export default async function LandingPage() {
                   </Button>
                 </div>
               </div>
-              <Image
-                src={landingImageUrl}
-                width="600"
-                height="600"
-                alt="Hero"
-                className="mx-auto aspect-square overflow-hidden rounded-xl object-contain sm:w-full"
-                data-ai-hint="team collaboration"
-                priority
-              />
+               <div className="mx-auto aspect-square overflow-hidden rounded-xl sm:w-full relative p-2 bg-muted/20">
+                <Image
+                  src={landingImageUrl}
+                  alt="Hero"
+                  fill
+                  className="object-contain"
+                  data-ai-hint="team collaboration"
+                  priority
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -151,14 +152,15 @@ export default async function LandingPage() {
         <section className="w-full py-12 md:py-24">
             <div className="container px-4 md:px-6">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
+                     <div className="mx-auto aspect-video overflow-hidden rounded-xl sm:w-full relative p-2 bg-muted/20 shadow-2xl">
                         <Image
-                        src={benefitsImageUrl}
-                        width="600"
-                        height="400"
-                        alt="Benefits"
-                        className="mx-auto aspect-video overflow-hidden rounded-xl object-contain object-center sm:w-full shadow-2xl"
-                        data-ai-hint="diverse team"
-                      />
+                            src={benefitsImageUrl}
+                            alt="Benefits"
+                            fill
+                            className="object-contain"
+                            data-ai-hint="diverse team"
+                        />
+                     </div>
                     <div className="space-y-8">
                        {benefits.map((benefit, index) => (
                           <div key={index} className="flex items-start gap-4">
@@ -223,4 +225,3 @@ export default async function LandingPage() {
       </div>
   );
 }
-    

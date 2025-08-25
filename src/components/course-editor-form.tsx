@@ -770,7 +770,7 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                                                 <div key={opt.id} className="p-3 bg-card border rounded-md space-y-2">
                                                     <div className="flex items-center gap-2">
                                                         <RadioGroupItem value={opt.id} id={`q${qIndex}-o${oIndex}`} />
-                                                        <Label htmlFor={`q${qIndex}-o${oIndex}`} className="flex-grow">
+                                                        <Label htmlFor={`q${qIndex}-o${oIndex}`} className="flex-grow font-normal">
                                                             <Input value={opt.text} placeholder="Texto de la opción" onChange={(e) => handleOptionChange(qIndex, oIndex, 'text', e.target.value)} />
                                                         </Label>
                                                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70" onClick={() => deleteOption(qIndex, oIndex)}><XCircle className="h-4 w-4"/></Button>
