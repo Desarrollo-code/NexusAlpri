@@ -72,7 +72,9 @@ const processEventsForWeek = (week: Date[], allEvents: CalendarEvent[]) => {
         }
         
         if (laneIndex !== -1) {
-            lanes[laneIndex] = new Date(event.end);
+            for (let d = startCol; d <= endCol; d++) {
+                 lanes[laneIndex] = new Date(event.end);
+            }
             positionedEvents.push({
                 ...event,
                 startCol: startCol + 1,
@@ -100,14 +102,16 @@ const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect
     const today = new Date();
     const dayKey = format(day, 'yyyy-MM-dd');
     const holiday = isHoliday(day, 'CO');
+    const isMobile = useIsMobile();
     
     return (
         <div
             onClick={() => onDateSelect(day)}
             className={cn(
-                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer min-h-[120px] border-r border-b",
+                "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer border-r border-b",
                 !isSameMonth(day, month) && "bg-muted/30 text-muted-foreground/50",
-                isSameDay(day, selectedDay) && "bg-primary/10"
+                isSameDay(day, selectedDay) && "bg-primary/10",
+                isMobile ? "min-h-[90px]" : "min-h-[120px]"
             )}
         >
             <div className="flex justify-between items-center mb-1 flex-shrink-0">
@@ -196,9 +200,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                                         event.endsInWeek && "rounded-r-md"
                                     )}
                                     style={{
-                                        gridColumnStart: event.startCol,
-                                        gridColumnEnd: `span ${event.span}`,
-                                        gridRowStart: 1, 
+                                        gridColumn: `${event.startCol} / span ${event.span}`,
                                         marginTop: `${event.lane * 1.75}rem`
                                     }}
                                 >
