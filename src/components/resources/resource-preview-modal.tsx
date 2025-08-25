@@ -217,7 +217,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
 
         if (youtubeId) return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>;
         if (isVideoFile) return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />;
-        if (isImage) return <Image src={displayUrl} alt={resource.title} width={800} height={600} className="w-auto h-auto max-w-full max-h-full object-contain p-2" data-ai-hint="document image" />;
+        if (isImage) return <Image src={displayUrl} alt={resource.title} fill className="object-contain p-2" data-ai-hint="document image" />;
         if (isPdf) {
             return (
                 <div className="w-full h-full relative">
@@ -368,3 +368,5 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
         </Dialog>
     );
 };
+
+    

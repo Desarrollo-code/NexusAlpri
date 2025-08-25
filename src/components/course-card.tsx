@@ -117,9 +117,8 @@ export function CourseCard({
                 <Image
                     src={course.imageUrl || `https://placehold.co/600x400.png`}
                     alt={course.title}
-                    width={600}
-                    height={400}
-                    className="w-full h-auto object-contain p-2 transition-transform duration-300 group-hover:scale-105"
+                    fill
+                    className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
                     data-ai-hint="online course abstract"
                     priority={priority}
                 />
@@ -247,3 +246,5 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: 
         </DropdownMenu>
     );
 }
+
+    

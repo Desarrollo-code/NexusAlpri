@@ -31,8 +31,7 @@ export const SidebarHeader = () => {
               <Image 
                 src={logoSrc} 
                 alt="Logo" 
-                width={48} 
-                height={48} 
+                fill
                 data-ai-hint="logo" 
                 className="z-10 rounded-md p-1 object-contain"
               />
@@ -50,3 +49,5 @@ export const SidebarHeader = () => {
     </div>
   );
 };
+
+    

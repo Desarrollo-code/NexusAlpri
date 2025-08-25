@@ -31,7 +31,7 @@ export function PublicTopBar() {
     )}>
       <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
          <div className={cn("w-12 h-12 bg-card dark:bg-white/20 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg", !settings?.logoUrl && "p-2")}>
-          {settings?.logoUrl ? <Image src={settings.logoUrl} alt="Logo" width={48} height={48} data-ai-hint="logo" className="object-contain"/> : <div className="w-full h-full rounded-md bg-muted" />}
+          {settings?.logoUrl ? <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain p-1"/> : <div className="w-full h-full rounded-md bg-muted" />}
         </div>
         <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-foreground">
            {settings?.platformName || 'NexusAlpri'}
@@ -61,3 +61,5 @@ export function PublicTopBar() {
     </header>
   );
 }
+
+    

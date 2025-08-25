@@ -1,3 +1,4 @@
+
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -581,7 +582,7 @@ export default function ProfilePage() {
             </DialogHeader>
             <div className="flex flex-col items-center gap-4 py-4">
                 {qrCodeUrl ? (
-                    <Image src={qrCodeUrl} alt="Código QR para 2FA" width={200} height={200} data-ai-hint="qr code"/>
+                    <Image src={qrCodeUrl} alt="Código QR para 2FA" fill className="object-contain" data-ai-hint="qr code"/>
                 ) : <Loader2 className="h-8 w-8 animate-spin"/>}
                  <div className="w-full flex justify-center">
                     <InputOTP
@@ -725,3 +726,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
