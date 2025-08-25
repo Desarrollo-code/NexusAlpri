@@ -42,9 +42,14 @@ const processEventsForWeek = (week: Date[], allEvents: CalendarEvent[]) => {
 
     relevantEvents.forEach(event => {
         const eventStart = new Date(event.start);
-        const dayKey = format(eventStart, 'yyyy-MM-dd');
-        if (dailyEventCounts[dayKey] !== undefined) {
-          dailyEventCounts[dayKey]++;
+        
+        let currentDay = new Date(eventStart < weekStart ? weekStart : eventStart);
+        while (currentDay <= weekEnd && currentDay <= new Date(event.end)) {
+            const dayKey = format(currentDay, 'yyyy-MM-dd');
+            if (dailyEventCounts[dayKey] !== undefined) {
+              dailyEventCounts[dayKey]++;
+            }
+            currentDay.setDate(currentDay.getDate() + 1);
         }
 
         let startCol = isBefore(eventStart, weekStart) ? 0 : getDay(eventStart);
@@ -157,7 +162,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                 <div key={day} className="p-2 text-center text-xs font-semibold text-muted-foreground border-b border-r">{day}</div>
             ))}
         </div>
-        <div className="flex-grow grid grid-cols-1" style={{ gridTemplateRows: `repeat(${weeks.length}, 1fr)` }}>
+        <div className="flex-grow grid grid-cols-1" style={{ gridTemplateRows: `repeat(${weeks.length}, minmax(0, 1fr))` }}>
             {weeks.map((week, weekIndex) => (
                 <div key={weekIndex} className="grid grid-cols-7 relative">
                      {week.map((day) => {
@@ -193,8 +198,8 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                                     style={{
                                         gridColumnStart: event.startCol,
                                         gridColumnEnd: `span ${event.span}`,
-                                        gridRowStart: 1, // Start from the first row
-                                        marginTop: `${event.lane * 1.75}rem` // 1.5rem for height + 0.25rem for gap
+                                        gridRowStart: 1, 
+                                        marginTop: `${event.lane * 1.75}rem`
                                     }}
                                 >
                                     {event.title}
