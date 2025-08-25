@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek } from 'date-fns';
+import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek, isWithinInterval, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
@@ -43,9 +43,21 @@ const DayCell = React.memo(({ day, isCurrentMonth, isToday, onDateSelect, onEven
     
     const daySpecificEvents = useMemo(() => {
         return events
-            .filter(event => isSameDay(new Date(event.start), day))
+            .filter(event => {
+                 try {
+                    const eventStart = new Date(event.start);
+                    const eventEnd = new Date(event.end);
+                    // Asegura que los eventos que terminan a medianoche se incluyan en el día anterior.
+                    const adjustedEnd = eventEnd.getHours() === 0 && eventEnd.getMinutes() === 0 ? subDays(eventEnd, 1) : eventEnd;
+                    return isWithinInterval(day, { start: eventStart, end: adjustedEnd });
+                } catch (e) {
+                    // Si las fechas son inválidas, no mostrar el evento.
+                    return false;
+                }
+            })
             .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
     }, [events, day]);
+
 
     const dotEvents = useMemo(() => {
         const uniqueColors = new Set<string>();
