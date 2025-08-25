@@ -6,7 +6,7 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: { quizId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ quizId: string }> }) {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('userId');
 
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest, { params }: { params: { quizId: stri
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const { quizId } = params;
+    const { quizId } = await params;
 
     try {
         const count = await prisma.quizAttempt.count({

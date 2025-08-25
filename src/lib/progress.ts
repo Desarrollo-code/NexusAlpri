@@ -62,25 +62,25 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
 
     const progressId = enrollment.progress.id;
 
-    // Upsert the lesson completion record
-    await prisma.lessonCompletionRecord.upsert({
-        where: {
-            progressId_lessonId: {
+    // Use a direct create and catch the unique constraint violation to prevent race conditions.
+    try {
+        await prisma.lessonCompletionRecord.create({
+            data: {
                 progressId: progressId,
                 lessonId: lessonId,
+                type: type,
+                score: score,
             }
-        },
-        update: {
-            type: type,
-            score: score
-        },
-        create: {
-            progressId: progressId,
-            lessonId: lessonId,
-            type: type,
-            score: score,
+        });
+    } catch (error: any) {
+        // If the error is a unique constraint violation (P2002), it means the record
+        // was created by a parallel request. We can safely ignore this error.
+        if (error.code !== 'P2002') {
+            // If it's another error, re-throw it.
+            throw error;
         }
-    });
+        // If it is P2002, we just continue, as the record now exists.
+    }
 }
 
 
