@@ -18,13 +18,11 @@ export default async function PublicLayout({
   const fontVariables = await getFontVariables();
 
   return (
-    // No agregues <html> o <body> aquí. Next.js lo gestiona en el layout raíz.
-    // Usamos un React Fragment <> o un div para envolver.
     <>
         <div className="relative flex flex-col min-h-screen isolate">
             <DecorativeHeaderBackground />
             <PublicTopBar />
-            <main className="flex-1 flex flex-col items-center justify-center pb-16 md:pb-0">
+            <main className="flex-1 flex flex-col items-center pb-16 md:pb-0">
                 {children}
             </main>
             <div className="hidden md:block">
