@@ -9,7 +9,7 @@ import { addXp, awardAchievement, XP_CONFIG, ACHIEVEMENT_SLUGS } from '@/lib/gam
 // Records a 'quiz' interaction with its score and individual answers
 export async function POST(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
     const session = await getCurrentUser();
-    const { userId, courseId } = await params;
+    const { userId, courseId } = params;
 
     if (!session || session.id !== userId) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
@@ -33,9 +33,9 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
 
         let correctCount = 0;
         for (const question of questions) {
-            const correctAnswer = question.options.find(o => o.isCorrect);
+            const correctOption = question.options.find(o => o.isCorrect);
             const userAnswer = answers[question.id];
-            if (correctAnswer && userAnswer === correctAnswer.id) {
+            if (correctOption && userAnswer === correctOption.id) {
                 correctCount++;
             }
         }
