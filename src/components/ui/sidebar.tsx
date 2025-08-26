@@ -1,15 +1,11 @@
-
 // src/components/ui/sidebar.tsx
 'use client';
-
-// Sidebar-layout-enhanced 🌈 Creativo & juvenil
-// Estilo visual mejorado: colores vivos, tipografía amigable, gradientes y transiciones suaves
 
 import * as React from "react";
 import { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronsLeft, Shield, Trash2 } from "lucide-react";
+import { ChevronsLeft, LogOut, User as UserIconLucide } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
 import { getNavItemsForRole } from "@/lib/nav-items";
@@ -21,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tool
 import { SidebarHeader } from "../layout/sidebar-header";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { Identicon } from "./identicon";
+import { getInitials } from "@/lib/utils";
 
 const SidebarContext = React.createContext<any>(null);
 
@@ -157,16 +154,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
           ? "bg-primary/10 text-primary"
           : "text-muted-foreground hover:bg-muted hover:text-foreground"
       )}>
-        {item.id === 'profile' && user ? (
-             <Avatar className="h-6 w-6">
-                 {user.avatar ? <AvatarImage src={user.avatar} alt={user.name || 'User'}/> : null}
-                 <AvatarFallback className="text-xs">
-                     <Identicon userId={user.id}/>
-                 </AvatarFallback>
-            </Avatar>
-        ) : (
-            <GradientIcon icon={item.icon || Shield} isActive={isActive} />
-        )}
+        <GradientIcon icon={item.icon} isActive={isActive} />
         {showText && <span className="whitespace-nowrap">{item.label}</span>}
       </div>
   );
@@ -194,23 +182,47 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
 export const SidebarFooter = () => {
   const { isCollapsed, toggleSidebar } = useSidebar();
+  const { user, logout } = useAuth();
+
+  if (!user) return null;
 
   return (
-    <div className={cn(
-        "p-4 border-t border-border mt-auto flex items-center",
-        isCollapsed ? "justify-center" : "justify-end"
-    )}>
-        <Button
-          onClick={toggleSidebar}
-          variant="ghost"
-          size="icon"
-          className={cn(
-              "h-9 w-9 text-muted-foreground hover:bg-muted hover:text-foreground transition-transform duration-300",
-              isCollapsed && "rotate-180"
-          )}
-        >
-          <ChevronsLeft className="h-5 w-5" />
-        </Button>
+    <div className={cn("p-3 border-t border-border mt-auto")}>
+        <div className="flex items-center justify-between">
+           <Link href="/profile" className={cn(
+               "flex items-center gap-3 w-full p-1 rounded-md transition-colors",
+               "hover:bg-muted"
+           )}>
+                <Avatar className="h-9 w-9">
+                    {user.avatar ? <AvatarImage src={user.avatar} alt={user.name || 'User'}/> : null}
+                    <AvatarFallback className="text-xs">
+                        <Identicon userId={user.id}/>
+                    </AvatarFallback>
+                </Avatar>
+                {!isCollapsed && (
+                    <div className="overflow-hidden">
+                        <p className="font-semibold text-sm truncate">{user.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{getInitials(user.role)}</p>
+                    </div>
+                )}
+           </Link>
+           {!isCollapsed && (
+             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground shrink-0" onClick={logout}><LogOut className="h-4 w-4"/></Button>
+           )}
+        </div>
+        <div className="mt-2 flex items-center justify-end">
+            <Button
+              onClick={toggleSidebar}
+              variant="ghost"
+              size="icon"
+              className={cn(
+                  "h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-transform duration-300",
+                  isCollapsed && "rotate-180"
+              )}
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+        </div>
     </div>
   );
 };

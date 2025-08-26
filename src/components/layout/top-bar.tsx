@@ -88,13 +88,6 @@ export const TopBar = () => {
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2">
-                 {(isMobile || isCollapsed) && (
-                    <Link href="/dashboard" className="flex items-center justify-center gap-3" prefetch={false}>
-                        <div className={cn("w-10 h-10 bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden", !settings?.logoUrl && "p-2")}>
-                          {settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain p-1"/></div> : <div className="w-full h-full rounded-md bg-muted" />}
-                        </div>
-                      </Link>
-                )}
                  <h1 className="text-xl font-semibold truncate text-foreground">{pageTitle}</h1>
             </div>
 

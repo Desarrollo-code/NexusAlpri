@@ -5,37 +5,35 @@ import { useSidebar } from "../ui/sidebar";
 import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Identicon } from "../ui/identicon";
-import { getInitials } from "@/lib/utils";
+import Image from "next/image";
 
 export const SidebarHeader = () => {
   const { isCollapsed } = useSidebar();
-  const { user } = useAuth();
+  const { settings } = useAuth();
   
-  if (!user) return null;
-
   return (
     <div className={cn(
       "flex items-center h-20", 
-      isCollapsed ? 'justify-center px-2' : 'px-4'
+      isCollapsed ? 'justify-center' : 'px-4'
     )}>
-      <Link href="/profile" className={cn(
-          "flex items-center gap-3 w-full p-2 rounded-lg transition-colors",
-          "hover:bg-muted"
-        )}>
-         <Avatar className={cn(isCollapsed ? 'h-10 w-10' : 'h-12 w-12')}>
-             {user.avatar ? <AvatarImage src={user.avatar} alt={user.name} /> : null}
-             <AvatarFallback>
-                 <Identicon userId={user.id} />
-             </AvatarFallback>
-         </Avatar>
+      <Link href="/dashboard" className="flex items-center gap-3 w-full">
+         <div className={cn(
+             "bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
+             isCollapsed ? "h-10 w-10 p-1.5" : "h-12 w-12 p-2",
+             !settings?.logoUrl && "p-2"
+         )}>
+            {settings?.logoUrl ? 
+              <div className="relative w-full h-full">
+                <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain"/>
+              </div> 
+              : <div className="w-full h-full rounded-md bg-muted" />
+            }
+          </div>
         
         {!isCollapsed && (
-            <div className="overflow-hidden">
-                <p className="font-semibold truncate">{user.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{getInitials(user.role)}</p>
-            </div>
+            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-foreground">
+              {settings?.platformName || 'NexusAlpri'}
+            </span>
         )}
       </Link>
     </div>
