@@ -16,7 +16,7 @@ export const SidebarHeader = () => {
       "flex items-center h-20", 
       isCollapsed ? 'justify-center' : 'px-4'
     )}>
-      <Link href="/dashboard" className="flex items-center gap-3 w-full">
+      <Link href="/dashboard" className="inline-flex items-center gap-3">
          <div className={cn(
              "bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
              isCollapsed ? "h-10 w-10 p-1.5" : "h-12 w-12 p-2",
