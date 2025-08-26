@@ -123,7 +123,7 @@ const FormCreationModal = ({ open, onOpenChange, onFormCreated }: { open: boolea
     
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
+            <DialogContent className="rounded-lg">
                 <DialogHeader>
                     <DialogTitle>Crear Nuevo Formulario</DialogTitle>
                     <DialogDescription>Comienza con un título y una descripción. Podrás añadir las preguntas después.</DialogDescription>

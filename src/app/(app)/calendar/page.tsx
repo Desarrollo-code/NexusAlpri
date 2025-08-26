@@ -357,8 +357,8 @@ export default function CalendarPage() {
         </main>
       
       <Dialog open={showEventModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowEventModal(isOpen); }}>
-        <DialogContent className={cn("w-[95vw] max-w-2xl overflow-hidden flex flex-col max-h-[90vh]", selectedEvent && canEditSelectedEvent && "border-primary shadow-primary/20")}>
-          <DialogHeader className="flex flex-row items-center justify-between">
+        <DialogContent className={cn("w-[95vw] max-w-2xl overflow-hidden flex flex-col max-h-[90vh] rounded-lg", selectedEvent && canEditSelectedEvent && "border-primary shadow-primary/20")}>
+          <DialogHeader className="flex flex-row items-center justify-between p-6 pb-0">
             <div className="space-y-1.5">
                 <DialogTitle>{(selectedEvent && !isEditMode) ? selectedEvent.title : (isEditMode ? (selectedEvent ? "Editar Evento" : "Crear Evento") : "Detalles del Evento")}</DialogTitle>
                 <DialogDescription>{isEditMode ? "Completa los detalles para agendar un nuevo evento." : "Información detallada sobre el evento."}</DialogDescription>
@@ -374,8 +374,8 @@ export default function CalendarPage() {
                 </div>
             )}
           </DialogHeader>
-           <ScrollArea className="pr-3 -mr-6">
-                <div className="py-4 pr-6">
+           <ScrollArea className="flex-1 pr-3 -mr-6">
+                <div className="py-4 px-6 pr-6">
                  {isEditMode ? (
                     <form id="event-form" onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                       <div className="sm:col-span-2"><Label htmlFor="event-title">Título del Evento</Label><Input id="event-title" value={formTitle} onChange={e => setFormTitle(e.target.value)} required disabled={isSaving} /></div>
@@ -440,7 +440,7 @@ export default function CalendarPage() {
                  ) : null}
                 </div>
            </ScrollArea>
-           <DialogFooter className="sm:col-span-2 mt-4 flex flex-col-reverse sm:flex-row sm:justify-end w-full gap-2 border-t pt-4">
+           <DialogFooter className="p-6 pt-4 sm:col-span-2 mt-auto flex flex-col-reverse sm:flex-row sm:justify-end w-full gap-2 border-t">
               {isEditMode ? (
                 <>
                   <div className="flex-grow">

@@ -403,7 +403,7 @@ export default function ProfilePage() {
                                             <Tooltip>
                                               <TooltipTrigger asChild>
                                                   <div className="p-2 bg-muted rounded-md border">
-                                                      <Award className="h-5 w-5 text-amber-500"/>
+                                                      <Award className="h-5 w-5 text-yellow-400"/>
                                                   </div>
                                               </TooltipTrigger>
                                               <TooltipContent>
@@ -470,12 +470,12 @@ export default function ProfilePage() {
                         <div>
                             <h4 className="font-semibold mb-2">Autenticación de Dos Factores (2FA)</h4>
                             {user.isTwoFactorEnabled ? (
-                                <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
+                                <div className="flex items-center justify-between mt-2 p-3 rounded-lg bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
                                     <p className="text-sm text-green-800 dark:text-green-200">2FA está <strong>activado</strong>.</p>
                                     <Button variant="destructive" size="sm" onClick={() => setShowDisable2faDialog(true)} disabled={is2faProcessing}>Desactivar</Button>
                                 </div>
                             ) : (
-                                <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-muted/50 border">
+                                <div className="flex items-center justify-between mt-2 p-3 rounded-lg bg-muted/50 border">
                                     <p className="text-sm text-muted-foreground">Añade una capa extra de seguridad.</p>
                                     <Button onClick={handleEnable2fa} disabled={is2faProcessing}>
                                         {is2faProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
@@ -486,7 +486,7 @@ export default function ProfilePage() {
                         </div>
                         <div>
                             <h4 className="font-semibold mb-2">Cambiar Contraseña</h4>
-                            <div className="flex items-center justify-between mt-2 p-3 rounded-md bg-muted/50 border">
+                            <div className="flex items-center justify-between mt-2 p-3 rounded-lg bg-muted/50 border">
                                 <p className="text-sm text-muted-foreground">Actualiza tu contraseña regularmente.</p>
                                 <Button variant="outline" onClick={() => setShowChangePasswordDialog(true)}>Cambiar</Button>
                             </div>
@@ -550,7 +550,7 @@ export default function ProfilePage() {
                                           <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <div className="p-2 bg-muted rounded-md border">
-                                                    <Award className="h-5 w-5 text-amber-500"/>
+                                                    <Award className="h-5 w-5 text-yellow-400"/>
                                                 </div>
                                             </TooltipTrigger>
                                             <TooltipContent>
@@ -612,7 +612,7 @@ export default function ProfilePage() {
       </Dialog>
       
        <AlertDialog open={showDisable2faDialog} onOpenChange={setShowDisable2faDialog}>
-        <AlertDialogContent className="w-[95vw] max-w-md">
+        <AlertDialogContent className="w-[95vw] max-w-md rounded-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>¿Desactivar Autenticación de Dos Factores?</AlertDialogTitle>
             <AlertDialogDescription>

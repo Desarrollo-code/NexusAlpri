@@ -503,14 +503,15 @@ export default function UsersPage() {
                         <GradientIcon icon={PlusCircle} className="mr-2" size="sm"/> Añadir Nuevo Usuario
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
+                <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] flex flex-col">
+                    <DialogHeader className="p-6 pb-0">
                       <DialogTitle>{userToEdit ? "Editar Usuario" : "Añadir Nuevo Usuario"}</DialogTitle>
                       <DialogDescription>
                         {userToEdit ? "Modifica los datos del usuario." : "Completa los campos para registrar un nuevo usuario."}
                       </DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={handleAddEditUser} className="grid gap-4 py-4">
+                    <form onSubmit={handleAddEditUser} className="flex-1 overflow-y-auto px-6 py-4 thin-scrollbar">
+                    <div className="grid gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="name">Nombre</Label>
                             <Input id="name" name="name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nombre completo" required disabled={isProcessing} />
@@ -553,18 +554,19 @@ export default function UsersPage() {
                               </div>
                             </div>
                         )}
-                        <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4">
+                        </div>
+                    </form>
+                    <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2">
                             <Button type="button" variant="outline" onClick={() => {
                                 setShowAddEditModal(false);
                                 setUserToEdit(null);
                                 resetFormFields();
                             }} disabled={isProcessing}>Cancelar</Button>
-                            <Button type="submit" disabled={isProcessing}>
+                            <Button type="submit" form="add-edit-user-form" disabled={isProcessing}>
                                 {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                                 {userToEdit ? "Guardar Cambios" : "Crear Usuario"}
                             </Button>
-                        </DialogFooter>
-                    </form>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

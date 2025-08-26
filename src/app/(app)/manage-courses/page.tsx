@@ -301,14 +301,16 @@ export default function ManageCoursesPage() {
                         <PlusCircle className="mr-2 h-4 w-4" /> Crear Nuevo Curso
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
+                <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] flex flex-col">
+                    <DialogHeader className="p-6 pb-0">
                     <DialogTitle>Crear Nuevo Curso</DialogTitle>
                     <DialogDescription>
                       Sigue los pasos para crear la base de tu nuevo curso. Serás redirigido para añadir contenido al finalizar.
                     </DialogDescription>
                     </DialogHeader>
-                    <CourseCreationForm onSuccess={handleCreationSuccess} />
+                    <div className="flex-1 overflow-y-auto px-6 py-4 thin-scrollbar">
+                        <CourseCreationForm onSuccess={handleCreationSuccess} />
+                    </div>
                 </DialogContent>
             </Dialog>
          </div>

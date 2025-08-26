@@ -64,7 +64,7 @@ export function CourseCreationForm({ onSuccess }: CourseCreationFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="course-title">Título del Curso</Label>
         <Input

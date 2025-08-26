@@ -75,49 +75,36 @@ export default function AnnouncementsPage() {
     setPageTitle('Anuncios');
   }, [setPageTitle]);
 
-  useEffect(() => {
-    const fetchAnnouncements = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const params = new URLSearchParams();
-        params.append('page', String(currentPage));
-        params.append('pageSize', String(PAGE_SIZE));
+  const fetchAnnouncements = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      params.append('page', String(currentPage));
+      params.append('pageSize', String(PAGE_SIZE));
 
-        const response = await fetch(`/api/announcements?${params.toString()}`, { cache: 'no-store' });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `Failed to fetch announcements: ${response.statusText}`);
-        }
-        const data: { announcements: PrismaAnnouncement[], totalAnnouncements: number } = await response.json();
-        
-        const displayData: DisplayAnnouncement[] = data.announcements.map(ann => {
-          let parsedAudience: UserRole[] | 'ALL' = 'ALL';
-          if (ann.audience === 'ALL') {
-            parsedAudience = 'ALL';
-          } else if (Array.isArray(ann.audience)) { 
-              parsedAudience = ann.audience as UserRole[];
-          }
-          return {
-            ...ann,
-            audience: parsedAudience, 
-            author: ann.author ? { id: ann.author.id, name: ann.author.name } : null,
-          };
-        });
-        setAllAnnouncements(displayData);
-        setTotalAnnouncements(data.totalAnnouncements);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar los anuncios');
-        setAllAnnouncements([]);
-        setTotalAnnouncements(0);
-        toast({ title: "Error al cargar anuncios", description: err instanceof Error ? err.message : 'No se pudieron cargar los anuncios.', variant: "destructive"});
-      } finally {
-        setIsLoading(false);
+      const response = await fetch(`/api/announcements?${params.toString()}`, { cache: 'no-store' });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to fetch announcements: ${response.statusText}`);
       }
-    };
-
-    fetchAnnouncements();
+      const data: { announcements: DisplayAnnouncement[], totalAnnouncements: number } = await response.json();
+      
+      setAllAnnouncements(data.announcements);
+      setTotalAnnouncements(data.totalAnnouncements);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar los anuncios');
+      setAllAnnouncements([]);
+      setTotalAnnouncements(0);
+      toast({ title: "Error al cargar anuncios", description: err instanceof Error ? err.message : 'No se pudieron cargar los anuncios.', variant: "destructive"});
+    } finally {
+      setIsLoading(false);
+    }
   }, [toast, currentPage]);
+
+  useEffect(() => {
+    fetchAnnouncements();
+  }, [fetchAnnouncements]);
 
   const relevantAnnouncements = useMemo(() => {
     return allAnnouncements
@@ -214,8 +201,7 @@ export default function AnnouncementsPage() {
       });
       setShowCreateEditModal(false);
       resetFormAndState();
-      // Re-fetch announcements after saving
-      router.refresh();
+      fetchAnnouncements();
     } catch (err) {
       toast({ 
           title: `Error al ${announcementToEdit ? 'actualizar' : 'crear'} anuncio`, 
@@ -239,7 +225,7 @@ export default function AnnouncementsPage() {
         throw new Error(errorData.message || 'Failed to delete announcement');
       }
       toast({ title: 'Anuncio Eliminado', description: `El anuncio "${announcementToDelete.title}" ha sido eliminado.` });
-      router.refresh();
+      fetchAnnouncements();
     } catch (err) {
       toast({ title: 'Error al eliminar', description: err instanceof Error ? err.message : 'No se pudo eliminar el anuncio.', variant: 'destructive' });
     } finally {
@@ -276,14 +262,15 @@ export default function AnnouncementsPage() {
                   {announcementToEdit ? 'Editar Anuncio' : 'Crear Anuncio'}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
+              <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] flex flex-col">
+                <DialogHeader className="p-6 pb-0">
                   <DialogTitle>{announcementToEdit ? 'Editar Anuncio' : 'Crear Nuevo Anuncio'}</DialogTitle>
                   <DialogDescription>
                     {announcementToEdit ? 'Modifica los detalles del anuncio.' : 'Redacta y publica un nuevo comunicado para los usuarios.'}
                   </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSaveAnnouncement} className="grid gap-4 py-4">
+                <form onSubmit={handleSaveAnnouncement} className="flex-1 overflow-y-auto px-6 py-4 thin-scrollbar">
+                 <div className="grid gap-4">
                   <div className="space-y-1">
                     <Label htmlFor="title">Título <span className="text-destructive">*</span></Label>
                     <Input 
@@ -332,14 +319,15 @@ export default function AnnouncementsPage() {
                    <p className="text-xs text-muted-foreground text-center pt-2">
                       Los campos marcados con <span className="text-destructive">*</span> son obligatorios.
                   </p>
-                  <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2">
+                  </div>
+                  </form>
+                  <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2">
                     <Button type="button" variant="outline" onClick={() => { setShowCreateEditModal(false); resetFormAndState();}} disabled={isProcessing}>Cancelar</Button>
-                    <Button type="submit" disabled={isProcessing}>
+                    <Button type="submit" form="create-update-form" disabled={isProcessing}>
                       {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (announcementToEdit ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />) }
                       {announcementToEdit ? 'Guardar Cambios' : 'Publicar Anuncio'}
                     </Button>
                   </DialogFooter>
-                </form>
               </DialogContent>
             </Dialog>
           </div>
