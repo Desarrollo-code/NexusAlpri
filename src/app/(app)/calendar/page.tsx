@@ -44,7 +44,7 @@ import ColorfulCalendar from '@/components/colorful-calendar';
 import { Calendar as DayPickerCalendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
 import { Identicon } from '@/components/ui/identicon';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 const eventColors = [
