@@ -535,25 +535,15 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     }
 
     return (
-        <div className="space-y-4 pb-24">
-            <header className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b bg-background sticky top-[63px] sm:top-0 z-20 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
+        <div className="space-y-4">
+            <header className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 border-b bg-card -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
                  <div className="flex items-center gap-4 w-full sm:w-auto">
                     <Button asChild variant="outline" type="button" size="sm" className="shrink-0"><Link href="/manage-courses"><ArrowLeft className="mr-2 h-4 w-4" /> Volver</Link></Button>
                     <h1 className="text-xl font-semibold truncate">{courseId === 'new' ? 'Crear Nuevo Curso' : 'Editar Curso'}</h1>
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                     <Button asChild variant="secondary" type="button" className="w-full sm:w-auto"><Link href={`/courses/${courseId}`} target="_blank"><Eye className="mr-2 h-4 w-4" /> Vista Previa</Link></Button>
-                    <div className="w-full sm:w-48">
-                         <Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}>
-                            <SelectTrigger id="status" className="w-full"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="DRAFT">Borrador</SelectItem>
-                                <SelectItem value="PUBLISHED">Publicado</SelectItem>
-                                <SelectItem value="ARCHIVED">Archivado</SelectItem>
-                                <SelectItem value="SCHEDULED">Programado</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4" />{isSaving ? 'Guardando...' : (courseId === 'new' ? 'Crear y Guardar' : 'Guardar Cambios')}</Button>
                 </div>
             </header>
             
@@ -608,7 +598,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     </Card>
                 </div>
 
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
                      <Card>
                         <CardHeader><CardTitle>Publicación</CardTitle><CardDescription>Controla la visibilidad y el estado del curso.</CardDescription></CardHeader>
                         <CardContent className="space-y-4">
@@ -682,12 +672,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                             )}
                         </CardContent>
                     </Card>
-                </div>
-            </div>
-
-            <div className="fixed bottom-0 left-0 md:left-72 group-data-[collapsed=true]:md:left-20 right-0 bg-background/95 backdrop-blur-sm border-t p-4 z-20">
-                <div className="max-w-screen-2xl mx-auto flex flex-col sm:flex-row justify-end gap-2">
-                    <Button type="button" onClick={handleSaveCourse} disabled={isSaving || !isDirty} className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4" />{isSaving ? 'Guardando...' : (courseId === 'new' ? 'Crear y Guardar' : 'Guardar Cambios')}</Button>
                 </div>
             </div>
             
