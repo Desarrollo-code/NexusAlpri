@@ -31,9 +31,9 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { CalendarEvent, User as AppUser, EventAudienceType, Attachment } from '@/types';
-import { format, addMonths, subMonths, startOfMonth, isSameDay, startOfToday } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, isSameDay, startOfToday, setMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
-import ColorfulCalendar from '@/components/colorful-calendar';
+import { Calendar } from '@/components/ui/calendar';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import { EventList } from '@/components/calendar/event-sidebar';
@@ -41,6 +41,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { EventDetailsView } from '@/components/calendar/event-details-view';
 import { useTitle } from '@/contexts/title-context';
+import ColorfulCalendar from '@/components/colorful-calendar';
 
 
 const eventColors = [
@@ -263,6 +264,7 @@ export default function CalendarPage() {
   
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
+    setCurrentMonth(setMonth(currentMonth, date.getMonth()));
   };
 
   const LocationInput = () => (
@@ -287,12 +289,20 @@ export default function CalendarPage() {
   return (
     <div className={cn("flex flex-col h-full md:h-[calc(100vh-8rem)] gap-4 md:gap-6", isMobile && "space-y-4")}>
         <header className="flex-shrink-0 flex items-center gap-4">
-            <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="h-4 w-4"/></Button>
-            <h1 className="text-2xl font-bold font-headline text-foreground min-w-[150px] sm:min-w-[200px] text-center capitalize">
-                {format(currentMonth, "MMMM yyyy", { locale: es })}
-            </h1>
-            <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight className="h-4 w-4"/></Button>
-            <Button variant="outline" size="sm" className="h-9 px-3" onClick={() => setCurrentMonth(startOfToday())}>Hoy</Button>
+             {isMobile ? (
+                 <h1 className="text-2xl font-bold font-headline text-foreground capitalize">
+                     {format(selectedDate, "MMMM yyyy", { locale: es })}
+                 </h1>
+             ) : (
+                <>
+                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="h-4 w-4"/></Button>
+                    <h1 className="text-2xl font-bold font-headline text-foreground min-w-[150px] sm:min-w-[200px] text-center capitalize">
+                        {format(currentMonth, "MMMM yyyy", { locale: es })}
+                    </h1>
+                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight className="h-4 w-4"/></Button>
+                    <Button variant="outline" size="sm" className="h-9 px-3" onClick={() => { setCurrentMonth(startOfToday()); setSelectedDate(startOfToday()); }}>Hoy</Button>
+                </>
+             )}
             <div className="ml-auto">
                {canCreateEvent && (
                   <Button size="sm" onClick={() => handleOpenCreateModal(selectedDate)}>
@@ -304,22 +314,36 @@ export default function CalendarPage() {
         </header>
 
         <main className={cn("flex-grow min-h-0", isMobile ? 'flex flex-col gap-4' : 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6')}>
-          <div className={cn("md:col-span-2 lg:col-span-3 flex flex-col min-h-0", isMobile ? "bg-card border rounded-lg shadow-sm" : "bg-card p-2 sm:p-4 border rounded-lg shadow-sm")}>
+          <div className={cn("md:col-span-2 lg:col-span-3 flex flex-col min-h-0", isMobile ? "" : "bg-card p-2 sm:p-4 border rounded-lg shadow-sm")}>
             {isLoading ? (
               <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
             ) : error ? (
               <div className="flex flex-col items-center justify-center h-full text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}</div>
             ) : (
-              <div className={cn(!isMobile && "h-full w-full", "overflow-x-auto thin-scrollbar")}>
-                <ColorfulCalendar
-                    className="w-full h-full"
-                    month={currentMonth}
-                    events={events}
-                    onDateSelect={handleDateSelect}
-                    onEventClick={handleOpenEventModal}
-                    selectedDay={selectedDate}
-                />
-              </div>
+                <>
+                {isMobile ? (
+                     <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(day) => day && handleDateSelect(day)}
+                        month={currentMonth}
+                        onMonthChange={setCurrentMonth}
+                        className="rounded-md border bg-card"
+                        locale={es}
+                     />
+                ) : (
+                    <div className={cn("h-full w-full", "overflow-x-auto thin-scrollbar")}>
+                        <ColorfulCalendar
+                            className="w-full h-full"
+                            month={currentMonth}
+                            events={events}
+                            onDateSelect={handleDateSelect}
+                            onEventClick={handleOpenEventModal}
+                            selectedDay={selectedDate}
+                        />
+                    </div>
+                 )}
+                </>
             )}
           </div>
           <aside className="md:col-span-1 lg:col-span-1 md:bg-card md:p-4 md:border rounded-lg md:shadow-sm">
