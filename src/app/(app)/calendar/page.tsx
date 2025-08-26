@@ -290,9 +290,7 @@ export default function CalendarPage() {
     <div className={cn("flex flex-col h-full md:h-[calc(100vh-8rem)] gap-4 md:gap-6", isMobile && "space-y-4")}>
         <header className="flex-shrink-0 flex items-center gap-4">
              {isMobile ? (
-                 <h1 className="text-2xl font-bold font-headline text-foreground capitalize">
-                     {format(selectedDate, "MMMM yyyy", { locale: es })}
-                 </h1>
+                 <div className="flex-grow"></div>
              ) : (
                 <>
                     <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="h-4 w-4"/></Button>
@@ -331,6 +329,7 @@ export default function CalendarPage() {
                             onMonthChange={setCurrentMonth}
                             className="rounded-md border bg-card"
                             locale={es}
+                            showOutsideDays
                          />
                      </div>
                 ) : (
