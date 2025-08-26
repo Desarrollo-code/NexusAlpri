@@ -181,56 +181,26 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
 
 export const SidebarFooter = () => {
-  const { isCollapsed, toggleSidebar } = useSidebar();
+  const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
   const { user, logout } = useAuth();
 
   if (!user) return null;
 
-  const footerContent = (
-    <div className={cn("p-3 border-t border-border mt-auto")}>
-        <div className={cn(
-            "flex items-center",
-            isCollapsed ? 'justify-center' : 'justify-between'
-        )}>
-           <TooltipProvider>
-             <Tooltip>
-                <TooltipTrigger asChild>
-                    <Link href="/profile">
-                        <Avatar className="h-9 w-9">
-                            {user.avatar ? <AvatarImage src={user.avatar} alt={user.name || 'User'}/> : null}
-                            <AvatarFallback className="text-xs">
-                                <Identicon userId={user.id}/>
-                            </AvatarFallback>
-                        </Avatar>
-                    </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={10}>
-                    <p>{user.name}</p>
-                </TooltipContent>
-             </Tooltip>
-           </TooltipProvider>
-
-           {!isCollapsed && (
-             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground shrink-0" onClick={logout}><LogOut className="h-4 w-4"/></Button>
-           )}
-        </div>
-        {!isCollapsed && (
-        <div className="mt-2 flex items-center justify-end">
-            <Button
-              onClick={toggleSidebar}
-              variant="ghost"
-              size="icon"
-              className={cn(
-                  "h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-transform duration-300",
-                  isCollapsed && "rotate-180"
-              )}
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-        </div>
-        )}
+  return (
+    <div className={cn("p-3 border-t border-border mt-auto flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
+      {!isMobile && (
+        <Button
+          onClick={toggleSidebar}
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-transform duration-300",
+            isCollapsed && "rotate-180"
+          )}
+        >
+          <ChevronsLeft className="h-4 w-4" />
+        </Button>
+      )}
     </div>
   );
-  
-  return footerContent;
 };
