@@ -1,11 +1,9 @@
-
-
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, ListPlus, Edit, Users, Zap, CircleOff, Loader2, AlertTriangle, ShieldAlert, MoreVertical, Archive, ArchiveRestore, Trash2, Eye } from 'lucide-react';
+import { PlusCircle, ListPlus, Edit, Users, Zap, CircleOff, Loader2, AlertTriangle, ShieldAlert, MoreVertical, Archive, ArchiveRestore, Trash2, Eye, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -39,6 +37,9 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourseCard } from '@/components/course-card';
 import { useTitle } from '@/contexts/title-context';
+import { useTour } from '@/contexts/tour-context';
+import { manageCoursesTour } from '@/lib/tour-steps';
+
 
 interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
   instructor: { id: string; name: string } | null;
@@ -73,6 +74,7 @@ export default function ManageCoursesPage() {
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
   const { setPageTitle } = useTitle();
+  const { startTour } = useTour();
 
   const [allCourses, setAllCourses] = useState<AppCourseType[]>([]);
   const [totalCourses, setTotalCourses] = useState(0);
@@ -265,9 +267,13 @@ export default function ManageCoursesPage() {
         </div>
         {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
          <div className="flex flex-row flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => startTour('manageCourses', manageCoursesTour)}>
+              <HelpCircle className="mr-2 h-4 w-4" />
+              Ver Guía
+            </Button>
             <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
                 <DialogTrigger asChild>
-                    <Button>
+                    <Button id="create-course-btn">
                         <PlusCircle className="mr-2 h-4 w-4" /> Crear Nuevo Curso
                     </Button>
                 </DialogTrigger>
@@ -287,7 +293,7 @@ export default function ManageCoursesPage() {
         )}
       </div>
 
-       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full" id="course-status-tabs">
           <TabsList className="h-auto flex-wrap justify-start md:h-10 md:flex-nowrap">
             <TabsTrigger value="all">Todos</TabsTrigger>
             <TabsTrigger value="PUBLISHED">Publicados</TabsTrigger>
@@ -306,7 +312,7 @@ export default function ManageCoursesPage() {
                 <Button onClick={() => setCourseUpdateSignal(s => s + 1)} variant="outline" className="mt-4">Reintentar</Button>
               </div>
             ) : allCourses.length > 0 ? (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="course-list-container">
                   {allCourses.map(course => (
                       <CourseCard 
                           key={course.id}
