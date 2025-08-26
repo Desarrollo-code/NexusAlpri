@@ -18,7 +18,7 @@ export default async function RootLayout({
   // para un control más granular. El layout raíz ya no gestiona el tema.
   return (
     <html lang="es" suppressHydrationWarning className={fontVariables}>
-      <body className={cn("font-body flex flex-col min-h-screen bg-background")}>
+      <body className={cn("flex flex-col min-h-screen bg-background font-body")}>
         <AuthProvider>
             <TitleProvider>
                 {children}

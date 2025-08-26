@@ -6,6 +6,14 @@ const config: Config = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  safelist: [
+    {
+      pattern: /bg-event-(blue|green|red|orange)/,
+    },
+    {
+      pattern: /text-event-(blue|green|red|orange)/,
+    },
+  ],
   darkMode: ["class"],
   theme: {
     container: {
@@ -23,8 +31,7 @@ const config: Config = {
         '2xl': '1rem',
       },
       fontFamily: {
-        body: ['var(--font-body)', 'sans-serif'],
-        headline: ['var(--font-headline)', 'sans-serif'],
+        // Se elimina esta sección para que las variables CSS del layout tomen precedencia
       },
       colors: {
         border: 'hsl(var(--border))',
