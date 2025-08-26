@@ -11,36 +11,6 @@ import { buttonVariants } from "@/components/ui/button"
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
-function CustomCaption(props: any) {
-  const { fromDate, toDate } = useDayPicker();
-  const { goToMonth, nextMonth, previousMonth } = useNavigation();
-  
-  const displayMonth = format(props.displayMonth, "MMMM yyyy", { locale: es });
-
-  return (
-    <div className="flex justify-center items-center px-2 pt-1 relative">
-       <Button
-        variant="ghost"
-        disabled={!previousMonth}
-        onClick={() => previousMonth && goToMonth(previousMonth)}
-        className="h-7 w-7 p-0 absolute left-1"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
-      <h2 className="font-semibold text-sm capitalize">{displayMonth}</h2>
-       <Button
-         variant="ghost"
-         disabled={!nextMonth}
-         onClick={() => nextMonth && goToMonth(nextMonth)}
-         className="h-7 w-7 p-0 absolute right-1"
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
-    </div>
-  )
-}
-
-
 function Calendar({
   className,
   classNames,
@@ -54,10 +24,10 @@ function Calendar({
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
-        caption_layout: 'dropdown-buttons',
-        caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "hidden", // We use our custom caption
-        nav_button: "hidden", // We use our custom caption buttons
+        caption: "hidden", // Ocultamos el caption por defecto
+        caption_label: "hidden", 
+        nav: "hidden",
+        nav_button: "hidden", 
         table: "w-full border-collapse space-y-1",
         head_row: "flex",
         head_cell:
@@ -78,9 +48,7 @@ function Calendar({
         day_hidden: "invisible",
         ...classNames,
       }}
-      components={{
-        Caption: CustomCaption,
-      }}
+      locale={es} // Aseguramos el locale español
       {...props}
     />
   )

@@ -289,20 +289,17 @@ export default function CalendarPage() {
   return (
     <div className={cn("flex flex-col h-full md:h-[calc(100vh-8rem)] gap-4 md:gap-6", isMobile && "space-y-4")}>
         <header className="flex-shrink-0 flex items-center justify-between gap-4">
-            {!isMobile && (
-                <div className="flex items-center gap-4">
-                    <h1 className="text-2xl font-bold font-headline capitalize">{format(currentMonth, "MMMM yyyy", { locale: es })}</h1>
-                    <div className="flex items-center gap-1">
-                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="h-4 w-4" /></Button>
-                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight className="h-4 w-4" /></Button>
-                    </div>
-                </div>
-            )}
-            <div className="ml-auto">
+            <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="h-4 w-4" /></Button>
+                <h1 className="text-xl md:text-2xl font-bold font-headline capitalize w-48 text-center">{format(currentMonth, "MMMM yyyy", { locale: es })}</h1>
+                <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight className="h-4 w-4" /></Button>
+                <Button variant="outline" className="h-9 hidden sm:flex" onClick={() => setCurrentMonth(startOfToday())}>Hoy</Button>
+            </div>
+            <div className="ml-auto flex items-center gap-2">
                {canCreateEvent && (
                   <Button size={isMobile ? 'sm' : 'default'} onClick={() => handleOpenCreateModal(selectedDate)}>
                       <PlusCircle className="mr-2 h-4 w-4" />
-                      {!isMobile && 'Crear'}
+                      {!isMobile && 'Crear Evento'}
                   </Button>
                )}
             </div>
