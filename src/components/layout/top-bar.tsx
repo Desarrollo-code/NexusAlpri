@@ -4,7 +4,7 @@
 import { cn } from "@/lib/utils";
 import { useSidebar } from "../ui/sidebar";
 import { Button } from "../ui/button";
-import { ChevronsLeft, Bell } from "lucide-react";
+import { ChevronsLeft, Bell, PanelLeft } from "lucide-react";
 import { UserAvatarDropdown } from "./user-avatar-dropdown";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
@@ -34,7 +34,7 @@ const timeSince = (date: Date): string => {
 export const TopBar = () => {
     const { isMobile, toggleSidebar, isCollapsed } = useSidebar();
     const { pageTitle } = useTitle();
-    const { settings } = useAuth();
+    const { user } = useAuth();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const { toast } = useToast();
@@ -88,6 +88,12 @@ export const TopBar = () => {
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2">
+                 {isMobile && (
+                    <Button onClick={toggleSidebar} variant="ghost" size="icon">
+                        <PanelLeft className="h-5 w-5"/>
+                        <span className="sr-only">Toggle Menu</span>
+                    </Button>
+                 )}
                  <h1 className="text-xl font-semibold truncate text-foreground">{pageTitle}</h1>
             </div>
 
