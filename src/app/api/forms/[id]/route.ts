@@ -24,8 +24,8 @@ async function checkPermissions(formId: string, session: any) {
 }
 
 // GET a specific form by ID with its fields
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id: formId } = await params;
+export async function GET(request: Request, { params }: { params: { id: string } }) {
+  const { id: formId } = params;
 
   try {
     const session = await getCurrentUser();
@@ -54,8 +54,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 // PUT (update) a form, including its fields
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id: formId } = await params;
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id: formId } = params;
 
   const session = await getCurrentUser();
   if (!session) {
@@ -128,8 +128,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 // DELETE a form
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id: formId } = await params;
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id: formId } = params;
 
   const session = await getCurrentUser();
   if (!session) {

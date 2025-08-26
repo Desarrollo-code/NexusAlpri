@@ -108,11 +108,19 @@ export async function POST(req: NextRequest) {
                 password: hashedPassword,
                 role,
                 registeredDate: new Date(),
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                avatar: true,
+                isTwoFactorEnabled: true,
+                registeredDate: true,
             }
         });
 
-        const { password: _, ...userToReturn } = newUser;
-        return NextResponse.json(userToReturn, { status: 201 });
+        return NextResponse.json(newUser, { status: 201 });
 
     } catch (error) {
         console.error('[USER_POST_ERROR]', error);

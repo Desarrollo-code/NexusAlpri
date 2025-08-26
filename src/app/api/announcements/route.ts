@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
         date: new Date(),
       },
       include: {
-        author: { select: { name: true } }
+        author: { select: { name: true, id: true } }
       }
     });
 

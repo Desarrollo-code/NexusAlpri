@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
         where: whereClause,
         include: {
           instructor: { select: { id: true, name: true } },
-          _count: { select: { modules: true, lessons: true } },
+          _count: { select: { modules: true } },
         },
         orderBy: { createdAt: 'desc' },
         ...(isPaginated && { skip, take: pageSize }),
@@ -52,7 +52,6 @@ export async function GET(req: NextRequest) {
     const enrichedCourses = courses.map((course: any) => ({
       ...course,
       modulesCount: course._count?.modules ?? 0,
-      lessonsCount: course._count?.lessons ?? 0,
     }));
 
     return NextResponse.json({ courses: enrichedCourses, totalCourses });

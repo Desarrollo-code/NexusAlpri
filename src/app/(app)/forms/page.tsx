@@ -128,7 +128,7 @@ const FormCreationModal = ({ open, onOpenChange, onFormCreated }: { open: boolea
                     <DialogTitle>Crear Nuevo Formulario</DialogTitle>
                     <DialogDescription>Comienza con un título y una descripción. Podrás añadir las preguntas después.</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 py-4">
+                <form onSubmit={handleSubmit} id="create-form" className="space-y-4 py-4">
                     <div className="space-y-1">
                         <Label htmlFor="form-title">Título del Formulario</Label>
                         <Input id="form-title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isSubmitting} />
@@ -137,14 +137,14 @@ const FormCreationModal = ({ open, onOpenChange, onFormCreated }: { open: boolea
                         <Label htmlFor="form-description">Descripción (Opcional)</Label>
                         <Textarea id="form-description" value={description} onChange={(e) => setDescription(e.target.value)} disabled={isSubmitting} />
                     </div>
-                     <DialogFooter>
-                        <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancelar</Button>
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                            Crear y Continuar
-                        </Button>
-                    </DialogFooter>
                 </form>
+                 <DialogFooter>
+                    <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancelar</Button>
+                    <Button type="submit" form="create-form" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        Crear y Continuar
+                    </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
@@ -165,7 +165,8 @@ export default function FormsPage() {
     const [error, setError] = useState<string | null>(null);
 
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [formToAction, setFormToAction] = useState<AppForm | null>(null);
+    const [formToDelete, setFormToDelete] = useState<AppForm | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const currentPage = Number(searchParams.get('page')) || 1;
     const totalPages = Math.ceil(totalForms / PAGE_SIZE);
@@ -219,8 +220,29 @@ export default function FormsPage() {
            router.push(`/forms/${form.id}/results`);
            return;
        }
+       if (action === 'delete') {
+           setFormToDelete(form);
+           return;
+       }
        toast({ title: 'Próximamente', description: `La acción "${action}" para el formulario "${form.title}" estará disponible pronto.` });
     };
+
+    const handleDeleteForm = async () => {
+        if (!formToDelete) return;
+        setIsDeleting(true);
+        try {
+            const res = await fetch(`/api/forms/${formToDelete.id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error((await res.json()).message || 'No se pudo eliminar el formulario.');
+            toast({ title: '¡Eliminado!', description: 'El formulario ha sido eliminado correctamente.' });
+            fetchForms(); // Refrescar la lista
+        } catch (err) {
+            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Error desconocido', variant: 'destructive' });
+        } finally {
+            setIsDeleting(false);
+            setFormToDelete(null);
+        }
+    };
+
 
     const FormList = ({ formsList, view }: { formsList: AppForm[], view: 'management' | 'student' }) => {
         if (view === 'management') {
@@ -346,6 +368,24 @@ export default function FormsPage() {
             )}
 
             <FormCreationModal open={showCreateModal} onOpenChange={setShowCreateModal} onFormCreated={handleFormCreated} />
+
+             <AlertDialog open={!!formToDelete} onOpenChange={(open) => !open && setFormToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            El formulario "<strong>{formToDelete?.title}</strong>" y todas sus respuestas serán eliminados permanentemente. Esta acción no se puede deshacer.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteForm} disabled={isDeleting} className={buttonVariants({ variant: 'destructive' })}>
+                           {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Trash2 className="mr-2 h-4 w-4"/>}
+                           Sí, eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

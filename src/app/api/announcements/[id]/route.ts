@@ -3,14 +3,16 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const dynamic = 'force-dynamic';
+
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
   try {
-    const { id } = await params;
+    const { id } = params;
     const announcement = await prisma.announcement.findUnique({ where: { id } });
 
     if (!announcement) {
@@ -36,14 +38,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
   try {
-    const { id } = await params;
+    const { id } = params;
     const announcement = await prisma.announcement.findUnique({ where: { id } });
 
      if (!announcement) {
@@ -55,7 +57,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     await prisma.announcement.delete({ where: { id } });
-    return NextResponse.json({ message: 'Anuncio eliminado correctamente' });
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error('[ANNOUNCEMENT_DELETE_ERROR]', error);
     return NextResponse.json({ message: 'Error al eliminar el anuncio' }, { status: 500 });
