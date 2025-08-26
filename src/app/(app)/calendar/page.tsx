@@ -322,15 +322,17 @@ export default function CalendarPage() {
             ) : (
                 <>
                 {isMobile ? (
-                     <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={(day) => day && handleDateSelect(day)}
-                        month={currentMonth}
-                        onMonthChange={setCurrentMonth}
-                        className="rounded-md border bg-card"
-                        locale={es}
-                     />
+                     <div className="flex justify-center">
+                         <Calendar
+                            mode="single"
+                            selected={selectedDate}
+                            onSelect={(day) => day && handleDateSelect(day)}
+                            month={currentMonth}
+                            onMonthChange={setCurrentMonth}
+                            className="rounded-md border bg-card"
+                            locale={es}
+                         />
+                     </div>
                 ) : (
                     <div className={cn("h-full w-full", "overflow-x-auto thin-scrollbar")}>
                         <ColorfulCalendar
