@@ -7,8 +7,8 @@ import Link from 'next/link';
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 
-export default function FormResultsPage({ params }: { params: { formId: string } }) {
-  const { formId } = params;
+export default function FormResultsPage({ params }: { params: Promise<{ formId: string }> }) {
+  const { formId } = React.use(params);
   const { setPageTitle } = useTitle();
 
   useEffect(() => {
