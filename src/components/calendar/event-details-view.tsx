@@ -8,6 +8,7 @@ import { Calendar as CalendarIcon, Video, MapPin, User, Users, Link as LinkIcon 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { getInitials } from '@/lib/security-log-utils';
+import { Identicon } from '../ui/identicon';
 
 
 const getAudienceLabel = (audienceType: EventAudienceType) => {
@@ -69,7 +70,7 @@ export function EventDetailsView({ event }: { event: CalendarEvent }) {
                   <div className="flex flex-wrap gap-4">
                       {event.attendees.map(attendee => (
                           <div key={attendee.id} className="flex items-center gap-2">
-                               <Avatar className="h-8 w-8"><AvatarImage src={undefined} /><AvatarFallback className="text-xs">{getInitials(attendee.name)}</AvatarFallback></Avatar>
+                               <Avatar className="h-8 w-8"><AvatarImage src={undefined} /><AvatarFallback className="text-xs"><Identicon userId={attendee.id} /></AvatarFallback></Avatar>
                                <span className="text-sm">{attendee.name}</span>
                           </div>
                       ))}

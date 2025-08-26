@@ -20,6 +20,7 @@ export interface PlatformSettings {
     platformName: string;
     allowPublicRegistration: boolean;
     enableEmailNotifications: boolean;
+    emailWhitelist: string; // Comma-separated list of allowed emails/domains
     require2faForAdmins: boolean;
     idleTimeoutMinutes: number;
     enableIdleTimeout: boolean;
@@ -118,6 +119,7 @@ export interface Course {
   imageUrl?: string;
   category?: string;
   modulesCount: number;
+  lessonsCount?: number;
   status: CourseStatus;
   modules: Module[];
   isEnrolled?: boolean;

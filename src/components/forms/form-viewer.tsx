@@ -12,13 +12,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { Form, FormField } from '@prisma/client';
+import type { Form, FormField as PrismaFormField } from '@prisma/client';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Checkbox } from '../ui/checkbox';
+import type { FormFieldOption } from '@/types';
 
-type FullForm = Form & { fields: FormField[] };
+type FullForm = Form & { fields: (PrismaFormField & { options: FormFieldOption[] })[] };
 
-const FormFieldRenderer = ({ field, value, onChange }: { field: FormField, value: any, onChange: (fieldId: string, value: any) => void }) => {
+
+const FormFieldRenderer = ({ field, value, onChange }: { field: FullForm['fields'][0], value: any, onChange: (fieldId: string, value: any) => void }) => {
     const fieldId = `field-${field.id}`;
     
     const renderInput = () => {
@@ -28,10 +30,10 @@ const FormFieldRenderer = ({ field, value, onChange }: { field: FormField, value
             case 'LONG_TEXT':
                 return <Textarea id={fieldId} value={value || ''} onChange={(e) => onChange(field.id, e.target.value)} placeholder={field.placeholder || ''} required={field.required}/>;
             case 'SINGLE_CHOICE':
-                return (
-                    <RadioGroup id={fieldId} value={value} onValueChange={(val) => onChange(field.id, val)} required={field.required}>
-                        {(field.options as string[]).map((opt, i) => (
-                            <div key={i} className="flex items-center space-x-2"><RadioGroupItem value={opt} id={`${fieldId}-${i}`} /><Label htmlFor={`${fieldId}-${i}`} className="font-normal">{opt}</Label></div>
+                 return (
+                    <RadioGroup id={fieldId} value={value} onValueChange={(val) => onChange(field.id, val)} className="space-y-2">
+                        {(field.options || []).map((opt, i) => (
+                            <div key={opt.id} className="flex items-center space-x-2"><RadioGroupItem value={opt.id} id={`${fieldId}-${i}`} /><Label htmlFor={`${fieldId}-${i}`} className="font-normal">{opt.text}</Label></div>
                         ))}
                     </RadioGroup>
                 );
@@ -39,18 +41,18 @@ const FormFieldRenderer = ({ field, value, onChange }: { field: FormField, value
                 const currentValues = new Set(value || []);
                 return (
                      <div id={fieldId} className="space-y-2">
-                        {(field.options as string[]).map((opt, i) => (
-                           <div key={i} className="flex items-center space-x-2">
+                        {(field.options || []).map((opt, i) => (
+                           <div key={opt.id} className="flex items-center space-x-2">
                                 <Checkbox 
                                     id={`${fieldId}-${i}`} 
-                                    checked={currentValues.has(opt)}
+                                    checked={currentValues.has(opt.id)}
                                     onCheckedChange={(checked) => {
                                         const newValues = new Set(currentValues);
-                                        if (checked) newValues.add(opt); else newValues.delete(opt);
+                                        if (checked) newValues.add(opt.id); else newValues.delete(opt.id);
                                         onChange(field.id, Array.from(newValues));
                                     }}
                                 />
-                                <Label htmlFor={`${fieldId}-${i}`} className="font-normal">{opt}</Label>
+                                <Label htmlFor={`${fieldId}-${i}`} className="font-normal">{opt.text}</Label>
                             </div>
                         ))}
                     </div>

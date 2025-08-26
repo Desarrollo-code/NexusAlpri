@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
         where: whereClause,
         include: {
           instructor: { select: { id: true, name: true } },
-          _count: { select: { modules: true } }, // Mantengo el conteo de módulos aquí
+          _count: { select: { modules: true, lessons: true } },
         },
         orderBy: { createdAt: 'desc' },
         ...(isPaginated && { skip, take: pageSize }),
@@ -49,12 +49,10 @@ export async function GET(req: NextRequest) {
       prisma.course.count({ where: whereClause }),
     ]);
     
-    // El conteo de lecciones ya no es necesario aquí, se simplifica el proceso.
-    // La información de `_count.modules` ya es correcta y se pasa directamente.
     const enrichedCourses = courses.map((course: any) => ({
       ...course,
-      modulesCount: course._count?.modules ?? 0, // Usamos el conteo directo de Prisma
-      lessonsCount: 0, // Este campo ya no se usa en la tarjeta pero lo mantenemos por consistencia del tipo
+      modulesCount: course._count?.modules ?? 0,
+      lessonsCount: course._count?.lessons ?? 0,
     }));
 
     return NextResponse.json({ courses: enrichedCourses, totalCourses });
