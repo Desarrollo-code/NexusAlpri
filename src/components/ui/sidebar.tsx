@@ -1,3 +1,4 @@
+
 // src/components/ui/sidebar.tsx
 'use client';
 
@@ -29,7 +30,7 @@ export function useSidebar() {
   return context;
 }
 
-export const SidebarProvider = ({ children }: { children: React.Node }) => {
+export const SidebarProvider = ({ children }: { children: React.ReactNode }) => {
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const [activeItem, setActiveItem] = React.useState(pathname);
@@ -70,7 +71,7 @@ export const SidebarProvider = ({ children }: { children: React.Node }) => {
   );
 };
 
-export const Sidebar = ({ children }: { children: React.Node }) => {
+export const Sidebar = ({ children }: { children: React.ReactNode }) => {
   const { isMobile, openMobile, setOpenMobile, isCollapsed } = useSidebar();
   
   const desktopClasses = isCollapsed ? "w-20" : "w-72";
@@ -103,7 +104,7 @@ export const SidebarContent = () => {
 
   return (
     <TooltipProvider delayDuration={100}>
-      <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-1 thin-scrollbar">
         {navItems.map((item) => {
           if (item.children && item.children.length > 0) {
             return (
