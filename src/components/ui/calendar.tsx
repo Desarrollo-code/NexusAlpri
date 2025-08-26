@@ -18,22 +18,24 @@ function CustomCaption(props: any) {
   const displayMonth = format(props.displayMonth, "MMMM yyyy", { locale: es });
 
   return (
-    <div className="flex justify-between items-center px-2 pt-1">
-       <button
+    <div className="flex justify-center items-center px-2 pt-1 relative">
+       <Button
+        variant="ghost"
         disabled={!previousMonth}
         onClick={() => previousMonth && goToMonth(previousMonth)}
-        className={cn(buttonVariants({ variant: "ghost" }), "h-7 w-7 p-0")}
+        className="h-7 w-7 p-0 absolute left-1"
       >
         <ChevronLeft className="h-4 w-4" />
-      </button>
+      </Button>
       <h2 className="font-semibold text-sm capitalize">{displayMonth}</h2>
-       <button
+       <Button
+         variant="ghost"
          disabled={!nextMonth}
          onClick={() => nextMonth && goToMonth(nextMonth)}
-         className={cn(buttonVariants({ variant: "ghost" }), "h-7 w-7 p-0")}
+         className="h-7 w-7 p-0 absolute right-1"
       >
         <ChevronRight className="h-4 w-4" />
-      </button>
+      </Button>
     </div>
   )
 }
