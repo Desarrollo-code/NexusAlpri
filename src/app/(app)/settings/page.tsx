@@ -61,16 +61,15 @@ const UploadWidget = ({
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      <div className="relative w-full border-2 border-dashed border-muted-foreground/30 rounded-lg flex items-center justify-center bg-muted/20 p-2 min-h-[10rem]">
+      <div className="relative w-full h-48 border-2 border-dashed border-muted-foreground/30 rounded-lg flex items-center justify-center bg-muted/20 p-2">
         {currentImageUrl ? (
           <>
-            <div className="relative w-full h-full min-h-[10rem]">
+            <div className="relative w-full h-full">
                 <Image
                     src={currentImageUrl}
                     alt={`Previsualización de ${label}`}
-                    width={200}
-                    height={120}
-                    className="w-full h-auto object-contain rounded-md p-2"
+                    fill
+                    className="object-contain rounded-md p-2"
                     data-ai-hint="logo company"
                 />
             </div>
