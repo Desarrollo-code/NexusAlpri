@@ -31,7 +31,8 @@ const config: Config = {
         '2xl': '1rem',
       },
       fontFamily: {
-        // Se elimina esta sección para que las variables CSS del layout tomen precedencia
+        body: ['var(--font-body)', 'sans-serif'],
+        headline: ['var(--font-headline)', 'sans-serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
