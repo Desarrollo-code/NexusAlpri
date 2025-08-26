@@ -202,7 +202,6 @@ export const SidebarFooter = () => {
                 {!isCollapsed && (
                     <div className="overflow-hidden">
                         <p className="font-semibold text-sm truncate">{user.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{getInitials(user.role)}</p>
                     </div>
                 )}
            </Link>
