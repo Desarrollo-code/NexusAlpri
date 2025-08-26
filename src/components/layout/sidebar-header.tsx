@@ -19,7 +19,7 @@ export const SidebarHeader = () => {
       <Link href="/dashboard" className="inline-flex items-center gap-3">
          <div className={cn(
              "bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
-             isCollapsed ? "h-10 w-10 p-1.5" : "h-12 w-12 p-2",
+             isCollapsed ? "h-12 w-12 p-2" : "h-14 w-14 p-2.5", // Aumentado el tamaño aquí
              !settings?.logoUrl && "p-2"
          )}>
             {settings?.logoUrl ? 
