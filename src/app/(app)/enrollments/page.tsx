@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import type { Course as AppCourse, User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, Target, FileText, Search } from 'lucide-react';
+import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, Target, FileText, Search, CheckCircle, Percent } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -22,6 +22,9 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 
 interface CourseEnrollmentInfo extends AppCourse {
@@ -39,6 +42,7 @@ interface CourseEnrollmentInfo extends AppCourse {
     enrolledAt: Date;
     progress: {
       progressPercentage: number | null;
+      avgQuizScore: number | null;
     } | null;
   }[];
   avgProgress: number | null;
@@ -109,33 +113,50 @@ const EnrolledStudentList = ({ enrollments, onAction }: { enrollments: CourseEnr
     if (isMobile) {
         return (
             <div className="space-y-4">
-                {enrollments.map(enrollment => (
-                  <Card key={enrollment.user.id} className="card-border-animated">
-                    <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
-                       <Avatar className="h-10 w-10"><AvatarImage src={enrollment.user.avatar || undefined} /><AvatarFallback><Identicon userId={enrollment.user.id}/></AvatarFallback></Avatar>
-                        <div className="flex-grow overflow-hidden">
-                            <p className="font-semibold truncate">{enrollment.user.name || 'N/A'}</p>
-                            <p className="text-sm text-muted-foreground truncate">{enrollment.user.email}</p>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-4 pt-0 space-y-2">
-                       <Separator/>
-                       <div className="pt-2 flex justify-between items-center">
-                         <div>
-                            <Label className="text-xs text-muted-foreground">Progreso</Label>
-                            <div className="flex items-center gap-2 mt-1">
-                                <CircularProgress value={enrollment.progress?.progressPercentage || 0} size={32} strokeWidth={3} />
-                                <span className="text-lg font-bold">{Math.round(enrollment.progress?.progressPercentage || 0)}%</span>
-                            </div>
-                         </div>
-                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
-                            <DropdownMenuContent><DropdownMenuItem onClick={() => onAction(enrollment.user)}>Ver Detalles</DropdownMenuItem></DropdownMenuContent>
-                         </DropdownMenu>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                {enrollments.map(enrollment => {
+                    const progress = Math.round(enrollment.progress?.progressPercentage || 0);
+                    const isCompleted = progress === 100;
+                    return (
+                        <Card key={enrollment.user.id} className="card-border-animated overflow-hidden">
+                            <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
+                                <Avatar className="h-10 w-10"><AvatarImage src={enrollment.user.avatar || undefined} /><AvatarFallback><Identicon userId={enrollment.user.id}/></AvatarFallback></Avatar>
+                                <div className="flex-grow overflow-hidden">
+                                    <p className="font-semibold truncate">{enrollment.user.name || 'N/A'}</p>
+                                    <p className="text-sm text-muted-foreground truncate">{enrollment.user.email}</p>
+                                </div>
+                                 <DropdownMenu>
+                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                    <DropdownMenuContent><DropdownMenuItem onClick={() => onAction(enrollment.user)}>Ver Detalles</DropdownMenuItem></DropdownMenuContent>
+                                 </DropdownMenu>
+                            </CardHeader>
+                            <CardContent className="p-4 pt-0 space-y-3">
+                               <Separator/>
+                               <div className="pt-2 space-y-3">
+                                   <div>
+                                       <Label className="text-xs text-muted-foreground">Progreso del Curso</Label>
+                                       <div className="flex items-center gap-2 mt-1">
+                                            <Progress value={progress} className="h-2 flex-grow"/>
+                                            <span className="text-sm font-bold w-10 text-right">{progress}%</span>
+                                       </div>
+                                   </div>
+                                    <div>
+                                       <Label className="text-xs text-muted-foreground">Puntuación Quizzes</Label>
+                                       <div className="flex items-center gap-2 mt-1">
+                                            <Percent className="h-4 w-4 text-primary"/>
+                                            <span className="text-base font-bold">{enrollment.progress?.avgQuizScore?.toFixed(0) || '0'}%</span>
+                                       </div>
+                                   </div>
+                               </div>
+                            </CardContent>
+                             <CardFooter className="p-2 bg-muted/40">
+                                <Badge variant={isCompleted ? "default" : "secondary"} className={cn(isCompleted && "bg-green-600 text-white")}>
+                                   {isCompleted ? <CheckCircle className="mr-1.5 h-3.5 w-3.5" /> : null}
+                                   {isCompleted ? 'Completado' : 'En Progreso'}
+                                </Badge>
+                             </CardFooter>
+                        </Card>
+                    )
+                })}
             </div>
         );
     }
@@ -146,39 +167,54 @@ const EnrolledStudentList = ({ enrollments, onAction }: { enrollments: CourseEnr
                 <TableRow>
                     <TableHead className="w-[300px]">Estudiante</TableHead>
                     <TableHead>Progreso</TableHead>
+                    <TableHead>Nota Quizzes</TableHead>
+                    <TableHead>Estado</TableHead>
                     <TableHead className="text-right">Inscrito el</TableHead>
                     <TableHead className="w-[50px]"><span className="sr-only">Acciones</span></TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {enrollments.map(enrollment => (
-                    <TableRow key={enrollment.user.id}>
-                        <TableCell>
-                            <div className="flex items-center gap-3">
-                                <Avatar className="h-9 w-9"><AvatarImage src={enrollment.user.avatar || undefined} /><AvatarFallback><Identicon userId={enrollment.user.id}/></AvatarFallback></Avatar>
-                                <div>
-                                    <div className="font-medium">{enrollment.user.name || 'N/A'}</div>
-                                    <div className="text-xs text-muted-foreground">{enrollment.user.email}</div>
+                {enrollments.map(enrollment => {
+                    const progress = Math.round(enrollment.progress?.progressPercentage || 0);
+                    const isCompleted = progress === 100;
+                    return (
+                        <TableRow key={enrollment.user.id}>
+                            <TableCell>
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="h-9 w-9"><AvatarImage src={enrollment.user.avatar || undefined} /><AvatarFallback><Identicon userId={enrollment.user.id}/></AvatarFallback></Avatar>
+                                    <div>
+                                        <div className="font-medium">{enrollment.user.name || 'N/A'}</div>
+                                        <div className="text-xs text-muted-foreground">{enrollment.user.email}</div>
+                                    </div>
                                 </div>
-                            </div>
-                        </TableCell>
-                        <TableCell>
-                            <div className="flex items-center gap-3">
-                                <CircularProgress value={enrollment.progress?.progressPercentage || 0} size={36} strokeWidth={4} />
-                                <span className="text-sm font-medium text-muted-foreground">{Math.round(enrollment.progress?.progressPercentage || 0)}%</span>
-                            </div>
-                        </TableCell>
-                        <TableCell className="text-right text-sm text-muted-foreground">
-                            {new Date(enrollment.enrolledAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
-                        </TableCell>
-                        <TableCell>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
-                                <DropdownMenuContent><DropdownMenuItem onClick={() => onAction(enrollment.user)}>Ver Detalles</DropdownMenuItem></DropdownMenuContent>
-                            </DropdownMenu>
-                        </TableCell>
-                    </TableRow>
-                ))}
+                            </TableCell>
+                            <TableCell>
+                                <div className="flex items-center gap-3">
+                                    <CircularProgress value={progress} size={36} strokeWidth={4} showValue={false} />
+                                    <span className="text-sm font-medium text-muted-foreground">{progress}%</span>
+                                </div>
+                            </TableCell>
+                             <TableCell>
+                                <span className="font-semibold">{enrollment.progress?.avgQuizScore?.toFixed(0) || 'N/A'}%</span>
+                            </TableCell>
+                             <TableCell>
+                                <Badge variant={isCompleted ? "default" : "secondary"} className={cn(isCompleted && "bg-green-600 text-white")}>
+                                   {isCompleted ? <CheckCircle className="mr-1.5 h-3.5 w-3.5" /> : null}
+                                   {isCompleted ? 'Completado' : 'En Progreso'}
+                                </Badge>
+                            </TableCell>
+                            <TableCell className="text-right text-sm text-muted-foreground">
+                                {new Date(enrollment.enrolledAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
+                            </TableCell>
+                            <TableCell>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                    <DropdownMenuContent><DropdownMenuItem onClick={() => onAction(enrollment.user)}>Ver Detalles</DropdownMenuItem></DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                        </TableRow>
+                    );
+                })}
             </TableBody>
         </Table>
     );
@@ -244,6 +280,7 @@ export default function EnrollmentsPage() {
         };
         fetchCoursesForRole();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser, isAuthLoading, toast]);
 
 
@@ -257,7 +294,7 @@ export default function EnrollmentsPage() {
         setSelectedCourseInfo(data);
     } catch(err) {
         setError(err instanceof Error ? err.message : 'Unknown error fetching details');
-        toast({ title: "Error", description: `Could not load details for course: ${err.message}`, variant: "destructive" });
+        toast({ title: "Error", description: `Could not load details for course: ${err instanceof Error ? err.message : ''}`, variant: "destructive" });
         setSelectedCourseInfo(null);
     } finally {
         setIsLoadingDetails(false);
