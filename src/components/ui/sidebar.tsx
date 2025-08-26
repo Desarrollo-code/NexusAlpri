@@ -186,29 +186,35 @@ export const SidebarFooter = () => {
 
   if (!user) return null;
 
-  return (
+  const footerContent = (
     <div className={cn("p-3 border-t border-border mt-auto")}>
-        <div className="flex items-center justify-between">
-           <Link href="/profile" className={cn(
-               "flex items-center gap-3 w-full p-1 rounded-md transition-colors",
-               "hover:bg-muted"
-           )}>
-                <Avatar className="h-9 w-9">
-                    {user.avatar ? <AvatarImage src={user.avatar} alt={user.name || 'User'}/> : null}
-                    <AvatarFallback className="text-xs">
-                        <Identicon userId={user.id}/>
-                    </AvatarFallback>
-                </Avatar>
-                {!isCollapsed && (
-                    <div className="overflow-hidden">
-                        <p className="font-semibold text-sm truncate">{user.name}</p>
-                    </div>
-                )}
-           </Link>
+        <div className={cn(
+            "flex items-center",
+            isCollapsed ? 'justify-center' : 'justify-between'
+        )}>
+           <TooltipProvider>
+             <Tooltip>
+                <TooltipTrigger asChild>
+                    <Link href="/profile">
+                        <Avatar className="h-9 w-9">
+                            {user.avatar ? <AvatarImage src={user.avatar} alt={user.name || 'User'}/> : null}
+                            <AvatarFallback className="text-xs">
+                                <Identicon userId={user.id}/>
+                            </AvatarFallback>
+                        </Avatar>
+                    </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={10}>
+                    <p>{user.name}</p>
+                </TooltipContent>
+             </Tooltip>
+           </TooltipProvider>
+
            {!isCollapsed && (
              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground shrink-0" onClick={logout}><LogOut className="h-4 w-4"/></Button>
            )}
         </div>
+        {!isCollapsed && (
         <div className="mt-2 flex items-center justify-end">
             <Button
               onClick={toggleSidebar}
@@ -222,6 +228,9 @@ export const SidebarFooter = () => {
               <ChevronsLeft className="h-4 w-4" />
             </Button>
         </div>
+        )}
     </div>
   );
+  
+  return footerContent;
 };
