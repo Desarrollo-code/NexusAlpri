@@ -337,7 +337,7 @@ export function FormEditor({ formId }: { formId: string }) {
 
     return (
         <div className="space-y-6">
-            <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <header className="flex flex-col md:flex-row items-start justify-between gap-4">
                  <div className="flex-grow space-y-1">
                      <Input value={form.title} onChange={e => handleFormUpdate({ title: e.target.value })} className="text-2xl font-bold h-auto p-0 border-none focus-visible:ring-0 bg-transparent" />
                      <Textarea value={form.description ?? ''} onChange={e => handleFormUpdate({ description: e.target.value })} placeholder="Añade una descripción para tu formulario..." className="text-muted-foreground border-none p-0 focus-visible:ring-0 h-auto resize-none bg-transparent"/>
