@@ -289,16 +289,6 @@ export default function CalendarPage() {
   return (
     <div className={cn("flex flex-col h-full md:h-[calc(100vh-8rem)] gap-4 md:gap-6", isMobile && "space-y-4")}>
         <header className="flex-shrink-0 flex items-center gap-4">
-             {!isMobile && (
-                <>
-                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="h-4 w-4"/></Button>
-                    <h1 className="text-2xl font-bold font-headline text-foreground min-w-[150px] sm:min-w-[200px] text-center capitalize">
-                        {format(currentMonth, "MMMM yyyy", { locale: es })}
-                    </h1>
-                    <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight className="h-4 w-4"/></Button>
-                    <Button variant="outline" size="sm" className="h-9 px-3" onClick={() => { setCurrentMonth(startOfToday()); setSelectedDate(startOfToday()); }}>Hoy</Button>
-                </>
-             )}
             <div className="ml-auto">
                {canCreateEvent && (
                   <Button size="sm" onClick={() => handleOpenCreateModal(selectedDate)}>
@@ -372,8 +362,8 @@ export default function CalendarPage() {
                 </div>
             )}
           </DialogHeader>
-           <ScrollArea className="flex-1 pr-3 -mr-6">
-                <div className="py-4 px-6 pr-6">
+           <div className="flex-1 overflow-y-auto pr-2 thin-scrollbar">
+                <div className="py-4 px-6 pr-4">
                  {isEditMode ? (
                     <form id="event-form" onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                       <div className="sm:col-span-2"><Label htmlFor="event-title">Título del Evento</Label><Input id="event-title" value={formTitle} onChange={e => setFormTitle(e.target.value)} required disabled={isSaving} /></div>
@@ -437,7 +427,7 @@ export default function CalendarPage() {
                     <EventDetailsView event={selectedEvent} />
                  ) : null}
                 </div>
-           </ScrollArea>
+           </div>
            <DialogFooter className="p-6 pt-4 sm:col-span-2 mt-auto flex flex-col-reverse sm:flex-row sm:justify-end w-full gap-2 border-t">
               {isEditMode ? (
                 <>
