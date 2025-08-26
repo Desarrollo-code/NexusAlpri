@@ -23,7 +23,7 @@ export const SidebarHeader = () => {
       <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
          <div className={cn(
             "flex items-center justify-center flex-shrink-0 rounded-lg transition-all duration-300 relative overflow-hidden",
-            "w-12 h-12 bg-gradient-to-br from-slate-800 to-amber-500"
+            "w-12 h-12 bg-gradient-to-br from-primary to-accent"
         )}>
           {logoSrc ? (
             <div className="relative w-full h-full p-1">
