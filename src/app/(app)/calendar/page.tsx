@@ -324,6 +324,7 @@ export default function CalendarPage() {
                             className="rounded-md border bg-card"
                             locale={es}
                             showOutsideDays
+                            events={events}
                          />
                      </div>
                 ) : (
