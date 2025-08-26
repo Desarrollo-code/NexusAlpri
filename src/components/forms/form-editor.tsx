@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { useTitle } from '@/contexts/title-context';
 import { useRouter } from 'next/navigation';
-import { Loader2, AlertTriangle, Save, PlusCircle, Trash2, GripVertical, Check, Eye, BarChart, Share2, FilePen, MoreVertical, Settings, Copy, Shield, X, CheckSquare, ChevronDown } from 'lucide-react';
+import { Loader2, AlertTriangle, Save, PlusCircle, Trash2, GripVertical, Check, Eye, BarChart, Share2, FilePen, MoreVertical, Settings, Copy, Shield, X, CheckSquare, ChevronDown, Type, CaseUpper, MessageSquare, ListChecks } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,11 +26,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Checkbox } from '../ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -189,8 +189,6 @@ export function FormEditor({ formId }: { formId: string }) {
     const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
     
-    const [activeTab, setActiveTab] = useState('editor');
-
     const handleFormUpdate = (updates: Partial<AppForm>) => {
         setForm(prev => prev ? { ...prev, ...updates } : null);
         setIsDirty(true);
@@ -339,12 +337,12 @@ export function FormEditor({ formId }: { formId: string }) {
 
     return (
         <div className="space-y-6">
-            <header className="flex items-center justify-between gap-4">
+            <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                  <div className="flex-grow space-y-1">
-                     <Input value={form.title} onChange={e => handleFormUpdate({ title: e.target.value })} className="text-2xl font-bold h-auto p-0 border-none focus-visible:ring-0" />
-                     <Textarea value={form.description ?? ''} onChange={e => handleFormUpdate({ description: e.target.value })} placeholder="Añade una descripción para tu formulario..." className="text-muted-foreground border-none p-0 focus-visible:ring-0 h-auto resize-none"/>
+                     <Input value={form.title} onChange={e => handleFormUpdate({ title: e.target.value })} className="text-2xl font-bold h-auto p-0 border-none focus-visible:ring-0 bg-transparent" />
+                     <Textarea value={form.description ?? ''} onChange={e => handleFormUpdate({ description: e.target.value })} placeholder="Añade una descripción para tu formulario..." className="text-muted-foreground border-none p-0 focus-visible:ring-0 h-auto resize-none bg-transparent"/>
                  </div>
-                 <div className="flex items-center gap-2">
+                 <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
                      <Link href={`/forms/${formId}/results`} className={cn(buttonVariants({variant: 'outline'}))}>
                          <BarChart className="mr-2 h-4 w-4"/>Resultados
                      </Link>
@@ -391,47 +389,62 @@ export function FormEditor({ formId }: { formId: string }) {
                 </main>
                 <aside className="lg:sticky lg:top-24 space-y-4">
                      <Card>
-                         <CardHeader><CardTitle>Añadir Campo</CardTitle></CardHeader>
+                         <CardHeader>
+                            <CardTitle className="text-base">Añadir Campo</CardTitle>
+                         </CardHeader>
                          <CardContent className="grid grid-cols-2 gap-2">
-                            <Button variant="outline" onClick={() => addField('SHORT_TEXT')}>Texto Corto</Button>
-                            <Button variant="outline" onClick={() => addField('LONG_TEXT')}>Párrafo</Button>
-                            <Button variant="outline" onClick={() => addField('SINGLE_CHOICE')}>Opción Única</Button>
-                            <Button variant="outline" onClick={() => addField('MULTIPLE_CHOICE')}>Múltiples Opciones</Button>
+                            <Button variant="outline" size="sm" className="h-auto py-2 flex flex-col gap-1" onClick={() => addField('SHORT_TEXT')}><Type className="h-5 w-5 mb-1"/>Texto Corto</Button>
+                            <Button variant="outline" size="sm" className="h-auto py-2 flex flex-col gap-1" onClick={() => addField('LONG_TEXT')}><MessageSquare className="h-5 w-5 mb-1"/>Párrafo</Button>
+                            <Button variant="outline" size="sm" className="h-auto py-2 flex flex-col gap-1" onClick={() => addField('SINGLE_CHOICE')}><ListChecks className="h-5 w-5 mb-1"/>Opción Única</Button>
+                            <Button variant="outline" size="sm" className="h-auto py-2 flex flex-col gap-1" onClick={() => addField('MULTIPLE_CHOICE')}><CheckSquare className="h-5 w-5 mb-1"/>Casillas</Button>
                          </CardContent>
                      </Card>
                       <Card>
-                         <CardHeader><CardTitle>Publicación</CardTitle></CardHeader>
-                         <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <Label htmlFor="isQuiz" className="font-semibold">Habilitar Puntuación</Label>
-                                    <Switch id="isQuiz" checked={!!form.isQuiz} onCheckedChange={(c) => handleFormUpdate({ isQuiz: c })} />
+                         <CardHeader><CardTitle className="text-base">Configuración</CardTitle></CardHeader>
+                         <CardContent>
+                           <Tabs defaultValue="properties">
+                             <TabsList className="grid w-full grid-cols-2">
+                               <TabsTrigger value="properties">Propiedades</TabsTrigger>
+                               <TabsTrigger value="share">Compartir</TabsTrigger>
+                             </TabsList>
+                             <TabsContent value="properties" className="mt-4 space-y-4">
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="isQuiz" className="font-semibold">Habilitar Puntuación</Label>
+                                        <Switch id="isQuiz" checked={!!form.isQuiz} onCheckedChange={(c) => handleFormUpdate({ isQuiz: c })} />
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">Convierte este formulario en una evaluación con puntos por respuesta.</p>
                                 </div>
-                                <p className="text-xs text-muted-foreground">Convierte este formulario en una evaluación con puntos por respuesta.</p>
-                            </div>
-                            <div className="space-y-2">
-                                 <Label>Estado del Formulario</Label>
-                                 <Select value={form.status} onValueChange={(s) => handleFormUpdate({ status: s as FormStatus })}>
-                                     <SelectTrigger><SelectValue/></SelectTrigger>
-                                     <SelectContent>
-                                         <SelectItem value="DRAFT">Borrador</SelectItem>
-                                         <SelectItem value="PUBLISHED">Publicado</SelectItem>
-                                         <SelectItem value="ARCHIVED">Archivado</SelectItem>
-                                     </SelectContent>
-                                 </Select>
-                            </div>
-                            {form.status === 'PUBLISHED' && (
-                             <div className="space-y-2">
-                                 <Label>Enlace para Compartir</Label>
-                                 <div className="flex items-center gap-2">
-                                   <Input readOnly value={`${window.location.origin}/forms/${formId}/view`} />
-                                   <Button size="icon" variant="ghost" onClick={() => {
-                                       navigator.clipboard.writeText(`${window.location.origin}/forms/${formId}/view`);
-                                       toast({title: 'Copiado', description: 'El enlace ha sido copiado al portapapeles.'});
-                                     }}><Copy className="h-4 w-4"/></Button>
+                                <div className="space-y-2">
+                                     <Label>Estado del Formulario</Label>
+                                     <Select value={form.status} onValueChange={(s) => handleFormUpdate({ status: s as FormStatus })}>
+                                         <SelectTrigger><SelectValue/></SelectTrigger>
+                                         <SelectContent>
+                                             <SelectItem value="DRAFT">Borrador</SelectItem>
+                                             <SelectItem value="PUBLISHED">Publicado</SelectItem>
+                                             <SelectItem value="ARCHIVED">Archivado</SelectItem>
+                                         </SelectContent>
+                                     </Select>
+                                </div>
+                             </TabsContent>
+                             <TabsContent value="share" className="mt-4">
+                               {form.status === 'PUBLISHED' && (
+                                 <div className="space-y-2">
+                                     <Label>Enlace para Compartir</Label>
+                                     <div className="flex items-center gap-2">
+                                       <Input readOnly value={`${window.location.origin}/forms/${formId}/view`} />
+                                       <Button size="icon" variant="ghost" onClick={() => {
+                                           navigator.clipboard.writeText(`${window.location.origin}/forms/${formId}/view`);
+                                           toast({title: 'Copiado', description: 'El enlace ha sido copiado al portapapeles.'});
+                                         }}><Copy className="h-4 w-4"/></Button>
+                                     </div>
                                  </div>
-                             </div>
-                            )}
+                                )}
+                                {form.status !== 'PUBLISHED' && (
+                                    <p className="text-sm text-center text-muted-foreground p-4 bg-muted rounded-md">Publica el formulario para obtener el enlace para compartir.</p>
+                                )}
+                             </TabsContent>
+                           </Tabs>
                          </CardContent>
                       </Card>
                 </aside>
