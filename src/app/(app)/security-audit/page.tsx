@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useTitle } from '@/contexts/title-context';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Identicon } from '@/components/ui/identicon';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 
 interface SecurityLogWithUser extends AppSecurityLog {
@@ -58,6 +59,7 @@ export default function SecurityAuditPage() {
     const searchParams = useSearchParams();
     const { toast } = useToast();
     const { setPageTitle } = useTitle();
+    const isMobile = useIsMobile();
 
     const [logs, setLogs] = useState<SecurityLogWithUser[]>([]);
     const [totalLogs, setTotalLogs] = useState(0);
@@ -175,6 +177,39 @@ export default function SecurityAuditPage() {
                                 Reintentar
                             </Button>
                         </div>
+                    ) : logs.length === 0 ? (
+                       <p className="text-center text-muted-foreground py-8">No hay registros de seguridad.</p>
+                    ) : isMobile ? (
+                        <div className="space-y-4">
+                            {logs.map((log) => {
+                                const eventDetails = getEventDetails(log.event, log.details);
+                                const { browser, os } = parseUserAgent(log.userAgent);
+                                return (
+                                    <Card key={log.id} className="p-4">
+                                        <div className="flex items-start gap-4">
+                                            <div className="pt-1">{eventDetails.icon}</div>
+                                            <div className="flex-grow">
+                                                <div className="flex justify-between items-start">
+                                                    <Badge variant={eventDetails.variant}>{eventDetails.label}</Badge>
+                                                     <p className="text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO', { timeStyle: 'short' })}</p>
+                                                </div>
+                                                <p className="text-sm mt-1">{eventDetails.details}</p>
+                                                {log.user ? (
+                                                    <div className="flex items-center gap-2 mt-3 pt-3 border-t">
+                                                        <Avatar className="h-8 w-8"><AvatarImage src={log.user.avatar || undefined} /><AvatarFallback><Identicon userId={log.user.id} /></AvatarFallback></Avatar>
+                                                        <div>
+                                                            <p className="text-sm font-medium">{log.user.name}</p>
+                                                            <p className="text-xs text-muted-foreground">{log.emailAttempt}</p>
+                                                        </div>
+                                                    </div>
+                                                ) : <p className="text-xs text-muted-foreground mt-2 pt-2 border-t">{log.emailAttempt}</p>}
+                                                 <div className="text-xs text-muted-foreground mt-2 flex items-center gap-2"><Globe className="h-4 w-4"/> {log.city && log.country ? `${log.city}, ${log.country}` : (log.ipAddress || 'Desconocida')}</div>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                )
+                            })}
+                        </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <Table>
@@ -189,70 +224,62 @@ export default function SecurityAuditPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {logs.length > 0 ? (
-                                        logs.map((log) => {
-                                            const eventDetails = getEventDetails(log.event, log.details);
-                                            const { browser, os } = parseUserAgent(log.userAgent);
-                                            return (
-                                                <TableRow key={log.id}>
+                                    {logs.map((log) => {
+                                        const eventDetails = getEventDetails(log.event, log.details);
+                                        const { browser, os } = parseUserAgent(log.userAgent);
+                                        return (
+                                            <TableRow key={log.id}>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        {eventDetails.icon}
+                                                        <Badge variant={eventDetails.variant}>
+                                                            {eventDetails.label}
+                                                        </Badge>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-xs text-muted-foreground">{eventDetails.details}</TableCell>
                                                     <TableCell>
+                                                    {log.user ? (
                                                         <div className="flex items-center gap-2">
-                                                            {eventDetails.icon}
-                                                            <Badge variant={eventDetails.variant}>
-                                                                {eventDetails.label}
-                                                            </Badge>
+                                                            <Avatar className="h-8 w-8">
+                                                                {log.user.avatar ? <AvatarImage src={log.user.avatar} alt={log.user.name || 'User'} /> : null}
+                                                                <AvatarFallback>
+                                                                    <Identicon userId={log.user.id} />
+                                                                </AvatarFallback>
+                                                            </Avatar>
+                                                            <Link href={`/users?search=${encodeURIComponent(log.user.name || '')}`} className="font-medium hover:underline">{log.user.name}</Link>
                                                         </div>
-                                                    </TableCell>
-                                                    <TableCell className="text-xs text-muted-foreground">{eventDetails.details}</TableCell>
-                                                     <TableCell>
-                                                        {log.user ? (
-                                                            <div className="flex items-center gap-2">
-                                                                <Avatar className="h-8 w-8">
-                                                                    {log.user.avatar ? <AvatarImage src={log.user.avatar} alt={log.user.name || 'User'} /> : null}
-                                                                    <AvatarFallback>
-                                                                        <Identicon userId={log.user.id} />
-                                                                    </AvatarFallback>
-                                                                </Avatar>
-                                                                <Link href={`/users?search=${encodeURIComponent(log.user.name || '')}`} className="font-medium hover:underline">{log.user.name}</Link>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="flex items-center gap-2 text-muted-foreground">
-                                                               <div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserCog className="h-4 w-4"/></div>
-                                                                <span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span>
-                                                            </div>
-                                                        )}
-                                                    </TableCell>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                                            <div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted"><UserCog className="h-4 w-4"/></div>
+                                                            <span className="text-xs font-mono">{log.emailAttempt || 'Desconocido'}</span>
+                                                        </div>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger>
+                                                                <div className="flex items-center gap-2 text-xs">
+                                                                    <Monitor className="h-4 w-4 text-muted-foreground"/> {browser} en {os}
+                                                                </div>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent className="max-w-xs break-words">
+                                                                <p>{log.userAgent}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                </TableCell>
                                                     <TableCell>
-                                                        <TooltipProvider>
-                                                            <Tooltip>
-                                                                <TooltipTrigger>
-                                                                    <div className="flex items-center gap-2 text-xs">
-                                                                        <Monitor className="h-4 w-4 text-muted-foreground"/> {browser} en {os}
-                                                                    </div>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent className="max-w-xs break-words">
-                                                                    <p>{log.userAgent}</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        </TooltipProvider>
-                                                    </TableCell>
-                                                     <TableCell>
-                                                        <div className="flex items-center gap-2 text-xs">
-                                                            <Globe className="h-4 w-4 text-muted-foreground"/>
-                                                            {log.city && log.country ? `${log.city}, ${log.country}` : (log.ipAddress || 'Desconocida')}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="text-right text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
-                                                </TableRow>
-                                            );
-                                        })
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={6} className="h-24 text-center">
-                                                No hay registros de seguridad.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
+                                                    <div className="flex items-center gap-2 text-xs">
+                                                        <Globe className="h-4 w-4 text-muted-foreground"/>
+                                                        {log.city && log.country ? `${log.city}, ${log.country}` : (log.ipAddress || 'Desconocida')}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-right text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'short' })}</TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
                                 </TableBody>
                             </Table>
                         </div>
@@ -262,27 +289,9 @@ export default function SecurityAuditPage() {
                     <CardFooter>
                         <Pagination>
                             <PaginationContent>
-                                <PaginationItem>
-                                    <PaginationPrevious
-                                        href="#"
-                                        onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
-                                        className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
-                                    />
-                                </PaginationItem>
-                                {[...Array(totalPages)].map((_, i) => (
-                                    <PaginationItem key={i}>
-                                        <PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>
-                                            {i + 1}
-                                        </PaginationLink>
-                                    </PaginationItem>
-                                ))}
-                                <PaginationItem>
-                                    <PaginationNext
-                                        href="#"
-                                        onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
-                                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}
-                                    />
-                                </PaginationItem>
+                                <PaginationItem><PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined} /></PaginationItem>
+                                {[...Array(totalPages)].map((_, i) => <PaginationItem key={i}><PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>{i + 1}</PaginationLink></PaginationItem>)}
+                                <PaginationItem><PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined} /></PaginationItem>
                             </PaginationContent>
                         </Pagination>
                     </CardFooter>

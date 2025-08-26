@@ -112,7 +112,7 @@ export default function MyCoursesPage() {
             <Skeleton className="h-8 w-1/2" />
             <Skeleton className="h-4 w-3/4 mt-2" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
              {[...Array(4)].map((_, i) => (
                 <Card key={i} className="flex flex-col overflow-hidden">
                     <Skeleton className="aspect-video w-full" />
@@ -192,7 +192,7 @@ export default function MyCoursesPage() {
 
       {!isFetchingPageData && !error && user && (
         filteredAndSearchedCourses.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredAndSearchedCourses.map((course, index) => (
               <CourseCard 
                 key={course.id} 
@@ -229,4 +229,3 @@ export default function MyCoursesPage() {
     </div>
   );
 }
-

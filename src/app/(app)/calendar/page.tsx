@@ -362,8 +362,7 @@ export default function CalendarPage() {
                 </div>
             )}
           </DialogHeader>
-           <div className="flex-1 overflow-y-auto pr-2 thin-scrollbar">
-                <div className="py-4 px-6 pr-4">
+           <div className="flex-1 overflow-y-auto px-6 py-4 pr-6">
                  {isEditMode ? (
                     <form id="event-form" onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                       <div className="sm:col-span-2"><Label htmlFor="event-title">Título del Evento</Label><Input id="event-title" value={formTitle} onChange={e => setFormTitle(e.target.value)} required disabled={isSaving} /></div>
@@ -426,7 +425,6 @@ export default function CalendarPage() {
                  ) : selectedEvent ? (
                     <EventDetailsView event={selectedEvent} />
                  ) : null}
-                </div>
            </div>
            <DialogFooter className="p-6 pt-4 sm:col-span-2 mt-auto flex flex-col-reverse sm:flex-row sm:justify-end w-full gap-2 border-t">
               {isEditMode ? (

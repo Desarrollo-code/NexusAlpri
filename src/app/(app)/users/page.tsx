@@ -643,7 +643,7 @@ export default function UsersPage() {
       </Card>
 
       <AlertDialog open={showDeleteConfirmDialog} onOpenChange={setShowDeleteConfirmDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[95vw] max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -664,7 +664,7 @@ export default function UsersPage() {
           setShowChangeRoleDialog(isOpen);
           if (!isOpen) setUserToChangeRole(null);
       }}>
-          <DialogContent className="w-[95vw] max-w-sm rounded-lg">
+          <DialogContent className="w-[95vw] max-w-sm">
               <DialogHeader>
                 <DialogTitle>Cambiar Rol de Usuario</DialogTitle>
                 <DialogDescription>

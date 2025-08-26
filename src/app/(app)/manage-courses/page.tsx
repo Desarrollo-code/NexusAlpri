@@ -256,36 +256,6 @@ export default function ManageCoursesPage() {
         ))}
     </div>
   );
-  
-  const MobileManagementList = () => (
-      <div className="space-y-4">
-          {allCourses.map(course => (
-              <CourseCard 
-                  key={course.id}
-                  course={course}
-                  userRole={user?.role || null}
-                  viewMode="management"
-                  onStatusChange={handleChangeStatus}
-                  onDelete={setCourseToDelete}
-              />
-          ))}
-      </div>
-  );
-  
-   const DesktopManagementGrid = () => (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {allCourses.map(course => (
-              <CourseCard 
-                  key={course.id}
-                  course={course}
-                  userRole={user?.role || null}
-                  viewMode="management"
-                  onStatusChange={handleChangeStatus}
-                  onDelete={setCourseToDelete}
-              />
-          ))}
-      </div>
-  );
 
   return (
     <div className="space-y-8">
@@ -336,7 +306,18 @@ export default function ManageCoursesPage() {
                 <Button onClick={() => setCourseUpdateSignal(s => s + 1)} variant="outline" className="mt-4">Reintentar</Button>
               </div>
             ) : allCourses.length > 0 ? (
-                 isMobile ? <MobileManagementList /> : <DesktopManagementGrid />
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {allCourses.map(course => (
+                      <CourseCard 
+                          key={course.id}
+                          course={course}
+                          userRole={user?.role || null}
+                          viewMode="management"
+                          onStatusChange={handleChangeStatus}
+                          onDelete={setCourseToDelete}
+                      />
+                  ))}
+                </div>
             ) : (
                 <div className="text-center py-12">
                     <ListPlus className="mx-auto h-12 w-12 text-primary mb-4" />
