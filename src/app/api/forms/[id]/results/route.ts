@@ -1,4 +1,3 @@
-
 // src/app/api/forms/[id]/results/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -6,13 +5,13 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
     
-    const { id: formId } = await params;
+    const { id: formId } = params;
 
     try {
         const form = await prisma.form.findUnique({

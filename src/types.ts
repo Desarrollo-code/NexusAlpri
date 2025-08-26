@@ -1,4 +1,3 @@
-
 // src/types.ts
 import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form, FormField as PrismaFormField, FormFieldType, FormStatus } from "@prisma/client";
 
@@ -288,11 +287,11 @@ export type UserAchievement = Prisma.UserAchievementGetPayload<{
 // --- FORMS ---
 // Extend the Prisma FormField to include a potential points property in its options
 // This is done by intersecting with a new type for options
-type FormFieldOption = {
+export type FormFieldOption = {
   id: string;
   text: string;
   isCorrect: boolean;
-  points?: number; // Optional points per option
+  points: number; // Optional points per option
 };
 
 export interface FormField extends Omit<PrismaFormField, 'options'> {

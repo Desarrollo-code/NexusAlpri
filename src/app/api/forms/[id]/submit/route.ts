@@ -2,16 +2,17 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import type { FormFieldOption } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'Debes iniciar sesión para responder' }, { status: 401 });
     }
     
-    const { id: formId } = await params;
+    const { id: formId } = params;
 
     try {
         const body = await req.json();
@@ -34,14 +35,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         if (form.isQuiz) {
             totalScore = 0;
             for (const field of form.fields) {
-                if (field.type === 'SINGLE_CHOICE' || field.type === 'MULTIPLE_CHOICE') {
+                 if (field.type === 'SINGLE_CHOICE' || field.type === 'MULTIPLE_CHOICE') {
                     const fieldAnswer = answers[field.id];
                     if (!fieldAnswer) continue;
 
-                    const correctOptions = (field.options as any[]).filter(o => o.isCorrect);
+                    const correctOptions = (field.options as any as FormFieldOption[]).filter(o => o.isCorrect);
                     
                     if (field.type === 'SINGLE_CHOICE') {
-                        const selectedOption = (field.options as any[]).find(o => o.id === fieldAnswer);
+                        const selectedOption = (field.options as any as FormFieldOption[]).find(o => o.id === fieldAnswer);
                         if (selectedOption?.isCorrect) {
                             totalScore += selectedOption.points || 0;
                         }
