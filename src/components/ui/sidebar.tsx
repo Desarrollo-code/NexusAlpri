@@ -1,4 +1,4 @@
-
+// src/components/ui/sidebar.tsx
 'use client';
 
 // Sidebar-layout-enhanced 🌈 Creativo & juvenil
@@ -29,7 +29,7 @@ export function useSidebar() {
   return context;
 }
 
-export const SidebarProvider = ({ children }: { children: React.ReactNode }) => {
+export const SidebarProvider = ({ children }: { children: React.Node }) => {
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const [activeItem, setActiveItem] = React.useState(pathname);
@@ -70,7 +70,7 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
   );
 };
 
-export const Sidebar = ({ children }: { children: React.ReactNode }) => {
+export const Sidebar = ({ children }: { children: React.Node }) => {
   const { isMobile, openMobile, setOpenMobile, isCollapsed } = useSidebar();
   
   const desktopClasses = isCollapsed ? "w-20" : "w-72";
@@ -195,8 +195,10 @@ export const SidebarFooter = () => {
   const { isCollapsed, toggleSidebar } = useSidebar();
 
   return (
-    <div className="p-4 border-t border-border mt-auto">
-      <div className={cn("flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
+    <div className={cn(
+        "p-4 border-t border-border mt-auto flex items-center",
+        isCollapsed ? "justify-center" : "justify-end"
+    )}>
         <Button
           onClick={toggleSidebar}
           variant="ghost"
@@ -208,7 +210,6 @@ export const SidebarFooter = () => {
         >
           <ChevronsLeft className="h-5 w-5" />
         </Button>
-      </div>
     </div>
   );
 };
