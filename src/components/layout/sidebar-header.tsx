@@ -13,10 +13,10 @@ export const SidebarHeader = () => {
   
   return (
     <div className={cn(
-      "flex items-center h-20", 
+      "flex items-center h-20 bg-sidebar-header", 
       isCollapsed ? 'justify-center' : 'justify-start'
     )}>
-      <Link href="/dashboard" className={cn("inline-flex items-center gap-3", !isCollapsed && "w-full px-4")}>
+      <Link href="/dashboard" className={cn("inline-flex items-center gap-3 w-full", !isCollapsed && "px-4")}>
          <div className={cn(
              "bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
              isCollapsed ? "h-12 w-12" : "h-14 w-14",

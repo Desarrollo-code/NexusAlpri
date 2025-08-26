@@ -31,8 +31,8 @@ const config: Config = {
         '2xl': '1rem',
       },
       fontFamily: {
-        body: ['var(--font-body)'],
-        headline: ['var(--font-headline)'],
+        body: ['var(--font-body)', 'sans-serif'],
+        headline: ['var(--font-headline)', 'sans-serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -83,6 +83,9 @@ const config: Config = {
         },
         sidebar: {
           background: 'hsl(var(--sidebar-background))',
+          header: {
+            DEFAULT: 'hsl(var(--sidebar-header-background))',
+          },
           foreground: 'hsl(var(--sidebar-foreground))',
           muted: {
             foreground: 'hsl(var(--sidebar-muted-foreground))',
