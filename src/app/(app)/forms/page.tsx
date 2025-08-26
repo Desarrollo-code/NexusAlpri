@@ -124,27 +124,29 @@ const FormCreationModal = ({ open, onOpenChange, onFormCreated }: { open: boolea
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="rounded-lg">
-                <DialogHeader>
-                    <DialogTitle>Crear Nuevo Formulario</DialogTitle>
-                    <DialogDescription>Comienza con un título y una descripción. Podrás añadir las preguntas después.</DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} id="create-form" className="space-y-4 py-4">
-                    <div className="space-y-1">
-                        <Label htmlFor="form-title">Título del Formulario</Label>
-                        <Input id="form-title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isSubmitting} />
+                <form onSubmit={handleSubmit} id="create-form">
+                    <DialogHeader>
+                        <DialogTitle>Crear Nuevo Formulario</DialogTitle>
+                        <DialogDescription>Comienza con un título y una descripción. Podrás añadir las preguntas después.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-1">
+                            <Label htmlFor="form-title">Título del Formulario</Label>
+                            <Input id="form-title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isSubmitting} />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="form-description">Descripción (Opcional)</Label>
+                            <Textarea id="form-description" value={description} onChange={(e) => setDescription(e.target.value)} disabled={isSubmitting} />
+                        </div>
                     </div>
-                    <div className="space-y-1">
-                        <Label htmlFor="form-description">Descripción (Opcional)</Label>
-                        <Textarea id="form-description" value={description} onChange={(e) => setDescription(e.target.value)} disabled={isSubmitting} />
-                    </div>
+                    <DialogFooter>
+                        <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancelar</Button>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            Crear y Continuar
+                        </Button>
+                    </DialogFooter>
                 </form>
-                 <DialogFooter>
-                    <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancelar</Button>
-                    <Button type="submit" form="create-form" disabled={isSubmitting}>
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                        Crear y Continuar
-                    </Button>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
     );

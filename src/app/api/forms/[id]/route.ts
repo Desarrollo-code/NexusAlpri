@@ -144,6 +144,9 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`[DELETE_FORM_ID: ${formId}] Error al eliminar el formulario:`, error);
+    if ((error as any).code === 'P2025') {
+       return NextResponse.json({ message: 'El formulario a eliminar no fue encontrado.' }, { status: 404 });
+    }
     return NextResponse.json({ message: 'Error al eliminar el formulario' }, { status: 500 });
   }
 }

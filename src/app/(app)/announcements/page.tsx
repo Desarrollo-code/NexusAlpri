@@ -68,7 +68,6 @@ export default function AnnouncementsPage() {
   const [formContent, setFormContent] = useState('');
 
   const [announcementToDelete, setAnnouncementToDelete] = useState<DisplayAnnouncement | null>(null);
-  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
@@ -220,9 +219,9 @@ export default function AnnouncementsPage() {
       const response = await fetch(`/api/announcements/${announcementToDelete.id}`, {
         method: 'DELETE',
       });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete announcement');
+      if (!response.ok && response.status !== 204) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to delete announcement' }));
+        throw new Error(errorData.message);
       }
       toast({ title: 'Anuncio Eliminado', description: `El anuncio "${announcementToDelete.title}" ha sido eliminado.` });
       fetchAnnouncements();
@@ -230,17 +229,12 @@ export default function AnnouncementsPage() {
       toast({ title: 'Error al eliminar', description: err instanceof Error ? err.message : 'No se pudo eliminar el anuncio.', variant: 'destructive' });
     } finally {
       setIsProcessing(false);
-      setShowDeleteConfirmDialog(false);
       setAnnouncementToDelete(null);
     }
   };
 
-  const openDeleteConfirmation = (announcementId: string) => {
-    const annToDel = allAnnouncements.find(ann => ann.id === announcementId);
-    if (annToDel) {
-      setAnnouncementToDelete(annToDel);
-      setShowDeleteConfirmDialog(true);
-    }
+  const openDeleteConfirmation = (announcement: DisplayAnnouncement) => {
+    setAnnouncementToDelete(announcement);
   };
 
 
@@ -257,77 +251,79 @@ export default function AnnouncementsPage() {
                 if (!isOpen) resetFormAndState();
             }}>
               <DialogTrigger asChild>
-                <Button>
+                <Button onClick={handleOpenCreateModal}>
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  {announcementToEdit ? 'Editar Anuncio' : 'Crear Anuncio'}
+                  Crear Anuncio
                 </Button>
               </DialogTrigger>
               <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] flex flex-col">
-                <DialogHeader className="p-6 pb-0">
-                  <DialogTitle>{announcementToEdit ? 'Editar Anuncio' : 'Crear Nuevo Anuncio'}</DialogTitle>
-                  <DialogDescription>
-                    {announcementToEdit ? 'Modifica los detalles del anuncio.' : 'Redacta y publica un nuevo comunicado para los usuarios.'}
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleSaveAnnouncement} className="flex-1 overflow-y-auto px-6 py-4 thin-scrollbar">
-                 <div className="grid gap-4">
-                  <div className="space-y-1">
-                    <Label htmlFor="title">Título <span className="text-destructive">*</span></Label>
-                    <Input 
-                      id="title" 
-                      value={formTitle}
-                      onChange={(e) => setFormTitle(e.target.value)}
-                      placeholder="Título del anuncio" 
-                      required
-                      disabled={isProcessing}
-                    />
-                  </div>
-                  
-                  <div className="space-y-1">
-                     <Label htmlFor="content">Contenido <span className="text-destructive">*</span></Label>
-                      <Textarea
-                        id="content"
-                        value={formContent}
-                        onChange={(e) => setFormContent(e.target.value)}
-                        placeholder="Escribe aquí el contenido del anuncio para los usuarios..."
+                <form onSubmit={handleSaveAnnouncement}>
+                  <DialogHeader className="p-6 pb-0">
+                    <DialogTitle>{announcementToEdit ? 'Editar Anuncio' : 'Crear Nuevo Anuncio'}</DialogTitle>
+                    <DialogDescription>
+                      {announcementToEdit ? 'Modifica los detalles del anuncio.' : 'Redacta y publica un nuevo comunicado para los usuarios.'}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="overflow-y-auto px-6 py-4 thin-scrollbar">
+                  <div className="grid gap-4">
+                    <div className="space-y-1">
+                      <Label htmlFor="title">Título <span className="text-destructive">*</span></Label>
+                      <Input 
+                        id="title" 
+                        value={formTitle}
+                        onChange={(e) => setFormTitle(e.target.value)}
+                        placeholder="Título del anuncio" 
                         required
                         disabled={isProcessing}
-                        rows={5}
                       />
-                  </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <Label htmlFor="content">Contenido <span className="text-destructive">*</span></Label>
+                        <Textarea
+                          id="content"
+                          value={formContent}
+                          onChange={(e) => setFormContent(e.target.value)}
+                          placeholder="Escribe aquí el contenido del anuncio para los usuarios..."
+                          required
+                          disabled={isProcessing}
+                          rows={5}
+                        />
+                    </div>
 
-                  <div className="space-y-1">
-                    <Label htmlFor="audience">Dirigido a <span className="text-destructive">*</span></Label>
-                     <Select 
-                        name="audience" 
-                        value={formAudience}
-                        onValueChange={(value) => setFormAudience(value as UserRole | 'ALL')}
-                        required
-                        disabled={isProcessing}
-                      >
-                        <SelectTrigger id="audience" className="col-span-3">
-                           <SelectValue placeholder="Seleccionar audiencia" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="ALL">Todos</SelectItem>
-                          <SelectItem value="STUDENT">Estudiantes</SelectItem>
-                          <SelectItem value="INSTRUCTOR">Instructores</SelectItem>
-                          <SelectItem value="ADMINISTRATOR">Administradores</SelectItem>
-                        </SelectContent>
-                      </Select>
-                  </div>
-                   <p className="text-xs text-muted-foreground text-center pt-2">
-                      Los campos marcados con <span className="text-destructive">*</span> son obligatorios.
-                  </p>
-                  </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="audience">Dirigido a <span className="text-destructive">*</span></Label>
+                      <Select 
+                          name="audience" 
+                          value={formAudience}
+                          onValueChange={(value) => setFormAudience(value as UserRole | 'ALL')}
+                          required
+                          disabled={isProcessing}
+                        >
+                          <SelectTrigger id="audience" className="col-span-3">
+                            <SelectValue placeholder="Seleccionar audiencia" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="ALL">Todos</SelectItem>
+                            <SelectItem value="STUDENT">Estudiantes</SelectItem>
+                            <SelectItem value="INSTRUCTOR">Instructores</SelectItem>
+                            <SelectItem value="ADMINISTRATOR">Administradores</SelectItem>
+                          </SelectContent>
+                        </Select>
+                    </div>
+                    <p className="text-xs text-muted-foreground text-center pt-2">
+                        Los campos marcados con <span className="text-destructive">*</span> son obligatorios.
+                    </p>
+                    </div>
+                    </div>
+                    <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2">
+                      <Button type="button" variant="outline" onClick={() => { setShowCreateEditModal(false); resetFormAndState();}} disabled={isProcessing}>Cancelar</Button>
+                      <Button type="submit" disabled={isProcessing}>
+                        {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (announcementToEdit ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />) }
+                        {announcementToEdit ? 'Guardar Cambios' : 'Publicar Anuncio'}
+                      </Button>
+                    </DialogFooter>
                   </form>
-                  <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2">
-                    <Button type="button" variant="outline" onClick={() => { setShowCreateEditModal(false); resetFormAndState();}} disabled={isProcessing}>Cancelar</Button>
-                    <Button type="submit" form="create-update-form" disabled={isProcessing}>
-                      {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (announcementToEdit ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />) }
-                      {announcementToEdit ? 'Guardar Cambios' : 'Publicar Anuncio'}
-                    </Button>
-                  </DialogFooter>
               </DialogContent>
             </Dialog>
           </div>
@@ -393,7 +389,7 @@ export default function AnnouncementsPage() {
         </Pagination>
       )}
 
-      <AlertDialog open={showDeleteConfirmDialog} onOpenChange={setShowDeleteConfirmDialog}>
+      <AlertDialog open={!!announcementToDelete} onOpenChange={(open) => !open && setAnnouncementToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás realmente seguro?</AlertDialogTitle>
@@ -402,7 +398,7 @@ export default function AnnouncementsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2">
-            <AlertDialogCancel disabled={isProcessing}>
+            <AlertDialogCancel disabled={isProcessing} onClick={() => setAnnouncementToDelete(null)}>
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction 

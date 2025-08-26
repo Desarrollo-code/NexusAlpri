@@ -282,7 +282,6 @@ export default function UsersPage() {
     if (!userToDelete) return;
     if (userToDelete.id === currentUser?.id) {
         toast({ title: "Acción no permitida", description: "No puedes eliminar tu propia cuenta.", variant: "destructive" });
-        setShowDeleteConfirmDialog(false);
         setUserToDelete(null);
         return;
     }
@@ -298,7 +297,6 @@ export default function UsersPage() {
     } catch (err) {
       toast({ title: "Error al eliminar", description: err instanceof Error ? err.message : 'No se pudo eliminar el usuario.', variant: "destructive" });
     } finally {
-      setShowDeleteConfirmDialog(false);
       setUserToDelete(null);
       setIsProcessing(false);
     }
@@ -406,10 +404,7 @@ export default function UsersPage() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                         className="text-destructive focus:text-destructive-foreground focus:bg-destructive"
-                        onClick={() => {
-                            setUserToDelete(u);
-                            setShowDeleteConfirmDialog(true);
-                        }}
+                        onClick={() => setUserToDelete(u)}
                         disabled={u.id === currentUser?.id} 
                     >
                         <Trash2 className="mr-2 h-4 w-4"/>Eliminar
@@ -471,7 +466,7 @@ export default function UsersPage() {
                 <DropdownMenuItem onClick={() => handleOpenEditModal(u)}>Editar</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleOpenChangeRoleDialog(u)} disabled={u.id === currentUser?.id}>Cambiar Rol</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => { setUserToDelete(u); setShowDeleteConfirmDialog(true); }} disabled={u.id === currentUser?.id} className="text-destructive">Eliminar</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setUserToDelete(u)} disabled={u.id === currentUser?.id} className="text-destructive">Eliminar</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -491,84 +486,9 @@ export default function UsersPage() {
             <p className="text-muted-foreground">Administra los usuarios de la plataforma NexusAlpri.</p>
         </div>
         <div className="flex flex-row flex-wrap items-center gap-2">
-            <Dialog open={showAddEditModal} onOpenChange={(isOpen) => {
-                setShowAddEditModal(isOpen);
-                if (!isOpen) {
-                    setUserToEdit(null); 
-                    resetFormFields();
-                }
-            }}>
-                <DialogTrigger asChild>
-                    <Button>
-                        <GradientIcon icon={PlusCircle} className="mr-2" size="sm"/> Añadir Nuevo Usuario
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] flex flex-col">
-                    <DialogHeader className="p-6 pb-0">
-                      <DialogTitle>{userToEdit ? "Editar Usuario" : "Añadir Nuevo Usuario"}</DialogTitle>
-                      <DialogDescription>
-                        {userToEdit ? "Modifica los datos del usuario." : "Completa los campos para registrar un nuevo usuario."}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleAddEditUser} className="flex-1 overflow-y-auto px-6 py-4 thin-scrollbar">
-                    <div className="grid gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="name">Nombre</Label>
-                            <Input id="name" name="name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nombre completo" required disabled={isProcessing} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" name="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="usuario@ejemplo.com" required disabled={isProcessing}/>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="role">Rol</Label>
-                            <Select name="role" value={editRole} onValueChange={(value) => setEditRole(value as UserRole)} required disabled={isProcessing}>
-                                <SelectTrigger id="role">
-                                    <SelectValue placeholder="Seleccionar rol" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="STUDENT">Estudiante</SelectItem>
-                                    <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                                    <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        {!userToEdit && (
-                           <div className="space-y-2">
-                              <Label htmlFor="password">Contraseña</Label>
-                              <div className="relative">
-                                <Input 
-                                  id="password" 
-                                  name="password"
-                                  type={showPassword ? "text" : "password"}
-                                  value={editPassword} 
-                                  onChange={(e) => setEditPassword(e.target.value)} 
-                                  placeholder="Mínimo 8 caracteres" 
-                                  required 
-                                  disabled={isProcessing}
-                                  className="pr-10"
-                                />
-                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
-                                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                  </button>
-                              </div>
-                            </div>
-                        )}
-                        </div>
-                    </form>
-                    <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2">
-                            <Button type="button" variant="outline" onClick={() => {
-                                setShowAddEditModal(false);
-                                setUserToEdit(null);
-                                resetFormFields();
-                            }} disabled={isProcessing}>Cancelar</Button>
-                            <Button type="submit" form="add-edit-user-form" disabled={isProcessing}>
-                                {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                                {userToEdit ? "Guardar Cambios" : "Crear Usuario"}
-                            </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <Button onClick={handleOpenAddModal}>
+                <GradientIcon icon={PlusCircle} className="mr-2" size="sm"/> Añadir Nuevo Usuario
+            </Button>
         </div>
       </div>
 
@@ -641,8 +561,74 @@ export default function UsersPage() {
             </CardFooter>
         )}
       </Card>
+      
+      <Dialog open={showAddEditModal} onOpenChange={(isOpen) => { setShowAddEditModal(isOpen); if (!isOpen) { setUserToEdit(null); resetFormFields(); } }}>
+          <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] flex flex-col">
+              <form onSubmit={handleAddEditUser}>
+                <DialogHeader className="p-6 pb-0">
+                  <DialogTitle>{userToEdit ? "Editar Usuario" : "Añadir Nuevo Usuario"}</DialogTitle>
+                  <DialogDescription>
+                    {userToEdit ? "Modifica los datos del usuario." : "Completa los campos para registrar un nuevo usuario."}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="overflow-y-auto px-6 py-4 thin-scrollbar">
+                <div className="grid gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="name">Nombre</Label>
+                        <Input id="name" name="name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nombre completo" required disabled={isProcessing} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" name="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="usuario@ejemplo.com" required disabled={isProcessing}/>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="role">Rol</Label>
+                        <Select name="role" value={editRole} onValueChange={(value) => setEditRole(value as UserRole)} required disabled={isProcessing}>
+                            <SelectTrigger id="role">
+                                <SelectValue placeholder="Seleccionar rol" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="STUDENT">Estudiante</SelectItem>
+                                <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
+                                <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    {!userToEdit && (
+                      <div className="space-y-2">
+                          <Label htmlFor="password">Contraseña</Label>
+                          <div className="relative">
+                            <Input 
+                              id="password" 
+                              name="password"
+                              type={showPassword ? "text" : "password"}
+                              value={editPassword} 
+                              onChange={(e) => setEditPassword(e.target.value)} 
+                              placeholder="Mínimo 8 caracteres" 
+                              required 
+                              disabled={isProcessing}
+                              className="pr-10"
+                            />
+                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
+                                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                              </button>
+                          </div>
+                        </div>
+                    )}
+                    </div>
+                </div>
+                <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2">
+                        <Button type="button" variant="outline" onClick={() => { setShowAddEditModal(false); setUserToEdit(null); resetFormFields(); }} disabled={isProcessing}>Cancelar</Button>
+                        <Button type="submit" disabled={isProcessing}>
+                            {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            {userToEdit ? "Guardar Cambios" : "Crear Usuario"}
+                        </Button>
+                </DialogFooter>
+              </form>
+          </DialogContent>
+      </Dialog>
 
-      <AlertDialog open={showDeleteConfirmDialog} onOpenChange={setShowDeleteConfirmDialog}>
+      <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
         <AlertDialogContent className="w-[95vw] max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
@@ -652,9 +638,10 @@ export default function UsersPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-            <AlertDialogCancel disabled={isProcessing} onClick={() => setShowDeleteConfirmDialog(false)}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isProcessing} onClick={() => setUserToDelete(null)}>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteUser} disabled={isProcessing} className={buttonVariants({ variant: "destructive" })}>
-              {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : "Sí, eliminar usuario"}
+              {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+              Sí, eliminar usuario
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -665,40 +652,39 @@ export default function UsersPage() {
           if (!isOpen) setUserToChangeRole(null);
       }}>
           <DialogContent className="w-[95vw] max-w-sm">
-              <DialogHeader>
-                <DialogTitle>Cambiar Rol de Usuario</DialogTitle>
-                <DialogDescription>
-                  Selecciona el nuevo rol para <strong>{userToChangeRole?.name}</strong>.
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleChangeUserRoleSubmit} className="space-y-4 py-4">
-                  <div className="space-y-2">
-                      <Label htmlFor="user-name-role">Usuario</Label>
-                      <Input id="user-name-role" value={userToChangeRole?.name || ''} disabled />
-                  </div>
-                  <div className="space-y-2">
-                      <Label htmlFor="new-role">Nuevo Rol</Label>
-                      <Select name="new-role" value={selectedNewRole} onValueChange={(value) => setSelectedNewRole(value as UserRole)} required disabled={isProcessing}>
-                          <SelectTrigger id="new-role">
-                              <SelectValue placeholder="Seleccionar nuevo rol" />
-                          </SelectTrigger>
-                          <SelectContent>
-                              <SelectItem value="STUDENT">Estudiante</SelectItem>
-                              <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                              <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
-                          </SelectContent>
-                      </Select>
-                  </div>
-                  <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4">
-                      <Button type="button" variant="outline" onClick={() => {
-                          setShowChangeRoleDialog(false);
-                          setUserToChangeRole(null);
-                      }} disabled={isProcessing}>Cancelar</Button>
-                      <Button type="submit" disabled={isProcessing}>
-                          {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                          Guardar Rol
-                      </Button>
-                  </DialogFooter>
+              <form onSubmit={handleChangeUserRoleSubmit}>
+                <DialogHeader>
+                  <DialogTitle>Cambiar Rol de Usuario</DialogTitle>
+                  <DialogDescription>
+                    Selecciona el nuevo rol para <strong>{userToChangeRole?.name}</strong>.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="user-name-role">Usuario</Label>
+                        <Input id="user-name-role" value={userToChangeRole?.name || ''} disabled />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="new-role">Nuevo Rol</Label>
+                        <Select name="new-role" value={selectedNewRole} onValueChange={(value) => setSelectedNewRole(value as UserRole)} required disabled={isProcessing}>
+                            <SelectTrigger id="new-role">
+                                <SelectValue placeholder="Seleccionar nuevo rol" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="STUDENT">Estudiante</SelectItem>
+                                <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
+                                <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4">
+                    <Button type="button" variant="outline" onClick={() => { setShowChangeRoleDialog(false); setUserToChangeRole(null); }} disabled={isProcessing}>Cancelar</Button>
+                    <Button type="submit" disabled={isProcessing}>
+                        {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        Guardar Rol
+                    </Button>
+                </DialogFooter>
               </form>
           </DialogContent>
       </Dialog>
