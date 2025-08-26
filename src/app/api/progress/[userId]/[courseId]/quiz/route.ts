@@ -1,4 +1,3 @@
-
 // src/app/api/progress/[userId]/[courseId]/quiz/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
