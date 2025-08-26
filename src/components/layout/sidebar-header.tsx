@@ -13,18 +13,18 @@ export const SidebarHeader = () => {
   
   return (
     <div className={cn(
-      "flex items-center h-20", 
-      isCollapsed ? 'justify-center' : 'px-4'
+      "flex items-center justify-center h-20", 
+      isCollapsed ? '' : 'px-4'
     )}>
       <Link href="/dashboard" className="inline-flex items-center gap-3">
          <div className={cn(
              "bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden",
-             isCollapsed ? "h-12 w-12 p-2" : "h-14 w-14 p-2.5", // Aumentado el tamaño aquí
+             isCollapsed ? "h-12 w-12" : "h-14 w-14",
              !settings?.logoUrl && "p-2"
          )}>
             {settings?.logoUrl ? 
               <div className="relative w-full h-full">
-                <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain"/>
+                <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className={cn("object-contain", isCollapsed ? 'p-1.5' : 'p-1')} />
               </div> 
               : <div className="w-full h-full rounded-md bg-muted" />
             }
