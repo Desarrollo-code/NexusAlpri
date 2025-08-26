@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import type { Notification } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useTitle } from "@/contexts/title-context";
+import Image from "next/image";
 
 const timeSince = (date: Date): string => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -31,8 +32,9 @@ const timeSince = (date: Date): string => {
 };
 
 export const TopBar = () => {
-    const { isMobile, toggleSidebar } = useSidebar();
+    const { isMobile, toggleSidebar, isCollapsed } = useSidebar();
     const { pageTitle } = useTitle();
+    const { settings } = useAuth();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const { toast } = useToast();
@@ -86,15 +88,12 @@ export const TopBar = () => {
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2">
-                {isMobile && (
-                    <Button
-                        onClick={toggleSidebar}
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 text-foreground"
-                    >
-                        <ChevronsLeft className="h-5 w-5" />
-                    </Button>
+                 {(isMobile || isCollapsed) && (
+                    <Link href="/dashboard" className="flex items-center justify-center gap-3" prefetch={false}>
+                        <div className={cn("w-10 h-10 bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden", !settings?.logoUrl && "p-2")}>
+                          {settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain p-1"/></div> : <div className="w-full h-full rounded-md bg-muted" />}
+                        </div>
+                      </Link>
                 )}
                  <h1 className="text-xl font-semibold truncate text-foreground">{pageTitle}</h1>
             </div>

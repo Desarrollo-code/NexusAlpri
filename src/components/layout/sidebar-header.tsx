@@ -1,48 +1,41 @@
-
 // src/components/layout/sidebar-header.tsx
-
 'use client';
 
 import { useSidebar } from "../ui/sidebar";
 import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Identicon } from "../ui/identicon";
+import { getInitials } from "@/lib/utils";
 
 export const SidebarHeader = () => {
   const { isCollapsed } = useSidebar();
-  const { settings } = useAuth();
+  const { user } = useAuth();
   
-  const logoSrc = settings?.logoUrl; // No hay fallback, depende 100% de la config.
+  if (!user) return null;
 
   return (
     <div className={cn(
-      "flex items-center h-20 px-4", 
-      isCollapsed ? 'justify-center' : 'justify-between'
+      "flex items-center h-20", 
+      isCollapsed ? 'justify-center px-2' : 'px-4'
     )}>
-      <Link href="/dashboard" className={cn("flex items-center gap-2 overflow-hidden")}>
-         <div className={cn(
-            "flex items-center justify-center flex-shrink-0 rounded-lg transition-all duration-300 relative overflow-hidden",
-            "w-12 h-12 bg-gradient-to-br from-primary to-accent"
+      <Link href="/profile" className={cn(
+          "flex items-center gap-3 w-full p-2 rounded-lg transition-colors",
+          "hover:bg-muted"
         )}>
-          {logoSrc ? (
-            <div className="relative w-full h-full p-1">
-              <Image 
-                src={logoSrc} 
-                alt="Logo" 
-                fill
-                data-ai-hint="logo" 
-                className="object-contain"
-              />
-            </div>
-          ) : (
-             <div className="w-full h-full bg-muted" />
-          )}
-        </div>
+         <Avatar className={cn(isCollapsed ? 'h-10 w-10' : 'h-12 w-12')}>
+             {user.avatar ? <AvatarImage src={user.avatar} alt={user.name} /> : null}
+             <AvatarFallback>
+                 <Identicon userId={user.id} />
+             </AvatarFallback>
+         </Avatar>
+        
         {!isCollapsed && (
-            <span className={cn("text-2xl font-bold font-headline tracking-wide whitespace-nowrap text-foreground transition-opacity duration-300")}>
-              {settings?.platformName || 'NexusAlpri'}
-            </span>
+            <div className="overflow-hidden">
+                <p className="font-semibold truncate">{user.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{getInitials(user.role)}</p>
+            </div>
         )}
       </Link>
     </div>
