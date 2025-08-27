@@ -78,17 +78,17 @@ const MetricCard = ({ title, value, icon: Icon, description, suffix = '' }: { ti
 
 const userRolesChartConfig = {
   count: { label: "Usuarios" },
-  STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
-  INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
-  ADMINISTRATOR: { label: "Administradores", color: "hsl(var(--chart-3))" },
+  STUDENT: { label: "Estudiantes", color: "hsl(210 90% 55%)" },
+  INSTRUCTOR: { label: "Instructores", color: "hsl(140 80% 45%)" },
+  ADMINISTRATOR: { label: "Admins", color: "hsl(260 85% 60%)" },
 } satisfies ChartConfig;
 
 const courseStatusChartConfig = {
     count: { label: "Cursos" },
-    DRAFT: { label: "Borrador", color: "hsl(var(--chart-4))" },
-    PUBLISHED: { label: "Publicado", color: "hsl(var(--chart-2))" },
-    ARCHIVED: { label: "Archivado", color: "hsl(var(--chart-5))" },
-    SCHEDULED: { label: "Programado", color: "hsl(var(--chart-1))"}
+    DRAFT: { label: "Borrador", color: "hsl(35 90% 55%)" },
+    PUBLISHED: { label: "Publicado", color: "hsl(140 80% 45%)" },
+    ARCHIVED: { label: "Archivado", color: "hsl(220 10% 60%)" },
+    SCHEDULED: { label: "Programado", color: "hsl(210 90% 55%)"}
 } satisfies ChartConfig;
 
 const renderActiveShape = (props: any) => {
@@ -113,7 +113,7 @@ const renderActiveShape = (props: any) => {
         cx={cx}
         cy={cy}
         innerRadius={innerRadius}
-        outerRadius={outerRadius + 4} // Slightly larger pop-out effect
+        outerRadius={outerRadius + 2} // Slightly smaller pop-out effect
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
@@ -156,8 +156,8 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
                 data={data} 
                 dataKey="count" 
                 nameKey="label" 
-                innerRadius={85} 
-                outerRadius={110}
+                innerRadius={90} 
+                outerRadius={115}
                 strokeWidth={2}
                 activeIndex={activeIndex}
                 activeShape={renderActiveShape}
@@ -328,7 +328,7 @@ function AdminAnalyticsPage() {
     const registrationTrendChartConfig = {
       count: {
         label: "Nuevos Usuarios",
-        color: "hsl(var(--chart-1))",
+        color: "hsl(var(--primary))",
       },
     } satisfies ChartConfig;
 
@@ -411,7 +411,7 @@ function AdminAnalyticsPage() {
                          </defs>
                          <CartesianGrid vertical={false} strokeDasharray="3 3" />
                          <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} interval="preserveStartEnd" angle={-45} textAnchor="end" tickFormatter={formatDateTick}/>
-                         <YAxis tickLine={false} axisLine={false} tickMargin={10} />
+                         <YAxis tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} />
                          <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" hideIndicator labelFormatter={formatDateTooltip} />} />
                          <Area type="monotone" dataKey="count" stroke="var(--color-count)" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" />
                        </AreaChart>
