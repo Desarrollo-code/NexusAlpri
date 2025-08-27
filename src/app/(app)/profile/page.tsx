@@ -1,3 +1,4 @@
+
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -46,7 +47,6 @@ import { getRoleInSpanish } from '@/lib/security-log-utils';
 const ProfileCardBackground = () => (
     <div className="card__img">
       <div className="card__img--gradient"></div>
-      <div className="card__img--pattern"></div>
     </div>
 );
 

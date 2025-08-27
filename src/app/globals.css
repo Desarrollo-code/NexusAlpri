@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -108,6 +109,9 @@
   }
   .profile-card .card__img {
     @apply h-28 w-full relative;
+  }
+  .profile-card .card__img .card__img--gradient {
+    @apply absolute inset-0 bg-gradient-to-br from-primary to-accent opacity-80;
   }
   .profile-card .card__avatar {
     @apply relative w-32 h-32 mx-auto -mt-20;
