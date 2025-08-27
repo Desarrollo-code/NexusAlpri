@@ -10,7 +10,7 @@ import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../ui/input';
 import { DownloadButton } from '../ui/download-button';
-import { cn, getInitials } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
 import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -19,6 +19,7 @@ import mammoth from 'mammoth';
 import JSZip from 'jszip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
+import { getInitials } from '@/lib/utils';
 
 
 const DocxPreviewer = ({ url }: { url: string }) => {
@@ -31,11 +32,13 @@ const DocxPreviewer = ({ url }: { url: string }) => {
             setIsLoading(true);
             setError(null);
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('No se pudo cargar el archivo para la previsualización.');
-                const arrayBuffer = await response.arrayBuffer();
-                const result = await mammoth.convertToHtml({ arrayBuffer });
-                setHtml(result.value);
+                const response = await fetch(`/api/resources/preview?url=${encodeURIComponent(url)}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'No se pudo cargar el archivo para la previsualización.');
+                }
+                const data = await response.json();
+                setHtml(data.html);
             } catch (e) {
                 console.error("Error procesando DOCX:", e);
                 setError("No se pudo previsualizar este archivo Word.");
