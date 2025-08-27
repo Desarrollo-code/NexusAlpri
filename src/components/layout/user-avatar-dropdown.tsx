@@ -25,6 +25,7 @@ import { useTheme } from 'next-themes';
 import { UserRole } from '@/types';
 import { AVAILABLE_THEMES } from '../theme-provider';
 import { Identicon } from '../ui/identicon';
+import { getRoleInSpanish } from '@/lib/security-log-utils';
 
 
 function ThemeToggle() {
@@ -63,14 +64,6 @@ export function UserAvatarDropdown() {
 
   if (!user) return null;
   
-  const getRoleInSpanish = (role: UserRole) => {
-    switch (role) {
-        case 'ADMINISTRATOR': return 'Administrador';
-        case 'INSTRUCTOR': return 'Instructor';
-        case 'STUDENT': return 'Estudiante';
-        default: return role;
-    }
-  }
 
   const userDisplayName = user.name || "Usuario";
   const userDisplayEmail = user.email || "No email";

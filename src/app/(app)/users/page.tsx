@@ -1,3 +1,4 @@
+
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -57,6 +58,7 @@ import { GradientIcon } from '@/components/ui/gradient-icon';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useTitle } from '@/contexts/title-context';
 import { Identicon } from '@/components/ui/identicon';
+import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils';
 
 const PAGE_SIZE = 10;
 
@@ -166,23 +168,6 @@ export default function UsersPage() {
      }
   }, [debouncedSearchTerm, pathname, router, createQueryString, searchParams]);
   
-  const getRoleInSpanish = (role: UserRole) => {
-    switch (role) {
-        case 'ADMINISTRATOR': return 'Administrador';
-        case 'INSTRUCTOR': return 'Instructor';
-        case 'STUDENT': return 'Estudiante';
-        default: return role;
-    }
-  }
-
-  const getRoleBadgeVariant = (role: UserRole) => {
-    switch(role) {
-      case 'ADMINISTRATOR': return 'destructive';
-      case 'INSTRUCTOR': return 'default';
-      case 'STUDENT': return 'secondary';
-      default: return 'outline';
-    }
-  };
 
   const resetFormFields = () => {
     setEditName('');

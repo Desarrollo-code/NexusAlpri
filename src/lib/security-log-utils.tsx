@@ -1,10 +1,29 @@
 
+
 // src/lib/security-log-utils.tsx
 'use client';
 
-import type { SecurityLogEvent } from '@/types';
+import type { SecurityLogEvent, UserRole } from '@/types';
 import { ShieldCheck, ShieldX, KeyRound, UserCog, ShieldAlert, Monitor, Globe } from 'lucide-react';
 import React from 'react';
+
+export const getRoleInSpanish = (role: UserRole) => {
+    switch (role) {
+      case 'ADMINISTRATOR': return 'Administrador';
+      case 'INSTRUCTOR': return 'Instructor';
+      case 'STUDENT': return 'Estudiante';
+      default: return role;
+    }
+};
+
+export const getRoleBadgeVariant = (role: UserRole) => {
+    switch(role) {
+      case 'ADMINISTRATOR': return 'destructive';
+      case 'INSTRUCTOR': return 'default';
+      case 'STUDENT': return 'secondary';
+      default: return 'outline';
+    }
+};
 
 export const getEventDetails = (event: SecurityLogEvent, details?: string | null) => {
     switch (event) {

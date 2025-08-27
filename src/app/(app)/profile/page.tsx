@@ -42,6 +42,7 @@ import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '@/comp
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 import { AnimatePresence } from 'framer-motion';
 import { Identicon } from '@/components/ui/identicon';
+import { getRoleInSpanish } from '@/lib/security-log-utils';
 
 const ProfileCardBackground = () => (
     <div className="card__img">
@@ -108,15 +109,6 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  const getRoleInSpanish = (role: UserRole) => {
-    switch (role) {
-      case 'ADMINISTRATOR': return 'Administrador';
-      case 'INSTRUCTOR': return 'Instructor';
-      case 'STUDENT': return 'Estudiante';
-      default: return role;
-    }
-  };
-  
   const avatarSrc = avatarPreview || user?.avatar || null;
 
  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
