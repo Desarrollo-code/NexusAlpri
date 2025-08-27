@@ -113,7 +113,7 @@ const renderActiveShape = (props: any) => {
         cx={cx}
         cy={cy}
         innerRadius={innerRadius}
-        outerRadius={outerRadius + 2} // Subtle expansion
+        outerRadius={outerRadius}
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
@@ -154,8 +154,8 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
                 data={data} 
                 dataKey="count" 
                 nameKey="label" 
-                innerRadius={70} 
-                outerRadius={90}
+                innerRadius={80} 
+                outerRadius={100}
                 strokeWidth={2}
                 activeIndex={activeIndex}
                 activeShape={renderActiveShape}
@@ -397,7 +397,7 @@ function AdminAnalyticsPage() {
             <CardHeader>
                 <CardTitle>Tendencia de Registros (Últimos 30 Días)</CardTitle>
             </CardHeader>
-            <CardContent className="h-80">
+            <CardContent className="h-80 p-0 pr-4">
                  <ChartContainer config={registrationTrendChartConfig}>
                     <BarChart accessibilityLayer data={stats?.userRegistrationTrend || []}>
                          <CartesianGrid vertical={false} />
