@@ -24,6 +24,13 @@ const config: Config = {
       },
     },
     extend: {
+      backgroundImage: {
+        'gradient-blue': 'linear-gradient(to right bottom, #3b82f6, #60a5fa)',
+        'gradient-green': 'linear-gradient(to right bottom, #16a34a, #4ade80)',
+        'gradient-purple': 'linear-gradient(to right bottom, #7e22ce, #a855f7)',
+        'gradient-orange': 'linear-gradient(to right bottom, #f97316, #fb923c)',
+        'gradient-pink': 'linear-gradient(to right bottom, #db2777, #f472b6)',
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 4px)",

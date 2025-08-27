@@ -45,6 +45,7 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useTitle } from '@/contexts/title-context';
 import { Identicon } from '@/components/ui/identicon';
+import { cn } from '@/lib/utils';
 
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -90,17 +91,18 @@ interface DashboardData {
 
 // --- DASHBOARD COMPONENTS PER ROLE ---
 
-const MetricCard = ({ title, value: finalValue, icon: Icon, description }: { title: string; value: number; icon: React.ElementType; description?: string }) => {
+const MetricCard = ({ title, value: finalValue, icon: Icon, description, gradient }: { title: string; value: number; icon: React.ElementType; description?: string, gradient?: string }) => {
     const animatedValue = useAnimatedCounter(finalValue);
     return (
-        <Card className="shadow-sm card-border-animated">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-                <Icon className="h-4 w-4 text-primary" />
+        <Card className={cn("relative overflow-hidden text-white card-border-animated", gradient)}>
+            <div className="absolute inset-0 bg-black/10"></div>
+            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-white/80">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-white/80" />
             </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{animatedValue}</div>
-                {description && <p className="text-xs text-muted-foreground">{description}</p>}
+            <CardContent className="relative">
+                <div className="text-3xl font-bold text-white">{animatedValue}</div>
+                {description && <p className="text-xs text-white/70">{description}</p>}
             </CardContent>
         </Card>
     );
@@ -135,10 +137,10 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
   return (
     <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-            <MetricCard title="Total Usuarios" value={stats.totalUsers} icon={UsersRound} />
-            <MetricCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={BookOpenCheck} />
-            <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="En los últimos 7 días" />
-            <MetricCard title="Nuevos Registros" value={stats.newUsersLast7Days} icon={UserPlus} description="En los últimos 7 días"/>
+            <MetricCard title="Total Usuarios" value={stats.totalUsers} icon={UsersRound} gradient="bg-gradient-blue" />
+            <MetricCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={BookOpenCheck} gradient="bg-gradient-green" />
+            <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="En los últimos 7 días" gradient="bg-gradient-orange" />
+            <MetricCard title="Nuevos Registros" value={stats.newUsersLast7Days} icon={UserPlus} description="En los últimos 7 días" gradient="bg-gradient-purple" />
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

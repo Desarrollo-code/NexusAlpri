@@ -21,6 +21,7 @@ import { useTitle } from '@/contexts/title-context';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Identicon } from '@/components/ui/identicon';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 
 interface SecurityLogWithUser extends AppSecurityLog {
@@ -36,17 +37,18 @@ interface SecurityStats {
 
 const PAGE_SIZE = 20;
 
-const MetricCard = ({ title, value, icon: Icon, description }: { title: string; value: number; icon: React.ElementType; description?: string }) => {
+const MetricCard = ({ title, value, icon: Icon, description, gradient }: { title: string; value: number; icon: React.ElementType; description?: string, gradient?: string }) => {
     const animatedValue = useAnimatedCounter(value);
     return (
-        <Card className="shadow-sm card-border-animated">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-                <Icon className="h-4 w-4 text-primary" />
+        <Card className={cn("relative overflow-hidden text-white card-border-animated", gradient)}>
+            <div className="absolute inset-0 bg-black/10"></div>
+            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-white/80">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-white/80" />
             </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{animatedValue}</div>
-                {description && <p className="text-xs text-muted-foreground">{description}</p>}
+            <CardContent className="relative">
+                <div className="text-3xl font-bold text-white">{animatedValue}</div>
+                {description && <p className="text-xs text-white/70">{description}</p>}
             </CardContent>
         </Card>
     );
@@ -151,10 +153,10 @@ export default function SecurityAuditPage() {
                  </div>
             ) : stats && (
                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <MetricCard title="Inicios de Sesión Exitosos" value={stats.successfulLogins} icon={ShieldCheck} description="Últimas 24 horas" />
-                    <MetricCard title="Inicios de Sesión Fallidos" value={stats.failedLogins} icon={ShieldX} description="Últimas 24 horas" />
-                    <MetricCard title="Eventos 2FA" value={stats.twoFactorEvents} icon={KeyRound} description="Últimas 24 horas" />
-                    <MetricCard title="Cambios de Rol" value={stats.roleChanges} icon={UserCog} description="Últimas 24 horas" />
+                    <MetricCard title="Inicios de Sesión Exitosos" value={stats.successfulLogins} icon={ShieldCheck} description="Últimas 24 horas" gradient="bg-gradient-green" />
+                    <MetricCard title="Inicios de Sesión Fallidos" value={stats.failedLogins} icon={ShieldX} description="Últimas 24 horas" gradient="bg-gradient-orange" />
+                    <MetricCard title="Eventos 2FA" value={stats.twoFactorEvents} icon={KeyRound} description="Últimas 24 horas" gradient="bg-gradient-blue" />
+                    <MetricCard title="Cambios de Rol" value={stats.roleChanges} icon={UserCog} description="Últimas 24 horas" gradient="bg-gradient-purple" />
                  </div>
             )}
 

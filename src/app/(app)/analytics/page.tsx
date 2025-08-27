@@ -37,6 +37,7 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useTitle } from '@/contexts/title-context';
 import { Identicon } from '@/components/ui/identicon';
+import { cn } from '@/lib/utils';
 
 
 const formatDateTick = (tick: string) => {
@@ -60,17 +61,18 @@ const formatDateTooltip = (dateString: string) => {
 
 // --- DASHBOARD COMPONENTS ---
 
-const MetricCard = ({ title, value, icon: Icon, description, suffix = '' }: { title: string; value: number; icon: React.ElementType; description?: string, suffix?: string }) => {
+const MetricCard = ({ title, value, icon: Icon, description, suffix = '', gradient }: { title: string; value: number; icon: React.ElementType; description?: string, suffix?: string, gradient: string }) => {
     const animatedValue = useAnimatedCounter(value);
     return (
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-                <Icon className="h-4 w-4 text-primary" />
+        <Card className={cn("relative overflow-hidden text-white card-border-animated", gradient)}>
+            <div className="absolute inset-0 bg-black/10"></div>
+            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-white/80">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-white/80" />
             </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{animatedValue}{suffix}</div>
-                {description && <p className="text-xs text-muted-foreground">{description}</p>}
+            <CardContent className="relative">
+                <div className="text-3xl font-bold text-white">{animatedValue}{suffix}</div>
+                {description && <p className="text-xs text-white/70">{description}</p>}
             </CardContent>
         </Card>
     );
@@ -113,7 +115,7 @@ const renderActiveShape = (props: any) => {
         cx={cx}
         cy={cy}
         innerRadius={innerRadius}
-        outerRadius={outerRadius + 2} // Slightly smaller pop-out effect
+        outerRadius={outerRadius}
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
@@ -157,7 +159,7 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
                 dataKey="count" 
                 nameKey="label" 
                 innerRadius={90} 
-                outerRadius={115}
+                outerRadius={110}
                 strokeWidth={2}
                 activeIndex={activeIndex}
                 activeShape={renderActiveShape}
@@ -366,11 +368,11 @@ function AdminAnalyticsPage() {
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold">Resumen de la Plataforma</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
-            <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} />
-            <MetricCard title="Total Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} />
-            <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} />
-            <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={BookOpenCheck} />
-            <MetricCard title="Tasa de Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio de todos los cursos" />
+            <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
+            <MetricCard title="Total Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
+            <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} gradient="bg-gradient-orange" />
+            <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={BookOpenCheck} gradient="bg-gradient-green" />
+            <MetricCard title="Tasa de Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio de todos los cursos" gradient="bg-gradient-pink" />
         </div>
         
         <Separator />
@@ -402,7 +404,7 @@ function AdminAnalyticsPage() {
             <CardContent className="h-80 p-0 pr-4">
                  <ChartContainer config={registrationTrendChartConfig} className="w-full h-full -ml-4 pl-4">
                     <ResponsiveContainer>
-                       <AreaChart accessibilityLayer data={stats?.userRegistrationTrend || []} margin={{ top: 10, right: 10, left: -20, bottom: 40 }}>
+                       <AreaChart accessibilityLayer data={stats?.userRegistrationTrend || []} margin={{ top: 10, right: 10, left: 0, bottom: 40 }}>
                          <defs>
                             <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8}/>
