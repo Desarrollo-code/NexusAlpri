@@ -54,6 +54,7 @@ import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Calendar } from '@/components/ui/calendar';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { UploadArea } from '@/components/ui/upload-area';
+import { ImageCropper } from '@/components/image-cropper';
 
 
 // === TIPOS E INTERFACES ===
@@ -263,6 +264,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [imageToCrop, setImageToCrop] = useState<string | null>(null);
 
     // --- Data Fetching ---
     useEffect(() => {
@@ -459,22 +461,17 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
-
-            setIsUploading(true);
-            setUploadProgress(0);
-
-            try {
-                const result: { url: string } = await uploadWithProgress('/api/upload/course-image', formData, setUploadProgress);
-                updateCourseField('imageUrl', result.url);
-                toast({ title: "Imagen Subida", description: "La imagen de portada ha sido actualizada." });
-            } catch (err) {
-                toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
-            } finally {
-                setIsUploading(false);
-            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                setImageToCrop(reader.result as string);
+            };
+            reader.readAsDataURL(file);
         }
+    };
+    
+    const handleCropComplete = (croppedFileUrl: string) => {
+        updateCourseField('imageUrl', croppedFileUrl);
+        setImageToCrop(null);
     };
 
 
@@ -674,7 +671,12 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     </Card>
                 </div>
             </div>
-            
+            <ImageCropper
+                imageSrc={imageToCrop}
+                onCropComplete={handleCropComplete}
+                onClose={() => setImageToCrop(null)}
+                uploadUrl="/api/upload/course-image"
+            />
             <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro? Esta acción eliminará "{itemToDeleteDetails?.name}" y su contenido.</AlertDialogDescription></AlertDialogHeader>
