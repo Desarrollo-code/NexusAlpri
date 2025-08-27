@@ -90,9 +90,6 @@ const config: Config = {
         },
         sidebar: {
           background: 'hsl(var(--sidebar-background))',
-          header: {
-            DEFAULT: 'hsl(var(--sidebar-header-background))',
-          },
           foreground: 'hsl(var(--sidebar-foreground))',
           muted: {
             foreground: 'hsl(var(--sidebar-muted-foreground))',
