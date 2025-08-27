@@ -1,4 +1,3 @@
-
 import prisma from '@/lib/prisma';
 import type { LessonCompletionRecord as AppLessonCompletionRecord } from '@/types';
 
@@ -64,8 +63,18 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
 
     // Use a direct create and catch the unique constraint violation to prevent race conditions.
     try {
-        await prisma.lessonCompletionRecord.create({
-            data: {
+        await prisma.lessonCompletionRecord.upsert({
+            where: {
+                progressId_lessonId: {
+                    progressId,
+                    lessonId,
+                }
+            },
+            update: {
+                type: type,
+                score: score,
+            },
+            create: {
                 progressId: progressId,
                 lessonId: lessonId,
                 type: type,

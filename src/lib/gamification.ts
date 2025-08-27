@@ -4,7 +4,7 @@ import prisma from './prisma';
 export const dynamic = 'force-dynamic';
 
 // --- CONFIGURACIÓN DE PUNTOS Y LOGROS ---
-const XP_CONFIG = {
+export const XP_CONFIG = {
     ENROLL_COURSE: 10,
     COMPLETE_LESSON: 5,
     COMPLETE_QUIZ: 15,
@@ -13,7 +13,7 @@ const XP_CONFIG = {
 };
 
 // Slugs de logros que deben existir en la tabla `Achievement`
-const ACHIEVEMENT_SLUGS = {
+export const ACHIEVEMENT_SLUGS = {
     FIRST_ENROLLMENT: 'first-enrollment',
     FIRST_COURSE_COMPLETED: 'first-course-completed',
     PERFECT_SCORE: 'perfect-quiz-score',

@@ -265,7 +265,7 @@ export function QuizViewer({ quiz, lessonId, courseId, isEnrolled, isCreatorPrev
                          </AlertDescription>
                     </Alert>
                  ) : (
-                    <Button className="w-full" onClick={() => setQuizStarted(true)}>
+                    <Button className="w-full" onClick={() => setQuizStarted(true)} disabled={!canAttemptQuiz}>
                         <PlayCircle className="mr-2 h-4 w-4"/>
                         {isCreatorPreview ? 'Comenzar (Vista Previa)' : 'Comenzar Quiz'}
                     </Button>
