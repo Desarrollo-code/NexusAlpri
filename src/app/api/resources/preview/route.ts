@@ -11,9 +11,12 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        const response = await fetch(fileUrl);
+        // Construct the full URL for the fetch request on the server-side
+        const absoluteUrl = new URL(fileUrl, req.nextUrl.origin).href;
+
+        const response = await fetch(absoluteUrl);
         if (!response.ok) {
-            throw new Error(`No se pudo obtener el archivo desde ${fileUrl}`);
+            throw new Error(`No se pudo obtener el archivo desde ${absoluteUrl}`);
         }
         const arrayBuffer = await response.arrayBuffer();
 
