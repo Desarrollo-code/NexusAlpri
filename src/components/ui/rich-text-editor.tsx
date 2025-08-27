@@ -33,6 +33,7 @@ const modules = {
     [{ 'header': [1, 2, 3, false] }],
     ['bold', 'italic', 'underline', 'strike'],        // Estilos básicos
     [{'list': 'ordered'}, {'list': 'bullet'}],
+    ['blockquote', 'code-block'],                     // Cita y bloque de código
     ['link'],                                          // Enlace
     ['clean']                                         // Limpiar formato
   ],
@@ -42,6 +43,7 @@ const formats = [
   'header',
   'bold', 'italic', 'underline', 'strike',
   'list', 'bullet',
+  'blockquote', 'code-block',
   'link'
 ];
 

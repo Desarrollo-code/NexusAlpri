@@ -39,7 +39,7 @@ export default function MyNotesPage() {
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
 
-  const [notesByCourse, setNotesByCourse] = useState<NotesByCourse[]>([]);
+  const [notes, setNotes] = useState<NoteWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,8 +57,48 @@ export default function MyNotesPage() {
         throw new Error((await response.json()).message || 'Failed to fetch notes');
       }
       const allNotes: NoteWithRelations[] = await response.json();
+      setNotes(allNotes);
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      toast({ title: 'Error', description: 'No se pudieron cargar tus apuntes.', variant: 'destructive' });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, toast]);
+
+  useEffect(() => {
+    fetchNotes();
+  }, [fetchNotes]);
+
+  const handleNoteUpdate = (noteId: string, content: string) => {
+    setNotes(prev => prev.map(n => n.id === noteId ? { ...n, content } : n));
+  };
+
+  const handleNoteDelete = async (noteId: string) => {
+      // Optimistic deletion from UI
+      const originalNotes = [...notes];
+      setNotes(prev => prev.filter(n => n.id !== noteId));
       
-      const groupedByCourse = allNotes.reduce((acc, note) => {
+      try {
+          const response = await fetch(`/api/notes`, {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ noteId })
+          });
+          if (!response.ok) {
+              throw new Error('No se pudo eliminar la nota.');
+          }
+          toast({ title: "Nota Eliminada" });
+      } catch (error) {
+          toast({ title: "Error", description: (error as Error).message, variant: "destructive" });
+          setNotes(originalNotes); // Revert on failure
+      }
+  };
+
+
+  const notesByCourse = useMemo(() => {
+    const groupedByCourse = notes.reduce((acc, note) => {
         const courseId = note.lesson.module.course.id;
         const courseTitle = note.lesson.module.course.title;
         const moduleId = note.lesson.module.id;
@@ -75,25 +115,12 @@ export default function MyNotesPage() {
         return acc;
       }, {} as Record<string, { courseId: string; courseTitle: string; modules: Record<string, { moduleId: string, moduleTitle: string, notes: NoteWithRelations[] }> }>);
       
-      const finalStructure = Object.values(groupedByCourse).map(courseGroup => ({
+      return Object.values(groupedByCourse).map(courseGroup => ({
           courseId: courseGroup.courseId,
           courseTitle: courseGroup.courseTitle,
           modules: Object.values(courseGroup.modules)
       }));
-
-      setNotesByCourse(finalStructure);
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      toast({ title: 'Error', description: 'No se pudieron cargar tus apuntes.', variant: 'destructive' });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, toast]);
-
-  useEffect(() => {
-    fetchNotes();
-  }, [fetchNotes]);
+  }, [notes]);
 
   return (
     <div className="space-y-8">
@@ -130,8 +157,13 @@ export default function MyNotesPage() {
                                 <Layers className="h-4 w-4"/> Módulo: {moduleGroup.moduleTitle}
                             </h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {moduleGroup.notes.map((note, index) => (
-                                <StickyNoteCard key={note.id} note={note} />
+                                {moduleGroup.notes.map((note) => (
+                                    <StickyNoteCard 
+                                        key={note.id} 
+                                        note={note} 
+                                        onDelete={handleNoteDelete}
+                                        onUpdate={handleNoteUpdate}
+                                    />
                                 ))}
                             </div>
                         </div>

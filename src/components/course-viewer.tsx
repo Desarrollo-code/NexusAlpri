@@ -21,7 +21,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTitle } from '@/contexts/title-context';
-import { Textarea } from '@/components/ui/textarea';
 import { useDebounce } from '@/hooks/use-debounce';
 import { RichTextEditor } from './ui/rich-text-editor';
 
@@ -45,36 +44,33 @@ function getYouTubeVideoId(url: string | null | undefined): string | null {
 }
 
 // --- Note Taking Component ---
-const LessonNotes = ({ lessonId }: { lessonId: string }) => {
+const LessonNotesPanel = ({ lessonId, isOpen, onOpenChange }: { lessonId: string, isOpen: boolean, onOpenChange: (open: boolean) => void }) => {
     const { user } = useAuth();
     const [noteContent, setNoteContent] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const debouncedContent = useDebounce(noteContent, 1000); // 1-second debounce
-    const initialContentRef = useRef<string | null>(null);
+    const isInitialLoad = useRef(true);
 
     useEffect(() => {
+        if (!isOpen) return;
+        isInitialLoad.current = true; // Reset on open
         const fetchNote = async () => {
             if (!user) return;
             setIsLoading(true);
             try {
                 const res = await fetch(`/api/notes/${lessonId}`);
-                if (res.ok) {
-                    const data: UserNote = await res.json();
-                    setNoteContent(data.content);
-                    initialContentRef.current = data.content; // Store initial content
-                } else {
-                     initialContentRef.current = '';
-                }
+                const data: UserNote = res.ok ? await res.json() : { content: '' };
+                setNoteContent(data.content);
             } catch (error) {
-                // Silently fail, user can start typing a new note
-                initialContentRef.current = '';
+                 setNoteContent('');
             } finally {
                 setIsLoading(false);
+                setTimeout(() => { isInitialLoad.current = false; }, 500);
             }
         };
         fetchNote();
-    }, [lessonId, user]);
+    }, [lessonId, user, isOpen]);
 
     const saveNote = useCallback(async (content: string) => {
         if (!user) return;
@@ -88,42 +84,41 @@ const LessonNotes = ({ lessonId }: { lessonId: string }) => {
         } catch (error) {
             console.error("Failed to save note:", error);
         } finally {
-            setTimeout(() => setIsSaving(false), 500); // Visual cue for saving
+            setTimeout(() => setIsSaving(false), 500);
         }
     }, [lessonId, user]);
 
     useEffect(() => {
-        if (initialContentRef.current !== null && debouncedContent !== initialContentRef.current) {
+        if (!isInitialLoad.current && !isLoading) {
             saveNote(debouncedContent);
         }
-    }, [debouncedContent, saveNote]);
+    }, [debouncedContent, saveNote, isLoading]);
 
     return (
-        <div className="mt-8">
-             <Card className="bg-yellow-100/50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800/30 shadow-md">
-                <CardHeader className="flex flex-row items-center justify-between p-4 bg-yellow-100/70 dark:bg-yellow-900/30 rounded-t-lg">
-                    <CardTitle className="text-lg flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
-                        <Notebook className="h-5 w-5" />
-                        Mis Apuntes
-                    </CardTitle>
-                    {isSaving && <p className="text-xs text-muted-foreground">Guardando...</p>}
-                </CardHeader>
-                <CardContent className="p-0">
+        <Sheet open={isOpen} onOpenChange={onOpenChange}>
+            <SheetContent className="w-[90vw] max-w-md p-0 flex flex-col" side="right">
+                 <div className="p-4 border-b flex items-center justify-between">
+                    <DialogTitle className="flex items-center gap-2">
+                       <Notebook className="h-5 w-5" /> Mis Apuntes
+                    </DialogTitle>
+                    {isSaving && <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin"/>Guardando...</p>}
+                </div>
+                 <div className="flex-1 min-h-0">
                     {isLoading ? (
-                        <div className="flex justify-center items-center h-24">
+                        <div className="flex justify-center items-center h-full">
                             <Loader2 className="h-6 w-6 animate-spin text-primary" />
                         </div>
                     ) : (
                        <RichTextEditor
                             value={noteContent}
-                            onChange={(value) => setNoteContent(value)}
+                            onChange={setNoteContent}
                             placeholder="Escribe tus notas privadas para esta lección aquí. Se guardarán automáticamente..."
-                            className="w-full min-h-[200px] bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-4"
+                            className="w-full h-full bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                         />
                     )}
-                </CardContent>
-            </Card>
-        </div>
+                </div>
+            </SheetContent>
+        </Sheet>
     );
 };
 
@@ -202,6 +197,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   const [sidebarSearch, setSidebarSearch] = useState('');
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
+  const [isNotesPanelOpen, setIsNotesPanelOpen] = useState(false);
 
   const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
   const totalLessonsCount = allLessons.length;
@@ -401,10 +397,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                 </Card>
             );
         }
-        return (
-            <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" style={{ maxHeight: '500px', overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: block.content }}>
-            </div>
-        );
+        return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" style={{ maxHeight: '500px', overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: block.content }} />;
     }
     
     if (block.type === 'FILE') {
@@ -583,7 +576,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                             <h2>{selectedLesson.title}</h2>
                         </div>
                         {(selectedLesson.contentBlocks || []).map(block => renderContentBlock(block))}
-                         {isEnrolled && !isCreatorViewingCourse && <LessonNotes lessonId={selectedLesson.id} />}
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center">
@@ -597,6 +589,18 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         </main>
       </div>
       
+       {selectedLessonId && isEnrolled && !isCreatorViewingCourse && (
+            <>
+                <Button 
+                    className="fixed bottom-24 right-6 z-40 h-14 w-14 rounded-full shadow-lg" 
+                    onClick={() => setIsNotesPanelOpen(true)}
+                >
+                    <Notebook className="h-6 w-6" />
+                </Button>
+                <LessonNotesPanel lessonId={selectedLessonId} isOpen={isNotesPanelOpen} onOpenChange={setIsNotesPanelOpen} />
+            </>
+        )}
+
       {isMobile && (
         <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
           <SheetTrigger asChild>
