@@ -105,7 +105,7 @@ const renderActiveShape = (props: any) => {
   const textAnchor = cos >= 0 ? 'start' : 'end';
 
   return (
-    <g className="transition-transform duration-300 ease-in-out">
+    <g className="transition-transform duration-300 ease-in-out animate-bloom">
       <text x={cx} y={cy} dy={4} textAnchor="middle" fill={fill} className="text-base font-bold">
         {payload.label}
       </text>
@@ -113,7 +113,7 @@ const renderActiveShape = (props: any) => {
         cx={cx}
         cy={cy}
         innerRadius={innerRadius}
-        outerRadius={outerRadius}
+        outerRadius={outerRadius + 2}
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
@@ -154,8 +154,8 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
                 data={data} 
                 dataKey="count" 
                 nameKey="label" 
-                innerRadius={80} 
-                outerRadius={100}
+                innerRadius={85} 
+                outerRadius={105}
                 strokeWidth={2}
                 activeIndex={activeIndex}
                 activeShape={renderActiveShape}
@@ -397,11 +397,11 @@ function AdminAnalyticsPage() {
             <CardHeader>
                 <CardTitle>Tendencia de Registros (Últimos 30 Días)</CardTitle>
             </CardHeader>
-            <CardContent className="h-80 p-0 pr-4">
+            <CardContent className="h-80 p-4">
                  <ChartContainer config={registrationTrendChartConfig}>
                     <BarChart accessibilityLayer data={stats?.userRegistrationTrend || []}>
                          <CartesianGrid vertical={false} />
-                         <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={formatDateTick}/>
+                         <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} interval="preserveStartEnd" tickFormatter={formatDateTick}/>
                          <YAxis />
                          <ChartTooltip content={<ChartTooltipContent hideIndicator labelFormatter={formatDateTooltip} />} />
                          <Bar dataKey="count" fill="var(--color-count)" radius={8} />
