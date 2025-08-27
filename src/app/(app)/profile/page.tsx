@@ -1,4 +1,5 @@
 
+
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -592,10 +593,10 @@ export default function ProfilePage() {
                     </InputOTP>
                 </div>
             </div>
-            <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+            <DialogFooter>
                 <Button variant="outline" onClick={() => setShow2faSetup(false)} disabled={is2faProcessing}>Cancelar</Button>
                 <Button onClick={handleVerify2fa} disabled={!twoFactorToken || twoFactorToken.length < 6 || is2faProcessing}>
-                    {is2faProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                    {is2faProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Shield className="mr-2 h-4 w-4" />}
                     Verificar y Activar
                 </Button>
             </DialogFooter>
@@ -621,14 +622,14 @@ export default function ProfilePage() {
                 placeholder="Ingresa tu contraseña"
               />
           </div>
-          <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+          <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setDisablePassword('')}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDisable2fa}
               disabled={!disablePassword || is2faProcessing}
               className={cn("bg-destructive text-destructive-foreground hover:bg-destructive/90")}
             >
-              {is2faProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+              {is2faProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Trash2 className="mr-2 h-4 w-4" />}
               Sí, desactivar 2FA
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -703,7 +704,7 @@ export default function ProfilePage() {
                       </button>
                     </div>
                 </div>
-                <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4">
+                <DialogFooter>
                     <Button variant="outline" type="button" onClick={() => setShowChangePasswordDialog(false)} disabled={isChangingPassword}>Cancelar</Button>
                     <Button type="submit" disabled={isChangingPassword}>
                         {isChangingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}

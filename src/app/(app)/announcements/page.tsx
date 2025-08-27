@@ -106,10 +106,11 @@ export default function AnnouncementsPage() {
   }, [fetchAnnouncements]);
 
   const relevantAnnouncements = useMemo(() => {
+    if (!user) return [];
     return allAnnouncements
       .filter(ann => {
         if (ann.audience === 'ALL') return true;
-        if (user && Array.isArray(ann.audience) && ann.audience.includes(user.role)) return true;
+        if (Array.isArray(ann.audience) && ann.audience.includes(user.role)) return true;
         return false;
       });
   }, [user, allAnnouncements]);
@@ -257,7 +258,7 @@ export default function AnnouncementsPage() {
                 </Button>
               </DialogTrigger>
               <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] flex flex-col">
-                <form onSubmit={handleSaveAnnouncement}>
+                <form onSubmit={handleSaveAnnouncement} id="announcement-form">
                   <DialogHeader className="p-6 pb-0">
                     <DialogTitle>{announcementToEdit ? 'Editar Anuncio' : 'Crear Nuevo Anuncio'}</DialogTitle>
                     <DialogDescription>
@@ -316,14 +317,14 @@ export default function AnnouncementsPage() {
                     </p>
                     </div>
                     </div>
-                    <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2">
+                    </form>
+                    <DialogFooter className="p-6 pt-4 flex-row justify-end gap-2">
                       <Button type="button" variant="outline" onClick={() => { setShowCreateEditModal(false); resetFormAndState();}} disabled={isProcessing}>Cancelar</Button>
-                      <Button type="submit" disabled={isProcessing}>
+                      <Button type="submit" form="announcement-form" disabled={isProcessing}>
                         {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (announcementToEdit ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />) }
                         {announcementToEdit ? 'Guardar Cambios' : 'Publicar Anuncio'}
                       </Button>
                     </DialogFooter>
-                  </form>
               </DialogContent>
             </Dialog>
           </div>
@@ -397,7 +398,7 @@ export default function AnnouncementsPage() {
               Esta acción no se puede deshacer. El anuncio "<strong>{announcementToDelete?.title}</strong>" será eliminado permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2">
+          <AlertDialogFooter>
             <AlertDialogCancel disabled={isProcessing} onClick={() => setAnnouncementToDelete(null)}>
               Cancelar
             </AlertDialogCancel>

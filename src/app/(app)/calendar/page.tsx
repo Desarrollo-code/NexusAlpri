@@ -465,30 +465,24 @@ export default function CalendarPage() {
                     <EventDetailsView event={selectedEvent} />
                  ) : null}
            </div>
-           <DialogFooter className="p-6 pt-4 sm:col-span-2 mt-auto flex flex-col-reverse sm:flex-row sm:justify-end w-full gap-2 border-t">
+           <DialogFooter className="p-6 pt-4 sm:col-span-2 flex flex-row w-full justify-end gap-2 border-t">
               {isEditMode ? (
                 <>
-                  <div className="flex-grow">
-                     <Button type="button" variant="outline" onClick={() => selectedEvent ? setIsEditMode(false) : setShowEventModal(false)} disabled={isSaving} className="w-full sm:w-auto">Cancelar</Button>
-                  </div>
-                  <div className="flex justify-end w-full sm:w-auto">
-                     <Button form="event-form" type="submit" disabled={isSaving} className="w-full sm:w-auto">
-                        {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                        {selectedEvent ? 'Guardar Cambios' : 'Crear Evento'}
-                      </Button>
-                  </div>
+                  <Button type="button" variant="outline" onClick={() => selectedEvent ? setIsEditMode(false) : setShowEventModal(false)} disabled={isSaving}>Cancelar</Button>
+                  <Button form="event-form" type="submit" disabled={isSaving}>
+                      {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                      {selectedEvent ? 'Guardar Cambios' : 'Crear Evento'}
+                  </Button>
                 </>
               ) : (
-                <div className="flex justify-end w-full">
-                  <Button type="button" variant="outline" onClick={() => setShowEventModal(false)} className="w-full sm:w-auto">Cerrar</Button>
-                </div>
+                <Button type="button" variant="outline" onClick={() => setShowEventModal(false)}>Cerrar</Button>
               )}
             </DialogFooter>
         </DialogContent>
       </Dialog>
       
       <AlertDialog open={!!eventToDelete} onOpenChange={(isOpen) => !isOpen && setEventToDelete(null)}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle><AlertDialogDescription>Se eliminará el evento "<strong>{eventToDelete?.title}</strong>".</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel disabled={isSaving}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => { if(eventToDelete) handleDeleteEvent(eventToDelete.id); }} disabled={isSaving} className={cn(buttonVariants({ variant: "destructive" }))}>{isSaving && <Loader2 className="mr-2 animate-spin" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle><AlertDialogDescription>Se eliminará el evento "<strong>{eventToDelete?.title}</strong>".</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel disabled={isSaving}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => { if(eventToDelete) handleDeleteEvent(eventToDelete.id); }} disabled={isSaving} className={cn(buttonVariants({ variant: "destructive" }))}>{isSaving && <Loader2 className="mr-2 animate-spin" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
     </div>
   );
