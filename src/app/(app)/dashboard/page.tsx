@@ -150,15 +150,17 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
               </CardHeader>
               <CardContent className="h-[350px] p-0 pr-4">
                    <ChartContainer config={activityChartConfig} className="w-full h-full">
-                        <BarChart data={stats.courseActivity} margin={{ top: 20, right: 20, bottom: 40, left: 0 }}>
+                    <ResponsiveContainer>
+                        <BarChart data={stats.courseActivity} margin={{ top: 20, right: 20, bottom: 50, left: 0 }}>
                             <CartesianGrid vertical={false} />
-                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval={5} tickFormatter={formatDateTick} />
+                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval="preserveStartEnd" tickFormatter={formatDateTick} />
                             <YAxis />
                             <ChartTooltip content={<ChartTooltipContent hideIndicator labelFormatter={formatDateTooltip} />} />
                             <Legend verticalAlign="top" height={36} />
                             <Bar dataKey="newCourses" name="Nuevos" stackId="a" fill="var(--color-newCourses)" radius={[0, 0, 4, 4]} />
                             <Bar dataKey="publishedCourses" name="Publicados" stackId="a" fill="var(--color-publishedCourses)" radius={[4, 4, 0, 0]} />
                         </BarChart>
+                    </ResponsiveContainer>
                     </ChartContainer>
               </CardContent>
             </Card>
