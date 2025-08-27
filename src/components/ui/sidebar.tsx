@@ -1,3 +1,4 @@
+
 // src/components/ui/sidebar.tsx
 'use client';
 
@@ -9,7 +10,7 @@ import { ChevronsLeft, LogOut, User as UserIconLucide } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
 import { getNavItemsForRole } from "@/lib/nav-items";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { GradientIcon } from "./gradient-icon";
 import type { NavItem } from '@/types';
@@ -17,7 +18,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tool
 import { SidebarHeader } from "../layout/sidebar-header";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { Identicon } from "./identicon";
-import { getInitials } from "@/lib/utils";
 
 const SidebarContext = React.createContext<any>(null);
 

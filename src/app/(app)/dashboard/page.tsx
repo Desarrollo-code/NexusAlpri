@@ -41,7 +41,7 @@ import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Area, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend } from "recharts";
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
-import { getEventDetails, getInitials } from '@/lib/security-log-utils';
+import { getEventDetails } from '@/lib/security-log-utils';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useTitle } from '@/contexts/title-context';

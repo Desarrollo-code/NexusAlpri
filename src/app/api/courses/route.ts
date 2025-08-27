@@ -36,13 +36,35 @@ export async function GET(req: NextRequest) {
       whereClause.status = 'PUBLISHED';
     }
 
+    // Para la vista de gestión, no necesitamos todos los detalles del curso,
+    // solo la cuenta de módulos. Esto optimiza la consulta.
+    const courseInclude = manageView 
+        ? {
+            instructor: { select: { id: true, name: true } },
+            _count: { select: { modules: true } },
+          }
+        : {
+            instructor: { select: { id: true, name: true } },
+            modules: {
+              orderBy: { order: "asc" },
+              include: {
+                lessons: {
+                  orderBy: { order: "asc" },
+                  include: {
+                    contentBlocks: {
+                      orderBy: { order: "asc" },
+                    },
+                  },
+                },
+              },
+            },
+          };
+
+
     const [courses, totalCourses] = await prisma.$transaction([
       prisma.course.findMany({
         where: whereClause,
-        include: {
-          instructor: { select: { id: true, name: true } },
-          _count: { select: { modules: true } },
-        },
+        include: courseInclude,
         orderBy: { createdAt: 'desc' },
         ...(isPaginated && { skip, take: pageSize }),
       }),
@@ -51,7 +73,7 @@ export async function GET(req: NextRequest) {
     
     const enrichedCourses = courses.map((course: any) => ({
       ...course,
-      modulesCount: course._count?.modules ?? 0,
+      modulesCount: course._count?.modules ?? (course.modules?.length || 0),
     }));
 
     return NextResponse.json({ courses: enrichedCourses, totalCourses });

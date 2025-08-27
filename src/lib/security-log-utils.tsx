@@ -1,3 +1,4 @@
+
 // src/lib/security-log-utils.tsx
 'use client';
 
@@ -57,16 +58,6 @@ export const getEventDetails = (event: SecurityLogEvent, details?: string | null
                 details: details || 'Evento de seguridad general.'
             };
     }
-};
-
-export const getInitials = (name?: string | null): string => {
-  if (!name) return '??';
-  const names = name.split(' ');
-  if (names.length > 1 && names[0] && names[names.length - 1]) {
-      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-  }
-  if (names.length === 1 && names[0]) return names[0].substring(0, 2).toUpperCase();
-  return name.substring(0, 2).toUpperCase();
 };
 
 export const parseUserAgent = (userAgent: string | null | undefined): { browser: string; os: string } => {

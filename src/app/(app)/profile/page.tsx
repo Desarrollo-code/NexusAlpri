@@ -1,3 +1,4 @@
+
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -396,27 +397,27 @@ export default function ProfilePage() {
                         </div>
                         <div className="space-y-2">
                             <h4 className="font-medium text-sm">Logros Recientes</h4>
-                            <div className="flex flex-wrap gap-2">
-                                {userAchievements.length > 0 ? (
-                                    userAchievements.map(ua => (
-                                         <TooltipProvider key={ua.achievement.id}>
-                                            <Tooltip>
-                                              <TooltipTrigger asChild>
-                                                  <div className="p-2 bg-muted rounded-md border">
-                                                      <Award className="h-5 w-5 text-yellow-400"/>
-                                                  </div>
-                                              </TooltipTrigger>
-                                              <TooltipContent>
-                                                  <p className="font-semibold">{ua.achievement.name}</p>
-                                                  <p className="text-xs">{ua.achievement.description}</p>
-                                              </TooltipContent>
+                             <TooltipProvider>
+                                <div className="flex flex-wrap gap-2">
+                                    {userAchievements.length > 0 ? (
+                                        userAchievements.map(ua => (
+                                            <Tooltip key={ua.achievement.id}>
+                                                <TooltipTrigger asChild>
+                                                    <div className="p-2 bg-muted rounded-md border">
+                                                        <Award className="h-5 w-5 text-yellow-400"/>
+                                                    </div>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p className="font-semibold">{ua.achievement.name}</p>
+                                                    <p className="text-xs">{ua.achievement.description}</p>
+                                                </TooltipContent>
                                             </Tooltip>
-                                         </TooltipProvider>
-                                    ))
-                                ) : (
-                                  <p className="text-xs text-muted-foreground">Aún no has desbloqueado logros.</p>
-                                )}
-                            </div>
+                                        ))
+                                    ) : (
+                                      <p className="text-xs text-muted-foreground">Aún no has desbloqueado logros.</p>
+                                    )}
+                                </div>
+                            </TooltipProvider>
                         </div>
                     </CardContent>
                 </Card>
@@ -465,31 +466,41 @@ export default function ProfilePage() {
                     </div>
                 </div>
                  <Card className="card-border-animated">
-                    <CardHeader><CardTitle>Seguridad de la Cuenta</CardTitle></CardHeader>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Star className="h-5 w-5 text-yellow-400"/>Progreso y Logros</CardTitle>
+                    </CardHeader>
                     <CardContent className="space-y-4">
-                        <div>
-                            <h4 className="font-semibold mb-2">Autenticación de Dos Factores (2FA)</h4>
-                            {user.isTwoFactorEnabled ? (
-                                <div className="flex items-center justify-between mt-2 p-3 rounded-lg bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
-                                    <p className="text-sm text-green-800 dark:text-green-200">2FA está <strong>activado</strong>.</p>
-                                    <Button variant="destructive" size="sm" onClick={() => setShowDisable2faDialog(true)} disabled={is2faProcessing}>Desactivar</Button>
-                                </div>
-                            ) : (
-                                <div className="flex items-center justify-between mt-2 p-3 rounded-lg bg-muted/50 border">
-                                    <p className="text-sm text-muted-foreground">Añade una capa extra de seguridad.</p>
-                                    <Button onClick={handleEnable2fa} disabled={is2faProcessing}>
-                                        {is2faProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                                        Activar 2FA
-                                    </Button>
-                                </div>
-                            )}
-                        </div>
-                        <div>
-                            <h4 className="font-semibold mb-2">Cambiar Contraseña</h4>
-                            <div className="flex items-center justify-between mt-2 p-3 rounded-lg bg-muted/50 border">
-                                <p className="text-sm text-muted-foreground">Actualiza tu contraseña regularmente.</p>
-                                <Button variant="outline" onClick={() => setShowChangePasswordDialog(true)}>Cambiar</Button>
+                        <div className="space-y-1">
+                            <div className="flex justify-between items-center text-sm font-medium">
+                                <span>Puntos de Experiencia</span>
+                                <span>{user.xp?.toLocaleString() || 0} XP</span>
                             </div>
+                            <Progress value={(user.xp || 0) % 1000 / 10} className="h-2" />
+                            <p className="text-xs text-muted-foreground">Nivel {Math.floor((user.xp || 0) / 1000) + 1}</p>
+                        </div>
+                        <div className="space-y-2">
+                            <h4 className="font-medium text-sm">Logros Recientes</h4>
+                             <TooltipProvider>
+                                <div className="flex flex-wrap gap-2">
+                                    {userAchievements.length > 0 ? (
+                                        userAchievements.slice(0, 8).map(ua => ( // Limitar a 8 para no saturar
+                                            <Tooltip key={ua.achievement.id}>
+                                                <TooltipTrigger asChild>
+                                                    <div className="p-2 bg-muted rounded-md border">
+                                                        <Award className="h-5 w-5 text-yellow-400"/>
+                                                    </div>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p className="font-semibold">{ua.achievement.name}</p>
+                                                    <p className="text-xs">{ua.achievement.description}</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        ))
+                                    ) : (
+                                        <p className="text-xs text-muted-foreground">Aún no has desbloqueado logros.</p>
+                                    )}
+                                </div>
+                            </TooltipProvider>
                         </div>
                     </CardContent>
                 </Card>
@@ -526,47 +537,35 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
               
-              <Card className="card-border-animated">
-                  <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                         <Star className="text-yellow-400" /> Progreso y Logros
-                      </CardTitle>
-                  </CardHeader>
-                   <CardContent className="space-y-4">
-                      <div className="space-y-1">
-                        <div className="flex justify-between items-center text-sm font-medium">
-                            <span>Puntos de Experiencia</span>
-                            <span>{user.xp?.toLocaleString() || 0} XP</span>
+               <Card className="card-border-animated">
+                    <CardHeader><CardTitle>Seguridad de la Cuenta</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <div>
+                            <h4 className="font-semibold mb-2">Autenticación de Dos Factores (2FA)</h4>
+                            {user.isTwoFactorEnabled ? (
+                                <div className="flex items-center justify-between mt-2 p-3 rounded-lg bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
+                                    <p className="text-sm text-green-800 dark:text-green-200">2FA está <strong>activado</strong>.</p>
+                                    <Button variant="destructive" size="sm" onClick={() => setShowDisable2faDialog(true)} disabled={is2faProcessing}>Desactivar</Button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-between mt-2 p-3 rounded-lg bg-muted/50 border">
+                                    <p className="text-sm text-muted-foreground">Añade una capa extra de seguridad.</p>
+                                    <Button onClick={handleEnable2fa} disabled={is2faProcessing}>
+                                        {is2faProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                                        Activar 2FA
+                                    </Button>
+                                </div>
+                            )}
                         </div>
-                         <Progress value={(user.xp || 0) % 1000 / 10} className="h-2" />
-                         <p className="text-xs text-muted-foreground">Nivel {Math.floor((user.xp || 0) / 1000) + 1}</p>
-                      </div>
-                      <div className="space-y-2">
-                          <h4 className="font-medium text-sm">Logros Recientes</h4>
-                          <div className="flex flex-wrap gap-2">
-                              {userAchievements.length > 0 ? (
-                                  userAchievements.map(ua => (
-                                       <TooltipProvider key={ua.achievement.id}>
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <div className="p-2 bg-muted rounded-md border">
-                                                    <Award className="h-5 w-5 text-yellow-400"/>
-                                                </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p className="font-semibold">{ua.achievement.name}</p>
-                                                <p className="text-xs">{ua.achievement.description}</p>
-                                            </TooltipContent>
-                                          </Tooltip>
-                                       </TooltipProvider>
-                                  ))
-                              ) : (
-                                <p className="text-xs text-muted-foreground">Aún no has desbloqueado logros.</p>
-                              )}
-                          </div>
-                      </div>
-                  </CardContent>
-              </Card>
+                        <div>
+                            <h4 className="font-semibold mb-2">Cambiar Contraseña</h4>
+                            <div className="flex items-center justify-between mt-2 p-3 rounded-lg bg-muted/50 border">
+                                <p className="text-sm text-muted-foreground">Actualiza tu contraseña regularmente.</p>
+                                <Button variant="outline" onClick={() => setShowChangePasswordDialog(true)}>Cambiar</Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
           </div>
       )}

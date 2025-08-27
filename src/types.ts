@@ -1,3 +1,4 @@
+
 // src/types.ts
 import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form, FormField as PrismaFormField, FormFieldType, FormStatus } from "@prisma/client";
 
@@ -13,7 +14,7 @@ export interface User {
   isTwoFactorEnabled?: boolean;
   registeredDate?: string | Date;
   theme?: string | null;
-  xp?: number | null; // Added for gamification
+  xp?: number | null;
 }
 
 export interface PlatformSettings {
