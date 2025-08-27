@@ -80,7 +80,7 @@ const userRolesChartConfig = {
   count: { label: "Usuarios" },
   STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
   INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
-  ADMINISTRATOR: { label: "Admins", color: "hsl(var(--chart-5))" },
+  ADMINISTRATOR: { label: "Administradores", color: "hsl(var(--chart-5))" },
 } satisfies ChartConfig;
 
 const courseStatusChartConfig = {
