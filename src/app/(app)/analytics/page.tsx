@@ -38,6 +38,7 @@ import { es } from 'date-fns/locale';
 import { useTitle } from '@/contexts/title-context';
 import { Identicon } from '@/components/ui/identicon';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 
 const formatDateTick = (tick: string) => {
@@ -278,6 +279,7 @@ function AdminAnalyticsPage() {
     const { user } = useAuth();
     const router = useRouter();
     const { setPageTitle } = useTitle();
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         setPageTitle('Analíticas');
@@ -413,7 +415,7 @@ function AdminAnalyticsPage() {
                             </linearGradient>
                          </defs>
                          <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                         <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} interval={0} angle={-45} textAnchor="end" tickFormatter={formatDateTick}/>
+                         <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} interval={isMobile ? 6 : 0} angle={-45} textAnchor="end" tickFormatter={formatDateTick}/>
                          <YAxis tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} />
                          <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" hideIndicator labelFormatter={formatDateTooltip} />} />
                          <Area type="monotone" dataKey="count" stroke="var(--color-count)" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" />
