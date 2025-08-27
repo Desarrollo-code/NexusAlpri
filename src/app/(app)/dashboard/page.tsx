@@ -107,8 +107,8 @@ const MetricCard = ({ title, value: finalValue, icon: Icon, description }: { tit
 };
 
 const activityChartConfig = {
-  newCourses: { label: "Nuevos", color: "hsl(var(--chart-1))" },
-  publishedCourses: { label: "Publicados", color: "hsl(var(--chart-2))" },
+  newCourses: { label: "Nuevos", color: "hsl(220 80% 60%)" },
+  publishedCourses: { label: "Publicados", color: "hsl(140 70% 45%)" },
 } satisfies ChartConfig;
 
 
@@ -149,9 +149,9 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                   <CardDescription>Resumen de creación y publicación de cursos.</CardDescription>
               </CardHeader>
               <CardContent className="h-[350px] p-0 pr-4">
-                   <ChartContainer config={activityChartConfig} className="w-full h-full">
+                   <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
                     <ResponsiveContainer>
-                        <ComposedChart data={stats.courseActivity} margin={{ top: 20, right: 20, bottom: 50, left: 0 }}>
+                        <ComposedChart data={stats.courseActivity} margin={{ top: 20, right: 30, bottom: 50, left: 0 }}>
                             <CartesianGrid vertical={false} />
                             <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval="preserveStartEnd" tickFormatter={formatDateTick} />
                             <YAxis yAxisId="left" orientation="left" stroke="var(--color-newCourses)" />
