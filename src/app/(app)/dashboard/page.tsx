@@ -1,4 +1,3 @@
-
 // src/app/(app)/dashboard/page.tsx
 'use client';
 
@@ -39,12 +38,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend } from "recharts";
+import { Area, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, BarChart } from "recharts";
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { getEventDetails } from '@/lib/security-log-utils';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useTitle } from '@/contexts/title-context';
+import { Identicon } from '@/components/ui/identicon';
 
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -107,9 +107,8 @@ const MetricCard = ({ title, value: finalValue, icon: Icon, description }: { tit
 };
 
 const activityChartConfig = {
-  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-5))" },
-  publishedCourses: { label: "Cursos Publicados", color: "hsl(var(--chart-2))" },
-  newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-3))" },
+  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-2))" },
+  publishedCourses: { label: "Cursos Publicados", color: "hsl(var(--chart-1))" },
 } satisfies ChartConfig;
 
 
@@ -147,35 +146,20 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
             <Card className="card-border-animated">
               <CardHeader>
                   <CardTitle>Actividad de los Cursos (Últimos 30 días)</CardTitle>
-                  <CardDescription>Resumen de creación, publicación e inscripciones.</CardDescription>
+                  <CardDescription>Resumen de creación y publicación de cursos.</CardDescription>
               </CardHeader>
               <CardContent className="h-[350px] p-0 pr-4">
-                  <ChartContainer config={activityChartConfig} className="w-full h-full">
-                      <ComposedChart data={stats.courseActivity} margin={{ top: 20, right: 20, bottom: 40, left: 0 }}>
-                          <CartesianGrid vertical={false} strokeDasharray="3 3"/>
-                          <XAxis 
-                              dataKey="date" 
-                              tickLine={false} 
-                              axisLine={false} 
-                              tickMargin={10} 
-                              angle={-45} 
-                              textAnchor="end" 
-                              interval={5} 
-                              tickFormatter={formatDateTick}
-                          />
-                          <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
-                          <ChartTooltip 
-                            content={<ChartTooltipContent 
-                                hideIndicator 
-                                labelFormatter={(label, payload) => payload?.[0]?.payload.date ? formatDateTooltip(payload[0].payload.date) : ''}
-                            />} 
-                          />
-                          <Legend verticalAlign="top" height={36}/>
-                          <Bar dataKey="newCourses" name="Nuevos Cursos" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} barSize={20} />
-                          <Bar dataKey="publishedCourses" name="Cursos Publicados" fill="var(--color-publishedCourses)" radius={[4, 4, 0, 0]} barSize={20} />
-                          <Bar dataKey="newEnrollments" name="Nuevas Inscripciones" fill="var(--color-newEnrollments)" radius={[4, 4, 0, 0]} barSize={20} />
-                      </ComposedChart>
-                  </ChartContainer>
+                   <ChartContainer config={activityChartConfig} className="w-full h-full">
+                        <BarChart data={stats.courseActivity} margin={{ top: 20, right: 20, bottom: 40, left: 0 }}>
+                            <CartesianGrid vertical={false} />
+                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval={5} tickFormatter={formatDateTick} />
+                            <YAxis />
+                            <ChartTooltip content={<ChartTooltipContent hideIndicator labelFormatter={formatDateTooltip} />} />
+                            <Legend verticalAlign="top" height={36} />
+                            <Bar dataKey="newCourses" name="Nuevos" stackId="a" fill="var(--color-newCourses)" radius={[0, 0, 4, 4]} />
+                            <Bar dataKey="publishedCourses" name="Publicados" stackId="a" fill="var(--color-publishedCourses)" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                    </ChartContainer>
               </CardContent>
             </Card>
              <section>

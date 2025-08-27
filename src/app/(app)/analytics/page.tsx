@@ -1,5 +1,3 @@
-
-
 // src/app/(app)/analytics/page.tsx
 'use client';
 
@@ -28,7 +26,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector, CartesianGrid, AreaChart as RechartsArea } from "recharts";
+import { Area, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector, CartesianGrid, BarChart, Bar, Legend } from "recharts";
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import type { AdminDashboardStats, Course } from '@/types';
 import { Progress } from '@/components/ui/progress';
@@ -38,6 +36,7 @@ import { Separator } from '@/components/ui/separator';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useTitle } from '@/contexts/title-context';
+import { Identicon } from '@/components/ui/identicon';
 
 
 const formatDateTick = (tick: string) => {
@@ -81,15 +80,15 @@ const userRolesChartConfig = {
   count: { label: "Usuarios" },
   STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
   INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
-  ADMINISTRATOR: { label: "Administradores", color: "hsl(var(--chart-5))" },
+  ADMINISTRATOR: { label: "Administradores", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
 const courseStatusChartConfig = {
     count: { label: "Cursos" },
-    DRAFT: { label: "Borrador", color: "hsl(var(--chart-3))" },
+    DRAFT: { label: "Borrador", color: "hsl(var(--chart-4))" },
     PUBLISHED: { label: "Publicado", color: "hsl(var(--chart-2))" },
     ARCHIVED: { label: "Archivado", color: "hsl(var(--chart-5))" },
-    SCHEDULED: { label: "Programado", color: "hsl(var(--chart-4))"}
+    SCHEDULED: { label: "Programado", color: "hsl(var(--chart-1))"}
 } satisfies ChartConfig;
 
 const renderActiveShape = (props: any) => {
@@ -106,7 +105,7 @@ const renderActiveShape = (props: any) => {
   const textAnchor = cos >= 0 ? 'start' : 'end';
 
   return (
-    <g>
+    <g className="transition-transform duration-300 ease-in-out">
       <text x={cx} y={cy} dy={4} textAnchor="middle" fill={fill} className="text-base font-bold">
         {payload.label}
       </text>
@@ -114,18 +113,9 @@ const renderActiveShape = (props: any) => {
         cx={cx}
         cy={cy}
         innerRadius={innerRadius}
-        outerRadius={outerRadius}
+        outerRadius={outerRadius + 2} // Subtle expansion
         startAngle={startAngle}
         endAngle={endAngle}
-        fill={fill}
-      />
-      <Sector
-        cx={cx}
-        cy={cy}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        innerRadius={outerRadius + 4}
-        outerRadius={outerRadius + 6}
         fill={fill}
       />
        <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
@@ -164,7 +154,8 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
                 data={data} 
                 dataKey="count" 
                 nameKey="label" 
-                innerRadius={65} 
+                innerRadius={70} 
+                outerRadius={90}
                 strokeWidth={2}
                 activeIndex={activeIndex}
                 activeShape={renderActiveShape}
@@ -239,19 +230,6 @@ function CourseRankingCard({ title, courses, metric, icon: Icon, unit = '' }: { 
 }
 
 function UserRankingCard({ title, users, metric, icon: Icon, unit = '' }: { title: string; users: any[]; metric: string; icon: React.ElementType; unit?: string }) {
-    
-    const getInitials = (name?: string | null): string => {
-      if (!name) return '??';
-      const names = name.split(' ');
-      if (names.length > 1 && names[0] && names[names.length - 1]) {
-        return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-      }
-      if (names.length === 1 && names[0]) {
-        return names[0].substring(0, 2).toUpperCase();
-      }
-      return name.substring(0, 2).toUpperCase();
-    };
-
     return (
         <Card className="card-border-animated">
             <CardHeader>
@@ -272,7 +250,7 @@ function UserRankingCard({ title, users, metric, icon: Icon, unit = '' }: { titl
                                     <div className="flex items-center gap-2">
                                         <Avatar className="h-8 w-8 hidden sm:flex">
                                             <AvatarImage src={user.avatar || undefined} />
-                                            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                                            <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
                                         </Avatar>
                                         <Link href={`/users?search=${user.name}`} className="font-medium hover:underline truncate" title={user.name}>{user.name}</Link>
                                     </div>
@@ -348,7 +326,7 @@ function AdminAnalyticsPage() {
     const registrationTrendChartConfig = {
       count: {
         label: "Nuevos Usuarios",
-        color: "hsl(var(--chart-2))",
+        color: "hsl(var(--chart-1))",
       },
     } satisfies ChartConfig;
 
@@ -420,29 +398,14 @@ function AdminAnalyticsPage() {
                 <CardTitle>Tendencia de Registros (Últimos 30 Días)</CardTitle>
             </CardHeader>
             <CardContent className="h-80">
-                <ChartContainer config={registrationTrendChartConfig} className="w-full h-full">
-                    <ResponsiveContainer>
-                        <RechartsArea data={stats?.userRegistrationTrend || []} margin={{ top: 5, right: 30, left: 0, bottom: 30 }}>
-                            <defs>
-                                <linearGradient id="fillArea" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8}/>
-                                    <stop offset="95%" stopColor="var(--color-count)" stopOpacity={0.1}/>
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid vertical={false} strokeDasharray="3 3"/>
-                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} angle={-45} textAnchor="end" interval={5} tickFormatter={formatDateTick}/>
-                            <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false}/>
-                            <ChartTooltip 
-                                cursor={false}
-                                content={<ChartTooltipContent 
-                                    hideIndicator 
-                                    labelFormatter={(value, payload) => formatDateTooltip(value)}
-                                    formatter={(value, name, item) => [`${value} usuarios`, item.payload.count > 0 ? "Nuevos" : ""]}
-                                />} 
-                            />
-                            <Area dataKey="count" type="monotone" fill="url(#fillArea)" stroke="var(--color-count)" />
-                        </RechartsArea>
-                    </ResponsiveContainer>
+                 <ChartContainer config={registrationTrendChartConfig}>
+                    <BarChart accessibilityLayer data={stats?.userRegistrationTrend || []}>
+                         <CartesianGrid vertical={false} />
+                         <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={formatDateTick}/>
+                         <YAxis />
+                         <ChartTooltip content={<ChartTooltipContent hideIndicator labelFormatter={formatDateTooltip} />} />
+                         <Bar dataKey="count" fill="var(--color-count)" radius={8} />
+                    </BarChart>
                 </ChartContainer>
             </CardContent>
         </Card>
