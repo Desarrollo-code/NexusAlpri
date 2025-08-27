@@ -39,6 +39,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
+import { ResourceListItem } from '@/components/resources/resource-list-item';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -459,8 +460,9 @@ export default function ResourcesPage() {
                               {files.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
                           </div>
                         ) : (
-                          // Placeholder for future list view
-                          <p>List view coming soon!</p>
+                          <div className="space-y-2">
+                             {files.map(item => <ResourceListItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} />)}
+                          </div>
                         )}
                     </section>
                   )}
