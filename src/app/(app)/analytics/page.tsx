@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector, CartesianGrid, BarChart, Bar, Legend } from "recharts";
+import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector, CartesianGrid, BarChart, Bar, Legend } from "recharts";
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import type { AdminDashboardStats, Course } from '@/types';
 import { Progress } from '@/components/ui/progress';
@@ -98,14 +98,14 @@ const renderActiveShape = (props: any) => {
   const cos = Math.cos(-RADIAN * midAngle);
   const sx = cx + (outerRadius + 2) * cos;
   const sy = cy + (outerRadius + 2) * sin;
-  const mx = cx + (outerRadius + 15) * cos;
-  const my = cy + (outerRadius + 15) * sin;
+  const mx = cx + (outerRadius + 10) * cos;
+  const my = cy + (outerRadius + 10) * sin;
   const ex = mx + (cos >= 0 ? 1 : -1) * 11;
   const ey = my;
   const textAnchor = cos >= 0 ? 'start' : 'end';
 
   return (
-    <g className="transition-transform duration-300 ease-in-out">
+    <g className="transition-transform duration-300 ease-in-out transform-gpu">
       <text x={cx} y={cy} dy={4} textAnchor="middle" fill={fill} className="text-base font-bold">
         {payload.label}
       </text>
@@ -113,16 +113,18 @@ const renderActiveShape = (props: any) => {
         cx={cx}
         cy={cy}
         innerRadius={innerRadius}
-        outerRadius={outerRadius}
+        outerRadius={outerRadius + 4} // Slightly larger pop-out effect
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
+        stroke={fill}
+        strokeWidth={1}
       />
        <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
        <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-       <text x={ex + (cos >= 0 ? 1 : -1) * 6} y={ey} textAnchor={textAnchor} fill="hsl(var(--foreground))" className="text-xs">
-         <tspan x={ex + (cos >= 0 ? 1 : -1) * 6} dy="-0.5em">{value}</tspan>
-         <tspan x={ex + (cos >= 0 ? 1 : -1) * 6} dy="1em">{`(${(percent * 100).toFixed(0)}%)`}</tspan>
+       <text x={ex + (cos >= 0 ? 1 : -1) * 8} y={ey} textAnchor={textAnchor} fill="hsl(var(--foreground))" className="text-xs">
+         <tspan x={ex + (cos >= 0 ? 1 : -1) * 8} dy="-0.5em">{value}</tspan>
+         <tspan x={ex + (cos >= 0 ? 1 : -1) * 8} dy="1em">{`(${(percent * 100).toFixed(0)}%)`}</tspan>
       </text>
     </g>
   );
@@ -154,7 +156,7 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
                 data={data} 
                 dataKey="count" 
                 nameKey="label" 
-                innerRadius={90} 
+                innerRadius={85} 
                 outerRadius={110}
                 strokeWidth={2}
                 activeIndex={activeIndex}
@@ -398,15 +400,21 @@ function AdminAnalyticsPage() {
                 <CardTitle>Tendencia de Registros (Últimos 30 Días)</CardTitle>
             </CardHeader>
             <CardContent className="h-80 p-0 pr-4">
-                 <ChartContainer config={registrationTrendChartConfig}>
+                 <ChartContainer config={registrationTrendChartConfig} className="w-full h-full -ml-4 pl-4">
                     <ResponsiveContainer>
-                        <BarChart accessibilityLayer data={stats?.userRegistrationTrend || []}>
-                            <CartesianGrid vertical={false} />
-                            <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} interval="preserveStartEnd" tickFormatter={formatDateTick}/>
-                            <YAxis />
-                            <ChartTooltip content={<ChartTooltipContent hideIndicator labelFormatter={formatDateTooltip} />} />
-                            <Bar dataKey="count" fill="var(--color-count)" radius={8} />
-                        </BarChart>
+                       <AreaChart accessibilityLayer data={stats?.userRegistrationTrend || []} margin={{ top: 10, right: 10, left: -20, bottom: 40 }}>
+                         <defs>
+                            <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.8}/>
+                                <stop offset="95%" stopColor="var(--color-count)" stopOpacity={0.1}/>
+                            </linearGradient>
+                         </defs>
+                         <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                         <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} interval="preserveStartEnd" angle={-45} textAnchor="end" tickFormatter={formatDateTick}/>
+                         <YAxis tickLine={false} axisLine={false} tickMargin={10} />
+                         <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" hideIndicator labelFormatter={formatDateTooltip} />} />
+                         <Area type="monotone" dataKey="count" stroke="var(--color-count)" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" />
+                       </AreaChart>
                     </ResponsiveContainer>
                 </ChartContainer>
             </CardContent>

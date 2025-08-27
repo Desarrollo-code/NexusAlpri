@@ -26,12 +26,12 @@
     --ring: 262 84% 58%;
     --radius: 0.75rem;
     
-    /* Colores para gráficos y eventos derivados de los colores principales */
+    /* Colores para gráficos derivados de los colores principales */
     --chart-1: hsl(var(--primary));
     --chart-2: hsl(var(--accent));
     --chart-3: hsl(var(--secondary));
-    --chart-4: 200 80% 55%; /* Teal/Cyan - un color adicional */
-    --chart-5: 0 75% 60%; /* Red-orange - un color adicional */
+    --chart-4: 200 80% 55%; /* Teal/Cyan */
+    --chart-5: 0 75% 60%; /* Red-orange */
     
     --event-blue: hsl(var(--chart-1));
     --event-green: 150 70% 45%;
