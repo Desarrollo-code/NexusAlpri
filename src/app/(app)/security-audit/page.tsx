@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, KeyRound, UserCog, Monitor, Globe } from 'lucide-react';
-import type { SecurityLog as AppSecurityLog, SecurityLogEvent, User as AppUser } from '@/types';
+import type { SecurityLog as AppSecurityLog, User as AppUser } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

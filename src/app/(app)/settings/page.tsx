@@ -61,10 +61,10 @@ const UploadWidget = ({
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      <div className="relative w-full h-48 border-2 border-dashed border-muted-foreground/30 rounded-lg flex items-center justify-center bg-muted/20 p-2">
+      <div className="relative w-full border-2 border-dashed border-muted-foreground/30 rounded-lg flex items-center justify-center bg-muted/20 p-2 min-h-[10rem]">
         {currentImageUrl ? (
           <>
-            <div className="relative w-full h-full">
+            <div className="relative w-full h-full min-h-[10rem]">
                 <Image
                     src={currentImageUrl}
                     alt={`Previsualización de ${label}`}
@@ -146,7 +146,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                         <div className="mt-2 p-4 rounded-md shadow-sm" style={{ backgroundColor: settings.backgroundColorLight || '#FFFFFF' }}>
                             <div className="flex items-center gap-2 mb-4">
                                 <div className="relative w-8 h-8">
-                                    {settings.logoUrl ? <Image src={settings.logoUrl} alt="logo" width={32} height={32} data-ai-hint="logo company" className="object-contain"/> : <div className="w-8 h-8 rounded-md bg-muted" />}
+                                    {settings.logoUrl ? <Image src={settings.logoUrl} alt="logo" fill data-ai-hint="logo company" className="object-contain"/> : <div className="w-8 h-8 rounded-md bg-muted" />}
                                 </div>
                                 <h4 className="font-headline text-base font-bold" style={{ color: settings.primaryColor }}>{settings.platformName}</h4>
                             </div>
@@ -164,13 +164,13 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                             <div className="space-y-2">
                                 <Label className="text-xs">Página de Inicio (Landing)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
-                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" width={100} height={100} className="object-contain" data-ai-hint="office workspace" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" fill className="object-contain" data-ai-hint="office workspace" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                              <div className="space-y-2">
                                 <Label className="text-xs">Página de Acceso (Login)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
-                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" width={100} height={100} className="object-contain" data-ai-hint="abstract background" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" fill className="object-contain" data-ai-hint="abstract background" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                         </div>
@@ -182,7 +182,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                            <div className="mt-2 h-20 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
                                 <span className="text-sm text-muted-foreground z-10">Contenido de la app</span>
                                 <div className="absolute inset-0 p-2">
-                                    <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" width={100} height={100} className="object-contain opacity-20 z-0" data-ai-hint="logo company"/>
+                                    <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" fill className="object-contain opacity-20 z-0" data-ai-hint="logo company"/>
                                 </div>
                            </div>
                         </div>
@@ -530,6 +530,15 @@ export default function SettingsPage() {
         </div>
       </div>
       
+      {imageToCrop && (
+        <ImageCropper
+            imageSrc={imageToCrop}
+            onCropComplete={handleCropComplete}
+            onClose={() => setImageToCrop(null)}
+            uploadUrl={cropUploadUrl}
+        />
+      )}
+
       <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
         <AlertDialogContent>
             <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>
