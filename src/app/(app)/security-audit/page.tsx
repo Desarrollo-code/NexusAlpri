@@ -37,7 +37,7 @@ interface SecurityStats {
 
 const PAGE_SIZE = 20;
 
-const MetricCard = ({ title, value, icon: Icon, description, gradient }: { title: string; value: number; icon: React.ElementType; description?: string, gradient?: string }) => {
+const MetricCard = ({ title, value, icon: Icon, description, gradient }: { title: string; value: number; icon: React.ElementType; description?: string, gradient: string }) => {
     const animatedValue = useAnimatedCounter(value);
     return (
         <Card className={cn("relative overflow-hidden text-white card-border-animated", gradient)}>

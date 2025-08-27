@@ -91,8 +91,8 @@ interface DashboardData {
 
 // --- DASHBOARD COMPONENTS PER ROLE ---
 
-const MetricCard = ({ title, value: finalValue, icon: Icon, description, gradient }: { title: string; value: number; icon: React.ElementType; description?: string, gradient?: string }) => {
-    const animatedValue = useAnimatedCounter(finalValue);
+const MetricCard = ({ title, value, icon: Icon, description, gradient }: { title: string; value: number; icon: React.ElementType; description?: string, gradient: string }) => {
+    const animatedValue = useAnimatedCounter(value);
     return (
         <Card className={cn("relative overflow-hidden text-white card-border-animated", gradient)}>
             <div className="absolute inset-0 bg-black/10"></div>
