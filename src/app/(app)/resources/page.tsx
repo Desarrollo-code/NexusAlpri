@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, User as AppUser, UserRole } from '@/types';
 import { Search, ArchiveX, Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronRight, Users, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
@@ -475,16 +475,19 @@ export default function ResourcesPage() {
       />
       
       <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => !open && setResourceToDelete(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
-                <AlertDialogDescription>El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. {resourceToDelete?.type === 'FOLDER' && 'Todos los archivos dentro también serán eliminados.'}</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteResource} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
+            <AlertDialogDescription>El recurso "<strong>{resourceToDelete?.title}</strong>" será eliminado permanentemente. {resourceToDelete?.type === 'FOLDER' && 'Todos los archivos dentro también serán eliminados.'}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingResource}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteResource} disabled={isDeletingResource} className={cn(buttonVariants({ variant: 'destructive' }))}>
+              {isDeletingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Sí, eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
       </AlertDialog>
       
        <Dialog open={showCreateUpdateModal} onOpenChange={(isOpen) => { if (!isOpen) resetForm(); setShowCreateUpdateModal(isOpen); }}>
@@ -561,7 +564,10 @@ export default function ResourcesPage() {
 
                   </div>
               </form>
-               <DialogFooter className="p-6 pt-2 flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><Button type="button" variant="outline" onClick={() => setShowCreateUpdateModal(false)} disabled={isSubmittingResource}>Cancelar</Button><Button form="create-update-form" type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}{editingResource ? 'Guardar Cambios' : 'Crear Recurso'}</Button></DialogFooter>
+               <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setShowCreateUpdateModal(false)} disabled={isSubmittingResource}>Cancelar</Button>
+                  <Button form="create-update-form" type="submit" disabled={isSubmittingResource}>{isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}{editingResource ? 'Guardar Cambios' : 'Crear Recurso'}</Button>
+              </DialogFooter>
           </DialogContent>
        </Dialog>
 
@@ -620,8 +626,8 @@ export default function ResourcesPage() {
                       </div>
                   </div>
               </form>
-               <DialogFooter className="p-6 pt-2 flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-                  <Button type="button" variant="outline" onClick={() => setShowCreateFolderModal(false)} disabled={isSubmittingResource}>Cancelar</Button>
+               <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => { setShowCreateFolderModal(false); setEditingResource(null); }} disabled={isSubmittingResource}>Cancelar</Button>
                   <Button type="submit" form="create-folder-form" disabled={isSubmittingResource || !(editingResource ? newResourceTitle : newFolderName).trim()}>
                       {isSubmittingResource ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FolderPlus className="mr-2 h-4 w-4" />}
                       {editingResource ? 'Guardar Cambios' : 'Crear Carpeta'}
