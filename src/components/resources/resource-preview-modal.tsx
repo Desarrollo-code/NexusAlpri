@@ -15,7 +15,6 @@ import { Separator } from '../ui/separator';
 import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { ScrollArea } from '../ui/scroll-area';
-import mammoth from 'mammoth';
 import JSZip from 'jszip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
@@ -32,6 +31,7 @@ const DocxPreviewer = ({ url }: { url: string }) => {
             setIsLoading(true);
             setError(null);
             try {
+                // Fetch the HTML content from our dedicated API endpoint
                 const response = await fetch(`/api/resources/preview?url=${encodeURIComponent(url)}`);
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -41,7 +41,7 @@ const DocxPreviewer = ({ url }: { url: string }) => {
                 setHtml(data.html);
             } catch (e) {
                 console.error("Error procesando DOCX:", e);
-                setError("No se pudo previsualizar este archivo Word.");
+                setError(e instanceof Error ? e.message : "No se pudo previsualizar este archivo Word.");
             } finally {
                 setIsLoading(false);
             }
