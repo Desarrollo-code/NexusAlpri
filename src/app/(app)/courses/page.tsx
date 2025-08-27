@@ -6,7 +6,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { CourseCard } from '@/components/course-card';
 import { Input } from '@/components/ui/input';
 import type { Course as AppCourseType, EnrolledCourse, CourseStatus, UserRole } from '@/types'; 
-import { Search, PackageX, Loader2, AlertTriangle } from 'lucide-react'; 
+import { Search, PackageX, Loader2, AlertTriangle, Filter } from 'lucide-react'; 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CourseCarousel } from '@/components/course-carousel';
 import { useTitle } from '@/contexts/title-context';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ApiCourse extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
   instructor: { id: string; name: string } | null;
@@ -42,7 +43,7 @@ function mapApiCourseToAppCourse(apiCourse: ApiCourse): AppCourseType {
 
 
 export default function CoursesPage() {
-  const { user } = useAuth();
+  const { user, settings } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { setPageTitle } = useTitle();
@@ -53,6 +54,7 @@ export default function CoursesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string>('all');
   
   const [enrollmentUpdatedSignal, setEnrollmentUpdatedSignal] = useState(0);
 
@@ -109,12 +111,12 @@ export default function CoursesPage() {
       
       const isPublished = course.status === 'PUBLISHED';
       const isNotEnrolled = !enrolledCourseIds.includes(course.id);
-      
       const isNotOwnCourse = !( (user?.role === 'INSTRUCTOR' || user?.role === 'ADMINISTRATOR') && course.instructorId === user?.id );
+      const matchesCategory = activeCategory === 'all' || course.category === activeCategory;
 
-      return matchesSearch && isPublished && isNotEnrolled && isNotOwnCourse;
+      return matchesSearch && isPublished && isNotEnrolled && isNotOwnCourse && matchesCategory;
     });
-  }, [allCoursesForDisplay, searchTerm, enrolledCourseIds, user]);
+  }, [allCoursesForDisplay, searchTerm, enrolledCourseIds, user, activeCategory]);
 
 
   const groupedCourses = useMemo(() => {
@@ -135,6 +137,8 @@ export default function CoursesPage() {
         setEnrolledCourseIds(prev => prev.filter(id => id !== courseId));
     }
   };
+  
+  const allCategories = useMemo(() => ['all', ...(settings?.resourceCategories || [])], [settings]);
 
   const CourseCardSkeleton = () => (
     <Card className="flex flex-col overflow-hidden">
@@ -159,15 +163,30 @@ export default function CoursesPage() {
       </div>
 
       <Card className="p-4 space-y-4 shadow">
-        <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Buscar en todos los cursos..."
-            className="pl-10 w-full"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-grow">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Buscar en todos los cursos..."
+              className="pl-10 w-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Filter className="h-5 w-5 text-muted-foreground" />
+            <Select value={activeCategory} onValueChange={setActiveCategory}>
+              <SelectTrigger className="w-full md:w-[240px]">
+                <SelectValue placeholder="Filtrar por categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                {allCategories.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat === 'all' ? 'Todas las Categorías' : cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="text-sm text-muted-foreground pt-2 border-t">
            {isLoading ? (
@@ -222,8 +241,8 @@ export default function CoursesPage() {
           <PackageX className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
           <h3 className="text-xl font-semibold mb-2">Ningún curso disponible</h3>
           <p className="text-muted-foreground">
-            {searchTerm 
-              ? 'No hay cursos que coincidan con tu búsqueda.' 
+            {searchTerm || activeCategory !== 'all'
+              ? 'No hay cursos que coincidan con tu búsqueda o filtro.' 
               : 'Actualmente no hay cursos publicados que cumplan con los criterios de visualización.'
             }
           </p>
