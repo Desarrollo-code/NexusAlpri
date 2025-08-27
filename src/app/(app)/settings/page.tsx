@@ -529,15 +529,6 @@ export default function SettingsPage() {
             </Card>
         </div>
       </div>
-      
-      {imageToCrop && (
-        <ImageCropper
-            imageSrc={imageToCrop}
-            onCropComplete={handleCropComplete}
-            onClose={() => setImageToCrop(null)}
-            uploadUrl={cropUploadUrl}
-        />
-      )}
 
       <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
         <AlertDialogContent>
