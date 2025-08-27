@@ -1,4 +1,5 @@
 
+
 // src/app/(app)/analytics/page.tsx
 'use client';
 
@@ -124,7 +125,7 @@ const renderActiveShape = (props: any) => {
         startAngle={startAngle}
         endAngle={endAngle}
         innerRadius={outerRadius + 4}
-        outerRadius={outerRadius + 8}
+        outerRadius={outerRadius + 6}
         fill={fill}
       />
        <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
@@ -163,7 +164,7 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
                 data={data} 
                 dataKey="count" 
                 nameKey="label" 
-                innerRadius={60} 
+                innerRadius={65} 
                 strokeWidth={2}
                 activeIndex={activeIndex}
                 activeShape={renderActiveShape}
