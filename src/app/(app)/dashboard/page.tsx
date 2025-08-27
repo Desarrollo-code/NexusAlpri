@@ -151,7 +151,8 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                   <CardTitle>Actividad de los Cursos (Últimos 30 días)</CardTitle>
                   <CardDescription>Resumen de creación y publicación de cursos.</CardDescription>
               </CardHeader>
-                  <CardContent className="aspect-video p-0 pr-4">
+                  <CardContent className="h-[350px] p-0 pr-4">
+
                     
                    <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
                     <ResponsiveContainer>
