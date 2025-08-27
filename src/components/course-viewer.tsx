@@ -203,6 +203,61 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
 
+  const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
+  const totalLessonsCount = allLessons.length;
+
+  const isCreatorViewingCourse = useMemo(() => {
+    if (!user || !course) return false;
+    return user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === course.instructorId);
+  }, [user, course]);
+  
+  const handleConsolidateProgress = useCallback(async () => {
+      if (!user || !courseId || isConsolidating) return;
+      setIsConsolidating(true);
+      try {
+          const response = await fetch(`/api/progress/${user.id}/${courseId}/consolidate`, { method: 'POST' });
+          if (!response.ok) throw new Error((await response.json()).message || "Failed to consolidate progress");
+          
+          const finalProgressData = await response.json();
+          setCourseProgress(finalProgressData);
+          toast({ title: "¡Curso Finalizado!", description: "Tu puntuación final ha sido calculada y guardada." });
+      } catch (error) {
+          toast({ title: "Error", description: `No se pudo calcular tu progreso: ${(error as Error).message}`, variant: "destructive"});
+      } finally {
+          setIsConsolidating(false);
+      }
+  }, [user, courseId, toast, isConsolidating]);
+
+  const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz', score?: number) => {
+    if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || provisionalProgress[lessonId]) return;
+    
+    // Optimistic update
+    const nextProvisionalProgress = { ...provisionalProgress, [lessonId]: true };
+    setProvisionalProgress(nextProvisionalProgress);
+    
+    // Check if this was the last lesson
+    const allLessonsAreCompleted = allLessons.every(lesson => nextProvisionalProgress[lesson.id]);
+
+    if (allLessonsAreCompleted) {
+        // Automatically trigger final calculation
+        handleConsolidateProgress();
+    }
+    
+    let endpoint = `/api/progress/${user.id}/${courseId}/lesson`;
+    let payload: any = { lessonId };
+    if (type === 'quiz') {
+        endpoint = `/api/progress/${user.id}/${courseId}/quiz`;
+        payload.score = score;
+    }
+    
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch(e => console.error("Failed to record interaction:", e));
+
+  }, [user, courseId, isEnrolled, provisionalProgress, isCreatorViewingCourse, allLessons, handleConsolidateProgress]);
+
   useEffect(() => {
     const fetchData = async () => {
         setIsLoading(true);
@@ -244,34 +299,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     };
     fetchData();
   }, [courseId, user, toast, setPageTitle]);
-
-  const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
-  const totalLessonsCount = allLessons.length;
-  
-  const isCreatorViewingCourse = useMemo(() => {
-    if (!user || !course) return false;
-    return user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === course.instructorId);
-  }, [user, course]);
-  
-  const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz', score?: number) => {
-    if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || provisionalProgress[lessonId]) return;
-    
-    setProvisionalProgress(prev => ({ ...prev, [lessonId]: true }));
-    
-    let endpoint = `/api/progress/${user.id}/${courseId}/lesson`;
-    let payload: any = { lessonId };
-    if (type === 'quiz') {
-        endpoint = `/api/progress/${user.id}/${courseId}/quiz`;
-        payload.score = score;
-    }
-    
-    fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    }).catch(e => console.error("Failed to record interaction:", e));
-
-  }, [user, courseId, isEnrolled, provisionalProgress, isCreatorViewingCourse]);
   
   useEffect(() => {
     if (isLoading) return;
@@ -292,28 +319,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     recordInteraction(lessonId, 'quiz', score);
   }, [recordInteraction]);
 
-  const isCourseProvisionallyComplete = useMemo(() => {
-    if (totalLessonsCount === 0) return false;
-    return allLessons.every(lesson => provisionalProgress[lesson.id]);
-  }, [provisionalProgress, allLessons, totalLessonsCount]);
-
-  const handleConsolidateProgress = async () => {
-      if (!user || !courseId) return;
-      setIsConsolidating(true);
-      try {
-          const response = await fetch(`/api/progress/${user.id}/${courseId}/consolidate`, { method: 'POST' });
-          if (!response.ok) throw new Error((await response.json()).message || "Failed to consolidate progress");
-          
-          const finalProgressData = await response.json();
-          setCourseProgress(finalProgressData);
-          toast({ title: "Progreso Calculado", description: "Tu puntuación final ha sido guardada." });
-      } catch (error) {
-          toast({ title: "Error", description: `No se pudo calcular tu progreso: ${(error as Error).message}`, variant: "destructive"});
-      } finally {
-          setIsConsolidating(false);
-      }
-  };
-  
   const selectedLesson = useMemo(() => {
     if (!selectedLessonId || !course) return null;
     return course.modules.flatMap(m => m.lessons).find(l => l.id === selectedLessonId);
@@ -491,6 +496,31 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                  <p className="text-muted-foreground text-xs text-center py-4 px-2">No se encontraron lecciones que coincidan con la búsqueda.</p>
              )}
         </ScrollArea>
+        { !isCreatorViewingCourse && isEnrolled && (
+            <div className="p-4 border-t">
+                 <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="w-full">
+                            <LineChart className="mr-2 h-4 w-4" /> Ver Mi Progreso
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-sm text-center p-6">
+                        <DialogHeader>
+                            <DialogTitle>Tu Progreso en {course.title}</DialogTitle>
+                            <DialogDescription>
+                                {courseProgress && courseProgress.progressPercentage > 0 ? "Este es tu resultado final para el curso." : "Completa todas las lecciones para ver tu puntuación."}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex flex-col items-center justify-center space-y-4 py-4">
+                            <CircularProgress value={courseProgress?.progressPercentage || 0} size={150} strokeWidth={12} />
+                             {courseProgress?.progressPercentage === 0 && (
+                                <p className="text-sm text-muted-foreground">Aún no has completado ninguna lección.</p>
+                            )}
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        )}
     </div>
   );
   
@@ -514,39 +544,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                 )}
             </div>
             <div className="flex items-center gap-2">
-                { !isCreatorViewingCourse && isEnrolled && (
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button variant="outline" size="sm">
-                                <LineChart className="mr-2 h-4 w-4" /> Ver Mi Progreso
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-sm text-center p-6">
-                            <DialogHeader>
-                                <DialogTitle>Tu Progreso en {course.title}</DialogTitle>
-                                <DialogDescription>
-                                    {courseProgress && courseProgress.progressPercentage > 0 ? "Este es tu resultado final para el curso." : "Completa todas las lecciones para calcular tu puntuación."}
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="flex flex-col items-center justify-center space-y-4 py-4">
-                                {courseProgress && courseProgress.progressPercentage > 0 ? (
-                                    <div className="text-center space-y-3">
-                                        <CircularProgress value={courseProgress.progressPercentage || 0} size={150} strokeWidth={12} />
-                                        <h3 className="text-xl font-semibold text-foreground pt-4">Puntuación Final</h3>
-                                    </div>
-                                ) : (
-                                    <div className="text-center space-y-3">
-                                        <p className="text-muted-foreground max-w-xs">Completa todas las lecciones y presiona el botón para calcular tu puntuación final.</p>
-                                        <Button onClick={handleConsolidateProgress} disabled={!isCourseProvisionallyComplete || isConsolidating} className="w-full">
-                                            {isConsolidating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                                            {isConsolidating ? 'Calculando...' : 'Calcular Mi Puntuación Final'}
-                                        </Button>
-                                    </div>
-                                )}
-                            </div>
-                        </DialogContent>
-                    </Dialog>
-                )}
                 {isCreatorViewingCourse ? (
                     <Button asChild variant="outline" size="sm" className="shrink-0">
                         <Link href={`/manage-courses/${course.id}/edit`}>
