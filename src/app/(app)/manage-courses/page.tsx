@@ -1,12 +1,12 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, ListPlus, Edit, Users, Zap, CircleOff, Loader2, AlertTriangle, ShieldAlert, MoreVertical, Archive, ArchiveRestore, Trash2, Eye, HelpCircle } from 'lucide-react';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { PlusCircle, List, Edit, Users, Grid, ListPlus, Loader2, AlertTriangle, ShieldAlert, MoreVertical, Archive, ArchiveRestore, Trash2, Eye, HelpCircle, LineChart, BookOpen, Layers } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import Image from 'next/image';
 import type { Course as AppCourseType, CourseStatus, UserRole } from '@/types';
 import {
   Dialog,
@@ -29,7 +29,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import type { Course as PrismaCourse } from '@prisma/client';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CourseCreationForm } from '@/components/course-creation-form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
@@ -39,16 +39,34 @@ import { CourseCard } from '@/components/course-card';
 import { useTitle } from '@/contexts/title-context';
 import { useTour } from '@/contexts/tour-context';
 import { manageCoursesTour } from '@/lib/tour-steps';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { CircularProgress } from '@/components/ui/circular-progress';
+import Image from 'next/image';
 
 
-interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
+interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | 'status'> {
   instructor: { id: string; name: string } | null;
-  modulesCount: number;
-  lessonsCount: number;
   status: CourseStatus;
+  _count: {
+    modules: number;
+    enrollments: number;
+  };
+  averageCompletion?: number;
 }
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 8;
+
+const getStatusInSpanish = (status: CourseStatus) => {
+    switch (status) {
+        case 'DRAFT': return 'Borrador';
+        case 'PUBLISHED': return 'Publicado';
+        case 'ARCHIVED': return 'Archivado';
+        case 'SCHEDULED': return 'Programado';
+        default: return status;
+    }
+};
 
 function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
   return {
@@ -59,7 +77,9 @@ function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
     instructor: apiCourse.instructor?.name || 'N/A',
     instructorId: apiCourse.instructorId || undefined,
     imageUrl: apiCourse.imageUrl || undefined,
-    modulesCount: apiCourse.modulesCount ?? 0,
+    modulesCount: apiCourse._count?.modules ?? 0,
+    enrollmentsCount: apiCourse._count?.enrollments ?? 0,
+    averageCompletion: apiCourse.averageCompletion ?? 0,
     status: apiCourse.status,
     modules: [],
   };
@@ -72,7 +92,6 @@ export default function ManageCoursesPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const isMobile = useIsMobile();
   const { setPageTitle } = useTitle();
   const { startTour } = useTour();
 
@@ -87,6 +106,8 @@ export default function ManageCoursesPage() {
   const [courseToDelete, setCourseToDelete] = useState<AppCourseType | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
   const activeTab = searchParams.get('tab') || 'all';
   const currentPage = Number(searchParams.get('page')) || 1;
   const totalPages = Math.ceil(totalCourses / PAGE_SIZE);
@@ -239,23 +260,84 @@ export default function ManageCoursesPage() {
   }
 
   const CourseListSkeleton = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {[...Array(PAGE_SIZE)].map((_, i) => (
             <Card key={i} className="flex flex-col overflow-hidden">
             <Skeleton className="aspect-video w-full" />
-            <CardHeader>
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-            </CardHeader>
-            <CardContent>
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-5/6 mt-2" />
-            </CardContent>
-            <CardFooter>
-                <Skeleton className="h-9 w-full" />
-            </CardFooter>
+            <CardHeader><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-1/2" /></CardHeader>
+            <CardContent><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-5/6 mt-2" /></CardContent>
+            <CardFooter><Skeleton className="h-9 w-full" /></CardFooter>
             </Card>
         ))}
+    </div>
+  );
+  
+  const ListView = () => (
+    <Card>
+      <div className="overflow-x-auto">
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead className="w-[40%]">Curso</TableHead>
+                    <TableHead className="text-center">Estadísticas</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                 {isLoading ? (
+                    [...Array(5)].map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell><div className="flex items-center gap-3"><Skeleton className="h-10 w-16 rounded-md" /><div className="space-y-1"><Skeleton className="h-4 w-48" /><Skeleton className="h-3 w-32" /></div></div></TableCell>
+                            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                            <TableCell className="text-right"><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
+                        </TableRow>
+                    ))
+                 ) : allCourses.map(course => (
+                     <TableRow key={course.id}>
+                        <TableCell>
+                           <div className="flex items-center gap-4">
+                                <Image src={course.imageUrl || '/placeholder.png'} alt={course.title} width={64} height={36} className="w-16 h-9 object-cover rounded-md bg-muted" />
+                                <div>
+                                    <Link href={`/manage-courses/${course.id}/edit`} className="font-semibold text-foreground hover:underline">{course.title}</Link>
+                                    <p className="text-xs text-muted-foreground">{course.category}</p>
+                                </div>
+                           </div>
+                        </TableCell>
+                         <TableCell>
+                             <div className="flex items-center justify-center gap-6">
+                                <div className="text-center"><div className="font-bold">{course.enrollmentsCount}</div><div className="text-xs text-muted-foreground">Inscritos</div></div>
+                                <div className="text-center"><div className="font-bold">{Math.round(course.averageCompletion || 0)}%</div><div className="text-xs text-muted-foreground">Completado</div></div>
+                                <div className="text-center"><div className="font-bold">{course.modulesCount}</div><div className="text-xs text-muted-foreground">Módulos</div></div>
+                             </div>
+                         </TableCell>
+                         <TableCell>
+                            <Badge variant={course.status === 'PUBLISHED' ? 'default' : 'secondary'}>{getStatusInSpanish(course.status)}</Badge>
+                         </TableCell>
+                         <TableCell className="text-right">
+                             <ManagementDropdown course={course} onStatusChange={handleChangeStatus} onDelete={setCourseToDelete} isProcessing={false} />
+                         </TableCell>
+                     </TableRow>
+                 ))}
+            </TableBody>
+        </Table>
+      </div>
+    </Card>
+  );
+
+  const GridView = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="course-list-container">
+      {allCourses.map(course => (
+          <CourseCard 
+              key={course.id}
+              course={course}
+              userRole={user?.role || null}
+              viewMode="management"
+              onStatusChange={handleChangeStatus}
+              onDelete={setCourseToDelete}
+          />
+      ))}
     </div>
   );
 
@@ -265,8 +347,11 @@ export default function ManageCoursesPage() {
         <div>
             <p className="text-muted-foreground">Administradores e Instructores: Creen, editen y organicen los cursos.</p>
         </div>
-        {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-         <div className="flex flex-row flex-wrap items-center gap-2">
+        <div className="flex flex-row flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+                <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
+                <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
+            </div>
             <Button variant="outline" size="sm" onClick={() => startTour('manageCourses', manageCoursesTour)}>
               <HelpCircle className="mr-2 h-4 w-4" />
               Ver Guía
@@ -274,23 +359,15 @@ export default function ManageCoursesPage() {
             <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
                 <DialogTrigger asChild>
                     <Button id="create-course-btn">
-                        <PlusCircle className="mr-2 h-4 w-4" /> Crear Nuevo Curso
+                        <PlusCircle className="mr-2 h-4 w-4" /> Crear Curso
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] flex flex-col">
-                    <DialogHeader className="p-6 pb-0">
-                    <DialogTitle>Crear Nuevo Curso</DialogTitle>
-                    <DialogDescription>
-                      Sigue los pasos para crear la base de tu nuevo curso. Serás redirigido para añadir contenido al finalizar.
-                    </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-y-auto px-6 py-4 thin-scrollbar">
-                        <CourseCreationForm onSuccess={handleCreationSuccess} />
-                    </div>
+                    <DialogHeader className="p-6 pb-0"><DialogTitle>Crear Nuevo Curso</DialogTitle><DialogDescription>Sigue los pasos para crear la base de tu nuevo curso.</DialogDescription></DialogHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-4 thin-scrollbar"><CourseCreationForm onSuccess={handleCreationSuccess} /></div>
                 </DialogContent>
             </Dialog>
          </div>
-        )}
       </div>
 
        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full" id="course-status-tabs">
@@ -306,29 +383,14 @@ export default function ManageCoursesPage() {
                <CourseListSkeleton />
             ) : error ? (
               <div className="flex flex-col items-center justify-center py-12 text-destructive text-center">
-                <AlertTriangle className="h-8 w-8 mb-2" />
-                <p className="font-semibold">Error al Cargar Cursos</p>
-                <p className="text-sm">{error}</p>
+                <AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">Error al Cargar Cursos</p><p className="text-sm">{error}</p>
                 <Button onClick={() => setCourseUpdateSignal(s => s + 1)} variant="outline" className="mt-4">Reintentar</Button>
               </div>
             ) : allCourses.length > 0 ? (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="course-list-container">
-                  {allCourses.map(course => (
-                      <CourseCard 
-                          key={course.id}
-                          course={course}
-                          userRole={user?.role || null}
-                          viewMode="management"
-                          onStatusChange={handleChangeStatus}
-                          onDelete={setCourseToDelete}
-                      />
-                  ))}
-                </div>
+                 viewMode === 'grid' ? <GridView /> : <ListView />
             ) : (
                 <div className="text-center py-12">
-                    <ListPlus className="mx-auto h-12 w-12 text-primary mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">No hay cursos en esta sección</h3>
-                    <p className="text-muted-foreground">No se encontraron cursos que coincidan con este estado.</p>
+                    <ListPlus className="mx-auto h-12 w-12 text-primary mb-4" /><h3 className="text-xl font-semibold mb-2">No hay cursos en esta sección</h3><p className="text-muted-foreground">No se encontraron cursos que coincidan con este estado.</p>
                 </div>
             )}
           </div>
@@ -337,53 +399,57 @@ export default function ManageCoursesPage() {
         {totalPages > 1 && !isLoading && (
             <Pagination className="mt-8">
                 <PaginationContent>
-                    <PaginationItem>
-                    <PaginationPrevious
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
-                        className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
-                    />
-                    </PaginationItem>
-                    {[...Array(totalPages)].map((_, i) => (
-                        <PaginationItem key={i}>
-                        <PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>
-                            {i + 1}
-                        </PaginationLink>
-                        </PaginationItem>
-                    ))}
-                    <PaginationItem>
-                    <PaginationNext
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
-                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}
-                    />
-                    </PaginationItem>
+                    <PaginationItem><PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}/></PaginationItem>
+                    {[...Array(totalPages)].map((_, i) => (<PaginationItem key={i}><PaginationLink href="#" onClick={(e) => { e.preventDefault(); handlePageChange(i + 1); }} isActive={currentPage === i + 1}>{i + 1}</PaginationLink></PaginationItem>))}
+                    <PaginationItem><PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}/></PaginationItem>
                 </PaginationContent>
             </Pagination>
         )}
 
       <AlertDialog open={!!courseToDelete} onOpenChange={(open) => !open && setCourseToDelete(null)}>
         <AlertDialogContent className="w-[95vw] max-w-md">
-            <AlertDialogHeader>
-                <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    Esta acción es irreversible. Se eliminará permanentemente el curso "<strong>{courseToDelete?.title}</strong>" 
-                    y todos sus datos asociados, incluyendo módulos, lecciones, inscripciones y progreso de los estudiantes.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
+            <AlertDialogHeader><AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle><AlertDialogDescription>Esta acción es irreversible. Se eliminará permanentemente el curso "<strong>{courseToDelete?.title}</strong>" y todos sus datos asociados, incluyendo módulos, lecciones, inscripciones y progreso de los estudiantes.</AlertDialogDescription></AlertDialogHeader>
             <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:space-x-0">
                 <AlertDialogCancel onClick={() => setCourseToDelete(null)} disabled={isDeleting}>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                    onClick={handleDeleteCourse}
-                    disabled={isDeleting}
-                    className={buttonVariants({ variant: "destructive" })}
-                >
-                    {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
-                    Sí, eliminar curso
-                </AlertDialogAction>
+                <AlertDialogAction onClick={handleDeleteCourse} disabled={isDeleting} className={buttonVariants({ variant: "destructive" })}>{isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar curso</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
   );
+}
+
+const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: {
+    course: AppCourseType,
+    onStatusChange?: (courseId: string, newStatus: CourseStatus) => void,
+    onDelete?: (course: AppCourseType) => void,
+    isProcessing: boolean,
+}) => {
+    const handleAction = (e: React.MouseEvent, action: () => void) => {
+        e.stopPropagation();
+        e.preventDefault();
+        action();
+    };
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
+                    <MoreVertical className="h-4 w-4"/>
+                    <span className="sr-only">Más opciones</span>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
+                <DropdownMenuItem asChild><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2 h-4 w-4"/> Editar</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href={`/courses/${course.id}`} target="_blank"><Eye className="mr-2 h-4 w-4"/> Vista Previa</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href={`/enrollments?courseId=${course.id}`}><Users className="mr-2 h-4 w-4"/> Ver Inscritos</Link></DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'PUBLISHED'))} disabled={isProcessing || course.status === 'PUBLISHED'}>Publicar</DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'ARCHIVED'))} disabled={isProcessing || course.status === 'ARCHIVED'}>Archivar</DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'DRAFT'))} disabled={isProcessing || course.status === 'DRAFT'}>Mover a Borrador</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onDelete?.(course))} disabled={isProcessing} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4"/> Eliminar</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
 }

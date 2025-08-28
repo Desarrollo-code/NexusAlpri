@@ -1,3 +1,4 @@
+
 // src/types.ts
 import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form, FormField as PrismaFormField, FormFieldType, FormStatus } from "@prisma/client";
 
@@ -125,6 +126,7 @@ export interface Course {
   isEnrolled?: boolean;
   publicationDate?: Date | string | null;
   enrollmentsCount?: number;
+  averageCompletion?: number;
 }
 
 export interface EnrolledCourse extends Course {

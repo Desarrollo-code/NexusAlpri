@@ -36,30 +36,26 @@ export async function GET(req: NextRequest) {
       whereClause.status = 'PUBLISHED';
     }
 
-    // Para la vista de gestión, no necesitamos todos los detalles del curso,
-    // solo la cuenta de módulos. Esto optimiza la consulta.
-    const courseInclude = manageView 
-        ? {
-            instructor: { select: { id: true, name: true } },
-            _count: { select: { modules: true } },
-          }
-        : {
-            instructor: { select: { id: true, name: true } },
-            modules: {
-              orderBy: { order: "asc" },
-              include: {
-                lessons: {
-                  orderBy: { order: "asc" },
-                  include: {
-                    contentBlocks: {
-                      orderBy: { order: "asc" },
-                    },
-                  },
-                },
+    const courseInclude = {
+      instructor: { select: { id: true, name: true } },
+      _count: {
+        select: {
+          modules: true,
+          ...(manageView && { enrollments: true }),
+        },
+      },
+      ...(manageView && {
+        enrollments: {
+          select: {
+            progress: {
+              select: {
+                progressPercentage: true,
               },
             },
-          };
-
+          },
+        },
+      }),
+    };
 
     const [courses, totalCourses] = await prisma.$transaction([
       prisma.course.findMany({
@@ -71,10 +67,25 @@ export async function GET(req: NextRequest) {
       prisma.course.count({ where: whereClause }),
     ]);
     
-    const enrichedCourses = courses.map((course: any) => ({
-      ...course,
-      modulesCount: course._count?.modules ?? (course.modules?.length || 0),
-    }));
+    const enrichedCourses = courses.map((course: any) => {
+      let averageCompletion = 0;
+      if (manageView && course.enrollments && course.enrollments.length > 0) {
+        const validProgress = course.enrollments
+          .map((e: any) => e.progress?.progressPercentage)
+          .filter((p: any) => p !== null && p !== undefined);
+        
+        if (validProgress.length > 0) {
+            averageCompletion = validProgress.reduce((acc: number, curr: number) => acc + curr, 0) / validProgress.length;
+        }
+      }
+
+      return {
+        ...course,
+        modulesCount: course._count?.modules ?? (course.modules?.length || 0),
+        enrollmentsCount: course._count?.enrollments ?? 0,
+        averageCompletion: averageCompletion,
+      };
+    });
 
     return NextResponse.json({ courses: enrichedCourses, totalCourses });
     
