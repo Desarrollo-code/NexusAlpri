@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { PlusCircle, List, Edit, Users, Grid, ListPlus, Loader2, AlertTriangle, ShieldAlert, MoreVertical, Archive, ArchiveRestore, Trash2, Eye, HelpCircle, LineChart, BookOpen, Layers } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
@@ -298,7 +298,7 @@ export default function ManageCoursesPage() {
                      <TableRow key={course.id}>
                         <TableCell>
                            <div className="flex items-center gap-4">
-                                <Image src={course.imageUrl || '/placeholder.png'} alt={course.title} width={64} height={36} className="w-16 h-9 object-cover rounded-md bg-muted" />
+                                <Image src={course.imageUrl || `https://placehold.co/64x36.png`} alt={course.title} width={64} height={36} className="w-16 h-9 object-cover rounded-md bg-muted" />
                                 <div>
                                     <Link href={`/manage-courses/${course.id}/edit`} className="font-semibold text-foreground hover:underline">{course.title}</Link>
                                     <p className="text-xs text-muted-foreground">{course.category}</p>
