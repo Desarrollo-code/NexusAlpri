@@ -234,8 +234,11 @@ export default function AnnouncementsPage() {
     }
   };
 
-  const openDeleteConfirmation = (announcement: DisplayAnnouncement) => {
-    setAnnouncementToDelete(announcement);
+  const openDeleteConfirmation = (announcementId: string) => {
+    const annToDelete = allAnnouncements.find(ann => ann.id === announcementId);
+    if(annToDelete) {
+        setAnnouncementToDelete(annToDelete);
+    }
   };
 
 
