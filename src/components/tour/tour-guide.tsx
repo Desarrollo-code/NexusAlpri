@@ -2,10 +2,18 @@
 'use client';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, X } from 'lucide-react';
 import type { TourStep } from '@/lib/tour-steps';
+import { cn } from '@/lib/utils';
+
+interface TourGuideProps {
+  steps: TourStep[];
+  currentStepIndex: number;
+  onNext: () => void;
+  onStop: () => void;
+}
 
 const getElementAndRect = (selector: string): { element: HTMLElement | null, rect: DOMRect | null } => {
   try {
@@ -49,7 +57,6 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
   }, [step, onNext]);
   
   useEffect(() => {
-    // We need a brief moment for the DOM to update after a route change or state update
     const timeoutId = setTimeout(updatePositionAndScroll, 100);
     
     window.addEventListener('resize', updatePositionAndScroll);
@@ -96,30 +103,29 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
 
   return (
     <AnimatePresence>
+        {/* The overlay with a hole cut out */}
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9998] pointer-events-none"
-        >
-             {/* The overlay and highlight box */}
-             <div 
-                className="absolute inset-0 transition-all duration-300 ease-in-out pointer-events-auto"
-                onClick={onStop}
-                style={{
-                    boxShadow: `0 0 0 9999px rgba(0, 0, 0, 0.7)`,
-                    top: targetRect.top - 8,
-                    left: targetRect.left - 8,
-                    width: targetRect.width + 16,
-                    height: targetRect.height + 16,
-                    borderRadius: '8px',
-                }}
-            />
-        </motion.div>
-        
-        {/* The popover, now a sibling to ensure it's on top */}
+            className="fixed inset-0 z-[9998] pointer-events-auto"
+            onClick={onStop}
+            style={{
+                 // This creates a large shadow that acts as an overlay, but leaves the highlight box transparent.
+                 boxShadow: `0 0 0 9999px rgba(0, 0, 0, 0.7)`,
+                 top: targetRect.top - 8,
+                 left: targetRect.left - 8,
+                 width: targetRect.width + 16,
+                 height: targetRect.height + 16,
+                 borderRadius: '8px',
+                 transition: 'all 0.3s ease-in-out',
+            }}
+        />
+
+        {/* The popover, positioned relative to the viewport */}
         <motion.div
             ref={popoverRef}
+            key={currentStepIndex} // Re-animate on step change
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
