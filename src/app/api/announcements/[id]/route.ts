@@ -5,14 +5,14 @@ import type { NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const announcement = await prisma.announcement.findUnique({ where: { id } });
 
     if (!announcement) {
@@ -38,14 +38,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const announcement = await prisma.announcement.findUnique({ where: { id } });
 
      if (!announcement) {
