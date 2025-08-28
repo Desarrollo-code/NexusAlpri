@@ -24,8 +24,8 @@ async function checkPermissions(formId: string, session: any) {
 }
 
 // GET a specific form by ID with its fields
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const { id: formId } = params;
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: formId } = await params;
 
   try {
     const session = await getCurrentUser();
@@ -54,8 +54,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // PUT (update) a form, including its fields
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id: formId } = params;
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: formId } = await params;
 
   const session = await getCurrentUser();
   if (!session) {
@@ -88,28 +88,39 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         if (fieldsToDelete.length > 0) {
           await tx.formField.deleteMany({ where: { id: { in: fieldsToDelete.map(f => f.id) } } });
         }
+        
+        // Separate new fields from existing ones
+        const newFields = fields.filter((f: FormField) => f.id.startsWith('new-'));
+        const existingFields = fields.filter((f: FormField) => !f.id.startsWith('new-'));
 
-        // Create or update incoming fields
-        for (const [index, fieldData] of (fields as FormField[]).entries()) {
-          const isNew = fieldData.id.startsWith('new-');
-          const fieldPayload = {
-            label: fieldData.label,
-            type: fieldData.type as FormFieldType,
-            options: (fieldData.options as unknown as FormFieldOption[]) || [],
-            required: fieldData.required || false,
-            placeholder: fieldData.placeholder || null,
-            order: index,
-            formId: formId,
-          };
+        // Create new fields
+        for (const [index, fieldData] of (newFields as FormField[]).entries()) {
+             const fieldPayload = {
+                label: fieldData.label,
+                type: fieldData.type as FormFieldType,
+                options: (fieldData.options as unknown as FormFieldOption[]) || [],
+                required: fieldData.required || false,
+                placeholder: fieldData.placeholder || null,
+                order: fields.findIndex((f: FormField) => f.id === fieldData.id), // Use the final order from the array
+                formId: formId,
+             };
+             await tx.formField.create({ data: fieldPayload });
+        }
 
-          if (isNew) {
-            await tx.formField.create({ data: fieldPayload });
-          } else {
-            await tx.formField.update({
-              where: { id: fieldData.id },
-              data: fieldPayload,
-            });
-          }
+        // Update existing fields
+        for (const [index, fieldData] of (existingFields as FormField[]).entries()) {
+             const fieldPayload = {
+                label: fieldData.label,
+                type: fieldData.type as FormFieldType,
+                options: (fieldData.options as unknown as FormFieldOption[]) || [],
+                required: fieldData.required || false,
+                placeholder: fieldData.placeholder || null,
+                order: fields.findIndex((f: FormField) => f.id === fieldData.id),
+             };
+             await tx.formField.update({
+                where: { id: fieldData.id },
+                data: fieldPayload,
+             });
         }
       }
     });
@@ -128,8 +139,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE a form
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id: formId } = params;
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: formId } = await params;
 
   const session = await getCurrentUser();
   if (!session) {
