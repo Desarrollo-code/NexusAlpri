@@ -15,8 +15,13 @@ interface TourGuideProps {
 }
 
 const getElementRect = (selector: string): DOMRect | null => {
-  const element = document.querySelector(selector);
-  return element ? element.getBoundingClientRect() : null;
+  try {
+    const element = document.querySelector(selector);
+    return element ? element.getBoundingClientRect() : null;
+  } catch(e) {
+    console.error("Error finding tour target:", e);
+    return null;
+  }
 };
 
 export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuideProps) {
@@ -29,8 +34,13 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
     if (step) {
       const rect = getElementRect(step.target);
       setTargetRect(rect);
+
+       if (!rect) {
+          console.warn(`Tour target "${step.target}" not found. Skipping step.`);
+          onNext(); // Skip to the next step if the target isn't found
+      }
     }
-  }, [step]);
+  }, [step, onNext]);
 
   useEffect(() => {
     if (targetRect && popoverRef.current) {
@@ -69,21 +79,35 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100]"
+            className="fixed inset-0 z-[100] pointer-events-none"
         >
-            {/* Overlay Oscuro */}
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onStop} />
-
-            {/* Agujero para resaltar el elemento */}
-            <div
-                className="absolute transition-all duration-300 ease-in-out bg-transparent rounded-lg shadow-[0_0_0_9999px_rgba(0,0,0,0.7)]"
-                style={{
-                    top: targetRect.top,
-                    left: targetRect.left,
-                    width: targetRect.width,
-                    height: targetRect.height,
-                }}
-            />
+            {/* SVG Overlay para crear el "agujero" */}
+             <svg className="absolute inset-0 w-full h-full">
+                <defs>
+                    <mask id="tour-mask">
+                        <rect x="0" y="0" width="100%" height="100%" fill="white" />
+                        <rect
+                            x={targetRect.left}
+                            y={targetRect.top}
+                            width={targetRect.width}
+                            height={targetRect.height}
+                            rx="8"
+                            fill="black"
+                            className="transition-all duration-300 ease-in-out"
+                        />
+                    </mask>
+                </defs>
+                <rect
+                    x="0"
+                    y="0"
+                    width="100%"
+                    height="100%"
+                    fill="rgba(0, 0, 0, 0.7)"
+                    mask="url(#tour-mask)"
+                    className="pointer-events-auto"
+                    onClick={onStop}
+                />
+            </svg>
 
             {/* Popover con la explicación */}
             <motion.div
@@ -91,7 +115,7 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="absolute"
+                className="absolute pointer-events-auto"
                 style={{ top: popoverPosition.top, left: popoverPosition.left }}
             >
                 <Card className="w-80 shadow-2xl">
