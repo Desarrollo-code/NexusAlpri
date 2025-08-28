@@ -303,3 +303,20 @@ export const settingsTour: TourStep[] = [
         }
     }
 ];
+
+export const myNotesTour: TourStep[] = [
+    {
+        target: '#my-notes-header',
+        content: {
+            title: 'Tus Apuntes',
+            description: 'Este es tu tablero personal de apuntes. Todas las notas que tomes en las lecciones aparecerán aquí, organizadas por curso y módulo.'
+        }
+    },
+    {
+        target: '#my-notes-board',
+        content: {
+            title: 'Tablero de Notas',
+            description: 'Navega por tus cursos y haz clic en cualquier nota para editarla o eliminarla. También puedes ir directamente a la lección correspondiente.'
+        }
+    }
+];

@@ -1,4 +1,3 @@
-
 // src/components/tour/tour-guide.tsx
 'use client';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
@@ -27,12 +26,14 @@ const getElementAndRect = (selector: string): { element: HTMLElement | null, rec
 
 export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuideProps) {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
-  const step = steps[currentStepIndex];
   const popoverRef = useRef<HTMLDivElement>(null);
   const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+  
+  const step = steps[currentStepIndex];
 
-  const updatePosition = useCallback(() => {
+  const updatePositionAndScroll = useCallback(() => {
     if (!step) return;
+
     const { element, rect } = getElementAndRect(step.target);
     
     if (element && rect) {
@@ -46,26 +47,33 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
         rect.right <= (window.innerWidth || document.documentElement.clientWidth)
       );
 
-      // If not fully visible, scroll to it.
       if (!isVisible) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+        element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
       }
     } else {
-        console.warn(`Tour target "${step.target}" not found. Skipping step.`);
-        onNext();
+      console.warn(`Tour target "${step.target}" not found. Skipping step.`);
+      onNext();
     }
   }, [step, onNext]);
 
   useEffect(() => {
-    updatePosition();
-    window.addEventListener('resize', updatePosition);
-    window.addEventListener('scroll', updatePosition); // Recalculate on scroll too
+    updatePositionAndScroll();
+    
+    const observer = new ResizeObserver(updatePositionAndScroll);
+    const targetElement = getElementAndRect(step?.target)?.element;
+    if (targetElement) {
+        observer.observe(targetElement);
+    }
+    
+    window.addEventListener('resize', updatePositionAndScroll);
+    window.addEventListener('scroll', updatePositionAndScroll);
 
     return () => {
-      window.removeEventListener('resize', updatePosition);
-      window.removeEventListener('scroll', updatePosition);
+        if (targetElement) observer.disconnect();
+        window.removeEventListener('resize', updatePositionAndScroll);
+        window.removeEventListener('scroll', updatePositionAndScroll);
     };
-  }, [currentStepIndex, updatePosition]);
+  }, [currentStepIndex, updatePositionAndScroll, step]);
 
   useEffect(() => {
     if (targetRect && popoverRef.current) {
@@ -75,22 +83,15 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
         
         let top, left;
 
-        // Default position: below the target
         top = targetRect.bottom + spacing;
         left = targetRect.left + targetRect.width / 2 - popoverWidth / 2;
 
-        // If it goes off-screen at the bottom, try to place it above
         if (top + popoverHeight > window.innerHeight - spacing) {
             top = targetRect.top - popoverHeight - spacing;
         }
 
-        // Clamp horizontal position to stay within the screen bounds
-        if (left < spacing) {
-            left = spacing;
-        }
-        if (left + popoverWidth > window.innerWidth - spacing) {
-            left = window.innerWidth - popoverWidth - spacing;
-        }
+        if (left < spacing) left = spacing;
+        if (left + popoverWidth > window.innerWidth - spacing) left = window.innerWidth - popoverWidth - spacing;
         
         setPopoverPosition({ top, left });
     }
@@ -112,29 +113,18 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
             className="fixed inset-0 z-[100] pointer-events-none"
         >
              <div 
-                className="absolute transition-all duration-300 ease-in-out pointer-events-auto"
-                onClick={onStop} // Allow clicking the overlay to stop the tour
-                style={{
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    clipPath: `path('M0,0H${window.innerWidth}V${window.innerHeight}H0V0z M${targetRect.x},${targetRect.y} H${targetRect.right} V${targetRect.bottom} H${targetRect.x}z')`,
-                    background: 'rgba(0, 0, 0, 0.7)',
-                }}
-            />
-            <div 
-                className="absolute transition-all duration-300 ease-in-out pointer-events-none"
+                className="absolute inset-0 transition-all duration-300 ease-in-out pointer-events-auto"
+                onClick={onStop}
                 style={{
                     top: targetRect.top,
                     left: targetRect.left,
                     width: targetRect.width,
                     height: targetRect.height,
-                    boxShadow: '0 0 0 4px hsl(var(--primary)), 0 0 15px hsl(var(--primary))',
+                    boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.7)',
                     borderRadius: '8px',
                 }}
             />
-
+            
             <motion.div
                 ref={popoverRef}
                 initial={{ opacity: 0, y: 20 }}

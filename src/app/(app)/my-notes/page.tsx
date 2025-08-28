@@ -4,10 +4,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle, Notebook, BookOpen, Layers } from 'lucide-react';
+import { Loader2, AlertTriangle, Notebook, BookOpen, Layers, HelpCircle } from 'lucide-react';
 import type { UserNote } from '@/types';
 import { useTitle } from '@/contexts/title-context';
 import { StickyNoteCard } from '@/components/sticky-note-card';
+import { useTour } from '@/contexts/tour-context';
+import { myNotesTour } from '@/lib/tour-steps';
+import { Button } from '@/components/ui/button';
 
 interface NoteWithRelations extends UserNote {
   lesson: {
@@ -38,6 +41,7 @@ export default function MyNotesPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
+  const { startTour, forceStartTour } = useTour();
 
   const [notes, setNotes] = useState<NoteWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,7 +49,8 @@ export default function MyNotesPage() {
 
   useEffect(() => {
     setPageTitle('Mis Apuntes');
-  }, [setPageTitle]);
+    startTour('myNotes', myNotesTour);
+  }, [setPageTitle, startTour]);
 
   const fetchNotes = useCallback(async () => {
     if (!user) return;
@@ -76,7 +81,6 @@ export default function MyNotesPage() {
   };
 
   const handleNoteDelete = async (noteId: string) => {
-      // Optimistic deletion from UI
       const originalNotes = [...notes];
       setNotes(prev => prev.filter(n => n.id !== noteId));
       
@@ -92,7 +96,7 @@ export default function MyNotesPage() {
           toast({ title: "Nota Eliminada" });
       } catch (error) {
           toast({ title: "Error", description: (error as Error).message, variant: "destructive" });
-          setNotes(originalNotes); // Revert on failure
+          setNotes(originalNotes);
       }
   };
 
@@ -124,11 +128,14 @@ export default function MyNotesPage() {
 
   return (
     <div className="space-y-8">
-      <div>
+      <div id="my-notes-header" className="flex items-center justify-between">
         <p className="text-muted-foreground">Aquí encontrarás todos los apuntes que has tomado, organizados en un tablero virtual por curso y módulo.</p>
+         <Button variant="outline" size="sm" onClick={() => forceStartTour('myNotes', myNotesTour)}>
+            <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+        </Button>
       </div>
 
-      <div className="space-y-12">
+      <div id="my-notes-board" className="space-y-12">
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
