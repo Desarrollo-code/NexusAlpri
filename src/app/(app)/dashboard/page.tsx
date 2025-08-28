@@ -611,15 +611,18 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">Hola, {user.name}! 👋</h1>
-          <p className="text-muted-foreground">Bienvenido de nuevo a tu plataforma de aprendizaje.</p>
+       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-1">
+                <h1 className="text-3xl font-bold font-headline flex items-center gap-2">
+                    Hola, {user.name}! 
+                    <span className="text-2xl animate-wave">👋</span>
+                </h1>
+                <p className="text-muted-foreground">Bienvenido de nuevo a tu plataforma de aprendizaje.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleShowTour}>
+                <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+            </Button>
         </div>
-         <Button variant="outline" size="sm" onClick={handleShowTour}>
-            <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
-        </Button>
-      </div>
       
       {renderContentForRole()}
 

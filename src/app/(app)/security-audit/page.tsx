@@ -7,7 +7,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, KeyRound, UserCog, Monitor, Globe } from 'lucide-react';
+import { Loader2, AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, KeyRound, UserCog, Monitor, Globe, HelpCircle } from 'lucide-react';
 import type { SecurityLog as AppSecurityLog, User as AppUser } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,8 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Identicon } from '@/components/ui/identicon';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { useTour, TourProvider } from '@/contexts/tour-context'; // Import TourProvider
+import { securityAuditTour } from '@/lib/tour-steps';
 
 
 interface SecurityLogWithUser extends AppSecurityLog {
@@ -54,7 +56,7 @@ const MetricCard = ({ title, value, icon: Icon, description, gradient }: { title
     );
 };
 
-export default function SecurityAuditPage() {
+function SecurityAuditContent() {
     const { user: currentUser } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
@@ -62,6 +64,7 @@ export default function SecurityAuditPage() {
     const { toast } = useToast();
     const { setPageTitle } = useTitle();
     const isMobile = useIsMobile();
+    const { startTour, forceStartTour } = useTour();
 
     const [logs, setLogs] = useState<SecurityLogWithUser[]>([]);
     const [totalLogs, setTotalLogs] = useState(0);
@@ -74,7 +77,8 @@ export default function SecurityAuditPage() {
 
     useEffect(() => {
         setPageTitle('Auditoría de Seguridad');
-    }, [setPageTitle]);
+        startTour('securityAudit', securityAuditTour);
+    }, [setPageTitle, startTour]);
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);
@@ -140,8 +144,14 @@ export default function SecurityAuditPage() {
 
     return (
         <div className="space-y-8">
-            <div>
-                <p className="text-muted-foreground">Revisa los eventos de seguridad importantes de la plataforma.</p>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="space-y-1">
+                    <h2 className="text-2xl font-semibold">Auditoría de Seguridad</h2>
+                    <p className="text-muted-foreground">Revisa los eventos de seguridad importantes de la plataforma.</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => forceStartTour('securityAudit', securityAuditTour)}>
+                    <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+                </Button>
             </div>
             
             {(isLoading && !stats) ? (
@@ -152,7 +162,7 @@ export default function SecurityAuditPage() {
                     <Skeleton className="h-28" />
                  </div>
             ) : stats && (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="security-stats-cards">
                     <MetricCard title="Inicios de Sesión Exitosos" value={stats.successfulLogins} icon={ShieldCheck} description="Últimas 24 horas" gradient="bg-gradient-green" />
                     <MetricCard title="Inicios de Sesión Fallidos" value={stats.failedLogins} icon={ShieldX} description="Últimas 24 horas" gradient="bg-gradient-orange" />
                     <MetricCard title="Eventos 2FA" value={stats.twoFactorEvents} icon={KeyRound} description="Últimas 24 horas" gradient="bg-gradient-blue" />
@@ -160,7 +170,7 @@ export default function SecurityAuditPage() {
                  </div>
             )}
 
-            <Card>
+            <Card id="security-log-table">
                 <CardHeader>
                     <CardTitle>Registro de Eventos</CardTitle>
                     <CardDescription>Mostrando los últimos registros de seguridad de la plataforma.</CardDescription>
@@ -301,4 +311,12 @@ export default function SecurityAuditPage() {
             </Card>
         </div>
     );
+}
+
+export default function SecurityAuditPage() {
+    return (
+        <TourProvider>
+            <SecurityAuditContent />
+        </TourProvider>
+    )
 }

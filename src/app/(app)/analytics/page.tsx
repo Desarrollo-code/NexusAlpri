@@ -374,8 +374,11 @@ function AdminAnalyticsPage() {
 
   return (
     <div className="space-y-6">
-        <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">Resumen de la Plataforma</h2>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-1">
+                <h2 className="text-2xl font-semibold">Resumen de la Plataforma</h2>
+                <p className="text-muted-foreground">Métricas clave sobre el rendimiento y uso de NexusAlpri.</p>
+            </div>
              <Button variant="outline" size="sm" onClick={() => forceStartTour('analytics', analyticsTour)}>
                 <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
             </Button>

@@ -128,12 +128,15 @@ export default function MyNotesPage() {
 
   return (
     <div className="space-y-8">
-      <div id="my-notes-header" className="flex items-center justify-between">
-        <p className="text-muted-foreground">Aquí encontrarás todos los apuntes que has tomado, organizados en un tablero virtual por curso y módulo.</p>
-         <Button variant="outline" size="sm" onClick={() => forceStartTour('myNotes', myNotesTour)}>
-            <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
-        </Button>
-      </div>
+       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-1">
+                <h2 className="text-2xl font-semibold">Mis Apuntes</h2>
+                <p id="my-notes-header" className="text-muted-foreground">Aquí encontrarás todos los apuntes que has tomado, organizados en un tablero virtual por curso y módulo.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => forceStartTour('myNotes', myNotesTour)}>
+                <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+            </Button>
+        </div>
 
       <div id="my-notes-board" className="space-y-12">
         {isLoading ? (

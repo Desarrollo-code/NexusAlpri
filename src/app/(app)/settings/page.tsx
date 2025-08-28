@@ -360,12 +360,15 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <p className="text-muted-foreground">Ajusta los parámetros generales, de seguridad y apariencia de NexusAlpri.</p>
-        <Button variant="outline" size="sm" onClick={() => forceStartTour('settings', settingsTour)}>
-            <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
-        </Button>
-      </div>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-1">
+                <h2 className="text-2xl font-semibold">Configuración</h2>
+                <p className="text-muted-foreground">Ajusta los parámetros generales, de seguridad y apariencia de NexusAlpri.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => forceStartTour('settings', settingsTour)}>
+                <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+            </Button>
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2">

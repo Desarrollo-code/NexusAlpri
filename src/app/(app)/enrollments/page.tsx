@@ -357,8 +357,11 @@ export default function EnrollmentsPage() {
 
   return (
     <div className="space-y-8">
-       <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold"></h2>
+       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-1">
+                <h2 className="text-2xl font-semibold">Gestión de Inscritos</h2>
+                <p className="text-muted-foreground">Selecciona un curso para ver los estudiantes inscritos y su progreso.</p>
+            </div>
             <Button variant="outline" size="sm" onClick={() => forceStartTour('enrollments', enrollmentsTour)}>
                 <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
             </Button>
@@ -367,8 +370,8 @@ export default function EnrollmentsPage() {
         <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="flex-grow">
-                    <CardTitle className="text-2xl font-headline flex items-center gap-2"><UsersRound /> Gestión de Inscritos</CardTitle>
-                    <CardDescription>Selecciona un curso para ver los estudiantes inscritos y su progreso.</CardDescription>
+                     <CardTitle className="text-2xl font-headline flex items-center gap-2"><UsersRound /> Seguimiento de Estudiantes</CardTitle>
+                    <CardDescription>Aquí puedes ver el avance de tus estudiantes en los cursos que impartes.</CardDescription>
                 </div>
                 <div className="w-full sm:w-auto">
                     <CourseSelector courses={courses} onSelect={handleCourseSelection} selectedCourseId={selectedCourseId} isLoading={isLoadingCourses} />

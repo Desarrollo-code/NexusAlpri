@@ -1,4 +1,3 @@
-
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -328,8 +327,9 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8">
-       <div className="flex items-center justify-between">
-            <div>
+       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-1">
+                <h2 className="text-2xl font-semibold">Mi Perfil</h2>
                 <p className="text-muted-foreground">Visualiza y actualiza tu información personal y de cuenta.</p>
             </div>
             <Button variant="outline" size="sm" onClick={() => forceStartTour('profile', profileTour)}>

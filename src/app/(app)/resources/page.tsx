@@ -391,6 +391,7 @@ export default function ResourcesPage() {
             </React.Fragment>
             ))}
           </div>
+          <p className="text-muted-foreground">Encuentra y gestiona todos los documentos, guías y políticas de la empresa.</p>
         </div>
          <Button variant="outline" size="sm" onClick={() => forceStartTour('resources', resourcesTour)}>
             <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
