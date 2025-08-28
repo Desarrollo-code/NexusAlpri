@@ -27,6 +27,7 @@ import {
   Server,
   KeyRound,
   UserCog,
+  HelpCircle,
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
@@ -47,6 +48,8 @@ import { useTitle } from '@/contexts/title-context';
 import { Identicon } from '@/components/ui/identicon';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTour } from '@/contexts/tour-context';
+import { adminDashboardTour, studentDashboardTour, instructorDashboardTour } from '@/lib/tour-steps';
 
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -92,10 +95,10 @@ interface DashboardData {
 
 // --- DASHBOARD COMPONENTS PER ROLE ---
 
-const MetricCard = ({ title, value, icon: Icon, description, gradient }: { title: string; value: number; icon: React.ElementType; description?: string, gradient: string }) => {
+const MetricCard = ({ title, value, icon: Icon, description, gradient, id }: { title: string; value: number; icon: React.ElementType; description?: string, gradient: string, id?: string }) => {
     const animatedValue = useAnimatedCounter(value);
     return (
-        <Card className={cn("relative overflow-hidden text-white card-border-animated", gradient)}>
+        <Card id={id} className={cn("relative overflow-hidden text-white card-border-animated", gradient)}>
             <div className="absolute inset-0 bg-black/10"></div>
             <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white/80">{title}</CardTitle>
@@ -137,7 +140,7 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
   const isMobile = useIsMobile();
   return (
     <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4" id="admin-stats-cards">
             <MetricCard title="Total Usuarios" value={stats.totalUsers} icon={UsersRound} gradient="bg-gradient-blue" />
             <MetricCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={BookOpenCheck} gradient="bg-gradient-green" />
             <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="En los últimos 7 días" gradient="bg-gradient-orange" />
@@ -146,7 +149,7 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <main className="lg:col-span-2 space-y-6">
-            <Card className="card-border-animated">
+            <Card className="card-border-animated" id="course-activity-chart">
               <CardHeader>
                   <CardTitle>Actividad de los Cursos (Últimos 30 días)</CardTitle>
                   <CardDescription>Resumen de creación y publicación de cursos.</CardDescription>
@@ -179,7 +182,7 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                     </ChartContainer>
               </CardContent>
             </Card>
-             <section>
+             <section id="recent-announcements">
               <h2 className="text-2xl font-semibold">Anuncios Recientes</h2>
               {announcements.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -194,7 +197,7 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
           </main>
           
           <aside className="lg:col-span-1 space-y-6">
-             <Card className="card-border-animated">
+             <Card className="card-border-animated" id="security-activity">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><ShieldAlert className="text-primary"/>Última Actividad de Seguridad</CardTitle>
                 </CardHeader>
@@ -220,7 +223,7 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                     </Button>
                 </CardFooter>
              </Card>
-             <Card className="card-border-animated">
+             <Card className="card-border-animated" id="quick-access">
                 <CardHeader>
                     <CardTitle>Accesos Rápidos</CardTitle>
                 </CardHeader>
@@ -264,7 +267,7 @@ function StudentDashboard({ stats, announcements, myCourses }: { stats: { enroll
     <div className="space-y-8">
       <section>
         <h2 className="text-2xl font-semibold mb-4">Tu Progreso</h2>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2" id="student-stats-cards">
           <Card className="card-border-animated">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Cursos Inscritos</CardTitle>
@@ -288,7 +291,7 @@ function StudentDashboard({ stats, announcements, myCourses }: { stats: { enroll
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <main className="lg:col-span-2 space-y-6">
-          <section>
+          <section id="continue-learning-section">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-semibold">Continuar Aprendiendo</h2>
               <Button asChild variant="link">
@@ -311,7 +314,7 @@ function StudentDashboard({ stats, announcements, myCourses }: { stats: { enroll
             )}
           </section>
 
-          <section>
+          <section id="recent-announcements-student">
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-semibold">Anuncios Recientes</h2>
                  <Button asChild variant="link">
@@ -331,7 +334,7 @@ function StudentDashboard({ stats, announcements, myCourses }: { stats: { enroll
         </main>
         
         <aside className="lg:col-span-1">
-          <Card className="card-border-animated sticky top-24">
+          <Card className="card-border-animated sticky top-24" id="quick-access-student">
             <CardHeader><CardTitle>Accesos Rápidos</CardTitle></CardHeader>
             <CardContent>
               <ul className="space-y-3">
@@ -353,7 +356,7 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
     <div className="space-y-8">
       <section>
         <h2 className="text-2xl font-semibold mb-4">Resumen de Instructor</h2>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2" id="instructor-stats-cards">
           <Card className="card-border-animated">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Cursos Impartidos</CardTitle>
@@ -378,7 +381,7 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <main className="lg:col-span-2 space-y-6">
-            <section>
+            <section id="my-taught-courses">
                  <div className="flex items-center justify-between mb-4">
                     <h2 className="text-2xl font-semibold">Mis Cursos Impartidos</h2>
                     <Button asChild variant="link">
@@ -407,7 +410,7 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
               )}
             </section>
             
-             <section>
+             <section id="recent-announcements-instructor">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-semibold">Anuncios Recientes</h2>
                  <Button asChild variant="link">
@@ -427,7 +430,7 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
         </main>
         
         <aside className="lg:col-span-1">
-          <Card className="card-border-animated sticky top-24">
+          <Card className="card-border-animated sticky top-24" id="quick-access-instructor">
             <CardHeader><CardTitle>Accesos Rápidos</CardTitle></CardHeader>
             <CardContent>
               <ul className="space-y-3">
@@ -446,14 +449,24 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
 export default function DashboardPage() {
   const { user } = useAuth();
   const { setPageTitle } = useTitle();
+  const { startTour, forceStartTour } = useTour();
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setPageTitle('Panel Principal');
-  }, [setPageTitle]);
+    if (user?.role === 'ADMINISTRATOR') startTour('adminDashboard', adminDashboardTour);
+    if (user?.role === 'INSTRUCTOR') startTour('instructorDashboard', instructorDashboardTour);
+    if (user?.role === 'STUDENT') startTour('studentDashboard', studentDashboardTour);
+  }, [setPageTitle, startTour, user?.role]);
   
+  const handleShowTour = () => {
+    if (user?.role === 'ADMINISTRATOR') forceStartTour('adminDashboard', adminDashboardTour);
+    if (user?.role === 'INSTRUCTOR') forceStartTour('instructorDashboard', instructorDashboardTour);
+    if (user?.role === 'STUDENT') forceStartTour('studentDashboard', studentDashboardTour);
+  }
+
   const fetchDashboardData = useCallback(async () => {
     if (!user) return;
     
@@ -603,6 +616,9 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold font-headline">Hola, {user.name}! 👋</h1>
           <p className="text-muted-foreground">Bienvenido de nuevo a tu plataforma de aprendizaje.</p>
         </div>
+         <Button variant="outline" size="sm" onClick={handleShowTour}>
+            <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+        </Button>
       </div>
       
       {renderContentForRole()}

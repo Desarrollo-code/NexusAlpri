@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Edit3, Mail, Shield, User, Camera, KeyRound, Save, Loader2, Check, Eye, EyeOff, Award, Star, Replace, XCircle, Trash2 } from 'lucide-react';
+import { Edit3, Mail, Shield, User, Camera, KeyRound, Save, Loader2, Check, Eye, EyeOff, Award, Star, Replace, XCircle, Trash2, HelpCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -43,6 +43,8 @@ import { PasswordStrengthIndicator } from '@/components/password-strength-indica
 import { AnimatePresence } from 'framer-motion';
 import { Identicon } from '@/components/ui/identicon';
 import { getRoleInSpanish } from '@/lib/security-log-utils';
+import { useTour } from '@/contexts/tour-context';
+import { profileTour } from '@/lib/tour-steps';
 
 const ProfileCardBackground = () => (
     <div className="card__img">
@@ -56,6 +58,8 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { setPageTitle } = useTitle();
+  const { startTour, forceStartTour } = useTour();
+
 
   const [editableName, setEditableName] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -88,7 +92,8 @@ export default function ProfilePage() {
 
   useEffect(() => {
     setPageTitle('Mi Perfil');
-  }, [setPageTitle]);
+    startTour('profile', profileTour);
+  }, [setPageTitle, startTour]);
   
   useEffect(() => {
     if (user) {
@@ -323,9 +328,14 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-muted-foreground">Visualiza y actualiza tu información personal y de cuenta.</p>
-      </div>
+       <div className="flex items-center justify-between">
+            <div>
+                <p className="text-muted-foreground">Visualiza y actualiza tu información personal y de cuenta.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => forceStartTour('profile', profileTour)}>
+                <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+            </Button>
+        </div>
       
       {isUploading && (
         <Card>
@@ -417,7 +427,7 @@ export default function ProfilePage() {
       ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1 space-y-8">
-                <div className="profile-card">
+                <div className="profile-card" id="profile-card-display">
                     <ProfileCardBackground />
                     <div className="card__avatar">
                         <Avatar className="avatar">
@@ -456,7 +466,7 @@ export default function ProfilePage() {
                         </div>
                     </div>
                 </div>
-                 <Card className="card-border-animated">
+                 <Card className="card-border-animated" id="gamification-card-desktop">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Star className="h-5 w-5 text-yellow-400"/>Progreso y Logros</CardTitle>
                     </CardHeader>
@@ -498,7 +508,7 @@ export default function ProfilePage() {
             </div>
     
             <div className="lg:col-span-2 space-y-8">
-              <Card className="card-border-animated">
+              <Card className="card-border-animated" id="info-card-desktop">
                 <CardHeader>
                   <CardTitle>Información Personal</CardTitle>
                   <CardDescription>Estos datos son visibles en tu perfil público (si aplica).</CardDescription>
@@ -528,7 +538,7 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
               
-               <Card className="card-border-animated">
+               <Card className="card-border-animated" id="security-card-desktop">
                     <CardHeader><CardTitle>Seguridad de la Cuenta</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
                         <div>

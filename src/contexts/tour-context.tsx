@@ -8,6 +8,7 @@ interface TourContextType {
   currentStepIndex: number;
   steps: TourStep[];
   startTour: (tourKey: string, steps: TourStep[]) => void;
+  forceStartTour: (tourKey: string, steps: TourStep[]) => void;
   stopTour: () => void;
   nextStep: () => void;
 }
@@ -21,10 +22,18 @@ export const TourProvider = ({ children }: { children: ReactNode }) => {
   const [activeTourKey, setActiveTourKey] = useState<string | null>(null);
 
   const startTour = useCallback((tourKey: string, tourSteps: TourStep[]) => {
-    // No iniciar el tour si ya fue completado u omitido
+    // Iniciar el tour automáticamente solo si no ha sido completado
     if (typeof window !== 'undefined' && localStorage.getItem(`tour_completed_${tourKey}`)) {
       return;
     }
+    setSteps(tourSteps);
+    setCurrentStepIndex(0);
+    setIsTourActive(true);
+    setActiveTourKey(tourKey);
+  }, []);
+
+  const forceStartTour = useCallback((tourKey: string, tourSteps: TourStep[]) => {
+    // Forzar el inicio del tour, ignorando el localStorage
     setSteps(tourSteps);
     setCurrentStepIndex(0);
     setIsTourActive(true);
@@ -54,6 +63,7 @@ export const TourProvider = ({ children }: { children: ReactNode }) => {
     currentStepIndex,
     steps,
     startTour,
+    forceStartTour,
     stopTour,
     nextStep,
   };
