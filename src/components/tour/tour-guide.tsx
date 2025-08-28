@@ -38,16 +38,15 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
     
     if (element && rect) {
       setTargetRect(rect);
-
-      // Check if the element is fully within the viewport.
-      const isVisible = (
+      
+      const isFullyVisible = (
         rect.top >= 0 &&
         rect.left >= 0 &&
         rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
         rect.right <= (window.innerWidth || document.documentElement.clientWidth)
       );
 
-      if (!isVisible) {
+      if (!isFullyVisible) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
       }
     } else {
@@ -55,21 +54,14 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
       onNext();
     }
   }, [step, onNext]);
-
+  
   useEffect(() => {
     updatePositionAndScroll();
-    
-    const observer = new ResizeObserver(updatePositionAndScroll);
-    const targetElement = getElementAndRect(step?.target)?.element;
-    if (targetElement) {
-        observer.observe(targetElement);
-    }
     
     window.addEventListener('resize', updatePositionAndScroll);
     window.addEventListener('scroll', updatePositionAndScroll);
 
     return () => {
-        if (targetElement) observer.disconnect();
         window.removeEventListener('resize', updatePositionAndScroll);
         window.removeEventListener('scroll', updatePositionAndScroll);
     };
@@ -83,13 +75,16 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
         
         let top, left;
 
+        // Default position: below the target
         top = targetRect.bottom + spacing;
         left = targetRect.left + targetRect.width / 2 - popoverWidth / 2;
 
+        // If it overflows the bottom, place it on top
         if (top + popoverHeight > window.innerHeight - spacing) {
             top = targetRect.top - popoverHeight - spacing;
         }
 
+        // Adjust horizontal position to stay within viewport
         if (left < spacing) left = spacing;
         if (left + popoverWidth > window.innerWidth - spacing) left = window.innerWidth - popoverWidth - spacing;
         
@@ -110,7 +105,7 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] pointer-events-none"
+            className="fixed inset-0 z-[999] pointer-events-none"
         >
              <div 
                 className="absolute inset-0 transition-all duration-300 ease-in-out pointer-events-auto"
@@ -130,7 +125,7 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="absolute pointer-events-auto"
+                className="absolute pointer-events-auto z-[1000]"
                 style={{ top: popoverPosition.top, left: popoverPosition.left }}
             >
                 <Card className="w-80 shadow-2xl">
