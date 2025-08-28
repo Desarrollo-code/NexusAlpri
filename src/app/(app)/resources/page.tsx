@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, User as AppUser, UserRole } from '@/types';
-import { Search, ArchiveX, Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronRight, Users, Globe } from 'lucide-react';
+import { Search, ArchiveX, Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronRight, Users, Globe, Filter } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -387,41 +387,44 @@ export default function ResourcesPage() {
             ))}
           </div>
         </div>
-        {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
-        <div className="flex gap-2 w-full sm:w-auto">
-            <Button variant="outline" onClick={handleOpenCreateFolderModal} className="w-full sm:w-auto">
-                <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
-            </Button>
-            <Button onClick={handleOpenCreateFileModal} className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
-              <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
-            </Button>
-        </div>
-        )}
     </header>
 
       <div className="space-y-4">
-        <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input 
-                placeholder="Buscar en la carpeta actual..." 
-                className="pl-10 h-11 text-base"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-            />
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+             <div className="relative w-full flex-grow">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input 
+                    placeholder="Buscar en la carpeta actual..." 
+                    className="pl-10 h-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+             {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
+            <div className="flex gap-2 w-full sm:w-auto">
+                <Button variant="outline" onClick={handleOpenCreateFolderModal} className="w-full sm:w-auto">
+                    <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
+                </Button>
+                <Button onClick={handleOpenCreateFileModal} className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
+                  <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
+                </Button>
+            </div>
+            )}
         </div>
 
         {files.length > 0 && (
-           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <Select value={activeCategory} onValueChange={handleCategoryChange}>
-                      <SelectTrigger className="w-full sm:w-[180px]">
-                          <SelectValue placeholder="Categorías" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          {allCategories.map(c => <SelectItem key={c} value={c}>{c === 'all' ? 'Todas las Categorías' : c}</SelectItem>)}
-                      </SelectContent>
-                  </Select>
-              </div>
+           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2 border-t">
+                <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4 text-muted-foreground" />
+                    <Select value={activeCategory} onValueChange={handleCategoryChange}>
+                        <SelectTrigger className="w-full sm:w-[180px] h-9">
+                            <SelectValue placeholder="Categorías" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {allCategories.map(c => <SelectItem key={c} value={c}>{c === 'all' ? 'Todas las Categorías' : c}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </div>
               <div className="flex bg-muted rounded-md p-1">
                 <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
                 <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
