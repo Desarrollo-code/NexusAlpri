@@ -20,7 +20,7 @@ const ReactQuill = dynamic(() => import('react-quill'), {
 
 
 interface RichTextEditorProps extends ReactQuillProps {
-  // Omitimos value y onChange de las props directas de react-quill para tiparlas correctamente
+  // Aquí podemos añadir props personalizadas en el futuro si es necesario
 }
 
 const modules = {
@@ -32,6 +32,10 @@ const modules = {
     ['link'],
     ['clean']
   ],
+  clipboard: {
+    // Coincidir con cualquier etiqueta de estilo para limpiar el pegado
+    matchVisual: false,
+  }
 };
 
 const formats = [
