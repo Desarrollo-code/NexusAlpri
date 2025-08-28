@@ -1,6 +1,7 @@
+
 // src/components/tour/tour-guide.tsx
 'use client';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,13 +31,14 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
   const popoverRef = useRef<HTMLDivElement>(null);
   const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
 
-  const updatePosition = () => {
+  const updatePosition = useCallback(() => {
     if (!step) return;
     const { element, rect } = getElementAndRect(step.target);
+    
     if (element && rect) {
       setTargetRect(rect);
 
-      // Scroll the element into view smoothly if needed
+      // Check if the element is fully within the viewport.
       const isVisible = (
         rect.top >= 0 &&
         rect.left >= 0 &&
@@ -44,28 +46,27 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
         rect.right <= (window.innerWidth || document.documentElement.clientWidth)
       );
 
+      // If not fully visible, scroll to it.
       if (!isVisible) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+          element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
       }
     } else {
         console.warn(`Tour target "${step.target}" not found. Skipping step.`);
         onNext();
     }
-  };
-
-  // Effect for initially setting up and listening to resizes
-  useEffect(() => {
-    updatePosition(); // Initial position update
-    
-    // Add resize listener to handle orientation changes or window resizing
-    window.addEventListener('resize', updatePosition);
-    return () => {
-      window.removeEventListener('resize', updatePosition);
-    };
   }, [step, onNext]);
 
+  useEffect(() => {
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition); // Recalculate on scroll too
 
-  // Effect for positioning the popover after the targetRect is set
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition);
+    };
+  }, [currentStepIndex, updatePosition]);
+
   useEffect(() => {
     if (targetRect && popoverRef.current) {
         const popoverHeight = popoverRef.current.offsetHeight;
@@ -111,13 +112,25 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
             className="fixed inset-0 z-[100] pointer-events-none"
         >
              <div 
-                className="absolute transition-all duration-300 ease-in-out"
+                className="absolute transition-all duration-300 ease-in-out pointer-events-auto"
+                onClick={onStop} // Allow clicking the overlay to stop the tour
+                style={{
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    clipPath: `path('M0,0H${window.innerWidth}V${window.innerHeight}H0V0z M${targetRect.x},${targetRect.y} H${targetRect.right} V${targetRect.bottom} H${targetRect.x}z')`,
+                    background: 'rgba(0, 0, 0, 0.7)',
+                }}
+            />
+            <div 
+                className="absolute transition-all duration-300 ease-in-out pointer-events-none"
                 style={{
                     top: targetRect.top,
                     left: targetRect.left,
                     width: targetRect.width,
                     height: targetRect.height,
-                    boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.7)',
+                    boxShadow: '0 0 0 4px hsl(var(--primary)), 0 0 15px hsl(var(--primary))',
                     borderRadius: '8px',
                 }}
             />
