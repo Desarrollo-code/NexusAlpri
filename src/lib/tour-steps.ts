@@ -320,3 +320,20 @@ export const myNotesTour: TourStep[] = [
         }
     }
 ];
+
+export const securityAuditTour: TourStep[] = [
+  {
+    target: '#security-stats-cards',
+    content: {
+      title: 'Estadísticas de Seguridad',
+      description: 'Aquí ves un resumen de los eventos de seguridad más importantes de las últimas 24 horas, como inicios de sesión y cambios de rol.'
+    }
+  },
+  {
+    target: '#security-log-table',
+    content: {
+      title: 'Registro de Eventos',
+      description: 'Esta tabla contiene un registro detallado de cada evento de seguridad. Puedes ver quién, qué, cuándo y desde dónde se realizó la acción.'
+    }
+  }
+];
