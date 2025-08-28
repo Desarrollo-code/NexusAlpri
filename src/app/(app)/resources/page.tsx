@@ -44,6 +44,7 @@ import { ResourcePreviewModal } from '@/components/resources/resource-preview-mo
 import { useIsMobile } from '@/hooks/use-mobile';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Identicon } from '@/components/ui/identicon';
+import { Card } from '@/components/ui/card';
 
 
 // --- Main Page Component ---
@@ -389,9 +390,9 @@ export default function ResourcesPage() {
         </div>
     </header>
 
-      <div className="space-y-4">
+      <Card className="p-4 shadow">
         <div className="flex flex-col sm:flex-row items-center gap-4">
-             <div className="relative w-full flex-grow">
+            <div className="relative w-full flex-grow">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input 
                     placeholder="Buscar en la carpeta actual..." 
@@ -411,27 +412,27 @@ export default function ResourcesPage() {
             </div>
             )}
         </div>
-
         {files.length > 0 && (
-           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2 border-t">
-                <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-muted-foreground" />
+           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 mt-4 border-t">
+                <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
                     <Select value={activeCategory} onValueChange={handleCategoryChange}>
-                        <SelectTrigger className="w-full sm:w-[180px] h-9">
+                        <SelectTrigger className="w-full sm:w-[180px] h-9 border-0 bg-transparent focus:ring-0">
+                           <div className="flex items-center gap-2">
+                            <Filter className="h-4 w-4 text-muted-foreground" />
                             <SelectValue placeholder="Categorías" />
+                           </div>
                         </SelectTrigger>
                         <SelectContent>
                             {allCategories.map(c => <SelectItem key={c} value={c}>{c === 'all' ? 'Todas las Categorías' : c}</SelectItem>)}
                         </SelectContent>
                     </Select>
+                    <Separator orientation="vertical" className="h-6" />
+                    <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
+                    <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
                 </div>
-              <div className="flex bg-muted rounded-md p-1">
-                <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Vista de cuadrícula"><Grid size={18} /></Button>
-                <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="Vista de lista"><List size={18} /></Button>
-              </div>
-          </div>
+            </div>
         )}
-      </div>
+      </Card>
       
       <div className="flex-grow overflow-auto -mx-4 px-4 mt-4 thin-scrollbar">
           {isLoading ? (
