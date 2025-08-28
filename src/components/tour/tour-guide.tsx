@@ -1,3 +1,4 @@
+
 // src/components/tour/tour-guide.tsx
 'use client';
 import React, { useEffect, useState, useRef } from 'react';
@@ -14,13 +15,13 @@ interface TourGuideProps {
   onStop: () => void;
 }
 
-const getElementRect = (selector: string): DOMRect | null => {
+const getElementAndRect = (selector: string): { element: HTMLElement | null, rect: DOMRect | null } => {
   try {
-    const element = document.querySelector(selector);
-    return element ? element.getBoundingClientRect() : null;
+    const element = document.querySelector(selector) as HTMLElement;
+    return { element, rect: element ? element.getBoundingClientRect() : null };
   } catch(e) {
     console.error("Error finding tour target:", e);
-    return null;
+    return { element: null, rect: null };
   }
 };
 
@@ -32,12 +33,23 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
 
   useEffect(() => {
     if (step) {
-      const rect = getElementRect(step.target);
-      setTargetRect(rect);
+      const { element, rect } = getElementAndRect(step.target);
+      
+      if (element && rect) {
+        // Scroll the element into view smoothly
+        element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        
+        // Give a moment for the scroll to complete before positioning
+        const scrollTimeout = setTimeout(() => {
+            // Re-calculate rect after scroll
+            const finalRect = element.getBoundingClientRect();
+            setTargetRect(finalRect);
+        }, 300); // 300ms delay to allow for smooth scroll
 
-       if (!rect) {
-          console.warn(`Tour target "${step.target}" not found. Skipping step.`);
-          onNext(); // Skip to the next step if the target isn't found
+        return () => clearTimeout(scrollTimeout);
+      } else {
+        console.warn(`Tour target "${step.target}" not found. Skipping step.`);
+        onNext(); // Skip to the next step if the target isn't found
       }
     }
   }, [step, onNext]);
@@ -50,12 +62,10 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
         let top = targetRect.bottom + spacing;
         let left = targetRect.left + targetRect.width / 2 - popoverWidth / 2;
 
-        // Si se sale por abajo, ponerlo arriba
         if (top + popoverHeight > window.innerHeight) {
             top = targetRect.top - popoverHeight - spacing;
         }
 
-        // Ajustar horizontalmente si se sale de la pantalla
         if (left < spacing) {
             left = spacing;
         }
@@ -81,35 +91,20 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] pointer-events-none"
         >
-            {/* SVG Overlay para crear el "agujero" */}
-             <svg className="absolute inset-0 w-full h-full">
-                <defs>
-                    <mask id="tour-mask">
-                        <rect x="0" y="0" width="100%" height="100%" fill="white" />
-                        <rect
-                            x={targetRect.left}
-                            y={targetRect.top}
-                            width={targetRect.width}
-                            height={targetRect.height}
-                            rx="8"
-                            fill="black"
-                            className="transition-all duration-300 ease-in-out"
-                        />
-                    </mask>
-                </defs>
-                <rect
-                    x="0"
-                    y="0"
-                    width="100%"
-                    height="100%"
-                    fill="rgba(0, 0, 0, 0.7)"
-                    mask="url(#tour-mask)"
-                    className="pointer-events-auto"
-                    onClick={onStop}
-                />
-            </svg>
+            <div 
+                className="absolute transition-all duration-300 ease-in-out"
+                style={{
+                    top: targetRect.top,
+                    left: targetRect.left,
+                    width: targetRect.width,
+                    height: targetRect.height,
+                    boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.7)',
+                    borderRadius: '8px',
+                    pointerEvents: 'auto',
+                }}
+                onClick={onStop}
+            />
 
-            {/* Popover con la explicación */}
             <motion.div
                 ref={popoverRef}
                 initial={{ opacity: 0, y: 20 }}
