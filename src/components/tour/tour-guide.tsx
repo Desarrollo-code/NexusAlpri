@@ -1,4 +1,3 @@
-
 // src/components/tour/tour-guide.tsx
 'use client';
 import React, { useEffect, useState, useRef } from 'react';
@@ -31,41 +30,60 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
   const popoverRef = useRef<HTMLDivElement>(null);
   const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
 
-  useEffect(() => {
-    if (step) {
-      const { element, rect } = getElementAndRect(step.target);
-      
-      if (element && rect) {
-        // Scroll the element into view smoothly
-        element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-        
-        // Give a moment for the scroll to complete before positioning
-        const scrollTimeout = setTimeout(() => {
-            // Re-calculate rect after scroll
-            const finalRect = element.getBoundingClientRect();
-            setTargetRect(finalRect);
-        }, 300); // 300ms delay to allow for smooth scroll
+  const updatePosition = () => {
+    if (!step) return;
+    const { element, rect } = getElementAndRect(step.target);
+    if (element && rect) {
+      setTargetRect(rect);
 
-        return () => clearTimeout(scrollTimeout);
-      } else {
-        console.warn(`Tour target "${step.target}" not found. Skipping step.`);
-        onNext(); // Skip to the next step if the target isn't found
+      // Scroll the element into view smoothly if needed
+      const isVisible = (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+      );
+
+      if (!isVisible) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
       }
+    } else {
+        console.warn(`Tour target "${step.target}" not found. Skipping step.`);
+        onNext();
     }
+  };
+
+  // Effect for initially setting up and listening to resizes
+  useEffect(() => {
+    updatePosition(); // Initial position update
+    
+    // Add resize listener to handle orientation changes or window resizing
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+    };
   }, [step, onNext]);
 
+
+  // Effect for positioning the popover after the targetRect is set
   useEffect(() => {
     if (targetRect && popoverRef.current) {
         const popoverHeight = popoverRef.current.offsetHeight;
         const popoverWidth = popoverRef.current.offsetWidth;
         const spacing = 16;
-        let top = targetRect.bottom + spacing;
-        let left = targetRect.left + targetRect.width / 2 - popoverWidth / 2;
+        
+        let top, left;
 
-        if (top + popoverHeight > window.innerHeight) {
+        // Default position: below the target
+        top = targetRect.bottom + spacing;
+        left = targetRect.left + targetRect.width / 2 - popoverWidth / 2;
+
+        // If it goes off-screen at the bottom, try to place it above
+        if (top + popoverHeight > window.innerHeight - spacing) {
             top = targetRect.top - popoverHeight - spacing;
         }
 
+        // Clamp horizontal position to stay within the screen bounds
         if (left < spacing) {
             left = spacing;
         }
@@ -75,7 +93,8 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
         
         setPopoverPosition({ top, left });
     }
-  }, [targetRect, popoverRef.current]);
+  }, [targetRect]);
+
 
   if (!step || !targetRect) {
     return null;
@@ -91,7 +110,7 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] pointer-events-none"
         >
-            <div 
+             <div 
                 className="absolute transition-all duration-300 ease-in-out"
                 style={{
                     top: targetRect.top,
@@ -100,9 +119,7 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
                     height: targetRect.height,
                     boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.7)',
                     borderRadius: '8px',
-                    pointerEvents: 'auto',
                 }}
-                onClick={onStop}
             />
 
             <motion.div
