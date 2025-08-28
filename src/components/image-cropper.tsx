@@ -7,6 +7,7 @@ import type { Point, Area } from 'react-easy-crop';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 import { getCroppedImg } from '@/lib/crop-image';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Crop, Check } from 'lucide-react';
