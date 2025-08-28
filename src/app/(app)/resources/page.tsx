@@ -460,8 +460,17 @@ export default function ResourcesPage() {
                               {files.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
                           </div>
                         ) : (
-                          <div className="space-y-2">
+                          <div className="border rounded-lg overflow-hidden">
+                            <div className="hidden md:grid grid-cols-12 gap-4 p-3 border-b bg-muted/50 text-xs font-semibold text-muted-foreground">
+                                <div className="col-span-6">Nombre</div>
+                                <div className="col-span-2">Subido por</div>
+                                <div className="col-span-2">Fecha</div>
+                                <div className="col-span-1">Acceso</div>
+                                <div className="col-span-1 text-right">Acciones</div>
+                            </div>
+                            <div className="divide-y">
                              {files.map(item => <ResourceListItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} />)}
+                            </div>
                           </div>
                         )}
                     </section>
@@ -524,7 +533,7 @@ export default function ResourcesPage() {
                      <h3 className="text-base font-semibold">Control de Acceso</h3>
                      <div className="space-y-3 p-3 border rounded-lg">
                         <div className="flex items-center justify-between">
-                            <Label htmlFor="is-public" className="flex items-center gap-2 cursor-pointer">{isPublic ? <Globe className="h-4 w-4 text-primary" /> : <Users className="h-4 w-4 text-destructive" />} {isPublic ? 'Público' : 'Privado'}</Label>
+                            <Label htmlFor="is-public" className="flex items-center gap-2 cursor-pointer">{isPublic ? <Globe className="h-4 w-4 text-green-500" /> : <Users className="h-4 w-4 text-blue-500" />} {isPublic ? 'Público' : 'Privado'}</Label>
                             <Switch id="is-public" checked={isPublic} onCheckedChange={setIsPublic} />
                         </div>
                         {!isPublic && (
@@ -601,7 +610,7 @@ export default function ResourcesPage() {
                       <h3 className="text-base font-semibold">Control de Acceso</h3>
                        <div className="space-y-3 p-3 border rounded-lg">
                           <div className="flex items-center justify-between">
-                              <Label htmlFor="is-public-folder" className="flex items-center gap-2 cursor-pointer">{isPublic ? <Globe className="h-4 w-4 text-primary" /> : <Users className="h-4 w-4 text-destructive" />} {isPublic ? 'Público' : 'Privado'}</Label>
+                              <Label htmlFor="is-public-folder" className="flex items-center gap-2 cursor-pointer">{isPublic ? <Globe className="h-4 w-4 text-green-500" /> : <Users className="h-4 w-4 text-blue-500" />} {isPublic ? 'Público' : 'Privado'}</Label>
                               <Switch id="is-public-folder" checked={isPublic} onCheckedChange={setIsPublic} />
                           </div>
                           {!isPublic && (

@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
         const resources = await prisma.resource.findMany({
             where: whereClause,
             include: {
-                uploader: { select: { id: true, name: true } },
+                uploader: { select: { id: true, name: true, avatar: true } }, // Include avatar
                 sharedWith: { select: { id: true, name: true, avatar: true } }
             },
             orderBy: [
@@ -46,10 +46,12 @@ export async function GET(req: NextRequest) {
         });
         
         // Don't expose the PIN hash to the client
-        const safeResources = resources.map(({ pin, tags, ...resource }) => ({
+        const safeResources = resources.map(({ pin, tags, uploader, ...resource }) => ({
             ...resource,
             tags: tags ? tags.split(',').filter(Boolean) : [],
             hasPin: !!pin,
+            uploaderName: uploader?.name || 'Sistema', // Add uploaderName
+            uploader: uploader, // Keep the uploader object with avatar
         }));
 
         return NextResponse.json({ resources: safeResources, totalResources: safeResources.length });
@@ -98,14 +100,19 @@ export async function POST(req: NextRequest) {
 
         const newResource = await prisma.resource.create({
             data,
+             include: {
+                uploader: { select: { id: true, name: true, avatar: true } },
+            }
         });
         
-        const { pin, tags: tagsString, ...safeResource } = newResource;
+        const { pin, tags: tagsString, uploader, ...safeResource } = newResource;
 
         return NextResponse.json({ 
             ...safeResource,
             tags: tagsString ? tagsString.split(',').filter(Boolean) : [],
             hasPin: !!pin,
+            uploaderName: uploader?.name || 'Sistema',
+            uploader: uploader
         }, { status: 201 });
 
     } catch (error) {

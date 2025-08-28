@@ -1,4 +1,3 @@
-
 // src/types.ts
 import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form, FormField as PrismaFormField, FormFieldType, FormStatus } from "@prisma/client";
 
@@ -170,6 +169,7 @@ export interface EnterpriseResource {
     uploadDate: string;
     uploaderId?: string | null;
     uploaderName: string;
+    uploader?: { id: string, name: string | null, avatar: string | null } | null;
     hasPin: boolean;
     parentId: string | null;
     ispublic: boolean;
