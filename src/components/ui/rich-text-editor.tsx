@@ -1,25 +1,16 @@
-
 'use client';
 
-import React, { useRef, useMemo } from 'react';
+import React from 'react';
 import dynamic from 'next/dynamic';
-import 'react-quill/dist/quill.snow.css';
+import 'react-quill-new/dist/quill.snow.css';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { ReactQuillProps } from 'react-quill';
+import type { ReactQuillProps } from 'react-quill-new';
 
-// Quill no es compatible con SSR, por lo que lo cargamos dinámicamente solo en el cliente.
+// Importa react-quill-new de forma dinámica para evitar SSR.
 const ReactQuill = dynamic(
-  async () => {
-    const { default: RQ } = await import('react-quill');
-    
-    // Este es el truco: se crea un componente que reenvía la referencia.
-    // eslint-disable-next-line react/display-name
-    return ({ forwardedRef, ...props }: { forwardedRef: React.Ref<any> } & ReactQuillProps) => {
-      return <RQ ref={forwardedRef} {...props} />;
-    };
-  },
-  { 
+  () => import('react-quill-new'),
+  {
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-40 border rounded-md bg-muted/50">
@@ -29,57 +20,47 @@ const ReactQuill = dynamic(
   }
 );
 
+interface RichTextEditorProps extends ReactQuillProps {}
 
-interface RichTextEditorProps extends ReactQuillProps {
-  // Aquí podemos añadir props personalizadas en el futuro si es necesario
-}
-
-const modulesConfig = {
+// Configuración de la toolbar
+const modules = {
   toolbar: [
-    [{ 'header': [1, 2, 3, false] }],
+    [{ header: [1, 2, 3, false] }],
     ['bold', 'italic', 'underline', 'strike'],
-    [{'list': 'ordered'}, {'list': 'bullet'}],
+    [{ list: 'ordered' }, { list: 'bullet' }],
     ['blockquote', 'code-block'],
     ['link'],
-    ['clean']
+    ['clean'],
   ],
-  clipboard: {
-    // Coincidir con cualquier etiqueta de estilo para limpiar el pegado
-    matchVisual: false,
-  }
 };
 
-const formatsConfig = [
+// ✅ Aquí quitamos "bullet"
+const formats = [
   'header',
   'bold', 'italic', 'underline', 'strike',
-  'list', 'bullet',
+  'list',
   'blockquote', 'code-block',
-  'link'
+  'link',
 ];
 
-export const RichTextEditor: React.FC<RichTextEditorProps> = ({ 
-    className,
-    value,
-    onChange,
-    ...props
+export const RichTextEditor: React.FC<RichTextEditorProps> = ({
+  className,
+  ...props
 }) => {
-  const quillRef = useRef(null);
-
-  // Usamos useMemo para la configuración para evitar re-renderizados innecesarios.
-  const modules = useMemo(() => (modulesConfig), []);
-  const formats = useMemo(() => (formatsConfig), []);
-
   return (
-    <div className={cn("bg-card text-foreground rounded-md border", className, "quill-editor")}>
-        <ReactQuill
-            forwardedRef={quillRef}
-            theme="snow"
-            modules={modules}
-            formats={formats}
-            value={value}
-            onChange={onChange}
-            {...props}
-        />
+    <div
+      className={cn(
+        'bg-card text-foreground rounded-md border',
+        className,
+        'quill-editor'
+      )}
+    >
+      <ReactQuill
+        theme="snow"
+        modules={modules}
+        formats={formats}
+        {...props}
+      />
     </div>
   );
 };
