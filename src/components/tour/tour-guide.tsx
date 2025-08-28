@@ -1,3 +1,4 @@
+
 // src/components/tour/tour-guide.tsx
 'use client';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
@@ -56,12 +57,14 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
   }, [step, onNext]);
   
   useEffect(() => {
-    updatePositionAndScroll();
+    // We need a brief moment for the DOM to update after a route change or state update
+    const timeoutId = setTimeout(updatePositionAndScroll, 100);
     
     window.addEventListener('resize', updatePositionAndScroll);
     window.addEventListener('scroll', updatePositionAndScroll);
 
     return () => {
+        clearTimeout(timeoutId);
         window.removeEventListener('resize', updatePositionAndScroll);
         window.removeEventListener('scroll', updatePositionAndScroll);
     };
@@ -111,10 +114,10 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
                 className="absolute inset-0 transition-all duration-300 ease-in-out pointer-events-auto"
                 onClick={onStop}
                 style={{
-                    top: targetRect.top,
-                    left: targetRect.left,
-                    width: targetRect.width,
-                    height: targetRect.height,
+                    top: targetRect.top - 8,
+                    left: targetRect.left - 8,
+                    width: targetRect.width + 16,
+                    height: targetRect.height + 16,
                     boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.7)',
                     borderRadius: '8px',
                 }}
