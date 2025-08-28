@@ -30,12 +30,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { Announcement as PrismaAnnouncement, User as PrismaUser } from '@prisma/client';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { useTitle } from '@/contexts/title-context';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
 interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
   author: { id: string; name: string; email?: string } | null;
@@ -260,7 +260,7 @@ export default function AnnouncementsPage() {
                   Crear Anuncio
                 </Button>
               </DialogTrigger>
-              <DialogContent className="w-[95vw] max-w-lg rounded-lg max-h-[90vh] flex flex-col">
+              <DialogContent className="w-[95vw] max-w-2xl rounded-lg max-h-[90vh] flex flex-col">
                 <form onSubmit={handleSaveAnnouncement} id="announcement-form">
                   <DialogHeader className="p-6 pb-0">
                     <DialogTitle>{announcementToEdit ? 'Editar Anuncio' : 'Crear Nuevo Anuncio'}</DialogTitle>
@@ -284,14 +284,11 @@ export default function AnnouncementsPage() {
                     
                     <div className="space-y-1">
                       <Label htmlFor="content">Contenido <span className="text-destructive">*</span></Label>
-                        <Textarea
-                          id="content"
+                        <RichTextEditor
                           value={formContent}
-                          onChange={(e) => setFormContent(e.target.value)}
+                          onChange={setFormContent}
                           placeholder="Escribe aquí el contenido del anuncio para los usuarios..."
-                          required
                           disabled={isProcessing}
-                          rows={5}
                         />
                     </div>
 

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -16,7 +17,7 @@ interface AnnouncementCardProps {
   onDelete?: (announcementId: string) => void;
 }
 
-const TRUNCATE_LENGTH = 200;
+const TRUNCATE_WORDS = 30; // Truncar por palabras en lugar de caracteres
 
 export function AnnouncementCard({ announcement, onEdit, onDelete }: AnnouncementCardProps) {
   const { user } = useAuth();
@@ -54,15 +55,20 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
     }
   };
 
-  const isTruncated = announcement.content.length > TRUNCATE_LENGTH;
-  
+  const stripHtml = (html: string) => {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || "";
+  }
+
+  const plainTextContent = stripHtml(announcement.content);
+  const words = plainTextContent.split(' ');
+  const isTruncated = words.length > TRUNCATE_WORDS;
+
   const toggleExpand = (e: React.MouseEvent) => {
       e.stopPropagation();
       e.preventDefault();
       setIsExpanded(!isExpanded);
   }
-
-  const contentToShow = isExpanded ? announcement.content : `${''}${announcement.content.substring(0, TRUNCATE_LENGTH)}${isTruncated ? '...' : ''}`;
 
   return (
     <Card className="flex flex-col h-full group card-border-animated">
@@ -93,18 +99,9 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
         </div>
       </CardHeader>
       <CardContent className="flex-grow">
-        <div className="text-sm text-muted-foreground whitespace-pre-wrap">
-          {contentToShow}
+        <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
+           <div dangerouslySetInnerHTML={{ __html: announcement.content }} />
         </div>
-         {isTruncated && (
-            <Button
-              onClick={toggleExpand}
-              variant="link"
-              className="p-0 h-auto text-sm mt-1 animated-underline"
-            >
-              {isExpanded ? 'Leer menos' : 'Leer más'}
-            </Button>
-          )}
       </CardContent>
       {canModify && onEdit && onDelete && (
         <CardFooter className="border-t pt-3 pb-3 justify-end gap-2">
