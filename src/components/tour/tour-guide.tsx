@@ -1,3 +1,4 @@
+
 // src/components/tour/tour-guide.tsx
 'use client';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
@@ -47,22 +48,19 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
 
         if (!isElementVisible) {
             element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-            // Give it a moment to scroll before calculating final positions
             setTimeout(() => {
                 const newRect = element.getBoundingClientRect();
                 setTargetRect(newRect);
-            }, 500); // Adjust delay as needed
+            }, 300);
         } else {
             setTargetRect(rect);
         }
     } else {
-      console.warn(`Tour target "${step.target}" not found. Skipping step.`);
       onNext();
     }
   }, [step, onNext]);
   
   useEffect(() => {
-    // A short delay helps ensure the layout is stable, especially on initial load or resize.
     const timeoutId = setTimeout(updatePosition, 100);
     
     window.addEventListener('resize', updatePosition);
@@ -82,51 +80,27 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
         const spacing = 16;
         
         let top, left;
-
-        // Default to bottom-center
         let finalPosition: TourStep['placement'] = step.placement || 'bottom';
 
         const placements = {
-            bottom: {
-                top: targetRect.bottom + spacing,
-                left: targetRect.left + targetRect.width / 2 - popoverWidth / 2,
-            },
-            top: {
-                top: targetRect.top - popoverHeight - spacing,
-                left: targetRect.left + targetRect.width / 2 - popoverWidth / 2,
-            },
-            left: {
-                top: targetRect.top + targetRect.height / 2 - popoverHeight / 2,
-                left: targetRect.left - popoverWidth - spacing,
-            },
-            right: {
-                top: targetRect.top + targetRect.height / 2 - popoverHeight / 2,
-                left: targetRect.right + spacing,
-            },
+            bottom: { top: targetRect.bottom + spacing, left: targetRect.left + targetRect.width / 2 - popoverWidth / 2 },
+            top: { top: targetRect.top - popoverHeight - spacing, left: targetRect.left + targetRect.width / 2 - popoverWidth / 2 },
+            left: { top: targetRect.top + targetRect.height / 2 - popoverHeight / 2, left: targetRect.left - popoverWidth - spacing },
+            right: { top: targetRect.top + targetRect.height / 2 - popoverHeight / 2, left: targetRect.right + spacing },
         };
         
-        // Intelligent positioning logic
-        const canPlaceBottom = targetRect.bottom + popoverHeight + spacing < window.innerHeight;
-        const canPlaceTop = targetRect.top - popoverHeight - spacing > 0;
-        const canPlaceRight = targetRect.right + popoverWidth + spacing < window.innerWidth;
-        const canPlaceLeft = targetRect.left - popoverWidth - spacing > 0;
-
         if (!step.placement) {
-            if (canPlaceBottom) finalPosition = 'bottom';
-            else if (canPlaceTop) finalPosition = 'top';
-            else if (canPlaceRight) finalPosition = 'right';
-            else if (canPlaceLeft) finalPosition = 'left';
-            // Fallback to bottom if no ideal position is found
+            if (placements.bottom.top + popoverHeight < window.innerHeight) finalPosition = 'bottom';
+            else if (placements.top.top > 0) finalPosition = 'top';
+            else if (placements.right.left + popoverWidth < window.innerWidth) finalPosition = 'right';
+            else if (placements.left.left > 0) finalPosition = 'left';
         }
         
         top = placements[finalPosition].top;
         left = placements[finalPosition].left;
         
-        // Adjust horizontal position to stay within viewport
         if (left < spacing) left = spacing;
         if (left + popoverWidth > window.innerWidth - spacing) left = window.innerWidth - popoverWidth - spacing;
-        
-        // Adjust vertical position
         if (top < spacing) top = spacing;
         if (top + popoverHeight > window.innerHeight - spacing) top = window.innerHeight - popoverHeight - spacing;
         
@@ -143,19 +117,19 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
 
   return (
     <AnimatePresence>
-        {/* The overlay with a hole cut out */}
         <motion.div
+            key={`tour-overlay-${currentStepIndex}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9998] pointer-events-auto"
+            className="fixed inset-0 z-[9998]"
             style={{
                  boxShadow: `0 0 0 9999px rgba(0, 0, 0, 0.7)`,
             }}
         />
         
-        {/* The highlighted element hole */}
         <motion.div
+            key={`tour-highlight-${currentStepIndex}`}
              className="fixed pointer-events-none z-[9998]"
              style={{
                  top: targetRect.top - 8,
@@ -168,10 +142,9 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
              }}
         />
 
-        {/* The popover, positioned relative to the viewport */}
         <motion.div
             ref={popoverRef}
-            key={currentStepIndex} // Re-animate on step change
+            key={`tour-popover-${currentStepIndex}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
