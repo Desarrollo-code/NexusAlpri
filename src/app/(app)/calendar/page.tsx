@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { PlusCircle, Loader2, AlertTriangle, Trash2, MapPin, Calendar as CalendarIcon, Clock, Save, ChevronLeft, ChevronRight, Video, Paperclip, Link as LinkIcon, X, Check, List, LayoutGrid, Users, User, Edit } from 'lucide-react';
+import { PlusCircle, Loader2, AlertTriangle, Trash2, MapPin, Calendar as CalendarIcon, Clock, Save, ChevronLeft, ChevronRight, Video, Paperclip, Link as LinkIcon, X, Check, List, LayoutGrid, Users, User, Edit, HelpCircle } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -45,6 +45,8 @@ import { Calendar as DayPickerCalendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
 import { Identicon } from '@/components/ui/identicon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useTour } from '@/contexts/tour-context';
+import { calendarTour } from '@/lib/tour-steps';
 
 
 const eventColors = [
@@ -60,6 +62,7 @@ export default function CalendarPage() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { setPageTitle } = useTitle();
+  const { startTour, forceStartTour } = useTour();
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -102,7 +105,8 @@ export default function CalendarPage() {
 
   useEffect(() => {
     setPageTitle('Calendario');
-  }, [setPageTitle]);
+    startTour('calendar', calendarTour);
+  }, [setPageTitle, startTour]);
 
   const fetchEvents = useCallback(async () => {
     setIsLoading(true);
@@ -301,15 +305,18 @@ export default function CalendarPage() {
   return (
     <div className={cn("flex flex-col h-full md:h-[calc(100vh-8rem)] gap-4 md:gap-6", isMobile && "space-y-4")}>
         <header className="flex-shrink-0 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" id="calendar-nav-controls">
                 <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="h-4 w-4" /></Button>
                 <h1 className="text-xl md:text-2xl font-bold font-headline capitalize w-48 text-center">{format(currentMonth, "MMMM yyyy", { locale: es })}</h1>
                 <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight className="h-4 w-4" /></Button>
                 <Button variant="outline" className="h-9 hidden sm:flex" onClick={() => setCurrentMonth(startOfToday())}>Hoy</Button>
             </div>
             <div className="ml-auto flex items-center gap-2">
+               <Button variant="outline" size="sm" onClick={() => forceStartTour('calendar', calendarTour)}>
+                   <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+               </Button>
                {canCreateEvent && (
-                  <Button size={isMobile ? 'sm' : 'default'} onClick={() => handleOpenCreateModal(selectedDate)}>
+                  <Button size={isMobile ? 'sm' : 'default'} onClick={() => handleOpenCreateModal(selectedDate)} id="create-event-btn">
                       <PlusCircle className="mr-2 h-4 w-4" />
                       {!isMobile && 'Crear Evento'}
                   </Button>
@@ -318,7 +325,7 @@ export default function CalendarPage() {
         </header>
 
         <main className={cn("flex-grow min-h-0", isMobile ? 'flex flex-col gap-4' : 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6')}>
-          <div className={cn("md:col-span-2 lg:col-span-3 flex flex-col min-h-0", isMobile ? "" : "bg-card p-2 sm:p-4 border rounded-lg shadow-sm")}>
+          <div className={cn("md:col-span-2 lg:col-span-3 flex flex-col min-h-0", isMobile ? "" : "bg-card p-2 sm:p-4 border rounded-lg shadow-sm")} id="calendar-main-view">
             {isLoading ? (
               <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
             ) : error ? (
@@ -354,7 +361,7 @@ export default function CalendarPage() {
                 </>
             )}
           </div>
-          <aside className="md:col-span-1 lg:col-span-1 md:bg-card md:p-4 md:border rounded-lg md:shadow-sm">
+          <aside className="md:col-span-1 lg:col-span-1 md:bg-card md:p-4 md:border rounded-lg md:shadow-sm" id="calendar-event-list">
             <EventList 
               selectedDate={selectedDate}
               events={eventsForSelectedDate}

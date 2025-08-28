@@ -107,20 +107,12 @@ export const manageCoursesTour: TourStep[] = [
     placement: 'bottom',
   },
   {
-    target: '#course-list-container > div:first-child',
+    target: '#course-list-container',
     content: {
-      title: 'Tarjeta de Curso',
+      title: 'Lista de Cursos',
       description: 'Cada curso que creas aparece aquí. Puedes ver su estado y acceder a las opciones de edición.',
     },
     placement: 'right',
-  },
-  {
-    target: '#course-list-container > div:first-child button[aria-haspopup="menu"]',
-    content: {
-      title: 'Opciones del Curso',
-      description: 'Desde este menú puedes publicar, archivar o eliminar el curso. ¡También puedes acceder a una vista previa!',
-    },
-    placement: 'left',
   },
 ];
 
@@ -152,6 +144,38 @@ export const profileTour: TourStep[] = [
     content: {
       title: 'Tus Logros',
       description: '¡Revisa tus puntos de experiencia (XP) y los logros que has desbloqueado en la plataforma!'
+    }
+  }
+];
+
+
+export const calendarTour: TourStep[] = [
+  {
+    target: '#calendar-nav-controls',
+    content: {
+      title: 'Navegación del Calendario',
+      description: 'Usa estos botones para moverte entre los meses o volver rápidamente al día de hoy.'
+    }
+  },
+  {
+    target: '#create-event-btn',
+    content: {
+      title: 'Crear Nuevo Evento',
+      description: 'Si tienes permisos, puedes crear un nuevo evento para ti, para un rol específico o para toda la organización.'
+    }
+  },
+  {
+    target: '#calendar-main-view',
+    content: {
+      title: 'Vista Principal',
+      description: 'Aquí puedes ver todos los eventos del mes. Haz clic en un día para ver sus eventos en detalle.'
+    }
+  },
+  {
+    target: '#calendar-event-list',
+    content: {
+      title: 'Eventos del Día',
+      description: 'Los eventos para el día que hayas seleccionado aparecerán aquí. Haz clic en uno para ver toda la información.'
     }
   }
 ];

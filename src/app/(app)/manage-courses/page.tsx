@@ -93,7 +93,7 @@ export default function ManageCoursesPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { setPageTitle } = useTitle();
-  const { startTour } = useTour();
+  const { startTour, forceStartTour } = useTour();
 
   const [allCourses, setAllCourses] = useState<AppCourseType[]>([]);
   const [totalCourses, setTotalCourses] = useState(0);
@@ -114,7 +114,8 @@ export default function ManageCoursesPage() {
   
   useEffect(() => {
     setPageTitle('Gestionar Cursos');
-  }, [setPageTitle]);
+    startTour('manageCourses', manageCoursesTour);
+  }, [setPageTitle, startTour]);
 
   const createQueryString = useCallback(
     (paramsToUpdate: Record<string, string | number>) => {
@@ -352,7 +353,7 @@ export default function ManageCoursesPage() {
                 <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4"/></Button>
                 <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
             </div>
-            <Button variant="outline" size="sm" onClick={() => startTour('manageCourses', manageCoursesTour)}>
+            <Button variant="outline" size="sm" onClick={() => forceStartTour('manageCourses', manageCoursesTour)}>
               <HelpCircle className="mr-2 h-4 w-4" />
               Ver Guía
             </Button>
