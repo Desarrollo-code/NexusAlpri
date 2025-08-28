@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import type { AppForm, FormField, FormFieldType, FormStatus } from '@/types';
+import type { AppForm, FormField, FormFieldOption, FormFieldType, FormStatus } from '@/types';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import {
   AlertDialog,
@@ -56,14 +56,14 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
     };
     
    const renderOptionsEditor = () => {
-    const options = (field.options || []) as { id: string, text: string, isCorrect: boolean, points?: number }[];
+    const options = (field.options || []) as FormFieldOption[];
 
     const handlePointsChange = (optionIndex: number, value: string) => {
         const points = parseInt(value, 10);
         onOptionChange(field.id, optionIndex, { points: isNaN(points) ? 0 : points });
     };
 
-    const renderOption = (option: typeof options[0], index: number) => {
+    const renderOption = (option: FormFieldOption, index: number) => {
         const optionId = `opt-${field.id}-${option.id}`;
         return (
             <div className="flex items-center gap-2" key={option.id}>
@@ -253,7 +253,7 @@ export function FormEditor({ formId }: { formId: string }) {
       const handleCorrectChange = (fieldId: string, optionId: string, isCorrect: boolean) => {
         const updatedFields = form!.fields.map(f => {
             if (f.id === fieldId) {
-                const newOptions = (f.options as any[]).map(opt => {
+                const newOptions = (f.options as FormFieldOption[]).map(opt => {
                     if (f.type === 'SINGLE_CHOICE') {
                         return { ...opt, isCorrect: opt.id === optionId };
                     }

@@ -9,6 +9,9 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Identicon } from '../ui/identicon';
+import type { FormFieldOption } from '@/types';
+import { cn } from '@/lib/utils';
+import { Badge } from '../ui/badge';
 
 interface FormResults {
     formTitle: string;
@@ -20,6 +23,7 @@ interface FormResults {
         id: string;
         label: string;
         type: string;
+        options: FormFieldOption[]; // Added for quiz correct answer display
         stats: any; // Can be counts for choices or list of text answers
     }[];
 }
@@ -42,7 +46,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const FieldResultCard = ({ field }: { field: FormResults['fields'][0] }) => {
+const FieldResultCard = ({ field, isQuiz }: { field: FormResults['fields'][0], isQuiz: boolean }) => {
     switch (field.type) {
         case 'SHORT_TEXT':
         case 'LONG_TEXT':
@@ -68,23 +72,26 @@ const FieldResultCard = ({ field }: { field: FormResults['fields'][0] }) => {
         case 'MULTIPLE_CHOICE':
         case 'SINGLE_CHOICE':
              const chartData = field.stats.map((stat: any) => ({ name: stat.option, value: stat.count }));
+             const correctOptionText = field.options.find(o => o.isCorrect)?.text;
              return (
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2"><ListChecks className="h-4 w-4 text-primary"/>{field.label}</CardTitle>
                         <CardDescription>Distribución de respuestas</CardDescription>
+                        {isQuiz && correctOptionText && <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 w-fit">Correcta: {correctOptionText}</Badge>}
                     </CardHeader>
                     <CardContent className="h-[250px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <ComposedChart layout="vertical" data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 10 }}>
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                                 <XAxis type="number" allowDecimals={false} />
-                                <YAxis dataKey="name" type="category" scale="band" width={120} tick={{ fontSize: 12 }} />
+                                <YAxis dataKey="name" type="category" scale="band" width={120} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
                                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
                                 <Bar dataKey="value" barSize={20} name="Respuestas">
-                                    {chartData.map((_entry: any, index: number) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
+                                    {chartData.map((entry: any, index: number) => {
+                                        const isCorrect = isQuiz && entry.name === correctOptionText;
+                                        return <Cell key={`cell-${index}`} fill={isCorrect ? 'hsl(var(--primary))' : 'hsl(var(--secondary))'} />
+                                    })}
                                 </Bar>
                             </ComposedChart>
                         </ResponsiveContainer>
@@ -202,7 +209,7 @@ export const FormResultsView: React.FC<FormResultsViewProps> = ({ formId }) => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {results.fields.map(field => (
-                    <FieldResultCard key={field.id} field={field} />
+                    <FieldResultCard key={field.id} field={field} isQuiz={results.isQuiz} />
                 ))}
             </div>
         </div>

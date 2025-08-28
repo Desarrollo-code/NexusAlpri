@@ -2,6 +2,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import type { FormFieldOption } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,10 +18,15 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         const form = await prisma.form.findUnique({
             where: { id: formId },
             include: {
-                fields: { orderBy: { order: 'asc' } },
+                fields: { 
+                    orderBy: { order: 'asc' },
+                    select: { id: true, label: true, type: true, options: true }
+                },
                 responses: {
                     include: {
-                        answers: true,
+                        answers: {
+                            select: { fieldId: true, value: true }
+                        },
                         user: { select: { id: true, name: true, avatar: true }}
                     },
                     orderBy: {
@@ -61,13 +67,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
                 case 'SINGLE_CHOICE':
                 case 'MULTIPLE_CHOICE':
                     const counts = new Map<string, number>();
-                    const allOptions = (field.options as any[]).map(opt => opt.text) || [];
+                    const allOptions = (field.options as any as FormFieldOption[]).map(opt => opt.text) || [];
 
                     // Initialize all options with 0 count
                     allOptions.forEach(opt => counts.set(opt, 0));
 
                     fieldAnswers.forEach(ans => {
-                        const selectedOptionIds: string[] = [];
+                        let selectedOptionIds: string[] = [];
                         if (field.type === 'SINGLE_CHOICE') {
                              selectedOptionIds.push(ans.value);
                         } else { // MULTIPLE_CHOICE
@@ -80,7 +86,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
                         }
                         
                          selectedOptionIds.forEach(optId => {
-                            const value = (field.options as any[]).find(opt => opt.id === optId)?.text;
+                            const value = (field.options as any as FormFieldOption[]).find(opt => opt.id === optId)?.text;
                              if (value && counts.has(value)) {
                                 counts.set(value, counts.get(value)! + 1);
                             }
@@ -97,6 +103,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
                 id: field.id,
                 label: field.label,
                 type: field.type,
+                options: field.options,
                 stats: stats
             };
         });

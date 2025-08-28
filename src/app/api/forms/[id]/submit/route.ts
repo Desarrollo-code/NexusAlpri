@@ -24,7 +24,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         
         const form = await prisma.form.findUnique({
             where: { id: formId },
-            include: { fields: true }
+            include: { fields: {
+                select: { id: true, type: true, options: true }
+            }}
         });
 
         if (!form || form.status !== 'PUBLISHED') {
@@ -75,7 +77,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             }
         });
 
-        return NextResponse.json({ message: 'Respuesta enviada con éxito', responseId: newResponse.id }, { status: 201 });
+        return NextResponse.json({ message: 'Respuesta enviada con éxito', responseId: newResponse.id, score: totalScore }, { status: 201 });
 
     } catch (error) {
         console.error(`[SUBMIT_FORM_ID: ${formId}]`, error);

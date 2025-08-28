@@ -288,14 +288,12 @@ export type UserAchievement = Prisma.UserAchievementGetPayload<{
 }>;
 
 // --- FORMS ---
-// Extend the Prisma FormField to include a potential points property in its options
-// This is done by intersecting with a new type for options
-export type FormFieldOption = {
+export interface FormFieldOption {
   id: string;
   text: string;
   isCorrect: boolean;
-  points: number; // Optional points per option
-};
+  points: number;
+}
 
 export interface FormField extends Omit<PrismaFormField, 'options'> {
   options: FormFieldOption[];

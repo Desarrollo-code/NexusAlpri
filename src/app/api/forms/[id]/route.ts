@@ -2,7 +2,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import type { FormField, FormFieldType } from '@prisma/client';
+import type { FormField, FormFieldType, FormFieldOption } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,12 +90,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         }
 
         // Create or update incoming fields
-        for (const [index, fieldData] of fields.entries()) {
+        for (const [index, fieldData] of (fields as FormField[]).entries()) {
           const isNew = fieldData.id.startsWith('new-');
           const fieldPayload = {
             label: fieldData.label,
             type: fieldData.type as FormFieldType,
-            options: fieldData.options || [],
+            options: (fieldData.options as unknown as FormFieldOption[]) || [],
             required: fieldData.required || false,
             placeholder: fieldData.placeholder || null,
             order: index,

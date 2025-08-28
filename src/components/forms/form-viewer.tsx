@@ -84,6 +84,7 @@ export function FormViewer({ formId }: { formId: string }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [finalScore, setFinalScore] = useState<number | null>(null);
     
     useEffect(() => {
         const fetchForm = async () => {
@@ -117,8 +118,10 @@ export function FormViewer({ formId }: { formId: string }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ answers }),
             });
-            if (!res.ok) throw new Error((await res.json()).message || 'No se pudo enviar la respuesta.');
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'No se pudo enviar la respuesta.');
             setIsSubmitted(true);
+            setFinalScore(data.score); // Store the score from the response
             toast({ title: '¡Respuesta Enviada!', description: 'Gracias por completar el formulario.' });
         } catch (err) {
             toast({ title: 'Error', description: err instanceof Error ? err.message : 'Error desconocido', variant: 'destructive' });
@@ -137,6 +140,12 @@ export function FormViewer({ formId }: { formId: string }) {
                 <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
                 <h2 className="text-2xl font-bold">¡Gracias!</h2>
                 <p className="text-muted-foreground mt-2">Tu respuesta al formulario "{form.title}" ha sido registrada.</p>
+                {form.isQuiz && finalScore !== null && (
+                    <div className="mt-4">
+                        <p className="text-lg">Tu puntuación:</p>
+                        <p className="text-4xl font-bold text-primary">{finalScore.toFixed(1)}%</p>
+                    </div>
+                )}
                 <Button className="mt-6" onClick={() => router.push('/dashboard')}>Volver al Panel Principal</Button>
             </Card>
         );
