@@ -6,10 +6,16 @@ import dynamic from 'next/dynamic';
 import { Loader2 } from 'lucide-react';
 import 'react-quill/dist/quill.snow.css'; // Importa los estilos del editor
 import { cn } from '@/lib/utils';
+import type { ReactQuillProps } from 'react-quill';
 
 // Carga dinámica de ReactQuill para que solo se renderice en el cliente
 const ReactQuill = dynamic(
-    () => import('react-quill'), 
+    async () => {
+        const { default: RQ } = await import('react-quill');
+        // Este es el truco: se crea un componente que reenvía la referencia.
+        // eslint-disable-next-line react/display-name
+        return ({ forwardedRef, ...props }: { forwardedRef: React.Ref<any> } & ReactQuillProps) => <RQ ref={forwardedRef} {...props} />;
+    },
     { 
         ssr: false,
         loading: () => (
@@ -54,9 +60,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     disabled, 
     className 
 }) => {
+    const editorRef = React.useRef(null);
     return (
         <div className={cn("bg-card text-foreground rounded-md border", className)}>
              <ReactQuill 
+                forwardedRef={editorRef}
                 theme="snow"
                 value={value}
                 onChange={onChange}
