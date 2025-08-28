@@ -35,6 +35,7 @@ import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import { useTour } from '@/contexts/tour-context';
 import { settingsTour } from '@/lib/tour-steps';
+import { ImageCropper } from '@/components/image-cropper';
 
 const availableFonts = [
     { value: 'Inter', label: 'Inter (Sans-serif)' },
@@ -215,6 +216,10 @@ export default function SettingsPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [cropUploadUrl, setCropUploadUrl] = useState('');
+  const [cropField, setCropField] = useState<'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | null>(null);
+
   useEffect(() => {
     setPageTitle('Configuración');
     startTour('settings', settingsTour);
@@ -243,26 +248,26 @@ export default function SettingsPage() {
     setFormState(prev => prev ? { ...prev, [field]: checked } : null);
   };
   
- const handleFileSelected = async (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl', e: ChangeEvent<HTMLInputElement>) => {
+ const handleFileSelected = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl', e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
         const file = e.target.files[0];
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        setIsUploading(true);
-        setUploadProgress(0);
-
-        try {
-            const result: { url: string } = await uploadWithProgress('/api/upload/course-image', formData, setUploadProgress);
-            setFormState(prev => prev ? { ...prev, [field]: result.url } : null);
-            toast({ title: "Imagen Subida", description: "La imagen ha sido subida con éxito." });
-        } catch (error) {
-            toast({ title: 'Error de Subida', description: (error as Error).message, variant: 'destructive' });
-        } finally {
-            setIsUploading(false);
-        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          setImageToCrop(reader.result as string);
+          setCropUploadUrl('/api/upload/course-image'); 
+          setCropField(field);
+        };
+        reader.readAsDataURL(file);
     }
     if (e.target) e.target.value = '';
+  };
+
+  const handleCropComplete = (croppedFileUrl: string) => {
+    if (cropField) {
+        setFormState(prev => prev ? { ...prev, [cropField]: croppedFileUrl } : null);
+    }
+    setImageToCrop(null);
+    setCropField(null);
   };
 
   const handleRemoveImage = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl') => {
@@ -539,8 +544,8 @@ export default function SettingsPage() {
        <ImageCropper
             imageSrc={imageToCrop}
             onCropComplete={handleCropComplete}
-            onClose={() => { setImageToCrop(null); }}
-            uploadUrl="/api/upload/course-image"
+            onClose={() => { setImageToCrop(null); setCropField(null); }}
+            uploadUrl={cropUploadUrl}
         />
       <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
         <AlertDialogContent>
