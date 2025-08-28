@@ -179,3 +179,127 @@ export const calendarTour: TourStep[] = [
     }
   }
 ];
+
+export const resourcesTour: TourStep[] = [
+    {
+        target: '#resources-breadcrumbs',
+        content: {
+            title: 'Navegación por Carpetas',
+            description: 'Usa estas "migas de pan" para saber en qué carpeta te encuentras y para volver a las carpetas anteriores fácilmente.',
+        }
+    },
+    {
+        target: '#resources-controls',
+        content: {
+            title: 'Controles de la Biblioteca',
+            description: 'Busca, filtra por categoría, cambia entre vista de cuadrícula o lista, y (si tienes permisos) crea carpetas y sube nuevos recursos.',
+        }
+    },
+    {
+        target: '#resources-folder-list',
+        content: {
+            title: 'Carpetas',
+            description: 'Las carpetas te ayudan a organizar el contenido. Haz clic en una para entrar y ver los archivos que contiene.',
+        }
+    },
+    {
+        target: '#resources-file-list',
+        content: {
+            title: 'Archivos',
+            description: 'Aquí están los documentos, videos y enlaces. Haz clic en uno para previsualizarlo o descargarlo.',
+        }
+    },
+];
+
+export const analyticsTour: TourStep[] = [
+    {
+        target: '#analytics-metric-cards',
+        content: {
+            title: 'Métricas Principales',
+            description: 'Un vistazo rápido a los números más importantes de tu plataforma: usuarios, cursos, inscripciones y la tasa de finalización promedio.'
+        }
+    },
+    {
+        target: '#analytics-course-rankings',
+        content: {
+            title: 'Ranking de Cursos',
+            description: 'Identifica rápidamente qué cursos son los más populares (más inscritos) y cuáles tienen el mejor (y peor) rendimiento en finalización.'
+        }
+    },
+    {
+        target: '#analytics-distribution-charts',
+        content: {
+            title: 'Distribución',
+            description: 'Estos gráficos te muestran cómo se distribuyen tus usuarios por rol y tus cursos por estado (borrador, publicado, etc.).'
+        }
+    },
+    {
+        target: '#analytics-registration-trend',
+        content: {
+            title: 'Tendencia de Registros',
+            description: 'Observa cuántos nuevos usuarios se han registrado en la plataforma durante los últimos 30 días.'
+        }
+    }
+];
+
+export const enrollmentsTour: TourStep[] = [
+    {
+        target: '#enrollments-course-selector',
+        content: {
+            title: 'Selecciona un Curso',
+            description: 'Elige el curso del que quieres ver las inscripciones. Si eres instructor, solo verás tus propios cursos.'
+        }
+    },
+    {
+        target: '#enrollments-stats-cards',
+        content: {
+            title: 'Estadísticas del Curso',
+            description: 'Aquí tienes un resumen de los inscritos, el porcentaje de finalización promedio y la nota media de los quizzes para el curso seleccionado.'
+        }
+    },
+    {
+        target: '#enrollments-student-list',
+        content: {
+            title: 'Lista de Estudiantes',
+            description: 'Busca y visualiza el progreso individual de cada estudiante inscrito en este curso.'
+        }
+    }
+];
+
+export const settingsTour: TourStep[] = [
+    {
+        target: '#settings-tabs',
+        content: {
+            title: 'Pestañas de Configuración',
+            description: 'Navega entre las diferentes secciones: Apariencia, Seguridad y configuraciones Generales de la plataforma.'
+        }
+    },
+     {
+        target: '#settings-identity',
+        content: {
+            title: 'Identidad Visual',
+            description: 'Personaliza la plataforma subiendo tu propio logo, marca de agua e imágenes para las páginas públicas.'
+        }
+    },
+    {
+        target: '#settings-security',
+        content: {
+            title: 'Políticas de Seguridad',
+            description: 'Define cómo funcionará la seguridad en tu plataforma, desde la complejidad de las contraseñas hasta el cierre de sesión por inactividad.'
+        }
+    },
+    {
+        target: '#settings-categories',
+        content: {
+            title: 'Categorías',
+            description: 'Gestiona la lista de categorías que se usarán al crear cursos y recursos en la biblioteca.'
+        }
+    },
+     {
+        target: '#settings-save-button',
+        content: {
+            title: 'Guardar Cambios',
+            description: '¡No olvides guardar! Haz clic aquí para aplicar todas las modificaciones que hayas realizado en esta página.'
+        }
+    }
+];

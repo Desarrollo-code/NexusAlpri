@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, Image as ImageIcon, Paintbrush, Type, User, UploadCloud, XCircle, Replace } from 'lucide-react';
+import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, Image as ImageIcon, Paintbrush, Type, User, UploadCloud, XCircle, Replace, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
@@ -33,6 +33,8 @@ import { cn } from '@/lib/utils';
 import { fontMap } from '@/lib/fonts';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
+import { useTour } from '@/contexts/tour-context';
+import { settingsTour } from '@/lib/tour-steps';
 
 const availableFonts = [
     { value: 'Inter', label: 'Inter (Sans-serif)' },
@@ -199,6 +201,7 @@ export default function SettingsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
+  const { startTour, forceStartTour } = useTour();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -214,7 +217,8 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setPageTitle('Configuración');
-  }, [setPageTitle]);
+    startTour('settings', settingsTour);
+  }, [setPageTitle, startTour]);
 
   useEffect(() => {
     if (globalSettings) {
@@ -351,20 +355,23 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
+      <div className="flex items-center justify-between">
         <p className="text-muted-foreground">Ajusta los parámetros generales, de seguridad y apariencia de NexusAlpri.</p>
+        <Button variant="outline" size="sm" onClick={() => forceStartTour('settings', settingsTour)}>
+            <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2">
-            <Tabs defaultValue="appearance" className="w-full">
+            <Tabs defaultValue="appearance" className="w-full" id="settings-tabs">
                 <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="appearance">Apariencia</TabsTrigger>
                     <TabsTrigger value="security">Seguridad</TabsTrigger>
                     <TabsTrigger value="general">Generales</TabsTrigger>
                 </TabsList>
                 <TabsContent value="appearance" className="space-y-8 mt-6">
-                   <Card className="card-border-animated">
+                   <Card className="card-border-animated" id="settings-identity">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary"/>Identidad Visual</CardTitle>
                             <CardDescription>Logo, marca de agua e imágenes de las páginas públicas.</CardDescription>
@@ -434,7 +441,7 @@ export default function SettingsPage() {
                     </Card>
                 </TabsContent>
                 <TabsContent value="security" className="space-y-8 mt-6">
-                    <Card className="card-border-animated">
+                    <Card className="card-border-animated" id="settings-security">
                         <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5 text-primary"/>Seguridad y Acceso</CardTitle>
                         <CardDescription>Gestiona las políticas de seguridad y registro.</CardDescription>
@@ -484,7 +491,7 @@ export default function SettingsPage() {
                     </Card>
                 </TabsContent>
                  <TabsContent value="general" className="space-y-8 mt-6">
-                    <Card className="card-border-animated">
+                    <Card className="card-border-animated" id="settings-categories">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary" />Categorías de Recursos</CardTitle>
                             <CardDescription>Gestiona las categorías usadas en cursos y la biblioteca.</CardDescription>
@@ -517,7 +524,7 @@ export default function SettingsPage() {
         </div>
         <div className="lg:col-span-1 lg:sticky lg:top-24 space-y-6">
             <ThemePreview settings={formState} />
-            <Card className="card-border-animated">
+            <Card className="card-border-animated" id="settings-save-button">
                 <CardHeader><CardTitle>Guardar Cambios</CardTitle></CardHeader>
                 <CardContent>
                     <p className="text-sm text-muted-foreground mb-4">Asegúrate de que todas las configuraciones son correctas antes de guardar.</p>
@@ -529,7 +536,12 @@ export default function SettingsPage() {
             </Card>
         </div>
       </div>
-
+       <ImageCropper
+            imageSrc={imageToCrop}
+            onCropComplete={handleCropComplete}
+            onClose={() => { setImageToCrop(null); }}
+            uploadUrl="/api/upload/course-image"
+        />
       <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
         <AlertDialogContent>
             <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>

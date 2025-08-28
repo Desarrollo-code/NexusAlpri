@@ -23,6 +23,7 @@ import {
   UserCheck,
   UserRound,
   FilePlus2 as CourseIcon,
+  HelpCircle,
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -39,6 +40,8 @@ import { useTitle } from '@/contexts/title-context';
 import { Identicon } from '@/components/ui/identicon';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTour } from '@/contexts/tour-context';
+import { analyticsTour } from '@/lib/tour-steps';
 
 
 const formatDateTick = (tick: string) => {
@@ -62,10 +65,10 @@ const formatDateTooltip = (dateString: string) => {
 
 // --- DASHBOARD COMPONENTS ---
 
-const MetricCard = ({ title, value, icon: Icon, description, suffix = '', gradient }: { title: string; value: number; icon: React.ElementType; description?: string, suffix?: string, gradient: string }) => {
+const MetricCard = ({ title, value, icon: Icon, description, suffix = '', gradient, id }: { title: string; value: number; icon: React.ElementType; description?: string; suffix?: string; gradient: string, id?: string }) => {
     const animatedValue = useAnimatedCounter(value);
     return (
-        <Card className={cn("relative overflow-hidden text-white card-border-animated", gradient)}>
+        <Card id={id} className={cn("relative overflow-hidden text-white card-border-animated", gradient)}>
             <div className="absolute inset-0 bg-black/10"></div>
             <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white/80">{title}</CardTitle>
@@ -134,7 +137,7 @@ const renderActiveShape = (props: any) => {
   );
 };
 
-function DonutChartCard({ title, data, config }: { title: string, data: any[], config: ChartConfig }) {
+function DonutChartCard({ title, data, config, id }: { title: string, data: any[], config: ChartConfig, id?: string }) {
   const total = useMemo(() => data.reduce((acc, curr) => acc + curr.count, 0), [data]);
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
   
@@ -147,7 +150,7 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
   }, [setActiveIndex]);
   
   return (
-    <Card className="card-border-animated h-full">
+    <Card className="card-border-animated h-full" id={id}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
@@ -199,9 +202,9 @@ function DonutChartCard({ title, data, config }: { title: string, data: any[], c
   )
 }
 
-function CourseRankingCard({ title, courses, metric, icon: Icon, unit = '' }: { title: string, courses: any[], metric: string, icon: React.ElementType, unit?: string }) {
+function CourseRankingCard({ title, courses, metric, icon: Icon, unit = '', id }: { title: string, courses: any[], metric: string, icon: React.ElementType, unit?: string, id?: string }) {
     return (
-        <Card className="card-border-animated">
+        <Card className="card-border-animated" id={id}>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Icon className="text-primary"/>{title}</CardTitle>
             </CardHeader>
@@ -235,9 +238,9 @@ function CourseRankingCard({ title, courses, metric, icon: Icon, unit = '' }: { 
     );
 }
 
-function UserRankingCard({ title, users, metric, icon: Icon, unit = '' }: { title: string; users: any[]; metric: string; icon: React.ElementType; unit?: string }) {
+function UserRankingCard({ title, users, metric, icon: Icon, unit = '', id }: { title: string; users: any[]; metric: string; icon: React.ElementType; unit?: string, id?: string }) {
     return (
-        <Card className="card-border-animated">
+        <Card className="card-border-animated" id={id}>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Icon className="text-primary"/>{title}</CardTitle>
             </CardHeader>
@@ -280,10 +283,12 @@ function AdminAnalyticsPage() {
     const router = useRouter();
     const { setPageTitle } = useTitle();
     const isMobile = useIsMobile();
+    const { startTour, forceStartTour } = useTour();
 
     useEffect(() => {
         setPageTitle('Analíticas');
-    }, [setPageTitle]);
+        startTour('analytics', analyticsTour);
+    }, [setPageTitle, startTour]);
 
     const fetchStats = useCallback(async () => {
         setIsLoading(true);
@@ -369,8 +374,13 @@ function AdminAnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Resumen de la Plataforma</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
+        <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Resumen de la Plataforma</h2>
+             <Button variant="outline" size="sm" onClick={() => forceStartTour('analytics', analyticsTour)}>
+                <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+            </Button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-4" id="analytics-metric-cards">
             <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
             <MetricCard title="Total Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
             <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} gradient="bg-gradient-orange" />
@@ -380,7 +390,7 @@ function AdminAnalyticsPage() {
         
         <Separator />
         <h2 className="text-2xl font-semibold">Análisis de Cursos</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" id="analytics-course-rankings">
             <CourseRankingCard title="Cursos Más Populares" courses={stats?.topCoursesByEnrollment || []} metric="Inscritos" icon={TrendingUp} />
             <CourseRankingCard title="Cursos con Mejor Rendimiento" courses={stats?.topCoursesByCompletion || []} metric="Finalización" icon={Award} unit="%" />
             <CourseRankingCard title="Cursos con Oportunidad de Mejora" courses={stats?.lowestCoursesByCompletion || []} metric="Finalización" icon={TrendingDown} unit="%" />
@@ -388,19 +398,19 @@ function AdminAnalyticsPage() {
 
         <Separator />
         <h2 className="text-2xl font-semibold">Análisis de Usuarios</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" id="analytics-user-rankings">
              <UserRankingCard title="Estudiantes Más Activos" users={stats?.topStudentsByEnrollment || []} metric="Inscripciones" icon={UserRound} />
              <UserRankingCard title="Mejores Estudiantes" users={stats?.topStudentsByCompletion || []} metric="Cursos Completados" icon={UserCheck} />
              <UserRankingCard title="Instructores Destacados" users={stats?.topInstructorsByCourses || []} metric="Cursos Creados" icon={CourseIcon} />
         </div>
 
         <Separator />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" id="analytics-distribution-charts">
             <DonutChartCard title="Distribución de Roles" data={userRolesChartData} config={userRolesChartConfig} />
             <DonutChartCard title="Distribución de Cursos por Estado" data={courseStatusChartData} config={courseStatusChartConfig} />
         </div>
 
-        <Card className="card-border-animated">
+        <Card className="card-border-animated" id="analytics-registration-trend">
             <CardHeader>
                 <CardTitle>Tendencia de Registros (Últimos 30 Días)</CardTitle>
             </CardHeader>

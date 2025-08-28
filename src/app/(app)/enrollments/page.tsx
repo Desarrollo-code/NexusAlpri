@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import type { Course as AppCourse, User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, Target, FileText, Search, CheckCircle, Percent } from 'lucide-react';
+import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, Target, FileText, Search, CheckCircle, Percent, HelpCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -25,6 +25,8 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useTour } from '@/contexts/tour-context';
+import { enrollmentsTour } from '@/lib/tour-steps';
 
 
 interface CourseEnrollmentInfo extends AppCourse {
@@ -76,6 +78,7 @@ const CourseSelector = ({ courses, onSelect, selectedCourseId, isLoading }: { co
                     aria-expanded={open}
                     className="w-full sm:w-[350px] justify-between"
                     disabled={isLoading || courses.length === 0}
+                    id="enrollments-course-selector"
                 >
                     <span className="truncate">{selectedCourseTitle}</span>
                     <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -228,6 +231,7 @@ export default function EnrollmentsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { startTour, forceStartTour } = useTour();
 
   const [courses, setCourses] = useState<AppCourse[]>([]);
   const [selectedCourseInfo, setSelectedCourseInfo] = useState<CourseEnrollmentInfo | null>(null);
@@ -242,7 +246,8 @@ export default function EnrollmentsPage() {
 
   useEffect(() => {
     setPageTitle('Inscripciones');
-  }, [setPageTitle]);
+    startTour('enrollments', enrollmentsTour);
+  }, [setPageTitle, startTour]);
 
   const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -352,6 +357,12 @@ export default function EnrollmentsPage() {
 
   return (
     <div className="space-y-8">
+       <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold"></h2>
+            <Button variant="outline" size="sm" onClick={() => forceStartTour('enrollments', enrollmentsTour)}>
+                <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+            </Button>
+        </div>
       <Card className="card-border-animated">
         <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -371,14 +382,14 @@ export default function EnrollmentsPage() {
                 <div className="flex items-center justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : selectedCourseInfo && (
                 <div className="space-y-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4" id="enrollments-stats-cards">
                         <StatCard icon={UsersRound} title="Total Inscritos" value={selectedCourseInfo._count.enrollments} />
                         <StatCard icon={LineChart} title="Finalización" value={selectedCourseInfo.avgProgress || 0} unit="%" />
                         <StatCard icon={Target} title="Nota Quizzes" value={selectedCourseInfo.avgQuizScore || 0} unit="%" />
                         <StatCard icon={BookOpen} title="Lecciones" value={selectedCourseInfo._count.lessons} />
                     </div>
 
-                    <Card className="bg-muted/20">
+                    <Card className="bg-muted/20" id="enrollments-student-list">
                     <CardHeader>
                         <CardTitle className="text-xl">Estudiantes Inscritos en: {selectedCourseInfo.title}</CardTitle>
                         <div className="flex items-center pt-2">

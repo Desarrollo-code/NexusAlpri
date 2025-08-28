@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { EnterpriseResource as AppResourceType, User as AppUser, UserRole } from '@/types';
-import { Search, ArchiveX, Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronRight, Users, Globe, Filter } from 'lucide-react';
+import { Search, ArchiveX, Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronRight, Users, Globe, Filter, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -45,6 +45,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Identicon } from '@/components/ui/identicon';
 import { Card } from '@/components/ui/card';
+import { useTour } from '@/contexts/tour-context';
+import { resourcesTour } from '@/lib/tour-steps';
 
 
 // --- Main Page Component ---
@@ -53,6 +55,7 @@ export default function ResourcesPage() {
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
   const isMobile = useIsMobile();
+  const { startTour, forceStartTour } = useTour();
 
   const [allApiResources, setAllApiResources] = useState<AppResourceType[]>([]);
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
@@ -94,7 +97,8 @@ export default function ResourcesPage() {
 
   useEffect(() => {
     setPageTitle('Biblioteca de Recursos');
-  }, [setPageTitle]);
+    startTour('resources', resourcesTour);
+  }, [setPageTitle, startTour]);
 
   const fetchResources = useCallback(async () => {
     setIsLoading(true);
@@ -371,7 +375,7 @@ export default function ResourcesPage() {
     <div className="space-y-6">
       <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="flex-grow space-y-1">
-           <div className="flex items-center text-sm text-muted-foreground flex-wrap">
+           <div className="flex items-center text-sm text-muted-foreground flex-wrap" id="resources-breadcrumbs">
             {breadcrumbs.map((crumb, index) => (
             <React.Fragment key={crumb.id || 'root'}>
                 {index > 0 && <ChevronRight className="h-4 w-4 mx-1" />}
@@ -388,9 +392,12 @@ export default function ResourcesPage() {
             ))}
           </div>
         </div>
+         <Button variant="outline" size="sm" onClick={() => forceStartTour('resources', resourcesTour)}>
+            <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+        </Button>
     </header>
 
-      <Card className="p-4 shadow">
+      <Card className="p-4 shadow" id="resources-controls">
         <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="relative w-full flex-grow">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -419,10 +426,10 @@ export default function ResourcesPage() {
             </div>
              {(user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') && (
             <div className="flex gap-2 w-full sm:w-auto">
-                <Button variant="outline" onClick={handleOpenCreateFolderModal} className="w-full sm:w-auto">
+                <Button variant="outline" onClick={handleOpenCreateFolderModal} className="w-full sm:w-auto" id="resources-create-folder-btn">
                     <FolderPlus className="mr-2 h-4 w-4"/> Crear Carpeta
                 </Button>
-                <Button onClick={handleOpenCreateFileModal} className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
+                <Button onClick={handleOpenCreateFileModal} className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-md" id="resources-upload-btn">
                   <UploadCloud className="mr-2 h-4 w-4"/> Subir Recurso
                 </Button>
             </div>
@@ -444,7 +451,7 @@ export default function ResourcesPage() {
           ) : (
               <div className="space-y-8">
                   {folders.length > 0 && (
-                      <section>
+                      <section id="resources-folder-list">
                           <h2 className="text-xl font-semibold mb-4 text-muted-foreground">Carpetas</h2>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                               {folders.map(item => <ResourceGridItem key={item.id} resource={item} onSelect={() => setSelectedResource(item)} onEdit={handleOpenEditModal} onDelete={() => setResourceToDelete(item)} onNavigate={handleNavigateFolder} />)}
@@ -453,7 +460,7 @@ export default function ResourcesPage() {
                   )}
                   
                   {files.length > 0 && (
-                    <section>
+                    <section id="resources-file-list">
                         <h2 className="text-xl font-semibold mb-4 text-muted-foreground">Archivos</h2>
                         {viewMode === 'grid' ? (
                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
