@@ -267,41 +267,41 @@ export const enrollmentsTour: TourStep[] = [
 ];
 
 export const settingsTour: TourStep[] = [
-    {
-        target: '#settings-tabs',
-        content: {
-            title: 'Pestañas de Configuración',
-            description: 'Navega entre las diferentes secciones: Apariencia, Seguridad y configuraciones Generales de la plataforma.'
-        }
-    },
-     {
-        target: '#settings-identity',
-        content: {
-            title: 'Identidad Visual',
-            description: 'Personaliza la plataforma subiendo tu propio logo, marca de agua e imágenes para las páginas públicas.'
-        }
-    },
-    {
-        target: '#settings-security',
-        content: {
-            title: 'Políticas de Seguridad',
-            description: 'Define cómo funcionará la seguridad en tu plataforma, desde la complejidad de las contraseñas hasta el cierre de sesión por inactividad.'
-        }
-    },
-    {
-        target: '#settings-categories',
-        content: {
-            title: 'Categorías',
-            description: 'Gestiona la lista de categorías que se usarán al crear cursos y recursos en la biblioteca.'
-        }
-    },
-     {
-        target: '#settings-save-button',
-        content: {
-            title: 'Guardar Cambios',
-            description: '¡No olvides guardar! Haz clic aquí para aplicar todas las modificaciones que hayas realizado en esta página.'
-        }
+  {
+    target: '#settings-tabs-list',
+    content: {
+      title: 'Pestañas de Configuración',
+      description: 'Navega entre las diferentes secciones: Apariencia, Seguridad y configuraciones Generales de la plataforma.'
     }
+  },
+  {
+    target: '#settings-identity',
+    content: {
+      title: 'Identidad Visual',
+      description: 'Personaliza la plataforma subiendo tu propio logo, marca de agua e imágenes para las páginas públicas.'
+    }
+  },
+  {
+    target: '#settings-security',
+    content: {
+      title: 'Políticas de Seguridad',
+      description: 'Define cómo funcionará la seguridad en tu plataforma, desde la complejidad de las contraseñas hasta el cierre de sesión por inactividad.'
+    }
+  },
+  {
+    target: '#settings-categories',
+    content: {
+      title: 'Categorías',
+      description: 'Gestiona la lista de categorías que se usarán al crear cursos y recursos en la biblioteca.'
+    }
+  },
+  {
+    target: '#settings-save-button',
+    content: {
+      title: 'Guardar Cambios',
+      description: '¡No olvides guardar! Haz clic aquí para aplicar todas las modificaciones que hayas realizado en esta página.'
+    }
+  }
 ];
 
 export const myNotesTour: TourStep[] = [

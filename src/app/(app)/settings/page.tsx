@@ -370,7 +370,7 @@ export default function SettingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2">
             <Tabs defaultValue="appearance" className="w-full" id="settings-tabs">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList id="settings-tabs-list" className="grid w-full grid-cols-3">
                     <TabsTrigger value="appearance">Apariencia</TabsTrigger>
                     <TabsTrigger value="security">Seguridad</TabsTrigger>
                     <TabsTrigger value="general">Generales</TabsTrigger>
@@ -545,7 +545,7 @@ export default function SettingsPage() {
             imageSrc={imageToCrop}
             onCropComplete={handleCropComplete}
             onClose={() => { setImageToCrop(null); setCropField(null); }}
-            uploadUrl={cropUploadUrl}
+            uploadUrl="/api/upload/course-image"
         />
       <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
         <AlertDialogContent>
