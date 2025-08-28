@@ -32,24 +32,29 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
   
   const step = steps[currentStepIndex];
 
-  const updatePositionAndScroll = useCallback(() => {
+  const updatePosition = useCallback(() => {
     if (!step) return;
 
     const { element, rect } = getElementAndRect(step.target);
     
     if (element && rect) {
-      setTargetRect(rect);
-      
-      const isFullyVisible = (
-        rect.top >= 80 && // Leave space for top bar
-        rect.left >= 0 &&
-        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-      );
+        const isElementVisible = (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
 
-      if (!isFullyVisible) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-      }
+        if (!isElementVisible) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+            // Give it a moment to scroll before calculating final positions
+            setTimeout(() => {
+                const newRect = element.getBoundingClientRect();
+                setTargetRect(newRect);
+            }, 500); // Adjust delay as needed
+        } else {
+            setTargetRect(rect);
+        }
     } else {
       console.warn(`Tour target "${step.target}" not found. Skipping step.`);
       onNext();
@@ -57,17 +62,18 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
   }, [step, onNext]);
   
   useEffect(() => {
-    const timeoutId = setTimeout(updatePositionAndScroll, 100);
+    // A short delay helps ensure the layout is stable, especially on initial load or resize.
+    const timeoutId = setTimeout(updatePosition, 100);
     
-    window.addEventListener('resize', updatePositionAndScroll);
-    window.addEventListener('scroll', updatePositionAndScroll, true);
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
 
     return () => {
         clearTimeout(timeoutId);
-        window.removeEventListener('resize', updatePositionAndScroll);
-        window.removeEventListener('scroll', updatePositionAndScroll, true);
+        window.removeEventListener('resize', updatePosition);
+        window.removeEventListener('scroll', updatePosition, true);
     };
-  }, [currentStepIndex, updatePositionAndScroll, step]);
+  }, [currentStepIndex, updatePosition]);
 
   useEffect(() => {
     if (targetRect && popoverRef.current) {
@@ -77,22 +83,56 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
         
         let top, left;
 
-        // Default position: below the target
-        top = targetRect.bottom + spacing;
-        left = targetRect.left + targetRect.width / 2 - popoverWidth / 2;
+        // Default to bottom-center
+        let finalPosition: TourStep['placement'] = step.placement || 'bottom';
 
-        // If it overflows the bottom, place it on top
-        if (top + popoverHeight > window.innerHeight - spacing) {
-            top = targetRect.top - popoverHeight - spacing;
+        const placements = {
+            bottom: {
+                top: targetRect.bottom + spacing,
+                left: targetRect.left + targetRect.width / 2 - popoverWidth / 2,
+            },
+            top: {
+                top: targetRect.top - popoverHeight - spacing,
+                left: targetRect.left + targetRect.width / 2 - popoverWidth / 2,
+            },
+            left: {
+                top: targetRect.top + targetRect.height / 2 - popoverHeight / 2,
+                left: targetRect.left - popoverWidth - spacing,
+            },
+            right: {
+                top: targetRect.top + targetRect.height / 2 - popoverHeight / 2,
+                left: targetRect.right + spacing,
+            },
+        };
+        
+        // Intelligent positioning logic
+        const canPlaceBottom = targetRect.bottom + popoverHeight + spacing < window.innerHeight;
+        const canPlaceTop = targetRect.top - popoverHeight - spacing > 0;
+        const canPlaceRight = targetRect.right + popoverWidth + spacing < window.innerWidth;
+        const canPlaceLeft = targetRect.left - popoverWidth - spacing > 0;
+
+        if (!step.placement) {
+            if (canPlaceBottom) finalPosition = 'bottom';
+            else if (canPlaceTop) finalPosition = 'top';
+            else if (canPlaceRight) finalPosition = 'right';
+            else if (canPlaceLeft) finalPosition = 'left';
+            // Fallback to bottom if no ideal position is found
         }
-
+        
+        top = placements[finalPosition].top;
+        left = placements[finalPosition].left;
+        
         // Adjust horizontal position to stay within viewport
         if (left < spacing) left = spacing;
         if (left + popoverWidth > window.innerWidth - spacing) left = window.innerWidth - popoverWidth - spacing;
         
+        // Adjust vertical position
+        if (top < spacing) top = spacing;
+        if (top + popoverHeight > window.innerHeight - spacing) top = window.innerHeight - popoverHeight - spacing;
+        
         setPopoverPosition({ top, left });
     }
-  }, [targetRect]);
+  }, [targetRect, step.placement]);
 
 
   if (!step || !targetRect) {
@@ -109,17 +149,23 @@ export function TourGuide({ steps, currentStepIndex, onNext, onStop }: TourGuide
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[9998] pointer-events-auto"
-            onClick={onStop}
             style={{
-                 // This creates a large shadow that acts as an overlay, but leaves the highlight box transparent.
                  boxShadow: `0 0 0 9999px rgba(0, 0, 0, 0.7)`,
+            }}
+        />
+        
+        {/* The highlighted element hole */}
+        <motion.div
+             className="fixed pointer-events-none z-[9998]"
+             style={{
                  top: targetRect.top - 8,
                  left: targetRect.left - 8,
                  width: targetRect.width + 16,
                  height: targetRect.height + 16,
+                 boxShadow: `0 0 0 9999px rgba(0, 0, 0, 0.7)`,
                  borderRadius: '8px',
                  transition: 'all 0.3s ease-in-out',
-            }}
+             }}
         />
 
         {/* The popover, positioned relative to the viewport */}
