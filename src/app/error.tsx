@@ -20,6 +20,11 @@ export default function GlobalError({
     console.error(error);
   }, [error]);
 
+  const handleReset = () => {
+    console.log("Intentando recuperar del error. Llamando a la función reset() de Next.js...");
+    reset();
+  }
+
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-background p-4 text-center overflow-hidden">
         <DecorativeHeaderBackground />
@@ -42,7 +47,7 @@ export default function GlobalError({
                 </p>
             </CardContent>
             <CardFooter className="flex flex-col sm:flex-row gap-4">
-                 <Button onClick={() => reset()} className="w-full sm:w-auto">
+                 <Button onClick={handleReset} className="w-full sm:w-auto">
                    <RefreshCw className="mr-2 h-4 w-4" />
                    Reintentar
                  </Button>
