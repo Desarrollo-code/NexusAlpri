@@ -51,15 +51,15 @@ export default function NotFound() {
                 </div>
                  <h1 className="text-6xl font-extrabold tracking-tighter text-primary font-headline">404</h1>
                  <CardTitle className="text-3xl font-bold font-headline text-foreground">
-                    ¡Página No Encontrada!
+                    Página No Encontrada
                  </CardTitle>
                  <CardDescription className="text-base text-muted-foreground">
-                    Parece que nuestro pequeño monstruo se ha perdido en los enlaces. No te preocupes, te ayudaremos a volver.
+                    El recurso que buscas no existe o ha sido movido. Es posible que el enlace esté roto o que la dirección sea incorrecta.
                  </CardDescription>
             </CardHeader>
             <CardContent>
                 <p className="text-sm text-muted-foreground">
-                    Puedes volver al inicio o buscar lo que necesitas.
+                    Te recomendamos volver a un lugar seguro o explorar nuestros cursos para encontrar lo que necesitas.
                 </p>
             </CardContent>
             <CardFooter className="flex flex-col sm:flex-row gap-4">
