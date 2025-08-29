@@ -24,17 +24,17 @@ import {
   UserRound,
   FilePlus2 as CourseIcon,
   HelpCircle,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Area, AreaChart, Pie, PieChart, ResponsiveContainer, Cell, Label, XAxis, YAxis, Sector, CartesianGrid, BarChart, Bar, Legend } from "recharts";
-import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import type { AdminDashboardStats, Course } from '@/types';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, startOfDay, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useTitle } from '@/contexts/title-context';
 import { Identicon } from '@/components/ui/identicon';
@@ -42,6 +42,10 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTour } from '@/contexts/tour-context';
 import { analyticsTour } from '@/lib/tour-steps';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { DateRange } from 'react-day-picker';
+import { Calendar } from '@/components/ui/calendar';
+import { MetricCard } from '@/components/analytics/metric-card';
 
 
 const formatDateTick = (tick: string) => {
@@ -64,23 +68,6 @@ const formatDateTooltip = (dateString: string) => {
 
 
 // --- DASHBOARD COMPONENTS ---
-
-const MetricCard = ({ title, value, icon: Icon, description, suffix = '', gradient, id }: { title: string; value: number; icon: React.ElementType; description?: string; suffix?: string; gradient: string, id?: string }) => {
-    const animatedValue = useAnimatedCounter(value);
-    return (
-        <Card id={id} className={cn("relative overflow-hidden text-white card-border-animated", gradient)}>
-            <div className="absolute inset-0 bg-black/10"></div>
-            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white/80">{title}</CardTitle>
-                <Icon className="h-4 w-4 text-white/80" />
-            </CardHeader>
-            <CardContent className="relative">
-                <div className="text-3xl font-bold text-white">{animatedValue}{suffix}</div>
-                {description && <p className="text-xs text-white/70">{description}</p>}
-            </CardContent>
-        </Card>
-    );
-};
 
 const userRolesChartConfig = {
   count: { label: "Usuarios" },
@@ -285,6 +272,11 @@ function AdminAnalyticsPage() {
     const isMobile = useIsMobile();
     const { startTour, forceStartTour } = useTour();
 
+     const [date, setDate] = React.useState<DateRange | undefined>({
+        from: startOfDay(subDays(new Date(), 29)),
+        to: startOfDay(new Date()),
+    });
+
     useEffect(() => {
         setPageTitle('Analíticas');
         startTour('analytics', analyticsTour);
@@ -294,7 +286,11 @@ function AdminAnalyticsPage() {
         setIsLoading(true);
         setError(null);
         try {
-            const res = await fetch('/api/dashboard/admin-stats');
+            const params = new URLSearchParams();
+            if (date?.from) params.append('startDate', date.from.toISOString());
+            if (date?.to) params.append('endDate', date.to.toISOString());
+
+            const res = await fetch(`/api/dashboard/admin-stats?${params.toString()}`);
             if (!res.ok) throw new Error((await res.json()).message || "Failed to fetch stats");
             const data = await res.json();
             setStats(data);
@@ -303,7 +299,7 @@ function AdminAnalyticsPage() {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [date]);
 
     useEffect(() => {
         if (user?.role === 'ADMINISTRATOR') {
@@ -379,9 +375,48 @@ function AdminAnalyticsPage() {
                 <h2 className="text-2xl font-semibold">Resumen de la Plataforma</h2>
                 <p className="text-muted-foreground">Métricas clave sobre el rendimiento y uso de NexusAlpri.</p>
             </div>
-             <Button variant="outline" size="sm" onClick={() => forceStartTour('analytics', analyticsTour)}>
-                <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
-            </Button>
+             <div className="flex items-center gap-2">
+                 <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        id="date"
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal md:w-[300px]",
+                          !date && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {date?.from ? (
+                          date.to ? (
+                            <>
+                              {format(date.from, "LLL dd, y", { locale: es })} -{" "}
+                              {format(date.to, "LLL dd, y", { locale: es })}
+                            </>
+                          ) : (
+                            format(date.from, "LLL dd, y", { locale: es })
+                          )
+                        ) : (
+                          <span>Elige una fecha</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                      <Calendar
+                        initialFocus
+                        mode="range"
+                        defaultMonth={date?.from}
+                        selected={date}
+                        onSelect={setDate}
+                        numberOfMonths={2}
+                        locale={es}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                 <Button variant="outline" size="sm" onClick={() => forceStartTour('analytics', analyticsTour)}>
+                    <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+                </Button>
+             </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-4" id="analytics-metric-cards">
             <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
@@ -415,7 +450,7 @@ function AdminAnalyticsPage() {
 
         <Card className="card-border-animated" id="analytics-registration-trend">
             <CardHeader>
-                <CardTitle>Tendencia de Registros (Últimos 30 Días)</CardTitle>
+                <CardTitle>Tendencia de Registros (Rango Seleccionado)</CardTitle>
             </CardHeader>
             <CardContent className="h-80 p-0 pr-4">
                  <ChartContainer config={registrationTrendChartConfig} className="w-full h-full -ml-4 pl-4">
@@ -428,7 +463,7 @@ function AdminAnalyticsPage() {
                             </linearGradient>
                          </defs>
                          <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                         <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} interval={isMobile ? 6 : 0} angle={-45} textAnchor="end" tickFormatter={formatDateTick}/>
+                         <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} interval={isMobile ? 'preserveEnd' : 6} angle={-45} textAnchor="end" tickFormatter={formatDateTick}/>
                          <YAxis tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} />
                          <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" hideIndicator labelFormatter={formatDateTooltip} />} />
                          <Area type="monotone" dataKey="count" stroke="var(--color-count)" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" />
