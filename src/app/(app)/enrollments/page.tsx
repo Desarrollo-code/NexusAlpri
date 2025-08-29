@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import type { Course as AppCourse, User, CourseProgress, LessonCompletionRecord } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, Target, FileText, Search, CheckCircle, Percent, HelpCircle, UserX, BarChartHorizontal, ArrowRight } from 'lucide-react';
+import { Loader2, AlertTriangle, UsersRound, Filter, MoreVertical, BookOpen, LineChart, Target, FileText, Search, CheckCircle, Percent, HelpCircle, UserX, BarChartHorizontal, ArrowRight, Download } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -358,6 +358,33 @@ export default function EnrollmentsPage() {
     }
   }
 
+  const handleExport = () => {
+    if (!selectedCourseInfo || !selectedCourseInfo.enrollments) return;
+
+    const headers = "Nombre,Email,Progreso (%),Estado,Fecha Inscripción,Fecha Completado\n";
+    
+    const rows = selectedCourseInfo.enrollments.map(e => {
+        const name = `"${e.user.name || ''}"`;
+        const email = e.user.email;
+        const progress = e.progress?.progressPercentage?.toFixed(0) || 0;
+        const isCompleted = progress === 100;
+        const status = isCompleted ? 'Completado' : 'En Progreso';
+        const enrolledDate = new Date(e.enrolledAt).toLocaleDateString('es-CO');
+        const completedDate = e.progress?.completedAt ? new Date(e.progress.completedAt).toLocaleDateString('es-CO') : 'N/A';
+        return [name, email, progress, status, enrolledDate, completedDate].join(',');
+    }).join('\n');
+
+    const csvContent = "data:text/csv;charset=utf-8," + headers + rows;
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `progreso_${selectedCourseInfo.title.replace(/\s+/g, '_').toLowerCase()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast({title: "Exportación Iniciada", description: "La descarga de tu reporte ha comenzado."})
+  }
+
 
   const filteredEnrollments = useMemo(() => {
     if (!selectedCourseInfo) return [];
@@ -400,8 +427,11 @@ export default function EnrollmentsPage() {
                 <div className="flex-grow">
                      <CardTitle className="text-2xl font-headline flex items-center gap-2"><UsersRound /> Seguimiento de Estudiantes</CardTitle>
                 </div>
-                <div className="w-full sm:w-auto">
+                <div className="w-full sm:w-auto flex items-center gap-2">
                     <CourseSelector courses={courses} onSelect={handleCourseSelection} selectedCourseId={selectedCourseId} isLoading={isLoadingCourses} />
+                    <Button variant="outline" size="sm" onClick={handleExport} disabled={!selectedCourseInfo || selectedCourseInfo.enrollments.length === 0}>
+                        <Download className="mr-2 h-4 w-4" /> Exportar CSV
+                    </Button>
                 </div>
             </div>
         </CardHeader>
