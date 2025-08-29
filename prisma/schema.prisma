@@ -99,6 +99,9 @@ model User {
   sharedForms           Form[]              @relation("SharedForms")
   sharedResources       Resource[]          @relation("SharedResources")
 
+  // 🔹 Relación inversa para SecurityLog
+  securityLogs          SecurityLog[]
+
   @@index([email])
 }
 
@@ -296,18 +299,18 @@ model CalendarEvent {
 
 
 model SecurityLog {
-    id          String              @id @default(cuid())
-    event       SecurityLogEvent
-    userId      String?
+    id           String              @id @default(cuid())
+    event        SecurityLogEvent
+    userId       String?
     emailAttempt String?
-    ipAddress   String?
-    userAgent   String?             @db.Text
-    city        String?
-    country     String?
-    details     String?             @db.Text
-    createdAt   DateTime            @default(now())
+    ipAddress    String?
+    userAgent    String?             @db.Text
+    city         String?
+    country      String?
+    details      String?             @db.Text
+    createdAt    DateTime            @default(now())
     
-    user        User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+    user         User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
 
     @@index([userId])
     @@index([event])
