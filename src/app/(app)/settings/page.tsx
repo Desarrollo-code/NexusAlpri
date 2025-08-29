@@ -382,9 +382,19 @@ export default function SettingsPage() {
                    <Card className="card-border-animated" id="settings-identity">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary"/>Identidad Visual</CardTitle>
-                            <CardDescription>Logo, marca de agua e imágenes de las páginas públicas.</CardDescription>
+                            <CardDescription>Nombre, logo, marca de agua e imágenes de las páginas públicas.</CardDescription>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           <div className="md:col-span-2 space-y-2">
+                               <Label htmlFor="platformName">Nombre de la Plataforma</Label>
+                               <Input
+                                   id="platformName"
+                                   value={formState.platformName}
+                                   onChange={(e) => handleInputChange('platformName', e.target.value)}
+                                   disabled={isSaving}
+                                   placeholder="Nombre de tu plataforma"
+                               />
+                           </div>
                            <UploadWidget label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(e) => handleFileSelected('logoUrl', e)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving || isUploading} />
                            <UploadWidget label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(e) => handleFileSelected('watermarkUrl', e)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving || isUploading}/>
                            <UploadWidget label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(e) => handleFileSelected('landingImageUrl', e)} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving || isUploading}/>
