@@ -39,6 +39,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         fields: {
           orderBy: { order: 'asc' },
         },
+        sharedWith: {
+            select: { id: true, name: true, avatar: true }
+        }
       },
     });
 
@@ -67,19 +70,31 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   try {
     const body = await req.json();
-    const { title, description, status, isQuiz, fields } = body;
+    const { title, description, status, isQuiz, fields, sharedWithUserIds } = body;
 
-    const dataToUpdate: any = { title, description, status, isQuiz };
+    const dataToUpdate: any = {};
+    if (title !== undefined) dataToUpdate.title = title;
+    if (description !== undefined) dataToUpdate.description = description;
+    if (status !== undefined) dataToUpdate.status = status;
+    if (isQuiz !== undefined) dataToUpdate.isQuiz = isQuiz;
+    if (sharedWithUserIds !== undefined) {
+        dataToUpdate.sharedWith = {
+            set: sharedWithUserIds.map((id: string) => ({ id }))
+        }
+    }
+
 
     await prisma.$transaction(async (tx) => {
-      // Update the main form data
-      await tx.form.update({
-        where: { id: formId },
-        data: dataToUpdate,
-      });
+      // Update the main form data if there's anything to update
+      if (Object.keys(dataToUpdate).length > 0) {
+        await tx.form.update({
+            where: { id: formId },
+            data: dataToUpdate,
+        });
+      }
 
       if (fields && Array.isArray(fields)) {
-        const incomingFieldIds = new Set(fields.map((f: FormField) => f.id));
+        const incomingFieldIds = new Set(fields.map((f: FormField) => f.id).filter(id => !id.startsWith('new-')));
         
         // Delete fields that are not in the incoming list
         await tx.formField.deleteMany({
@@ -107,7 +122,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           
           await tx.formField.upsert({
             where: { id: isNew ? `__NEVER_FIND__${fieldData.id}` : fieldData.id },
-            create: { ...fieldPayload, id: isNew ? undefined : fieldData.id },
+            create: fieldPayload,
             update: fieldPayload,
           });
         }
@@ -123,6 +138,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   } catch (error) {
     console.error(`[UPDATE_FORM_ID: ${formId}] Error al actualizar el formulario:`, error);
+    if ((error as any).code === 'P2025') {
+        return NextResponse.json({ message: 'Error de concurrencia: Uno de los elementos a actualizar no fue encontrado. Inténtalo de nuevo.' }, { status: 409 });
+    }
     return NextResponse.json({ message: 'Error al actualizar el formulario' }, { status: 500 });
   }
 }

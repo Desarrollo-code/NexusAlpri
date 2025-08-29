@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const tab = searchParams.get('tab') || 'my-forms'; // my-forms, shared-with-me, all
+    const tab = searchParams.get('tab') || 'my-forms'; // my-forms, shared-with-me, all, for-student
     const page = parseInt(searchParams.get('page') || '1', 10);
     const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
     const skip = (page - 1) * pageSize;
@@ -36,6 +36,10 @@ export async function GET(req: NextRequest) {
             break;
         case 'for-student':
              whereClause.status = 'PUBLISHED';
+             whereClause.OR = [
+                { sharedWith: { none: {} } }, // Public forms (not shared with anyone specifically)
+                { sharedWith: { some: { id: session.id } } } // Or forms shared with the current user
+             ]
             // We might need to add a condition to exclude already answered forms in the future
             break;
         default:
@@ -52,6 +56,9 @@ export async function GET(req: NextRequest) {
                     },
                     creator: {
                         select: { name: true }
+                    },
+                    sharedWith: {
+                        select: { id: true, name: true, avatar: true }
                     }
                 },
                 orderBy: { createdAt: 'desc' },

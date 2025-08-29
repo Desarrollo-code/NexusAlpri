@@ -1,5 +1,5 @@
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -303,7 +303,7 @@ export interface FormField extends Omit<PrismaFormField, 'options'> {
   options: FormFieldOption[];
 }
 
-export type AppForm = Form & {
+export type AppForm = PrismaForm & {
     fields: FormField[];
     _count: {
         responses: number;
@@ -311,6 +311,7 @@ export type AppForm = Form & {
     creator?: {
         name: string | null;
     } | null;
+    sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
 };
 
 export { type FormStatus, type FormFieldType };

@@ -4,10 +4,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, FileText, Share2, Users, FilePen, Trash2, Eye, BarChart, MoreVertical, Loader2, AlertTriangle, ShieldAlert, ArrowRight } from 'lucide-react';
+import { PlusCircle, FileText, Share2, Users, FilePen, Trash2, Eye, BarChart, MoreVertical, Loader2, AlertTriangle, ShieldAlert, ArrowRight, User as UserIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import type { AppForm, FormStatus } from '@/types';
+import type { AppForm, FormStatus, User as AppUser } from '@/types';
 import {
   Dialog,
   DialogContent,
@@ -39,6 +39,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Identicon } from '@/components/ui/identicon';
 
 const PAGE_SIZE = 9;
 
@@ -152,6 +156,93 @@ const FormCreationModal = ({ open, onOpenChange, onFormCreated }: { open: boolea
     );
 };
 
+const ShareFormModal = ({ form, isOpen, onOpenChange, onShareSuccess }: { form: AppForm | null, isOpen: boolean, onOpenChange: (open: boolean) => void, onShareSuccess: () => void }) => {
+    const { user } = useAuth();
+    const { toast } = useToast();
+    const [allUsers, setAllUsers] = useState<AppUser[]>([]);
+    const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
+    const [userSearch, setUserSearch] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        if (isOpen && user) {
+            setIsLoading(true);
+            fetch('/api/users/list')
+                .then(res => res.json())
+                .then(data => setAllUsers(data.users.filter((u: AppUser) => u.id !== user.id)))
+                .catch(() => toast({ title: "Error", description: "No se pudo cargar la lista de usuarios.", variant: "destructive" }))
+                .finally(() => setIsLoading(false));
+            
+            setSharedWithUserIds(form?.sharedWith?.map(u => u.id) || []);
+        }
+    }, [isOpen, user, form, toast]);
+
+    const filteredUsers = React.useMemo(() => {
+        return allUsers.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()));
+    }, [allUsers, userSearch]);
+    
+    const handleUserShareToggle = (userId: string, checked: boolean) => {
+        setSharedWithUserIds(prev => checked ? [...prev, userId] : prev.filter(id => id !== userId));
+    }
+
+    const handleSaveChanges = async () => {
+        if (!form) return;
+        setIsSaving(true);
+        try {
+            const res = await fetch(`/api/forms/${form.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sharedWithUserIds }),
+            });
+            if (!res.ok) throw new Error((await res.json()).message || 'No se pudo compartir el formulario.');
+            toast({ title: '¡Éxito!', description: 'Se han guardado los permisos del formulario.' });
+            onShareSuccess();
+            onOpenChange(false);
+        } catch (err) {
+            toast({ title: 'Error', description: err instanceof Error ? err.message : 'Error desconocido', variant: 'destructive' });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Compartir Formulario</DialogTitle>
+                    <DialogDescription>Selecciona los usuarios que podrán ver y responder a "{form?.title}".</DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                    <Input placeholder="Buscar usuarios para compartir..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
+                    <ScrollArea className="h-48 border rounded-md">
+                        {isLoading ? <div className="p-4 text-center"><Loader2 className="animate-spin" /></div> :
+                        <div className="p-4 space-y-2">
+                            {filteredUsers.map(u => (
+                                <div key={u.id} className="flex items-center space-x-3">
+                                    <Checkbox id={`share-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={(c) => handleUserShareToggle(u.id, !!c)} />
+                                    <Label htmlFor={`share-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer">
+                                        <Avatar className="h-7 w-7"><AvatarImage src={u.avatar || undefined} /><AvatarFallback><Identicon userId={u.id}/></AvatarFallback></Avatar>
+                                        {u.name}
+                                    </Label>
+                                </div>
+                            ))}
+                        </div>
+                        }
+                    </ScrollArea>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                    <Button onClick={handleSaveChanges} disabled={isSaving}>
+                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        Guardar Cambios
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 export default function FormsPage() {
     const { user } = useAuth();
     const router = useRouter();
@@ -168,6 +259,7 @@ export default function FormsPage() {
 
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [formToDelete, setFormToDelete] = useState<AppForm | null>(null);
+    const [formToShare, setFormToShare] = useState<AppForm | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
     const currentPage = Number(searchParams.get('page')) || 1;
@@ -222,11 +314,14 @@ export default function FormsPage() {
            router.push(`/forms/${form.id}/results`);
            return;
        }
+        if (action === 'share') {
+           setFormToShare(form);
+           return;
+       }
        if (action === 'delete') {
            setFormToDelete(form);
            return;
        }
-       toast({ title: 'Próximamente', description: `La acción "${action}" para el formulario "${form.title}" estará disponible pronto.` });
     };
 
     const handleDeleteForm = async () => {
@@ -370,6 +465,8 @@ export default function FormsPage() {
             )}
 
             <FormCreationModal open={showCreateModal} onOpenChange={setShowCreateModal} onFormCreated={handleFormCreated} />
+            
+            <ShareFormModal form={formToShare} isOpen={!!formToShare} onOpenChange={() => setFormToShare(null)} onShareSuccess={fetchForms} />
 
              <AlertDialog open={!!formToDelete} onOpenChange={(open) => !open && setFormToDelete(null)}>
                 <AlertDialogContent>
