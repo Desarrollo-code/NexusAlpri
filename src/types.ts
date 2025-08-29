@@ -38,8 +38,6 @@ export interface PlatformSettings {
     backgroundColorLight?: string;
     primaryColorDark?: string;
     backgroundColorDark?: string;
-    fontHeadline?: string;
-    fontBody?: string;
     logoUrl?: string | null;
     watermarkUrl?: string | null;
     landingImageUrl?: string | null;

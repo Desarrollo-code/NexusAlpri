@@ -30,20 +30,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { fontMap } from '@/lib/fonts';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import { useTour } from '@/contexts/tour-context';
 import { settingsTour } from '@/lib/tour-steps';
-
-const availableFonts = [
-    { value: 'Inter', label: 'Inter (Sans-serif)' },
-    { value: 'Space Grotesk', label: 'Space Grotesk (Sans-serif)' },
-    { value: 'Source Code Pro', label: 'Source Code Pro (Monospace)' },
-    { value: 'Roboto', label: 'Roboto (Sans-serif)' },
-    { value: 'Lato', label: 'Lato (Sans-serif)' },
-    { value: 'Montserrat', label: 'Montserrat (Sans-serif)' },
-];
 
 const UploadWidget = ({
   label,
@@ -129,11 +119,6 @@ const UploadWidget = ({
 const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) => {
     if (!settings) return null;
 
-    const fontVars = {
-        '--font-headline': (fontMap[settings.fontHeadline || 'Space Grotesk'] as any)?.style.fontFamily,
-        '--font-body': (fontMap[settings.fontBody || 'Inter'] as any)?.style.fontFamily,
-    } as React.CSSProperties;
-
     return (
         <div className="space-y-4">
              <Card className="overflow-hidden">
@@ -141,7 +126,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                     <CardTitle>Vista Previa</CardTitle>
                     <CardDescription>Así se verán los cambios en la plataforma.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4" style={fontVars}>
+                <CardContent className="space-y-4">
                      {/* Preview for Light Theme */}
                     <div className="p-4 rounded-lg border bg-background">
                         <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>Apariencia General</h3>
@@ -379,7 +364,7 @@ export default function SettingsPage() {
                    <Card className="card-border-animated" id="settings-identity">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary"/>Identidad Visual</CardTitle>
-                            <CardDescription>Nombre, logo, marca de agua e imágenes de las páginas públicas.</CardDescription>
+                            <CardDescription>Nombre de la plataforma, logo, marca de agua e imágenes de las páginas públicas.</CardDescription>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <div className="md:col-span-2 space-y-2">
@@ -430,28 +415,6 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="card-border-animated">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Type className="h-5 w-5 text-primary"/>Tipografía</CardTitle>
-                            <CardDescription>Elige las fuentes para los títulos y el texto de la plataforma.</CardDescription>
-                        </CardHeader>
-                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="fontHeadline">Fuente de Títulos</Label>
-                                 <Select value={formState.fontHeadline || 'Space Grotesk'} onValueChange={(value) => handleInputChange('fontHeadline', value)}>
-                                    <SelectTrigger><SelectValue/></SelectTrigger>
-                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: (fontMap[f.value] as any)?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="fontBody">Fuente de Párrafos</Label>
-                                 <Select value={formState.fontBody || 'Inter'} onValueChange={(value) => handleInputChange('fontBody', value)}>
-                                    <SelectTrigger><SelectValue/></SelectTrigger>
-                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: (fontMap[f.value] as any)?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
-                                </Select>
-                            </div>
                         </CardContent>
                     </Card>
                 </TabsContent>

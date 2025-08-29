@@ -26,7 +26,7 @@ async function main() {
             passwordMinLength: 8, passwordRequireUppercase: true, passwordRequireLowercase: true, passwordRequireNumber: true, passwordRequireSpecialChar: false,
             enableIdleTimeout: true, idleTimeoutMinutes: 20, require2faForAdmins: false,
             primaryColor: '#6366f1', secondaryColor: '#a5b4fc', accentColor: '#ec4899', backgroundColorLight: '#f8fafc',
-            primaryColorDark: '#a5b4fc', backgroundColorDark: '#020617', fontHeadline: 'Space Grotesk', fontBody: 'Inter',
+            primaryColorDark: '#a5b4fc', backgroundColorDark: '#020617',
         }
     });
   }

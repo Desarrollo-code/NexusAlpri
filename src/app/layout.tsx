@@ -6,24 +6,12 @@ import React from 'react';
 import { TitleProvider } from '@/contexts/title-context';
 import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
-import prisma from '@/lib/prisma';
 
 // This function now fetches settings and determines font variables on the server.
 async function getLayoutSettings() {
-    try {
-        await prisma.$connect();
-        const settings = await prisma.platformSettings.findFirst();
-        await prisma.$disconnect();
-        return {
-            fontVariables: getFontVariables(settings?.fontHeadline, settings?.fontBody)
-        };
-    } catch (error) {
-        console.error("Layout DB Error: Could not fetch settings. Using default fonts.", error);
-        await prisma.$disconnect().catch(() => {});
-        return {
-            fontVariables: getFontVariables() // Get default fonts
-        };
-    }
+    return {
+        fontVariables: getFontVariables() // Get default fonts
+    };
 }
 
 

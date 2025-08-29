@@ -28,8 +28,6 @@ const DEFAULT_DB_SETTINGS = {
   backgroundColorLight: '#f8fafc',
   primaryColorDark: '#a5b4fc',
   backgroundColorDark: '#020617',
-  fontHeadline: 'Space Grotesk',
-  fontBody: 'Inter',
   logoUrl: null,
   watermarkUrl: null,
   landingImageUrl: null,
