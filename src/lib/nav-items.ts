@@ -17,7 +17,8 @@ import {
   GitCommitHorizontal,
   LayoutGrid,
   Notebook,
-  FileText, // Added for Forms
+  FileText,
+  AlertTriangle, // <-- Importado para el ícono de prueba
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -124,6 +125,14 @@ const NAVIGATION_ITEMS: NavItem[] = [
         label: 'Configuración',
         icon: Settings,
         path: '/settings',
+        roles: ['ADMINISTRATOR']
+      },
+      // --- ENLACE DE PRUEBA 404 ---
+      {
+        id: 'test-404',
+        label: 'Página de Prueba 404',
+        icon: AlertTriangle,
+        path: '/pagina-rota-de-prueba',
         roles: ['ADMINISTRATOR']
       }
     ]
