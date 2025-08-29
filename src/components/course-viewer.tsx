@@ -44,7 +44,7 @@ function getYouTubeVideoId(url: string | null | undefined): string | null {
 }
 
 // --- Note Taking Component ---
-const LessonNotesPanel = ({ lessonId, isOpen, onOpenChange }: { lessonId: string, isOpen: boolean, onOpenChange: (open: boolean) => void }) => {
+const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isOpen: boolean, onClose: () => void }) => {
     const { user } = useAuth();
     const [noteContent, setNoteContent] = useState('');
     const [isLoading, setIsLoading] = useState(true);
@@ -95,33 +95,32 @@ const LessonNotesPanel = ({ lessonId, isOpen, onOpenChange }: { lessonId: string
     }, [debouncedContent, saveNote, isLoading]);
 
     return (
-        <Sheet open={isOpen} onOpenChange={onOpenChange}>
-          <SheetContent className="w-[90vw] max-w-md flex flex-col p-0" side="right">
-                <SheetHeader className="p-4 border-b flex flex-row items-center justify-between h-16">
-                     <SheetTitle className="flex items-center gap-2">
-                        <Notebook className="h-5 w-5" />
-                        <span>Mis Apuntes</span>
-                    </SheetTitle>
-                    <div className="flex items-center gap-2">
-                        {isSaving && <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin"/>Guardando...</p>}
-                    </div>
-                </SheetHeader>
-                <div className="flex-1 min-h-0">
-                    {isLoading ? (
-                        <div className="flex justify-center items-center h-full">
-                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                        </div>
-                    ) : (
-                       <RichTextEditor
-                            value={noteContent}
-                            onChange={setNoteContent}
-                            placeholder="Escribe tus notas privadas para esta lección aquí. Se guardarán automáticamente..."
-                            className="w-full h-full bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                        />
-                    )}
+        <div className={cn("bg-card border-l flex-col h-full", isOpen ? "flex" : "hidden")}>
+             <div className="p-4 border-b flex flex-row items-center justify-between h-16 shrink-0">
+                <h3 className="font-semibold flex items-center gap-2">
+                    <Notebook className="h-5 w-5" />
+                    <span>Mis Apuntes</span>
+                </h3>
+                <div className="flex items-center gap-2">
+                    {isSaving && <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin"/>Guardando...</p>}
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}><XCircle className="h-4 w-4"/></Button>
                 </div>
-          </SheetContent>
-        </Sheet>
+            </div>
+             <div className="flex-1 min-h-0">
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-full">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                ) : (
+                    <RichTextEditor
+                        value={noteContent}
+                        onChange={setNoteContent}
+                        placeholder="Escribe tus notas privadas para esta lección aquí. Se guardarán automáticamente..."
+                        className="w-full h-full bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
+                )}
+            </div>
+        </div>
     );
 };
 
@@ -581,37 +580,53 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                 )}
             </header>
             <main className="flex-1 overflow-hidden flex">
-                <ScrollArea className="flex-1">
-                    <div className="p-4 md:p-6 lg:p-8">
-                    {selectedLesson ? (
-                        <div>
-                             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4 flex-wrap">
-                                <span>{course.title}</span>
-                                <ChevronRight className="h-4 w-4"/>
-                                <span className="font-semibold text-foreground">{selectedLesson.moduleTitle}</span>
-                             </div>
-                            <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-                                <BookOpenText className="h-5 w-5 text-primary" />
-                                <h2>{selectedLesson.title}</h2>
+                 <div className={cn(
+                    "flex-1 transition-[margin-right] duration-300 ease-in-out",
+                    isNotesPanelOpen && !isMobile && "mr-[448px]" // 448px = 28rem (width of notes panel)
+                 )}>
+                    <ScrollArea className="h-full">
+                        <div className="p-4 md:p-6 lg:p-8">
+                        {selectedLesson ? (
+                            <div>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4 flex-wrap">
+                                    <span>{course.title}</span>
+                                    <ChevronRight className="h-4 w-4"/>
+                                    <span className="font-semibold text-foreground">{selectedLesson.moduleTitle}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-lg font-semibold mb-4">
+                                    <BookOpenText className="h-5 w-5 text-primary" />
+                                    <h2>{selectedLesson.title}</h2>
+                                </div>
+                                {(selectedLesson.contentBlocks || []).map(block => renderContentBlock(block))}
                             </div>
-                            {(selectedLesson.contentBlocks || []).map(block => renderContentBlock(block))}
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                                <BookOpenText className="h-12 w-12 text-muted-foreground mb-4" />
+                                <h3 className="text-xl font-semibold">Selecciona una lección</h3>
+                                <p className="text-muted-foreground">Elige una lección del menú para comenzar a aprender.</p>
+                            </div>
+                        )}
                         </div>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                            <BookOpenText className="h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-xl font-semibold">Selecciona una lección</h3>
-                            <p className="text-muted-foreground">Elige una lección del menú para comenzar a aprender.</p>
-                        </div>
-                    )}
-                    </div>
-                </ScrollArea>
-                 {selectedLessonId && isEnrolled && !isCreatorViewingCourse && (
-                    <LessonNotesPanel 
-                        lessonId={selectedLessonId} 
-                        isOpen={isNotesPanelOpen} 
-                        onOpenChange={setIsNotesPanelOpen} 
-                    />
-                )}
+                    </ScrollArea>
+                </div>
+
+                <aside className={cn(
+                    "h-full flex-shrink-0 transition-all duration-300 ease-in-out",
+                    "fixed top-0 right-0 h-full z-20", // Use fixed positioning for overlay on mobile
+                    isMobile 
+                        ? (isNotesPanelOpen ? 'w-full max-w-md translate-x-0' : 'translate-x-full') // Slide in/out on mobile
+                        : 'relative w-0', // On desktop, it doesn't take space initially
+                    !isMobile && isNotesPanelOpen && "w-[448px]" // Expand on desktop
+                )}>
+                   {isMobile && isNotesPanelOpen && <div className="fixed inset-0 bg-black/50 z-10" onClick={() => setIsNotesPanelOpen(false)}></div>}
+                   {selectedLessonId && isEnrolled && !isCreatorViewingCourse && (
+                        <LessonNotesPanel 
+                            lessonId={selectedLessonId}
+                            isOpen={isNotesPanelOpen}
+                            onClose={() => setIsNotesPanelOpen(false)}
+                        />
+                   )}
+                </aside>
             </main>
         </div>
     </div>

@@ -34,11 +34,10 @@ const modules = {
   ],
 };
 
-// ✅ Aquí quitamos "bullet"
 const formats = [
   'header',
   'bold', 'italic', 'underline', 'strike',
-  'list',
+  'list', 'bullet',
   'blockquote', 'code-block',
   'link',
 ];
@@ -51,8 +50,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     <div
       className={cn(
         'bg-card text-foreground rounded-md border',
+        'quill-editor',
         className,
-        'quill-editor'
       )}
     >
       <ReactQuill
