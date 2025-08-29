@@ -17,6 +17,10 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
         const course = await prisma.course.findUnique({
             where: { id: courseId },
             include: {
+                 modules: {
+                    select: { id: true, title: true, order: true, lessons: { select: { id: true, title: true, order: true } } },
+                    orderBy: { order: 'asc' }
+                },
                 _count: {
                     select: { 
                         enrollments: true,
@@ -26,13 +30,16 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
                     include: {
                         user: { select: { id: true, name: true, email: true, avatar: true } },
                         progress: { 
-                            select: { 
-                                progressPercentage: true,
+                            include: { 
                                 completedLessons: {
-                                    where: { type: 'quiz' },
-                                    select: { score: true }
+                                   select: { lessonId: true, type: true, score: true, completedAt: true }
                                 }
                             }
+                        }
+                    },
+                     orderBy: {
+                        user: {
+                            name: 'asc'
                         }
                     }
                 }
@@ -44,9 +51,7 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
         }
         
         // Calculate total lessons for the course
-        const totalLessons = await prisma.lesson.count({
-            where: { module: { courseId: courseId } },
-        });
+        const totalLessons = course.modules.reduce((sum, mod) => sum + mod.lessons.length, 0);
 
         // Calculate average progress for the whole course
         const allProgressRecords = course.enrollments.map(e => e.progress?.progressPercentage).filter(p => p !== null && p !== undefined) as number[];
@@ -59,27 +64,36 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
         });
         const avgQuizScore = allQuizAttempts.length > 0 ? allQuizAttempts.reduce((sum, attempt) => sum + attempt.score, 0) / allQuizAttempts.length : 0;
 
-        // Enhance enrollments with individual average quiz scores
-        const enrollmentsWithAvgScore = course.enrollments.map(enrollment => {
-            const quizScores = enrollment.progress?.completedLessons
-                .map(cl => cl.score)
-                .filter(s => s !== null && s !== undefined) as number[];
+        // Enhance enrollments with individual average quiz scores and last activity date
+        const enrollmentsWithDetails = course.enrollments.map(enrollment => {
+            const progress = enrollment.progress;
+            if (!progress) {
+                return { ...enrollment, progress: null };
+            }
+
+            const quizScores = progress.completedLessons
+                .filter(cl => cl.type === 'quiz' && cl.score !== null)
+                .map(cl => cl.score) as number[];
             
             const userAvgQuizScore = quizScores.length > 0 ? quizScores.reduce((sum, score) => sum + score, 0) / quizScores.length : null;
 
+            const lastActivity = progress.completedLessons.length > 0 
+                ? new Date(Math.max(...progress.completedLessons.map(cl => new Date(cl.completedAt).getTime())))
+                : null;
+            
             return {
                 ...enrollment,
                 progress: {
-                    ...enrollment.progress,
-                    avgQuizScore: userAvgQuizScore
+                    ...progress,
+                    avgQuizScore: userAvgQuizScore,
+                    lastActivity
                 }
             }
         });
 
-
         const response = {
             ...course,
-            enrollments: enrollmentsWithAvgScore,
+            enrollments: enrollmentsWithDetails,
             _count: {
               ...course._count,
               lessons: totalLessons,

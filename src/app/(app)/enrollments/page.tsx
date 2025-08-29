@@ -430,7 +430,7 @@ export default function EnrollmentsPage() {
                 <div className="w-full sm:w-auto flex items-center gap-2">
                     <CourseSelector courses={courses} onSelect={handleCourseSelection} selectedCourseId={selectedCourseId} isLoading={isLoadingCourses} />
                     <Button variant="outline" size="sm" onClick={handleExport} disabled={!selectedCourseInfo || selectedCourseInfo.enrollments.length === 0}>
-                        <Download className="mr-2 h-4 w-4" /> Exportar CSV
+                        <Download className="mr-2 h-4 w-4" /> Exportar Reporte
                     </Button>
                 </div>
             </div>
@@ -442,7 +442,7 @@ export default function EnrollmentsPage() {
                 <div className="flex items-center justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : selectedCourseInfo && (
                 <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="enrollments-stats-cards">
                        <Card className="lg:col-span-1">
                          <CardHeader><CardTitle className="text-base">Métricas Clave</CardTitle></CardHeader>
                          <CardContent className="space-y-4">
