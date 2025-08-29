@@ -453,7 +453,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                 {filteredModules.map((moduleItem) => (
                   <AccordionItem value={moduleItem.id} key={moduleItem.id} className="border-b-0 mb-1">
                     <AccordionTrigger className="text-sm font-semibold hover:no-underline py-2 px-2 hover:bg-muted/50 rounded-md">
-                      <span className="truncate">{moduleItem.title}</span>
+                      <span className="text-left">{moduleItem.title}</span>
                     </AccordionTrigger>
                     <AccordionContent className="pt-1 pb-1 pr-0 pl-2">
                       {moduleItem.lessons.length > 0 ? (
@@ -465,15 +465,15 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                                 <button 
                                     onClick={() => handleLessonSelect(lesson)}
                                     className={cn(
-                                        "w-full text-left text-sm flex items-center gap-2 p-2 rounded-md transition-colors",
+                                        "w-full text-left text-sm flex items-start gap-2 p-2 rounded-md transition-colors",
                                         selectedLessonId === lesson.id 
                                             ? "bg-primary/10 text-primary font-medium" 
                                             : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                                     )}
                                 >
-                                    <BookOpenText className="h-4 w-4 text-primary flex-shrink-0" />
+                                    <BookOpenText className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
                                     <span className="flex-grow">{lesson.title}</span>
-                                    {isCompleted && <CheckCircle className="h-4 w-4 text-green-500 shrink-0"/>}
+                                    {isCompleted && <CheckCircle className="h-4 w-4 text-green-500 shrink-0 mt-0.5"/>}
                                 </button>
                             </li>
                           )})}
