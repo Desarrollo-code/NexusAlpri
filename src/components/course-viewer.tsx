@@ -97,12 +97,12 @@ const LessonNotesPanel = ({ lessonId, isOpen, onOpenChange }: { lessonId: string
     return (
         <Sheet open={isOpen} onOpenChange={onOpenChange}>
             <SheetContent className="w-[90vw] max-w-md p-0 flex flex-col" side="right">
-                 <div className="p-4 border-b flex items-center justify-between">
-                    <DialogTitle className="flex items-center gap-2">
+                 <SheetHeader className="p-4 border-b flex flex-row items-center justify-between space-y-0">
+                    <SheetTitle className="flex items-center gap-2">
                        <Notebook className="h-5 w-5" /> Mis Apuntes
-                    </DialogTitle>
+                    </SheetTitle>
                     {isSaving && <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin"/>Guardando...</p>}
-                </div>
+                </SheetHeader>
                  <div className="flex-1 min-h-0">
                     {isLoading ? (
                         <div className="flex justify-center items-center h-full">
@@ -529,17 +529,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
   return (
     <div className="space-y-4">
-       <div className="flex items-center justify-between gap-4 md:hidden">
-          <Button asChild variant="outline" size="sm">
-             {isCreatorViewingCourse ? 
-                <Link href={`/manage-courses/${course.id}/edit`}>
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Gestión
-                </Link> : 
-                <button onClick={() => router.back()}>
-                     <ArrowLeft className="mr-2 h-4 w-4" /> Volver
-                </button>
-              }
-          </Button>
+       <div className="flex items-center justify-end gap-4 md:hidden">
           <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="sm">
@@ -547,6 +537,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-full max-w-sm">
+                <SheetHeader className="sr-only">
+                    <SheetTitle>Navegación del Curso</SheetTitle>
+                </SheetHeader>
                 <SidebarContent />
             </SheetContent>
           </Sheet>
