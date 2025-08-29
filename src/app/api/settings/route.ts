@@ -39,9 +39,20 @@ const DEFAULT_DB_SETTINGS = {
   emailWhitelist: null, // Añadido para consistencia
 };
 
+const getFallbackSettings = (): PlatformSettings => {
+    return {
+        ...DEFAULT_DB_SETTINGS,
+        resourceCategories: DEFAULT_DB_SETTINGS.resourceCategories.split(','),
+        emailWhitelist: '',
+    };
+};
+
 // GET /api/settings - Fetches platform settings
 export async function GET(req: NextRequest) {
   try {
+    // Intenta conectar a la base de datos de forma explícita
+    await prisma.$connect();
+
     let dbSettings = await prisma.platformSettings.findFirst();
 
     if (!dbSettings) {
@@ -61,13 +72,12 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     console.error('[SETTINGS_GET_ERROR]', error);
-    // En caso de error, devuelve la configuración por defecto para que la app no falle.
-    const fallbackSettings: PlatformSettings = {
-        ...DEFAULT_DB_SETTINGS,
-        resourceCategories: DEFAULT_DB_SETTINGS.resourceCategories.split(','),
-        emailWhitelist: '',
-    };
+    // En caso de error de conexión, devuelve la configuración por defecto
+    const fallbackSettings = getFallbackSettings();
     return NextResponse.json(fallbackSettings);
+  } finally {
+      // Asegúrate de desconectar para evitar conexiones abiertas innecesarias
+      await prisma.$disconnect().catch(() => {});
   }
 }
 

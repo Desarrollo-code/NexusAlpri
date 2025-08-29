@@ -20,9 +20,18 @@ export const fontMap: { [key: string]: NextFont } = {
   'Montserrat': montserrat,
 };
 
+const getDefaultFontVariables = (): string => {
+    return `${spaceGrotesk.variable} ${inter.variable}`;
+}
+
 export async function getFontVariables(): Promise<string> {
   try {
+    // Intenta conectar explícitamente para fallar rápido si la DB no está disponible.
+    // Esto evita que la aplicación se bloquee en producción si la BD tiene un problema temporal.
+    await prisma.$connect();
     const settings = await prisma.platformSettings.findFirst();
+    await prisma.$disconnect();
+
     const headlineFontName = settings?.fontHeadline || 'Space Grotesk';
     const bodyFontName = settings?.fontBody || 'Inter';
 
@@ -33,8 +42,9 @@ export async function getFontVariables(): Promise<string> {
     return `${headlineFont.variable} ${bodyFont.variable}`;
 
   } catch (error) {
-    console.error("Error al obtener las fuentes desde la BD, usando valores por defecto.", error);
-    // En caso de error, retorna las fuentes por defecto para que la app no falle.
-    return `${spaceGrotesk.variable} ${inter.variable}`;
+    console.error("Error al conectar a la DB para obtener fuentes, usando valores por defecto.", error);
+    // En caso de error de conexión, desconecta si es posible y retorna las fuentes por defecto.
+    await prisma.$disconnect().catch(() => {});
+    return getDefaultFontVariables();
   }
 }
