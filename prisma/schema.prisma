@@ -10,7 +10,6 @@ generator client {
 }
 
 // --- ENUMS ---
-
 enum UserRole {
   ADMINISTRATOR
   INSTRUCTOR
@@ -78,16 +77,14 @@ enum FormFieldType {
 }
 
 enum EventAudienceType {
-    ALL
-    ADMINISTRATOR
-    INSTRUCTOR
-    STUDENT
-    SPECIFIC
+  ALL
+  ADMINISTRATOR
+  INSTRUCTOR
+  STUDENT
+  SPECIFIC
 }
 
-
 // --- MODELS ---
-
 model User {
   id                  String  @id @default(cuid())
   name                String
@@ -117,6 +114,8 @@ model User {
   formResponses       FormResponse[]
   quizAttempts        QuizAttempt[]
   achievements        UserAchievement[]
+  securityLogs        SecurityLog[]      // 🔥 agregado
+  lessonTemplates     LessonTemplate[]   // 🔥 agregado
 }
 
 model Course {
@@ -223,9 +222,7 @@ model AnswerOption {
   @@index([questionId])
 }
 
-
 // --- PROGRESS & ENROLLMENT MODELS ---
-
 model Enrollment {
   id         String   @id @default(cuid())
   userId     String
@@ -266,7 +263,7 @@ model LessonCompletionRecord {
   id          String   @id @default(cuid())
   progressId  String
   lessonId    String
-  type        String // 'view' or 'quiz'
+  type        String
   score       Float?
   completedAt DateTime @default(now())
   
@@ -293,16 +290,16 @@ model QuizAttempt {
 }
 
 model AnswerAttempt {
-    id              String @id @default(cuid())
-    attemptId       String
-    questionId      String
-    selectedOptionId String
+  id              String @id @default(cuid())
+  attemptId       String
+  questionId      String
+  selectedOptionId String
 
-    attempt         QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-    question        Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-    selectedOption  AnswerOption @relation(fields: [selectedOptionId], references: [id], onDelete: Cascade)
+  attempt         QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question        Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOption  AnswerOption @relation(fields: [selectedOptionId], references: [id], onDelete: Cascade)
 
-    @@index([attemptId])
+  @@index([attemptId])
 }
 
 model UserNote {
@@ -321,7 +318,6 @@ model UserNote {
 }
 
 // --- GLOBAL CONTENT MODELS ---
-
 model CalendarEvent {
   id        String   @id @default(cuid())
   title     String
@@ -332,7 +328,7 @@ model CalendarEvent {
   allDay    Boolean  @default(false)
   color     String   @default("blue")
   videoConferenceLink String?
-  attachments Json? // [{ name: string, url: string }]
+  attachments Json?
   
   audienceType EventAudienceType @default(ALL)
 
@@ -349,7 +345,7 @@ model Announcement {
   content   String    @db.Text
   date      DateTime  @default(now())
   priority  String?   @default("Normal")
-  audience  Json      // Puede ser "ALL" o un array de UserRole
+  audience  Json
   
   authorId  String
   author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -387,17 +383,15 @@ model Resource {
   uploader     User?    @relation("UploadedResources", fields: [uploaderId], references: [id], onDelete: SetNull)
   sharedWith   User[]   @relation("SharedResources")
   
-  // Self-relation for folders
   parentId    String?
-  parent      Resource?    @relation("FolderChildren", fields: [parentId], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  children    Resource[]   @relation("FolderChildren")
+  parent      Resource?  @relation("FolderChildren", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction) // 🔥 corregido
+  children    Resource[] @relation("FolderChildren")
 
   @@index([parentId])
   @@index([uploaderId])
 }
 
 // --- SECURITY & SETTINGS ---
-
 model SecurityLog {
   id           String           @id @default(cuid())
   event        SecurityLogEvent
@@ -437,7 +431,7 @@ model PlatformSettings {
   
   allowPublicRegistration   Boolean @default(true)
   enableEmailNotifications  Boolean @default(true)
-  emailWhitelist            String? @db.Text // Comma separated emails/domains
+  emailWhitelist            String? @db.Text
   
   require2faForAdmins       Boolean @default(false)
   enableIdleTimeout         Boolean @default(true)
@@ -453,7 +447,6 @@ model PlatformSettings {
 }
 
 // --- GAMIFICATION ---
-
 model Achievement {
   id          String   @id @default(cuid())
   slug        AchievementSlug @unique
@@ -483,8 +476,8 @@ model LessonTemplate {
   id           String @id @default(cuid())
   name         String
   description  String?
-  type         String // SYSTEM or USER
-  creatorId    String? // Null for system templates
+  type         String
+  creatorId    String?
   
   creator      User? @relation(fields: [creatorId], references: [id], onDelete: SetNull)
   templateBlocks TemplateBlock[]
@@ -528,7 +521,7 @@ model FormField {
   type          FormFieldType
   required      Boolean     @default(false)
   placeholder   String?
-  options       Json?       // [{id: string, text: string, isCorrect?: boolean, points?: number}]
+  options       Json?
   order         Int
   
   form          Form        @relation(fields: [formId], references: [id], onDelete: Cascade)
@@ -542,7 +535,7 @@ model FormResponse {
   formId        String
   userId        String
   submittedAt   DateTime  @default(now())
-  score         Float? // For quizzes
+  score         Float?
 
   form          Form      @relation(fields: [formId], references: [id], onDelete: Cascade)
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
