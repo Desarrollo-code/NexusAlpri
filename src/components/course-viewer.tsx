@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -95,35 +95,33 @@ const LessonNotesPanel = ({ lessonId, isOpen, onOpenChange }: { lessonId: string
     }, [debouncedContent, saveNote, isLoading]);
 
     return (
-        <aside className={cn(
-            "flex-shrink-0 bg-card border-l transition-all duration-300 ease-in-out flex flex-col",
-            isOpen ? "w-full md:w-1/3 lg:w-1/4" : "w-0"
-        )}>
-            <div className="p-4 border-b flex items-center justify-between h-16">
-                 <div className="flex items-center gap-2">
-                    <Notebook className="h-5 w-5" />
-                    <h3 className="font-semibold">Mis Apuntes</h3>
-                </div>
-                <div className="flex items-center gap-2">
-                    {isSaving && <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin"/>Guardando...</p>}
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onOpenChange(false)}><X className="h-4 w-4" /></Button>
-                </div>
-            </div>
-            <div className="flex-1 min-h-0">
-                {isLoading ? (
-                    <div className="flex justify-center items-center h-full">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <Sheet open={isOpen} onOpenChange={onOpenChange}>
+          <SheetContent className="w-[90vw] max-w-md flex flex-col p-0" side="right">
+                <SheetHeader className="p-4 border-b flex flex-row items-center justify-between h-16">
+                     <SheetTitle className="flex items-center gap-2">
+                        <Notebook className="h-5 w-5" />
+                        <span>Mis Apuntes</span>
+                    </SheetTitle>
+                    <div className="flex items-center gap-2">
+                        {isSaving && <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin"/>Guardando...</p>}
                     </div>
-                ) : (
-                   <RichTextEditor
-                        value={noteContent}
-                        onChange={setNoteContent}
-                        placeholder="Escribe tus notas privadas para esta lección aquí. Se guardarán automáticamente..."
-                        className="w-full h-full bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                    />
-                )}
-            </div>
-        </aside>
+                </SheetHeader>
+                <div className="flex-1 min-h-0">
+                    {isLoading ? (
+                        <div className="flex justify-center items-center h-full">
+                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        </div>
+                    ) : (
+                       <RichTextEditor
+                            value={noteContent}
+                            onChange={setNoteContent}
+                            placeholder="Escribe tus notas privadas para esta lección aquí. Se guardarán automáticamente..."
+                            className="w-full h-full bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                        />
+                    )}
+                </div>
+          </SheetContent>
+        </Sheet>
     );
 };
 
@@ -322,7 +320,17 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
   const selectedLesson = useMemo(() => {
     if (!selectedLessonId || !course) return null;
-    return course.modules.flatMap(m => m.lessons).find(l => l.id === selectedLessonId);
+    let foundModule: AppModule | undefined;
+    const lesson = course.modules.flatMap(m => {
+        const found = m.lessons.find(l => l.id === selectedLessonId);
+        if (found) foundModule = m;
+        return found ? [found] : [];
+    })[0];
+    
+    if (lesson && foundModule) {
+        return { ...lesson, moduleTitle: foundModule.title };
+    }
+    return null;
   }, [selectedLessonId, course]);
 
   useEffect(() => {
@@ -547,7 +555,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         {/* --- Sidebar (mobile) --- */}
         <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
           <SheetContent side="left" className="p-0 w-full max-w-sm">
-              <SidebarContent />
+            <SheetHeader className="p-4 border-b">
+                <SheetTitle>Contenido del Curso</SheetTitle>
+            </SheetHeader>
+            <SidebarContent />
           </SheetContent>
         </Sheet>
         
@@ -574,6 +585,11 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                     <div className="p-4 md:p-6 lg:p-8">
                     {selectedLesson ? (
                         <div>
+                             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4 flex-wrap">
+                                <span>{course.title}</span>
+                                <ChevronRight className="h-4 w-4"/>
+                                <span className="font-semibold text-foreground">{selectedLesson.moduleTitle}</span>
+                             </div>
                             <div className="flex items-center gap-2 text-lg font-semibold mb-4">
                                 <BookOpenText className="h-5 w-5 text-primary" />
                                 <h2>{selectedLesson.title}</h2>
