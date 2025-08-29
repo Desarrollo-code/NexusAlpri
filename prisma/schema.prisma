@@ -302,8 +302,8 @@ model Resource {
     parentId    String?
     
     // Relations for folders
-    parent      Resource?   @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
-    children    Resource[]  @relation("FolderChildren")
+    parent Resource? @relation("FolderChildren", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction) // <-- ¡CAMBIO AQUÍ!
+    children Resource[] @relation("FolderChildren")
     uploader    User?       @relation(fields: [uploaderId], references: [id], onDelete: SetNull)
     sharedWith  User[]      @relation("SharedResources")
     ispublic    Boolean     @default(true)
