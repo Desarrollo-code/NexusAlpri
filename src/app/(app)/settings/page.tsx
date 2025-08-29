@@ -435,28 +435,6 @@ export default function SettingsPage() {
                            </div>
                         </CardContent>
                     </Card>
-                    <Card className="card-border-animated">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Type className="h-5 w-5 text-primary"/>Tipografía</CardTitle>
-                            <CardDescription>Elige las fuentes para los títulos y el texto de la plataforma.</CardDescription>
-                        </CardHeader>
-                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="fontHeadline">Fuente de Títulos</Label>
-                                 <Select value={formState.fontHeadline || 'Space Grotesk'} onValueChange={(value) => handleInputChange('fontHeadline', value)}>
-                                    <SelectTrigger><SelectValue/></SelectTrigger>
-                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: (fontMap[f.value] as any)?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="fontBody">Fuente de Párrafos</Label>
-                                 <Select value={formState.fontBody || 'Inter'} onValueChange={(value) => handleInputChange('fontBody', value)}>
-                                    <SelectTrigger><SelectValue/></SelectTrigger>
-                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: (fontMap[f.value] as any)?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
-                                </Select>
-                            </div>
-                        </CardContent>
-                    </Card>
                 </TabsContent>
                 <TabsContent value="security" className="space-y-8 mt-6">
                     <Card className="card-border-animated" id="settings-security">

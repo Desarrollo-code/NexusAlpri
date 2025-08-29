@@ -135,6 +135,3 @@ export async function checkAndAwardCourseCompletionAchievements(userId: string) 
         await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIVE_COURSES_COMPLETED });
     }
 }
-
-
-export { XP_CONFIG, ACHIEVEMENT_SLUGS };
