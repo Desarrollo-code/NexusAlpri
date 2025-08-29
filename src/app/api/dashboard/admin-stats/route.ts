@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
                 SELECT u.id, u.name, u.avatar, COUNT(cp.id) as value
                 FROM CourseProgress cp
                 JOIN User u ON cp.userId = u.id
-                WHERE cp.progressPercentage = 100 AND cp.updatedAt >= ${startDate} AND cp.updatedAt <= ${endDate}
+                WHERE cp.progressPercentage = 100 AND cp.completedAt >= ${startDate} AND cp.completedAt <= ${endDate}
                 GROUP BY u.id
                 ORDER BY value DESC
                 LIMIT 5;
