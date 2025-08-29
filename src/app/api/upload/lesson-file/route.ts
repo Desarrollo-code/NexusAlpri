@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   const file: File | null = data.get('file') as unknown as File;
 
   if (!file) {
-    return NextResponse.json({ success: false, message: 'No file uploaded.' }, { status: 400 });
+    return NextResponse.json({ success: false, message: 'No se ha subido ningún archivo.' }, { status: 400 });
   }
 
   const bytes = await file.arrayBuffer();
@@ -21,8 +21,8 @@ export async function POST(request: NextRequest) {
     await mkdir(uploadDir, { recursive: true });
   } catch (error: any) {
     if (error.code !== 'EEXIST') {
-      console.error('Error creating directory:', error);
-      return NextResponse.json({ success: false, message: 'Internal server error creating directory.' }, { status: 500 });
+      console.error('Error al crear directorio:', error);
+      return NextResponse.json({ success: false, message: 'Error interno del servidor al crear el directorio.' }, { status: 500 });
     }
   }
 
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const fileUrl = `${relativeUploadDir}/${filename}`;
     return NextResponse.json({ success: true, url: fileUrl });
   } catch (e) {
-    console.error('Error writing file:', e);
-    return NextResponse.json({ success: false, message: 'Error saving file.' }, { status: 500 });
+    console.error('Error escribiendo el archivo:', e);
+    return NextResponse.json({ success: false, message: 'Error al guardar el archivo.' }, { status: 500 });
   }
 }
