@@ -1,14 +1,14 @@
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, KeyRound, UserCog, Monitor, Globe, HelpCircle } from 'lucide-react';
-import type { SecurityLog as AppSecurityLog, User as AppUser } from '@/types';
+import type { SecurityLog as AppSecurityLog, User as AppUser, SecurityLogEvent } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -24,7 +24,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useTour, TourProvider } from '@/contexts/tour-context'; // Import TourProvider
 import { securityAuditTour } from '@/lib/tour-steps';
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface SecurityLogWithUser extends AppSecurityLog {
   user: Pick<AppUser, 'id' | 'name' | 'avatar'> | null;
@@ -38,6 +38,17 @@ interface SecurityStats {
 }
 
 const PAGE_SIZE = 20;
+
+const ALL_EVENTS: { value: SecurityLogEvent | 'ALL', label: string }[] = [
+    { value: 'ALL', label: 'Todos los Eventos' },
+    { value: 'SUCCESSFUL_LOGIN', label: 'Inicios de Sesión Exitosos' },
+    { value: 'FAILED_LOGIN_ATTEMPT', label: 'Inicios de Sesión Fallidos' },
+    { value: 'PASSWORD_CHANGE_SUCCESS', label: 'Cambios de Contraseña' },
+    { value: 'TWO_FACTOR_ENABLED', label: 'Activaciones de 2FA' },
+    { value: 'TWO_FACTOR_DISABLED', label: 'Desactivaciones de 2FA' },
+    { value: 'USER_ROLE_CHANGED', label: 'Cambios de Rol' },
+];
+
 
 const MetricCard = ({ title, value, icon: Icon, description, gradient }: { title: string; value: number; icon: React.ElementType; description?: string, gradient: string }) => {
     const animatedValue = useAnimatedCounter(value);
@@ -71,8 +82,9 @@ function SecurityAuditContent() {
     const [stats, setStats] = useState<SecurityStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
+    
     const currentPage = Number(searchParams.get('page')) || 1;
+    const activeFilter = searchParams.get('event') || 'ALL';
     const totalPages = Math.ceil(totalLogs / PAGE_SIZE);
 
     useEffect(() => {
@@ -88,6 +100,9 @@ function SecurityAuditContent() {
                 page: String(currentPage),
                 pageSize: String(PAGE_SIZE),
             });
+            if (activeFilter !== 'ALL') {
+                logsParams.append('event', activeFilter);
+            }
 
             const [logsResponse, statsResponse] = await Promise.all([
                 fetch(`/api/security/logs?${logsParams.toString()}`),
@@ -116,7 +131,7 @@ function SecurityAuditContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [toast, currentPage]);
+    }, [toast, currentPage, activeFilter]);
 
     useEffect(() => {
         if (currentUser?.role !== 'ADMINISTRATOR') {
@@ -124,7 +139,28 @@ function SecurityAuditContent() {
             return;
         }
         fetchData();
-    }, [currentUser, router, fetchData, currentPage]);
+    }, [currentUser, router, fetchData]);
+    
+    
+    const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
+        const params = new URLSearchParams(searchParams.toString());
+        Object.entries(paramsToUpdate).forEach(([name, value]) => {
+            if (value === null || value === '' || (name === 'event' && value === 'ALL')) {
+                params.delete(name);
+            } else {
+                params.set(name, String(value));
+            }
+        });
+        return params.toString();
+      }, [searchParams]);
+
+    const handleFilterChange = (newEvent: string) => {
+        router.push(`${pathname}?${createQueryString({ event: newEvent, page: 1 })}`);
+    }
+
+    const handlePageChange = (page: number) => {
+        router.push(`${pathname}?${createQueryString({ page })}`);
+    };
 
 
     if (currentUser?.role !== 'ADMINISTRATOR') {
@@ -135,13 +171,6 @@ function SecurityAuditContent() {
         );
     }
     
-    const handlePageChange = (page: number) => {
-        if (page > 0 && page <= totalPages) {
-            router.push(`${pathname}?page=${page}`);
-        }
-    };
-
-
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -172,8 +201,22 @@ function SecurityAuditContent() {
 
             <Card id="security-log-table">
                 <CardHeader>
-                    <CardTitle>Registro de Eventos</CardTitle>
-                    <CardDescription>Mostrando los últimos registros de seguridad de la plataforma.</CardDescription>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                             <CardTitle>Registro de Eventos</CardTitle>
+                             <CardDescription>Mostrando los últimos registros de seguridad de la plataforma.</CardDescription>
+                        </div>
+                        <Select value={activeFilter} onValueChange={handleFilterChange}>
+                            <SelectTrigger className="w-full sm:w-[250px]">
+                                <SelectValue placeholder="Filtrar por evento..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {ALL_EVENTS.map(event => (
+                                    <SelectItem key={event.value} value={event.value}>{event.label}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     {isLoading && logs.length === 0 ? (
@@ -190,7 +233,7 @@ function SecurityAuditContent() {
                             </Button>
                         </div>
                     ) : logs.length === 0 ? (
-                       <p className="text-center text-muted-foreground py-8">No hay registros de seguridad.</p>
+                       <p className="text-center text-muted-foreground py-8">No hay registros para el filtro seleccionado.</p>
                     ) : isMobile ? (
                         <div className="space-y-4">
                             {logs.map((log) => {
