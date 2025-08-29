@@ -18,7 +18,8 @@ import {
   LayoutGrid,
   Notebook,
   FileText,
-  AlertTriangle, // <-- Importado para el ícono de prueba
+  AlertTriangle, 
+  ServerCrash, // Ícono para el error 500
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -76,14 +77,14 @@ const NAVIGATION_ITEMS: NavItem[] = [
     label: 'Formularios',
     icon: FileText,
     path: '/forms',
-    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'], // Now available to students
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
   },
   {
     id: 'admin',
     label: 'Administración',
     icon: Shield,
     roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
-    color: 'hsl(var(--destructive))', // Color rojo para el icono
+    color: 'hsl(var(--destructive))',
     children: [
       {
         id: 'manage-courses',
@@ -127,12 +128,19 @@ const NAVIGATION_ITEMS: NavItem[] = [
         path: '/settings',
         roles: ['ADMINISTRATOR']
       },
-      // --- ENLACE DE PRUEBA 404 ---
+      // --- ENLACES DE PRUEBA ---
       {
         id: 'test-404',
-        label: 'Página de Prueba 404',
+        label: 'Prueba Error 404',
         icon: AlertTriangle,
         path: '/pagina-rota-de-prueba',
+        roles: ['ADMINISTRATOR']
+      },
+      {
+        id: 'test-500',
+        label: 'Prueba Error 500',
+        icon: ServerCrash,
+        path: '/error-test',
         roles: ['ADMINISTRATOR']
       }
     ]
