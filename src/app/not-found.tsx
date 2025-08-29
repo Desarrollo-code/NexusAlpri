@@ -62,7 +62,7 @@ export default function NotFound() {
                     Te recomendamos volver a un lugar seguro o explorar nuestros cursos para encontrar lo que necesitas.
                 </p>
             </CardContent>
-            <CardFooter className="flex flex-col sm:flex-row gap-4">
+            <CardFooter className="flex flex-col sm:flex-row justify-center gap-4">
                  <Button asChild className="w-full sm:w-auto">
                     <a href="/dashboard">
                       <ArrowLeft className="mr-2 h-4 w-4" />
