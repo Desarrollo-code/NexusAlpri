@@ -64,10 +64,10 @@ export default function NotFound() {
             </CardContent>
             <CardFooter className="flex flex-col sm:flex-row gap-4">
                  <Button asChild className="w-full sm:w-auto">
-                    <Link href="/dashboard">
+                    <a href="/dashboard">
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       Volver al Panel Principal
-                    </Link>
+                    </a>
                   </Button>
                   <Button asChild variant="secondary" className="w-full sm:w-auto">
                     <Link href="/courses">
