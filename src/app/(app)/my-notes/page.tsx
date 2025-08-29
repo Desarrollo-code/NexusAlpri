@@ -130,7 +130,6 @@ export default function MyNotesPage() {
     <div className="space-y-8">
        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="space-y-1">
-                <h2 className="text-2xl font-semibold">Mis Apuntes</h2>
                 <p id="my-notes-header" className="text-muted-foreground">Aquí encontrarás todos los apuntes que has tomado, organizados en un tablero virtual por curso y módulo.</p>
             </div>
             <Button variant="outline" size="sm" onClick={() => forceStartTour('myNotes', myNotesTour)}>

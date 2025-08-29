@@ -95,30 +95,35 @@ const LessonNotesPanel = ({ lessonId, isOpen, onOpenChange }: { lessonId: string
     }, [debouncedContent, saveNote, isLoading]);
 
     return (
-        <Sheet open={isOpen} onOpenChange={onOpenChange}>
-            <SheetContent className="w-[90vw] max-w-md p-0 flex flex-col" side="right">
-                 <SheetHeader className="p-4 border-b flex flex-row items-center justify-between space-y-0">
-                    <SheetTitle className="flex items-center gap-2">
-                       <Notebook className="h-5 w-5" /> Mis Apuntes
-                    </SheetTitle>
-                    {isSaving && <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin"/>Guardando...</p>}
-                </SheetHeader>
-                 <div className="flex-1 min-h-0">
-                    {isLoading ? (
-                        <div className="flex justify-center items-center h-full">
-                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                        </div>
-                    ) : (
-                       <RichTextEditor
-                            value={noteContent}
-                            onChange={setNoteContent}
-                            placeholder="Escribe tus notas privadas para esta lección aquí. Se guardarán automáticamente..."
-                            className="w-full h-full bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                        />
-                    )}
+        <aside className={cn(
+            "flex-shrink-0 bg-card border-l transition-all duration-300 ease-in-out flex flex-col",
+            isOpen ? "w-full md:w-1/3 lg:w-1/4" : "w-0"
+        )}>
+            <div className="p-4 border-b flex items-center justify-between h-16">
+                 <div className="flex items-center gap-2">
+                    <Notebook className="h-5 w-5" />
+                    <h3 className="font-semibold">Mis Apuntes</h3>
                 </div>
-            </SheetContent>
-        </Sheet>
+                <div className="flex items-center gap-2">
+                    {isSaving && <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin"/>Guardando...</p>}
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onOpenChange(false)}><X className="h-4 w-4" /></Button>
+                </div>
+            </div>
+            <div className="flex-1 min-h-0">
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-full">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                ) : (
+                   <RichTextEditor
+                        value={noteContent}
+                        onChange={setNoteContent}
+                        placeholder="Escribe tus notas privadas para esta lección aquí. Se guardarán automáticamente..."
+                        className="w-full h-full bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
+                )}
+            </div>
+        </aside>
     );
 };
 
@@ -528,74 +533,71 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }
 
   return (
-    <div className="space-y-4">
-       <div className="flex items-center justify-end gap-4 md:hidden">
-          <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="sm">
-                <PanelLeft className="mr-2 h-4 w-4" /> Menú del Curso
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-full max-w-sm">
-                <SheetHeader className="sr-only">
-                    <SheetTitle>Navegación del Curso</SheetTitle>
-                </SheetHeader>
-                <SidebarContent />
-            </SheetContent>
-          </Sheet>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        
+    <div className="flex h-full">
+        {/* --- Sidebar (desktop) --- */}
         {!isMobile && (
             <aside className={cn(
-                "bg-card border rounded-lg flex-col transition-all duration-300",
-                "lg:col-span-1",
-                isSidebarVisible ? "flex" : "hidden"
+                "bg-card border-r flex-shrink-0 flex flex-col transition-all duration-300 ease-in-out",
+                isSidebarVisible ? "w-80" : "w-0"
             )}>
                 <SidebarContent />
             </aside>
         )}
-
-        <main className={cn(
-            "bg-card rounded-lg border flex flex-col transition-all duration-300",
-            !isMobile && (isSidebarVisible ? "lg:col-span-4" : "col-span-full"),
-            isMobile && "col-span-full"
-        )}>
-            <ScrollArea className="flex-1">
-                <div className="p-4 md:p-6 lg:p-8">
-                {selectedLesson ? (
-                    <div>
-                        <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-                            <BookOpenText className="h-5 w-5 text-primary" />
-                            <h2>{selectedLesson.title}</h2>
-                        </div>
-                        {(selectedLesson.contentBlocks || []).map(block => renderContentBlock(block))}
-                    </div>
-                ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                        <BookOpenText className="h-12 w-12 text-muted-foreground mb-4" />
-                        <h3 className="text-xl font-semibold">Selecciona una lección</h3>
-                        <p className="text-muted-foreground">Elige una lección del menú para comenzar a aprender.</p>
-                    </div>
-                )}
+        
+        {/* --- Sidebar (mobile) --- */}
+        <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+          <SheetContent side="left" className="p-0 w-full max-w-sm">
+              <SidebarContent />
+          </SheetContent>
+        </Sheet>
+        
+        {/* --- Main Content --- */}
+        <div className="flex-1 flex flex-col min-w-0">
+             <header className="flex-shrink-0 h-16 bg-card border-b flex items-center px-4 justify-between">
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => (isMobile ? setIsMobileSheetOpen(true) : setIsSidebarVisible(!isSidebarVisible))}>
+                        <PanelLeft className="h-5 w-5" />
+                    </Button>
+                     <Button variant="ghost" size="sm" onClick={() => router.back()}>
+                        <ArrowLeft className="h-4 w-4 mr-2"/> Volver
+                    </Button>
                 </div>
-            </ScrollArea>
-        </main>
-      </div>
-      
-       {selectedLessonId && isEnrolled && !isCreatorViewingCourse && (
-            <>
-                <Button 
-                    className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full shadow-lg" 
-                    onClick={() => setIsNotesPanelOpen(true)}
-                >
-                    <Notebook className="h-6 w-6" />
-                </Button>
-                <LessonNotesPanel lessonId={selectedLessonId} isOpen={isNotesPanelOpen} onOpenChange={setIsNotesPanelOpen} />
-            </>
-        )}
-
+                {isEnrolled && !isCreatorViewingCourse && (
+                   <Button variant="outline" size="sm" onClick={() => setIsNotesPanelOpen(!isNotesPanelOpen)}>
+                        <Notebook className="h-4 w-4 mr-2"/>
+                        Mis Apuntes
+                    </Button>
+                )}
+            </header>
+            <main className="flex-1 overflow-hidden flex">
+                <ScrollArea className="flex-1">
+                    <div className="p-4 md:p-6 lg:p-8">
+                    {selectedLesson ? (
+                        <div>
+                            <div className="flex items-center gap-2 text-lg font-semibold mb-4">
+                                <BookOpenText className="h-5 w-5 text-primary" />
+                                <h2>{selectedLesson.title}</h2>
+                            </div>
+                            {(selectedLesson.contentBlocks || []).map(block => renderContentBlock(block))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                            <BookOpenText className="h-12 w-12 text-muted-foreground mb-4" />
+                            <h3 className="text-xl font-semibold">Selecciona una lección</h3>
+                            <p className="text-muted-foreground">Elige una lección del menú para comenzar a aprender.</p>
+                        </div>
+                    )}
+                    </div>
+                </ScrollArea>
+                 {selectedLessonId && isEnrolled && !isCreatorViewingCourse && (
+                    <LessonNotesPanel 
+                        lessonId={selectedLessonId} 
+                        isOpen={isNotesPanelOpen} 
+                        onOpenChange={setIsNotesPanelOpen} 
+                    />
+                )}
+            </main>
+        </div>
     </div>
   );
 }
