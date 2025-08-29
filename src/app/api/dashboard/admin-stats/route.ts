@@ -53,7 +53,14 @@ export async function GET(req: NextRequest) {
     };
 
     try {
-        // --- Ejecutar todas las consultas en paralelo ---
+        // --- Primero, obtenemos los IDs de los cursos publicados ---
+        const publishedCourses = await prisma.course.findMany({
+            where: { status: 'PUBLISHED' },
+            select: { id: true }
+        });
+        const publishedCourseIds = publishedCourses.map(c => c.id);
+
+        // --- Luego, ejecutamos el resto de las consultas en paralelo ---
         const [
             totalUsersResult,
             totalCoursesResult,
@@ -86,7 +93,7 @@ export async function GET(req: NextRequest) {
             }),
             prisma.user.count({ where: { registeredDate: dateFilter } }),
             prisma.courseProgress.findMany({ 
-                where: { course: { status: 'PUBLISHED' } },
+                where: { courseId: { in: publishedCourseIds } }, // Usamos los IDs filtrados
                 select: { courseId: true, progressPercentage: true, userId: true } 
             }),
             prisma.course.findMany({ where: { status: 'PUBLISHED' }, select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } }, orderBy: { enrollments: { _count: 'desc' } }, take: 5 }),
@@ -166,15 +173,15 @@ export async function GET(req: NextRequest) {
             avgCompletionByCourse.set(key, value.sum / value.total);
         });
 
-        const allPublishedCourses = await prisma.course.findMany({ where: { status: 'PUBLISHED' }, select: { id: true, title: true, imageUrl: true }});
+        const allPublishedCoursesInfo = await prisma.course.findMany({ where: { status: 'PUBLISHED' }, select: { id: true, title: true, imageUrl: true }});
 
         const topCoursesByCompletion = [...avgCompletionByCourse.entries()]
             .sort(([, a], [, b]) => b - a).slice(0, 5)
-            .map(([id, value]) => ({ id, value: Math.round(value), ...allPublishedCourses.find(c => c.id === id) }));
+            .map(([id, value]) => ({ id, value: Math.round(value), ...allPublishedCoursesInfo.find(c => c.id === id) }));
 
         const lowestCoursesByCompletion = [...avgCompletionByCourse.entries()]
             .sort(([, a], [, b]) => a - b).slice(0, 5)
-            .map(([id, value]) => ({ id, value: Math.round(value), ...allPublishedCourses.find(c => c.id === id) }));
+            .map(([id, value]) => ({ id, value: Math.round(value), ...allPublishedCoursesInfo.find(c => c.id === id) }));
         
         const topCoursesByEnrollment = coursesWithEnrollmentCounts.map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: c._count.enrollments }));
 
