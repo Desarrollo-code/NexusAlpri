@@ -35,7 +35,6 @@ import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import { useTour } from '@/contexts/tour-context';
 import { settingsTour } from '@/lib/tour-steps';
-import { ImageCropper } from '@/components/image-cropper';
 
 const availableFonts = [
     { value: 'Inter', label: 'Inter (Sans-serif)' },
@@ -216,9 +215,7 @@ export default function SettingsPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
-  const [cropUploadUrl, setCropUploadUrl] = useState('');
-  const [cropField, setCropField] = useState<'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | null>(null);
+  type ImageField = 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl';
 
   useEffect(() => {
     setPageTitle('Configuración');
@@ -248,29 +245,29 @@ export default function SettingsPage() {
     setFormState(prev => prev ? { ...prev, [field]: checked } : null);
   };
   
- const handleFileSelected = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl', e: ChangeEvent<HTMLInputElement>) => {
+ const handleFileSelected = async (field: ImageField, e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = () => {
-          setImageToCrop(reader.result as string);
-          setCropUploadUrl('/api/upload/course-image'); 
-          setCropField(field);
-        };
-        reader.readAsDataURL(file);
+      const file = e.target.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      try {
+        const result = await uploadWithProgress('/api/upload/settings-image', formData, setUploadProgress);
+        handleInputChange(field, result.url);
+        toast({ title: "Imagen Subida", description: "La imagen se ha subido correctamente. No olvides guardar los cambios." });
+      } catch (error) {
+        toast({ title: 'Error de Subida', description: (error as Error).message, variant: 'destructive' });
+      } finally {
+        setIsUploading(false);
+        if (e.target) e.target.value = ''; // Reset file input
+      }
     }
-    if (e.target) e.target.value = '';
   };
 
-  const handleCropComplete = (croppedFileUrl: string) => {
-    if (cropField) {
-        setFormState(prev => prev ? { ...prev, [cropField]: croppedFileUrl } : null);
-    }
-    setImageToCrop(null);
-    setCropField(null);
-  };
-
-  const handleRemoveImage = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl') => {
+  const handleRemoveImage = (field: ImageField) => {
       setFormState(prev => prev ? { ...prev, [field]: null } : null);
   }
 
@@ -435,9 +432,31 @@ export default function SettingsPage() {
                            </div>
                         </CardContent>
                     </Card>
+                    <Card className="card-border-animated">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Type className="h-5 w-5 text-primary"/>Tipografía</CardTitle>
+                            <CardDescription>Elige las fuentes para los títulos y el texto de la plataforma.</CardDescription>
+                        </CardHeader>
+                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="fontHeadline">Fuente de Títulos</Label>
+                                 <Select value={formState.fontHeadline || 'Space Grotesk'} onValueChange={(value) => handleInputChange('fontHeadline', value)}>
+                                    <SelectTrigger><SelectValue/></SelectTrigger>
+                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: (fontMap[f.value] as any)?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="fontBody">Fuente de Párrafos</Label>
+                                 <Select value={formState.fontBody || 'Inter'} onValueChange={(value) => handleInputChange('fontBody', value)}>
+                                    <SelectTrigger><SelectValue/></SelectTrigger>
+                                    <SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{ fontFamily: (fontMap[f.value] as any)?.style.fontFamily }}>{f.label}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
                 <TabsContent value="security" className="space-y-8 mt-6">
-                    <Card className="card-border-animated" id="settings-security">
+                    <Card className="card-border-animated">
                         <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5 text-primary"/>Seguridad y Acceso</CardTitle>
                         <CardDescription>Gestiona las políticas de seguridad y registro.</CardDescription>
@@ -487,7 +506,7 @@ export default function SettingsPage() {
                     </Card>
                 </TabsContent>
                  <TabsContent value="general" className="space-y-8 mt-6">
-                    <Card className="card-border-animated" id="settings-categories">
+                    <Card className="card-border-animated">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary" />Categorías de Recursos</CardTitle>
                             <CardDescription>Gestiona las categorías usadas en cursos y la biblioteca.</CardDescription>
@@ -520,7 +539,7 @@ export default function SettingsPage() {
         </div>
         <div className="lg:col-span-1 lg:sticky lg:top-24 space-y-6">
             <ThemePreview settings={formState} />
-            <Card className="card-border-animated" id="settings-save-button">
+            <Card className="card-border-animated">
                 <CardHeader><CardTitle>Guardar Cambios</CardTitle></CardHeader>
                 <CardContent>
                     <p className="text-sm text-muted-foreground mb-4">Asegúrate de que todas las configuraciones son correctas antes de guardar.</p>
@@ -532,12 +551,7 @@ export default function SettingsPage() {
             </Card>
         </div>
       </div>
-       <ImageCropper
-            imageSrc={imageToCrop}
-            onCropComplete={handleCropComplete}
-            onClose={() => { setImageToCrop(null); setCropField(null); }}
-            uploadUrl="/api/upload/course-image"
-        />
+
       <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
         <AlertDialogContent>
             <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>
