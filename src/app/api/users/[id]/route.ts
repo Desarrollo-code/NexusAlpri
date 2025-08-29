@@ -102,7 +102,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 
-// DELETE a user
+// DELETE a user -> Now INACTIVATE
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
@@ -111,14 +111,17 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     
     const { id } = await params;
     if (session.id === id) {
-        return NextResponse.json({ message: 'No puedes eliminar tu propia cuenta' }, { status: 400 });
+        return NextResponse.json({ message: 'No puedes inactivar tu propia cuenta' }, { status: 400 });
     }
 
     try {
-        await prisma.user.delete({ where: { id } });
+        await prisma.user.update({ 
+            where: { id },
+            data: { isActive: false }
+        });
         return new NextResponse(null, { status: 204 });
     } catch (error) {
-        console.error('[USER_DELETE_ERROR]', error);
-        return NextResponse.json({ message: 'Error al eliminar el usuario' }, { status: 500 });
+        console.error('[USER_INACTIVATE_ERROR]', error);
+        return NextResponse.json({ message: 'Error al inactivar el usuario' }, { status: 500 });
     }
 }

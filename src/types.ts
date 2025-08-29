@@ -1,4 +1,3 @@
-
 // src/types.ts
 import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form, FormField as PrismaFormField, FormFieldType, FormStatus } from "@prisma/client";
 
@@ -15,6 +14,7 @@ export interface User {
   registeredDate?: string | Date;
   theme?: string | null;
   xp?: number | null;
+  isActive?: boolean;
 }
 
 export interface PlatformSettings {
@@ -145,6 +145,7 @@ export interface CourseProgress {
     courseId: string;
     completedLessons: LessonCompletionRecord[];
     progressPercentage: number;
+    completedAt?: Date | null;
 }
 
 export interface UserNote {

@@ -6,7 +6,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal, Eye, EyeOff } from 'lucide-react';
+import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal, Eye, EyeOff, UserCheck, UserX } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
@@ -82,11 +82,11 @@ export default function UsersPage() {
   const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
 
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [userToToggleStatus, setUserToToggleStatus] = useState<User | null>(null);
   const [userToChangeRole, setUserToChangeRole] = useState<User | null>(null);
   
   const [showAddEditModal, setShowAddEditModal] = useState(false);
-  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
+  const [showToggleStatusDialog, setShowToggleStatusDialog] = useState(false);
   const [showChangeRoleDialog, setShowChangeRoleDialog] = useState(false);
 
   // Form state
@@ -263,27 +263,28 @@ export default function UsersPage() {
     }
   };
 
-  const handleDeleteUser = async () => {
-    if (!userToDelete) return;
-    if (userToDelete.id === currentUser?.id) {
-        toast({ title: "Acción no permitida", description: "No puedes eliminar tu propia cuenta.", variant: "destructive" });
-        setUserToDelete(null);
-        return;
-    }
+  const handleToggleUserStatus = async () => {
+    if (!userToToggleStatus) return;
     setIsProcessing(true);
     try {
-      const response = await fetch(`/api/users/${userToDelete.id}`, { method: 'DELETE' });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Falló al eliminar el usuario');
-      }
-      toast({ title: "Usuario Eliminado", description: `El usuario ${userToDelete.name} ha sido eliminado.` });
-      fetchUsers();
+        const newStatus = !userToToggleStatus.isActive;
+        const response = await fetch(`/api/users/${userToToggleStatus.id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isActive: newStatus })
+        });
+        if (!response.ok) throw new Error((await response.json()).message || 'No se pudo cambiar el estado');
+
+        toast({
+            title: `Usuario ${newStatus ? 'Activado' : 'Inactivado'}`,
+            description: `El estado de ${userToToggleStatus.name} ha sido actualizado.`
+        });
+        fetchUsers();
     } catch (err) {
-      toast({ title: "Error al eliminar", description: err instanceof Error ? err.message : 'No se pudo eliminar el usuario.', variant: "destructive" });
+        toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
     } finally {
-      setUserToDelete(null);
-      setIsProcessing(false);
+        setIsProcessing(false);
+        setShowToggleStatusDialog(false);
     }
   };
 
@@ -337,7 +338,7 @@ export default function UsersPage() {
             <TableHead>Nombre</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Rol</TableHead>
-            <TableHead>Registrado</TableHead>
+            <TableHead>Estado</TableHead>
             <TableHead><span className="sr-only">Acciones</span></TableHead>
           </TableRow>
         </TableHeader>
@@ -348,19 +349,17 @@ export default function UsersPage() {
                       <TableCell><div className="flex items-center gap-3"><Skeleton className="h-9 w-9 rounded-full" /><Skeleton className="h-5 w-32" /></div></TableCell>
                       <TableCell><Skeleton className="h-5 w-48" /></TableCell>
                       <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
-                      <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
                       <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
                   </TableRow>
               ))
           ) : usersList.map((u) => (
-            <TableRow key={u.id}>
+            <TableRow key={u.id} className={cn(!u.isActive && "opacity-60")}>
               <TableCell>
                 <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
                         {u.avatar ? <AvatarImage src={u.avatar} alt={u.name} /> : null}
-                        <AvatarFallback>
-                            <Identicon userId={u.id}/>
-                        </AvatarFallback>
+                        <AvatarFallback><Identicon userId={u.id}/></AvatarFallback>
                     </Avatar>
                     <div className="font-medium">{u.name}</div>
                 </div>
@@ -369,7 +368,11 @@ export default function UsersPage() {
               <TableCell>
                 <Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{getRoleInSpanish(u.role)}</Badge>
               </TableCell>
-              <TableCell>{u.registeredDate ? new Date(u.registeredDate).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'short', timeStyle: 'medium' }) : 'N/A'}</TableCell>
+              <TableCell>
+                 <Badge variant={u.isActive ? 'default' : 'destructive'} className={cn(u.isActive && "bg-green-600 hover:bg-green-700")}>
+                    {u.isActive ? 'Activo' : 'Inactivo'}
+                 </Badge>
+              </TableCell>
               <TableCell>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -387,12 +390,13 @@ export default function UsersPage() {
                         <UserCog className="mr-2 h-4 w-4 text-primary"/>Cambiar Rol
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                        className="text-destructive focus:text-destructive-foreground focus:bg-destructive"
-                        onClick={() => setUserToDelete(u)}
+                     <DropdownMenuItem 
+                        className={cn(u.isActive ? "text-destructive focus:text-destructive-foreground focus:bg-destructive" : "text-green-600 focus:bg-green-500 focus:text-white")}
+                        onClick={() => setUserToToggleStatus(u)}
                         disabled={u.id === currentUser?.id} 
                     >
-                        <Trash2 className="mr-2 h-4 w-4"/>Eliminar
+                        {u.isActive ? <UserX className="mr-2 h-4 w-4"/> : <UserCheck className="mr-2 h-4 w-4"/>}
+                        {u.isActive ? 'Inactivar' : 'Activar'}
                     </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -427,14 +431,12 @@ export default function UsersPage() {
             </Card>
           ))
       ) : usersList.map((u) => (
-        <Card key={u.id} className="p-4 card-border-animated">
+        <Card key={u.id} className={cn("p-4 card-border-animated", !u.isActive && "opacity-60")}>
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-10 w-10">
                 {u.avatar ? <AvatarImage src={u.avatar} alt={u.name} /> : null}
-                <AvatarFallback>
-                    <Identicon userId={u.id}/>
-                </AvatarFallback>
+                <AvatarFallback><Identicon userId={u.id}/></AvatarFallback>
               </Avatar>
               <div>
                 <p className="font-semibold">{u.name}</p>
@@ -451,13 +453,17 @@ export default function UsersPage() {
                 <DropdownMenuItem onClick={() => handleOpenEditModal(u)}>Editar</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleOpenChangeRoleDialog(u)} disabled={u.id === currentUser?.id}>Cambiar Rol</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setUserToDelete(u)} disabled={u.id === currentUser?.id} className="text-destructive">Eliminar</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setUserToToggleStatus(u)} disabled={u.id === currentUser?.id} className={cn(u.isActive ? 'text-destructive' : 'text-green-600')}>
+                    {u.isActive ? 'Inactivar' : 'Activar'}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
           <div className="mt-4 pt-4 border-t flex justify-between items-center text-sm">
             <Badge variant={getRoleBadgeVariant(u.role)} className="capitalize">{getRoleInSpanish(u.role)}</Badge>
-            <p className="text-muted-foreground">{u.registeredDate ? new Date(u.registeredDate).toLocaleDateString() : 'N/A'}</p>
+            <Badge variant={u.isActive ? 'default' : 'destructive'} className={cn(u.isActive && "bg-green-600 hover:bg-green-700")}>
+                {u.isActive ? 'Activo' : 'Inactivo'}
+            </Badge>
           </div>
         </Card>
       ))}
@@ -613,20 +619,21 @@ export default function UsersPage() {
           </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+      <AlertDialog open={!!userToToggleStatus} onOpenChange={(open) => !open && setUserToToggleStatus(null)}>
         <AlertDialogContent className="w-[95vw] max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogTitle>¿Confirmar acción?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Esto eliminará permanentemente al usuario
-               <strong> {userToDelete?.name}</strong> de la plataforma.
+              {`¿Estás seguro de que deseas ${userToToggleStatus?.isActive ? 'inactivar' : 'activar'} la cuenta de `}
+              <strong>{userToToggleStatus?.name}</strong>?
+              {userToToggleStatus?.isActive ? ' El usuario no podrá iniciar sesión.' : ' El usuario podrá volver a iniciar sesión.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-            <AlertDialogCancel disabled={isProcessing} onClick={() => setUserToDelete(null)}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteUser} disabled={isProcessing} className={buttonVariants({ variant: "destructive" })}>
-              {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-              Sí, eliminar usuario
+            <AlertDialogCancel disabled={isProcessing} onClick={() => setUserToToggleStatus(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleToggleUserStatus} disabled={isProcessing} className={cn(userToToggleStatus?.isActive && buttonVariants({ variant: "destructive" }))}>
+              {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+              Sí, {userToToggleStatus?.isActive ? 'inactivar' : 'activar'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

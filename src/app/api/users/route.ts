@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
                     avatar: true,
                     isTwoFactorEnabled: true,
                     registeredDate: true,
+                    isActive: true, // <-- Incluir estado
                 },
                 orderBy: {
                     registeredDate: 'desc'
@@ -108,6 +109,7 @@ export async function POST(req: NextRequest) {
                 password: hashedPassword,
                 role,
                 registeredDate: new Date(),
+                isActive: true, // <-- Asegurar que el nuevo usuario esté activo
             },
             select: {
                 id: true,
@@ -117,6 +119,7 @@ export async function POST(req: NextRequest) {
                 avatar: true,
                 isTwoFactorEnabled: true,
                 registeredDate: true,
+                isActive: true,
             }
         });
 

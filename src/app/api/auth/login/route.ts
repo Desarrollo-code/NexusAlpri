@@ -91,6 +91,13 @@ export async function POST(req: NextRequest) {
       recordFailedAttempt(req, email);
       return NextResponse.json({ message: 'Credenciales inválidas' }, { status: 401 });
     }
+    
+    // --- NUEVA VALIDACIÓN DE ESTADO ACTIVO ---
+    if (!user.isActive) {
+        recordFailedAttempt(req, email, user.id);
+        return NextResponse.json({ message: 'Esta cuenta de usuario ha sido inactivada.' }, { status: 403 });
+    }
+    // ----------------------------------------
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 

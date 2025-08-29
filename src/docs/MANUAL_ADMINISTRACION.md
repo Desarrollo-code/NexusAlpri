@@ -10,7 +10,7 @@ Este manual está destinado a los usuarios con el rol de **Administrador**. Prop
 **Ruta:** `/users`
 
 Desde esta sección, puedes realizar las siguientes acciones:
-*   **Visualizar Usuarios:** Ver una lista de todos los usuarios registrados, con su nombre, email, rol y fecha de registro.
+*   **Visualizar Usuarios:** Ver una lista de todos los usuarios registrados, con su nombre, email, rol y estado (Activo/Inactivo).
 *   **Buscar y Filtrar:** Utiliza la barra de búsqueda para encontrar usuarios específicos.
 *   **Añadir un Nuevo Usuario:**
     1.  Haz clic en "Añadir Nuevo Usuario".
@@ -19,10 +19,10 @@ Desde esta sección, puedes realizar las siguientes acciones:
 *   **Editar un Usuario:**
     1.  Haz clic en el menú de acciones (tres puntos) de un usuario y selecciona "Editar".
     2.  Puedes modificar el nombre, email y rol del usuario.
-*   **Eliminar un Usuario:**
-    1.  Selecciona "Eliminar" en el menú de acciones.
-    2.  Confirma la acción. Esto eliminará permanentemente al usuario y todos sus datos asociados (progreso, inscripciones, etc.).
-    *Nota: No puedes eliminar tu propia cuenta de administrador.*
+*   **Inactivar/Activar un Usuario:**
+    1.  Selecciona "Inactivar" (o "Activar" si ya está inactivo) en el menú de acciones.
+    2.  Confirma la acción. Un usuario inactivo **no podrá iniciar sesión**, pero todos sus datos (progreso, cursos, etc.) se conservan.
+    *Nota: No puedes cambiar tu propio estado.*
 *   **Cambiar Rol:**
     1.  Selecciona "Cambiar Rol" en el menú de acciones para asignar rápidamente un nuevo rol sin entrar en la pantalla de edición completa.
 
