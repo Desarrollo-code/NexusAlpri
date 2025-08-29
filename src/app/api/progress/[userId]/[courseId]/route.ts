@@ -23,7 +23,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
                 courseId: courseId,
             },
             include: {
-                completedLessons: true // Include the related records
+                completedLessons: {
+                    orderBy: {
+                        completedAt: 'desc'
+                    }
+                }
             }
         });
         
@@ -46,8 +50,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
 
         return NextResponse.json({
             ...progress,
-            completedLessons: completedLessonRecords,
-            completedLessonIds: progress.completedLessons.map(l => l.lessonId) // Keep for backward compatibility if needed
+            completedLessons: completedLessonRecords
         });
 
     } catch (error) {

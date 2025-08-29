@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import { recordLessonInteraction } from '@/lib/progress';
+import { recordLessonInteraction, recalculateProgress } from '@/lib/progress';
 import { addXp, XP_CONFIG } from '@/lib/gamification';
 
-// Records a 'view' interaction for a lesson
+// Records a 'view' interaction for a lesson and recalculates progress
 export async function POST(req: NextRequest, { params }: { params: Promise<{ userId: string, courseId: string }> }) {
     const session = await getCurrentUser();
     const { userId, courseId } = await params;
@@ -19,18 +19,23 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
             return NextResponse.json({ message: 'lessonId es requerido.' }, { status: 400 });
         }
         
-        await recordLessonInteraction({
+        const interactionRecorded = await recordLessonInteraction({
             userId,
             courseId,
             lessonId,
             type: 'view',
         });
+        
+        // Recalculate progress after the interaction
+        const updatedProgress = await recalculateProgress({ userId, courseId });
 
         // --- Gamification Logic ---
-        await addXp(userId, XP_CONFIG.COMPLETE_LESSON);
+        if (interactionRecorded) {
+            await addXp(userId, XP_CONFIG.COMPLETE_LESSON);
+        }
         // --------------------------
         
-        return NextResponse.json({ message: "Interaction recorded" });
+        return NextResponse.json({ message: "Interaction recorded", progress: updatedProgress });
 
     } catch (error) {
         console.error('[PROGRESS_LESSON_ERROR]', error);

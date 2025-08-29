@@ -65,17 +65,23 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
         const avgQuizScore = allQuizAttempts.length > 0 ? allQuizAttempts.reduce((sum, attempt) => sum + attempt.score, 0) / allQuizAttempts.length : 0;
 
         // Enhance enrollments with individual average quiz scores and last activity date
-        const enrollmentsWithDetails = course.enrollments.map(enrollment => {
+        const enrollmentsWithDetails = await Promise.all(course.enrollments.map(async (enrollment) => {
             const progress = enrollment.progress;
             if (!progress) {
                 return { ...enrollment, progress: null };
             }
 
-            const quizScores = progress.completedLessons
-                .filter(cl => cl.type === 'quiz' && cl.score !== null)
-                .map(cl => cl.score) as number[];
-            
-            const userAvgQuizScore = quizScores.length > 0 ? quizScores.reduce((sum, score) => sum + score, 0) / quizScores.length : null;
+            const userQuizAttempts = await prisma.quizAttempt.findMany({
+                where: {
+                    userId: enrollment.userId,
+                    quiz: { contentBlock: { lesson: { module: { courseId } } } }
+                },
+                select: { score: true }
+            });
+
+            const userAvgQuizScore = userQuizAttempts.length > 0 ?
+                userQuizAttempts.reduce((sum, attempt) => sum + attempt.score, 0) / userQuizAttempts.length
+                : null;
 
             const lastActivity = progress.completedLessons.length > 0 
                 ? new Date(Math.max(...progress.completedLessons.map(cl => new Date(cl.completedAt).getTime())))
@@ -89,7 +95,7 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
                     lastActivity
                 }
             }
-        });
+        }));
 
         const response = {
             ...course,

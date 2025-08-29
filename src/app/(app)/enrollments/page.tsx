@@ -186,7 +186,7 @@ const EnrolledStudentList = ({ enrollments, onAction }: { enrollments: StudentEn
                     <TableRow>
                         <TableHead className="w-[300px]">Estudiante</TableHead>
                         <TableHead>Progreso</TableHead>
-                        <TableHead>Últ. Actividad</TableHead>
+                        <TableHead>Calificación Quizzes</TableHead>
                         <TableHead>Estado</TableHead>
                         <TableHead className="w-[50px]"><span className="sr-only">Acciones</span></TableHead>
                     </TableRow>
@@ -195,6 +195,7 @@ const EnrolledStudentList = ({ enrollments, onAction }: { enrollments: StudentEn
                     {enrollments.map(enrollment => {
                         const progress = Math.round(enrollment.progress?.progressPercentage || 0);
                         const isCompleted = progress === 100;
+                        const avgQuizScore = enrollment.progress?.avgQuizScore;
                         return (
                             <TableRow key={enrollment.user.id}>
                                 <TableCell>
@@ -212,13 +213,19 @@ const EnrolledStudentList = ({ enrollments, onAction }: { enrollments: StudentEn
                                         <span className="text-sm font-medium text-muted-foreground w-10 text-right">{progress}%</span>
                                     </div>
                                 </TableCell>
-                                 <TableCell className="text-xs text-muted-foreground">
-                                    {enrollment.progress?.lastActivity ? new Date(enrollment.progress.lastActivity).toLocaleDateString() : 'N/A'}
+                                <TableCell>
+                                    {avgQuizScore !== null && avgQuizScore !== undefined ? (
+                                        <Badge variant={avgQuizScore >= 80 ? 'default' : 'secondary'} className={cn(avgQuizScore >= 80 ? 'bg-green-600' : 'bg-amber-500')}>
+                                            {avgQuizScore.toFixed(0)}%
+                                        </Badge>
+                                    ) : (
+                                        <span className="text-xs text-muted-foreground">N/A</span>
+                                    )}
                                 </TableCell>
                                  <TableCell>
                                     <Badge variant={isCompleted ? "default" : "secondary"} className={cn(isCompleted && "bg-green-600 text-white")}>
                                        {isCompleted ? <CheckCircle className="mr-1.5 h-3.5 w-3.5" /> : null}
-                                       {isCompleted ? `Completado el ${new Date(enrollment.progress!.completedAt!).toLocaleDateString()}` : 'En Progreso'}
+                                       {isCompleted ? `Completado` : 'En Progreso'}
                                     </Badge>
                                 </TableCell>
                                 <TableCell>
@@ -361,17 +368,18 @@ export default function EnrollmentsPage() {
   const handleExport = () => {
     if (!selectedCourseInfo || !selectedCourseInfo.enrollments) return;
 
-    const headers = "Nombre,Email,Progreso (%),Estado,Fecha Inscripción,Fecha Completado\n";
+    const headers = "Nombre,Email,Progreso (%),Calificación Quizzes (%),Estado,Fecha Inscripción,Fecha Completado\n";
     
     const rows = selectedCourseInfo.enrollments.map(e => {
         const name = `"${e.user.name || ''}"`;
         const email = e.user.email;
         const progress = e.progress?.progressPercentage?.toFixed(0) || 0;
-        const isCompleted = progress === 100;
+        const quizScore = e.progress?.avgQuizScore?.toFixed(0) || 'N/A';
+        const isCompleted = Number(progress) === 100;
         const status = isCompleted ? 'Completado' : 'En Progreso';
         const enrolledDate = new Date(e.enrolledAt).toLocaleDateString('es-CO');
         const completedDate = e.progress?.completedAt ? new Date(e.progress.completedAt).toLocaleDateString('es-CO') : 'N/A';
-        return [name, email, progress, status, enrolledDate, completedDate].join(',');
+        return [name, email, progress, quizScore, status, enrolledDate, completedDate].join(',');
     }).join('\n');
 
     const csvContent = "data:text/csv;charset=utf-8," + headers + rows;
@@ -507,7 +515,7 @@ export default function EnrollmentsPage() {
                     </div>
                      <div className="grid grid-cols-2 gap-4 text-sm">
                         <p><strong>Progreso:</strong> {studentToView.progress?.progressPercentage?.toFixed(0) || 0}%</p>
-                        <p><strong>Nota Quizzes:</strong> {studentToView.progress?.avgQuizScore?.toFixed(0) || 'N/A'}%</p>
+                        <p><strong>Calificación Quizzes:</strong> {studentToView.progress?.avgQuizScore?.toFixed(0) || 'N/A'}%</p>
                         <p><strong>Inscrito:</strong> {new Date(studentToView.enrolledAt).toLocaleDateString()}</p>
                         <p><strong>Última Actividad:</strong> {studentToView.progress?.lastActivity ? new Date(studentToView.progress.lastActivity).toLocaleDateString() : 'N/A'}</p>
                     </div>

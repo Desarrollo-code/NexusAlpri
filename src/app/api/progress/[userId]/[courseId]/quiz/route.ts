@@ -92,7 +92,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
         });
 
         const message = score >= 80 ? 'Quiz aprobado.' : 'Quiz enviado.';
-        return NextResponse.json({ message, attemptId: newAttempt.id });
+        return NextResponse.json({ message, attemptId: newAttempt.id, score });
 
     } catch (error) {
         console.error('[QUIZ_SUBMIT_ERROR]', error);
