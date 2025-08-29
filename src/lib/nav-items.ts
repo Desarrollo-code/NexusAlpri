@@ -128,21 +128,6 @@ const NAVIGATION_ITEMS: NavItem[] = [
         path: '/settings',
         roles: ['ADMINISTRATOR']
       },
-      // --- ENLACES DE PRUEBA ---
-      {
-        id: 'test-404',
-        label: 'Prueba Error 404',
-        icon: AlertTriangle,
-        path: '/pagina-rota-de-prueba',
-        roles: ['ADMINISTRATOR']
-      },
-      {
-        id: 'test-500',
-        label: 'Prueba Error 500',
-        icon: ServerCrash,
-        path: '/error-test',
-        roles: ['ADMINISTRATOR']
-      }
     ]
   }
 ];
