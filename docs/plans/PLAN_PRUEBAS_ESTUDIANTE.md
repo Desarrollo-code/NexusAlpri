@@ -2,62 +2,55 @@
 
 Este documento describe las acciones a verificar para el rol de **Estudiante**.
 
+**Credenciales de Prueba:**
+*   **Usuario 1 (con progreso):**
+    *   **Email:** `laura.gomez@nexus.com`
+    *   **Contraseña:** `nexuspro`
+*   **Usuario 2 (sin progreso):**
+    *   **Email:** `carlos.santana@nexus.com`
+    *   **Contraseña:** `nexuspro`
+
 ---
 
 ### 1. Panel Principal (`/dashboard`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **1.1. Ver el dashboard** | Al iniciar sesión, se muestra un resumen de los cursos en los que está inscrito y los anuncios recientes. |
+| **1.1. Ver el dashboard (Laura)** | Inicia sesión como Laura. El dashboard debe mostrar que está inscrita en 1 curso y debe ver el "Anuncio de Bienvenida". |
 
 ### 2. Catálogo de Cursos (`/courses`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **2.1. Explorar cursos** | La página muestra todas las tarjetas de los cursos que están en estado "Publicado". |
-| **2.2. Inscribirse a un curso** | Al hacer clic en "Inscribirse", el curso se añade a "Mis Cursos" y el botón cambia a "Continuar Curso". |
+| **2.1. Explorar cursos (Carlos)** | Inicia sesión como Carlos. Debe ver el "Curso de Bienvenida". No debe ver el "Curso de Marketing Digital" porque ya está inscrito. |
+| **2.2. Inscribirse a un curso (Carlos)** | Inscríbete al "Curso de Bienvenida". El curso debe desaparecer de esta página y aparecer en "Mis Cursos". |
 
 ### 3. Mis Cursos (`/my-courses`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **3.1. Ver cursos inscritos** | La página muestra únicamente las tarjetas de los cursos en los que el estudiante está inscrito. |
-| **3.2. Ver progreso en la tarjeta** | Cada tarjeta de curso muestra un indicador circular con el progreso actual. |
-| **3.3. Cancelar inscripción** | Al cancelar una inscripción, el curso desaparece de esta lista y su progreso se elimina. |
+| **3.1. Ver cursos inscritos (Laura)** | Como Laura, la página debe mostrar la tarjeta del "Curso de Marketing Digital" con un progreso del 25%. |
+| **3.2. Cancelar inscripción (Carlos)** | Como Carlos, ve a "Mis Cursos" y cancela la inscripción del "Curso de Marketing Digital". El curso debe desaparecer de esta lista. |
 
 ### 4. Consumo de un Curso (`/courses/[courseId]`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **4.1. Acceder al contenido** | Al hacer clic en "Continuar Curso", se accede a la vista detallada con los módulos y lecciones. |
-| **4.2. Seleccionar una lección** | Al hacer clic en una lección (video, texto, etc.), el contenido se muestra y la lección se marca como vista. |
-| **4.3. Realizar un quiz** | Puede responder a las preguntas de un quiz y enviarlo. El sistema muestra la puntuación y la guarda. |
-| **4.4. Calcular nota final** | Cuando todas las lecciones han sido vistas, el botón "Calcular Mi Puntuación Final" se activa. Al usarlo, se muestra la nota final en el indicador de progreso. |
+| **4.1. Acceder al contenido (Laura)** | Como Laura, entra al "Curso de Marketing Digital". La primera lección de "Introducción" debe estar marcada como completada. |
+| **4.2. Completar una lección (Laura)** | Haz clic en la lección "Video: ¿Qué es el SEO?". El sistema debe marcarla automáticamente como completada y el progreso del curso debe aumentar. |
+| **4.3. Realizar un quiz (Laura)** | Ve a la lección del quiz y respóndelo. Al enviarlo, el sistema debe mostrarte tu puntuación y marcar la lección como completada. |
+| **4.4. Tomar apuntes (Laura)** | En cualquier lección, abre el panel de "Mis Apuntes" y escribe algo. Cierra y vuelve a abrir para verificar que se guardó. Luego, ve a la página `/my-notes` para ver tu apunte allí. |
 
 ### 5. Biblioteca de Recursos (`/resources`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **5.1. Navegar y ver recursos** | Puede navegar por las carpetas y previsualizar o descargar cualquier recurso público. |
-| **5.2. Acceder a recurso protegido** | Si un recurso tiene PIN, se le pide que lo ingrese. Si es correcto, puede acceder al archivo. |
+| **5.1. Navegar y ver recursos** | Ve a la biblioteca. Deberías poder entrar a la carpeta "Documentos de RRHH" y ver el archivo "Guía de Beneficios". |
+| **5.2. Acceder a recurso protegido** | Haz clic en "Guía de Beneficios". El sistema te pedirá un PIN. Ingresa `1234`. Deberías poder previsualizar o descargar el archivo. |
 
-### 6. Anuncios y Calendario (`/announcements`, `/calendar`)
-
-| Acción a Realizar | Verificación Esperada |
-| :--- | :--- |
-| **6.1. Ver anuncios** | Muestra una lista de anuncios dirigidos a él, a su rol o a toda la organización. |
-| **6.2. Ver calendario** | Muestra los eventos del calendario que son relevantes para él. |
-
-### 7. Notificaciones (Popover y `/notifications`)
+### 6. Perfil (`/profile`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **7.1. Recibir notificaciones** | Recibe alertas (ej. nuevo curso publicado) que aparecen en el icono de la campana. |
-| **7.2. Ver y gestionar notificaciones** | Puede ver una lista de todas sus notificaciones, marcarlas como leídas o eliminarlas. |
-
-### 8. Perfil (`/profile`)
-
-| Acción a Realizar | Verificación Esperada |
-| :--- | :--- |
-| **8.1. Editar su información** | Puede cambiar su nombre y su foto de perfil. Los cambios se guardan y se reflejan. |
-| **8.2. Gestionar seguridad** | Puede cambiar su contraseña y activar o desactivar la autenticación de dos factores (2FA). |
+| **6.1. Ver progreso y logros** | Como Laura, ve a tu perfil. Deberías ver tus puntos de experiencia (XP) y el logro "Primer Paso" por tu primera inscripción. |
+| **6.2. Editar información** | Cambia tu nombre. El cambio debe reflejarse en la tarjeta de perfil y en la barra superior. |

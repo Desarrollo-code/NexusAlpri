@@ -2,62 +2,55 @@
 
 Este documento describe las acciones a verificar para el rol de **Administrador**.
 
+**Credenciales de Prueba:**
+*   **Email:** `admin@nexus.com`
+*   **Contraseña:** `nexuspro`
+
 ---
 
 ### 1. Gestión de Usuarios (`/users`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **1.1. Ver la lista de usuarios** | La página carga y muestra una tabla con todos los usuarios. La paginación funciona si hay más de 10 usuarios. |
-| **1.2. Buscar un usuario** | Al escribir en la barra de búsqueda, la lista se filtra para mostrar solo los usuarios que coinciden. |
-| **1.3. Añadir un nuevo usuario** | Al hacer clic en "Añadir", completar el formulario y guardar, el nuevo usuario aparece en la lista. |
-| **1.4. Editar un usuario** | Al seleccionar "Editar" en el menú de un usuario, se puede cambiar su nombre y rol, y los cambios se guardan. |
-| **1.5. Eliminar un usuario** | Al seleccionar "Eliminar" y confirmar, el usuario desaparece de la lista. No se puede eliminar a sí mismo. |
-| **1.6. Cambiar rol rápidamente** | Al usar la opción "Cambiar Rol", el rol del usuario se actualiza en la lista sin tener que editar el perfil completo. |
+| **1.1. Ver la lista de usuarios** | La página carga y muestra una tabla con todos los usuarios creados (Admin, Instructor, 2 Estudiantes). |
+| **1.2. Buscar un usuario** | Al escribir `Laura` en la búsqueda, la lista se filtra para mostrar solo a "Laura Gómez". |
+| **1.3. Añadir un nuevo usuario** | Haz clic en "Añadir", completa el formulario y guarda. El nuevo usuario debe aparecer en la lista. |
+| **1.4. Editar un usuario** | Edita el nombre de "Carlos Santana". El cambio debe reflejarse inmediatamente. |
+| **1.5. Inactivar un usuario** | Haz clic en "Inactivar" en el menú de "Laura Gómez". Su estado debe cambiar a "Inactivo". Intenta iniciar sesión con sus credenciales (debería fallar). Luego, actívala de nuevo. |
+| **1.6. Cambiar rol rápidamente** | Cambia el rol de "Carlos Santana" a "Instructor". El cambio debe reflejarse en la tabla. |
 
 ### 2. Gestión de Cursos (`/manage-courses`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **2.1. Crear un curso nuevo** | Al hacer clic en "Crear", completar el formulario y guardar, se redirige a la página de edición del curso. |
-| **2.2. Ver todos los cursos** | La lista muestra todos los cursos de la plataforma, sin importar quién los creó (Publicados, Borradores, Archivados). |
-| **2.3. Editar cualquier curso** | Se puede entrar al modo de edición de cualquier curso y modificar su título, descripción, imagen, etc. |
-| **2.4. Añadir/reordenar contenido** | Dentro de la edición de un curso, se pueden añadir módulos y lecciones, y reordenarlos arrastrando y soltando. |
-| **2.5. Cambiar estado de un curso** | Se puede cambiar el estado de cualquier curso a Publicado, Archivado o Borrador. |
-| **2.6. Eliminar un curso** | Al seleccionar "Eliminar" en un curso y confirmar, este desaparece por completo. |
+| **2.1. Crear un curso nuevo** | Crea un curso. Debe aparecer en la lista de "Borradores". |
+| **2.2. Ver todos los cursos** | La lista debe mostrar todos los cursos de la plataforma, incluyendo los creados por el Instructor de prueba. |
+| **2.3. Editar cualquier curso** | Entra a editar el "Curso de Marketing Digital" (creado por el instructor) y modifica su descripción. El cambio debe guardarse. |
+| **2.4. Publicar/Archivar un curso** | Cambia el estado del "Curso de Bienvenida" a "Archivado". Luego, cámbialo de nuevo a "Publicado". |
 
 ### 3. Seguimiento de Inscritos (`/enrollments`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **3.1. Seleccionar cualquier curso** | El menú desplegable muestra todos los cursos de la plataforma para seleccionar. |
-| **3.2. Ver inscritos y progreso** | Al seleccionar un curso, se carga una lista de todos los estudiantes inscritos con su porcentaje de progreso. |
+| **3.1. Seleccionar un curso** | En el desplegable, selecciona "Curso de Marketing Digital". |
+| **3.2. Ver inscritos y progreso** | La tabla debe mostrar a los dos estudiantes inscritos. "Laura Gómez" debe tener un progreso del 25%, mientras que "Carlos Santana" debe tener 0%. |
+| **3.3. Ver detalles de progreso** | Haz clic en "Ver Detalles" para Laura Gómez. Deberías ver qué lección específica ha completado. |
 
 ### 4. Analíticas (`/analytics`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **4.1. Ver dashboard de analíticas** | La página carga gráficos y tarjetas con métricas sobre usuarios, cursos y actividad general sin errores. |
+| **4.1. Ver dashboard de analíticas** | La página debe cargar gráficos con los datos de prueba: 4 usuarios, 2 cursos, 2 inscripciones, etc. |
 
 ### 5. Auditoría de Seguridad (`/security-audit`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **5.1. Revisar los registros** | La página carga una tabla con los últimos eventos de seguridad, como inicios de sesión y cambios de rol. |
+| **5.1. Revisar los registros** | La página debe mostrar los registros de seguridad iniciales creados por el seed. Cierra sesión y vuelve a iniciarla para ver un nuevo evento de "Inicio Exitoso". |
 
-### 6. Configuración del Sistema (`/settings`)
-
-| Acción a Realizar | Verificación Esperada |
-| :--- | :--- |
-| **6.1. Cambiar nombre de la app** | Al cambiar el nombre y guardar, el nuevo nombre aparece en la barra lateral y superior. |
-| **6.2. Habilitar/deshabilitar registro** | Al cambiar el switch y guardar, la página `/sign-up` se activa o desactiva para nuevos visitantes. |
-| **6.3. Gestionar categorías** | Se pueden añadir o eliminar categorías de la lista, y estos cambios se reflejan en los formularios de creación de cursos/recursos. |
-
-### 7. Contenido Global (`/resources`, `/announcements`, `/calendar`)
+### 6. Contenido Global (`/resources`, `/announcements`, `/calendar`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **7.1. Gestionar Biblioteca** | Puede crear carpetas, subir archivos, editar sus detalles y eliminar cualquier recurso. |
-| **7.2. Proteger un recurso con PIN** | Puede asignar un PIN a un archivo, y el sistema lo solicitará para acceder a él. |
-| **7.3. Gestionar Anuncios** | Puede crear, editar y eliminar cualquier anuncio de la plataforma. |
-| **7.4. Gestionar Calendario** | Puede crear, editar y eliminar cualquier evento del calendario, para cualquier audiencia. |
+| **6.1. Ver contenido de prueba** | Verifica que el "Anuncio de Bienvenida" aparece en `/announcements`, el evento "Reunión Trimestral" en `/calendar`, y la carpeta/archivo en `/resources`. |
+| **6.2. Editar contenido** | Edita el anuncio existente o el evento del calendario. Los cambios deben persistir. |
