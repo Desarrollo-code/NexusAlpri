@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTitle } from '@/contexts/title-context';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -609,6 +609,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-80">
+            <SheetHeader className="p-4 border-b">
+                <SheetTitle className="sr-only">Navegación del Curso</SheetTitle>
+            </SheetHeader>
             <SidebarContent />
           </SheetContent>
         </Sheet>
