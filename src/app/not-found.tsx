@@ -1,42 +1,82 @@
 // src/app/not-found.tsx
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Search } from 'lucide-react';
 import React from 'react';
+import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
-// Monstruo SVG mejorado que usa los colores del tema y tiene una animación de respiración.
-const MonsterIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <path d="M45.57,26.51c-4.48,0-8.11,3.63-8.11,8.11v43.25c0,4.48,3.63,8.11,8.11,8.11h48.86c4.48,0,8.11-3.63,8.11-8.11V34.62c0-4.48-3.63-8.11-8.11-8.11H45.57Z" fill="hsl(var(--background))" stroke="hsl(var(--primary))" strokeWidth="3"/>
-        <path d="M37.46,54.14c-5.46-1.57-9.5-6.59-9.5-12.44,0-7.23,5.86-13.09,13.09-13.09h52.9c7.23,0,13.09,5.86,13.09,13.09,0,5.85-4.04,10.87-9.5,12.44" fill="hsl(var(--primary))" stroke="hsl(var(--primary))" strokeWidth="3" />
-        <path d="M107.54,86.01s-2.18,12.02-17.45,12.02c-15.28,0-17.45-12.02-17.45-12.02" stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M42.46,112.51v-12.02c0-5.52,4.48-10,10-10h35.09c5.52,0,10,4.48,10,10v12.02" stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round" />
-        <circle cx="60.32" cy="62.48" r="4.71" fill="hsl(var(--background))" />
-        <circle cx="79.68" cy="62.48" r="4.71" fill="hsl(var(--background))" />
-    </svg>
+// Un monstruo SVG más amigable y detallado
+const LostMonsterIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <defs>
+      <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
+        <feOffset dx="2" dy="4" result="offsetblur" />
+        <feComponentTransfer>
+          <feFuncA type="linear" slope="0.5" />
+        </feComponentTransfer>
+        <feMerge>
+          <feMergeNode />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+    <g filter="url(#shadow)" className="animate-bloom" style={{ animationDelay: '0.2s' }}>
+      {/* Cuerpo */}
+      <path d="M45,110 C25,120 20,80 40,70 S50,40 75,40 S100,60 110,70 S125,100 105,110 Z" fill="hsl(var(--primary))" />
+      {/* Ojos */}
+      <g>
+        <circle cx="60" cy="70" r="12" fill="hsl(var(--background))" />
+        <circle cx="62" cy="72" r="5" fill="hsl(var(--foreground))" />
+        <circle cx="90" cy="70" r="12" fill="hsl(var(--background))" />
+        <circle cx="88" cy="72" r="5" fill="hsl(var(--foreground))" />
+      </g>
+      {/* Antena */}
+      <path d="M75,40 Q80,20 85,25" stroke="hsl(var(--primary))" strokeWidth="4" fill="none" strokeLinecap="round" />
+      <circle cx="85" cy="25" r="7" fill="hsl(var(--accent))" />
+    </g>
+  </svg>
 );
 
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background text-foreground p-6 text-center">
-      <div className="flex items-center justify-center text-7xl md:text-9xl font-bold text-primary -ml-4 md:-ml-8">
-        <span>4</span>
-        <MonsterIcon className="h-28 w-28 md:h-40 md:w-40 mx-1 md:mx-4 text-primary animate-bloom" data-ai-hint="cute monster" />
-        <span>4</span>
-      </div>
-      <h1 className="mt-8 text-3xl md:text-4xl font-headline font-bold text-foreground">
-        ¡Oops! Página No Encontrada
-      </h1>
-      <p className="mt-4 max-w-md text-muted-foreground">
-        Parece que el monstruo de los enlaces rotos se ha comido esta página. No te preocupes, te ayudamos a volver al camino.
-      </p>
-      <Button asChild className="mt-8">
-        <Link href="/dashboard">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Volver al Panel Principal
-        </Link>
-      </Button>
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background p-4 text-center overflow-hidden">
+        <DecorativeHeaderBackground />
+        <Card className="z-10 w-full max-w-lg bg-card/80 backdrop-blur-sm shadow-2xl">
+            <CardHeader>
+                <div className="mx-auto w-40 h-40">
+                    <LostMonsterIcon data-ai-hint="cute monster mascot" />
+                </div>
+                 <h1 className="text-6xl font-extrabold tracking-tighter text-primary font-headline">404</h1>
+                 <CardTitle className="text-3xl font-bold font-headline text-foreground">
+                    ¡Página No Encontrada!
+                 </CardTitle>
+                 <CardDescription className="text-base text-muted-foreground">
+                    Parece que nuestro pequeño monstruo se ha perdido en los enlaces. No te preocupes, te ayudaremos a volver.
+                 </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground">
+                    Puedes volver al inicio o buscar lo que necesitas.
+                </p>
+            </CardContent>
+            <CardFooter className="flex flex-col sm:flex-row gap-4">
+                 <Button asChild className="w-full sm:w-auto">
+                    <Link href="/dashboard">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Volver al Panel Principal
+                    </Link>
+                  </Button>
+                  <Button asChild variant="secondary" className="w-full sm:w-auto">
+                    <Link href="/courses">
+                      <Search className="mr-2 h-4 w-4" />
+                      Explorar Cursos
+                    </Link>
+                  </Button>
+            </CardFooter>
+        </Card>
     </div>
   );
 }
