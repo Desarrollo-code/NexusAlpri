@@ -78,49 +78,38 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         data: dataToUpdate,
       });
 
-      // Handle fields
       if (fields && Array.isArray(fields)) {
-        const currentFields = await tx.formField.findMany({ where: { formId } });
-        const incomingFieldIds = new Set(fields.map((f: FormField) => f.id).filter((id: string) => !id.startsWith('new-')));
-
-        // Delete fields that are no longer present
-        const fieldsToDelete = currentFields.filter(f => !incomingFieldIds.has(f.id));
-        if (fieldsToDelete.length > 0) {
-          await tx.formField.deleteMany({ where: { id: { in: fieldsToDelete.map(f => f.id) } } });
-        }
+        const incomingFieldIds = new Set(fields.map((f: FormField) => f.id));
         
-        // Separate new fields from existing ones
-        const newFields = fields.filter((f: FormField) => f.id.startsWith('new-'));
-        const existingFields = fields.filter((f: FormField) => !f.id.startsWith('new-'));
+        // Delete fields that are not in the incoming list
+        await tx.formField.deleteMany({
+          where: {
+            formId: formId,
+            id: {
+              notIn: Array.from(incomingFieldIds) as string[],
+            },
+          },
+        });
 
-        // Create new fields
-        for (const [index, fieldData] of (newFields as FormField[]).entries()) {
-             const fieldPayload = {
-                label: fieldData.label,
-                type: fieldData.type as FormFieldType,
-                options: (fieldData.options as unknown as FormFieldOption[]) || [],
-                required: fieldData.required || false,
-                placeholder: fieldData.placeholder || null,
-                order: fields.findIndex((f: FormField) => f.id === fieldData.id), // Use the final order from the array
-                formId: formId,
-             };
-             await tx.formField.create({ data: fieldPayload });
-        }
-
-        // Update existing fields
-        for (const [index, fieldData] of (existingFields as FormField[]).entries()) {
-             const fieldPayload = {
-                label: fieldData.label,
-                type: fieldData.type as FormFieldType,
-                options: (fieldData.options as unknown as FormFieldOption[]) || [],
-                required: fieldData.required || false,
-                placeholder: fieldData.placeholder || null,
-                order: fields.findIndex((f: FormField) => f.id === fieldData.id),
-             };
-             await tx.formField.update({
-                where: { id: fieldData.id },
-                data: fieldPayload,
-             });
+        // Upsert all incoming fields
+        for (const [index, fieldData] of (fields as FormField[]).entries()) {
+          const isNew = fieldData.id.startsWith('new-');
+          
+          const fieldPayload = {
+            label: fieldData.label,
+            type: fieldData.type as FormFieldType,
+            options: (fieldData.options as unknown as FormFieldOption[]) || [],
+            required: fieldData.required || false,
+            placeholder: fieldData.placeholder || null,
+            order: index,
+            formId: formId,
+          };
+          
+          await tx.formField.upsert({
+            where: { id: isNew ? `__NEVER_FIND__${fieldData.id}` : fieldData.id },
+            create: { ...fieldPayload, id: isNew ? undefined : fieldData.id },
+            update: fieldPayload,
+          });
         }
       }
     });
