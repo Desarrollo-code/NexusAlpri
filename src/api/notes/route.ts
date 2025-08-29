@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const { lessonId, content } = await req.json();
+        const { lessonId, content, color } = await req.json();
 
         if (!lessonId) {
             return NextResponse.json({ message: 'lessonId es requerido' }, { status: 400 });
@@ -75,11 +75,13 @@ export async function POST(req: NextRequest) {
             },
             update: {
                 content: content,
+                ...(color && { color: color }),
             },
             create: {
                 userId: session.id,
                 lessonId: lessonId,
                 content: content,
+                color: color || 'yellow',
             },
         });
 

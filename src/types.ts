@@ -153,6 +153,7 @@ export interface UserNote {
     userId: string;
     lessonId: string;
     content: string;
+    color: string;
     createdAt: string;
     updatedAt: string;
 }

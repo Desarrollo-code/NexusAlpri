@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -23,6 +23,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useTitle } from '@/contexts/title-context';
 import { useDebounce } from '@/hooks/use-debounce';
 import { RichTextEditor } from './ui/rich-text-editor';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 
 
 // --- Helper types and functions ---
@@ -43,27 +44,34 @@ function getYouTubeVideoId(url: string | null | undefined): string | null {
   return videoId;
 }
 
+const noteColors = [
+  { value: 'yellow', bg: 'bg-yellow-100 dark:bg-yellow-900/40', border: 'border-yellow-200 dark:border-yellow-800/50' },
+  { value: 'blue', bg: 'bg-blue-100 dark:bg-blue-900/40', border: 'border-blue-200 dark:border-blue-800/50' },
+  { value: 'green', bg: 'bg-green-100 dark:bg-green-900/40', border: 'border-green-200 dark:border-green-800/50' },
+  { value: 'pink', bg: 'bg-pink-100 dark:bg-pink-900/40', border: 'border-pink-200 dark:border-pink-800/50' },
+  { value: 'purple', bg: 'bg-purple-100 dark:bg-purple-900/40', border: 'border-purple-200 dark:border-purple-800/50' },
+];
+
 // --- Note Taking Component ---
 const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isOpen: boolean, onClose: () => void }) => {
     const { user } = useAuth();
-    const [noteContent, setNoteContent] = useState('');
+    const [note, setNote] = useState<Partial<UserNote>>({ content: '', color: 'yellow' });
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
-    const debouncedContent = useDebounce(noteContent, 1000); // 1-second debounce
+    const debouncedContent = useDebounce(note.content, 1000);
     const isInitialLoad = useRef(true);
 
     useEffect(() => {
-        if (!isOpen) return;
-        isInitialLoad.current = true; // Reset on open
+        if (!isOpen || !user) return;
+        isInitialLoad.current = true;
         const fetchNote = async () => {
-            if (!user) return;
             setIsLoading(true);
             try {
                 const res = await fetch(`/api/notes/${lessonId}`);
-                const data: UserNote = res.ok ? await res.json() : { content: '' };
-                setNoteContent(data.content);
+                const data: UserNote = res.ok ? await res.json() : { content: '', color: 'yellow' };
+                setNote({ content: data.content, color: data.color || 'yellow' });
             } catch (error) {
-                 setNoteContent('');
+                setNote({ content: '', color: 'yellow' });
             } finally {
                 setIsLoading(false);
                 setTimeout(() => { isInitialLoad.current = false; }, 500);
@@ -72,14 +80,14 @@ const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isO
         fetchNote();
     }, [lessonId, user, isOpen]);
 
-    const saveNote = useCallback(async (content: string) => {
+    const saveNote = useCallback(async (content: string, color: string) => {
         if (!user) return;
         setIsSaving(true);
         try {
             await fetch('/api/notes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lessonId, content }),
+                body: JSON.stringify({ lessonId, content, color }),
             });
         } catch (error) {
             console.error("Failed to save note:", error);
@@ -87,22 +95,50 @@ const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isO
             setTimeout(() => setIsSaving(false), 500);
         }
     }, [lessonId, user]);
-
+    
     useEffect(() => {
-        if (!isInitialLoad.current && !isLoading) {
-            saveNote(debouncedContent);
+        if (!isInitialLoad.current && !isLoading && debouncedContent !== undefined) {
+            saveNote(debouncedContent, note.color);
         }
-    }, [debouncedContent, saveNote, isLoading]);
+    }, [debouncedContent, note.color, saveNote, isLoading]);
+
+    const handleColorChange = (newColor: string) => {
+      setNote(prev => ({...prev, color: newColor }));
+      // Save color change immediately
+      if (!isInitialLoad.current && !isLoading) {
+          saveNote(note.content, newColor);
+      }
+    };
+
+
+    const activeColor = noteColors.find(c => c.value === note.color) || noteColors[0];
 
     return (
-        <div className={cn("bg-card border-l flex-col h-full", isOpen ? "flex" : "hidden")}>
-             <div className="p-4 border-b flex flex-row items-center justify-between h-16 shrink-0">
+        <div className={cn("flex flex-col h-full border-l transition-colors", activeColor.bg, activeColor.border)}>
+             <div className="p-4 border-b flex flex-row items-center justify-between h-16 shrink-0 bg-background/30">
                 <h3 className="font-semibold flex items-center gap-2">
                     <Notebook className="h-5 w-5" />
                     <span>Mis Apuntes</span>
                 </h3>
                 <div className="flex items-center gap-2">
                     {isSaving && <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin"/>Guardando...</p>}
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7"><Palette className="h-4 w-4"/></Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-1">
+                             <div className="flex gap-1">
+                                {noteColors.map(color => (
+                                    <button 
+                                        key={color.value} 
+                                        onClick={() => handleColorChange(color.value)} 
+                                        className={cn("h-6 w-6 rounded-full border-2 transition-transform", color.bg)}
+                                        style={{ borderColor: note.color === color.value ? 'hsl(var(--primary))' : 'transparent' }}
+                                    />
+                                ))}
+                            </div>
+                        </PopoverContent>
+                    </Popover>
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}><XCircle className="h-4 w-4"/></Button>
                 </div>
             </div>
@@ -113,8 +149,8 @@ const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isO
                     </div>
                 ) : (
                     <RichTextEditor
-                        value={noteContent}
-                        onChange={setNoteContent}
+                        value={note.content}
+                        onChange={(content) => setNote(prev => ({ ...prev, content }))}
                         placeholder="Escribe tus notas privadas para esta lección aquí. Se guardarán automáticamente..."
                         className="w-full h-full bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
@@ -123,6 +159,7 @@ const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isO
         </div>
     );
 };
+
 
 const VideoPlayer = ({ videoUrl, lessonTitle }: { videoUrl: string, lessonTitle?: string }) => {
     const videoId = getYouTubeVideoId(videoUrl);
@@ -581,8 +618,8 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             </header>
             <main className="flex-1 overflow-hidden flex">
                  <div className={cn(
-                    "flex-1 transition-[margin-right] duration-300 ease-in-out",
-                    isNotesPanelOpen && !isMobile && "mr-[448px]" // 448px = 28rem (width of notes panel)
+                    "flex-1 transition-all duration-300 ease-in-out",
+                    isNotesPanelOpen && "mr-[28rem]"
                  )}>
                     <ScrollArea className="h-full">
                         <div className="p-4 md:p-6 lg:p-8">
@@ -611,14 +648,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                 </div>
 
                 <aside className={cn(
-                    "h-full flex-shrink-0 transition-all duration-300 ease-in-out",
-                    "fixed top-0 right-0 h-full z-20", // Use fixed positioning for overlay on mobile
-                    isMobile 
-                        ? (isNotesPanelOpen ? 'w-full max-w-md translate-x-0' : 'translate-x-full') // Slide in/out on mobile
-                        : 'relative w-0', // On desktop, it doesn't take space initially
-                    !isMobile && isNotesPanelOpen && "w-[448px]" // Expand on desktop
+                    "h-full flex-shrink-0 transition-all duration-300 ease-in-out bg-card",
+                    isNotesPanelOpen ? "w-full max-w-md md:w-[28rem] border-l" : "w-0"
                 )}>
-                   {isMobile && isNotesPanelOpen && <div className="fixed inset-0 bg-black/50 z-10" onClick={() => setIsNotesPanelOpen(false)}></div>}
                    {selectedLessonId && isEnrolled && !isCreatorViewingCourse && (
                         <LessonNotesPanel 
                             lessonId={selectedLessonId}
