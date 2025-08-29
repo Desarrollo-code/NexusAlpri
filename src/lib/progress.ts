@@ -125,6 +125,7 @@ export async function consolidateCourseProgress({ userId, courseId }: { userId: 
         where: { id: enrollment.progress.id },
         data: {
             progressPercentage: finalPercentage,
+            completedAt: finalPercentage >= 100 ? new Date() : null, // Set completion date if 100%
         },
     });
 

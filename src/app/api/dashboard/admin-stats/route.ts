@@ -113,11 +113,10 @@ export async function GET(req: NextRequest) {
                 LIMIT 5;
             `,
             prisma.$queryRaw<RawStudentResult[]>`
-                SELECT u.id, u.name, u.avatar, COUNT(e.id) as value
-                FROM Enrollment e
-                JOIN User u ON e.userId = u.id
-                JOIN CourseProgress cp ON e.id = cp.enrollmentId
-                WHERE cp.progressPercentage = 100 AND e.completedAt >= ${startDate} AND e.completedAt <= ${endDate}
+                SELECT u.id, u.name, u.avatar, COUNT(cp.id) as value
+                FROM CourseProgress cp
+                JOIN User u ON cp.userId = u.id
+                WHERE cp.progressPercentage = 100 AND cp.completedAt >= ${startDate} AND cp.completedAt <= ${endDate}
                 GROUP BY u.id
                 ORDER BY value DESC
                 LIMIT 5;
