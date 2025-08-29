@@ -195,7 +195,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(lessonIdFromQuery || null);
   const [sidebarSearch, setSidebarSearch] = useState('');
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(!isMobile);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [isNotesPanelOpen, setIsNotesPanelOpen] = useState(false);
 
@@ -471,9 +471,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                                             : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                                     )}
                                 >
-                                    <BookOpenText className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                                    <div className="flex-shrink-0 mt-0.5">
+                                        {isCompleted ? <CheckCircle className="h-4 w-4 text-green-500"/> : <BookOpenText className="h-4 w-4 text-primary/70" />}
+                                    </div>
                                     <span className="flex-grow">{lesson.title}</span>
-                                    {isCompleted && <CheckCircle className="h-4 w-4 text-green-500 shrink-0 mt-0.5"/>}
                                 </button>
                             </li>
                           )})}
@@ -528,34 +529,35 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
   return (
     <div className="space-y-4">
-       <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-                {!isMobile && (
-                    <Button variant="ghost" size="icon" onClick={() => setIsSidebarVisible(!isSidebarVisible)}>
-                        <PanelLeft />
-                    </Button>
-                )}
-            </div>
-            <div className="flex items-center gap-2">
-                {isCreatorViewingCourse ? (
-                    <Button asChild variant="outline" size="sm" className="shrink-0">
-                        <Link href={`/manage-courses/${course.id}/edit`}>
-                            <ArrowLeft className="mr-2 h-4 w-4" /> Volver a Gestión
-                        </Link>
-                    </Button>
-                ) : (
-                    <Button variant="outline" size="sm" onClick={() => router.back()} className="shrink-0">
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Volver
-                    </Button>
-                )}
-            </div>
-        </div>
-      <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6">
+       <div className="flex items-center justify-between gap-4 md:hidden">
+          <Button asChild variant="outline" size="sm">
+             {isCreatorViewingCourse ? 
+                <Link href={`/manage-courses/${course.id}/edit`}>
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Gestión
+                </Link> : 
+                <button onClick={() => router.back()}>
+                     <ArrowLeft className="mr-2 h-4 w-4" /> Volver
+                </button>
+              }
+          </Button>
+          <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm">
+                <PanelLeft className="mr-2 h-4 w-4" /> Menú del Curso
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-full max-w-sm">
+                <SidebarContent />
+            </SheetContent>
+          </Sheet>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         
         {!isMobile && (
             <aside className={cn(
                 "bg-card border rounded-lg flex-col transition-all duration-300",
-                "md:col-span-1 lg:col-span-1",
+                "lg:col-span-1",
                 isSidebarVisible ? "flex" : "hidden"
             )}>
                 <SidebarContent />
@@ -564,7 +566,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
         <main className={cn(
             "bg-card rounded-lg border flex flex-col transition-all duration-300",
-            !isMobile && (isSidebarVisible ? "md:col-span-3 lg:col-span-4" : "col-span-full"),
+            !isMobile && (isSidebarVisible ? "lg:col-span-4" : "col-span-full"),
             isMobile && "col-span-full"
         )}>
             <ScrollArea className="flex-1">
@@ -578,10 +580,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                         {(selectedLesson.contentBlocks || []).map(block => renderContentBlock(block))}
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className="flex flex-col items-center justify-center h-full text-center p-8">
                         <BookOpenText className="h-12 w-12 text-muted-foreground mb-4" />
                         <h3 className="text-xl font-semibold">Selecciona una lección</h3>
-                        <p className="text-muted-foreground">Elige una lección de la barra lateral para comenzar a aprender.</p>
+                        <p className="text-muted-foreground">Elige una lección del menú para comenzar a aprender.</p>
                     </div>
                 )}
                 </div>
@@ -592,7 +594,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
        {selectedLessonId && isEnrolled && !isCreatorViewingCourse && (
             <>
                 <Button 
-                    className="fixed bottom-24 right-6 z-40 h-14 w-14 rounded-full shadow-lg" 
+                    className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full shadow-lg" 
                     onClick={() => setIsNotesPanelOpen(true)}
                 >
                     <Notebook className="h-6 w-6" />
@@ -601,21 +603,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             </>
         )}
 
-      {isMobile && (
-        <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-          <SheetTrigger asChild>
-            <Button className="fixed bottom-24 right-6 z-40 h-14 w-14 rounded-full shadow-lg">
-              <PanelLeft className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-80">
-            <SheetHeader className="p-4 border-b">
-                <SheetTitle className="sr-only">Navegación del Curso</SheetTitle>
-            </SheetHeader>
-            <SidebarContent />
-          </SheetContent>
-        </Sheet>
-      )}
     </div>
   );
 }

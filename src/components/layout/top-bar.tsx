@@ -84,10 +84,10 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-20 px-4 shrink-0 border-b border-primary/10",
-            "bg-gradient-to-b from-primary/20 to-transparent sticky top-0 z-40"
+            "bg-gradient-to-b from-primary/20 to-transparent sticky top-0 z-30" // Lower z-index
         )}>
             {/* Left side */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
                  {isMobile && (
                     <Button onClick={toggleSidebar} variant="ghost" size="icon">
                         <PanelLeft className="h-5 w-5"/>
