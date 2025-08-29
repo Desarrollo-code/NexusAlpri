@@ -322,10 +322,8 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     return (
         <Dialog open={!!resource} onOpenChange={(isOpen) => !isOpen && onClose()}>
             <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg">
-                 <DialogHeader className="p-0 absolute -top-40 -left-40">
-                     <DialogTitle className="sr-only">Previsualización de {resource.title}</DialogTitle>
-                 </DialogHeader>
-                <header className="flex-shrink-0 h-16 px-4 flex justify-between items-center border-b z-10 bg-background/70">
+                 <DialogHeader className="p-4 flex-shrink-0 h-16 px-4 flex justify-between items-center border-b z-10 bg-background/70">
+                    <DialogTitle className="sr-only">Previsualización de {resource.title}</DialogTitle>
                     <div className="flex items-center gap-3 overflow-hidden">
                         {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0" })}
                         <h2 className="font-semibold truncate text-foreground">{resource.title}</h2>
@@ -354,7 +352,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                             </Button>
                          </DialogClose>
                     </div>
-                </header>
+                </DialogHeader>
                 <div className="flex-grow flex relative overflow-hidden">
                      <div className="flex-grow relative">
                         <Button variant="ghost" size="icon" onClick={() => onNavigate('prev')} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronLeft/></Button>
