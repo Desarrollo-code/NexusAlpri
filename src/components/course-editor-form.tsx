@@ -533,10 +533,13 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     return (
         <div className="space-y-4">
-            <header className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 border-b bg-card -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
-                 <div className="flex items-center gap-4 w-full sm:w-auto">
+            <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-4 border-b bg-card -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 sticky top-0 md:top-20 z-10">
+                 <div className="flex items-center gap-2 w-full">
                     <Button asChild variant="outline" type="button" size="sm" className="shrink-0"><Link href="/manage-courses"><ArrowLeft className="mr-2 h-4 w-4" /> Volver</Link></Button>
-                    <h1 className="text-xl font-semibold truncate">{courseId === 'new' ? 'Crear Nuevo Curso' : 'Editar Curso'}</h1>
+                    <h1 className="text-lg sm:text-xl font-semibold truncate flex-grow">
+                        <span className="sm:hidden">Editando Curso</span>
+                        <span className="hidden sm:inline">Editando: {course.title}</span>
+                    </h1>
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                     <Button asChild variant="secondary" type="button" className="w-full sm:w-auto"><Link href={`/courses/${courseId}`} target="_blank"><Eye className="mr-2 h-4 w-4" /> Vista Previa</Link></Button>
@@ -595,7 +598,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     </Card>
                 </div>
 
-                <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+                <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-40">
                      <Card>
                         <CardHeader><CardTitle>Publicación</CardTitle><CardDescription>Controla la visibilidad y el estado del curso.</CardDescription></CardHeader>
                         <CardContent className="space-y-4">

@@ -206,3 +206,26 @@
 .quill-editor .ql-editor {
   @apply min-h-[150px] resize-y;
 }
+
+/* Responsive adjustments for Quill toolbar on mobile */
+@media (max-width: 768px) {
+  .quill-editor .ql-toolbar {
+    @apply flex flex-wrap;
+  }
+  .quill-editor .ql-formats {
+    @apply mr-2 mb-1;
+  }
+  .quill-editor .ql-toolbar .ql-picker-label,
+  .quill-editor .ql-toolbar .ql-picker-options {
+    @apply text-xs;
+  }
+  .quill-editor .ql-toolbar .ql-stroke {
+     @apply !h-4 !w-4;
+  }
+   .quill-editor .ql-toolbar .ql-picker {
+     @apply !h-6;
+  }
+   .quill-editor .ql-toolbar button {
+     @apply !p-1 !h-6 !w-6;
+  }
+}
