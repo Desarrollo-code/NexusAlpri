@@ -28,7 +28,7 @@ import { useTour } from '@/contexts/tour-context';
 import { enrollmentsTour } from '@/lib/tour-steps';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Bar, TooltipProps } from 'recharts';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 // --- TYPE DEFINITIONS ---
@@ -507,31 +507,41 @@ export default function EnrollmentsPage() {
             </DialogHeader>
             {studentToView && (
                 <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                         <Avatar className="h-16 w-16"><AvatarImage src={studentToView.user.avatar || ''} /><AvatarFallback><Identicon userId={studentToView.user.id}/></AvatarFallback></Avatar>
-                         <div>
+                    <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                        <Avatar className="h-16 w-16"><AvatarImage src={studentToView.user.avatar || ''} /><AvatarFallback><Identicon userId={studentToView.user.id}/></AvatarFallback></Avatar>
+                        <div>
                             <p className="font-bold text-lg">{studentToView.user.name}</p>
                             <p className="text-sm text-muted-foreground">{studentToView.user.email}</p>
-                         </div>
+                        </div>
                     </div>
-                     <div className="grid grid-cols-2 gap-4 text-sm">
-                        <p><strong>Progreso:</strong> {studentToView.progress?.progressPercentage?.toFixed(0) || 0}%</p>
-                        <p><strong>Calificación Quizzes:</strong> {studentToView.progress?.avgQuizScore?.toFixed(0) || 'N/A'}%</p>
-                        <p><strong>Inscrito:</strong> {new Date(studentToView.enrolledAt).toLocaleDateString()}</p>
-                        <p><strong>Última Actividad:</strong> {studentToView.progress?.lastActivity ? new Date(studentToView.progress.lastActivity).toLocaleDateString() : 'N/A'}</p>
+                    
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm p-4 border rounded-lg">
+                        <div className="font-semibold text-muted-foreground">Progreso:</div>
+                        <div className="font-bold">{studentToView.progress?.progressPercentage?.toFixed(0) || 0}%</div>
+                        
+                        <div className="font-semibold text-muted-foreground">Calificación Quizzes:</div>
+                        <div className="font-bold">{studentToView.progress?.avgQuizScore?.toFixed(0) || 'N/A'}%</div>
+
+                        <div className="font-semibold text-muted-foreground">Inscrito:</div>
+                        <div>{new Date(studentToView.enrolledAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+
+                        <div className="font-semibold text-muted-foreground">Última Actividad:</div>
+                        <div>{studentToView.progress?.lastActivity ? new Date(studentToView.progress.lastActivity).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }) : 'N/A'}</div>
                     </div>
+                    
                     <Separator/>
-                    <ScrollArea className="h-64">
-                       <div className="space-y-4 pr-4">
+                    
+                    <ScrollArea className="h-64 border rounded-lg">
+                       <div className="space-y-4 p-4">
                         {selectedCourseInfo?.modules.map(module => (
                             <div key={module.id}>
-                                <h4 className="font-semibold">{module.title}</h4>
-                                <ul className="mt-2 space-y-1 text-sm">
+                                <h4 className="font-semibold text-base">{module.title}</h4>
+                                <ul className="mt-2 space-y-1.5 text-sm ml-2">
                                     {module.lessons.map(lesson => {
                                         const isCompleted = studentToView.progress?.completedLessons.some(cl => cl.lessonId === lesson.id);
                                         return (
                                             <li key={lesson.id} className="flex items-center gap-2">
-                                                {isCompleted ? <CheckCircle className="h-4 w-4 text-green-500"/> : <div className="h-4 w-4 border rounded-full"/>}
+                                                {isCompleted ? <CheckCircle className="h-4 w-4 text-green-500"/> : <div className="h-4 w-4 flex-shrink-0" />}
                                                 <span className={cn(isCompleted ? 'text-muted-foreground line-through' : 'text-foreground')}>{lesson.title}</span>
                                             </li>
                                         )
@@ -541,12 +551,11 @@ export default function EnrollmentsPage() {
                         ))}
                        </div>
                     </ScrollArea>
-                    <Separator/>
-                    <div className="flex justify-end">
-                        <Button variant="destructive" onClick={() => setStudentToUnenroll(studentToView)}>
+                    <DialogFooter>
+                        <Button variant="destructive" onClick={() => { setStudentToView(null); setStudentToUnenroll(studentToView); }}>
                             <UserX className="mr-2 h-4 w-4"/> Cancelar Inscripción
                         </Button>
-                    </div>
+                    </DialogFooter>
                 </div>
             )}
         </DialogContent>
