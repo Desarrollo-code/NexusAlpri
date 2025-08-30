@@ -1,3 +1,4 @@
+
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
@@ -22,7 +23,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Identicon } from '@/components/ui/identicon';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
-import { useTour, TourProvider } from '@/contexts/tour-context'; // Import TourProvider
+import { useTour } from '@/contexts/tour-context';
 import { securityAuditTour } from '@/lib/tour-steps';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -360,8 +361,6 @@ function SecurityAuditContent() {
 
 export default function SecurityAuditPage() {
     return (
-        <TourProvider>
-            <SecurityAuditContent />
-        </TourProvider>
+        <SecurityAuditContent />
     )
 }
