@@ -49,7 +49,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
             }
         }
         
-        const score = (correctCount / questions.length) * 100;
+        const score = quiz?.questions.length ? (correctCount / quiz.questions.length) * 100 : 0;
         
         const currentAttempts = await prisma.quizAttempt.count({ where: { userId, quizId } });
 
