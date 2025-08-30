@@ -66,6 +66,9 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
 
     const renderOption = (option: FormFieldOption, index: number) => {
         const optionId = `opt-${field.id}-${option.id}`;
+        // La puntuación solo se muestra para opción única
+        const showScoring = isScoringEnabled && field.type === 'SINGLE_CHOICE';
+
         return (
             <div className="flex items-center gap-2" key={option.id}>
                 {field.type === 'SINGLE_CHOICE' ? (
@@ -81,7 +84,7 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
                         disabled={isSaving}
                     />
                 </Label>
-                {isScoringEnabled && (
+                {showScoring && (
                      <div className="flex items-center gap-1">
                         <Input
                             type="number"
@@ -278,6 +281,10 @@ export function FormEditor({ formId }: { formId: string }) {
         const updatedFields = form!.fields.map(f => {
             if (f.id === fieldId) {
                  const newOptions = (f.options as any[]).filter((_, i) => i !== optionIndex);
+                 // If the deleted option was the correct one, set the first one as correct
+                if (f.type === 'SINGLE_CHOICE' && newOptions.length > 0 && !newOptions.some(opt => opt.isCorrect)) {
+                    newOptions[0].isCorrect = true;
+                }
                  return { ...f, options: newOptions };
             }
             return f;
@@ -430,7 +437,7 @@ export function FormEditor({ formId }: { formId: string }) {
                                         <Alert variant="default" className="mt-2">
                                             <Info className="h-4 w-4" />
                                             <AlertDescription className="text-xs">
-                                                Recuerda asignar puntos a las opciones correctas en cada pregunta para que el cálculo funcione.
+                                                Recuerda: la puntuación solo funciona para preguntas de <strong>Opción Única</strong>. Asigna puntos a las opciones para que el cálculo funcione.
                                             </AlertDescription>
                                         </Alert>
                                     )}

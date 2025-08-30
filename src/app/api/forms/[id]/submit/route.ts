@@ -42,30 +42,23 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             let maxPoints = 0;
 
             for (const field of form.fields) {
+                // Solo procesar puntuación para SINGLE_CHOICE
+                if (field.type !== 'SINGLE_CHOICE') continue;
+
                 const fieldOptions = field.options as any as FormFieldOption[];
                 if (!fieldOptions || fieldOptions.length === 0) continue;
-
-                // Calcular el puntaje máximo para esta pregunta
+                
                 const questionMaxPoints = fieldOptions
                     .filter(opt => opt.isCorrect)
                     .reduce((sum, opt) => sum + (opt.points || 0), 0);
                 maxPoints += questionMaxPoints;
 
-                const userAnswer = answers[field.id];
-                if (!userAnswer) continue; 
-
-                if (field.type === 'SINGLE_CHOICE') {
-                    const selectedOption = fieldOptions.find(o => o.id === userAnswer);
-                    if (selectedOption?.isCorrect) {
-                        userPoints += selectedOption.points || 0;
-                    }
-                } else if (field.type === 'MULTIPLE_CHOICE') {
-                    const selectedOptionIds = new Set(Array.isArray(userAnswer) ? userAnswer : []);
-                    fieldOptions.forEach(opt => {
-                        if (selectedOptionIds.has(opt.id) && opt.isCorrect) {
-                             userPoints += opt.points || 0;
-                        }
-                    });
+                const userAnswerId = answers[field.id];
+                if (!userAnswerId) continue; 
+                
+                const selectedOption = fieldOptions.find(o => o.id === userAnswerId);
+                if (selectedOption?.isCorrect) {
+                    userPoints += selectedOption.points || 0;
                 }
             }
             
