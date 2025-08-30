@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
+    quality: 100, // Máxima calidad de imagen
     remotePatterns: [
       {
         protocol: 'https',
