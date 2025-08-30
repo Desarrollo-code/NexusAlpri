@@ -299,7 +299,7 @@ export default function ManageCoursesPage() {
                      <TableRow key={course.id}>
                         <TableCell>
                            <div className="flex items-center gap-4">
-                                <Image src={course.imageUrl || `https://placehold.co/64x36.png`} alt={course.title} width={64} height={36} className="w-16 h-9 object-cover rounded-md bg-muted" />
+                                <Image src={course.imageUrl || `https://placehold.co/64x36.png`} alt={course.title} width={64} height={36} className="w-16 h-9 object-cover rounded-md bg-muted" quality={100} />
                                 <div>
                                     <Link href={`/manage-courses/${course.id}/edit`} className="font-semibold text-foreground hover:underline">{course.title}</Link>
                                     <p className="text-xs text-muted-foreground">{course.category}</p>

@@ -126,6 +126,7 @@ export function CourseCard({
                     className="object-contain transition-transform duration-300 group-hover:scale-105"
                     data-ai-hint="online course abstract"
                     priority={priority}
+                    quality={100}
                 />
                 <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-colors" />
                 {typeof progress === 'number' && (

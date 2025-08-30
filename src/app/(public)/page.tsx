@@ -1,3 +1,4 @@
+
 // src/app/(public)/page.tsx
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -107,6 +108,7 @@ export default async function LandingPage() {
                   className="object-contain"
                   data-ai-hint="team collaboration"
                   priority
+                  quality={100}
                 />
               </div>
             </div>
@@ -164,6 +166,7 @@ export default async function LandingPage() {
                             fill
                             className="object-contain"
                             data-ai-hint="diverse team"
+                            quality={100}
                         />
                      </div>
                     <div className="space-y-8">
@@ -201,7 +204,7 @@ export default async function LandingPage() {
                            </CardContent>
                            <CardFooter>
                               <div className="flex items-center gap-3">
-                                <Image className="rounded-full" src={testimonial.avatar} height={40} width={40} alt={testimonial.name} data-ai-hint="portrait person" />
+                                <Image className="rounded-full" src={testimonial.avatar} height={40} width={40} alt={testimonial.name} data-ai-hint="portrait person" quality={100} />
                                 <div>
                                     <p className="font-semibold text-foreground">{testimonial.name}</p>
                                     <p className="text-sm text-muted-foreground">{testimonial.role}</p>

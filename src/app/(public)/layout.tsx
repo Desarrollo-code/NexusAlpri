@@ -1,3 +1,4 @@
+
 // src/app/(public)/layout.tsx
 import { Footer } from '@/components/layout/footer';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
@@ -42,6 +43,7 @@ export default async function PublicLayout({
                     data-ai-hint="logo company"
                     priority
                     style={{ width: 'auto', height: 'auto' }}
+                    quality={100}
                 />
             </div>
         )}

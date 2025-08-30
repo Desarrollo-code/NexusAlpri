@@ -1,3 +1,4 @@
+
 // src/components/resources/resource-preview-modal.tsx
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
@@ -218,7 +219,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
 
         if (youtubeId) return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>;
         if (isVideoFile) return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />;
-        if (isImage) return <div className="relative w-full h-full p-2"><Image src={displayUrl} alt={resource.title} fill className="object-contain" data-ai-hint="document image" /></div>;
+        if (isImage) return <div className="relative w-full h-full p-2"><Image src={displayUrl} alt={resource.title} fill className="object-contain" data-ai-hint="document image" quality={100} /></div>;
         if (isPdf) {
             return (
                 <div className="w-full h-full relative">

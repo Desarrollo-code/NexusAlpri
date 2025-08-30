@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -46,6 +47,7 @@ import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Calendar } from '@/components/ui/calendar';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { ImageCropper } from '@/components/image-cropper';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { UploadArea } from '@/components/ui/upload-area';
 
 
@@ -244,7 +246,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const router = useRouter();
     const { toast } = useToast();
     const { user, settings, isLoading: isAuthLoading } = useAuth();
-    const { setPageTitle, setHeaderActions } = useTitle();
+    const { setPageTitle, setHeaderActions, setShowBackButton } = useTitle();
 
     const [course, setCourse] = useState<AppCourse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -355,14 +357,16 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         );
 
         if (course) {
-            setPageTitle(`Editando: ${course.title}`);
+            setPageTitle(`${course.title}`);
             setHeaderActions(<EditorActions />);
+            setShowBackButton(true);
         }
         return () => {
             setPageTitle(''); // Reset on unmount
             setHeaderActions(null);
+            setShowBackButton(false);
         }
-    }, [course, isSaving, isDirty, courseId, setPageTitle, setHeaderActions, handleSaveCourse]);
+    }, [course, isSaving, isDirty, courseId, setPageTitle, setHeaderActions, setShowBackButton, handleSaveCourse]);
 
 
     const handleStateUpdate = useCallback((updater: (prev: AppCourse) => AppCourse) => {
@@ -623,7 +627,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                             <div className="relative aspect-video w-full rounded-md border overflow-hidden p-2 bg-muted/20">
                                 {course.imageUrl ? (
                                     <>
-                                        <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-contain p-2" onError={() => updateCourseField('imageUrl', null)} data-ai-hint="online course" />
+                                        <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-contain p-2" onError={() => updateCourseField('imageUrl', null)} data-ai-hint="online course" quality={100} />
                                         <div className="absolute top-2 right-2 z-10 flex gap-1">
                                             <Button type="button" variant="secondary" size="icon" className="rounded-full h-8 w-8" onClick={() => document.getElementById('image-upload')?.click()} disabled={isSaving}><Replace className="h-4 w-4" /></Button>
                                             <Button type="button" variant="destructive" size="icon" className="rounded-full h-8 w-8" onClick={() => updateCourseField('imageUrl', null)} disabled={isSaving}><XCircle className="h-4 w-4" /></Button>

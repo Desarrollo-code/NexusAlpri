@@ -33,7 +33,7 @@ export function PublicTopBar() {
       <div className="hidden md:flex items-center justify-between px-4 lg:px-6 h-20">
         <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
           <div className={cn("w-12 h-12 bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden", !settings?.logoUrl && "p-2")}>
-            {settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain p-1"/></div> : <div className="w-full h-full rounded-md bg-muted" />}
+            {settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain p-1" quality={100}/></div> : <div className="w-full h-full rounded-md bg-muted" />}
           </div>
           <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-foreground">
             {settings?.platformName || 'NexusAlpri'}
@@ -66,7 +66,7 @@ export function PublicTopBar() {
       <div className="md:hidden flex items-center px-4 h-16 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg">
           <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
             <div className={cn("w-10 h-10 bg-white/20 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden p-1")}>
-              {settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain"/></div> : <div className="w-full h-full rounded-md bg-muted" />}
+              {settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain" quality={100}/></div> : <div className="w-full h-full rounded-md bg-muted" />}
             </div>
             <span className="text-lg font-bold font-headline-alt tracking-wide whitespace-nowrap">
               {settings?.platformName || 'NexusAlpri'}

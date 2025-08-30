@@ -1,3 +1,4 @@
+
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -23,6 +24,7 @@ import { profileTour } from '@/lib/tour-steps';
 import type { UserAchievement } from '@/types';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
+import Image from 'next/image';
 
 // Gamification Level Calculation
 const calculateLevel = (xp: number) => {
@@ -259,7 +261,7 @@ function ProfilePageContent() {
             </div>
             <div className="card__avatar">
                 <Avatar className="h-full w-full">
-                    <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                    <AvatarImage src={user.avatar || undefined} alt={user.name} quality={100} />
                     <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
                 </Avatar>
                  <label htmlFor="avatar-upload" className="absolute bottom-1 right-1 h-9 w-9 bg-card text-card-foreground rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-muted transition-colors">
@@ -328,7 +330,7 @@ function ProfilePageContent() {
             ) : qrCode ? (
                  <div className="text-center space-y-4">
                     <p className="text-sm text-muted-foreground">Escanea este código QR con tu aplicación de autenticación (ej. Google Authenticator).</p>
-                    <div className="flex justify-center p-2 bg-white rounded-md"><Image src={qrCode} alt="Código QR para 2FA" width={200} height={200} /></div>
+                    <div className="flex justify-center p-2 bg-white rounded-md"><Image src={qrCode} alt="Código QR para 2FA" width={200} height={200} quality={100} /></div>
                     <Label htmlFor="verificationCode">Código de Verificación</Label>
                     <Input id="verificationCode" value={verificationCode} onChange={(e) => setVerificationCode(e.target.value)} placeholder="123456" maxLength={6} className="w-40 mx-auto text-center tracking-widest"/>
                     <Button onClick={handleVerify2FA} disabled={isActivating2FA}>{isActivating2FA ? <Loader2 className="animate-spin"/> : 'Activar y Verificar'}</Button>
@@ -426,4 +428,3 @@ export default function ProfilePage() {
     }
     return <ProfilePageContent />;
 }
-
