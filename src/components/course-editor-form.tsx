@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -7,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Zap, CircleOff, Paperclip, ChevronRight, Calendar as CalendarIcon, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState, ChangeEvent, useCallback, useMemo } from 'react';
@@ -30,7 +31,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from '@/components/ui/badge';
 import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided, DraggableStateSnapshot, DroppableProvided } from '@hello-pangea/dnd';
-import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
@@ -53,7 +53,6 @@ import { useTitle } from '@/contexts/title-context';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Calendar } from '@/components/ui/calendar';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { UploadArea } from '@/components/ui/upload-area';
 import { ImageCropper } from '@/components/image-cropper';
 
 
@@ -609,32 +608,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                         <SelectItem value="DRAFT">Borrador</SelectItem>
                                         <SelectItem value="PUBLISHED">Publicado</SelectItem>
                                         <SelectItem value="ARCHIVED">Archivado</SelectItem>
-                                        <SelectItem value="SCHEDULED">Programado</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
-                            {course.status === 'SCHEDULED' && 
-                                <div>
-                                    <Label htmlFor="publicationDate">Fecha de Publicación</Label>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !course.publicationDate && "text-muted-foreground")} disabled={isSaving}>
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {course.publicationDate ? format(new Date(course.publicationDate), "PPP", { locale: es }) : <span>Elige una fecha</span>}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <Calendar 
-                                                mode="single" 
-                                                selected={course.publicationDate ? new Date(course.publicationDate) : undefined} 
-                                                onSelect={d => updateCourseField('publicationDate', d)} 
-                                                initialFocus 
-                                                locale={es}
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
-                            }
                         </CardContent>
                     </Card>
                     <Card>
@@ -854,3 +830,4 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
         </Dialog>
     );
 }
+
