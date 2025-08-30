@@ -1,4 +1,3 @@
-
 // src/components/layout/user-avatar-dropdown.tsx
 'use client';
 
@@ -30,12 +29,6 @@ import { getRoleInSpanish } from '@/lib/security-log-utils';
 
 function ThemeToggle() {
     const { theme, setTheme } = useTheme();
-    const { updateTheme } = useAuth();
-
-    const handleThemeChange = (newTheme: string) => {
-        setTheme(newTheme); // from next-themes, for immediate visual feedback
-        updateTheme(newTheme); // from our auth context, to save to DB
-    };
 
     return (
         <DropdownMenuSub>
@@ -45,7 +38,7 @@ function ThemeToggle() {
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                    <DropdownMenuRadioGroup value={theme} onValueChange={handleThemeChange}>
+                    <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
                         {AVAILABLE_THEMES.map((t) => (
                            <DropdownMenuRadioItem key={t.value} value={t.value}>
                              {t.label}
