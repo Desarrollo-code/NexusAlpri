@@ -24,9 +24,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         
         const form = await prisma.form.findUnique({
             where: { id: formId },
-            include: { fields: {
-                select: { id: true, type: true, options: true }
-            }}
+            include: { 
+                fields: {
+                    select: { id: true, type: true, options: true }
+                }
+            }
         });
 
         if (!form || form.status !== 'PUBLISHED') {

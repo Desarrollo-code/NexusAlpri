@@ -1,130 +1,66 @@
-// src/app/api/notes/route.ts
+// src/app/api/progress/[userId]/[courseId]/consolidate/route.ts
 
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import type { NextRequest } from 'next/server';
+import { checkAndAwardCourseCompletionAchievements } from '@/lib/gamification';
 
 export const dynamic = 'force-dynamic';
 
-// GET all notes for the current user
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ userId: string, courseId: string }> }) {
     const session = await getCurrentUser();
-    if (!session) {
-        return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+    const { userId, courseId } = await params;
+
+    if (!session || session.id !== userId) {
+        return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
     try {
-        const notes = await prisma.userNote.findMany({
-            where: { userId: session.id },
-            include: {
-                lesson: {
-                    select: {
-                        id: true,
-                        title: true,
-                        module: {
-                            select: {
-                                id: true,
-                                title: true,
-                                course: {
-                                    select: {
-                                        id: true,
-                                        title: true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            orderBy: {
-                lesson: {
-                    module: {
-                        courseId: 'asc'
-                    }
-                }
+        const progress = await prisma.courseProgress.findFirst({
+            where: { userId, courseId },
+            include: { completedLessons: true }
+        });
+
+        if (!progress) {
+            return NextResponse.json({ message: 'No se encontró el progreso para este curso.' }, { status: 404 });
+        }
+
+        const totalLessonsInCourse = await prisma.lesson.count({ where: { module: { courseId } } });
+
+        if (totalLessonsInCourse === 0) {
+            return NextResponse.json({ progressPercentage: 100 });
+        }
+
+        if (progress.completedLessons.length < totalLessonsInCourse) {
+            return NextResponse.json({ message: 'Aún no has completado todas las lecciones del curso.' }, { status: 400 });
+        }
+
+        let totalScoreSum = 0;
+        progress.completedLessons.forEach(record => {
+            if (record.type === 'quiz' && record.score !== null) {
+                totalScoreSum += record.score;
+            } else { // 'view' or quiz without score
+                totalScoreSum += 100;
             }
         });
-        return NextResponse.json(notes);
-    } catch (error) {
-        console.error('[NOTES_GET_ALL_ERROR]', error);
-        return NextResponse.json({ message: 'Error al obtener las notas' }, { status: 500 });
-    }
-}
-
-
-// POST (create or update) a note
-export async function POST(req: NextRequest) {
-    const session = await getCurrentUser();
-    if (!session) {
-        return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
-    }
-
-    try {
-        const { lessonId, content, color } = await req.json();
-
-        if (!lessonId) {
-            return NextResponse.json({ message: 'lessonId es requerido' }, { status: 400 });
-        }
-
-        const note = await prisma.userNote.upsert({
-            where: {
-                userId_lessonId: {
-                    userId: session.id,
-                    lessonId: lessonId,
-                },
-            },
-            update: {
-                content: content,
-                color: color || 'yellow',
-            },
-            create: {
-                userId: session.id,
-                lessonId: lessonId,
-                content: content,
-                color: color || 'yellow',
-            },
-        });
-
-        return NextResponse.json(note);
-    } catch (error) {
-        console.error('[NOTE_POST_ERROR]', error);
-        return NextResponse.json({ message: 'Error al guardar la nota' }, { status: 500 });
-    }
-}
-
-// DELETE a note
-export async function DELETE(req: NextRequest) {
-    const session = await getCurrentUser();
-    if (!session) {
-        return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
-    }
-
-    try {
-        const { noteId } = await req.json();
-        if (!noteId) {
-            return NextResponse.json({ message: 'noteId es requerido' }, { status: 400 });
-        }
         
-        // Find the note and verify ownership
-        const noteToDelete = await prisma.userNote.findUnique({
-            where: { id: noteId },
-        });
+        const finalPercentage = Math.round(totalScoreSum / totalLessonsInCourse);
 
-        if (!noteToDelete) {
-            return NextResponse.json({ message: 'Nota no encontrada' }, { status: 404 });
-        }
-
-        if (noteToDelete.userId !== session.id) {
-            return NextResponse.json({ message: 'No tienes permiso para eliminar esta nota' }, { status: 403 });
-        }
-        
-        await prisma.userNote.delete({
-            where: { id: noteId },
+        const updatedProgress = await prisma.courseProgress.update({
+            where: { id: progress.id },
+            data: { 
+                progressPercentage: finalPercentage,
+                completedAt: new Date(),
+            }
         });
         
-        return new NextResponse(null, { status: 204 });
+        await checkAndAwardCourseCompletionAchievements(userId);
+        
+        return NextResponse.json(updatedProgress);
+
     } catch (error) {
-         console.error('[NOTE_DELETE_ERROR]', error);
-        return NextResponse.json({ message: 'Error al eliminar la nota' }, { status: 500 });
+        console.error('[CONSOLIDATE_PROGRESS_ERROR]', error);
+        return NextResponse.json({ message: 'Error al consolidar el progreso' }, { status: 500 });
     }
 }
