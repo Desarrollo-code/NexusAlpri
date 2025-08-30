@@ -1,4 +1,3 @@
-
 // src/components/ui/sidebar.tsx
 'use client';
 
@@ -10,12 +9,11 @@ import { ChevronsLeft, LogOut, User as UserIconLucide } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/auth-context";
 import { getNavItemsForRole } from "@/lib/nav-items";
-import { cn, getInitials } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { GradientIcon } from "./gradient-icon";
 import type { NavItem } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
-import { SidebarHeader } from "../layout/sidebar-header";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { Identicon } from "./identicon";
 
@@ -84,7 +82,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       )}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full transition-all duration-300 ease-in-out shadow-xl",
+          "fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out shadow-xl",
           "bg-card border-r border-border",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
@@ -182,13 +180,11 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
 export const SidebarFooter = () => {
   const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
-  const { user, logout } = useAuth();
 
-  if (!user) return null;
+  if (isMobile) return null; // No collapse button on mobile
 
   return (
-    <div className={cn("p-3 border-t border-border mt-auto flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
-      {!isMobile && (
+    <div className={cn("p-3 border-t border-border flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
         <Button
           onClick={toggleSidebar}
           variant="ghost"
@@ -199,8 +195,8 @@ export const SidebarFooter = () => {
           )}
         >
           <ChevronsLeft className="h-4 w-4" />
+          <span className="sr-only">Toggle Sidebar</span>
         </Button>
-      )}
     </div>
   );
 };

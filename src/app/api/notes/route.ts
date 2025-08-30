@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const { lessonId, content } = await req.json();
+        const { lessonId, content, color } = await req.json();
 
         if (!lessonId) {
             return NextResponse.json({ message: 'lessonId es requerido' }, { status: 400 });
@@ -75,11 +75,13 @@ export async function POST(req: NextRequest) {
             },
             update: {
                 content: content,
+                color: color || 'yellow',
             },
             create: {
                 userId: session.id,
                 lessonId: lessonId,
                 content: content,
+                color: color || 'yellow',
             },
         });
 
@@ -87,5 +89,42 @@ export async function POST(req: NextRequest) {
     } catch (error) {
         console.error('[NOTE_POST_ERROR]', error);
         return NextResponse.json({ message: 'Error al guardar la nota' }, { status: 500 });
+    }
+}
+
+// DELETE a note
+export async function DELETE(req: NextRequest) {
+    const session = await getCurrentUser();
+    if (!session) {
+        return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+    }
+
+    try {
+        const { noteId } = await req.json();
+        if (!noteId) {
+            return NextResponse.json({ message: 'noteId es requerido' }, { status: 400 });
+        }
+        
+        // Find the note and verify ownership
+        const noteToDelete = await prisma.userNote.findUnique({
+            where: { id: noteId },
+        });
+
+        if (!noteToDelete) {
+            return NextResponse.json({ message: 'Nota no encontrada' }, { status: 404 });
+        }
+
+        if (noteToDelete.userId !== session.id) {
+            return NextResponse.json({ message: 'No tienes permiso para eliminar esta nota' }, { status: 403 });
+        }
+        
+        await prisma.userNote.delete({
+            where: { id: noteId },
+        });
+        
+        return new NextResponse(null, { status: 204 });
+    } catch (error) {
+         console.error('[NOTE_DELETE_ERROR]', error);
+        return NextResponse.json({ message: 'Error al eliminar la nota' }, { status: 500 });
     }
 }

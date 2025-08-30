@@ -100,7 +100,8 @@ const CourseSelector = ({ courses, onSelect, selectedCourseId, isLoading }: { co
                     disabled={isLoading || courses.length === 0}
                     id="enrollments-course-selector"
                 >
-                    <span className="truncate">{selectedCourseTitle}</span>
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    <span className="truncate">{isLoading ? "Cargando cursos..." : selectedCourseTitle}</span>
                     <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>

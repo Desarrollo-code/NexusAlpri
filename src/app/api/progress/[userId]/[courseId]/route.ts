@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import type { LessonCompletionRecord as AppLessonCompletionRecord } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,18 +39,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
                 progressPercentage: 0,
             });
         }
-        
-        // Map the included records to the desired structure for the client
-        const completedLessonRecords = progress.completedLessons.map(record => ({
-            lessonId: record.lessonId,
-            type: record.type,
-            score: record.score,
-        }));
 
-        return NextResponse.json({
-            ...progress,
-            completedLessons: completedLessonRecords
-        });
+        return NextResponse.json(progress);
 
     } catch (error) {
         console.error('[PROGRESS_GET_ERROR]', error);

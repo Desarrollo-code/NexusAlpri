@@ -13,7 +13,7 @@ export const SidebarHeader = () => {
   
   return (
     <div className={cn(
-      "flex items-center h-20 bg-sidebar-header", 
+      "flex items-center h-20 bg-card", 
       isCollapsed ? 'justify-center' : 'justify-start'
     )}>
       <Link href="/dashboard" className={cn("inline-flex items-center gap-3", !isCollapsed && "px-4 w-full")}>

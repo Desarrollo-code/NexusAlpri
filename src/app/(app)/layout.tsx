@@ -1,4 +1,3 @@
-// src/app/(app)/layout.tsx
 'use client';
 
 import React from 'react';
@@ -54,7 +53,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-function AppLayout({ children }: { children: React.ReactNode }) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, settings, logout, isLoading } = useAuth();
   const { toast } = useToast();
 
@@ -86,5 +85,3 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     </ThemeProvider>
   );
 }
-
-export default AppLayout;

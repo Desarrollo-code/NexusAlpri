@@ -1,4 +1,3 @@
-
 // src/app/(app)/security-audit/page.tsx
 'use client';
 
@@ -68,7 +67,7 @@ const MetricCard = ({ title, value, icon: Icon, description, gradient }: { title
     );
 };
 
-function SecurityAuditContent() {
+export default function SecurityAuditPage() {
     const { user: currentUser } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
@@ -93,16 +92,16 @@ function SecurityAuditContent() {
         startTour('securityAudit', securityAuditTour);
     }, [setPageTitle, startTour]);
 
-    const fetchData = useCallback(async () => {
+    const fetchData = useCallback(async (filter: string, page: number) => {
         setIsLoading(true);
         setError(null);
         try {
             const logsParams = new URLSearchParams({
-                page: String(currentPage),
+                page: String(page),
                 pageSize: String(PAGE_SIZE),
             });
-            if (activeFilter !== 'ALL') {
-                logsParams.append('event', activeFilter);
+            if (filter !== 'ALL') {
+                logsParams.append('event', filter);
             }
 
             const [logsResponse, statsResponse] = await Promise.all([
@@ -132,15 +131,15 @@ function SecurityAuditContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [toast, currentPage, activeFilter]);
+    }, [toast]);
 
     useEffect(() => {
         if (currentUser?.role !== 'ADMINISTRATOR') {
             router.push('/dashboard');
             return;
         }
-        fetchData();
-    }, [currentUser, router, fetchData]);
+        fetchData(activeFilter, currentPage);
+    }, [currentUser, router, fetchData, activeFilter, currentPage]);
     
     
     const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
@@ -231,7 +230,7 @@ function SecurityAuditContent() {
                         <div className="flex flex-col items-center justify-center py-12 text-destructive">
                             <AlertTriangle className="h-8 w-8 mb-2" />
                             <p className="font-semibold">{error}</p>
-                            <Button onClick={fetchData} variant="outline" className="mt-4">
+                            <Button onClick={() => fetchData(activeFilter, currentPage)} variant="outline" className="mt-4">
                                 Reintentar
                             </Button>
                         </div>
@@ -357,10 +356,4 @@ function SecurityAuditContent() {
             </Card>
         </div>
     );
-}
-
-export default function SecurityAuditPage() {
-    return (
-        <SecurityAuditContent />
-    )
 }
