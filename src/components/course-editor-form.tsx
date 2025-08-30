@@ -294,16 +294,50 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         }
     }, [courseId, user, router, toast, setPageTitle]);
     
-     useEffect(() => {
-        if(course) {
-            setPageTitle(`Editando: ${course.title}`);
-        }
-        return () => {
-            setPageTitle(''); // Reset on unmount
-            setHeaderActions(null);
-        }
-    }, [course?.title, setPageTitle, setHeaderActions]);
+     const handleSaveCourse = useCallback(async () => {
+        if (!course) return;
+        setIsSaving(true);
+        
+        const payload = { ...course };
+        payload.modules.forEach((mod, mIdx) => {
+            mod.order = mIdx;
+            mod.lessons.forEach((les, lIdx) => {
+                les.order = lIdx;
+                les.contentBlocks.forEach((block, bIdx) => {
+                    block.order = bIdx;
+                });
+            });
+        });
+        
+        try {
+            const endpoint = courseId === 'new' ? '/api/courses' : `/api/courses/${courseId}`;
+            const method = courseId === 'new' ? 'POST' : 'PUT';
 
+            const response = await fetch(endpoint, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) throw new Error((await response.json()).message || 'Error al guardar el curso.');
+
+            const savedCourse = await response.json();
+            
+            toast({ title: "Curso Guardado", description: "La información del curso se ha guardado correctamente." });
+            
+            setCourse(savedCourse); 
+            setIsDirty(false); 
+            
+            if (courseId === 'new') {
+                router.replace(`/manage-courses/${savedCourse.id}/edit`, { scroll: false });
+            }
+
+        } catch (error: any) {
+            console.error('Error al guardar el curso:', error);
+            toast({ title: "Error al Guardar", description: error.message || "No se pudo guardar.", variant: "destructive" });
+        } finally {
+            setIsSaving(false);
+        }
+    }, [course, courseId, router, toast]);
 
     useEffect(() => {
         const EditorActions = () => (
@@ -321,9 +355,14 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         );
 
         if (course) {
+            setPageTitle(`Editando: ${course.title}`);
             setHeaderActions(<EditorActions />);
         }
-    }, [course, isSaving, isDirty, courseId, setHeaderActions]);
+        return () => {
+            setPageTitle(''); // Reset on unmount
+            setHeaderActions(null);
+        }
+    }, [course, isSaving, isDirty, courseId, setPageTitle, setHeaderActions, handleSaveCourse]);
 
 
     const handleStateUpdate = useCallback((updater: (prev: AppCourse) => AppCourse) => {
@@ -493,54 +532,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         updateCourseField('imageUrl', croppedFileUrl);
         setImageToCrop(null);
     };
-
-
-    const handleSaveCourse = async () => {
-        if (!course) return;
-        setIsSaving(true);
-        
-        const payload = { ...course };
-        payload.modules.forEach((mod, mIdx) => {
-            mod.order = mIdx;
-            mod.lessons.forEach((les, lIdx) => {
-                les.order = lIdx;
-                les.contentBlocks.forEach((block, bIdx) => {
-                    block.order = bIdx;
-                });
-            });
-        });
-        
-        try {
-            const endpoint = courseId === 'new' ? '/api/courses' : `/api/courses/${courseId}`;
-            const method = courseId === 'new' ? 'POST' : 'PUT';
-
-            const response = await fetch(endpoint, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-            if (!response.ok) throw new Error((await response.json()).message || 'Error al guardar el curso.');
-
-            const savedCourse = await response.json();
-            
-            toast({ title: "Curso Guardado", description: "La información del curso se ha guardado correctamente." });
-            
-            setCourse(savedCourse); 
-            setIsDirty(false); 
-            
-            if (courseId === 'new') {
-                router.replace(`/manage-courses/${savedCourse.id}/edit`, { scroll: false });
-            }
-
-
-        } catch (error: any) {
-            console.error('Error al guardar el curso:', error);
-            toast({ title: "Error al Guardar", description: error.message || "No se pudo guardar.", variant: "destructive" });
-        } finally {
-            setIsSaving(false);
-        }
-    }
-
 
     if (isLoading || isAuthLoading || !course) {
         return <div className="flex items-center justify-center min-h-[calc(100vh-80px)]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;

@@ -4,7 +4,7 @@
 import { cn } from "@/lib/utils";
 import { useSidebar } from "../ui/sidebar";
 import { Button } from "../ui/button";
-import { Bell, PanelLeft } from "lucide-react";
+import { Bell, PanelLeft, ArrowLeft } from "lucide-react";
 import { UserAvatarDropdown } from "./user-avatar-dropdown";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import type { Notification } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useTitle } from "@/contexts/title-context";
+import { useRouter } from "next/navigation";
 
 const timeSince = (date: Date): string => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -32,7 +33,8 @@ const timeSince = (date: Date): string => {
 
 export const TopBar = () => {
     const { isMobile, toggleSidebar } = useSidebar();
-    const { pageTitle, headerActions } = useTitle();
+    const { pageTitle, headerActions, showBackButton } = useTitle();
+    const router = useRouter();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const { toast } = useToast();
@@ -90,6 +92,11 @@ export const TopBar = () => {
                     <Button onClick={toggleSidebar} variant="ghost" size="icon">
                         <PanelLeft className="h-5 w-5"/>
                         <span className="sr-only">Toggle Menu</span>
+                    </Button>
+                 )}
+                 {showBackButton && (
+                     <Button variant="ghost" size="sm" onClick={() => router.back()}>
+                        <ArrowLeft className="h-4 w-4 mr-2"/> Volver
                     </Button>
                  )}
                  <h1 className="text-xl font-semibold truncate text-foreground">{pageTitle}</h1>
