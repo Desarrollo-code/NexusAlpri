@@ -34,10 +34,11 @@ const modules = {
   ],
 };
 
+// Se elimina 'bullet' de los formatos, ya que 'list' lo gestiona internamente.
 const formats = [
   'header',
   'bold', 'italic', 'underline', 'strike',
-  'list', 'bullet',
+  'list', 
   'blockquote', 'code-block',
   'link',
 ];
