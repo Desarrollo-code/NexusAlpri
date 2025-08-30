@@ -32,7 +32,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         });
 
         if (!form || form.status !== 'PUBLISHED') {
-            return NextResponse.json({ message: 'Este formulario no está aceptando respuestas.' }, { status: 403 });
+            return NextResponse.json({ message: 'Este formulario no está aceptando respuestas actualmente.' }, { status: 403 });
         }
         
         let finalScorePercentage: number | null = null;
@@ -43,37 +43,34 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
             for (const field of form.fields) {
                 const fieldOptions = field.options as any as FormFieldOption[];
-                if (field.type === 'SINGLE_CHOICE' || field.type === 'MULTIPLE_CHOICE') {
-                    const fieldAnswer = answers[field.id];
-                    
-                    // Calcular el máximo de puntos para esta pregunta
-                    const correctOptions = fieldOptions.filter(o => o.isCorrect);
-                    maxPoints += correctOptions.reduce((sum, opt) => sum + (opt.points || 0), 0);
+                const correctAnswerOptions = fieldOptions.filter(o => o.isCorrect);
 
-                    if (!fieldAnswer) continue;
-                    
-                    if (field.type === 'SINGLE_CHOICE') {
-                        const selectedOption = fieldOptions.find(o => o.id === fieldAnswer);
-                        if (selectedOption?.isCorrect) {
-                            userPoints += selectedOption.points || 0;
-                        }
-                    } else { // MULTIPLE_CHOICE
-                        const selectedOptionIds = new Set(Array.isArray(fieldAnswer) ? fieldAnswer : []);
-                        // Solo sumar puntos por las correctas, no restar por incorrectas seleccionadas
-                        correctOptions.forEach(correctOpt => {
-                            if (selectedOptionIds.has(correctOpt.id)) {
-                                userPoints += correctOpt.points || 0;
-                            }
-                        });
+                // Sumar al puntaje máximo posible solo si hay opciones correctas con puntos
+                maxPoints += correctAnswerOptions.reduce((sum, opt) => sum + (opt.points || 0), 0);
+
+                const userAnswer = answers[field.id];
+                if (!userAnswer) continue; // Si no hay respuesta, no suma puntos
+
+                if (field.type === 'SINGLE_CHOICE') {
+                    const selectedOption = fieldOptions.find(o => o.id === userAnswer);
+                    if (selectedOption?.isCorrect) {
+                        userPoints += selectedOption.points || 0;
                     }
+                } else if (field.type === 'MULTIPLE_CHOICE') {
+                    const selectedOptionIds = new Set(Array.isArray(userAnswer) ? userAnswer : []);
+                    correctAnswerOptions.forEach(correctOpt => {
+                        if (selectedOptionIds.has(correctOpt.id)) {
+                            userPoints += correctOpt.points || 0;
+                        }
+                    });
                 }
             }
             
-            // Calcular el porcentaje final
             if (maxPoints > 0) {
                 finalScorePercentage = (userPoints / maxPoints) * 100;
             } else {
-                finalScorePercentage = 0; // Si no hay puntos asignados, la nota es 0
+                // Si el quiz no tiene puntos asignados, el resultado es 0%
+                finalScorePercentage = 0;
             }
         }
         

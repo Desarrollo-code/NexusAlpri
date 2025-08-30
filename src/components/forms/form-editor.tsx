@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { useTitle } from '@/contexts/title-context';
 import { useRouter } from 'next/navigation';
-import { Loader2, AlertTriangle, Save, PlusCircle, Trash2, GripVertical, Check, Eye, BarChart, Share2, FilePen, MoreVertical, Settings, Copy, Shield, X, CheckSquare, ChevronDown, Type, CaseUpper, MessageSquare, ListChecks } from 'lucide-react';
+import { Loader2, AlertTriangle, Save, PlusCircle, Trash2, GripVertical, Check, Eye, BarChart, Share2, FilePen, MoreVertical, Settings, Copy, Shield, X, CheckSquare, ChevronDown, Type, CaseUpper, MessageSquare, ListChecks, Info } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -31,6 +31,7 @@ import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '../ui/alert';
 
 const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -81,13 +82,16 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
                     />
                 </Label>
                 {isScoringEnabled && (
-                    <Input
-                        type="number"
-                        value={option.points || 0}
-                        onChange={(e) => handlePointsChange(index, e.target.value)}
-                        className="w-20 h-9"
-                        disabled={isSaving}
-                    />
+                     <div className="flex items-center gap-1">
+                        <Input
+                            type="number"
+                            value={option.points || 0}
+                            onChange={(e) => handlePointsChange(index, e.target.value)}
+                            className="w-20 h-9"
+                            disabled={isSaving}
+                        />
+                         <span className="text-xs text-muted-foreground">pts</span>
+                    </div>
                 )}
                 <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={(e) => { e.preventDefault(); onOptionDelete(field.id, index)}} disabled={isSaving}>
                     <X className="h-4 w-4" />
@@ -206,7 +210,7 @@ export function FormEditor({ formId }: { formId: string }) {
             label: 'Nueva Pregunta',
             type,
             required: false,
-            options: type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' ? [{id: generateUniqueId('opt'), text: 'Opción 1', isCorrect: false, points: 0}] : [],
+            options: type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' ? [{id: generateUniqueId('opt'), text: 'Opción 1', isCorrect: true, points: 10}, {id: generateUniqueId('opt'), text: 'Opción 2', isCorrect: false, points: 0}] : [],
             placeholder: '',
             order: form ? form.fields.length : 0,
             formId: formId,
@@ -386,6 +390,14 @@ export function FormEditor({ formId }: { formId: string }) {
                             )}
                         </Droppable>
                     </DragDropContext>
+                     {form.fields.length === 0 && (
+                        <Card className="text-center border-2 border-dashed p-12">
+                            <CardHeader>
+                                <CardTitle>¡Empieza a construir!</CardTitle>
+                                <CardDescription>Usa los botones del panel derecho para añadir tu primera pregunta.</CardDescription>
+                            </CardHeader>
+                        </Card>
+                     )}
                 </main>
                 <aside className="lg:sticky lg:top-24 space-y-4">
                      <Card>
@@ -414,6 +426,14 @@ export function FormEditor({ formId }: { formId: string }) {
                                         <Switch id="isQuiz" checked={!!form.isQuiz} onCheckedChange={(c) => handleFormUpdate({ isQuiz: c })} />
                                     </div>
                                     <p className="text-xs text-muted-foreground">Convierte este formulario en una evaluación con puntos por respuesta.</p>
+                                    {form.isQuiz && (
+                                        <Alert variant="default" className="mt-2">
+                                            <Info className="h-4 w-4" />
+                                            <AlertDescription className="text-xs">
+                                                Recuerda asignar puntos a las opciones correctas en cada pregunta para que el cálculo funcione.
+                                            </AlertDescription>
+                                        </Alert>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                      <Label>Estado del Formulario</Label>
