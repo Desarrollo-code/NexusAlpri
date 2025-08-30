@@ -203,7 +203,7 @@ export function FormEditor({ formId }: { formId: string }) {
     const addField = (type: FormFieldType) => {
         const newField: FormField = {
             id: generateUniqueId('field'),
-            label: `Nueva Pregunta (${type.replace('_', ' ')})`,
+            label: 'Nueva Pregunta',
             type,
             required: false,
             options: type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' ? [{id: generateUniqueId('opt'), text: 'Opción 1', isCorrect: false, points: 0}] : [],
