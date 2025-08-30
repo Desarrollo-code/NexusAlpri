@@ -1,4 +1,4 @@
-// prisma/schema.prisma
+// prisma/schema.prisma 
 
 datasource db {
   provider     = "mysql"
@@ -118,11 +118,13 @@ model User {
   uploadedResources    Resource[]             @relation("UploadedResources")
   sharedResources      Resource[]             @relation("SharedResources")
   createdForms         Form[]                 @relation("CreatedForms")
+  sharedForms          Form[]
   formResponses        FormResponse[]
   userNotes            UserNote[]
   securityLogs         SecurityLog[]
   createdTemplates     LessonTemplate[]
   achievements         UserAchievement[]
+  quizAttempts         QuizAttempt[]
 }
 
 model Course {
@@ -279,7 +281,7 @@ model CourseProgress {
 model LessonCompletionRecord {
   id           String   @id @default(cuid())
   completedAt  DateTime @default(now())
-  type         String   // 'view' or 'quiz'
+  type         String
   score        Float?
 
   // Relations
@@ -341,7 +343,7 @@ model Resource {
   // Relations
   uploader          User?      @relation("UploadedResources", fields: [uploaderId], references: [id], onDelete: SetNull)
   uploaderId        String?
-  parent            Resource?  @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  parent            Resource?  @relation("FolderChildren", fields: [parentId], references: [id], onDelete: NoAction)
   children          Resource[] @relation("FolderChildren")
   sharedWith        User[]     @relation("SharedResources")
 
@@ -354,8 +356,8 @@ model Announcement {
   title     String
   content   String   @db.Text
   date      DateTime @default(now())
-  audience  Json     // 'ALL' or UserRole[]
-  priority  String?  @default("Normal") // "Normal" | "Urgente"
+  audience  Json
+  priority  String?  @default("Normal")
 
   // Relations
   author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -474,12 +476,12 @@ model PlatformSettings {
   require2faForAdmins        Boolean   @default(false)
 
   // Customization
-  primaryColor               String?   @default("#6366f1") // indigo-500
-  secondaryColor             String?   @default("#a5b4fc") // indigo-300
-  accentColor                String?   @default("#ec4899") // pink-500
-  backgroundColorLight       String?   @default("#f8fafc") // slate-50
-  primaryColorDark           String?   @default("#a5b4fc") // indigo-300
-  backgroundColorDark        String?   @default("#020617") // slate-950
+  primaryColor               String?   @default("#6366f1")
+  secondaryColor             String?   @default("#a5b4fc")
+  accentColor                String?   @default("#ec4899")
+  backgroundColorLight       String?   @default("#f8fafc")
+  primaryColorDark           String?   @default("#a5b4fc")
+  backgroundColorDark        String?   @default("#020617")
 
   // Categories & Tags
   resourceCategories         String?   @db.Text
@@ -510,7 +512,7 @@ model FormField {
     id          String        @id @default(cuid())
     label       String
     type        FormFieldType
-    options     Json? // For 'SINGLE_CHOICE', 'MULTIPLE_CHOICE'
+    options     Json?
     required    Boolean       @default(false)
     placeholder String?
     order       Int
@@ -526,7 +528,7 @@ model FormField {
 model FormResponse {
     id           String       @id @default(cuid())
     submittedAt  DateTime     @default(now())
-    score        Float?       // Score percentage if it's a quiz
+    score        Float?
 
     // Relations
     form         Form         @relation(fields: [formId], references: [id], onDelete: Cascade)
@@ -552,7 +554,6 @@ model FormAnswer {
     @@index([fieldId])
     @@index([responseId])
 }
-
 
 model Achievement {
     id          String    @id @default(cuid())
@@ -595,6 +596,4 @@ model UserNote {
     lessonId  String
 
     @@unique([userId, lessonId])
-    @@index([userId])
-    @@index([lessonId])
-}
+   
