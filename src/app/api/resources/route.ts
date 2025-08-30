@@ -87,9 +87,9 @@ export async function POST(req: NextRequest) {
             url: url || null,
             category: category || 'General',
             tags: Array.isArray(tags) ? tags.join(',') : '', // Convert array to comma-separated string
-            uploaderId: session.id,
             parentId: parentId || null,
             ispublic: isPublic === true,
+            uploader: { connect: { id: session.id } }, // Correctly connect the uploader
         };
         
         if (isPublic === false && sharedWithUserIds && Array.isArray(sharedWithUserIds)) {
