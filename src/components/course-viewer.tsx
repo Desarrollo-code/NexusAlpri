@@ -4,7 +4,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -140,7 +140,7 @@ const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isO
                             </div>
                         </PopoverContent>
                     </Popover>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}><XCircle className="h-4 w-4"/></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}><X className="h-4 w-4"/></Button>
                 </div>
             </div>
              <div className="flex-1 min-h-0">
@@ -610,7 +610,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                         <ArrowLeft className="h-4 w-4 mr-2"/> Volver
                     </Button>
                 </div>
-                {isEnrolled && !isCreatorViewingCourse && (
+                {isEnrolled && !isCreatorViewingCourse && selectedLessonId && (
                    <Button variant="outline" size="sm" onClick={() => setIsNotesPanelOpen(!isNotesPanelOpen)}>
                         <Notebook className="h-4 w-4 mr-2"/>
                         Mis Apuntes
