@@ -354,14 +354,14 @@ export default function SettingsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2">
-            <Tabs defaultValue="appearance" className="w-full" id="settings-tabs">
+            <Tabs defaultValue="appearance" className="w-full">
                 <TabsList id="settings-tabs-list" className="grid w-full grid-cols-3">
                     <TabsTrigger value="appearance">Apariencia</TabsTrigger>
                     <TabsTrigger value="security">Seguridad</TabsTrigger>
                     <TabsTrigger value="general">Generales</TabsTrigger>
                 </TabsList>
                 <TabsContent value="appearance" className="space-y-8 mt-6">
-                   <Card className="card-border-animated" id="settings-identity">
+                   <Card className="card-border-animated" id="settings-identity-card">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary"/>Identidad Visual</CardTitle>
                             <CardDescription>Nombre de la plataforma, logo, marca de agua e imágenes de las páginas públicas.</CardDescription>
@@ -469,7 +469,7 @@ export default function SettingsPage() {
                     </Card>
                 </TabsContent>
                  <TabsContent value="general" className="space-y-8 mt-6">
-                    <Card className="card-border-animated">
+                    <Card className="card-border-animated" id="settings-categories-card">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><List className="h-5 w-5 text-primary" />Categorías de Recursos</CardTitle>
                             <CardDescription>Gestiona las categorías usadas en cursos y la biblioteca.</CardDescription>
@@ -502,7 +502,7 @@ export default function SettingsPage() {
         </div>
         <div className="lg:col-span-1 lg:sticky lg:top-24 space-y-6">
             <ThemePreview settings={formState} />
-            <Card className="card-border-animated">
+            <Card className="card-border-animated" id="settings-save-card">
                 <CardHeader><CardTitle>Guardar Cambios</CardTitle></CardHeader>
                 <CardContent>
                     <p className="text-sm text-muted-foreground mb-4">Asegúrate de que todas las configuraciones son correctas antes de guardar.</p>

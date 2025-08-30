@@ -133,7 +133,7 @@ export const profileTour: TourStep[] = [
     }
   },
   {
-    target: '#security-card-desktop',
+    target: '#2fa-card-desktop',
     content: {
       title: 'Seguridad de la Cuenta',
       description: 'Gestiona tu contraseña y activa la Autenticación de Dos Factores (2FA) para una capa extra de seguridad.'
@@ -275,28 +275,14 @@ export const settingsTour: TourStep[] = [
     }
   },
   {
-    target: '#settings-identity',
+    target: '#settings-identity-card',
     content: {
       title: 'Identidad Visual',
       description: 'Personaliza la plataforma subiendo tu propio logo, marca de agua e imágenes para las páginas públicas.'
     }
   },
   {
-    target: '#settings-security',
-    content: {
-      title: 'Políticas de Seguridad',
-      description: 'Define cómo funcionará la seguridad en tu plataforma, desde la complejidad de las contraseñas hasta el cierre de sesión por inactividad.'
-    }
-  },
-  {
-    target: '#settings-categories',
-    content: {
-      title: 'Categorías',
-      description: 'Gestiona la lista de categorías que se usarán al crear cursos y recursos en la biblioteca.'
-    }
-  },
-  {
-    target: '#settings-save-button',
+    target: '#settings-save-card',
     content: {
       title: 'Guardar Cambios',
       description: '¡No olvides guardar! Haz clic aquí para aplicar todas las modificaciones que hayas realizado en esta página.'
