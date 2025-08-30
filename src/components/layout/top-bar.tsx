@@ -4,7 +4,7 @@
 import { cn } from "@/lib/utils";
 import { useSidebar } from "../ui/sidebar";
 import { Button } from "../ui/button";
-import { ChevronsLeft, Bell, PanelLeft } from "lucide-react";
+import { Bell, PanelLeft } from "lucide-react";
 import { UserAvatarDropdown } from "./user-avatar-dropdown";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
@@ -14,7 +14,6 @@ import { useEffect, useState } from "react";
 import type { Notification } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useTitle } from "@/contexts/title-context";
-import Image from "next/image";
 
 const timeSince = (date: Date): string => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -32,9 +31,8 @@ const timeSince = (date: Date): string => {
 };
 
 export const TopBar = () => {
-    const { isMobile, toggleSidebar, isCollapsed } = useSidebar();
-    const { pageTitle } = useTitle();
-    const { user } = useAuth();
+    const { isMobile, toggleSidebar } = useSidebar();
+    const { pageTitle, headerActions } = useTitle();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const { toast } = useToast();
@@ -49,7 +47,7 @@ export const TopBar = () => {
                     setUnreadCount(data.filter(n => !n.read).length);
                 }
             } catch (error) {
-                // Silently fail, or toast an error if preferred
+                // Silently fail
             }
         };
         fetchNotifications();
@@ -65,7 +63,7 @@ export const TopBar = () => {
                 body: JSON.stringify({ ids: ids === 'all' ? 'all' : ids, read: true })
             });
             if (res.ok) {
-                if (ids === 'all') {
+                 if (ids === 'all') {
                     setNotifications(prev => prev.map(n => ({...n, read: true})));
                     setUnreadCount(0);
                 } else {
@@ -84,7 +82,7 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-20 px-4 shrink-0 border-b border-primary/10",
-            "bg-gradient-to-b from-primary/20 to-transparent sticky top-0 z-40" // Increase z-index
+            "bg-card/80 backdrop-blur-sm sticky top-0 z-40"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -99,6 +97,7 @@ export const TopBar = () => {
 
             {/* Right side */}
             <div className="flex items-center gap-3">
+                 {headerActions && <div className="hidden md:flex items-center gap-2">{headerActions}</div>}
                  <Popover>
                     <PopoverTrigger asChild>
                         <Button variant="ghost" size="icon" className="relative text-foreground hover:text-foreground/80">
@@ -146,6 +145,7 @@ export const TopBar = () => {
                 <Separator orientation="vertical" className="h-8" />
                 <UserAvatarDropdown />
             </div>
+             {headerActions && <div className="md:hidden mt-4 flex items-center gap-2 w-full">{headerActions}</div>}
         </div>
     );
 };

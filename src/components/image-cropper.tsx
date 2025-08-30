@@ -45,6 +45,7 @@ export function ImageCropper({ imageSrc, uploadUrl, onCropComplete, onClose }: I
       }
 
       const formData = new FormData();
+      // Usamos un nombre de archivo genérico, ya que el servidor generará uno único
       formData.append('file', croppedImageBlob, 'cropped-image.png');
 
       const result = await uploadWithProgress(uploadUrl, formData, setUploadProgress);

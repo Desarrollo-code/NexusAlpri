@@ -2,7 +2,7 @@
 'use client';
 
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -26,10 +26,10 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from '@/components/ui/badge';
-import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvided, DraggableStateSnapshot, DroppableProvided } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Progress } from '@/components/ui/progress';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
@@ -40,14 +40,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { QuizViewer } from '@/components/quiz-viewer';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useTitle } from '@/contexts/title-context';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Calendar } from '@/components/ui/calendar';
@@ -71,7 +64,6 @@ const generateUniqueId = (prefix: string): string => {
     if (typeof window !== 'undefined' && window.crypto?.randomUUID) {
         return `${prefix}-${window.crypto.randomUUID()}`;
     }
-    // Fallback robusto para entornos sin crypto.randomUUID
     const timestamp = Date.now();
     const randomPart = Math.random().toString(36).substring(2, 9);
     return `${prefix}-${timestamp}-${randomPart}`;
@@ -252,7 +244,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const router = useRouter();
     const { toast } = useToast();
     const { user, settings, isLoading: isAuthLoading } = useAuth();
-    const { setPageTitle } = useTitle();
+    const { setPageTitle, setHeaderActions } = useTitle();
 
     const [course, setCourse] = useState<AppCourse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -261,8 +253,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
     const [itemToDeleteDetails, setItemToDeleteDetails] = useState<any>(null);
     
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
     const [imageToCrop, setImageToCrop] = useState<string | null>(null);
 
     // --- Data Fetching ---
@@ -291,7 +281,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 if (!response.ok) throw new Error("Course not found");
                 const courseData: AppCourse = await response.json();
                 setCourse(courseData);
-                setPageTitle(`Editando: ${courseData.title}`);
             } catch (err) {
                  toast({ title: "Error", description: "No se pudo cargar el curso para editar.", variant: "destructive" });
                  router.push('/manage-courses');
@@ -304,6 +293,38 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             fetchCourseData();
         }
     }, [courseId, user, router, toast, setPageTitle]);
+    
+     useEffect(() => {
+        if(course) {
+            setPageTitle(`Editando: ${course.title}`);
+        }
+        return () => {
+            setPageTitle(''); // Reset on unmount
+            setHeaderActions(null);
+        }
+    }, [course?.title, setPageTitle, setHeaderActions]);
+
+
+    useEffect(() => {
+        const EditorActions = () => (
+            <div className="flex items-center gap-2">
+                <Button asChild variant="outline" size="sm">
+                    <Link href={`/courses/${courseId}`} target="_blank">
+                        <Eye className="mr-2 h-4 w-4" /> Vista Previa
+                    </Link>
+                </Button>
+                <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} size="sm">
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                </Button>
+            </div>
+        );
+
+        if (course) {
+            setHeaderActions(<EditorActions />);
+        }
+    }, [course, isSaving, isDirty, courseId, setHeaderActions]);
+
 
     const handleStateUpdate = useCallback((updater: (prev: AppCourse) => AppCourse) => {
         setCourse(prev => prev ? updater(prev) : null);
@@ -424,7 +445,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             const newLessons = [...newModules[moduleIndex].lessons];
             const newBlocks = newLessons[lessonIndex].contentBlocks.filter((_, index) => index !== blockIndex);
             newLessons[lessonIndex] = { ...newLessons[lessonIndex], contentBlocks: newBlocks };
-            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
+            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newModules };
             return { ...prev, modules: newModules };
         });
     };
@@ -505,7 +526,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             toast({ title: "Curso Guardado", description: "La información del curso se ha guardado correctamente." });
             
             setCourse(savedCourse); 
-            setPageTitle(`Editando: ${savedCourse.title}`);
             setIsDirty(false); 
             
             if (courseId === 'new') {
@@ -532,20 +552,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     return (
         <div className="space-y-4">
-            <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-4 border-b bg-card -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 sticky top-0 md:top-20 z-30">
-                 <div className="flex items-center gap-2 w-full">
-                    <Button asChild variant="outline" type="button" size="sm" className="shrink-0"><Link href="/manage-courses"><ArrowLeft className="mr-2 h-4 w-4" /> Volver</Link></Button>
-                    <h1 className="text-lg sm:text-xl font-semibold truncate flex-grow">
-                        <span className="sm:hidden">Editando Curso</span>
-                        <span className="hidden sm:inline">Editando: {course.title}</span>
-                    </h1>
-                </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <Button asChild variant="secondary" type="button" className="w-full sm:w-auto"><Link href={`/courses/${courseId}`} target="_blank"><Eye className="mr-2 h-4 w-4" /> Vista Previa</Link></Button>
-                    <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4" />{isSaving ? 'Guardando...' : (courseId === 'new' ? 'Crear y Guardar' : 'Guardar Cambios')}</Button>
-                </div>
-            </header>
-            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
                     <Card>
@@ -597,7 +603,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     </Card>
                 </div>
 
-                <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-40">
+                <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
                      <Card>
                         <CardHeader><CardTitle>Publicación</CardTitle><CardDescription>Controla la visibilidad y el estado del curso.</CardDescription></CardHeader>
                         <CardContent className="space-y-4">
@@ -639,13 +645,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                     </Label>
                                 )}
                             </div>
-                            <Input id="image-upload" type="file" className="sr-only" accept="image/*" onChange={handleFileChange} disabled={isUploading || isSaving} />
-                            {isUploading && (
-                                <div className="space-y-1">
-                                    <p className="text-xs text-muted-foreground text-center">Subiendo...</p>
-                                    <Progress value={uploadProgress} />
-                                </div>
-                            )}
+                            <Input id="image-upload" type="file" className="sr-only" accept="image/*" onChange={handleFileChange} disabled={isSaving} />
                         </CardContent>
                     </Card>
                 </div>

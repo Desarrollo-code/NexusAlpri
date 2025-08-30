@@ -1,5 +1,4 @@
 // src/lib/crop-image.ts
-
 import type { Area } from 'react-easy-crop';
 
 export const createImage = (url: string): Promise<HTMLImageElement> =>
@@ -26,24 +25,20 @@ export async function getCroppedImg(
 
   const rotRad = (rotation * Math.PI) / 180;
 
-  // calculate bounding box of the rotated image
   const { width: bBoxWidth, height: bBoxHeight } = rotateSize(
     image.width,
     image.height,
     rotation
   );
 
-  // set canvas size to match the bounding box
   canvas.width = bBoxWidth;
   canvas.height = bBoxHeight;
 
-  // translate canvas context to a central location to allow rotating and flipping around the center
   ctx.translate(bBoxWidth / 2, bBoxHeight / 2);
   ctx.rotate(rotRad);
   ctx.scale(1, 1);
   ctx.translate(-image.width / 2, -image.height / 2);
 
-  // draw rotated image
   ctx.drawImage(image, 0, 0);
 
   const data = ctx.getImageData(
@@ -53,18 +48,15 @@ export async function getCroppedImg(
     pixelCrop.height
   );
 
-  // set canvas width to final desired crop size - this will clear existing context
   canvas.width = pixelCrop.width;
   canvas.height = pixelCrop.height;
 
-  // paste generated rotate image at the top left corner
   ctx.putImageData(data, 0, 0);
 
-  // As a blob
   return new Promise((resolve) => {
     canvas.toBlob((file) => {
       resolve(file);
-    }, 'image/png'); // <--- CAMBIO CLAVE: De JPEG a PNG
+    }, 'image/png', 0.95); // Usar PNG de alta calidad para preservar detalles
   });
 }
 
