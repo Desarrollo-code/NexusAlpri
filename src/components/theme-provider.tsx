@@ -5,8 +5,6 @@ import * as React from 'react';
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from 'next-themes';
 import { type ThemeProviderProps } from 'next-themes/dist/types';
 import { useAuth } from '@/contexts/auth-context';
-import { fontMap } from '@/lib/fonts';
-import { useSidebar } from './ui/sidebar';
 
 export const AVAILABLE_THEMES = [
   { value: 'light', label: 'Claro' },

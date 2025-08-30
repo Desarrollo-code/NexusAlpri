@@ -11,9 +11,9 @@ import { ColorfulLoader } from '@/components/ui/colorful-loader';
 import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
 import Image from 'next/image';
 import { SidebarHeader } from '@/components/layout/sidebar-header';
-import { ThemeProvider } from '@/components/theme-provider';
 import { TourProvider, useTour } from '@/contexts/tour-context';
 import { TourGuide } from '@/components/tour/tour-guide';
+import { ThemeProvider } from '@/components/theme-provider';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { settings } = useAuth();
