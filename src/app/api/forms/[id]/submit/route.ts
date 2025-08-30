@@ -43,13 +43,16 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
             for (const field of form.fields) {
                 const fieldOptions = field.options as any as FormFieldOption[];
-                const correctAnswerOptions = fieldOptions.filter(o => o.isCorrect);
+                if (!fieldOptions || fieldOptions.length === 0) continue;
 
-                // Sumar al puntaje máximo posible solo si hay opciones correctas con puntos
-                maxPoints += correctAnswerOptions.reduce((sum, opt) => sum + (opt.points || 0), 0);
+                // Calcular el puntaje máximo para esta pregunta
+                const questionMaxPoints = fieldOptions
+                    .filter(opt => opt.isCorrect)
+                    .reduce((sum, opt) => sum + (opt.points || 0), 0);
+                maxPoints += questionMaxPoints;
 
                 const userAnswer = answers[field.id];
-                if (!userAnswer) continue; // Si no hay respuesta, no suma puntos
+                if (!userAnswer) continue; 
 
                 if (field.type === 'SINGLE_CHOICE') {
                     const selectedOption = fieldOptions.find(o => o.id === userAnswer);
@@ -58,20 +61,15 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
                     }
                 } else if (field.type === 'MULTIPLE_CHOICE') {
                     const selectedOptionIds = new Set(Array.isArray(userAnswer) ? userAnswer : []);
-                    correctAnswerOptions.forEach(correctOpt => {
-                        if (selectedOptionIds.has(correctOpt.id)) {
-                            userPoints += correctOpt.points || 0;
+                    fieldOptions.forEach(opt => {
+                        if (selectedOptionIds.has(opt.id) && opt.isCorrect) {
+                             userPoints += opt.points || 0;
                         }
                     });
                 }
             }
             
-            if (maxPoints > 0) {
-                finalScorePercentage = (userPoints / maxPoints) * 100;
-            } else {
-                // Si el quiz no tiene puntos asignados, el resultado es 0%
-                finalScorePercentage = 0;
-            }
+            finalScorePercentage = maxPoints > 0 ? (userPoints / maxPoints) * 100 : 0;
         }
         
         const newResponse = await prisma.formResponse.create({
