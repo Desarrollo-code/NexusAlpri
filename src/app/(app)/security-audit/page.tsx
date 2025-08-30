@@ -206,16 +206,18 @@ function SecurityAuditContent() {
                              <CardTitle>Registro de Eventos</CardTitle>
                              <CardDescription>Mostrando los últimos registros de seguridad de la plataforma.</CardDescription>
                         </div>
-                        <Select value={activeFilter} onValueChange={handleFilterChange}>
-                            <SelectTrigger className="w-full sm:w-[250px]">
-                                <SelectValue placeholder="Filtrar por evento..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {ALL_EVENTS.map(event => (
-                                    <SelectItem key={event.value} value={event.value}>{event.label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <div id="security-event-filter">
+                            <Select value={activeFilter} onValueChange={handleFilterChange}>
+                                <SelectTrigger className="w-full sm:w-[250px]">
+                                    <SelectValue placeholder="Filtrar por evento..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {ALL_EVENTS.map(event => (
+                                        <SelectItem key={event.value} value={event.value}>{event.label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent>

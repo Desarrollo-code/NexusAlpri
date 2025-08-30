@@ -312,14 +312,22 @@ export const securityAuditTour: TourStep[] = [
     target: '#security-stats-cards',
     content: {
       title: 'Estadísticas de Seguridad',
-      description: 'Aquí ves un resumen de los eventos de seguridad más importantes de las últimas 24 horas, como inicios de sesión y cambios de rol.'
-    }
+      description: 'Aquí ves un resumen de los eventos de seguridad más importantes de las últimas 24 horas.',
+    },
+  },
+  {
+    target: '#security-event-filter',
+    content: {
+      title: 'Filtrar Eventos',
+      description: 'Utiliza este selector para filtrar los registros por un tipo de evento específico, como "Inicios de Sesión Fallidos".',
+    },
+    placement: 'bottom',
   },
   {
     target: '#security-log-table',
     content: {
-      title: 'Registro de Eventos',
-      description: 'Esta tabla contiene un registro detallado de cada evento de seguridad. Puedes ver quién, qué, cuándo y desde dónde se realizó la acción.'
-    }
-  }
+      title: 'Registro Detallado',
+      description: 'Esta tabla contiene un registro de cada evento de seguridad. Puedes ver quién, qué, cuándo y desde dónde se realizó la acción.',
+    },
+  },
 ];
