@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -54,6 +53,7 @@ import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Calendar } from '@/components/ui/calendar';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { ImageCropper } from '@/components/image-cropper';
+import { UploadArea } from '@/components/ui/upload-area';
 
 
 // === TIPOS E INTERFACES ===
@@ -830,4 +830,3 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
         </Dialog>
     );
 }
-
