@@ -17,7 +17,7 @@ services:
     plan: free 
     region: oregon
     healthCheckPath: /api/health
-    buildCommand: "npm install && prisma generate && prisma migrate deploy && next build"
+    buildCommand: "npm install && npm run build"
     startCommand: "npm start"
     envVars:
       - key: DATABASE_URL
