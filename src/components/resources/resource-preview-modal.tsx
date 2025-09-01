@@ -321,12 +321,15 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     
     return (
         <Dialog open={!!resource} onOpenChange={(isOpen) => !isOpen && onClose()}>
-            <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg">
+            <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg gap-0">
                  <DialogHeader className="p-4 flex-shrink-0 h-16 px-4 flex flex-row justify-between items-center border-b z-10 bg-background/70">
                     <div className="flex items-center gap-3 overflow-hidden flex-1">
                         {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0" })}
-                        <h2 className="font-semibold truncate text-foreground">{resource.title}</h2>
+                        <DialogTitle className="font-semibold truncate text-foreground">{resource.title}</DialogTitle>
                     </div>
+                    <DialogClose asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2"><X className="h-4 w-4" /></Button>
+                    </DialogClose>
                 </DialogHeader>
                 <div className="flex-grow flex relative overflow-hidden">
                      <div className="flex-grow relative">
@@ -358,6 +361,9 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                      </div>
                      <div className="flex items-center gap-2">
                         <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} variant="secondary" size="sm" />
+                        <DialogClose asChild>
+                           <Button variant="outline" size="sm">Cerrar</Button>
+                        </DialogClose>
                      </div>
                 </DialogFooter>
             </DialogContent>
