@@ -4,10 +4,12 @@
 
 services:
   # 1. La Base de Datos MySQL
-  - type: pserv
+  - type: pserv # Base de datos privada
     name: nexus-db
     plan: free # Puedes cambiarlo a un plan de pago para mejor rendimiento
     region: oregon # Elige la región más cercana a tus usuarios
+    # La línea 'runtime: mysql' se elimina porque es la causa del error.
+    # Render infiere el tipo de base de datos por el servicio.
 
   # 2. La Aplicación Web (Next.js)
   - type: web
