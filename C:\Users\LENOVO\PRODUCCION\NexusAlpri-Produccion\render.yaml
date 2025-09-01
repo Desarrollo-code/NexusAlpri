@@ -6,29 +6,28 @@ services:
   # 1. La Base de Datos MySQL
   - type: pserv
     name: nexus-db
-    plan: free
-    region: oregon
-    # 'runtime: mysql' no es necesario y se elimina.
-    # 'databaseName' y 'user' no se definen aquí para MySQL.
+    plan: free 
+    region: oregon 
+    # 'runtime: mysql' se elimina ya que no es necesario para este tipo de servicio.
 
   # 2. La Aplicación Web (Next.js)
   - type: web
     name: nexus-alpri-app
     runtime: node
-    plan: free
+    plan: free 
     region: oregon
     healthCheckPath: /api/health
-    buildCommand: "npm install && npm run build"
+    buildCommand: "npm install && prisma generate && prisma migrate deploy && next build"
     startCommand: "npm start"
     envVars:
       - key: DATABASE_URL
         fromService:
           type: pserv
           name: nexus-db
-          property: connectionString # CORREGIDO: Propiedad de conexión correcta
+          property: connectionString # Propiedad de conexión correcta.
       - key: JWT_SECRET
-        sync: false
+        sync: false # Se debe configurar manualmente en el dashboard de Render.
       - key: RESEND_API_KEY
-        sync: false
+        sync: false # Se debe configurar manualmente en el dashboard de Render.
       - key: NODE_ENV
         value: production
