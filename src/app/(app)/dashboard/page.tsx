@@ -39,7 +39,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line } from "recharts";
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line, Cell } from "recharts";
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { getEventDetails } from '@/lib/security-log-utils';
 import { format, parseISO } from 'date-fns';
@@ -471,7 +471,8 @@ export default function DashboardPage() {
     setIsLoading(true);
     setError(null);
     try {
-        const promises: Promise<any>[] = [fetch('/api/announcements?pageSize=2')];
+        const announcementsParams = new URLSearchParams({ pageSize: '2', filter: 'by-others' });
+        const promises: Promise<any>[] = [fetch(`/api/announcements?${announcementsParams.toString()}`)];
         
         if (user.role === 'ADMINISTRATOR') {
             promises.push(fetch('/api/dashboard/admin-stats'));
@@ -553,18 +554,6 @@ export default function DashboardPage() {
   }, [fetchDashboardData]);
 
   
-  const filteredAnnouncements = useMemo(() => {
-    if (!user || !data?.recentAnnouncements) return [];
-    return data.recentAnnouncements
-      .filter(ann => {
-        if (ann.audience === 'ALL') return true;
-        if (Array.isArray(ann.audience) && ann.audience.includes(user.role)) return true;
-        if (typeof ann.audience === 'string') { try { const parsed = JSON.parse(ann.audience); if (Array.isArray(parsed) && parsed.includes(user.role)) return true; } catch (e) {} }
-        return false;
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  }, [data?.recentAnnouncements, user]);
-
   if (!user || isLoading) {
     return (
       <div className="space-y-8">
@@ -596,11 +585,11 @@ export default function DashboardPage() {
   const renderContentForRole = () => {
     switch (user.role) {
       case 'ADMINISTRATOR':
-        return data?.adminStats ? <AdminDashboard stats={data.adminStats} logs={data.securityLogs} announcements={filteredAnnouncements} /> : null;
+        return data?.adminStats ? <AdminDashboard stats={data.adminStats} logs={data.securityLogs} announcements={data.recentAnnouncements} /> : null;
       case 'INSTRUCTOR':
-        return data?.instructorStats ? <InstructorDashboard stats={data.instructorStats} announcements={filteredAnnouncements} taughtCourses={data.taughtCourses} /> : null;
+        return data?.instructorStats ? <InstructorDashboard stats={data.instructorStats} announcements={data.recentAnnouncements} taughtCourses={data.taughtCourses} /> : null;
       case 'STUDENT':
-        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={filteredAnnouncements} myCourses={data.myDashboardCourses} /> : null;
+        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={data.recentAnnouncements} myCourses={data.myDashboardCourses} /> : null;
       default:
         return <p>Rol de usuario no reconocido.</p>;
     }
