@@ -758,12 +758,12 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-                <DialogHeader>
+            <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
+                <DialogHeader className="p-6">
                     <DialogTitle>Editor de Quiz</DialogTitle>
                     <DialogDescription>Añade, edita y gestiona las preguntas y respuestas de este quiz.</DialogDescription>
                 </DialogHeader>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-1 py-2">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-6 pb-4 border-b">
                     <div className="space-y-1">
                         <Label>Título del Quiz</Label>
                         <Input value={localQuiz.title} onChange={(e) => handleQuizMetaChange('title', e.target.value)} />
@@ -780,8 +780,8 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                         <p className="text-xs text-muted-foreground">Deja en blanco para intentos ilimitados.</p>
                     </div>
                 </div>
-                <ScrollArea className="flex-grow pr-6 -mr-6">
-                    <div className="space-y-6 py-4">
+                <ScrollArea className="flex-grow">
+                    <div className="space-y-6 p-6">
                         {localQuiz.questions.map((q, qIndex) => (
                             <Card key={q.id} className="bg-muted/30">
                                 <CardHeader className="flex flex-row items-center justify-between p-4">
@@ -814,7 +814,7 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                                                         </TooltipProvider>
                                                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70" onClick={() => deleteOption(qIndex, oIndex)}><XCircle className="h-4 w-4"/></Button>
                                                     </div>
-                                                    <Input value={opt.feedback || ''} placeholder="Retroalimentación para esta opción (opcional)" onChange={(e) => handleOptionChange(qIndex, oIndex, 'feedback', e.target.value)} className="text-xs h-8"/>
+                                                    <Input value={opt.feedback || ''} placeholder="Retroalimentación para esta opción (opcional)" onChange={(e) => handleOptionChange(qIndex, o.Index, 'feedback', e.target.value)} className="text-xs h-8"/>
                                                 </div>
                                             ))}
                                         </div>
@@ -830,7 +830,7 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                         </Button>
                     </div>
                 </ScrollArea>
-                <DialogFooter>
+                <DialogFooter className="p-6 border-t">
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
                     <Button onClick={handleSaveChanges}>Guardar Cambios del Quiz</Button>
                 </DialogFooter>
