@@ -26,6 +26,9 @@ El administrador tiene control total sobre la plataforma.
 | **A-13** | **Configuración** | Ver y modificar la configuración general de la plataforma. | `/settings` | Ajustes de la plataforma (nombre, políticas, etc.). | Los cambios se guardan y se aplican en toda la plataforma (ej. cambio de nombre). |
 | **A-14** | **Contenido Global** | Crear, editar y eliminar anuncios, eventos del calendario y recursos. | `/announcements`, `/calendar`, `/resources` | Anuncios, Eventos, Recursos de la biblioteca. | Las acciones (crear, editar, eliminar) se reflejan inmediatamente en las respectivas secciones. |
 | **A-15** | **Inscripciones** | Ver el progreso y los inscritos de cualquier curso. | `/enrollments` | Inscripciones y progreso de los estudiantes. | Al seleccionar un curso, se muestra la lista de estudiantes inscritos y su progreso. |
+| **A-16** | **Formularios** | Crear y editar cualquier formulario o evaluación. | `/forms`, `/forms/[id]/edit` | Formularios y sus preguntas. | El formulario se crea o actualiza, permitiendo la configuración de preguntas. |
+| **A-17** | | Ver los resultados de cualquier formulario. | `/forms/[id]/results` | Respuestas de los usuarios. | Se muestran gráficos y tablas con los resultados consolidados de las respuestas. |
+| **A-18** | | Compartir un formulario con usuarios específicos. | `/forms` (Modal) | Relación de compartición del formulario. | El formulario se vuelve visible y accesible para los usuarios seleccionados. |
 
 ---
 
@@ -43,7 +46,9 @@ El instructor gestiona sus propios cursos y estudiantes.
 | **I-06** | **Seguimiento** | Ver la lista de estudiantes inscritos en sus cursos y su progreso. | `/enrollments` | Inscripciones y progreso de los estudiantes en sus cursos. | El instructor puede seleccionar sus cursos y ver quién está inscrito y su avance. |
 | **I-07** | **Contenido Global** | Crear anuncios y eventos en el calendario para diferentes audiencias. | `/announcements`, `/calendar` | Anuncios, Eventos del calendario. | El instructor puede crear comunicados y eventos visibles para otros usuarios. |
 | **I-08** | | Subir, editar y eliminar los recursos que ha subido a la biblioteca. | `/resources` | Recursos de la biblioteca. | El instructor puede gestionar los archivos que él mismo ha subido. |
-| **I-09** | **Perfil** | Editar su propio perfil y gestionar su contraseña y 2FA. | `/profile` | Información de su propia cuenta. | El usuario puede actualizar su nombre, avatar y seguridad personal. |
+| **I-09** | **Formularios** | Crear, editar y eliminar los formularios que ha creado. | `/forms` | Formularios del instructor. | El instructor puede gestionar sus propios formularios, pero no los de otros. |
+| **I-10** | | Ver los resultados de sus propios formularios. | `/forms/[id]/results` | Respuestas de sus formularios. | El instructor puede analizar las respuestas de los formularios que ha creado. |
+| **I-11** | **Perfil** | Editar su propio perfil y gestionar su contraseña y 2FA. | `/profile` | Información de su propia cuenta. | El usuario puede actualizar su nombre, avatar y seguridad personal. |
 
 ---
 
@@ -70,3 +75,4 @@ El estudiante consume el contenido formativo de la plataforma.
 | **S-15** | **Anuncios** | Ver los anuncios relevantes para él. | `/announcements` | Anuncios de la plataforma. | El estudiante ve los anuncios dirigidos a él, a su rol o a todos los usuarios. |
 | **S-16** | **Mis Cursos** | Ver una lista dedicada de los cursos en los que está inscrito. | `/my-courses` | Sus inscripciones, su progreso. | La página muestra solo los cursos en los que está inscrito, con su progreso visible. |
 | **S-17** | **Mis Apuntes** | Ver y gestionar todas las notas tomadas en los cursos. | `/my-notes` | Sus notas personales. | La página muestra una lista de sus notas, organizadas por curso, y permite acceder a ellas. |
+| **S-18** | **Formularios** | Ver y responder formularios públicos o compartidos con él. | `/forms` | Formularios disponibles, Envío de respuestas. | El estudiante puede ver la lista de formularios activos y enviar sus respuestas. |

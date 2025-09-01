@@ -71,8 +71,9 @@ El sistema de formularios es una herramienta versátil para crear encuestas o ev
     *   En el editor de formularios (`/forms/[formId]/edit`), se pueden añadir campos de distintos tipos (texto, párrafo, opción única, opción múltiple).
     *   Se puede habilitar el modo **"Evaluación" (Quiz)**. Si está activo, permite asignar puntos a las opciones de respuesta (actualmente solo para campos de opción única), que se usarán para calcular una puntuación final.
 
-2.  **Envío de Respuestas (Estudiantes):**
-    *   Los estudiantes acceden al formulario a través de su URL directa (`/forms/[formId]/view`).
+2.  **Envío y Compartición:**
+    *   **Envío de Respuestas (Estudiantes):** Los estudiantes acceden al formulario a través de su URL directa (`/forms/[formId]/view`) si está publicado, o si ha sido compartido con ellos.
+    *   **Lógica de Compartición:** Un instructor o administrador puede compartir un formulario con usuarios específicos usando el endpoint `PUT /api/forms/[id]`, que actualiza la relación `sharedWith` en el modelo `Form`.
     *   Al enviar sus respuestas (`POST /api/forms/[id]/submit`), el sistema crea un registro `FormResponse`.
     *   Si el formulario es una evaluación, el backend calcula automáticamente la puntuación total basándose en los puntos asignados a las opciones correctas y la almacena en el `FormResponse`.
 

@@ -10,7 +10,7 @@ Este manual está destinado a los usuarios con el rol de **Administrador**. Prop
 **Ruta:** `/users`
 
 Desde esta sección, puedes realizar las siguientes acciones:
-*   **Visualizar Usuarios:** Ver una lista de todos los usuarios registrados, con su nombre, email, rol y fecha de registro.
+*   **Visualizar Usuarios:** Ver una lista de todos los usuarios registrados, con su nombre, email, rol y estado (Activo/Inactivo).
 *   **Buscar y Filtrar:** Utiliza la barra de búsqueda para encontrar usuarios específicos.
 *   **Añadir un Nuevo Usuario:**
     1.  Haz clic en "Añadir Nuevo Usuario".
@@ -19,10 +19,10 @@ Desde esta sección, puedes realizar las siguientes acciones:
 *   **Editar un Usuario:**
     1.  Haz clic en el menú de acciones (tres puntos) de un usuario y selecciona "Editar".
     2.  Puedes modificar el nombre, email y rol del usuario.
-*   **Eliminar un Usuario:**
-    1.  Selecciona "Eliminar" en el menú de acciones.
-    2.  Confirma la acción. Esto eliminará permanentemente al usuario y todos sus datos asociados (progreso, inscripciones, etc.).
-    *Nota: No puedes eliminar tu propia cuenta de administrador.*
+*   **Inactivar/Activar un Usuario:**
+    1.  Selecciona "Inactivar" (o "Activar" si ya está inactivo) en el menú de acciones.
+    2.  Confirma la acción. Un usuario inactivo **no podrá iniciar sesión**, pero todos sus datos (progreso, cursos, etc.) se conservan.
+    *Nota: No puedes cambiar tu propio estado.*
 *   **Cambiar Rol:**
     1.  Selecciona "Cambiar Rol" en el menú de acciones para asignar rápidamente un nuevo rol sin entrar en la pantalla de edición completa.
 
@@ -77,6 +77,22 @@ Aquí puedes gestionar todos los archivos y materiales compartidos de la organiz
     *   **Compartir con Usuarios:** Si un recurso es privado, puedes buscar y seleccionar usuarios individuales para concederles acceso.
     *   **Protección con PIN:** Puedes añadir un PIN de 4 a 8 dígitos a cualquier recurso (sea público o privado) como una capa extra de seguridad. Deberás comunicar este PIN a los usuarios que necesiten acceder.
 *   **Gestionar Recursos Existentes:** Puedes editar los detalles, cambiar los permisos de acceso o eliminar cualquier recurso de la biblioteca.
+
+### 4.4. Formularios y Evaluaciones
+
+**Ruta:** `/forms`
+
+Crea encuestas o evaluaciones personalizadas.
+
+*   **Crear un Formulario:**
+    1.  Haz clic en "Crear Nuevo Formulario".
+    2.  Asigna un título y descripción inicial.
+    3.  Serás redirigido al editor para añadir preguntas.
+*   **Añadir Preguntas:** Configura preguntas de texto, párrafo, opción única o múltiple.
+*   **Habilitar Puntuación (Modo Quiz):** En la configuración del formulario, puedes habilitar el modo "Evaluación" para asignar puntos a las respuestas y calificar automáticamente los envíos.
+*   **Compartir y Publicar:**
+    *   Usa el botón **"Compartir"** en el menú de acciones para asignar el formulario directamente a usuarios específicos.
+    *   Una vez **Publicado**, puedes obtener un enlace directo para compartirlo masivamente.
 
 ## 5. Configuración del Sistema
 
