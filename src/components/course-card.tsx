@@ -34,7 +34,6 @@ const getStatusInSpanish = (status: CourseStatus) => {
         case 'DRAFT': return 'Borrador';
         case 'PUBLISHED': return 'Publicado';
         case 'ARCHIVED': return 'Archivado';
-        case 'SCHEDULED': return 'Programado';
         default: return status;
     }
 }
@@ -266,12 +265,9 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: 
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
-                <DropdownMenuItem asChild>
-                    <Link href={`/courses/${course.id}`} target="_blank"><Eye className="mr-2 h-4 w-4"/> Vista Previa</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link href={`/enrollments?courseId=${course.id}`}><Users className="mr-2 h-4 w-4"/> Resultados</Link>
-                </DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2 h-4 w-4"/> Editar</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href={`/courses/${course.id}`} target="_blank"><Eye className="mr-2 h-4 w-4"/> Vista Previa</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href={`/enrollments?courseId=${course.id}`}><Users className="mr-2 h-4 w-4"/> Ver Inscritos</Link></DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'PUBLISHED'))} disabled={isProcessing || course.status === 'PUBLISHED'}>
                     <BookOpenCheck className="mr-2 h-4 w-4 text-green-500" /> Publicar

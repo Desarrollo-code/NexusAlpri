@@ -13,7 +13,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         const { id } = await params;
         const { status } = await req.json();
 
-        if (!['DRAFT', 'PUBLISHED', 'ARCHIVED', 'SCHEDULED'].includes(status)) {
+        if (!['DRAFT', 'PUBLISHED', 'ARCHIVED'].includes(status)) {
             return NextResponse.json({ message: 'Estado inválido' }, { status: 400 });
         }
 
