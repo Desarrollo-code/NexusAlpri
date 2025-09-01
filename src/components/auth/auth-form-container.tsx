@@ -134,7 +134,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                         onChange={e => setPassword(e.target.value)} 
                         disabled={isLoading}
                     />
-                    <Button type="button" variant="ghost" size="icon" className="absolute inset-y-0 right-0 flex items-center pr-3 h-full" onClick={() => setShowPassword(!showPassword)}>
+                     <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
                     </Button>
                  </div>
@@ -162,7 +162,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                             onFocus={() => setIsPasswordFocused(true)}
                             onBlur={() => !password && setIsPasswordFocused(false)}
                         />
-                         <Button type="button" variant="ghost" size="icon" className="absolute inset-y-0 right-0 flex items-center pr-3 h-full" onClick={() => setShowPassword(!showPassword)}>
+                         <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPassword(!showPassword)}>
                             {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
                         </Button>
                     </div>

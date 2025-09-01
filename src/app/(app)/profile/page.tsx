@@ -25,6 +25,8 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/comp
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
 
+// --- Components defined outside of the main component to prevent re-creation on render ---
+
 // Gamification Level Calculation
 const calculateLevel = (xp: number) => {
     const baseXP = 250;
@@ -41,7 +43,6 @@ const calculateLevel = (xp: number) => {
 
     return { level, currentXPInLevel: xp, xpForNextLevel, progressPercentage };
 };
-
 
 const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => void }) => {
     const [name, setName] = useState(user?.name || '');
@@ -84,7 +85,7 @@ const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => 
 };
 
 const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setConfirmPassword, currentPassword, setCurrentPassword }: 
-{ user: any, newPassword, setNewPassword, confirmPassword, setConfirmPassword, currentPassword, setCurrentPassword }) => {
+{ user: any, newPassword: any, setNewPassword: any, confirmPassword: any, setConfirmPassword: any, currentPassword: any, setCurrentPassword: any }) => {
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -126,7 +127,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                         <Label htmlFor="currentPassword">Contraseña Actual</Label>
                         <div className="relative">
                             <Input id="currentPassword" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
-                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={() => setShowCurrentPassword((prev) => !prev)}>
+                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowCurrentPassword((prev) => !prev)}>
                                 {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                         </div>
@@ -135,7 +136,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                         <Label htmlFor="newPassword">Nueva Contraseña</Label>
                         <div className="relative">
                             <Input id="newPassword" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
-                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={() => setShowNewPassword((prev) => !prev)}>
+                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowNewPassword((prev) => !prev)}>
                                 {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                         </div>
@@ -145,7 +146,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                         <Label htmlFor="confirmPassword">Confirmar Nueva Contraseña</Label>
                         <div className="relative">
                             <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
-                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={() => setShowConfirmPassword((prev) => !prev)}>
+                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowConfirmPassword((prev) => !prev)}>
                                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                         </div>
