@@ -312,7 +312,7 @@ function ProfilePageContent() {
     );
 
     const TwoFactorCard = () => (
-         <Card id="2fa-card-desktop">
+         <Card id="card-2fa-desktop">
             <CardHeader><CardTitle className="flex items-center gap-2"><Shield className="text-primary"/>Autenticación de Dos Factores (2FA)</CardTitle></CardHeader>
             <CardContent className="space-y-4">
             {user.isTwoFactorEnabled ? (
