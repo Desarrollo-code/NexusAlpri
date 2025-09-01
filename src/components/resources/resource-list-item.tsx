@@ -1,3 +1,4 @@
+
 // src/components/resources/resource-list-item.tsx
 'use client';
 
