@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState, ChangeEvent, useCallback, useMemo } from 'react';
@@ -786,7 +786,7 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                             <Card key={q.id} className="bg-muted/30">
                                 <CardHeader className="flex flex-row items-center justify-between p-4">
                                      <CardTitle className="text-base flex-grow">
-                                        <Input value={q.text} onChange={(e) => handleQuestionChange(qIndex, e.target.value)} className="font-semibold"/>
+                                        <Input value={q.text} onChange={(e) => handleQuestionChange(qIndex, e.target.value)} placeholder="Texto de la pregunta" className="font-semibold bg-transparent border-0 border-b-2 rounded-none focus-visible:ring-0 focus-visible:border-primary"/>
                                      </CardTitle>
                                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteQuestion(qIndex)}><Trash2 className="h-4 w-4"/></Button>
                                 </CardHeader>
@@ -794,12 +794,24 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                                     <RadioGroup value={q.options.find(opt => opt.isCorrect)?.id} onValueChange={(val) => handleSetCorrect(qIndex, val)}>
                                         <div className="space-y-3">
                                             {q.options.map((opt, oIndex) => (
-                                                <div key={opt.id} className="p-3 bg-card border rounded-md space-y-2">
+                                                <div key={opt.id} className={cn("p-3 bg-card border rounded-md space-y-2 transition-colors", opt.isCorrect && "border-green-500/50 bg-green-500/10")}>
                                                     <div className="flex items-center gap-2">
                                                         <RadioGroupItem value={opt.id} id={`q${qIndex}-o${oIndex}`} />
                                                         <Label htmlFor={`q${qIndex}-o${oIndex}`} className="flex-grow font-normal">
                                                             <Input value={opt.text} placeholder="Texto de la opción" onChange={(e) => handleOptionChange(qIndex, oIndex, 'text', e.target.value)} />
                                                         </Label>
+                                                        <TooltipProvider>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <div className={cn("h-6 w-6 flex items-center justify-center rounded-full cursor-pointer", opt.isCorrect ? "text-green-400" : "text-muted-foreground")}>
+                                                                        <Star className={cn("h-4 w-4 transition-all", opt.isCorrect && "fill-current")}/>
+                                                                    </div>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Marcar como correcta</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </TooltipProvider>
                                                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70" onClick={() => deleteOption(qIndex, oIndex)}><XCircle className="h-4 w-4"/></Button>
                                                     </div>
                                                     <Input value={opt.feedback || ''} placeholder="Retroalimentación para esta opción (opcional)" onChange={(e) => handleOptionChange(qIndex, oIndex, 'feedback', e.target.value)} className="text-xs h-8"/>
@@ -807,12 +819,14 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                                             ))}
                                         </div>
                                     </RadioGroup>
-                                    <Button size="sm" variant="link" onClick={() => addOption(qIndex)} className="mt-2 p-0 h-auto">+ Añadir Opción</Button>
+                                    <Button size="sm" variant="outline" onClick={() => addOption(qIndex)} className="mt-3">
+                                        <PlusCircle className="mr-2 h-4 w-4"/>Añadir Opción
+                                    </Button>
                                 </CardContent>
                             </Card>
                         ))}
-                        <Button variant="outline" onClick={addQuestion} className="w-full">
-                            <PlusCircle className="mr-2 h-4 w-4"/> Añadir Pregunta
+                        <Button variant="secondary" onClick={addQuestion} className="w-full">
+                            <FilePlus2 className="mr-2 h-4 w-4"/> Añadir Pregunta
                         </Button>
                     </div>
                 </ScrollArea>
