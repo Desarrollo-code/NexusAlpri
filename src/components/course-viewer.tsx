@@ -428,22 +428,11 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         const isUrl = /^(https?:\/\/)/.test(block.content);
         if (isUrl) {
             return (
-                <Card key={block.id} className="my-4 bg-muted/50 text-center">
-                    <CardContent className="p-6">
-                        <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                            <ExternalLink className="h-6 w-6 text-primary" />
-                        </div>
-                        <h3 className="font-semibold text-lg">{selectedLesson?.title}</h3>
-                        <p className="text-sm text-muted-foreground max-w-md mx-auto mt-1 mb-4">
-                            Esta lección te redirigirá a un recurso externo. Haz clic en el botón para continuar.
-                        </p>
-                        <Button asChild>
-                            <a href={block.content} target="_blank" rel="noopener noreferrer">
-                                Visitar Sitio
-                            </a>
-                        </Button>
-                    </CardContent>
-                </Card>
+                <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card">
+                    <a href={block.content} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        {block.content}
+                    </a>
+                </div>
             );
         }
         return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" style={{ maxHeight: '500px', overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: block.content }} />;
