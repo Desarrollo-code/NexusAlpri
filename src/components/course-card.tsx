@@ -58,7 +58,7 @@ export function CourseCard({
   const isEnrolled = 'isEnrolled' in course ? course.isEnrolled : undefined;
   const progress = 'progressPercentage' in course ? course.progressPercentage : undefined;
 
-  const handleEnrollment = async (e: React.MouseEvent | Event, enroll: boolean) => {
+  const handleEnrollment = async (e: React.MouseEvent, enroll: boolean) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -103,7 +103,7 @@ export function CourseCard({
   const isTruncated = course.description && course.description.length > TRUNCATE_LENGTH;
   const descriptionToShow = isExpanded
     ? course.description
-    : `${''}${course.description?.substring(0, TRUNCATE_LENGTH)}`;
+    : `${course.description?.substring(0, TRUNCATE_LENGTH)}`;
 
   const toggleExpand = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -269,19 +269,11 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: 
                 <DropdownMenuItem asChild><Link href={`/courses/${course.id}`} target="_blank"><Eye className="mr-2 h-4 w-4"/> Vista Previa</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link href={`/enrollments?courseId=${course.id}`}><Users className="mr-2 h-4 w-4"/> Ver Inscritos</Link></DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'PUBLISHED'))} disabled={isProcessing || course.status === 'PUBLISHED'}>
-                    <BookOpenCheck className="mr-2 h-4 w-4 text-green-500" /> Publicar
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'DRAFT'))} disabled={isProcessing || course.status === 'DRAFT'}>
-                     <Edit className="mr-2 h-4 w-4 text-blue-500" /> Pasar a Borrador
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'ARCHIVED'))} disabled={isProcessing || course.status === 'ARCHIVED'}>
-                     <Layers className="mr-2 h-4 w-4 text-orange-500" /> Archivar
-                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'PUBLISHED'))} disabled={isProcessing || course.status === 'PUBLISHED'}>Publicar</DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'ARCHIVED'))} disabled={isProcessing || course.status === 'ARCHIVED'}>Archivar</DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'DRAFT'))} disabled={isProcessing || course.status === 'DRAFT'}>Mover a Borrador</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onDelete?.(course))} disabled={isProcessing} className="text-destructive focus:bg-destructive/10">
-                    <Trash2 className="mr-2 h-4 w-4"/> Eliminar
-                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => handleAction(e, () => onDelete?.(course))} disabled={isProcessing} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4"/> Eliminar</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     );
