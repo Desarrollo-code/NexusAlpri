@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
             usersByRole,
             coursesByStatus,
             recentLoginLogs,
-            newUsersCount,
+            newEnrollmentsLast7DaysCount, // Corregido para contar inscripciones
             allCourseProgressRaw,
             coursesWithEnrollmentCounts,
             userRegistrationsByDay,
@@ -85,21 +85,26 @@ export async function GET(req: NextRequest) {
                 select: { userId: true },
                 distinct: ['userId']
             }),
-            prisma.user.count({ where: { registeredDate: { gte: subDays(new Date(), 7) } } }),
+            prisma.enrollment.count({ where: { enrolledAt: { gte: subDays(new Date(), 7) } } }), // CORREGIDO
             
             // Consultas para rankings (filtradas por fecha)
             prisma.courseProgress.findMany({ 
-                where: { course: { status: 'PUBLISHED' } }, 
+                where: { course: { status: 'PUBLISHED' }, completedAt: dateFilter }, 
                 select: { courseId: true, progressPercentage: true, userId: true } 
             }),
-            prisma.course.findMany({ where: { status: 'PUBLISHED' }, select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } }, orderBy: { enrollments: { _count: 'desc' } }, take: 5 }),
+            prisma.course.findMany({ 
+                where: { status: 'PUBLISHED', enrollments: { some: { enrolledAt: dateFilter } } }, 
+                select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: { where: { enrolledAt: dateFilter } } } } }, 
+                orderBy: { enrollments: { _count: 'desc' } }, 
+                take: 5 
+            }),
 
             // Consultas para el gráfico de tendencias (filtradas por fecha)
             prisma.user.groupBy({ by: ['registeredDate'], where: { registeredDate: dateFilter }, _count: { _all: true }, orderBy: { registeredDate: 'asc' } }),
             prisma.course.groupBy({ by: ['createdAt'], where: { createdAt: dateFilter }, _count: { _all: true }, orderBy: { createdAt: 'asc' } }),
             prisma.enrollment.groupBy({ by: ['enrolledAt'], where: { enrolledAt: dateFilter }, _count: { _all: true }, orderBy: { enrolledAt: 'asc' } }),
             
-            // Consultas Raw para rankings de usuarios
+            // Consultas Raw para rankings de usuarios (CORREGIDO: filtrado por fecha)
              prisma.$queryRaw<RawInstructorResult[]>`
                 SELECT u.id, u.name, u.avatar, COUNT(c.id) as value
                 FROM Course c
@@ -176,7 +181,7 @@ export async function GET(req: NextRequest) {
             }
         });
 
-        const allPublishedCoursesInfo = await prisma.course.findMany({ where: { id: { in: Array.from(completionRatesByCourse.keys()) } }, select: { id: true, title: true, imageUrl: true }});
+        const allPublishedCoursesInfo = await prisma.course.findMany({ where: { id: { in: Array.from(completionRatesByCourse.keys()) } }, select: { id: true, title: true, imageUrl: true } });
         const courseInfoMap = new Map(allPublishedCoursesInfo.map(c => [c.id, c]));
 
         const topCoursesByCompletion = [...completionRatesByCourse.entries()]
@@ -203,7 +208,7 @@ export async function GET(req: NextRequest) {
             usersByRole: usersByRole.map(u => ({ role: u.role, count: u._count._all })),
             coursesByStatus: coursesByStatus.map(c => ({ status: c.status, count: c._count._all })),
             recentLogins: uniqueActiveUsers,
-            newUsersLast7Days: newUsersCount,
+            newEnrollmentsLast7Days: newEnrollmentsLast7DaysCount, // CORREGIDO
             userRegistrationTrend,
             courseActivity,
             averageCompletionRate: Math.round(totalCompletionRate),
