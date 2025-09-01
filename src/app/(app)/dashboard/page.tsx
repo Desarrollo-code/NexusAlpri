@@ -39,7 +39,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line } from "recharts";
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line } from "recharts";
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { getEventDetails } from '@/lib/security-log-utils';
 import { format, parseISO } from 'date-fns';
@@ -113,8 +113,8 @@ const MetricCard = ({ title, value, icon: Icon, description, gradient, id }: { t
 };
 
 const activityChartConfig = {
-  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--primary))" },
-  newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-3))" },
+  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-1))" },
+  newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-2))" },
 } satisfies ChartConfig;
 
 
@@ -144,30 +144,20 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
             <MetricCard title="Total Usuarios" value={stats.totalUsers} icon={UsersRound} gradient="bg-gradient-blue" />
             <MetricCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={BookOpenCheck} gradient="bg-gradient-green" />
             <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="En los últimos 7 días" gradient="bg-gradient-orange" />
-            <MetricCard title="Nuevos Registros" value={stats.newUsersLast7Days} icon={UserPlus} description="En los últimos 7 días" gradient="bg-gradient-purple" />
+            <MetricCard title="Nuevas Inscripciones" value={stats.newEnrollmentsLast7Days} icon={UserPlus} description="En los últimos 7 días" gradient="bg-gradient-purple" />
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <main className="lg:col-span-2 space-y-6">
             <Card className="card-border-animated" id="course-activity-chart">
               <CardHeader>
-                  <CardTitle>Actividad de la Plataforma (Últimos 30 días)</CardTitle>
-                  <CardDescription>Resumen de nuevos cursos e inscripciones.</CardDescription>
+                  <CardTitle>Actividad Diaria (Últimos 30 días)</CardTitle>
+                  <CardDescription>Resumen de nuevos cursos e inscripciones por día.</CardDescription>
               </CardHeader>
                   <CardContent className="h-[350px] p-0 pr-4">
                    <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
                     <ResponsiveContainer>
-                        <AreaChart data={stats.courseActivity} margin={{ top: 20, right: 20, bottom: 50, left: 0 }}>
-                             <defs>
-                                <linearGradient id="fillNewCourses" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="var(--color-newCourses)" stopOpacity={0.8}/>
-                                    <stop offset="95%" stopColor="var(--color-newCourses)" stopOpacity={0.1}/>
-                                </linearGradient>
-                                <linearGradient id="fillNewEnrollments" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="var(--color-newEnrollments)" stopOpacity={0.8}/>
-                                    <stop offset="95%" stopColor="var(--color-newEnrollments)" stopOpacity={0.1}/>
-                                </linearGradient>
-                            </defs>
+                         <BarChart data={stats.courseActivity} margin={{ top: 20, right: 20, bottom: 50, left: 0 }}>
                             <CartesianGrid vertical={false} />
                             <XAxis 
                                 dataKey="date" 
@@ -182,9 +172,9 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                             <YAxis allowDecimals={false} />
                             <ChartTooltip content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
                             <Legend verticalAlign="top" height={36} />
-                            <Area type="monotone" dataKey="newCourses" stackId="1" stroke="var(--color-newCourses)" fill="url(#fillNewCourses)" name="Nuevos Cursos" />
-                            <Area type="monotone" dataKey="newEnrollments" stackId="1" stroke="var(--color-newEnrollments)" fill="url(#fillNewEnrollments)" name="Nuevas Inscripciones" />
-                        </AreaChart>
+                            <Bar dataKey="newCourses" fill="var(--color-newCourses)" radius={4} name="Nuevos Cursos" />
+                            <Bar dataKey="newEnrollments" fill="var(--color-newEnrollments)" radius={4} name="Nuevas Inscripciones" />
+                        </BarChart>
                     </ResponsiveContainer>
                     </ChartContainer>
               </CardContent>
