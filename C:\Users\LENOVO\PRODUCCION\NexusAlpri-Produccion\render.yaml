@@ -4,18 +4,18 @@
 
 services:
   # 1. La Base de Datos MySQL
-  - type: pserv # Base de datos privada
+  - type: pserv
     name: nexus-db
-    plan: free # Puedes cambiarlo a un plan de pago para mejor rendimiento
-    region: oregon # Elige la región más cercana a tus usuarios
-    # La línea 'runtime: mysql' se elimina porque es la causa del error.
-    # Render infiere el tipo de base de datos por el servicio.
+    plan: free
+    region: oregon
+    # 'runtime: mysql' no es necesario y se elimina.
+    # 'databaseName' y 'user' no se definen aquí para MySQL.
 
   # 2. La Aplicación Web (Next.js)
   - type: web
     name: nexus-alpri-app
     runtime: node
-    plan: free # Puedes cambiarlo a un plan de pago para mejor rendimiento
+    plan: free
     region: oregon
     healthCheckPath: /api/health
     buildCommand: "npm install && npm run build"
@@ -27,8 +27,8 @@ services:
           name: nexus-db
           property: connectionString # CORREGIDO: Propiedad de conexión correcta
       - key: JWT_SECRET
-        sync: false # Se debe configurar manualmente en el dashboard de Render
+        sync: false
       - key: RESEND_API_KEY
-        sync: false # Se debe configurar manualmente en el dashboard de Render
+        sync: false
       - key: NODE_ENV
         value: production
