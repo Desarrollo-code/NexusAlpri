@@ -124,8 +124,12 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
     const SignInForm = (
         <motion.div key="signIn" variants={formVariants} initial="hidden" animate="visible" exit="exit">
             <form onSubmit={handleSignInSubmit} className="space-y-4">
-                 <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} />
                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} className="pl-10"/>
+                </div>
+                 <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
                         type={showPassword ? "text" : "password"} 
                         placeholder="Contraseña" 
@@ -133,6 +137,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                         value={password} 
                         onChange={e => setPassword(e.target.value)} 
                         disabled={isLoading}
+                        className="pl-10"
                     />
                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
@@ -148,10 +153,17 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
     const SignUpForm = (
          <motion.div key="signUp" variants={formVariants} initial="hidden" animate="visible" exit="exit">
             <form onSubmit={handleSignUpSubmit} className="space-y-4">
-                 <Input type="text" placeholder="Nombre" required value={name} onChange={e => setName(e.target.value)} disabled={isLoading} />
-                 <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} />
+                <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input type="text" placeholder="Nombre" required value={name} onChange={e => setName(e.target.value)} disabled={isLoading} className="pl-10" />
+                </div>
+                <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} className="pl-10" />
+                </div>
                  <div className="space-y-2">
                     <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input 
                             type={showPassword ? "text" : "password"} 
                             placeholder="Contraseña" 
@@ -161,6 +173,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                             disabled={isLoading} 
                             onFocus={() => setIsPasswordFocused(true)}
                             onBlur={() => !password && setIsPasswordFocused(false)}
+                            className="pl-10"
                         />
                          <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPassword(!showPassword)}>
                             {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
