@@ -73,7 +73,18 @@ export async function POST(req: NextRequest) {
         if (!name || !email || !password || !role) {
             return NextResponse.json({ message: 'Nombre, email, contraseña y rol son requeridos' }, { status: 400 });
         }
-
+        
+        const settings = await prisma.platformSettings.findFirst();
+        
+        // --- Validación de Dominio ---
+        if (settings && settings.emailWhitelist && settings.emailWhitelist.trim() !== '') {
+            const allowedDomains = settings.emailWhitelist.split(',').map(d => d.trim().toLowerCase());
+            const emailDomain = email.substring(email.lastIndexOf('@') + 1).toLowerCase();
+            if (!allowedDomains.includes(emailDomain)) {
+                return NextResponse.json({ message: `Solo se permiten correos con los dominios autorizados: ${settings.emailWhitelist}.` }, { status: 403 });
+            }
+        }
+        
         const existingUser = await prisma.user.findUnique({
             where: { email: email.toLowerCase() }
         });
@@ -81,7 +92,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: 'El correo electrónico ya está en uso' }, { status: 409 });
         }
         
-        const settings = await prisma.platformSettings.findFirst();
         if (settings) {
             if (password.length < settings.passwordMinLength) {
                 return NextResponse.json({ message: `La contraseña debe tener al menos ${settings.passwordMinLength} caracteres.` }, { status: 400 });

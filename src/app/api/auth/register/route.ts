@@ -19,6 +19,15 @@ export async function POST(req: NextRequest) {
     if (!name || !email || !password) {
       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
+    
+    // --- Validación de Dominio ---
+    if (settings && settings.emailWhitelist && settings.emailWhitelist.trim() !== '') {
+        const allowedDomains = settings.emailWhitelist.split(',').map(d => d.trim().toLowerCase());
+        const emailDomain = email.substring(email.lastIndexOf('@') + 1).toLowerCase();
+        if (!allowedDomains.includes(emailDomain)) {
+            return NextResponse.json({ message: `Solo se permiten correos con los dominios autorizados.` }, { status: 403 });
+        }
+    }
 
     const existingUser = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },

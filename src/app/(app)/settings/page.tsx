@@ -440,6 +440,20 @@ export default function SettingsPage() {
                                 />
                             </div>
                             <Separator/>
+                             <div className="space-y-2 rounded-lg border p-3 shadow-sm">
+                                <Label htmlFor="emailWhitelist">Lista Blanca de Emails</Label>
+                                <Input
+                                    id="emailWhitelist"
+                                    value={formState.emailWhitelist || ''}
+                                    onChange={(e) => handleInputChange('emailWhitelist', e.target.value)}
+                                    placeholder="ej: alprigrama.com, ejemplo.org"
+                                    disabled={isSaving}
+                                />
+                                <p className="text-sm text-muted-foreground">
+                                    Si se completa, solo los correos que terminen con estos dominios podrán registrarse. Déjalo en blanco para permitir cualquier correo. Separa los dominios con comas.
+                                </p>
+                            </div>
+                            <Separator/>
                             <div>
                                 <h4 className="font-medium mb-3">Política de Contraseñas</h4>
                                 <div className="space-y-4 p-3 border rounded-lg shadow-sm">
@@ -531,3 +545,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
