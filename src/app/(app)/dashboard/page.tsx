@@ -127,7 +127,7 @@ const formatDateTick = (tick: string) => {
     }
 };
 
-const formatDateTooltip = (dateString: string) => {
+const formatDateTooltip = (dateString: string, payload?: any) => {
     try {
         const date = parseISO(dateString);
         return format(date, "d/MM/yyyy", { locale: es });
@@ -135,6 +135,7 @@ const formatDateTooltip = (dateString: string) => {
         return dateString;
     }
 };
+
 
 function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardStats, logs: SecurityLogWithUser[], announcements: DisplayAnnouncement[] }) {
   const isMobile = useIsMobile();
@@ -172,8 +173,8 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                             <YAxis allowDecimals={false} />
                             <ChartTooltip content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
                             <Legend verticalAlign="top" height={36} />
-                            <Bar dataKey="newCourses" fill="var(--color-newCourses)" radius={4} name="Nuevos Cursos" />
-                            <Bar dataKey="newEnrollments" fill="var(--color-newEnrollments)" radius={4} name="Nuevas Inscripciones" />
+                            <Bar dataKey="newCourses" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} name="Nuevos Cursos" />
+                            <Bar dataKey="newEnrollments" fill="var(--color-newEnrollments)" radius={[4, 4, 0, 0]} name="Nuevas Inscripciones" />
                         </BarChart>
                     </ResponsiveContainer>
                     </ChartContainer>
@@ -626,3 +627,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
