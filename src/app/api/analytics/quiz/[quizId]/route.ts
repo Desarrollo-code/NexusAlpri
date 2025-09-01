@@ -6,13 +6,13 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: { quizId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ quizId: string }> }) {
     const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const { quizId } = params;
+    const { quizId } = await params;
 
     try {
         const quiz = await prisma.quiz.findUnique({
