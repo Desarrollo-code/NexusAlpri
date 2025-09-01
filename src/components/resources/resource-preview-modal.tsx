@@ -327,6 +327,11 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
               {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0" })}
               <DialogTitle className="font-semibold truncate text-foreground">{resource.title}</DialogTitle>
             </div>
+            <DialogClose asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <X className="h-4 w-4"/>
+                </Button>
+            </DialogClose>
           </DialogHeader>
           <div className="flex-grow flex relative overflow-hidden">
             <div className="flex-grow relative">
