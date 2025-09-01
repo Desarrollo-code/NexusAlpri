@@ -1,4 +1,5 @@
 // prisma/schema.prisma
+
 datasource db {
   provider     = "mysql"
   url          = env("DATABASE_URL")
@@ -90,6 +91,7 @@ enum FormFieldType {
   MULTIPLE_CHOICE
 }
 
+
 // --- MODELS ---
 
 model User {
@@ -121,13 +123,11 @@ model User {
   quizAttempts        QuizAttempt[]
   lessonTemplates     LessonTemplate[]       @relation("UserTemplates")
   userAchievements    UserAchievement[]
-  notes               UserNote[]
-  securityLogs        SecurityLog[]
-  createdForms        Form[]
+  progress            CourseProgress[]
+  createdForms        Form[]                 @relation("CreatedForms")
+  sharedForms         Form[]                 @relation("SharedForms")
   formResponses       FormResponse[]
-  quizAttempts        QuizAttempt[]
-
-  @@index([email])
+  notes               UserNote[]
 }
 
 model Course {
@@ -259,17 +259,20 @@ model QuizAttempt {
 }
 
 model AnswerAttempt {
-  id               String       @id @default(cuid())
-  
-  // Relations
-  quizAttempt      QuizAttempt  @relation(fields: [quizAttemptId], references: [id], onDelete: Cascade)
-  quizAttemptId    String
-  question         Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  questionId       String
-  selectedOption   AnswerOption @relation(fields: [selectedOptionId], references: [id], onDelete: Cascade)
-  selectedOptionId String
-}
+    id                String       @id @default(cuid())
+    
+    // Relations
+    attempt           QuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+    attemptId         String
+    question          Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+    questionId        String
+    selectedOption    AnswerOption @relation(fields: [selectedOptionId], references: [id], onDelete: Cascade)
+    selectedOptionId  String
 
+    @@index([attemptId])
+    @@index([questionId])
+    @@index([selectedOptionId])
+}
 
 model Enrollment {
   id         String         @id @default(cuid())
@@ -357,10 +360,32 @@ model Announcement {
   priority  String   @default("Normal")
   
   // Relations
-  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId   String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+
+  @@index([authorId])
 }
 
+model CalendarEvent {
+  id                  String             @id @default(cuid())
+  title               String
+  description         String?
+  start               DateTime
+  end                 DateTime
+  allDay              Boolean            @default(false)
+  location            String?
+  color               String?
+  videoConferenceLink String?
+  attachments         Json?
+  audienceType        EventAudienceType  @default(ALL)
+
+  // Relations
+  creator              User               @relation("EventsCreated", fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId            String
+  attendees            User[]             @relation("EventAttendees")
+
+  @@index([creatorId])
+}
 
 model Notification {
   id          String   @id @default(cuid())
@@ -503,68 +528,8 @@ model UserAchievement {
   achievementId String
 
   @@unique([userId, achievementId])
-}
-
-model PlatformSettings {
-  id                         String    @id @default(cuid())
-  platformName               String    @default("NexusAlpri")
-  logoUrl                    String?
-  watermarkUrl               String?
-  primaryColor               String?
-  secondaryColor             String?
-  accentColor                String?
-  backgroundColorLight       String?
-  primaryColorDark           String?
-  backgroundColorDark        String?
-  landingImageUrl            String?
-  authImageUrl               String?
-  aboutImageUrl              String?
-  benefitsImageUrl           String?
-  fontHeadline               String?   @default("Space Grotesk")
-  fontBody                   String?   @default("Inter")
-  
-  allowPublicRegistration    Boolean   @default(true)
-  emailWhitelist             String?   // Comma-separated list of allowed emails/domains
-  
-  enableEmailNotifications   Boolean   @default(true)
-  
-  passwordMinLength          Int       @default(8)
-  passwordRequireUppercase   Boolean   @default(true)
-  passwordRequireLowercase   Boolean   @default(true)
-  passwordRequireNumber      Boolean   @default(true)
-  passwordRequireSpecialChar Boolean   @default(true)
-  
-  enableIdleTimeout          Boolean   @default(true)
-  idleTimeoutMinutes         Int       @default(20)
-  
-  require2faForAdmins        Boolean   @default(false)
-
-  resourceCategories         String?   @db.Text
-  updatedAt                  DateTime  @updatedAt
-}
-
-model LessonTemplate {
-  id             String            @id @default(cuid())
-  name           String
-  description    String?
-  type           String            // "SYSTEM" or "USER"
-  
-  // Relations
-  templateBlocks TemplateBlock[]
-  creatorId      String?
-  creator        User?             @relation(fields: [creatorId], references: [id], onDelete: SetNull)
-
-  @@index([creatorId])
-}
-
-model TemplateBlock {
-  id         String     @id @default(cuid())
-  type       LessonType
-  order      Int
-  
-  // Relations
-  template   LessonTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  templateId String
+  @@index([userId])
+  @@index([achievementId])
 }
 
 model Form {
@@ -578,11 +543,11 @@ model Form {
 
   // Relations
   creatorId    String
-  creator      User       @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creator      User           @relation("CreatedForms", fields: [creatorId], references: [id], onDelete: Cascade)
   fields       FormField[]
   responses    FormResponse[]
-  sharedWith   User[]
-  
+  sharedWith   User[]         @relation("SharedForms")
+
   @@index([creatorId])
 }
 
@@ -631,20 +596,4 @@ model FormAnswer {
 
   @@index([responseId])
   @@index([fieldId])
-}
-
-model UserNote {
-    id        String   @id @default(cuid())
-    content   String   @db.Text
-    color     String   @default("yellow")
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    // Relations
-    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId    String
-    lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-    lessonId  String
-
-    @@unique([userId, lessonId])
 }
