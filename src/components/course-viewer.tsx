@@ -425,12 +425,18 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
 
     if (block.type === 'TEXT') {
-        const isUrl = /^(https?:\/\/)/.test(block.content);
+        // Strip HTML tags for URL check
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = block.content;
+        const textContent = tempDiv.textContent || tempDiv.innerText || "";
+        const isUrl = /^(https?:\/\/)/.test(textContent.trim());
+
         if (isUrl) {
             return (
-                <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card">
-                    <a href={block.content} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        {block.content}
+                <div key={block.id} className="my-4 p-4 border rounded-md bg-card hover:bg-muted/50 transition-colors">
+                    <a href={textContent.trim()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-primary font-semibold group">
+                        <ExternalLink className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors"/>
+                        <span className="group-hover:underline underline-offset-4">{textContent.trim()}</span>
                     </a>
                 </div>
             );
