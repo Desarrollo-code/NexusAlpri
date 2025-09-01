@@ -1,4 +1,5 @@
 
+
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -34,6 +35,10 @@ export async function GET(req: NextRequest) {
       }
     } else {
       whereClause.status = 'PUBLISHED';
+      // Si el usuario está autenticado, no mostrar los cursos que ha creado él mismo.
+      if (userId) {
+          whereClause.instructorId = { not: userId };
+      }
     }
 
     const courseInclude = {

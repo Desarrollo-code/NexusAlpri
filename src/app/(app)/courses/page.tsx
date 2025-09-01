@@ -111,7 +111,8 @@ export default function CoursesPage() {
       
       const isPublished = course.status === 'PUBLISHED';
       const isNotEnrolled = !enrolledCourseIds.includes(course.id);
-      const isNotOwnCourse = !( (user?.role === 'INSTRUCTOR' || user?.role === 'ADMINISTRATOR') && course.instructorId === user?.id );
+      // Un usuario no puede inscribirse en un curso que él mismo ha creado.
+      const isNotOwnCourse = course.instructorId !== user?.id;
       const matchesCategory = activeCategory === 'all' || course.category === activeCategory;
 
       return matchesSearch && isPublished && isNotEnrolled && isNotOwnCourse && matchesCategory;
