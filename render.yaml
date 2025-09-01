@@ -3,7 +3,7 @@
 
 services:
   # 1. La Base de Datos PostgreSQL (en lugar de MySQL)
-  - type: database
+  - type: pserv
     name: nexus-db
     databaseName: nexus_db
     user: nexus_user
