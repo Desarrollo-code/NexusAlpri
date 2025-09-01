@@ -6,6 +6,8 @@ import type { NextRequest } from 'next/server';
 import { sendEmail } from '@/lib/email';
 import { AnnouncementEmail } from '@/components/emails/announcement-email';
 import type { UserRole } from '@/types';
+import { Prisma } from '@prisma/client';
+
 
 export const dynamic = 'force-dynamic';
 
@@ -24,8 +26,8 @@ export async function GET(req: NextRequest) {
   // Filtro de audiencia para asegurar que los usuarios solo vean lo que les corresponde.
   const audienceFilter = {
     OR: [
-      { audience: 'ALL' },
-      { audience: { has: session.role } },
+      { audience: { equals: "ALL" as any } }, // "ALL" se almacena como un string JSON
+      { audience: { path: '$', array_contains: session.role } }, // Roles se almacenan como un array JSON
     ],
   };
 
