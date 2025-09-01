@@ -1,29 +1,23 @@
-# Ignorar dependencias locales
+# Git files
+.git
+.gitignore
+
+# Node modules
 node_modules
 
-# Ignorar logs y archivos de entorno
+# Local environment variables
 .env
-.env*.local
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-*.log
+.env.local
 
-# Ignorar la carpeta de construcción de Next.js (se genera dentro del contenedor)
+# Next.js build output
 .next
 
-# Ignorar configuraciones de editor y sistema operativo
-.vscode
-.idea
-.DS_Store
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
+# Vercel deployment configuration
+.vercel
 
-# Ignorar archivos de caché
-.npm
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
+# READMEs and docs
+README.md
+docs/
+
+# TypeScript configuration
+tsconfig.json
