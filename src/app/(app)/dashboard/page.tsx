@@ -113,8 +113,8 @@ const MetricCard = ({ title, value, icon: Icon, description, gradient, id }: { t
 };
 
 const activityChartConfig = {
-  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--chart-1))" },
-  newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-2))" },
+  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--primary))" },
+  newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
 
@@ -159,16 +159,6 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                    <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
                     <ResponsiveContainer>
                          <BarChart data={stats.courseActivity} margin={{ top: 20, right: 20, bottom: 50, left: 0 }}>
-                            <defs>
-                                <linearGradient id="colorNewCourses" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="var(--color-newCourses)" stopOpacity={0.8}/>
-                                    <stop offset="95%" stopColor="var(--color-newCourses)" stopOpacity={0.1}/>
-                                </linearGradient>
-                                <linearGradient id="colorNewEnrollments" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="var(--color-newEnrollments)" stopOpacity={0.8}/>
-                                    <stop offset="95%" stopColor="var(--color-newEnrollments)" stopOpacity={0.1}/>
-                                </linearGradient>
-                            </defs>
                             <CartesianGrid vertical={false} />
                             <XAxis 
                                 dataKey="date" 
@@ -183,8 +173,8 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                             <YAxis allowDecimals={false} />
                             <ChartTooltip cursor={{fill: 'hsl(var(--muted))'}} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
                             <Legend verticalAlign="top" height={36} />
-                            <Bar dataKey="newCourses" fill="url(#colorNewCourses)" radius={[4, 4, 0, 0]} name="Nuevos Cursos" />
-                            <Bar dataKey="newEnrollments" fill="url(#colorNewEnrollments)" radius={[4, 4, 0, 0]} name="Nuevas Inscripciones" />
+                            <Bar dataKey="newCourses" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} name="Nuevos Cursos" />
+                            <Bar dataKey="newEnrollments" fill="var(--color-newEnrollments)" radius={[4, 4, 0, 0]} name="Nuevas Inscripciones" />
                         </BarChart>
                     </ResponsiveContainer>
                     </ChartContainer>
