@@ -140,6 +140,12 @@ export function FormViewer({ formId }: { formId: string }) {
                 <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
                 <h2 className="text-2xl font-bold">¡Gracias!</h2>
                 <p className="text-muted-foreground mt-2">Tu respuesta al formulario "{form.title}" ha sido registrada.</p>
+                {finalScore !== null && (
+                    <div className="mt-4">
+                        <p className="text-lg">Tu puntuación final es:</p>
+                        <p className="text-4xl font-bold text-primary">{finalScore.toFixed(0)}%</p>
+                    </div>
+                )}
                 <Button className="mt-6" onClick={() => router.push('/dashboard')}>Volver al Panel Principal</Button>
             </Card>
         );
