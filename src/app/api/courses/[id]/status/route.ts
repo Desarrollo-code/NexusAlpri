@@ -27,9 +27,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             return NextResponse.json({ message: 'No tienes permiso para modificar este curso' }, { status: 403 });
         }
         
+        const dataToUpdate: { status: CourseStatus; publicationDate?: Date } = { status: status as CourseStatus };
+        if (status === 'PUBLISHED' && courseToUpdate.status !== 'PUBLISHED') {
+            dataToUpdate.publicationDate = new Date();
+        }
+
         const updatedCourse = await prisma.course.update({
             where: { id },
-            data: { status: status as CourseStatus },
+            data: dataToUpdate,
         });
         
         if (status === 'PUBLISHED' && courseToUpdate.status !== 'PUBLISHED') {
