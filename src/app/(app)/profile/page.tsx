@@ -1,4 +1,3 @@
-
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -43,7 +42,6 @@ const calculateLevel = (xp: number) => {
     return { level, currentXPInLevel: xp, xpForNextLevel, progressPercentage };
 };
 
-// --- Sub-Components for the Profile Page ---
 
 const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => void }) => {
     const [name, setName] = useState(user?.name || '');
@@ -85,10 +83,8 @@ const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => 
     );
 };
 
-const SecurityCard = ({ user }: { user: any }) => {
-    const [currentPassword, setCurrentPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setConfirmPassword, currentPassword, setCurrentPassword }: 
+{ user: any, newPassword, setNewPassword, confirmPassword, setConfirmPassword, currentPassword, setCurrentPassword }) => {
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -130,14 +126,18 @@ const SecurityCard = ({ user }: { user: any }) => {
                         <Label htmlFor="currentPassword">Contraseña Actual</Label>
                         <div className="relative">
                             <Input id="currentPassword" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
-                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={() => setShowCurrentPassword((prev) => !prev)}>{showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={() => setShowCurrentPassword((prev) => !prev)}>
+                                {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
                         </div>
                     </div>
                     <div className="space-y-1">
                         <Label htmlFor="newPassword">Nueva Contraseña</Label>
                         <div className="relative">
                             <Input id="newPassword" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
-                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={() => setShowNewPassword((prev) => !prev)}>{showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={() => setShowNewPassword((prev) => !prev)}>
+                                {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
                         </div>
                     </div>
                     <PasswordStrengthIndicator password={newPassword} isVisible={newPassword.length > 0} />
@@ -145,7 +145,9 @@ const SecurityCard = ({ user }: { user: any }) => {
                         <Label htmlFor="confirmPassword">Confirmar Nueva Contraseña</Label>
                         <div className="relative">
                             <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
-                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={() => setShowConfirmPassword((prev) => !prev)}>{showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
+                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={() => setShowConfirmPassword((prev) => !prev)}>
+                                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
                         </div>
                     </div>
                 </CardContent>
@@ -338,6 +340,7 @@ const GamificationCard = ({ user, achievements, isLoadingAchievements }: { user:
 )};
 
 
+// Main component
 function ProfilePageContent() {
     const { user, updateUser } = useAuth();
     const { toast } = useToast();
@@ -348,6 +351,10 @@ function ProfilePageContent() {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [achievements, setAchievements] = useState<UserAchievement[]>([]);
     const [isLoadingAchievements, setIsLoadingAchievements] = useState(true);
+
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
 
     useEffect(() => {
         setPageTitle('Mi Perfil');
@@ -429,12 +436,30 @@ function ProfilePageContent() {
                 <div className="lg:col-span-2 space-y-8">
                     <InfoCard user={user} updateUser={updateUser} />
                     <div className={cn(isMobile ? "block" : "hidden")}><GamificationCard user={user} achievements={achievements} isLoadingAchievements={isLoadingAchievements}/></div>
-                    <div className={cn(isMobile ? "hidden" : "block")}><SecurityCard user={user} /></div>
+                    <div className={cn(isMobile ? "hidden" : "block")}>
+                        <SecurityCard 
+                            user={user} 
+                            newPassword={newPassword}
+                            setNewPassword={setNewPassword}
+                            confirmPassword={confirmPassword}
+                            setConfirmPassword={setConfirmPassword}
+                            currentPassword={currentPassword}
+                            setCurrentPassword={setCurrentPassword}
+                        />
+                    </div>
                     <div className={cn(isMobile ? "hidden" : "block")}><TwoFactorCard user={user} updateUser={updateUser}/></div>
                 </div>
                  {isMobile && (
                     <div className="lg:col-span-3 space-y-8">
-                        <SecurityCard user={user}/>
+                        <SecurityCard 
+                            user={user} 
+                            newPassword={newPassword}
+                            setNewPassword={setNewPassword}
+                            confirmPassword={confirmPassword}
+                            setConfirmPassword={setConfirmPassword}
+                            currentPassword={currentPassword}
+                            setCurrentPassword={setCurrentPassword}
+                        />
                         <TwoFactorCard user={user} updateUser={updateUser}/>
                     </div>
                  )}

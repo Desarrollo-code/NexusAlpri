@@ -15,13 +15,6 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
 
-const FormInput = ({ icon: Icon, ...props }: { icon: React.ElementType } & React.ComponentProps<typeof Input>) => (
-    <div className="relative flex items-center">
-        <Icon className="absolute left-3 h-5 w-5 text-muted-foreground" />
-        <Input className="pl-10 h-11 bg-muted/30 border-muted-foreground/50 focus:bg-muted/50" {...props} />
-    </div>
-);
-
 const formVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeInOut" } },
@@ -131,10 +124,9 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
     const SignInForm = (
         <motion.div key="signIn" variants={formVariants} initial="hidden" animate="visible" exit="exit">
             <form onSubmit={handleSignInSubmit} className="space-y-4">
-                 <FormInput icon={Mail} type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} />
+                 <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} />
                  <div className="relative">
-                    <FormInput
-                        icon={Lock}
+                    <Input
                         type={showPassword ? "text" : "password"} 
                         placeholder="Contraseña" 
                         required 
@@ -142,9 +134,9 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                         onChange={e => setPassword(e.target.value)} 
                         disabled={isLoading}
                     />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                    <Button type="button" variant="ghost" size="icon" className="absolute inset-y-0 right-0 flex items-center pr-3 h-full" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
-                    </button>
+                    </Button>
                  </div>
                 <Button type="submit" className="w-full !mt-6 h-12 text-base btn-primary-gradient" disabled={isLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Ingresar'}
@@ -156,12 +148,11 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
     const SignUpForm = (
          <motion.div key="signUp" variants={formVariants} initial="hidden" animate="visible" exit="exit">
             <form onSubmit={handleSignUpSubmit} className="space-y-4">
-                 <FormInput icon={User} type="text" placeholder="Nombre" required value={name} onChange={e => setName(e.target.value)} disabled={isLoading} />
-                 <FormInput icon={Mail} type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} />
+                 <Input type="text" placeholder="Nombre" required value={name} onChange={e => setName(e.target.value)} disabled={isLoading} />
+                 <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} />
                  <div className="space-y-2">
                     <div className="relative">
-                        <FormInput 
-                            icon={Lock}
+                        <Input 
                             type={showPassword ? "text" : "password"} 
                             placeholder="Contraseña" 
                             required 
@@ -171,9 +162,9 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                             onFocus={() => setIsPasswordFocused(true)}
                             onBlur={() => !password && setIsPasswordFocused(false)}
                         />
-                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                         <Button type="button" variant="ghost" size="icon" className="absolute inset-y-0 right-0 flex items-center pr-3 h-full" onClick={() => setShowPassword(!showPassword)}>
                             {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
-                        </button>
+                        </Button>
                     </div>
                      <AnimatePresence>
                          <PasswordStrengthIndicator password={password} isVisible={isPasswordFocused || password.length > 0} />
