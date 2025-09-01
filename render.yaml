@@ -1,0 +1,39 @@
+# render.yaml
+# Este archivo le dice a Render cómo construir y desplegar tu aplicación y base de datos.
+# https://render.com/docs/blueprint-spec
+
+services:
+  # 1. La Base de Datos MySQL
+  - type: pserv # Base de datos privada
+    name: nexus-db
+    runtime: mysql
+    plan: free # Puedes cambiarlo a un plan de pago para mejor rendimiento
+    region: oregon # Elige la región más cercana a tus usuarios
+
+  # 2. La Aplicación Web (Next.js)
+  - type: web
+    name: nexus-alpri-app
+    runtime: node
+    plan: free # Puedes cambiarlo a un plan de pago para mejor rendimiento
+    region: oregon
+    branch: main # Rama de GitHub que se desplegará
+    buildFilter:
+      paths:
+      - "src/**"
+      - "prisma/**"
+    # Comandos para construir tu aplicación
+    buildCommand: "npm install && npm run prisma:generate && npm run build"
+    # Comando para iniciar tu aplicación
+    startCommand: "npm start"
+    envVars:
+      - key: DATABASE_URL
+        fromService:
+          type: pserv
+          name: nexus-db
+          property: internalConnectionString # Usa la conexión interna para más seguridad y velocidad
+      - key: JWT_SECRET
+        sync: false # Se debe configurar manualmente en el dashboard de Render
+      - key: RESEND_API_KEY
+        sync: false # Se debe configurar manualmente en el dashboard de Render
+      - key: NODE_ENV
+        value: production
