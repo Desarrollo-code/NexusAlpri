@@ -39,7 +39,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line } from "recharts";
+import { Area, AreaChart, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line } from "recharts";
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { getEventDetails } from '@/lib/security-log-utils';
 import { format, parseISO } from 'date-fns';
@@ -113,8 +113,8 @@ const MetricCard = ({ title, value, icon: Icon, description, gradient, id }: { t
 };
 
 const activityChartConfig = {
-  newCourses: { label: "Nuevos", color: "hsl(220 80% 60%)" },
-  publishedCourses: { label: "Publicados", color: "hsl(140 70% 45%)" },
+  newCourses: { label: "Nuevos", color: "hsl(var(--primary))" },
+  publishedCourses: { label: "Publicados", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
 
@@ -155,11 +155,19 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                   <CardDescription>Resumen de creación y publicación de cursos.</CardDescription>
               </CardHeader>
                   <CardContent className="h-[350px] p-0 pr-4">
-
-                    
                    <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
                     <ResponsiveContainer>
-                        <ComposedChart data={stats.courseActivity} margin={{ top: 20, right: 30, bottom: 50, left: 0 }}>
+                        <AreaChart data={stats.courseActivity} margin={{ top: 20, right: 20, bottom: 50, left: 0 }}>
+                             <defs>
+                                <linearGradient id="fillNew" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="var(--color-newCourses)" stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor="var(--color-newCourses)" stopOpacity={0.1}/>
+                                </linearGradient>
+                                <linearGradient id="fillPublished" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="var(--color-publishedCourses)" stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor="var(--color-publishedCourses)" stopOpacity={0.1}/>
+                                </linearGradient>
+                            </defs>
                             <CartesianGrid vertical={false} />
                             <XAxis 
                                 dataKey="date" 
@@ -168,16 +176,15 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                                 tickMargin={10} 
                                 angle={-45} 
                                 textAnchor="end" 
-                                interval={isMobile ? 6 : 0} 
+                                interval={isMobile ? 6 : 2} 
                                 tickFormatter={formatDateTick} 
                             />
-                            <YAxis yAxisId="left" orientation="left" stroke="var(--color-newCourses)" />
-                            <YAxis yAxisId="right" orientation="right" stroke="var(--color-publishedCourses)" />
-                            <ChartTooltip content={<ChartTooltipContent hideIndicator labelFormatter={formatDateTooltip} />} />
+                            <YAxis allowDecimals={false} />
+                            <ChartTooltip content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
                             <Legend verticalAlign="top" height={36} />
-                            <Bar dataKey="newCourses" name="Nuevos Cursos" yAxisId="left" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} />
-                            <Line type="monotone" dataKey="publishedCourses" name="Cursos Publicados" yAxisId="right" stroke="var(--color-publishedCourses)" strokeWidth={2} dot={false} />
-                        </ComposedChart>
+                            <Area type="monotone" dataKey="newCourses" stackId="1" stroke="var(--color-newCourses)" fill="url(#fillNew)" name="Nuevos" />
+                            <Area type="monotone" dataKey="publishedCourses" stackId="1" stroke="var(--color-publishedCourses)" fill="url(#fillPublished)" name="Publicados" />
+                        </AreaChart>
                     </ResponsiveContainer>
                     </ChartContainer>
               </CardContent>

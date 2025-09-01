@@ -148,9 +148,9 @@ export async function GET(req: NextRequest) {
             const dayString = date.toISOString().split('T')[0];
             return {
                 date: dayString,
-                newCourses: courseCreationByDay.find(d => startOfDay(d.createdAt).toISOString().split('T')[0] === dayString)?._count._all || 0,
+                newCourses: courseCreationByDay.find(d => startOfDay(d.createdAt!).toISOString().split('T')[0] === dayString)?._count._all || 0,
                 publishedCourses: coursePublicationByDay.find(d => d.publicationDate && startOfDay(d.publicationDate).toISOString().split('T')[0] === dayString)?._count._all || 0,
-                newEnrollments: enrollmentsByDay.find(d => startOfDay(d.enrolledAt).toISOString().split('T')[0] === dayString)?._count._all || 0,
+                newEnrollments: enrollmentsByDay.find(d => startOfDay(d.enrolledAt!).toISOString().split('T')[0] === dayString)?._count._all || 0,
             };
         });
         
