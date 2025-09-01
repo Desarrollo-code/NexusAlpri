@@ -309,9 +309,6 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
         <div className="w-full sm:w-80 flex-shrink-0 border-l bg-background/50 flex flex-col">
             <div className="p-4 border-b flex items-center justify-between">
                 <h3 className="font-semibold">Detalles del Recurso</h3>
-                {isMobile && (
-                    <Button variant="ghost" size="icon" onClick={() => setShowDetails(false)}><X className="h-4 w-4" /></Button>
-                )}
             </div>
             <ScrollArea className="flex-grow p-4">
                 <ResourceDetailsContent resource={resource} />
@@ -327,12 +324,6 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
               {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0" })}
               <DialogTitle className="font-semibold truncate text-foreground">{resource.title}</DialogTitle>
             </div>
-             <DialogClose asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <X className="h-5 w-5" />
-                    <span className="sr-only">Cerrar</span>
-                </Button>
-            </DialogClose>
           </DialogHeader>
           <div className="flex-grow flex relative overflow-hidden">
             <div className="flex-grow relative">
@@ -352,7 +343,12 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
                     <Button variant="outline" size="sm"><Info className="h-4 w-4" /></Button>
                   </SheetTrigger>
                   <SheetContent side="bottom" className="h-[60vh] flex flex-col p-0">
-                      <DetailsComponent />
+                      <SheetHeader className="p-4 border-b">
+                          <SheetTitle>Detalles del Recurso</SheetTitle>
+                      </SheetHeader>
+                      <ScrollArea className="flex-grow p-4">
+                        <ResourceDetailsContent resource={resource} />
+                      </ScrollArea>
                   </SheetContent>
                 </Sheet>
               ) : (
@@ -363,7 +359,10 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
               )}
             </div>
             <div className="flex items-center gap-2">
-              <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} variant="secondary" size="sm" />
+                <DialogClose asChild>
+                    <Button variant="secondary" size="sm">Cerrar</Button>
+                </DialogClose>
+                <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} variant="default" size="sm" />
             </div>
           </DialogFooter>
         </DialogContent>
