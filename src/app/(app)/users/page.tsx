@@ -57,7 +57,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { GradientIcon } from '@/components/ui/gradient-icon';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useTitle } from '@/contexts/title-context';
-import { Identicon } from '@/components/ui/identicon';
+import { getInitials } from '@/lib/utils';
 import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils';
 
 const PAGE_SIZE = 10;
@@ -359,7 +359,7 @@ export default function UsersPage() {
                 <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
                         {u.avatar ? <AvatarImage src={u.avatar} alt={u.name} /> : null}
-                        <AvatarFallback><Identicon userId={u.id}/></AvatarFallback>
+                        <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
                     </Avatar>
                     <div className="font-medium">{u.name}</div>
                 </div>
@@ -436,7 +436,7 @@ export default function UsersPage() {
             <div className="flex items-center gap-4">
               <Avatar className="h-10 w-10">
                 {u.avatar ? <AvatarImage src={u.avatar} alt={u.name} /> : null}
-                <AvatarFallback><Identicon userId={u.id}/></AvatarFallback>
+                <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
               </Avatar>
               <div>
                 <p className="font-semibold">{u.name}</p>
@@ -598,7 +598,6 @@ export default function UsersPage() {
                               placeholder="Mínimo 8 caracteres" 
                               required 
                               disabled={isProcessing}
-                              className="pr-10"
                             />
                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
                                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}

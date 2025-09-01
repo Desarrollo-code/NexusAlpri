@@ -134,14 +134,15 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
             <form onSubmit={handleSignInSubmit} className="space-y-4">
                  <FormInput icon={Mail} type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} />
                  <div className="relative">
-                    <Input 
+                    <FormInput
+                        icon={Lock}
                         type={showPassword ? "text" : "password"} 
                         placeholder="Contraseña" 
                         required 
                         value={password} 
                         onChange={e => setPassword(e.target.value)} 
                         disabled={isLoading}
-                        className="pl-4 pr-10 h-11 bg-muted/30 border-muted-foreground/50 focus:bg-muted/50"
+                        className="pr-10"
                     />
                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                         {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
@@ -161,7 +162,8 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                  <FormInput icon={Mail} type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} />
                  <div className="space-y-2">
                     <div className="relative">
-                        <Input 
+                        <FormInput 
+                            icon={Lock}
                             type={showPassword ? "text" : "password"} 
                             placeholder="Contraseña" 
                             required 
@@ -170,7 +172,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                             disabled={isLoading} 
                             onFocus={() => setIsPasswordFocused(true)}
                             onBlur={() => !password && setIsPasswordFocused(false)}
-                            className="pl-4 pr-10 h-11 bg-muted/30 border-muted-foreground/50 focus:bg-muted/50"
+                            className="pr-10"
                         />
                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                             {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
