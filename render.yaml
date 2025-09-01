@@ -1,4 +1,4 @@
-# render.yaml
+># render.yaml
 # Este archivo le dice a Render cómo construir y desplegar tu aplicación y base de datos.
 # https://render.com/docs/blueprint-spec
 
@@ -13,13 +13,12 @@ services:
   # 2. La Aplicación Web (Next.js)
   - type: web
     name: nexus-alpri-app
-    runtime: docker # Le decimos a Render que use nuestro Dockerfile
+    runtime: node
     plan: free # Puedes cambiarlo a un plan de pago para mejor rendimiento
     region: oregon
     healthCheckPath: /api/health
-    # Render usará el Dockerfile por defecto, no necesita 'buildCommand'.
-    # El puerto expuesto en el Dockerfile debe coincidir aquí.
-    # El 'startCommand' está definido dentro del Dockerfile (CMD).
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start"
     envVars:
       - key: DATABASE_URL
         fromService:
