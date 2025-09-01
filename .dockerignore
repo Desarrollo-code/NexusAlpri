@@ -1,7 +1,12 @@
-node_modules
+
+.dockerignore
+Dockerfile
 .env
-.next
 .git
-.vscode
+.gitignore
+node_modules
+npm-debug.log
 README.md
+.next
+.vercel
 docs/
