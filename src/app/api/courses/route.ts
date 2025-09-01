@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
       }
     } else {
       whereClause.status = 'PUBLISHED';
-      // Si el usuario está autenticado, no mostrar los cursos que ha creado él mismo.
+      // Un usuario no puede inscribirse en un curso que él mismo ha creado.
       if (userId) {
           whereClause.instructorId = { not: userId };
       }
@@ -84,8 +84,11 @@ export async function GET(req: NextRequest) {
         }
       }
 
+      // Limpia la información sensible de las inscripciones si no es necesaria
+      const { enrollments, ...restOfCourse } = course;
+
       return {
-        ...course,
+        ...restOfCourse,
         modulesCount: course._count?.modules ?? (course.modules?.length || 0),
         enrollmentsCount: course._count?.enrollments ?? 0,
         averageCompletion: averageCompletion,

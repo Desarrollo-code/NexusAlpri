@@ -7,6 +7,7 @@ import { addXp, checkAndAwardFirstEnrollment, XP_CONFIG } from '@/lib/gamificati
 export const dynamic = 'force-dynamic';
 
 // This custom POST handler manages only enrollment.
+// An admin or instructor can also enroll a specific user.
 export async function POST(req: NextRequest) {
     const session = await getCurrentUser();
     if (!session) {
@@ -14,28 +15,40 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const { courseId } = await req.json();
+        const { courseId, userId } = await req.json(); // userId is optional
+        const finalUserId = userId || session.id;
 
         if (!courseId) {
             return NextResponse.json({ message: 'courseId es requerido.' }, { status: 400 });
         }
+        
+        // Admins can enroll anyone. Instructors can enroll anyone in their own courses.
+        if (userId && userId !== session.id) {
+            const course = await prisma.course.findUnique({ where: { id: courseId }, select: { instructorId: true } });
+            const isAdmin = session.role === 'ADMINISTRATOR';
+            const isCourseInstructor = session.role === 'INSTRUCTOR' && course?.instructorId === session.id;
+
+            if (!isAdmin && !isCourseInstructor) {
+                return NextResponse.json({ message: 'No tienes permiso para inscribir a este usuario.' }, { status: 403 });
+            }
+        }
 
         const existingEnrollment = await prisma.enrollment.findUnique({
-            where: { userId_courseId: { userId: session.id, courseId } },
+            where: { userId_courseId: { userId: finalUserId, courseId } },
         });
 
         if (existingEnrollment) {
-            return NextResponse.json({ message: 'Ya estás inscrito en este curso.' }, { status: 409 });
+            return NextResponse.json({ message: 'El usuario ya está inscrito en este curso.' }, { status: 409 });
         }
         
         await prisma.enrollment.create({
             data: {
-                user: { connect: { id: session.id } },
+                user: { connect: { id: finalUserId } },
                 course: { connect: { id: courseId } },
                 enrolledAt: new Date(),
                 progress: {
                     create: {
-                        userId: session.id,
+                        userId: finalUserId,
                         courseId,
                         progressPercentage: 0,
                     }
@@ -44,8 +57,8 @@ export async function POST(req: NextRequest) {
         });
 
         // --- Gamification Logic ---
-        await addXp(session.id, XP_CONFIG.ENROLL_COURSE);
-        await checkAndAwardFirstEnrollment(session.id);
+        await addXp(finalUserId, XP_CONFIG.ENROLL_COURSE);
+        await checkAndAwardFirstEnrollment(finalUserId);
         // --------------------------
 
         return NextResponse.json({ message: 'Inscripción exitosa' }, { status: 201 });

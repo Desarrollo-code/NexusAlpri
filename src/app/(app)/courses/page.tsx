@@ -66,7 +66,10 @@ export default function CoursesPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const coursePromise = fetch('/api/courses', { cache: 'no-store' });
+      const courseParams = new URLSearchParams();
+      if (user?.id) courseParams.append('userId', user.id);
+      
+      const coursePromise = fetch(`/api/courses?${courseParams.toString()}`, { cache: 'no-store' });
       
       const enrollmentPromise = user?.id 
         ? fetch(`/api/enrollment/${user.id}`, { cache: 'no-store' })
@@ -111,13 +114,11 @@ export default function CoursesPage() {
       
       const isPublished = course.status === 'PUBLISHED';
       const isNotEnrolled = !enrolledCourseIds.includes(course.id);
-      // Un usuario no puede inscribirse en un curso que él mismo ha creado.
-      const isNotOwnCourse = course.instructorId !== user?.id;
       const matchesCategory = activeCategory === 'all' || course.category === activeCategory;
 
-      return matchesSearch && isPublished && isNotEnrolled && isNotOwnCourse && matchesCategory;
+      return matchesSearch && isPublished && isNotEnrolled && matchesCategory;
     });
-  }, [allCoursesForDisplay, searchTerm, enrolledCourseIds, user, activeCategory]);
+  }, [allCoursesForDisplay, searchTerm, enrolledCourseIds, activeCategory]);
 
 
   const groupedCourses = useMemo(() => {
