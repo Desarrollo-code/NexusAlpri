@@ -85,7 +85,8 @@ const InfoCard = ({ user, updateUser }) => {
     );
 };
 
-const SecurityCard = ({ user }) => {
+const SecurityCard = (props) => {
+    const { user } = props;
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
