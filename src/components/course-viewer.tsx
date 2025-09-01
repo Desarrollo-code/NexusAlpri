@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -439,9 +438,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                             Esta lección te redirigirá a un recurso externo. Haz clic en el botón para continuar.
                         </p>
                         <Button asChild>
-                            <Link href={block.content} target="_blank" rel="noopener noreferrer">
+                            <a href={block.content} target="_blank" rel="noopener noreferrer">
                                 Visitar Sitio
-                            </Link>
+                            </a>
                         </Button>
                     </CardContent>
                 </Card>

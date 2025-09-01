@@ -196,7 +196,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
 
         const renderBlockContent = () => {
             switch(block.type) {
-                case 'TEXT': return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí texto o pega un enlace..." disabled={isSaving} />;
+                case 'TEXT': return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." disabled={isSaving} />;
                 case 'VIDEO': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
                 case 'FILE': return (
                      <div className="w-full space-y-2">
