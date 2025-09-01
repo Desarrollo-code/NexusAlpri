@@ -1,3 +1,4 @@
+// src/app/api/announcements/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -9,11 +10,24 @@ import type { UserRole } from '@/types';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
+  const session = await getCurrentUser();
+  if (!session) {
+    return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(req.url);
   const pageParam = searchParams.get('page');
   const pageSizeParam = searchParams.get('pageSize');
   
   const isPaginated = pageParam && pageSizeParam;
+
+  // Filtro de audiencia para asegurar que los usuarios solo vean lo que les corresponde.
+  const audienceFilter = {
+    OR: [
+      { audience: 'ALL' },
+      { audience: { has: session.role } },
+    ],
+  };
 
   try {
     if (isPaginated) {
@@ -23,22 +37,28 @@ export async function GET(req: NextRequest) {
 
         const [announcements, totalAnnouncements] = await prisma.$transaction([
             prisma.announcement.findMany({
+                where: audienceFilter,
                 orderBy: { date: 'desc' },
                 include: { author: { select: { id: true, name: true } } },
                 skip: skip,
                 take: pageSize,
             }),
-            prisma.announcement.count()
+            prisma.announcement.count({
+                where: audienceFilter
+            })
         ]);
         
         return NextResponse.json({ announcements, totalAnnouncements });
     } else {
+        // Esta rama se usa para el dashboard, que solo muestra los más recientes.
         const announcements = await prisma.announcement.findMany({
+            where: audienceFilter,
             orderBy: { date: 'desc' },
             include: { author: { select: { id: true, name: true } } },
-            take: 4, // Fetch 4 for dashboards
+            take: 4, 
         });
-        return NextResponse.json({ announcements, totalAnnouncements: announcements.length });
+        const totalAnnouncements = await prisma.announcement.count({ where: audienceFilter });
+        return NextResponse.json({ announcements, totalAnnouncements });
     }
 
   } catch (error) {
