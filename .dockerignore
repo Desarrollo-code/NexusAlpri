@@ -1,22 +1,10 @@
-# Evita que estos archivos y carpetas se copien en la imagen de Docker
-
-# Dependencias
+# Evita copiar archivos innecesarios al contenedor de Docker
+Dockerfile
+.dockerignore
 node_modules
-
-# Archivos de build y temporales
-.next
 npm-debug.log
-.DS_Store
-
-# Archivos locales de entorno
-.env
-.env.local
-
-# Git
+README.md
+.next
 .git
 .gitignore
-
-# Documentación y configuración del editor
-README.md
-docs/
-.vscode/
+*.tsbuildinfo

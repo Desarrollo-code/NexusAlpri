@@ -16,17 +16,9 @@ services:
     runtime: docker # Le decimos a Render que use nuestro Dockerfile
     plan: free # Puedes cambiarlo a un plan de pago para mejor rendimiento
     region: oregon
-    branch: master # Rama de GitHub que se desplegará
     healthCheckPath: /api/health
-    buildFilter:
-      paths:
-      - "src/**"
-      - "prisma/**"
-      - "Dockerfile"
-      - "render.yaml"
     # Render usará el Dockerfile por defecto, no necesita 'buildCommand'.
     # El puerto expuesto en el Dockerfile debe coincidir aquí.
-    # Next.js se ejecuta en el puerto 3000 por defecto. Lo cambiaremos a 9002.
     # El 'startCommand' está definido dentro del Dockerfile (CMD).
     envVars:
       - key: DATABASE_URL
