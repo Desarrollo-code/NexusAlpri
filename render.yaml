@@ -17,6 +17,7 @@ services:
     plan: free # Puedes cambiarlo a un plan de pago para mejor rendimiento
     region: oregon
     branch: master # Rama de GitHub que se desplegará
+    healthCheckPath: /api/health
     buildFilter:
       paths:
       - "src/**"

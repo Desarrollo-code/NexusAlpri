@@ -1,23 +1,22 @@
-# Git files
-.git
-.gitignore
+# Evita que estos archivos y carpetas se copien en la imagen de Docker
 
-# Node modules
+# Dependencias
 node_modules
 
-# Local environment variables
+# Archivos de build y temporales
+.next
+npm-debug.log
+.DS_Store
+
+# Archivos locales de entorno
 .env
 .env.local
 
-# Next.js build output
-.next
+# Git
+.git
+.gitignore
 
-# Vercel deployment configuration
-.vercel
-
-# READMEs and docs
+# Documentación y configuración del editor
 README.md
 docs/
-
-# TypeScript configuration
-tsconfig.json
+.vscode/
