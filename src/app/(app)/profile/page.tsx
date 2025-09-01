@@ -60,6 +60,7 @@ function ProfilePageContent() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isSavingPassword, setIsSavingPassword] = useState(false);
 
     // State for 2FA
@@ -301,10 +302,28 @@ function ProfilePageContent() {
             <CardHeader><CardTitle className="flex items-center gap-2"><KeyRound className="text-primary"/>Cambiar Contraseña</CardTitle></CardHeader>
             <form onSubmit={handlePasswordSubmit}>
                 <CardContent className="space-y-4">
-                    <div className="space-y-1 relative"><Label htmlFor="currentPassword">Contraseña Actual</Label><Input id="currentPassword" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required /><Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={()=>setShowCurrentPassword(!showCurrentPassword)}>{showCurrentPassword ? <EyeOff /> : <Eye />}</Button></div>
-                    <div className="space-y-1 relative"><Label htmlFor="newPassword">Nueva Contraseña</Label><Input id="newPassword" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required /><Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={()=>setShowNewPassword(!showNewPassword)}>{showNewPassword ? <EyeOff /> : <Eye />}</Button></div>
+                    <div className="space-y-1">
+                        <Label htmlFor="currentPassword">Contraseña Actual</Label>
+                        <div className="relative">
+                            <Input id="currentPassword" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={()=>setShowCurrentPassword(!showCurrentPassword)}>{showCurrentPassword ? <EyeOff /> : <Eye />}</Button>
+                        </div>
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor="newPassword">Nueva Contraseña</Label>
+                        <div className="relative">
+                            <Input id="newPassword" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={()=>setShowNewPassword(!showNewPassword)}>{showNewPassword ? <EyeOff /> : <Eye />}</Button>
+                        </div>
+                    </div>
                     <PasswordStrengthIndicator password={newPassword} isVisible={newPassword.length > 0} />
-                    <div className="space-y-1"><Label htmlFor="confirmPassword">Confirmar Nueva Contraseña</Label><Input id="confirmPassword" type={showNewPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required /></div>
+                     <div className="space-y-1">
+                        <Label htmlFor="confirmPassword">Confirmar Nueva Contraseña</Label>
+                        <div className="relative">
+                            <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={()=>setShowConfirmPassword(!showConfirmPassword)}>{showConfirmPassword ? <EyeOff /> : <Eye />}</Button>
+                        </div>
+                    </div>
                 </CardContent>
                 <CardFooter><Button type="submit" disabled={isSavingPassword}>{isSavingPassword ? <Loader2 className="animate-spin"/> : 'Cambiar Contraseña'}</Button></CardFooter>
             </form>
