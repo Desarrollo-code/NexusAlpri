@@ -1,4 +1,3 @@
-
 // src/components/auth/auth-form-container.tsx
 'use client';
 
@@ -142,7 +141,6 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                         value={password} 
                         onChange={e => setPassword(e.target.value)} 
                         disabled={isLoading}
-                        className="pr-10"
                     />
                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                         {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
@@ -172,7 +170,6 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                             disabled={isLoading} 
                             onFocus={() => setIsPasswordFocused(true)}
                             onBlur={() => !password && setIsPasswordFocused(false)}
-                            className="pr-10"
                         />
                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
                             {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
