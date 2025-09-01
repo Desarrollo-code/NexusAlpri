@@ -1,3 +1,4 @@
+
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -42,10 +43,9 @@ const calculateLevel = (xp: number) => {
     return { level, currentXPInLevel: xp, xpForNextLevel, progressPercentage };
 };
 
-
 // --- Sub-Components for the Profile Page ---
 
-const InfoCard = ({ user, updateUser }) => {
+const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => void }) => {
     const [name, setName] = useState(user?.name || '');
     const [isSavingInfo, setIsSavingInfo] = useState(false);
     const { toast } = useToast();
@@ -85,8 +85,7 @@ const InfoCard = ({ user, updateUser }) => {
     );
 };
 
-const SecurityCard = (props) => {
-    const { user } = props;
+const SecurityCard = ({ user }: { user: any }) => {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -130,14 +129,14 @@ const SecurityCard = (props) => {
                     <div className="space-y-1">
                         <Label htmlFor="currentPassword">Contraseña Actual</Label>
                         <div className="relative">
-                            <Input id="currentPassword" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
+                            <Input id="currentPassword" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required className="pr-10"/>
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={()=>setShowCurrentPassword(!showCurrentPassword)}>{showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
                         </div>
                     </div>
                     <div className="space-y-1">
                         <Label htmlFor="newPassword">Nueva Contraseña</Label>
                         <div className="relative">
-                            <Input id="newPassword" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                            <Input id="newPassword" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="pr-10"/>
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={()=>setShowNewPassword(!showNewPassword)}>{showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
                         </div>
                     </div>
@@ -145,7 +144,7 @@ const SecurityCard = (props) => {
                      <div className="space-y-1">
                         <Label htmlFor="confirmPassword">Confirmar Nueva Contraseña</Label>
                         <div className="relative">
-                            <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+                            <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="pr-10"/>
                              <Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={()=>setShowConfirmPassword(!showConfirmPassword)}>{showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
                         </div>
                     </div>
@@ -156,7 +155,7 @@ const SecurityCard = (props) => {
     );
 };
 
-const TwoFactorCard = ({ user, updateUser }) => {
+const TwoFactorCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => void }) => {
     const [qrCode, setQrCode] = useState<string | null>(null);
     const [verificationCode, setVerificationCode] = useState('');
     const [isActivating2FA, setIsActivating2FA] = useState(false);
@@ -264,6 +263,80 @@ const TwoFactorCard = ({ user, updateUser }) => {
     );
 };
 
+const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { user: any, onAvatarChange: (e: any) => void, isUploading: boolean, uploadProgress: number }) => (
+     <Card className="profile-card card-border-animated" id="profile-card-display">
+        <div className="card__img">
+            <div className="card__img--gradient" />
+        </div>
+        <div className="card__avatar">
+            <Avatar className="h-full w-full">
+                <AvatarImage src={user.avatar || undefined} alt={user.name} quality={100} />
+                <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+            </Avatar>
+             <label htmlFor="avatar-upload" className="absolute bottom-1 right-1 h-9 w-9 bg-card text-card-foreground rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-muted transition-colors">
+                <Camera className="h-5 w-5" />
+                <input id="avatar-upload" type="file" className="hidden" accept="image/*" onChange={onAvatarChange} disabled={isUploading}/>
+            </label>
+        </div>
+         <CardHeader className="pt-2 pb-0">
+            <CardTitle className="text-2xl font-headline">{user.name}</CardTitle>
+            <CardDescription className="card__subtitle">{user.email}</CardDescription>
+        </CardHeader>
+        <CardContent>
+            {isUploading && (
+                <div className="px-4 pt-2">
+                    <UploadProgress value={uploadProgress} className="h-1.5"/>
+                </div>
+            )}
+        </CardContent>
+    </Card>
+);
+
+const GamificationCard = ({ user, achievements, isLoadingAchievements }: { user: any, achievements: any[], isLoadingAchievements: boolean }) => {
+    const { level, currentXPInLevel, xpForNextLevel, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
+    return (
+     <Card id="gamification-card-desktop">
+        <CardHeader><CardTitle className="flex items-center gap-2"><Award className="text-primary"/>Progreso y Logros</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+             <div className="text-center space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Nivel {level}</p>
+                <p className="text-4xl font-bold text-primary">{user.xp || 0} XP</p>
+            </div>
+             <div className="space-y-1">
+                <Progress value={progressPercentage} />
+                <p className="text-xs text-muted-foreground text-right">{currentXPInLevel} / {xpForNextLevel} XP para el siguiente nivel</p>
+             </div>
+             <Separator />
+              <div>
+                <h4 className="font-semibold text-sm mb-3">Logros Desbloqueados</h4>
+                {isLoadingAchievements ? (
+                    <div className="flex justify-center"><Loader2 className="animate-spin"/></div>
+                ) : achievements.length > 0 ? (
+                    <TooltipProvider>
+                        <div className="flex flex-wrap gap-4">
+                            {achievements.map(({ achievement }) => (
+                                <Tooltip key={achievement.id}>
+                                    <TooltipTrigger>
+                                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-amber-300 to-yellow-500 flex items-center justify-center text-white shadow-md">
+                                            <Star className="h-7 w-7" fill="currentColor"/>
+                                        </div>
+                                    </TooltipTrigger>
+                                     <TooltipContent>
+                                        <p className="font-bold">{achievement.name}</p>
+                                        <p className="text-xs">{achievement.description}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            ))}
+                        </div>
+                    </TooltipProvider>
+                ) : (
+                    <p className="text-xs text-muted-foreground text-center italic">Aún no has desbloqueado logros. ¡Sigue aprendiendo!</p>
+                )}
+            </div>
+        </CardContent>
+    </Card>
+)};
+
 
 function ProfilePageContent() {
     const { user, updateUser } = useAuth();
@@ -334,82 +407,8 @@ function ProfilePageContent() {
         }
     };
     
-    const { level, currentXPInLevel, xpForNextLevel, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
-
     if (!user) return <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin"/></div>;
-
-    const ProfileCard = () => (
-         <Card className="profile-card card-border-animated" id="profile-card-display">
-            <div className="card__img">
-                <div className="card__img--gradient" />
-            </div>
-            <div className="card__avatar">
-                <Avatar className="h-full w-full">
-                    <AvatarImage src={user.avatar || undefined} alt={user.name} quality={100} />
-                    <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
-                </Avatar>
-                 <label htmlFor="avatar-upload" className="absolute bottom-1 right-1 h-9 w-9 bg-card text-card-foreground rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-muted transition-colors">
-                    <Camera className="h-5 w-5" />
-                    <input id="avatar-upload" type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} disabled={isUploading}/>
-                </label>
-            </div>
-             <CardHeader className="pt-2 pb-0">
-                <CardTitle className="text-2xl font-headline">{user.name}</CardTitle>
-                <CardDescription className="card__subtitle">{user.email}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {isUploading && (
-                    <div className="px-4 pt-2">
-                        <UploadProgress value={uploadProgress} className="h-1.5"/>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
-    );
     
-    const GamificationCard = () => (
-         <Card id="gamification-card-desktop">
-            <CardHeader><CardTitle className="flex items-center gap-2"><Award className="text-primary"/>Progreso y Logros</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-                 <div className="text-center space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">Nivel {level}</p>
-                    <p className="text-4xl font-bold text-primary">{user.xp || 0} XP</p>
-                </div>
-                 <div className="space-y-1">
-                    <Progress value={progressPercentage} />
-                    <p className="text-xs text-muted-foreground text-right">{currentXPInLevel} / {xpForNextLevel} XP para el siguiente nivel</p>
-                 </div>
-                 <Separator />
-                  <div>
-                    <h4 className="font-semibold text-sm mb-3">Logros Desbloqueados</h4>
-                    {isLoadingAchievements ? (
-                        <div className="flex justify-center"><Loader2 className="animate-spin"/></div>
-                    ) : achievements.length > 0 ? (
-                        <TooltipProvider>
-                            <div className="flex flex-wrap gap-4">
-                                {achievements.map(({ achievement }) => (
-                                    <Tooltip key={achievement.id}>
-                                        <TooltipTrigger>
-                                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-amber-300 to-yellow-500 flex items-center justify-center text-white shadow-md">
-                                                <Star className="h-7 w-7" fill="currentColor"/>
-                                            </div>
-                                        </TooltipTrigger>
-                                         <TooltipContent>
-                                            <p className="font-bold">{achievement.name}</p>
-                                            <p className="text-xs">{achievement.description}</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                ))}
-                            </div>
-                        </TooltipProvider>
-                    ) : (
-                        <p className="text-xs text-muted-foreground text-center italic">Aún no has desbloqueado logros. ¡Sigue aprendiendo!</p>
-                    )}
-                </div>
-            </CardContent>
-        </Card>
-    );
-
     const isMobile = useIsMobile();
 
     return (
@@ -423,13 +422,13 @@ function ProfilePageContent() {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-1 space-y-8">
-                    <ProfileCard/>
-                    <div className={cn(isMobile ? "hidden" : "block")}><GamificationCard /></div>
+                    <ProfileCard user={user} onAvatarChange={handleAvatarChange} isUploading={isUploading} uploadProgress={uploadProgress} />
+                    <div className={cn(isMobile ? "hidden" : "block")}><GamificationCard user={user} achievements={achievements} isLoadingAchievements={isLoadingAchievements}/></div>
                 </div>
 
                 <div className="lg:col-span-2 space-y-8">
                     <InfoCard user={user} updateUser={updateUser} />
-                    <div className={cn(isMobile ? "block" : "hidden")}><GamificationCard /></div>
+                    <div className={cn(isMobile ? "block" : "hidden")}><GamificationCard user={user} achievements={achievements} isLoadingAchievements={isLoadingAchievements}/></div>
                     <div className={cn(isMobile ? "hidden" : "block")}><SecurityCard user={user} /></div>
                     <div className={cn(isMobile ? "hidden" : "block")}><TwoFactorCard user={user} updateUser={updateUser}/></div>
                 </div>
