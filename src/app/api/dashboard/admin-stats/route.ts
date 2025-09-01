@@ -74,7 +74,6 @@ export async function GET(req: NextRequest) {
             coursesWithEnrollmentCounts,
             userRegistrationsByDay,
             courseCreationByDay,
-            coursePublicationByDay,
             enrollmentsByDay,
             topInstructorsByCoursesRaw,
             topStudentsByEnrollmentRaw,
@@ -99,7 +98,6 @@ export async function GET(req: NextRequest) {
             prisma.course.findMany({ where: { status: 'PUBLISHED' }, select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } }, orderBy: { enrollments: { _count: 'desc' } }, take: 5 }),
             prisma.user.groupBy({ by: ['registeredDate'], where: { registeredDate: dateFilter }, _count: { _all: true }, orderBy: { registeredDate: 'asc' } }),
             prisma.course.groupBy({ by: ['createdAt'], where: { createdAt: dateFilter }, _count: { _all: true }, orderBy: { createdAt: 'asc' } }),
-            prisma.course.groupBy({ by: ['publicationDate'], where: { status: 'PUBLISHED', publicationDate: dateFilter }, _count: { _all: true }, orderBy: { publicationDate: 'asc' } }),
             prisma.enrollment.groupBy({ by: ['enrolledAt'], where: { enrolledAt: dateFilter }, _count: { _all: true }, orderBy: { enrolledAt: 'asc' } }),
             prisma.$queryRaw<RawInstructorResult[]>`
                 SELECT u.id, u.name, u.avatar, COUNT(c.id) as value
@@ -149,7 +147,6 @@ export async function GET(req: NextRequest) {
             return {
                 date: dayString,
                 newCourses: courseCreationByDay.find(d => d.createdAt && startOfDay(d.createdAt).toISOString().split('T')[0] === dayString)?._count._all || 0,
-                publishedCourses: coursePublicationByDay.find(d => d.publicationDate && startOfDay(d.publicationDate).toISOString().split('T')[0] === dayString)?._count._all || 0,
                 newEnrollments: enrollmentsByDay.find(d => d.enrolledAt && startOfDay(d.enrolledAt).toISOString().split('T')[0] === dayString)?._count._all || 0,
             };
         });

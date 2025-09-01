@@ -113,8 +113,8 @@ const MetricCard = ({ title, value, icon: Icon, description, gradient, id }: { t
 };
 
 const activityChartConfig = {
-  newCourses: { label: "Nuevos", color: "hsl(var(--primary))" },
-  publishedCourses: { label: "Publicados", color: "hsl(var(--chart-3))" },
+  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--primary))" },
+  newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
 
@@ -151,21 +151,21 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
           <main className="lg:col-span-2 space-y-6">
             <Card className="card-border-animated" id="course-activity-chart">
               <CardHeader>
-                  <CardTitle>Actividad de los Cursos (Últimos 30 días)</CardTitle>
-                  <CardDescription>Resumen de creación y publicación de cursos.</CardDescription>
+                  <CardTitle>Actividad de la Plataforma (Últimos 30 días)</CardTitle>
+                  <CardDescription>Resumen de nuevos cursos e inscripciones.</CardDescription>
               </CardHeader>
                   <CardContent className="h-[350px] p-0 pr-4">
                    <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
                     <ResponsiveContainer>
                         <AreaChart data={stats.courseActivity} margin={{ top: 20, right: 20, bottom: 50, left: 0 }}>
                              <defs>
-                                <linearGradient id="fillNew" x1="0" y1="0" x2="0" y2="1">
+                                <linearGradient id="fillNewCourses" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="var(--color-newCourses)" stopOpacity={0.8}/>
                                     <stop offset="95%" stopColor="var(--color-newCourses)" stopOpacity={0.1}/>
                                 </linearGradient>
-                                <linearGradient id="fillPublished" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="var(--color-publishedCourses)" stopOpacity={0.8}/>
-                                    <stop offset="95%" stopColor="var(--color-publishedCourses)" stopOpacity={0.1}/>
+                                <linearGradient id="fillNewEnrollments" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="var(--color-newEnrollments)" stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor="var(--color-newEnrollments)" stopOpacity={0.1}/>
                                 </linearGradient>
                             </defs>
                             <CartesianGrid vertical={false} />
@@ -182,8 +182,8 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                             <YAxis allowDecimals={false} />
                             <ChartTooltip content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
                             <Legend verticalAlign="top" height={36} />
-                            <Area type="monotone" dataKey="newCourses" stackId="1" stroke="var(--color-newCourses)" fill="url(#fillNew)" name="Nuevos" />
-                            <Area type="monotone" dataKey="publishedCourses" stackId="1" stroke="var(--color-publishedCourses)" fill="url(#fillPublished)" name="Publicados" />
+                            <Area type="monotone" dataKey="newCourses" stackId="1" stroke="var(--color-newCourses)" fill="url(#fillNewCourses)" name="Nuevos Cursos" />
+                            <Area type="monotone" dataKey="newEnrollments" stackId="1" stroke="var(--color-newEnrollments)" fill="url(#fillNewEnrollments)" name="Nuevas Inscripciones" />
                         </AreaChart>
                     </ResponsiveContainer>
                     </ChartContainer>
