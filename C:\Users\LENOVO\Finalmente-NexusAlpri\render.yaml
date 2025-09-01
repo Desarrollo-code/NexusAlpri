@@ -26,8 +26,8 @@ services:
           name: nexus-db
           property: connectionString # Propiedad de conexión correcta.
       - key: JWT_SECRET
-        sync: false # Se debe configurar manualmente en el dashboard de Render.
+        sync: false # Se debe configurar manually en el dashboard de Render.
       - key: RESEND_API_KEY
-        sync: false # Se debe configurar manualmente en el dashboard de Render.
+        sync: false # Se debe configurar manually en el dashboard de Render.
       - key: NODE_ENV
         value: production
