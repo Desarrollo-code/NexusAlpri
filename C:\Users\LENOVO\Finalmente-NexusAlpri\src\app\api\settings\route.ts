@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
         resourceCategories: dataFromClient.resourceCategories.join(','),
     };
 
-    // Elimina campos que no deben ser actualizados manually
+    // Elimina campos que no deben ser actualizados manualmente
     delete (dataToSave as any).id;
     delete (dataToSave as any).updatedAt;
     
