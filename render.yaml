@@ -3,9 +3,9 @@
 
 services:
   # 1. La Base de Datos MySQL
-  - type: pserv # pserv significa "Private Service"
+  - type: pserv
     name: nexus-db
-    runtime: mysql # Especificamos que es MySQL
+    runtime: mysql
     plan: free # Puedes cambiarlo a un plan de pago para mejor rendimiento
     region: oregon # Elige la región más cercana a tus usuarios
     
