@@ -1,14 +1,3 @@
-¡Aquí tienes el archivo prisma/schema.prisma completamente corregido y listo para usar! ✅
-
-He aplicado la última corrección en la relación entre User y CourseProgress para asegurar que el despliegue en Render se complete sin problemas. Con este cambio, la validación de tu esquema de Prisma ya no fallará.
-
-<div style="background-color: #1a1a1a; padding: 20px; border-radius: 10px; color: #f0f0f0;">
-<pre style="margin: 0;">
-<code style="color: #f0f0f0;">
-// prisma/schema.prisma
-// Este es tu archivo de esquema de Prisma, define los modelos de tu base de datos.
-// Aprende más sobre esto en la documentación: https://pris.ly/d/prisma-schema
-
 generator client {
 provider = "prisma-client-js"
 }
