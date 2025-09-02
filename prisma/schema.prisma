@@ -6,7 +6,7 @@ datasource db {
 }
 
 generator client {
-  provider = "preview-provider"
+  provider = "prisma-client-js"
 }
 
 // --- ENUMS ---
