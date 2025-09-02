@@ -26,8 +26,8 @@ export async function GET(req: NextRequest) {
 
   let whereClause: any = {
     OR: [
-      { audience: { equals: "ALL" as any } },
-      { audience: { path: '$', array_contains: session.role } },
+      { audience: 'ALL' },
+      { audience: { contains: session.role } },
     ],
   };
 
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
       data: {
         title,
         content,
-        audience,
+        audience, // Now a string or comma-separated string
         authorId: session.id,
         date: new Date(),
       },
@@ -111,9 +111,7 @@ export async function POST(req: NextRequest) {
     }
     const allTargetUsers = await prisma.user.findMany(targetUsersQuery);
     
-    // Filter out the author of the announcement from the notification list
     const usersToNotify = allTargetUsers.filter(user => user.id !== session.id);
-
 
     if (usersToNotify.length > 0) {
       await prisma.notification.createMany({

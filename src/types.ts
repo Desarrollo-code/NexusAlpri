@@ -1,4 +1,3 @@
-
 // src/types.ts
 import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug } from "@prisma/client";
 
@@ -37,6 +36,8 @@ export interface PlatformSettings {
     secondaryColor?: string;
     accentColor?: string;
     backgroundColorLight?: string;
+    fontHeadline?: string;
+    fontBody?: string;
     primaryColorDark?: string;
     backgroundColorDark?: string;
     logoUrl?: string | null;
@@ -135,7 +136,7 @@ export interface EnrolledCourse extends Course {
 
 export type LessonCompletionRecord = {
     lessonId: string;
-    type: 'view' | 'quiz';
+    type: 'view' | 'quiz' | 'video';
     score?: number | null;
 };
 
@@ -268,6 +269,7 @@ export interface AdminDashboardStats {
     coursesByStatus: { status: CourseStatus; count: number }[];
     recentLogins: number;
     newUsersLast7Days: number;
+    newEnrollmentsLast7Days: number;
     userRegistrationTrend: { date: string, count: number }[];
     courseActivity: { date: string, newCourses: number, publishedCourses: number, newEnrollments: number }[];
     averageCompletionRate: number;

@@ -32,6 +32,7 @@ enum LessonType {
   FILE
 }
 
+<<<<<<< HEAD
 enum QuestionType {
   MULTIPLE_CHOICE
   SINGLE_CHOICE
@@ -578,4 +579,131 @@ model UserNote {
     lessonId  String
 
     @@unique([userId, lessonId])
+=======
+// --- MODELS ---
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  name        String
+  role        UserRole @default(STUDENT)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  courses     Course[]        @relation("InstructorCourses")
+  enrollments Enrollment[]
+  submissions Submission[]
+  notes       UserNote[]
+}
+
+model Course {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  status      CourseStatus  @default(DRAFT)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  orden       Int           @default(0)
+
+  // Relations
+  instructor  User          @relation("InstructorCourses", fields: [instructorId], references: [id])
+  instructorId String
+  lessons     Lesson[]
+  enrollments Enrollment[]
+  submissions Submission[]
+
+  @@orderBy([orden asc])
+}
+
+model Lesson {
+  id        String     @id @default(cuid())
+  title     String
+  content   String?
+  type      LessonType
+  orden     Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relations
+  course    Course     @relation(fields: [courseId], references: [id])
+  courseId  String
+  quiz      Quiz?
+
+  @@orderBy([orden asc])
+}
+
+model Quiz {
+  id        String   @id @default(cuid())
+  title     String
+  orden     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  // Relations
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  lessonId  String
+  questions Question[]
+
+  @@orderBy([orden asc])
+}
+
+model Question {
+  id       String   @id @default(cuid())
+  text     String
+  orden    Int      @default(0)
+
+  // Relations
+  quiz     Quiz     @relation(fields: [quizId], references: [id])
+  quizId   String
+  options  Option[]
+
+  @@orderBy([orden asc])
+}
+
+model Option {
+  id         String   @id @default(cuid())
+  text       String
+  isCorrect  Boolean  @default(false)
+  orden      Int      @default(0)
+
+  // Relations
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String
+
+  @@orderBy([orden asc])
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  String
+}
+
+model Submission {
+  id        String   @id @default(cuid())
+  content   String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  String
+}
+
+model UserNote {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+>>>>>>> 44c45429fd675c691d790dae184b7448b4f99eff
 }

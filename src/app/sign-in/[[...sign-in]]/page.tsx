@@ -1,2 +1,8 @@
-// This file is the new entry point for the sign-in page.
-export { default } from '../(public)/sign-in/[[...sign-in]]/page';
+
+'use client';
+
+import AuthForm from '@/components/auth/auth-form-container';
+
+export default function SignInPage() {
+  return <AuthForm defaultView="signIn" />;
+}
