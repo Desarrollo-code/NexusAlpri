@@ -62,6 +62,7 @@ export async function GET(req: NextRequest) {
     // Transforma los campos de string a array para el cliente
     const settingsToReturn: PlatformSettings = {
         ...dbSettings,
+        // CORRECCIÓN: Comprobar si el campo existe antes de usar .split()
         resourceCategories: dbSettings.resourceCategories ? dbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: dbSettings.emailWhitelist || '',
     };
@@ -95,7 +96,7 @@ export async function POST(req: NextRequest) {
         resourceCategories: dataFromClient.resourceCategories.join(','),
     };
 
-    // Elimina campos que no deben ser actualizados manualmente
+    // Elimina campos que no deben ser actualizados manually
     delete (dataToSave as any).id;
     delete (dataToSave as any).updatedAt;
     
@@ -131,6 +132,7 @@ export async function POST(req: NextRequest) {
     // Devuelve la configuración actualizada en el formato correcto para el cliente
     const settingsToReturn: PlatformSettings = {
         ...updatedDbSettings,
+        // CORRECCIÓN: Comprobar también aquí por si acaso
         resourceCategories: updatedDbSettings.resourceCategories ? updatedDbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: updatedDbSettings.emailWhitelist || '',
     };
