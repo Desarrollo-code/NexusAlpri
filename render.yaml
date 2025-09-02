@@ -1,22 +1,32 @@
-# Este archivo le dice a Render cómo construir y desplegar tu aplicación.
+# Este archivo le dice a Render cómo construir y desplegar tu aplicación y base de datos.
 # https://render.com/docs/blueprint-spec
 
 services:
-  # 1. La Aplicación Web (Next.js)
+  # 1. La Base de Datos MySQL
+  - type: pserv
+    name: nexus-db
+    runtime: mysql
+    plan: free # Puedes cambiarlo a un plan de pago para mejor rendimiento
+    region: oregon # Elige la región más cercana a tus usuarios
+    
+  # 2. La Aplicación Web (Next.js)
   - type: web
     name: nexus-alpri-app
     runtime: node
     plan: free
     region: oregon
     healthCheckPath: /api/health
-    buildCommand: "npm install && prisma generate && prisma migrate deploy && next build"
+    buildCommand: "npm install && npx prisma generate && npm run build"
     startCommand: "npm start"
     envVars:
       - key: DATABASE_URL
-        value: "your_database_connection_string_here"
+        fromService:
+          type: pserv
+          name: nexus-db
+          property: connectionString
       - key: JWT_SECRET
-        sync: false
+        generateValue: true # Render generará un valor seguro automáticamente
       - key: RESEND_API_KEY
-        sync: false
+        sync: false # Deberás añadirlo manualmente en Render si lo usas
       - key: NODE_ENV
         value: production
