@@ -77,6 +77,21 @@ enum EventAudienceType {
   SPECIFIC
 }
 
+enum FormStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum FormFieldType {
+  TEXT
+  TEXTAREA
+  SELECT
+  RADIO
+  CHECKBOX
+  DATE
+  FILE
+}
 
 // --- MODELS ---
 
@@ -227,9 +242,9 @@ model AnswerAttempt {
     attemptId           String
     attempt             QuizAttempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
     questionId          String
-    question            Question      @relation(fields: [questionId], references: [id], onDelete: Cascade, map: "AnswerAttempt_questionId_fkey")
+    question            Question      @relation(fields: [questionId], references: [id], onDelete: Cascade)
     selectedOptionId    String
-    selectedOption      AnswerOption  @relation(fields: [selectedOptionId], references: [id], onDelete: Cascade, map: "AnswerAttempt_selectedOptionId_fkey")
+    selectedOption      AnswerOption  @relation(fields: [selectedOptionId], references: [id], onDelete: Cascade)
     field               FormField?    @relation(fields: [formFieldId], references: [id])
     formFieldId         String?
     formResponse        FormResponse? @relation(fields: [formResponseId], references: [id])
@@ -239,7 +254,6 @@ model AnswerAttempt {
     @@index([attemptId])
     @@index([questionId])
 }
-
 
 model Enrollment {
   id          String          @id @default(cuid())
@@ -277,13 +291,12 @@ model LessonCompletionRecord {
   lessonId    String
   lesson      Lesson          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   completedAt DateTime        @default(now())
-  type        String // e.g., 'view', 'quiz', 'video'
+  type        String
   score       Float?
 
   @@unique([progressId, lessonId])
   @@index([lessonId])
 }
-
 
 model UserNote {
   id        String   @id @default(cuid())
@@ -313,10 +326,12 @@ model Resource {
   uploader     User?         @relation(fields: [uploaderId], references: [id], onDelete: SetNull)
   hasPin       Boolean       @default(false)
   pin          String?       @db.VarChar(255)
-  // Relación para carpetas
+  
+  // Auto-relación para carpetas
   parentId     String?
-  parent       Resource?     @relation("FolderContent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parent       Resource?     @relation("FolderContent", fields: [parentId], references: [id], onDelete: NoAction)
   children     Resource[]    @relation("FolderContent")
+  
   // Control de Acceso
   ispublic     Boolean       @default(true)
   sharedWith   User[]        @relation("SharedResources")
@@ -351,7 +366,7 @@ model Announcement {
   date      DateTime @default(now())
   authorId  String
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  audience  String   // 'ALL', or comma-separated roles like 'STUDENT,INSTRUCTOR'
+  audience  String
   priority  String   @default("Normal")
 
   @@index([authorId])
@@ -397,7 +412,7 @@ model FormField {
   type        FormFieldType
   required    Boolean       @default(false)
   placeholder String?
-  options     Json? // For select, radio, checkbox, etc. [{id, text, isCorrect, points}]
+  options     Json?
   order       Int
   formId      String
   form        Form          @relation(fields: [formId], references: [id], onDelete: Cascade)
@@ -444,14 +459,14 @@ model TemplateBlock {
 }
 
 model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title     String
-  description String? @db.Text
-  link      String?
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?  @db.Text
+  link        String?
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
 
   @@index([userId])
 }
