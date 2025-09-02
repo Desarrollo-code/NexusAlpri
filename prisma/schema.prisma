@@ -7,8 +7,8 @@ generator client {
 
 datasource db {
   provider     = "mysql"
-  url          = env("DATABASE_URL")
-  directUrl    = env("DIRECT_DATABASE_URL")
+  url          = env("postgresql://postgres.lhterxqcezyblzbprjce:Amkj2025*..@aws-1-sa-east-1.pooler.supabase.com:6543/postgres")
+  directUrl    = env("postgresql://postgres:Amkj2025*..@db.lhterxqcezyblzbprjce.supabase.co:5432/postgres")
   relationMode = "prisma"
 }
 
