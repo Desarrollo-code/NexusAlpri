@@ -107,7 +107,6 @@ model Course {
 model Module {
   id        String    @id @default(cuid())
   title     String
-  order     Int
   courseId  String
   course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
   lessons   Lesson[]
@@ -118,7 +117,6 @@ model Module {
 model Lesson {
   id            String                 @id @default(cuid())
   title         String
-  order         Int
   moduleId      String
   module        Module                 @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   contentBlocks ContentBlock[]
@@ -134,7 +132,6 @@ model ContentBlock {
   id          String     @id @default(cuid())
   type        LessonType
   content     String?    @db.Text
-  order       Int
   lessonId    String
   lesson      Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   quiz        Quiz?
@@ -156,7 +153,6 @@ model Quiz {
 model Question {
   id      String          @id @default(cuid())
   text    String
-  order   Int
   quizId  String
   quiz    Quiz            @relation(fields: [quizId], references: [id], onDelete: Cascade)
   options AnswerOption[]
@@ -380,7 +376,6 @@ model LessonTemplate {
 model TemplateBlock {
   id          String         @id @default(cuid())
   type        LessonType
-  order       Int
   templateId  String
   template    LessonTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 }
@@ -420,7 +415,6 @@ model FormField {
   required    Boolean       @default(false)
   placeholder String?
   options     Json?         // [{id, text, isCorrect, points}]
-  order       Int
   formId      String
   form        Form          @relation(fields: [formId], references: [id], onDelete: Cascade)
   answers     FormResponseAnswer[]
