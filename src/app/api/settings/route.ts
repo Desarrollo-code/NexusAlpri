@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
     // Transforma los campos de string a array para el cliente
     const settingsToReturn: PlatformSettings = {
         ...dbSettings,
-        resourceCategories: dbSettings.resourceCategories?.split(',').filter(Boolean) ?? [],
+        resourceCategories: dbSettings.resourceCategories ? dbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: dbSettings.emailWhitelist || '',
     };
     
@@ -131,12 +131,12 @@ export async function POST(req: NextRequest) {
     // Devuelve la configuración actualizada en el formato correcto para el cliente
     const settingsToReturn: PlatformSettings = {
         ...updatedDbSettings,
-        resourceCategories: updatedDbSettings.resourceCategories?.split(',').filter(Boolean) ?? [],
+        resourceCategories: updatedDbSettings.resourceCategories ? updatedDbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: updatedDbSettings.emailWhitelist || '',
     };
 
     return NextResponse.json(settingsToReturn);
-  } catch (error) {
+  } catch (error){
     console.error('[SETTINGS_POST_ERROR]', error);
     return NextResponse.json({ message: 'Error interno del servidor al guardar la configuración' }, { status: 500 });
   }

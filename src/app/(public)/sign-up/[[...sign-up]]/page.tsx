@@ -1,3 +1,4 @@
+
 // src/app/(public)/sign-up/[[...sign-up]]/page.tsx
 'use client';
 
