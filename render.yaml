@@ -1,0 +1,22 @@
+# Este archivo le dice a Render cómo construir y desplegar tu aplicación.
+# https://render.com/docs/blueprint-spec
+
+services:
+  # 1. La Aplicación Web (Next.js)
+  - type: web
+    name: nexus-alpri-app
+    runtime: node
+    plan: free
+    region: oregon
+    healthCheckPath: /api/health
+    buildCommand: "npm install && prisma generate && prisma migrate deploy && next build"
+    startCommand: "npm start"
+    envVars:
+      - key: DATABASE_URL
+        value: "your_database_connection_string_here"
+      - key: JWT_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: NODE_ENV
+        value: production

@@ -1,8 +1,7 @@
-
 // src/components/resources/resource-preview-modal.tsx
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from '@/components/ui/dialog';
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X, ArrowUpRightSquare, ZoomIn, ZoomOut, Expand } from 'lucide-react';
@@ -310,9 +309,6 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
         <div className="w-full sm:w-80 flex-shrink-0 border-l bg-background/50 flex flex-col">
             <div className="p-4 border-b flex items-center justify-between">
                 <h3 className="font-semibold">Detalles del Recurso</h3>
-                {isMobile && (
-                    <Button variant="ghost" size="icon" onClick={() => setShowDetails(false)}><X className="h-4 w-4" /></Button>
-                )}
             </div>
             <ScrollArea className="flex-grow p-4">
                 <ResourceDetailsContent resource={resource} />
@@ -321,50 +317,60 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     );
     
     return (
-        <Dialog open={!!resource} onOpenChange={(isOpen) => !isOpen && onClose()}>
-            <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg">
-                 <DialogHeader className="p-4 flex-shrink-0 h-16 px-4 flex justify-between items-center border-b z-10 bg-background/70">
-                    <DialogTitle className="sr-only">Previsualización de {resource.title}</DialogTitle>
-                    <div className="flex items-center gap-3 overflow-hidden">
-                        {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0" })}
-                        <h2 className="font-semibold truncate text-foreground">{resource.title}</h2>
-                    </div>
-                     <div className="flex items-center gap-2">
-                          <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} variant="secondary" size="sm" />
-                         {isMobile ? (
-                            <Sheet open={showDetails} onOpenChange={setShowDetails}>
-                               <SheetTrigger asChild>
-                                  <Button variant="outline" size="icon"><Info className="h-4 w-4" /></Button>
-                               </SheetTrigger>
-                               <SheetContent side="bottom" className="h-[60vh] flex flex-col p-0">
-                                   <DetailsComponent />
-                                </SheetContent>
-                            </Sheet>
-                         ) : (
-                            <Button variant="outline" size="sm" onClick={() => setShowDetails(!showDetails)}>
-                                <Info className="h-4 w-4" />
-                                <span className="hidden sm:inline ml-2">{showDetails ? 'Ocultar Detalles' : 'Ver Detalles'}</span>
-                            </Button>
-                         )}
-                          <DialogClose asChild>
-                             <Button variant="ghost" size="icon" className="h-9 w-9">
-                                <X className="h-5 w-5" />
-                                <span className="sr-only">Cerrar</span>
-                            </Button>
-                         </DialogClose>
-                    </div>
-                </DialogHeader>
-                <div className="flex-grow flex relative overflow-hidden">
-                     <div className="flex-grow relative">
-                        <Button variant="ghost" size="icon" onClick={() => onNavigate('prev')} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronLeft/></Button>
-                        <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
-                            <ContentPreview resource={resource} pinVerifiedUrl={pinVerifiedUrl} onPinVerified={setPinVerifiedUrl} />
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={() => onNavigate('next')} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronRight/></Button>
-                     </div>
-                     {!isMobile && showDetails && <DetailsComponent />}
-                </div>
-            </DialogContent>
-        </Dialog>
+      <Dialog open={!!resource} onOpenChange={(isOpen) => !isOpen && onClose()}>
+        <DialogContent className="w-[95vw] h-[90vh] max-w-6xl p-0 flex flex-col bg-background/80 backdrop-blur-lg gap-0">
+          <DialogHeader className="p-4 flex-shrink-0 h-16 px-4 flex flex-row justify-between items-center border-b z-10 bg-background/70">
+            <div className="flex items-center gap-3 overflow-hidden flex-1">
+              {React.createElement(getIconForType(resource.type), { className: "h-5 w-5 shrink-0" })}
+              <DialogTitle className="font-semibold truncate text-foreground">{resource.title}</DialogTitle>
+            </div>
+            <DialogClose asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <X className="h-4 w-4"/>
+                </Button>
+            </DialogClose>
+          </DialogHeader>
+          <div className="flex-grow flex relative overflow-hidden">
+            <div className="flex-grow relative">
+              <Button variant="ghost" size="icon" onClick={() => onNavigate('prev')} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronLeft/></Button>
+              <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
+                  <ContentPreview resource={resource} pinVerifiedUrl={pinVerifiedUrl} onPinVerified={setPinVerifiedUrl} />
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => onNavigate('next')} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 bg-background/50 hover:bg-background/80"><ChevronRight/></Button>
+            </div>
+            {!isMobile && showDetails && <DetailsComponent />}
+          </div>
+          <DialogFooter className="p-2 border-t flex-shrink-0 bg-background/70 justify-between">
+            <div className="flex items-center gap-2">
+              {isMobile ? (
+                <Sheet open={showDetails} onOpenChange={setShowDetails}>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm"><Info className="h-4 w-4" /></Button>
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="h-[60vh] flex flex-col p-0">
+                      <SheetHeader className="p-4 border-b flex flex-row items-center justify-between">
+                          <SheetTitle>Detalles del Recurso</SheetTitle>
+                           <DialogClose asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7"><X className="h-4 w-4"/></Button>
+                           </DialogClose>
+                      </SheetHeader>
+                      <ScrollArea className="flex-grow p-4">
+                        <ResourceDetailsContent resource={resource} />
+                      </ScrollArea>
+                  </SheetContent>
+                </Sheet>
+              ) : (
+                <Button variant="outline" size="sm" onClick={() => setShowDetails(!showDetails)}>
+                  <Info className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-2">{showDetails ? 'Ocultar Detalles' : 'Ver Detalles'}</span>
+                </Button>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+                <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} variant="default" size="sm" />
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     );
 };

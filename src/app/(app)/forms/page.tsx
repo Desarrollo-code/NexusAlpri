@@ -1,3 +1,4 @@
+
 // src/app/(app)/forms/page.tsx
 'use client';
 
@@ -302,7 +303,8 @@ export default function FormsPage() {
     
     const handleFormCreated = (newForm: AppForm) => {
         setShowCreateModal(false);
-        router.push(`/forms/${newForm.id}/edit`);
+        // Refresh the list to show the new form
+        fetchForms();
     };
 
     const handleFormAction = (action: 'edit' | 'delete' | 'share' | 'results', form: AppForm) => {

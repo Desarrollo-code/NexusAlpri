@@ -1,3 +1,4 @@
+
 // src/types.ts
 import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug } from "@prisma/client";
 
@@ -61,7 +62,7 @@ export interface NavItem {
 
 // --- COURSE CONTENT ---
 export type LessonType = 'TEXT' | 'VIDEO' | 'QUIZ' | 'FILE';
-export type CourseStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'SCHEDULED';
+export type CourseStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE' | 'TRUE_FALSE';
 
 export interface AnswerOption {

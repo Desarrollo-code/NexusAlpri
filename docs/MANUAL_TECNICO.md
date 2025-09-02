@@ -62,7 +62,29 @@ El seguimiento del progreso es un sistema automático y robusto diseñado para r
         *   Guarda este porcentaje final en el campo `progressPercentage` del modelo `CourseProgress`.
     *   La UI recibe este porcentaje final y lo muestra en el indicador circular de progreso.
 
-### 3.2. Lógica de Notificaciones
+### 3.2. Lógica de Formularios y Evaluaciones
+
+El sistema de formularios es una herramienta versátil para crear encuestas o evaluaciones con puntuación.
+
+1.  **Creación y Configuración (Instructores/Admins):**
+    *   Desde la página `/forms`, un usuario autorizado puede crear un nuevo formulario.
+    *   En el editor de formularios (`/forms/[formId]/edit`), se pueden añadir campos de distintos tipos (texto, párrafo, opción única, opción múltiple).
+    *   Se puede habilitar el modo **"Evaluación" (Quiz)**. Si está activo, permite asignar puntos a las opciones de respuesta (actualmente solo para campos de opción única), que se usarán para calcular una puntuación final.
+
+2.  **Envío y Compartición:**
+    *   **Envío de Respuestas (Estudiantes):** Los estudiantes acceden al formulario a través de su URL directa (`/forms/[formId]/view`) si está publicado, o si ha sido compartido con ellos.
+    *   **Lógica de Compartición:** Un instructor o administrador puede compartir un formulario con usuarios específicos usando el endpoint `PUT /api/forms/[id]`, que actualiza la relación `sharedWith` en el modelo `Form`.
+    *   Al enviar sus respuestas (`POST /api/forms/[id]/submit`), el sistema crea un registro `FormResponse`.
+    *   Si el formulario es una evaluación, el backend calcula automáticamente la puntuación total basándose en los puntos asignados a las opciones correctas y la almacena en el `FormResponse`.
+
+3.  **Análisis de Resultados (Instructores/Admins):**
+    *   La página de resultados (`/forms/[formId]/results`) obtiene los datos consolidados.
+    *   Muestra métricas clave como el número total de respuestas y la puntuación promedio (si es una evaluación).
+    *   Para cada pregunta, genera un resumen visual:
+        *   Para preguntas de opción múltiple o única, muestra gráficos de barras con la distribución de respuestas.
+        *   Para preguntas de texto, muestra una lista de las respuestas recibidas.
+
+### 3.3. Lógica de Notificaciones
 
 El sistema de notificaciones es proactivo y está automatizado para mantener a los usuarios informados.
 
@@ -74,7 +96,7 @@ El sistema de notificaciones es proactivo y está automatizado para mantener a l
     *   Cada notificación está vinculada a un `userId`, creando una bandeja de entrada personal.
     *   Desde `/notifications`, un usuario puede ver todas sus notificaciones, marcarlas como leídas (individualmente o en masa) o eliminarlas. Estas acciones se gestionan en `GET`, `PATCH` y `DELETE` de `/api/notifications`.
 
-### 3.3. Lógica de Eventos del Calendario
+### 3.4. Lógica de Eventos del Calendario
 
 El calendario está diseñado para ser flexible y mostrar solo la información relevante para cada usuario.
 
@@ -107,31 +129,32 @@ El esquema se define en `prisma/schema.prisma`. Los modelos principales son:
 *   `PlatformSettings`: Almacena la configuración global de la plataforma.
 *   **`SecurityLog`**: Registra eventos importantes de seguridad, como inicios de sesión (exitosos y fallidos), cambios de contraseña y cambios de rol.
 *   **`LessonTemplate`, `TemplateBlock`**: Almacenan las estructuras de las lecciones reutilizables.
+*   **`Form`, `FormField`, `FormResponse`**: Modelos para el sistema de formularios y evaluaciones.
 
 ### 4.2. Migraciones con Prisma
 
 Cada vez que modificas el archivo `schema.prisma`, la estructura de tu base de datos debe ser actualizada para reflejar esos cambios. Este proceso se gestiona con **Prisma Migrate**.
 
 Para crear y aplicar una nueva migración, ejecuta el siguiente comando en tu terminal:
-\`\`\`bash
+```bash
 npm run prisma:migrate -- --name "un_nombre_descriptivo_para_la_migracion"
-\`\`\`
+```
 
 **Ejemplo Práctico:**
 
 Supongamos que quieres añadir un campo `phoneNumber` a la tabla `User`.
 
 1.  **Modifica el esquema** en `prisma/schema.prisma`:
-    \`\`\`prisma
+    ```prisma
     model User {
       // ... otros campos
       phoneNumber String?
     }
-    \`\`\`
+    ```
 2.  **Ejecuta el comando** en la terminal:
-    \`\`\`bash
+    ```bash
     npm run prisma:migrate -- --name "add_phone_number_to_user"
-    \`\`\`
+    ```
     **Importante:** No olvides el `--` después de `prisma:migrate`. Es necesario para pasar el argumento `--name` al script subyacente de Prisma.
 
 **¿Qué hace este comando?**
@@ -156,24 +179,24 @@ La autenticación se realiza a través de un token JWT en una cookie http-only. 
 
 1.  **Requisitos:** Node.js, npm, y una base de datos MySQL en ejecución.
 2.  **Instalación:**
-    \`\`\`bash
+    ```bash
     npm install
-    \`\`\`
+    ```
 3.  **Variables de Entorno:**
     Crea un archivo `.env` en la raíz del proyecto y define las siguientes variables:
-    \`\`\`env
+    ```env
     DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE_NAME"
     JWT_SECRET="genera-una-cadena-aleatoria-muy-segura-aqui"
     RESEND_API_KEY="tu_api_key_de_resend"
-    \`\`\`
+    ```
 4.  **Aplicar Migraciones:**
-    \`\`\`bash
+    ```bash
     npm run prisma:migrate
-    \`\`\`
+    ```
 5.  **Ejecutar el Proyecto:**
-    \`\`\`bash
+    ```bash
     npm run dev
-    \`\`\`
+    ```
     La aplicación estará disponible en `http://localhost:9002`.
 
 ## 7. Estándares de Codificación

@@ -1,3 +1,4 @@
+
 // src/app/(app)/enrollments/page.tsx
 'use client';
 
@@ -349,10 +350,12 @@ export default function EnrollmentsPage() {
     if (!studentToUnenroll || !selectedCourseId) return;
     setIsUnenrolling(true);
     try {
-        const response = await fetch('/api/enrollments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ courseId: selectedCourseId, userId: studentToUnenroll.user.id, enroll: false }),
+        const params = new URLSearchParams({
+            courseId: selectedCourseId,
+            userId: studentToUnenroll.user.id
+        });
+        const response = await fetch(`/api/enrollments?${params.toString()}`, {
+            method: 'DELETE',
         });
          if (!response.ok) throw new Error((await response.json()).message || 'No se pudo cancelar la inscripción');
         toast({ title: 'Inscripción Cancelada', description: `Se ha cancelado la inscripción de ${studentToUnenroll.user.name}.` });

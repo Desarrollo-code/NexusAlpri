@@ -39,7 +39,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line } from "recharts";
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line, Cell } from "recharts";
 import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { getEventDetails } from '@/lib/security-log-utils';
 import { format, parseISO } from 'date-fns';
@@ -113,8 +113,8 @@ const MetricCard = ({ title, value, icon: Icon, description, gradient, id }: { t
 };
 
 const activityChartConfig = {
-  newCourses: { label: "Nuevos", color: "hsl(220 80% 60%)" },
-  publishedCourses: { label: "Publicados", color: "hsl(140 70% 45%)" },
+  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--primary))" },
+  newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
 
@@ -127,7 +127,7 @@ const formatDateTick = (tick: string) => {
     }
 };
 
-const formatDateTooltip = (dateString: string) => {
+const formatDateTooltip = (dateString: string, payload?: any) => {
     try {
         const date = parseISO(dateString);
         return format(date, "d/MM/yyyy", { locale: es });
@@ -135,6 +135,7 @@ const formatDateTooltip = (dateString: string) => {
         return dateString;
     }
 };
+
 
 function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardStats, logs: SecurityLogWithUser[], announcements: DisplayAnnouncement[] }) {
   const isMobile = useIsMobile();
@@ -144,22 +145,20 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
             <MetricCard title="Total Usuarios" value={stats.totalUsers} icon={UsersRound} gradient="bg-gradient-blue" />
             <MetricCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={BookOpenCheck} gradient="bg-gradient-green" />
             <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="En los últimos 7 días" gradient="bg-gradient-orange" />
-            <MetricCard title="Nuevos Registros" value={stats.newUsersLast7Days} icon={UserPlus} description="En los últimos 7 días" gradient="bg-gradient-purple" />
+            <MetricCard title="Nuevas Inscripciones" value={stats.newEnrollmentsLast7Days} icon={UserPlus} description="En los últimos 7 días" gradient="bg-gradient-purple" />
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <main className="lg:col-span-2 space-y-6">
             <Card className="card-border-animated" id="course-activity-chart">
               <CardHeader>
-                  <CardTitle>Actividad de los Cursos (Últimos 30 días)</CardTitle>
-                  <CardDescription>Resumen de creación y publicación de cursos.</CardDescription>
+                  <CardTitle>Actividad Diaria (Últimos 30 días)</CardTitle>
+                  <CardDescription>Resumen de nuevos cursos e inscripciones por día.</CardDescription>
               </CardHeader>
                   <CardContent className="h-[350px] p-0 pr-4">
-
-                    
                    <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
                     <ResponsiveContainer>
-                        <ComposedChart data={stats.courseActivity} margin={{ top: 20, right: 30, bottom: 50, left: 0 }}>
+                         <BarChart data={stats.courseActivity} margin={{ top: 20, right: 20, bottom: 50, left: 0 }}>
                             <CartesianGrid vertical={false} />
                             <XAxis 
                                 dataKey="date" 
@@ -168,16 +167,15 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                                 tickMargin={10} 
                                 angle={-45} 
                                 textAnchor="end" 
-                                interval={isMobile ? 6 : 0} 
+                                interval={isMobile ? 6 : 2} 
                                 tickFormatter={formatDateTick} 
                             />
-                            <YAxis yAxisId="left" orientation="left" stroke="var(--color-newCourses)" />
-                            <YAxis yAxisId="right" orientation="right" stroke="var(--color-publishedCourses)" />
-                            <ChartTooltip content={<ChartTooltipContent hideIndicator labelFormatter={formatDateTooltip} />} />
+                            <YAxis allowDecimals={false} />
+                            <ChartTooltip cursor={{fill: 'hsl(var(--muted))'}} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
                             <Legend verticalAlign="top" height={36} />
-                            <Bar dataKey="newCourses" name="Nuevos Cursos" yAxisId="left" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} />
-                            <Line type="monotone" dataKey="publishedCourses" name="Cursos Publicados" yAxisId="right" stroke="var(--color-publishedCourses)" strokeWidth={2} dot={false} />
-                        </ComposedChart>
+                            <Bar dataKey="newCourses" fill="var(--color-newCourses)" radius={[4, 4, 0, 0]} name="Nuevos Cursos" />
+                            <Bar dataKey="newEnrollments" fill="var(--color-newEnrollments)" radius={[4, 4, 0, 0]} name="Nuevas Inscripciones" />
+                        </BarChart>
                     </ResponsiveContainer>
                     </ChartContainer>
               </CardContent>
@@ -473,7 +471,8 @@ export default function DashboardPage() {
     setIsLoading(true);
     setError(null);
     try {
-        const promises: Promise<any>[] = [fetch('/api/announcements?pageSize=2')];
+        const announcementsParams = new URLSearchParams({ pageSize: '2', filter: 'by-others' });
+        const promises: Promise<any>[] = [fetch(`/api/announcements?${announcementsParams.toString()}`)];
         
         if (user.role === 'ADMINISTRATOR') {
             promises.push(fetch('/api/dashboard/admin-stats'));
@@ -555,18 +554,6 @@ export default function DashboardPage() {
   }, [fetchDashboardData]);
 
   
-  const filteredAnnouncements = useMemo(() => {
-    if (!user || !data?.recentAnnouncements) return [];
-    return data.recentAnnouncements
-      .filter(ann => {
-        if (ann.audience === 'ALL') return true;
-        if (Array.isArray(ann.audience) && ann.audience.includes(user.role)) return true;
-        if (typeof ann.audience === 'string') { try { const parsed = JSON.parse(ann.audience); if (Array.isArray(parsed) && parsed.includes(user.role)) return true; } catch (e) {} }
-        return false;
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  }, [data?.recentAnnouncements, user]);
-
   if (!user || isLoading) {
     return (
       <div className="space-y-8">
@@ -598,11 +585,11 @@ export default function DashboardPage() {
   const renderContentForRole = () => {
     switch (user.role) {
       case 'ADMINISTRATOR':
-        return data?.adminStats ? <AdminDashboard stats={data.adminStats} logs={data.securityLogs} announcements={filteredAnnouncements} /> : null;
+        return data?.adminStats ? <AdminDashboard stats={data.adminStats} logs={data.securityLogs} announcements={data.recentAnnouncements} /> : null;
       case 'INSTRUCTOR':
-        return data?.instructorStats ? <InstructorDashboard stats={data.instructorStats} announcements={filteredAnnouncements} taughtCourses={data.taughtCourses} /> : null;
+        return data?.instructorStats ? <InstructorDashboard stats={data.instructorStats} announcements={data.recentAnnouncements} taughtCourses={data.taughtCourses} /> : null;
       case 'STUDENT':
-        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={filteredAnnouncements} myCourses={data.myDashboardCourses} /> : null;
+        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={data.recentAnnouncements} myCourses={data.myDashboardCourses} /> : null;
       default:
         return <p>Rol de usuario no reconocido.</p>;
     }
@@ -629,3 +616,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

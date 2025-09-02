@@ -81,7 +81,6 @@ const courseStatusChartConfig = {
     DRAFT: { label: "Borrador", color: "hsl(35 90% 55%)" },
     PUBLISHED: { label: "Publicado", color: "hsl(140 80% 45%)" },
     ARCHIVED: { label: "Archivado", color: "hsl(220 10% 60%)" },
-    SCHEDULED: { label: "Programado", color: "hsl(210 90% 55%)"}
 } satisfies ChartConfig;
 
 const renderActiveShape = (props: any) => {
@@ -322,7 +321,7 @@ function AdminAnalyticsPage() {
     
     const courseStatusChartData = useMemo(() => {
         if (!stats?.coursesByStatus) return [];
-        const order: ('DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'SCHEDULED')[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED', 'SCHEDULED'];
+        const order: ('DRAFT' | 'PUBLISHED' | 'ARCHIVED')[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED'];
         return order.map(status => ({
             status: status,
             label: courseStatusChartConfig[status]?.label || status,

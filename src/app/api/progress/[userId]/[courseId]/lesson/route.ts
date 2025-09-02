@@ -4,6 +4,8 @@ import type { NextRequest } from 'next/server';
 import { recordLessonInteraction, recalculateProgress } from '@/lib/progress';
 import { addXp, XP_CONFIG } from '@/lib/gamification';
 
+export const dynamic = 'force-dynamic';
+
 // Records a 'view' interaction for a lesson and recalculates progress
 export async function POST(req: NextRequest, { params }: { params: Promise<{ userId: string, courseId: string }> }) {
     const session = await getCurrentUser();
@@ -14,7 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
     }
 
     try {
-        const { lessonId } = await req.json();
+        const { lessonId, type } = await req.json(); // Se añade 'type' para videos
         if (!lessonId) {
             return NextResponse.json({ message: 'lessonId es requerido.' }, { status: 400 });
         }
@@ -23,7 +25,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
             userId,
             courseId,
             lessonId,
-            type: 'view',
+            type: type === 'video' ? 'video' : 'view',
         });
         
         // Recalculate progress after the interaction

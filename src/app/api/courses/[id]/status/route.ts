@@ -13,7 +13,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         const { id } = await params;
         const { status } = await req.json();
 
-        if (!['DRAFT', 'PUBLISHED', 'ARCHIVED', 'SCHEDULED'].includes(status)) {
+        if (!['DRAFT', 'PUBLISHED', 'ARCHIVED'].includes(status)) {
             return NextResponse.json({ message: 'Estado inválido' }, { status: 400 });
         }
 
@@ -27,9 +27,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             return NextResponse.json({ message: 'No tienes permiso para modificar este curso' }, { status: 403 });
         }
         
+        const dataToUpdate: { status: CourseStatus; publicationDate?: Date } = { status: status as CourseStatus };
+        if (status === 'PUBLISHED' && courseToUpdate.status !== 'PUBLISHED') {
+            dataToUpdate.publicationDate = new Date();
+        }
+
         const updatedCourse = await prisma.course.update({
             where: { id },
-            data: { status: status as CourseStatus },
+            data: dataToUpdate,
         });
         
         if (status === 'PUBLISHED' && courseToUpdate.status !== 'PUBLISHED') {

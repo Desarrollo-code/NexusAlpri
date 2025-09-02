@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -25,6 +24,7 @@ import { useTitle } from '@/contexts/title-context';
 import { useDebounce } from '@/hooks/use-debounce';
 import { RichTextEditor } from './ui/rich-text-editor';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import YouTube from 'react-youtube';
 
 
 // --- Helper types and functions ---
@@ -162,7 +162,7 @@ const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isO
 };
 
 
-const VideoPlayer = ({ videoUrl, lessonTitle }: { videoUrl: string, lessonTitle?: string }) => {
+const VideoPlayer = ({ videoUrl, lessonTitle, onVideoEnd }: { videoUrl: string, lessonTitle?: string, onVideoEnd: () => void }) => {
     const videoId = getYouTubeVideoId(videoUrl);
     const [showRotateHint, setShowRotateHint] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -188,16 +188,24 @@ const VideoPlayer = ({ videoUrl, lessonTitle }: { videoUrl: string, lessonTitle?
 
     if (!videoId) return null;
 
+    const opts = {
+      height: '100%',
+      width: '100%',
+      playerVars: {
+        autoplay: 0,
+        rel: 0,
+        modestbranding: 1,
+      },
+    };
+
     return (
-        <div ref={containerRef} className="aspect-video w-full max-w-4xl mx-auto my-4 rounded-lg overflow-hidden shadow-md relative group">
-            <iframe 
-                className="w-full h-full" 
-                src={`https://www.youtube.com/embed/${videoId}?rel=0&showinfo=0&modestbranding=1`} 
-                title={`YouTube video: ${lessonTitle}`} 
-                frameBorder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowFullScreen
-            ></iframe>
+        <div ref={containerRef} className="aspect-video w-full max-w-4xl mx-auto my-4 rounded-lg overflow-hidden shadow-md relative group bg-black">
+            <YouTube
+                videoId={videoId}
+                opts={opts}
+                className="w-full h-full"
+                onEnd={onVideoEnd}
+            />
             {showRotateHint && (
                 <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white pointer-events-none transition-opacity duration-300 opacity-100 group-hover:opacity-0">
                     <ScreenShare className="h-12 w-12 mb-2 animate-pulse" />
@@ -264,7 +272,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       }
   }, [user, courseId, toast, isConsolidating]);
 
-  const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz', score?: number) => {
+  const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video', score?: number) => {
     if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || provisionalProgress[lessonId]) return;
     
     // Optimistic update
@@ -343,16 +351,25 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       if(selectedLessonId !== lessonToSelect) {
         setSelectedLessonId(lessonToSelect);
       }
-      if (user && isEnrolled && !isCreatorViewingCourse) {
+      
+      const lesson = allLessons.find(l => l.id === lessonToSelect);
+      const isVideoLesson = lesson?.contentBlocks.some(b => b.type === 'VIDEO');
+      
+      // Do not auto-complete video lessons on click
+      if (user && isEnrolled && !isCreatorViewingCourse && !isVideoLesson) {
         recordInteraction(lessonToSelect, 'view');
       }
     } else if (!selectedLessonId && firstLessonId) {
         setSelectedLessonId(firstLessonId);
     }
-  }, [isLoading, course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, selectedLessonId]);
+  }, [isLoading, course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, selectedLessonId, allLessons]);
   
   const handleQuizSubmitted = useCallback((lessonId: string, score: number) => {
     recordInteraction(lessonId, 'quiz', score);
+  }, [recordInteraction]);
+  
+  const handleVideoEnd = useCallback((lessonId: string) => {
+    recordInteraction(lessonId, 'video');
   }, [recordInteraction]);
 
   const selectedLesson = useMemo(() => {
@@ -398,13 +415,17 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       if (isMobile) {
         setIsMobileSheetOpen(false);
       }
-      recordInteraction(lesson.id, 'view');
+      // Non-video lessons are marked complete on click
+      const isVideoLesson = lesson.contentBlocks.some(b => b.type === 'VIDEO');
+      if (!isVideoLesson) {
+        recordInteraction(lesson.id, 'view');
+      }
       router.push(`/courses/${courseId}?lesson=${lesson.id}`, { scroll: false });
   };
   
   const renderContentBlock = (block: ContentBlock) => {
     if (block.type === 'VIDEO') {
-        return <VideoPlayer key={block.id} videoUrl={block.content || ''} lessonTitle={selectedLesson?.title} />
+        return <VideoPlayer key={block.id} videoUrl={block.content || ''} lessonTitle={selectedLesson?.title} onVideoEnd={() => handleVideoEnd(selectedLessonId!)} />
     }
     
     if (block.type === 'QUIZ') {
@@ -426,25 +447,20 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
 
     if (block.type === 'TEXT') {
-        const isUrl = /^(https?:\/\/)/.test(block.content);
+        // Strip HTML tags for URL check
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = block.content;
+        const textContent = tempDiv.textContent || tempDiv.innerText || "";
+        const isUrl = /^(https?:\/\/)/.test(textContent.trim());
+
         if (isUrl) {
             return (
-                <Card key={block.id} className="my-4 bg-muted/50 text-center">
-                    <CardContent className="p-6">
-                        <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                            <ExternalLink className="h-6 w-6 text-primary" />
-                        </div>
-                        <h3 className="font-semibold text-lg">{selectedLesson?.title}</h3>
-                        <p className="text-sm text-muted-foreground max-w-md mx-auto mt-1 mb-4">
-                            Esta lección te redirigirá a un recurso externo. Haz clic en el botón para continuar.
-                        </p>
-                        <Button asChild>
-                            <Link href={block.content} target="_blank" rel="noopener noreferrer">
-                                Visitar Sitio
-                            </Link>
-                        </Button>
-                    </CardContent>
-                </Card>
+                <div key={block.id} className="my-4 p-4 border rounded-md bg-card hover:bg-muted/50 transition-colors">
+                    <a href={textContent.trim()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-primary font-semibold group">
+                        <ExternalLink className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors"/>
+                        <span className="group-hover:underline underline-offset-4">{textContent.trim()}</span>
+                    </a>
+                </div>
             );
         }
         return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" style={{ maxHeight: '500px', overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: block.content }} />;

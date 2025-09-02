@@ -36,6 +36,7 @@ import type { Announcement as PrismaAnnouncement, User as PrismaUser } from '@pr
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { useTitle } from '@/contexts/title-context';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
   author: { id: string; name: string; email?: string } | null;
@@ -58,6 +59,7 @@ export default function AnnouncementsPage() {
   const [error, setError] = useState<string | null>(null);
   
   const currentPage = Number(searchParams.get('page')) || 1;
+  const activeTab = searchParams.get('tab') || 'all';
   const totalPages = Math.ceil(totalAnnouncements / PAGE_SIZE);
 
   const [showCreateEditModal, setShowCreateEditModal] = useState(false);
@@ -74,6 +76,14 @@ export default function AnnouncementsPage() {
     setPageTitle('Anuncios');
   }, [setPageTitle]);
 
+  const createQueryString = useCallback((paramsToUpdate: Record<string, string | number>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(paramsToUpdate).forEach(([name, value]) => {
+      params.set(name, String(value));
+    });
+    return params.toString();
+  }, [searchParams]);
+
   const fetchAnnouncements = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -81,6 +91,9 @@ export default function AnnouncementsPage() {
       const params = new URLSearchParams();
       params.append('page', String(currentPage));
       params.append('pageSize', String(PAGE_SIZE));
+      if (activeTab) {
+          params.append('filter', activeTab);
+      }
 
       const response = await fetch(`/api/announcements?${params.toString()}`, { cache: 'no-store' });
       if (!response.ok) {
@@ -99,35 +112,20 @@ export default function AnnouncementsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast, currentPage]);
+  }, [toast, currentPage, activeTab]);
 
   useEffect(() => {
     fetchAnnouncements();
   }, [fetchAnnouncements]);
 
-  const relevantAnnouncements = useMemo(() => {
-    if (!user) return [];
-    return allAnnouncements
-      .filter(ann => {
-        if (ann.audience === 'ALL') return true;
-        if (Array.isArray(ann.audience) && ann.audience.includes(user.role)) return true;
-        return false;
-      });
-  }, [user, allAnnouncements]);
-  
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString())
-      params.set(name, value)
-      return params.toString()
-    },
-    [searchParams]
-  );
-  
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= totalPages) {
-      router.push(`${pathname}?${createQueryString('page', String(page))}`);
+      router.push(`${pathname}?${createQueryString({ tab: activeTab, page: page })}`);
     }
+  };
+
+  const handleTabChange = (tab: string) => {
+    router.push(`${pathname}?${createQueryString({ tab, page: 1 })}`);
   };
 
   const resetFormAndState = () => {
@@ -331,6 +329,16 @@ export default function AnnouncementsPage() {
         )}
       </div>
 
+       {user?.role !== 'STUDENT' && (
+           <Tabs value={activeTab} onValueChange={handleTabChange}>
+                <TabsList>
+                    <TabsTrigger value="all">Todos</TabsTrigger>
+                    <TabsTrigger value="by-me">Creados por mí</TabsTrigger>
+                    <TabsTrigger value="by-others">Creados por otros</TabsTrigger>
+                </TabsList>
+           </Tabs>
+       )}
+
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -343,9 +351,9 @@ export default function AnnouncementsPage() {
           <p className="text-sm">{error}</p>
           <Button onClick={() => router.refresh()} variant="outline" className="mt-4">Reintentar</Button>
         </div>
-      ) : relevantAnnouncements.length > 0 ? (
+      ) : allAnnouncements.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {relevantAnnouncements.map((announcement: DisplayAnnouncement) => (
+          {allAnnouncements.map((announcement: DisplayAnnouncement) => (
             <AnnouncementCard 
                 key={announcement.id} 
                 announcement={announcement}
@@ -357,8 +365,8 @@ export default function AnnouncementsPage() {
       ) : (
         <div className="text-center py-12">
           <Megaphone className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-xl font-semibold mb-2">No hay anuncios recientes</h3>
-          <p className="text-muted-foreground">Vuelve más tarde para ver las últimas novedades o crea uno nuevo si tienes permisos.</p>
+          <h3 className="text-xl font-semibold mb-2">No hay anuncios que mostrar</h3>
+          <p className="text-muted-foreground">No se encontraron anuncios que coincidan con el filtro seleccionado.</p>
         </div>
       )}
 

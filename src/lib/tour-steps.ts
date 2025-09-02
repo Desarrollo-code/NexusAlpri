@@ -1,3 +1,4 @@
+
 // src/lib/tour-steps.ts
 
 export interface TourStep {
@@ -133,7 +134,7 @@ export const profileTour: TourStep[] = [
     }
   },
   {
-    target: '#2fa-card-desktop',
+    target: '#card-2fa-desktop',
     content: {
       title: 'Seguridad de la Cuenta',
       description: 'Gestiona tu contraseña y activa la Autenticación de Dos Factores (2FA) para una capa extra de seguridad.'

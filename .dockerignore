@@ -1,0 +1,10 @@
+# Evita copiar archivos innecesarios al contenedor de Docker
+Dockerfile
+.dockerignore
+node_modules
+npm-debug.log
+README.md
+.next
+.git
+.gitignore
+*.tsbuildinfo

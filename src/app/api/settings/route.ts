@@ -13,6 +13,7 @@ const DEFAULT_DB_SETTINGS = {
   platformName: "NexusAlpri",
   allowPublicRegistration: true,
   enableEmailNotifications: true,
+  emailWhitelist: "alprigrama.com",
   resourceCategories: "Recursos Humanos,TI y Seguridad,Marketing,Ventas,Legal,Operaciones,Finanzas,Formación Interna,Documentación de Producto,General",
   passwordMinLength: 8,
   passwordRequireUppercase: true,
@@ -34,14 +35,13 @@ const DEFAULT_DB_SETTINGS = {
   authImageUrl: null,
   aboutImageUrl: null,
   benefitsImageUrl: null,
-  emailWhitelist: null, // Añadido para consistencia
 };
 
 const getFallbackSettings = (): PlatformSettings => {
     return {
         ...DEFAULT_DB_SETTINGS,
         resourceCategories: DEFAULT_DB_SETTINGS.resourceCategories.split(','),
-        emailWhitelist: '',
+        emailWhitelist: DEFAULT_DB_SETTINGS.emailWhitelist || '',
     };
 };
 

@@ -1,11 +1,10 @@
-
 // src/app/(app)/profile/page.tsx
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Camera, User, KeyRound, Shield, Eye, EyeOff, Save, CheckCircle, Award, Star, HelpCircle } from 'lucide-react';
@@ -26,6 +25,8 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/comp
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
 
+// --- Components defined outside of the main component to prevent re-creation on render ---
+
 // Gamification Level Calculation
 const calculateLevel = (xp: number) => {
     const baseXP = 250;
@@ -43,99 +44,11 @@ const calculateLevel = (xp: number) => {
     return { level, currentXPInLevel: xp, xpForNextLevel, progressPercentage };
 };
 
-
-function ProfilePageContent() {
-    const { user, updateUser, logout } = useAuth();
-    const { toast } = useToast();
-    const { setPageTitle } = useTitle();
-    const { startTour, forceStartTour } = useTour();
-
-    // State for info
+const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => void }) => {
     const [name, setName] = useState(user?.name || '');
     const [isSavingInfo, setIsSavingInfo] = useState(false);
+    const { toast } = useToast();
 
-    // State for password
-    const [currentPassword, setCurrentPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-    const [showNewPassword, setShowNewPassword] = useState(false);
-    const [isSavingPassword, setIsSavingPassword] = useState(false);
-
-    // State for 2FA
-    const [qrCode, setQrCode] = useState<string | null>(null);
-    const [verificationCode, setVerificationCode] = useState('');
-    const [isActivating2FA, setIsActivating2FA] = useState(false);
-    const [passwordForDisable2FA, setPasswordForDisable2FA] = useState('');
-    const [isDisabling2FA, setIsDisabling2FA] = useState(false);
-    
-    // State for avatar upload
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-
-    // State for gamification
-    const [achievements, setAchievements] = useState<UserAchievement[]>([]);
-    const [isLoadingAchievements, setIsLoadingAchievements] = useState(true);
-
-    useEffect(() => {
-        setPageTitle('Mi Perfil');
-        startTour('profile', profileTour);
-    }, [setPageTitle, startTour]);
-
-    const fetchAchievements = useCallback(async () => {
-        if (!user) return;
-        setIsLoadingAchievements(true);
-        try {
-            const res = await fetch(`/api/users/${user.id}/achievements`);
-            if (res.ok) {
-                const data = await res.json();
-                setAchievements(data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch achievements", error);
-        } finally {
-            setIsLoadingAchievements(false);
-        }
-    }, [user]);
-
-    useEffect(() => {
-        fetchAchievements();
-    }, [fetchAchievements]);
-
-
-    const handleAvatarChange = async (e: ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0] && user) {
-            const file = e.target.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            setIsUploading(true);
-            setUploadProgress(0);
-
-            try {
-                const result = await uploadWithProgress('/api/upload/avatar', formData, setUploadProgress);
-                
-                // Now update the user profile with the new URL
-                const updateUserResponse = await fetch(`/api/users/${user.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ avatar: result.url }),
-                });
-
-                if (!updateUserResponse.ok) throw new Error('No se pudo guardar la nueva imagen de perfil.');
-
-                const updatedUser = await updateUserResponse.json();
-                updateUser(updatedUser); // Update context
-                toast({ title: "Avatar Actualizado", description: "Tu nueva foto de perfil ha sido guardada." });
-
-            } catch (error) {
-                toast({ title: 'Error', description: (error as Error).message, variant: 'destructive' });
-            } finally {
-                setIsUploading(false);
-            }
-        }
-    };
-    
     const handleInfoSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!user || !name.trim()) return;
@@ -157,6 +70,28 @@ function ProfilePageContent() {
         }
     };
 
+    return (
+        <Card id="info-card-desktop">
+            <CardHeader><CardTitle className="flex items-center gap-2"><User className="text-primary"/>Información Personal</CardTitle></CardHeader>
+            <form onSubmit={handleInfoSubmit}>
+                <CardContent className="space-y-4">
+                    <div className="space-y-1"><Label htmlFor="name">Nombre</Label><Input id="name" value={name} onChange={(e) => setName(e.target.value)} disabled={isSavingInfo} /></div>
+                    <div className="space-y-1"><Label htmlFor="email">Email</Label><Input id="email" value={user.email} disabled /></div>
+                </CardContent>
+                <CardFooter><Button type="submit" disabled={isSavingInfo || name === user.name}>{isSavingInfo ? <Loader2 className="animate-spin" /> : 'Guardar Información'}</Button></CardFooter>
+            </form>
+        </Card>
+    );
+};
+
+const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setConfirmPassword, currentPassword, setCurrentPassword }: 
+{ user: any, newPassword: any, setNewPassword: any, confirmPassword: any, setConfirmPassword: any, currentPassword: any, setCurrentPassword: any }) => {
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isSavingPassword, setIsSavingPassword] = useState(false);
+    const { toast } = useToast();
+
     const handlePasswordSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (newPassword !== confirmPassword) {
@@ -173,7 +108,6 @@ function ProfilePageContent() {
             });
             if (!response.ok) throw new Error((await response.json()).message);
             toast({ title: 'Contraseña Cambiada', description: 'Tu contraseña ha sido actualizada exitosamente.' });
-            // Reset fields
             setCurrentPassword('');
             setNewPassword('');
             setConfirmPassword('');
@@ -184,6 +118,54 @@ function ProfilePageContent() {
         }
     };
     
+    return (
+        <Card id="security-card-desktop">
+            <CardHeader><CardTitle className="flex items-center gap-2"><KeyRound className="text-primary"/>Cambiar Contraseña</CardTitle></CardHeader>
+            <form onSubmit={handlePasswordSubmit}>
+                <CardContent className="space-y-4">
+                    <div className="space-y-1">
+                        <Label htmlFor="currentPassword">Contraseña Actual</Label>
+                        <div className="relative">
+                            <Input id="currentPassword" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
+                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowCurrentPassword((prev) => !prev)}>
+                                {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor="newPassword">Nueva Contraseña</Label>
+                        <div className="relative">
+                            <Input id="newPassword" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowNewPassword((prev) => !prev)}>
+                                {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                        </div>
+                    </div>
+                    <PasswordStrengthIndicator password={newPassword} isVisible={newPassword.length > 0} />
+                     <div className="space-y-1">
+                        <Label htmlFor="confirmPassword">Confirmar Nueva Contraseña</Label>
+                        <div className="relative">
+                            <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowConfirmPassword((prev) => !prev)}>
+                                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+                <CardFooter><Button type="submit" disabled={isSavingPassword}>{isSavingPassword ? <Loader2 className="animate-spin"/> : 'Cambiar Contraseña'}</Button></CardFooter>
+            </form>
+        </Card>
+    );
+};
+
+const TwoFactorCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => void }) => {
+    const [qrCode, setQrCode] = useState<string | null>(null);
+    const [verificationCode, setVerificationCode] = useState('');
+    const [isActivating2FA, setIsActivating2FA] = useState(false);
+    const [passwordForDisable2FA, setPasswordForDisable2FA] = useState('');
+    const [isDisabling2FA, setIsDisabling2FA] = useState(false);
+    const { toast } = useToast();
+
      const handleEnable2FA = async () => {
         if (!user) return;
         setIsActivating2FA(true);
@@ -248,71 +230,9 @@ function ProfilePageContent() {
             setPasswordForDisable2FA('');
         }
     };
-    
-    const { level, currentXPInLevel, xpForNextLevel, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
 
-
-    if (!user) return <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin"/></div>;
-
-    const ProfileCard = () => (
-         <Card className="profile-card card-border-animated" id="profile-card-display">
-            <div className="card__img">
-                <div className="card__img--gradient" />
-            </div>
-            <div className="card__avatar">
-                <Avatar className="h-full w-full">
-                    <AvatarImage src={user.avatar || undefined} alt={user.name} quality={100} />
-                    <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
-                </Avatar>
-                 <label htmlFor="avatar-upload" className="absolute bottom-1 right-1 h-9 w-9 bg-card text-card-foreground rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-muted transition-colors">
-                    <Camera className="h-5 w-5" />
-                    <input id="avatar-upload" type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} disabled={isUploading}/>
-                </label>
-            </div>
-             <CardHeader className="pt-2 pb-0">
-                <CardTitle className="text-2xl font-headline">{user.name}</CardTitle>
-                <CardDescription className="card__subtitle">{user.email}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {isUploading && (
-                    <div className="px-4 pt-2">
-                        <UploadProgress value={uploadProgress} className="h-1.5"/>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
-    );
-
-    const InfoCard = () => (
-        <Card id="info-card-desktop">
-            <CardHeader><CardTitle className="flex items-center gap-2"><User className="text-primary"/>Información Personal</CardTitle></CardHeader>
-            <form onSubmit={handleInfoSubmit}>
-                <CardContent className="space-y-4">
-                    <div className="space-y-1"><Label htmlFor="name">Nombre</Label><Input id="name" value={name} onChange={(e) => setName(e.target.value)} disabled={isSavingInfo} /></div>
-                    <div className="space-y-1"><Label htmlFor="email">Email</Label><Input id="email" value={user.email} disabled /></div>
-                </CardContent>
-                <CardFooter><Button type="submit" disabled={isSavingInfo || name === user.name}>{isSavingInfo ? <Loader2 className="animate-spin" /> : 'Guardar Información'}</Button></CardFooter>
-            </form>
-        </Card>
-    );
-    
-    const SecurityCard = () => (
-        <Card id="security-card-desktop">
-            <CardHeader><CardTitle className="flex items-center gap-2"><KeyRound className="text-primary"/>Cambiar Contraseña</CardTitle></CardHeader>
-            <form onSubmit={handlePasswordSubmit}>
-                <CardContent className="space-y-4">
-                    <div className="space-y-1 relative"><Label htmlFor="currentPassword">Contraseña Actual</Label><Input id="currentPassword" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required /><Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={()=>setShowCurrentPassword(!showCurrentPassword)}><Icon /></Button></div>
-                    <div className="space-y-1 relative"><Label htmlFor="newPassword">Nueva Contraseña</Label><Input id="newPassword" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required /><Button type="button" variant="ghost" size="icon" className="absolute right-1 bottom-1 h-7 w-7" onClick={()=>setShowNewPassword(!showNewPassword)}><Icon /></Button></div>
-                    <PasswordStrengthIndicator password={newPassword} isVisible={newPassword.length > 0} />
-                    <div className="space-y-1"><Label htmlFor="confirmPassword">Confirmar Nueva Contraseña</Label><Input id="confirmPassword" type={showNewPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required /></div>
-                </CardContent>
-                <CardFooter><Button type="submit" disabled={isSavingPassword}>{isSavingPassword ? <Loader2 className="animate-spin"/> : 'Cambiar Contraseña'}</Button></CardFooter>
-            </form>
-        </Card>
-    );
-
-    const TwoFactorCard = () => (
-         <Card id="2fa-card-desktop">
+    return (
+         <Card id="card-2fa-desktop">
             <CardHeader><CardTitle className="flex items-center gap-2"><Shield className="text-primary"/>Autenticación de Dos Factores (2FA)</CardTitle></CardHeader>
             <CardContent className="space-y-4">
             {user.isTwoFactorEnabled ? (
@@ -344,50 +264,160 @@ function ProfilePageContent() {
             </CardContent>
         </Card>
     );
-    
-    const GamificationCard = () => (
-         <Card id="gamification-card-desktop">
-            <CardHeader><CardTitle className="flex items-center gap-2"><Award className="text-primary"/>Progreso y Logros</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-                 <div className="text-center space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">Nivel {level}</p>
-                    <p className="text-4xl font-bold text-primary">{user.xp || 0} XP</p>
-                </div>
-                 <div className="space-y-1">
-                    <Progress value={progressPercentage} />
-                    <p className="text-xs text-muted-foreground text-right">{currentXPInLevel} / {xpForNextLevel} XP para el siguiente nivel</p>
-                 </div>
-                 <Separator />
-                  <div>
-                    <h4 className="font-semibold text-sm mb-3">Logros Desbloqueados</h4>
-                    {isLoadingAchievements ? (
-                        <div className="flex justify-center"><Loader2 className="animate-spin"/></div>
-                    ) : achievements.length > 0 ? (
-                        <TooltipProvider>
-                            <div className="flex flex-wrap gap-4">
-                                {achievements.map(({ achievement }) => (
-                                    <Tooltip key={achievement.id}>
-                                        <TooltipTrigger>
-                                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-amber-300 to-yellow-500 flex items-center justify-center text-white shadow-md">
-                                                <Star className="h-7 w-7" fill="currentColor"/>
-                                            </div>
-                                        </TooltipTrigger>
-                                         <TooltipContent>
-                                            <p className="font-bold">{achievement.name}</p>
-                                            <p className="text-xs">{achievement.description}</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                ))}
-                            </div>
-                        </TooltipProvider>
-                    ) : (
-                        <p className="text-xs text-muted-foreground text-center italic">Aún no has desbloqueado logros. ¡Sigue aprendiendo!</p>
-                    )}
-                </div>
-            </CardContent>
-        </Card>
-    );
+};
 
+const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { user: any, onAvatarChange: (e: any) => void, isUploading: boolean, uploadProgress: number }) => (
+     <Card className="profile-card card-border-animated" id="profile-card-display">
+        <div className="card__img">
+            <div className="card__img--gradient" />
+        </div>
+        <div className="card__avatar">
+            <Avatar className="h-full w-full">
+                <AvatarImage src={user.avatar || undefined} alt={user.name} quality={100} />
+                <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+            </Avatar>
+             <label htmlFor="avatar-upload" className="absolute bottom-1 right-1 h-9 w-9 bg-card text-card-foreground rounded-full flex items-center justify-center cursor-pointer shadow-md hover:bg-muted transition-colors">
+                <Camera className="h-5 w-5" />
+                <input id="avatar-upload" type="file" className="hidden" accept="image/*" onChange={onAvatarChange} disabled={isUploading}/>
+            </label>
+        </div>
+         <CardHeader className="pt-2 pb-0">
+            <CardTitle className="text-2xl font-headline">{user.name}</CardTitle>
+            <CardDescription className="card__subtitle">{user.email}</CardDescription>
+        </CardHeader>
+        <CardContent>
+            {isUploading && (
+                <div className="px-4 pt-2">
+                    <UploadProgress value={uploadProgress} className="h-1.5"/>
+                </div>
+            )}
+        </CardContent>
+    </Card>
+);
+
+const GamificationCard = ({ user, achievements, isLoadingAchievements }: { user: any, achievements: any[], isLoadingAchievements: boolean }) => {
+    const { level, currentXPInLevel, xpForNextLevel, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
+    return (
+     <Card id="gamification-card-desktop">
+        <CardHeader><CardTitle className="flex items-center gap-2"><Award className="text-primary"/>Progreso y Logros</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+             <div className="text-center space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Nivel {level}</p>
+                <p className="text-4xl font-bold text-primary">{user.xp || 0} XP</p>
+            </div>
+             <div className="space-y-1">
+                <Progress value={progressPercentage} />
+                <p className="text-xs text-muted-foreground text-right">{currentXPInLevel} / {xpForNextLevel} XP para el siguiente nivel</p>
+             </div>
+             <Separator />
+              <div>
+                <h4 className="font-semibold text-sm mb-3">Logros Desbloqueados</h4>
+                {isLoadingAchievements ? (
+                    <div className="flex justify-center"><Loader2 className="animate-spin"/></div>
+                ) : achievements.length > 0 ? (
+                    <TooltipProvider>
+                        <div className="flex flex-wrap gap-4">
+                            {achievements.map(({ achievement }) => (
+                                <Tooltip key={achievement.id}>
+                                    <TooltipTrigger>
+                                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-amber-300 to-yellow-500 flex items-center justify-center text-white shadow-md">
+                                            <Star className="h-7 w-7" fill="currentColor"/>
+                                        </div>
+                                    </TooltipTrigger>
+                                     <TooltipContent>
+                                        <p className="font-bold">{achievement.name}</p>
+                                        <p className="text-xs">{achievement.description}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            ))}
+                        </div>
+                    </TooltipProvider>
+                ) : (
+                    <p className="text-xs text-muted-foreground text-center italic">Aún no has desbloqueado logros. ¡Sigue aprendiendo!</p>
+                )}
+            </div>
+        </CardContent>
+    </Card>
+)};
+
+
+// Main component
+function ProfilePageContent() {
+    const { user, updateUser } = useAuth();
+    const { toast } = useToast();
+    const { setPageTitle } = useTitle();
+    const { startTour, forceStartTour } = useTour();
+
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [achievements, setAchievements] = useState<UserAchievement[]>([]);
+    const [isLoadingAchievements, setIsLoadingAchievements] = useState(true);
+
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+
+    useEffect(() => {
+        setPageTitle('Mi Perfil');
+        startTour('profile', profileTour);
+    }, [setPageTitle, startTour]);
+
+    const fetchAchievements = useCallback(async () => {
+        if (!user) return;
+        setIsLoadingAchievements(true);
+        try {
+            const res = await fetch(`/api/users/${user.id}/achievements`);
+            if (res.ok) {
+                const data = await res.json();
+                setAchievements(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch achievements", error);
+        } finally {
+            setIsLoadingAchievements(false);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        fetchAchievements();
+    }, [fetchAchievements]);
+
+
+    const handleAvatarChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0] && user) {
+            const file = e.target.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            setIsUploading(true);
+            setUploadProgress(0);
+
+            try {
+                const result = await uploadWithProgress('/api/upload/avatar', formData, setUploadProgress);
+                
+                const updateUserResponse = await fetch(`/api/users/${user.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ avatar: result.url }),
+                });
+
+                if (!updateUserResponse.ok) throw new Error('No se pudo guardar la nueva imagen de perfil.');
+
+                const updatedUser = await updateUserResponse.json();
+                updateUser(updatedUser); 
+                toast({ title: "Avatar Actualizado", description: "Tu nueva foto de perfil ha sido guardada." });
+
+            } catch (error) {
+                toast({ title: 'Error', description: (error as Error).message, variant: 'destructive' });
+            } finally {
+                setIsUploading(false);
+            }
+        }
+    };
+    
+    if (!user) return <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin"/></div>;
+    
+    const isMobile = useIsMobile();
 
     return (
         <div className="space-y-8">
@@ -400,20 +430,38 @@ function ProfilePageContent() {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-1 space-y-8">
-                    <ProfileCard/>
-                    <div className={cn(useIsMobile() ? "hidden" : "block")}><GamificationCard /></div>
+                    <ProfileCard user={user} onAvatarChange={handleAvatarChange} isUploading={isUploading} uploadProgress={uploadProgress} />
+                    <div className={cn(isMobile ? "hidden" : "block")}><GamificationCard user={user} achievements={achievements} isLoadingAchievements={isLoadingAchievements}/></div>
                 </div>
 
                 <div className="lg:col-span-2 space-y-8">
-                    <InfoCard/>
-                    <div className={cn(useIsMobile() ? "block" : "hidden")}><GamificationCard /></div>
-                    <div className={cn(useIsMobile() ? "hidden" : "block")}><SecurityCard/></div>
-                    <div className={cn(useIsMobile() ? "hidden" : "block")}><TwoFactorCard/></div>
+                    <InfoCard user={user} updateUser={updateUser} />
+                    <div className={cn(isMobile ? "block" : "hidden")}><GamificationCard user={user} achievements={achievements} isLoadingAchievements={isLoadingAchievements}/></div>
+                    <div className={cn(isMobile ? "hidden" : "block")}>
+                        <SecurityCard 
+                            user={user} 
+                            newPassword={newPassword}
+                            setNewPassword={setNewPassword}
+                            confirmPassword={confirmPassword}
+                            setConfirmPassword={setConfirmPassword}
+                            currentPassword={currentPassword}
+                            setCurrentPassword={setCurrentPassword}
+                        />
+                    </div>
+                    <div className={cn(isMobile ? "hidden" : "block")}><TwoFactorCard user={user} updateUser={updateUser}/></div>
                 </div>
-                 {useIsMobile() && (
+                 {isMobile && (
                     <div className="lg:col-span-3 space-y-8">
-                        <SecurityCard/>
-                        <TwoFactorCard/>
+                        <SecurityCard 
+                            user={user} 
+                            newPassword={newPassword}
+                            setNewPassword={setNewPassword}
+                            confirmPassword={confirmPassword}
+                            setConfirmPassword={setConfirmPassword}
+                            currentPassword={currentPassword}
+                            setCurrentPassword={setCurrentPassword}
+                        />
+                        <TwoFactorCard user={user} updateUser={updateUser}/>
                     </div>
                  )}
             </div>

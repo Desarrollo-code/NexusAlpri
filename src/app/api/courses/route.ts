@@ -1,4 +1,5 @@
 
+
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -34,6 +35,10 @@ export async function GET(req: NextRequest) {
       }
     } else {
       whereClause.status = 'PUBLISHED';
+      // Un usuario no puede inscribirse en un curso que él mismo ha creado.
+      if (userId) {
+          whereClause.instructorId = { not: userId };
+      }
     }
 
     const courseInclude = {
@@ -79,8 +84,11 @@ export async function GET(req: NextRequest) {
         }
       }
 
+      // Limpia la información sensible de las inscripciones si no es necesaria
+      const { enrollments, ...restOfCourse } = course;
+
       return {
-        ...course,
+        ...restOfCourse,
         modulesCount: course._count?.modules ?? (course.modules?.length || 0),
         enrollmentsCount: course._count?.enrollments ?? 0,
         averageCompletion: averageCompletion,

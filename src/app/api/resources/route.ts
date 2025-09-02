@@ -86,12 +86,17 @@ export async function POST(req: NextRequest) {
             description,
             url: url || null,
             category: category || 'General',
-            tags: Array.isArray(tags) ? tags.join(',') : '', // Convert array to comma-separated string
-            parentId: parentId || null,
+            tags: Array.isArray(tags) ? tags.join(',') : '',
             ispublic: isPublic === true,
-            uploader: { connect: { id: session.id } }, // Correctly connect the uploader
+            uploader: { connect: { id: session.id } },
         };
         
+        if (parentId) {
+            data.parent = {
+                connect: { id: parentId }
+            };
+        }
+
         if (isPublic === false && sharedWithUserIds && Array.isArray(sharedWithUserIds)) {
             data.sharedWith = {
                 connect: sharedWithUserIds.map((id:string) => ({ id }))

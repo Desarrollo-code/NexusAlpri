@@ -1,3 +1,4 @@
+// src/app/api/announcements/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -5,16 +6,37 @@ import type { NextRequest } from 'next/server';
 import { sendEmail } from '@/lib/email';
 import { AnnouncementEmail } from '@/components/emails/announcement-email';
 import type { UserRole } from '@/types';
+import { Prisma } from '@prisma/client';
+
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
+  const session = await getCurrentUser();
+  if (!session) {
+    return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(req.url);
   const pageParam = searchParams.get('page');
   const pageSizeParam = searchParams.get('pageSize');
+  const filter = searchParams.get('filter'); // all, by-me, by-others
   
   const isPaginated = pageParam && pageSizeParam;
 
+  let whereClause: any = {
+    OR: [
+      { audience: { equals: "ALL" as any } },
+      { audience: { path: '$', array_contains: session.role } },
+    ],
+  };
+
+  if (filter === 'by-me') {
+    whereClause.authorId = session.id;
+  } else if (filter === 'by-others') {
+    whereClause.authorId = { not: session.id };
+  }
+  
   try {
     if (isPaginated) {
         const page = parseInt(pageParam, 10);
@@ -23,22 +45,27 @@ export async function GET(req: NextRequest) {
 
         const [announcements, totalAnnouncements] = await prisma.$transaction([
             prisma.announcement.findMany({
+                where: whereClause,
                 orderBy: { date: 'desc' },
                 include: { author: { select: { id: true, name: true } } },
                 skip: skip,
                 take: pageSize,
             }),
-            prisma.announcement.count()
+            prisma.announcement.count({
+                where: whereClause
+            })
         ]);
         
         return NextResponse.json({ announcements, totalAnnouncements });
     } else {
         const announcements = await prisma.announcement.findMany({
+            where: whereClause,
             orderBy: { date: 'desc' },
             include: { author: { select: { id: true, name: true } } },
-            take: 4, // Fetch 4 for dashboards
+            take: 4, 
         });
-        return NextResponse.json({ announcements, totalAnnouncements: announcements.length });
+        const totalAnnouncements = await prisma.announcement.count({ where: whereClause });
+        return NextResponse.json({ announcements, totalAnnouncements });
     }
 
   } catch (error) {

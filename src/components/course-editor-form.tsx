@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3, Star, Layers3, SaveIcon, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState, ChangeEvent, useCallback, useMemo } from 'react';
@@ -40,7 +40,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { QuizViewer } from '@/components/quiz-viewer';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { useTitle } from '@/contexts/title-context';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Calendar } from '@/components/ui/calendar';
@@ -71,8 +71,8 @@ const generateUniqueId = (prefix: string): string => {
 };
 
 
-const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: () => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; onQuizUpdate: (lessonIndex: number, blockIndex: number, updatedQuiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
-    ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onAddBlock, onBlockUpdate, onBlockDelete, onQuizUpdate, isSaving, onDelete, provided }, ref) => {
+const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdate: (field: keyof AppModule, value: any) => void; onAddLesson: (type: 'blank' | 'template') => void; onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; onLessonDelete: (lessonIndex: number) => void; onSaveLessonAsTemplate: (lessonIndex: number) => void; onAddBlock: (lessonIndex: number, type: LessonType) => void; onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; onBlockDelete: (lessonIndex: number, blockIndex: number) => void; onQuizUpdate: (lessonIndex: number, blockIndex: number, updatedQuiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; provided: DraggableProvided }>(
+    ({ module, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onSaveLessonAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onQuizUpdate, isSaving, onDelete, provided }, ref) => {
         return (
             <div ref={ref} {...provided.draggableProps}>
                 <Accordion type="single" collapsible className="w-full bg-muted/30 rounded-lg border" defaultValue={`item-${module.id}`}>
@@ -97,6 +97,7 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
                                 lesson={lesson}
                                 onDelete={() => onLessonDelete(lessonIndex)}
                                 onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
+                                onSaveAsTemplate={() => onSaveLessonAsTemplate(lessonIndex)}
                                 onAddBlock={(type) => onAddBlock(lessonIndex, type)}
                                 onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
                                 onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
@@ -114,9 +115,17 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
         )}
     </Droppable>
     <div className="mt-4 flex gap-2">
-        <Button size="sm" variant="secondary" onClick={onAddLesson} disabled={isSaving}>
-            <PlusCircle className="mr-2 h-4 w-4" />Añadir Lección
-        </Button>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="secondary" disabled={isSaving}>
+                    <PlusCircle className="mr-2 h-4 w-4" />Añadir Lección<ChevronDown className="ml-2 h-4 w-4"/>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                <DropdownMenuItem onSelect={() => onAddLesson('blank')}><FilePlus2 className="mr-2 h-4 w-4"/>Lección en Blanco</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => onAddLesson('template')}><Sparkles className="mr-2 h-4 w-4"/>Usar Plantilla</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     </div>
 </AccordionContent>
                     </AccordionItem>
@@ -128,14 +137,23 @@ const ModuleItem = React.forwardRef<HTMLDivElement, { module: AppModule; onUpdat
 ModuleItem.displayName = 'ModuleItem';
 
 
-const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdate: (field: keyof AppLesson, value: any) => void; onAddBlock: (type: LessonType) => void; onBlockUpdate: (blockIndex: number, field: string, value: any) => void; onBlockDelete: (blockIndex: number) => void; onQuizUpdate: (blockIndex: number, updatedQuiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; }>(
-    ({ lesson, onUpdate, onAddBlock, onBlockUpdate, onBlockDelete, onQuizUpdate, isSaving, onDelete, ...rest }, ref) => {
+const LessonItem = React.forwardRef<HTMLDivElement, { lesson: AppLesson; onUpdate: (field: keyof AppLesson, value: any) => void; onSaveAsTemplate: () => void; onAddBlock: (type: LessonType) => void; onBlockUpdate: (blockIndex: number, field: string, value: any) => void; onBlockDelete: (blockIndex: number) => void; onQuizUpdate: (blockIndex: number, updatedQuiz: AppQuiz) => void; isSaving: boolean; onDelete: () => void; }>(
+    ({ lesson, onUpdate, onSaveAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onQuizUpdate, isSaving, onDelete, ...rest }, ref) => {
         return (
             <div ref={ref} {...rest} className="bg-card p-3 rounded-md border">
                 <div className="flex items-center gap-2 mb-3">
                     <GripVertical className="h-5 w-5 text-muted-foreground" />
                     <Input value={lesson.title} onChange={e => onUpdate('title', e.target.value)} placeholder="Título de la lección" disabled={isSaving} />
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                           <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4"/></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                           <DropdownMenuItem onSelect={onSaveAsTemplate}><SaveIcon className="mr-2 h-4 w-4"/>Guardar como Plantilla</DropdownMenuItem>
+                           <DropdownMenuSeparator/>
+                           <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:bg-destructive/10"><Trash2 className="mr-2 h-4 w-4"/>Eliminar Lección</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
                  <Droppable droppableId={lesson.id} type="BLOCKS">
                     {(provided) => (
@@ -196,7 +214,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
 
         const renderBlockContent = () => {
             switch(block.type) {
-                case 'TEXT': return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí texto o pega un enlace..." disabled={isSaving} />;
+                case 'TEXT': return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." disabled={isSaving} />;
                 case 'VIDEO': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
                 case 'FILE': return (
                      <div className="w-full space-y-2">
@@ -255,6 +273,11 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const [itemToDeleteDetails, setItemToDeleteDetails] = useState<any>(null);
     
     const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+    const [templates, setTemplates] = useState<ApiTemplate[]>([]);
+    const [showTemplateModal, setShowTemplateModal] = useState(false);
+    const [activeModuleIndexForTemplate, setActiveModuleIndexForTemplate] = useState<number | null>(null);
+
+    const [lessonToSaveAsTemplate, setLessonToSaveAsTemplate] = useState<AppLesson | null>(null);
 
     // --- Data Fetching ---
     useEffect(() => {
@@ -290,8 +313,18 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             }
         };
         
+        const fetchTemplates = async () => {
+            try {
+                const res = await fetch('/api/templates');
+                if (res.ok) setTemplates(await res.json());
+            } catch (e) {
+                console.error("Failed to fetch templates", e);
+            }
+        };
+
         if (user) {
             fetchCourseData();
+            fetchTemplates();
         }
     }, [courseId, user, router, toast, setPageTitle]);
     
@@ -419,14 +452,40 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         handleStateUpdate(prev => ({ ...prev, modules: [...prev.modules, newModule] }));
     };
     
-    const handleAddLesson = useCallback((moduleIndex: number) => {
+    const handleAddLessonAction = (moduleIndex: number, type: 'blank' | 'template') => {
+        if (type === 'blank') {
+            handleAddLesson(moduleIndex);
+        } else {
+            setActiveModuleIndexForTemplate(moduleIndex);
+            setShowTemplateModal(true);
+        }
+    };
+    
+    const handleAddLesson = useCallback((moduleIndex: number, template?: ApiTemplate) => {
         if (!course) return;
+
+        let newBlocks: ContentBlock[] = [];
+        if (template) {
+            newBlocks = template.templateBlocks.map(tb => ({
+                id: generateUniqueId('block'),
+                type: tb.type as LessonType,
+                content: '',
+                order: tb.order,
+                quiz: tb.type === 'QUIZ' ? {
+                    id: generateUniqueId('quiz'),
+                    title: 'Nuevo Quiz desde Plantilla',
+                    description: '',
+                    questions: [],
+                    maxAttempts: null,
+                } : undefined
+            }));
+        }
 
         const newLesson: AppLesson = {
             id: generateUniqueId('lesson'),
-            title: 'Nueva Lección',
+            title: template ? `Lección de "${template.name}"` : 'Nueva Lección',
             order: course.modules[moduleIndex].lessons.length,
-            contentBlocks: [],
+            contentBlocks: newBlocks,
         };
 
         handleStateUpdate(prev => {
@@ -434,6 +493,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             newCourse.modules[moduleIndex].lessons.push(newLesson);
             return newCourse;
         });
+        
+        setShowTemplateModal(false);
+        setActiveModuleIndexForTemplate(null);
     }, [course, handleStateUpdate]);
     
      const handleAddBlock = useCallback((moduleIndex: number, lessonIndex: number, type: LessonType) => {
@@ -487,7 +549,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             const newLessons = [...newModules[moduleIndex].lessons];
             const newBlocks = newLessons[lessonIndex].contentBlocks.filter((_, index) => index !== blockIndex);
             newLessons[lessonIndex] = { ...newLessons[lessonIndex], contentBlocks: newBlocks };
-            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newModules };
+            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
             return { ...prev, modules: newModules };
         });
     };
@@ -535,6 +597,25 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         updateCourseField('imageUrl', croppedFileUrl);
         setImageToCrop(null);
     };
+    
+    const handleSaveTemplate = async (templateName: string, templateDescription: string) => {
+        if (!lessonToSaveAsTemplate) return;
+        try {
+            const res = await fetch('/api/templates', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: templateName, description: templateDescription, lessonId: lessonToSaveAsTemplate.id })
+            });
+            if (!res.ok) throw new Error('No se pudo guardar la plantilla');
+            toast({ title: 'Plantilla Guardada', description: `La plantilla "${templateName}" se ha guardado correctamente.`});
+            const newTemplate = await res.json();
+            setTemplates(prev => [...prev, newTemplate]);
+            setLessonToSaveAsTemplate(null);
+        } catch (err) {
+            toast({ title: "Error", description: (err as Error).message, variant: "destructive"});
+        }
+    };
+
 
     if (isLoading || isAuthLoading || !course) {
         return <div className="flex items-center justify-center min-h-[calc(100vh-80px)]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
@@ -573,9 +654,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                                             module={moduleItem}
                                                             onDelete={() => handleRemoveModule(moduleIndex)}
                                                             onUpdate={(field, value) => updateModuleField(moduleIndex, field, value)}
-                                                            onAddLesson={() => handleAddLesson(moduleIndex)}
+                                                            onAddLesson={(type) => handleAddLessonAction(moduleIndex, type)}
                                                             onLessonUpdate={(lessonIndex, field, value) => updateLessonField(moduleIndex, lessonIndex, field, value)}
                                                             onLessonDelete={(lessonIndex) => handleRemoveLesson(moduleIndex, lessonIndex)}
+                                                            onSaveLessonAsTemplate={(lessonIndex) => setLessonToSaveAsTemplate(course.modules[moduleIndex].lessons[lessonIndex])}
                                                             onAddBlock={(lessonIndex, type) => handleAddBlock(moduleIndex, lessonIndex, type)}
                                                             onBlockUpdate={(lessonIndex, blockIndex, field, value) => updateBlockField(moduleIndex, lessonIndex, blockIndex, field, value)}
                                                             onBlockDelete={(lessonIndex, blockIndex) => handleRemoveBlock(moduleIndex, lessonIndex, blockIndex)}
@@ -656,6 +738,23 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => { itemToDeleteDetails.onDelete(); setItemToDeleteDetails(null) }} className={buttonVariants({ variant: "destructive" })}>Sí, eliminar</AlertDialogAction></AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            <TemplateSelectorModal 
+                isOpen={showTemplateModal}
+                templates={templates}
+                onClose={() => { setShowTemplateModal(false); setActiveModuleIndexForTemplate(null); }}
+                onSelect={(template) => {
+                    if (activeModuleIndexForTemplate !== null) {
+                        handleAddLesson(activeModuleIndexForTemplate, template);
+                    }
+                }}
+            />
+             {lessonToSaveAsTemplate && (
+                <SaveTemplateModal 
+                    isOpen={!!lessonToSaveAsTemplate}
+                    onClose={() => setLessonToSaveAsTemplate(null)}
+                    onSave={handleSaveTemplate}
+                />
+            )}
         </div>
     );
 }
@@ -758,12 +857,12 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-                <DialogHeader>
-                    <DialogTitle>Editor de Quiz</DialogTitle>
+            <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
+                <DialogHeader className="p-6 pb-4">
+                    <DialogTitle className="flex items-center gap-2"><Pencil className="h-5 w-5 text-primary"/>Editor de Quiz</DialogTitle>
                     <DialogDescription>Añade, edita y gestiona las preguntas y respuestas de este quiz.</DialogDescription>
                 </DialogHeader>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-1 py-2">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-6 pb-4 border-b">
                     <div className="space-y-1">
                         <Label>Título del Quiz</Label>
                         <Input value={localQuiz.title} onChange={(e) => handleQuizMetaChange('title', e.target.value)} />
@@ -780,13 +879,13 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                         <p className="text-xs text-muted-foreground">Deja en blanco para intentos ilimitados.</p>
                     </div>
                 </div>
-                <ScrollArea className="flex-grow pr-6 -mr-6">
-                    <div className="space-y-6 py-4">
+                <ScrollArea className="flex-grow">
+                    <div className="space-y-6 p-6">
                         {localQuiz.questions.map((q, qIndex) => (
                             <Card key={q.id} className="bg-muted/30">
                                 <CardHeader className="flex flex-row items-center justify-between p-4">
                                      <CardTitle className="text-base flex-grow">
-                                        <Input value={q.text} onChange={(e) => handleQuestionChange(qIndex, e.target.value)} className="font-semibold"/>
+                                        <Input value={q.text} onChange={(e) => handleQuestionChange(qIndex, e.target.value)} placeholder="Texto de la pregunta" className="font-semibold bg-transparent border-0 border-b-2 rounded-none focus-visible:ring-0 focus-visible:border-primary"/>
                                      </CardTitle>
                                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteQuestion(qIndex)}><Trash2 className="h-4 w-4"/></Button>
                                 </CardHeader>
@@ -794,12 +893,24 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                                     <RadioGroup value={q.options.find(opt => opt.isCorrect)?.id} onValueChange={(val) => handleSetCorrect(qIndex, val)}>
                                         <div className="space-y-3">
                                             {q.options.map((opt, oIndex) => (
-                                                <div key={opt.id} className="p-3 bg-card border rounded-md space-y-2">
+                                                <div key={opt.id} className={cn("p-3 bg-card border rounded-md space-y-2 transition-colors", opt.isCorrect && "border-green-500/50 bg-green-500/10")}>
                                                     <div className="flex items-center gap-2">
                                                         <RadioGroupItem value={opt.id} id={`q${qIndex}-o${oIndex}`} />
                                                         <Label htmlFor={`q${qIndex}-o${oIndex}`} className="flex-grow font-normal">
                                                             <Input value={opt.text} placeholder="Texto de la opción" onChange={(e) => handleOptionChange(qIndex, oIndex, 'text', e.target.value)} />
                                                         </Label>
+                                                        <TooltipProvider>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <div className={cn("h-6 w-6 flex items-center justify-center rounded-full cursor-pointer", opt.isCorrect ? "text-green-400" : "text-muted-foreground")}>
+                                                                        <Star className={cn("h-4 w-4 transition-all", opt.isCorrect && "fill-current")}/>
+                                                                    </div>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>Marcar como correcta</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </TooltipProvider>
                                                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70" onClick={() => deleteOption(qIndex, oIndex)}><XCircle className="h-4 w-4"/></Button>
                                                     </div>
                                                     <Input value={opt.feedback || ''} placeholder="Retroalimentación para esta opción (opcional)" onChange={(e) => handleOptionChange(qIndex, oIndex, 'feedback', e.target.value)} className="text-xs h-8"/>
@@ -807,16 +918,18 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                                             ))}
                                         </div>
                                     </RadioGroup>
-                                    <Button size="sm" variant="link" onClick={() => addOption(qIndex)} className="mt-2 p-0 h-auto">+ Añadir Opción</Button>
+                                    <Button size="sm" variant="outline" onClick={() => addOption(qIndex)} className="mt-3">
+                                        <PlusCircle className="mr-2 h-4 w-4"/>Añadir Opción
+                                    </Button>
                                 </CardContent>
                             </Card>
                         ))}
-                        <Button variant="outline" onClick={addQuestion} className="w-full">
-                            <PlusCircle className="mr-2 h-4 w-4"/> Añadir Pregunta
+                        <Button variant="secondary" onClick={addQuestion} className="w-full">
+                            <FilePlus2 className="mr-2 h-4 w-4"/> Añadir Pregunta
                         </Button>
                     </div>
                 </ScrollArea>
-                <DialogFooter>
+                <DialogFooter className="p-6 border-t">
                     <Button variant="outline" onClick={onClose}>Cancelar</Button>
                     <Button onClick={handleSaveChanges}>Guardar Cambios del Quiz</Button>
                 </DialogFooter>
@@ -824,3 +937,74 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
         </Dialog>
     );
 }
+
+// Modal para seleccionar una plantilla
+const TemplateSelectorModal = ({ isOpen, onClose, templates, onSelect }) => {
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle>Usar Plantilla de Lección</DialogTitle>
+                    <DialogDescription>Elige una plantilla para crear rápidamente una nueva lección con una estructura predefinida.</DialogDescription>
+                </DialogHeader>
+                <ScrollArea className="max-h-[60vh] mt-4">
+                    <div className="p-1 space-y-2">
+                        {templates.map(template => (
+                            <button key={template.id} onClick={() => onSelect(template)} className="w-full text-left p-3 rounded-lg border hover:bg-muted transition-colors">
+                                <p className="font-semibold">{template.name}</p>
+                                <p className="text-sm text-muted-foreground">{template.description}</p>
+                                <div className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
+                                   {template.templateBlocks.map((b,i) => <Badge key={i} variant="secondary">{b.type}</Badge>)}
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                </ScrollArea>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+// Modal para guardar una lección como plantilla
+const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleFormSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSaving(true);
+        await onSave(name, description);
+        setIsSaving(false);
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent>
+                <form onSubmit={handleFormSubmit}>
+                    <DialogHeader>
+                        <DialogTitle>Guardar Lección como Plantilla</DialogTitle>
+                        <DialogDescription>Dale un nombre y una descripción a tu nueva plantilla para reutilizarla más tarde.</DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="template-name">Nombre de la Plantilla</Label>
+                            <Input id="template-name" value={name} onChange={e => setName(e.target.value)} required disabled={isSaving}/>
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="template-description">Descripción</Label>
+                            <Textarea id="template-description" value={description} onChange={e => setDescription(e.target.value)} disabled={isSaving}/>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+                        <Button type="submit" disabled={isSaving || !name.trim()}>
+                            {isSaving ? <Loader2 className="animate-spin mr-2 h-4 w-4"/> : <SaveIcon className="mr-2 h-4 w-4"/>}
+                            Guardar Plantilla
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
+};

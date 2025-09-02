@@ -24,7 +24,7 @@ async function checkAuth(req: NextRequest, resourceId: string) {
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const authResult = await checkAuth(req, id);
-    if (!authResult.authorized) return authResult.error;
+    if (!authResult.authorized) return authResult.error!;
     
     try {
         const { pin } = await req.json();
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const authResult = await checkAuth(req, id);
-    if (!authResult.authorized) return authResult.error;
+    if (!authResult.authorized) return authResult.error!;
 
     try {
         await prisma.resource.update({

@@ -1,3 +1,4 @@
+
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -470,10 +471,10 @@ export default function ResourcesPage() {
                         ) : (
                           <div className="border rounded-lg overflow-hidden">
                             <div className="hidden md:grid grid-cols-12 gap-4 p-3 border-b bg-muted/50 text-xs font-semibold text-muted-foreground">
-                                <div className="col-span-6">Nombre</div>
+                                <div className="col-span-5">Nombre</div>
                                 <div className="col-span-2">Subido por</div>
+                                <div className="col-span-2">Categoría</div>
                                 <div className="col-span-2">Fecha</div>
-                                <div className="col-span-1">Acceso</div>
                                 <div className="col-span-1 text-right">Acciones</div>
                             </div>
                             <div className="divide-y">

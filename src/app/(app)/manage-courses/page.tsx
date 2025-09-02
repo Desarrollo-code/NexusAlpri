@@ -63,7 +63,6 @@ const getStatusInSpanish = (status: CourseStatus) => {
         case 'DRAFT': return 'Borrador';
         case 'PUBLISHED': return 'Publicado';
         case 'ARCHIVED': return 'Archivado';
-        case 'SCHEDULED': return 'Programado';
         default: return status;
     }
 };
@@ -376,7 +375,6 @@ export default function ManageCoursesPage() {
             <TabsTrigger value="all">Todos</TabsTrigger>
             <TabsTrigger value="PUBLISHED">Publicados</TabsTrigger>
             <TabsTrigger value="DRAFT">Borradores</TabsTrigger>
-            <TabsTrigger value="SCHEDULED">Programados</TabsTrigger>
             <TabsTrigger value="ARCHIVED">Archivados</TabsTrigger>
           </TabsList>
           <div className="mt-6">
