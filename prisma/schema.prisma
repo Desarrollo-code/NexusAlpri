@@ -502,13 +502,13 @@ model Answer {
 
 
 model Achievement {
-  id                 String            @id @default(cuid())
-  slug               AchievementSlug   @unique
-  name               String
-  description        String
-  points             Int
-  icon               String?
-  unlockedBy         UserAchievement[]
+  id                String            @id @default(cuid())
+  slug              String            @unique // Se cambió 'AchievementSlug' a 'String'
+  name              String
+  description       String
+  points            Int
+  icon              String?
+  unlockedBy        UserAchievement[]
 }
 
 model UserAchievement {
