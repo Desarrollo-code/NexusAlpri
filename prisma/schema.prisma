@@ -76,6 +76,13 @@ enum AchievementSlug {
   FIVE_COURSES_COMPLETED
 }
 
+enum EventAudienceType {
+  ALL
+  STUDENTS
+  INSTRUCTORS
+  ADMINISTRATORS
+}
+
 // --- MODELS ---
 
 model User {
