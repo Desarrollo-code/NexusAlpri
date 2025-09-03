@@ -1,17 +1,16 @@
 // prisma/schema.render.prisma
 
-generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
-  // El motor binario es necesario para Render
-  binaryTargets   = ["native", "debian-openssl-1.1.x"] 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
-datasource db {
-  provider     = "mysql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma" // Importante para compatibilidad con PlanetScale/serverless
+generator client {
+  provider = "prisma-client-js"
 }
+
+
 
 // --- ENUMS ---
 // Usados para definir un conjunto de valores permitidos para un campo.
