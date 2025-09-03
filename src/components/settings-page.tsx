@@ -207,6 +207,7 @@ export default function SettingsPageComponent() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false); // Variable que faltaba
   
   const [formState, setFormState] = useState<AppPlatformSettings | null>(null);
   const [newCategory, setNewCategory] = useState('');
@@ -399,8 +400,8 @@ export default function SettingsPageComponent() {
                            <UploadWidget label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(e) => handleFileSelected('watermarkUrl', e)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving || isUploading}/>
                            <UploadWidget label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(e) => handleFileSelected('landingImageUrl', e)} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving || isUploading}/>
                            <UploadWidget label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(e) => handleFileSelected('authImageUrl', e)} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving || isUploading}/>
-                           <UploadWidget label="Imagen Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(e) => handleFileSelected('aboutImageUrl', e)} onRemove={() => handleRemoveImage('aboutImageUrl')} disabled={isSaving || isUploading} />
-                           <UploadWidget label="Imagen Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(e) => handleFileSelected('benefitsImageUrl', e)} onRemove={() => handleRemoveImage('benefitsImageUrl')} disabled={isSaving || isUploading} />
+                           <UploadWidget label="Imagen Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(e) => handleFileSelected('aboutImageUrl', e)} onRemove={() => handleRemoveImage('aboutImageUrl')} disabled={isSaving || isUploading}/>
+                           <UploadWidget label="Imagen Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(e) => handleFileSelected('benefitsImageUrl', e)} onRemove={() => handleRemoveImage('benefitsImageUrl')} disabled={isSaving || isUploading}/>
                         </CardContent>
                     </Card>
                     <Card className="card-border-animated">
