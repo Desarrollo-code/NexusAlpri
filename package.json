@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack -p 9002",
-    "build": "prisma db push --schema=./prisma/schema.render.prisma && prisma generate --schema=./prisma/schema.render.prisma && prisma db seed && next build",
+    "build": "prisma db push --schema=./prisma/schema.render.prisma --accept-data-loss && prisma generate --schema=./prisma/schema.render.prisma && prisma db seed && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
