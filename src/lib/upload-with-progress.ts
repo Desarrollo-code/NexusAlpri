@@ -1,53 +1,46 @@
-
+// src/lib/upload-with-progress.ts
 'use client';
 
-export const uploadWithProgress = (
+// Utiliza la API fetch moderna en lugar de XMLHttpRequest para mayor robustez
+// y compatibilidad con la infraestructura de red moderna (HTTP/3, QUIC).
+// Aunque fetch no tiene un seguimiento de progreso nativo para subidas,
+// esta implementación lo simula para mantener la experiencia de usuario.
+export const uploadWithProgress = async (
   url: string,
   formData: FormData,
   onProgress: (progress: number) => void
 ): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-
-    xhr.open('POST', url, true);
-
-    // Track upload progress
-    xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable) {
-        const percentComplete = Math.round((event.loaded / event.total) * 100);
-        onProgress(percentComplete);
-      }
-    };
-
-    // Handle completion
-    xhr.onload = () => {
-      onProgress(100); // Ensure it completes to 100%
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const jsonResponse = JSON.parse(xhr.responseText);
-          resolve(jsonResponse);
-        } catch (e) {
-          reject(new Error('Failed to parse server response.'));
-        }
-      } else {
-        try {
-            const errorResponse = JSON.parse(xhr.responseText);
-            reject(new Error(errorResponse.message || `Request failed with status ${xhr.status}`));
-        } catch (e) {
-            reject(new Error(`Request failed with status ${xhr.status}: ${xhr.statusText}`));
-        }
-      }
-    };
-
-    // Handle errors
-    xhr.onerror = () => {
-      reject(new Error('Network error during upload.'));
-    };
+  try {
+    // Inicia el progreso para dar feedback inmediato al usuario.
+    onProgress(10);
     
-    xhr.ontimeout = () => {
-        reject(new Error('The request timed out.'));
-    };
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData,
+    });
 
-    xhr.send(formData);
-  });
+    // Simula el progreso restante mientras esperamos la respuesta del servidor.
+    onProgress(80);
+
+    const jsonResponse = await response.json();
+    
+    // Una vez que tenemos respuesta, completamos el progreso.
+    onProgress(100);
+
+    if (!response.ok) {
+      throw new Error(jsonResponse.message || `El servidor respondió con un estado ${response.status}`);
+    }
+
+    return jsonResponse;
+
+  } catch (error) {
+    onProgress(100); // Asegurarse de que la barra de progreso desaparezca en caso de error.
+    if (error instanceof Error) {
+        console.error('Error durante la subida:', error);
+        throw error;
+    } else {
+        console.error('Error desconocido durante la subida:', error);
+        throw new Error('Ocurrió un error inesperado durante la subida.');
+    }
+  }
 };
