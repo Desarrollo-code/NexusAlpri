@@ -45,7 +45,6 @@ import { useTitle } from '@/contexts/title-context';
 import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Calendar } from '@/components/ui/calendar';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { ImageCropper } from '@/components/image-cropper';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { UploadArea } from '@/components/ui/upload-area';
 
@@ -272,7 +271,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
     const [itemToDeleteDetails, setItemToDeleteDetails] = useState<any>(null);
     
-    const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+
     const [templates, setTemplates] = useState<ApiTemplate[]>([]);
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [activeModuleIndexForTemplate, setActiveModuleIndexForTemplate] = useState<number | null>(null);
@@ -585,17 +586,22 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = () => {
-                setImageToCrop(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            setIsUploadingImage(true);
+            setUploadProgress(0);
+
+            try {
+                const result = await uploadWithProgress('/api/upload/course-image', formData, setUploadProgress);
+                updateCourseField('imageUrl', result.url);
+                toast({ title: 'Imagen Subida', description: 'La imagen de portada se ha actualizado.'});
+            } catch (err) {
+                 toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
+            } finally {
+                setIsUploadingImage(false);
+            }
         }
-    };
-    
-    const handleCropComplete = (croppedFileUrl: string) => {
-        updateCourseField('imageUrl', croppedFileUrl);
-        setImageToCrop(null);
     };
     
     const handleSaveTemplate = async (templateName: string, templateDescription: string) => {
@@ -705,33 +711,22 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                 </Select>
                             </div>
                            
-                            <div className="relative aspect-video w-full rounded-md border overflow-hidden p-2 bg-muted/20">
-                                {course.imageUrl ? (
-                                    <>
+                            <div className="space-y-2">
+                                <Label>Imagen de Portada</Label>
+                                <UploadArea onFileSelect={(file) => handleFileChange({ target: { files: [file] } } as any)} disabled={isSaving || isUploadingImage} />
+                                {isUploadingImage && <Progress value={uploadProgress} className="mt-2" />}
+                                {course.imageUrl && (
+                                    <div className="relative aspect-video w-full rounded-md border overflow-hidden p-2 bg-muted/20 mt-2">
                                         <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-contain p-2" onError={() => updateCourseField('imageUrl', null)} data-ai-hint="online course" quality={100} />
-                                        <div className="absolute top-2 right-2 z-10 flex gap-1">
-                                            <Button type="button" variant="secondary" size="icon" className="rounded-full h-8 w-8" onClick={() => document.getElementById('image-upload')?.click()} disabled={isSaving}><Replace className="h-4 w-4" /></Button>
-                                            <Button type="button" variant="destructive" size="icon" className="rounded-full h-8 w-8" onClick={() => updateCourseField('imageUrl', null)} disabled={isSaving}><XCircle className="h-4 w-4" /></Button>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <Label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-muted/30 transition-colors">
-                                        <UploadCloud className="h-8 w-8 text-muted-foreground mb-2" />
-                                        <span className="text-sm text-muted-foreground">Haz clic para subir</span>
-                                    </Label>
+                                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 rounded-full h-7 w-7" onClick={() => updateCourseField('imageUrl', null)} disabled={isSaving || isUploadingImage}><XCircle className="h-4 w-4" /></Button>
+                                    </div>
                                 )}
                             </div>
-                            <Input id="image-upload" type="file" className="sr-only" accept="image/*" onChange={handleFileChange} disabled={isSaving} />
                         </CardContent>
                     </Card>
                 </div>
             </div>
-            <ImageCropper
-                imageSrc={imageToCrop}
-                onCropComplete={handleCropComplete}
-                onClose={() => setImageToCrop(null)}
-                uploadUrl="/api/upload/course-image"
-            />
+            
             <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(isOpen) => !isOpen && setItemToDeleteDetails(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader><AlertDialogTitle>Confirmar eliminación</AlertDialogTitle><AlertDialogDescription>¿Estás seguro? Esta acción eliminará "{itemToDeleteDetails?.name}" y su contenido.</AlertDialogDescription></AlertDialogHeader>
