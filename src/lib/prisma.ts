@@ -1,4 +1,4 @@
-// src/lib/prisma.ts
+
 import { PrismaClient } from '@prisma/client';
 
 // PrismaClient is attached to the `globalThis` object in development to prevent
@@ -9,13 +9,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prismaClientSingleton = () => {
   return new PrismaClient({
-    // La fuente de datos se define aquí para asegurar que siempre se use la URL de la variable de entorno,
-    // especialmente en producción.
-    datasources: {
-        db: {
-            url: process.env.DATABASE_URL
-        }
-    }
+    // log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : [],
   });
 };
 
