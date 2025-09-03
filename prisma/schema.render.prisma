@@ -1,15 +1,13 @@
-// Este es tu esquema de Prisma.
-// Define tu modelo de datos y las relaciones entre ellos.
-// Aprende más sobre esto en la documentación: https://pris.ly/d/prisma-schema
+// prisma/schema.render.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
 
 generator client {
   provider = "prisma-client-js"
-}
-
-datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL")
 }
 
 // --- ENUMS (Tipos de datos personalizados) ---
