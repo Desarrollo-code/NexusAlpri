@@ -107,7 +107,7 @@ async function main() {
   const blockQuiz = await prisma.contentBlock.upsert({ where: { id: 'clseedblock211'}, update: {}, create: { id: 'clseedblock211', type: 'QUIZ', lessonId: lesson2_1.id, order: 0 }});
   
   const quiz1 = await prisma.quiz.upsert({ where: { id: 'clseedquiz01' }, update: {}, create: { id: 'clseedquiz01', title: 'Quiz de Marketing', contentBlockId: blockQuiz.id }});
-  const question1 = await prisma.question.upsert({ where: { id: 'clseedquestion01' }, update: {}, create: { id: 'clseedquestion01', text: '¿Qué significa SEO?', quizId: quiz1.id, order: 0, type: 'SINGLE_CHOICE' }});
+  const question1 = await prisma.question.upsert({ where: { id: 'clseedquestion01' }, update: {}, create: { id: 'clseedquestion01', text: '¿Qué significa SEO?', quizId: quiz1.id, order: 0 }});
   
   await prisma.answerOption.upsert({ where: { id: 'clseedans01' }, update: {}, create: { id: 'clseedans01', text: 'Search Engine Optimization', isCorrect: true, questionId: question1.id }});
   await prisma.answerOption.upsert({ where: { id: 'clseedans02' }, update: {}, create: { id: 'clseedans02', text: 'Social Engagement Office', isCorrect: false, questionId: question1.id }});
