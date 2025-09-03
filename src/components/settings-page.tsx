@@ -280,7 +280,8 @@ export default function SettingsPageComponent() {
         const result = await uploadWithProgress('/api/upload/settings-image', formData, (progress) => {
            setUploadStates(prev => ({ ...prev, [field]: { isUploading: true, progress }}));
         });
-        setFormState(prev => prev ? { ...prev, [field]: result.url } : null);
+        // SOLUCIÓN: Actualizar el estado principal del formulario aquí
+        handleInputChange(field, result.url);
         toast({ title: "Imagen Subida", description: "La imagen se ha subido correctamente."});
       } catch (err) {
         toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
@@ -291,7 +292,7 @@ export default function SettingsPageComponent() {
   };
 
   const handleRemoveImage = (field: ImageField) => {
-      setFormState(prev => prev ? { ...prev, [field]: null } : null);
+      handleInputChange(field, null);
   }
 
 
