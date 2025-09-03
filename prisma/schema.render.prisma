@@ -1,7 +1,7 @@
-// prisma/schema.prisma
+// prisma/schema.render.prisma
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -115,6 +115,7 @@ model User {
   createdTemplates    LessonTemplate[]     @relation("TemplateCreator")
   createdForms        Form[]               @relation("FormCreator")
   formResponses       FormResponse[]
+  sharedForms         Form[]               @relation("SharedForms")
 }
 
 model Course {
