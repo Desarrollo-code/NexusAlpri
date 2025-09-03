@@ -9,21 +9,6 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
 
-  // Allow static files, image optimization, and uploads to pass through
-  if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/static') ||
-    pathname.startsWith('/uploads') || // <-- AÑADIDO: Esta es la línea clave que permite el acceso a las imágenes.
-    pathname.match(/\.(.*)$/)
-  ) {
-    return NextResponse.next();
-  }
-
-  // Allow the 2FA page to be accessed without a session
-  if (pathname.startsWith('/sign-in/2fa')) {
-      return NextResponse.next();
-  }
-
   const isProtectedRoute = PROTECTED_ROUTE_REGEX.test(pathname);
   const isAuthRoute = AUTH_ROUTES.some(route => pathname.startsWith(route));
 
@@ -53,8 +38,13 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    // Match all routes except for static files and image optimization
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
+  /*
+   * Match all request paths except for the ones starting with:
+   * - api (API routes)
+   * - _next/static (static files)
+   * - _next/image (image optimization files)
+   * - favicon.ico (favicon file)
+   * - any files in the public folder (images, etc.)
+   */
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|uploads|static|.*\\..*).*)'],
 };
