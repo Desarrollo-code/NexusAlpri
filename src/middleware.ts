@@ -2,12 +2,17 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PROTECTED_ROUTE_REGEX = /^\/(dashboard|courses|my-courses|profile|manage-courses|users|settings|analytics|security-audit|enrollments|notifications|calendar|resources|my-notes)/;
+const PROTECTED_ROUTE_REGEX = /^\/(dashboard|courses|my-courses|profile|manage-courses|users|settings|analytics|security-audit|enrollments|notifications|calendar|resources|my-notes|forms)/;
 const AUTH_ROUTES = ['/sign-in', '/sign-up'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
+
+  // Allow direct access to files in the public folder
+  if (pathname.startsWith('/uploads/')) {
+    return NextResponse.next();
+  }
 
   const isProtectedRoute = PROTECTED_ROUTE_REGEX.test(pathname);
   const isAuthRoute = AUTH_ROUTES.some(route => pathname.startsWith(route));
@@ -44,7 +49,7 @@ export const config = {
    * - _next/static (static files)
    * - _next/image (image optimization files)
    * - favicon.ico (favicon file)
-   * - any files in the public folder (images, etc.)
+   * - any files in the public folder with an extension (images, etc.)
    */
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|uploads|static|.*\\..*).*)'],
+   matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)'],
 };
