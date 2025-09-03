@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -16,6 +15,14 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'i.ytimg.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.onrender.com', // Allow images from any Render subdomain
+      },
+       {
+        protocol: 'http',
+        hostname: 'localhost',
       },
     ],
   },
