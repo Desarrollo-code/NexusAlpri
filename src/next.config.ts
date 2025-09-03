@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
+    unoptimized: true, // Permite que las imágenes locales funcionen sin configuración de loader
     remotePatterns: [
       {
         protocol: 'https',
