@@ -21,6 +21,15 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+       // Añadimos el dominio de la aplicación para permitir imágenes locales
+      {
+        protocol: 'https',
+        hostname: process.env.RENDER_EXTERNAL_HOSTNAME,
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      }
     ],
   },
 };
