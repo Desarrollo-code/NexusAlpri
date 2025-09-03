@@ -13,7 +13,7 @@ export function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/static') ||
-    pathname.startsWith('/uploads') ||
+    pathname.startsWith('/uploads') || // <-- AÑADIDO: Esta es la línea clave que permite el acceso a las imágenes.
     pathname.match(/\.(.*)$/)
   ) {
     return NextResponse.next();
