@@ -1,4 +1,3 @@
-
 // src/components/settings-page.tsx
 'use client';
 
@@ -7,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, Image as ImageIcon, Paintbrush, Type, User, UploadCloud, XCircle, Replace } from 'lucide-react';
+import { Palette, Bell, Shield, List, Tag, Trash2, Loader2, FileWarning, KeyRound, Clock, Save, Image as ImageIcon, Paintbrush, Type, User, UploadCloud, XCircle, Replace, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
@@ -35,6 +34,8 @@ import { fontMap } from '@/lib/fonts';
 import { ImageCropper } from '@/components/image-cropper';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
+import { useTour } from '@/contexts/tour-context';
+import { settingsTour } from '@/lib/tour-steps';
 
 const availableFonts = [
     { value: 'Inter', label: 'Inter (Sans-serif)' },
@@ -73,6 +74,7 @@ const UploadWidget = ({
                     fill
                     className="object-contain rounded-md p-2"
                     data-ai-hint="logo company"
+                    quality={100}
                 />
             </div>
             <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
@@ -148,7 +150,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                         <div className="mt-2 p-4 rounded-md shadow-sm" style={{ backgroundColor: settings.backgroundColorLight || '#FFFFFF' }}>
                             <div className="flex items-center gap-2 mb-4">
                                 <div className="relative w-8 h-8">
-                                    {settings.logoUrl ? <Image src={settings.logoUrl} alt="logo" fill data-ai-hint="logo company" className="object-contain"/> : <div className="w-8 h-8 rounded-md bg-muted" />}
+                                    {settings.logoUrl ? <Image src={settings.logoUrl} alt="logo" fill data-ai-hint="logo company" className="object-contain" quality={100} /> : <div className="w-8 h-8 rounded-md bg-muted" />}
                                 </div>
                                 <h4 className="font-headline text-base font-bold" style={{ color: settings.primaryColor }}>{settings.platformName}</h4>
                             </div>
@@ -166,13 +168,13 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                             <div className="space-y-2">
                                 <Label className="text-xs">Página de Inicio (Landing)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
-                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" fill className="object-contain" data-ai-hint="office workspace" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" fill className="object-contain" data-ai-hint="office workspace" quality={100} /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                              <div className="space-y-2">
                                 <Label className="text-xs">Página de Acceso (Login)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
-                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" fill className="object-contain" data-ai-hint="abstract background" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" fill className="object-contain" data-ai-hint="abstract background" quality={100} /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                         </div>
@@ -184,7 +186,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                            <div className="mt-2 h-20 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
                                 <span className="text-sm text-muted-foreground z-10">Contenido de la app</span>
                                 <div className="absolute inset-0 p-2">
-                                    <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" fill className="object-contain opacity-20 z-0" data-ai-hint="logo company"/>
+                                    <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" fill className="object-contain opacity-20 z-0" data-ai-hint="logo company" quality={100} />
                                 </div>
                            </div>
                         </div>
@@ -196,11 +198,12 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
 }
 
 
-export default function SettingsPage() {
+export default function SettingsPageComponent() {
   const { user, settings: globalSettings, updateSettings } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
+  const { startTour, forceStartTour } = useTour();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -213,14 +216,14 @@ export default function SettingsPage() {
 
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const [cropUploadUrl, setCropUploadUrl] = useState('');
-  const [cropField, setCropField] = useState<'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | null>(null);
+  const [cropField, setCropField] = useState<ImageField | null>(null);
 
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  type ImageField = 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl';
 
   useEffect(() => {
     setPageTitle('Configuración');
-  }, [setPageTitle]);
+    startTour('settings', settingsTour);
+  }, [setPageTitle, startTour]);
 
   useEffect(() => {
     if (globalSettings) {
@@ -245,13 +248,13 @@ export default function SettingsPage() {
     setFormState(prev => prev ? { ...prev, [field]: checked } : null);
   };
   
-  const handleFileSelected = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl', e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelected = (field: ImageField, e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = () => {
           setImageToCrop(reader.result as string);
-          setCropUploadUrl('/api/upload/course-image'); 
+          setCropUploadUrl('/api/upload/settings-image'); 
           setCropField(field);
         };
         reader.readAsDataURL(file);
@@ -267,7 +270,7 @@ export default function SettingsPage() {
     setCropField(null);
   };
 
-  const handleRemoveImage = (field: 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl') => {
+  const handleRemoveImage = (field: ImageField) => {
       setFormState(prev => prev ? { ...prev, [field]: null } : null);
   }
 
@@ -357,37 +360,47 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-muted-foreground">Ajusta los parámetros generales, de seguridad y apariencia de NexusAlpri.</p>
-      </div>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-1">
+                <h2 className="text-2xl font-semibold">Configuración</h2>
+                <p className="text-muted-foreground">Ajusta los parámetros generales, de seguridad y apariencia de NexusAlpri.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => forceStartTour('settings', settingsTour)}>
+                <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+            </Button>
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2">
             <Tabs defaultValue="appearance" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList id="settings-tabs-list" className="grid w-full grid-cols-3">
                     <TabsTrigger value="appearance">Apariencia</TabsTrigger>
                     <TabsTrigger value="security">Seguridad</TabsTrigger>
                     <TabsTrigger value="general">Generales</TabsTrigger>
                 </TabsList>
                 <TabsContent value="appearance" className="space-y-8 mt-6">
-                   <Card className="card-border-animated">
+                   <Card className="card-border-animated" id="settings-identity-card">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary"/>Identidad Visual</CardTitle>
-                            <CardDescription>Logo, marca de agua e imágenes de las páginas públicas.</CardDescription>
+                            <CardDescription>Nombre de la plataforma, logo, marca de agua e imágenes de las páginas públicas.</CardDescription>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           <div className="md:col-span-2 space-y-2">
+                               <Label htmlFor="platformName">Nombre de la Plataforma</Label>
+                               <Input
+                                   id="platformName"
+                                   value={formState.platformName}
+                                   onChange={(e) => handleInputChange('platformName', e.target.value)}
+                                   disabled={isSaving}
+                                   placeholder="Nombre de tu plataforma"
+                               />
+                           </div>
                            <UploadWidget label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(e) => handleFileSelected('logoUrl', e)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving || isUploading} />
                            <UploadWidget label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(e) => handleFileSelected('watermarkUrl', e)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving || isUploading}/>
                            <UploadWidget label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(e) => handleFileSelected('landingImageUrl', e)} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving || isUploading}/>
                            <UploadWidget label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(e) => handleFileSelected('authImageUrl', e)} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving || isUploading}/>
                            <UploadWidget label="Imagen Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(e) => handleFileSelected('aboutImageUrl', e)} onRemove={() => handleRemoveImage('aboutImageUrl')} disabled={isSaving || isUploading} />
                            <UploadWidget label="Imagen Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(e) => handleFileSelected('benefitsImageUrl', e)} onRemove={() => handleRemoveImage('benefitsImageUrl')} disabled={isSaving || isUploading} />
-                           {isUploading && (
-                                <div className="md:col-span-2">
-                                    <Progress value={uploadProgress} className="w-full" />
-                                    <p className="text-sm text-center mt-1 text-muted-foreground">Subiendo...</p>
-                                </div>
-                            )}
                         </CardContent>
                     </Card>
                     <Card className="card-border-animated">
@@ -459,6 +472,20 @@ export default function SettingsPage() {
                                 />
                             </div>
                             <Separator/>
+                             <div className="space-y-2 rounded-lg border p-3 shadow-sm">
+                                <Label htmlFor="emailWhitelist">Lista Blanca de Dominios</Label>
+                                <Input
+                                    id="emailWhitelist"
+                                    value={formState.emailWhitelist || ''}
+                                    onChange={(e) => handleInputChange('emailWhitelist', e.target.value)}
+                                    placeholder="ej: alprigrama.com, ejemplo.org"
+                                    disabled={isSaving}
+                                />
+                                <p className="text-sm text-muted-foreground">
+                                    Si se completa, solo los correos que terminen con estos dominios podrán registrarse. Déjalo en blanco para permitir cualquier correo. Separa los dominios con comas.
+                                </p>
+                            </div>
+                            <Separator/>
                             <div>
                                 <h4 className="font-medium mb-3">Política de Contraseñas</h4>
                                 <div className="space-y-4 p-3 border rounded-lg shadow-sm">
@@ -523,7 +550,7 @@ export default function SettingsPage() {
         </div>
         <div className="lg:col-span-1 lg:sticky lg:top-24 space-y-6">
             <ThemePreview settings={formState} />
-            <Card className="card-border-animated">
+            <Card className="card-border-animated" id="settings-save-card">
                 <CardHeader><CardTitle>Guardar Cambios</CardTitle></CardHeader>
                 <CardContent>
                     <p className="text-sm text-muted-foreground mb-4">Asegúrate de que todas las configuraciones son correctas antes de guardar.</p>
@@ -539,7 +566,7 @@ export default function SettingsPage() {
             imageSrc={imageToCrop}
             onCropComplete={handleCropComplete}
             onClose={() => { setImageToCrop(null); setCropField(null); }}
-            uploadUrl="/api/upload/course-image"
+            uploadUrl="/api/upload/settings-image"
         />
       <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
         <AlertDialogContent>

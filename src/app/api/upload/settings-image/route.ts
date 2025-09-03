@@ -18,11 +18,13 @@ export async function POST(request: NextRequest) {
   const uploadDir = join(process.cwd(), 'public', relativeUploadDir);
 
   try {
+    // Asegurarse de que el directorio exista
     await mkdir(uploadDir, { recursive: true });
   } catch (error: any) {
+    // Si el error no es porque el directorio ya existe, fallar.
     if (error.code !== 'EEXIST') {
-      console.error('Error al crear el directorio:', error);
-      return NextResponse.json({ success: false, message: 'Error interno al crear directorio.' }, { status: 500 });
+      console.error('Error al crear el directorio de subida:', error);
+      return NextResponse.json({ success: false, message: 'Error interno al preparar la subida.' }, { status: 500 });
     }
   }
 
@@ -34,6 +36,7 @@ export async function POST(request: NextRequest) {
     await writeFile(filePath, buffer);
     const fileUrl = `${relativeUploadDir}/${filename}`;
     return NextResponse.json({ success: true, url: fileUrl });
+
   } catch (e) {
     console.error('Error escribiendo el archivo:', e);
     return NextResponse.json({ success: false, message: 'Error al guardar el archivo.' }, { status: 500 });
