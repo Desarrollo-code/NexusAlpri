@@ -8,7 +8,6 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    unoptimized: true, // Sirve las imágenes estáticamente sin optimización
     remotePatterns: [
       {
         protocol: 'https',

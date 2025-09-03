@@ -74,7 +74,7 @@ const UploadWidget = ({
                     fill
                     className="object-contain rounded-md p-2"
                     data-ai-hint="logo company"
-                    quality={100}
+                    unoptimized
                 />
             </div>
             <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
@@ -150,7 +150,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                         <div className="mt-2 p-4 rounded-md shadow-sm" style={{ backgroundColor: settings.backgroundColorLight || '#FFFFFF' }}>
                             <div className="flex items-center gap-2 mb-4">
                                 <div className="relative w-8 h-8">
-                                    {settings.logoUrl ? <Image src={settings.logoUrl} alt="logo" fill data-ai-hint="logo company" className="object-contain" quality={100} /> : <div className="w-8 h-8 rounded-md bg-muted" />}
+                                    {settings.logoUrl ? <Image src={settings.logoUrl} alt="logo" fill data-ai-hint="logo company" className="object-contain" unoptimized /> : <div className="w-8 h-8 rounded-md bg-muted" />}
                                 </div>
                                 <h4 className="font-headline text-base font-bold" style={{ color: settings.primaryColor }}>{settings.platformName}</h4>
                             </div>
@@ -168,13 +168,13 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                             <div className="space-y-2">
                                 <Label className="text-xs">Página de Inicio (Landing)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
-                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" fill className="object-contain" data-ai-hint="office workspace" quality={100} /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" fill className="object-contain" data-ai-hint="office workspace" unoptimized /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                              <div className="space-y-2">
                                 <Label className="text-xs">Página de Acceso (Login)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
-                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" fill className="object-contain" data-ai-hint="abstract background" quality={100} /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" fill className="object-contain" data-ai-hint="abstract background" unoptimized /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                         </div>
@@ -186,7 +186,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                            <div className="mt-2 h-20 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
                                 <span className="text-sm text-muted-foreground z-10">Contenido de la app</span>
                                 <div className="absolute inset-0 p-2">
-                                    <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" fill className="object-contain opacity-20 z-0" data-ai-hint="logo company" quality={100} />
+                                    <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" fill className="object-contain opacity-20 z-0" data-ai-hint="logo company" unoptimized />
                                 </div>
                            </div>
                         </div>
@@ -207,7 +207,7 @@ export default function SettingsPageComponent() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isUploading, setIsUploading] = useState(false); // Variable que faltaba
+  const [isUploading, setIsUploading] = useState(false);
   
   const [formState, setFormState] = useState<AppPlatformSettings | null>(null);
   const [newCategory, setNewCategory] = useState('');
