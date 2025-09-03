@@ -6,9 +6,14 @@ import { cache } from 'react';
 import type { User as PrismaUser } from '@prisma/client';
 import prisma from './prisma';
 
-const secretKey = process.env.JWT_SECRET;
+// Fallback to a value derived from DATABASE_URL if JWT_SECRET is not set.
+// This ensures functionality in environments like Render's free tier
+// where setting many environment variables can be cumbersome.
+const secretKey = process.env.JWT_SECRET || process.env.DATABASE_URL;
+
 if (!secretKey) {
-  throw new Error('La variable de entorno JWT_SECRET no está configurada.');
+  // This will now only fail if neither JWT_SECRET nor DATABASE_URL are set.
+  throw new Error('La variable de entorno JWT_SECRET o DATABASE_URL debe estar configurada.');
 }
 const key = new TextEncoder().encode(secretKey);
 
@@ -34,6 +39,8 @@ async function decrypt(input: string): Promise<any> {
     const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
     return payload;
   } catch (error) {
+    // Log the specific error for better debugging in production logs
+    console.error("Error decrypting JWT:", error);
     return null;
   }
 }
@@ -73,6 +80,12 @@ export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => 
     const user = await prisma.user.findUnique({
       where: { id: session.userId },
     });
+
+    // If a user is found, make sure they are active before returning
+    if (user && !user.isActive) {
+        return null; // Treat inactive users as if they are not logged in
+    }
+
     return user || null;
   } catch (error) {
     console.error("Error al obtener el usuario desde la base de datos:", error);
