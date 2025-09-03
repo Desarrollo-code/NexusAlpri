@@ -1,15 +1,13 @@
 // prisma/schema.render.prisma
-// Este esquema está configurado para la base de datos de producción en Render (MySQL en PlanetScale)
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
 
 generator client {
   provider = "prisma-client-js"
-}
-
-datasource db {
-  provider  = "mysql"
-  url       = env("DATABASE_URL")
-  // relationMode es crucial para bases de datos que no usan llaves foráneas nativas
-  relationMode = "prisma"
 }
 
 // ------------------- Modelos de la Aplicación -------------------
