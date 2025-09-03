@@ -17,7 +17,7 @@ export function BottomNav() {
   const pathname = usePathname();
   const { user } = useAuth();
 
-  // Si el usuario está autenticado, no mostramos la barra de navegación pública
+  // No mostrar la barra de navegación pública si el usuario está autenticado
   if (user) {
     return null;
   }
@@ -42,7 +42,9 @@ export function BottomNav() {
               <span className={cn(
                   "text-xs transition-opacity",
                   isActive ? "opacity-100" : "opacity-100" // Siempre mostramos el texto
-              )}>{item.label}</span>
+              )}>
+                {item.label}
+              </span>
             </Link>
           );
         })}
