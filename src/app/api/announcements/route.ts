@@ -1,3 +1,4 @@
+
 // src/app/api/announcements/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -24,10 +25,12 @@ export async function GET(req: NextRequest) {
   
   const isPaginated = pageParam && pageSizeParam;
 
+  // --- LÓGICA DE BÚSQUEDA CORREGIDA ---
+  // Ahora la búsqueda es más flexible y maneja todos los casos.
   let whereClause: any = {
     OR: [
       { audience: 'ALL' },
-      { audience: { contains: `"${session.role}"` } }, // Se busca el rol como un string JSON
+      { audience: { contains: session.role } }, // Busca el rol como texto simple
     ],
   };
 
@@ -88,8 +91,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: 'Título, contenido y audiencia son requeridos' }, { status: 400 });
     }
 
-    // Corregido: Guardar la audiencia como un string JSON para consistencia
-    const audienceToStore = audience === 'ALL' ? 'ALL' : JSON.stringify(audience);
+    // --- LÓGICA DE GUARDADO CORREGIDA ---
+    // Asegura que si es un array, se guarde como un JSON string.
+    const audienceToStore = Array.isArray(audience) ? JSON.stringify(audience) : audience;
 
     const newAnnouncement = await prisma.announcement.create({
       data: {
