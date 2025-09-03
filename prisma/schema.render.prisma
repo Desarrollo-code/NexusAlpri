@@ -103,6 +103,7 @@ model User {
   createdTemplates    LessonTemplate[]   @relation("CreatedTemplates")
   quizAttempts        QuizAttempt[]
   securityLogs        SecurityLog[]
+  sharedForms Form[] @relation("SharedForms")
 }
 
 model Course {
@@ -486,7 +487,7 @@ model Form {
     creator       User           @relation("CreatedForms", fields: [creatorId], references: [id], onDelete: Cascade)
     fields        FormField[]
     responses     FormResponse[]
-    sharedWith    User[]
+    sharedWith    User[] @relation("SharedForms")
     
     @@index([creatorId])
 }
