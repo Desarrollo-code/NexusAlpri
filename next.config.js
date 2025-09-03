@@ -7,24 +7,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
-      },
-      {
-        protocol: 'https',
-        hostname: 'i.ytimg.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.onrender.com', // Allow images from any Render subdomain
-      },
-       {
-        protocol: 'http',
-        hostname: 'localhost',
-      },
-    ],
+    unoptimized: true,
   },
 };
 
