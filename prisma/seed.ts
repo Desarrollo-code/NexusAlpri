@@ -128,8 +128,18 @@ async function main() {
 
 
   // Estudiante 2 (Carlos) inscrito en curso de instructor, pero sin progreso
-  await prisma.enrollment.create({ data: { userId: studentUser2.id, courseId: courseInstructor.id }});
-  await prisma.courseProgress.create({ data: { userId: studentUser2.id, courseId: courseInstructor.id }});
+  await prisma.enrollment.create({
+    data: {
+      userId: studentUser2.id,
+      courseId: courseInstructor.id,
+      progress: {
+        create: {
+          userId: studentUser2.id,
+          courseId: courseInstructor.id,
+        }
+      }
+    }
+  });
 
   console.log('Inscripciones y progreso listos.');
   console.log('Seeding finalizado exitosamente.');
