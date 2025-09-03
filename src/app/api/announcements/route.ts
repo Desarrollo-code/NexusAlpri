@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   let whereClause: any = {
     OR: [
       { audience: 'ALL' },
-      { audience: { contains: session.role } },
+      { audience: { contains: `"${session.role}"` } }, // Se busca el rol como un string JSON
     ],
   };
 
@@ -88,11 +88,14 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: 'Título, contenido y audiencia son requeridos' }, { status: 400 });
     }
 
+    // Corregido: Guardar la audiencia como un string JSON para consistencia
+    const audienceToStore = audience === 'ALL' ? 'ALL' : JSON.stringify(audience);
+
     const newAnnouncement = await prisma.announcement.create({
       data: {
         title,
         content,
-        audience, // Now a string or comma-separated string
+        audience: audienceToStore,
         authorId: session.id,
         date: new Date(),
       },
