@@ -1,5 +1,4 @@
 
-
 import { writeFile, mkdir } from 'fs/promises';
 import { NextRequest, NextResponse } from 'next/server';
 import { join } from 'path';
@@ -12,31 +11,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, message: 'No se ha subido ningún archivo.' }, { status: 400 });
   }
 
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-
-  const relativeUploadDir = '/uploads/lessons';
-  const uploadDir = join(process.cwd(), 'public', relativeUploadDir);
-
   try {
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // Define la ruta de guardado
+    const relativeUploadDir = '/uploads/lessons';
+    const uploadDir = join(process.cwd(), 'public', relativeUploadDir);
+
+    // Asegurarse de que el directorio exista
     await mkdir(uploadDir, { recursive: true });
-  } catch (error: any) {
-    if (error.code !== 'EEXIST') {
-      console.error('Error al crear directorio:', error);
-      return NextResponse.json({ success: false, message: 'Error interno del servidor al crear el directorio.' }, { status: 500 });
-    }
-  }
 
-  const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-  const filename = `${uniqueSuffix}-${file.name.replace(/\s/g, '_')}`;
-  const filePath = join(uploadDir, filename);
-  
-  try {
+    // Genera un nombre de archivo único para evitar colisiones
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+    const filename = `${uniqueSuffix}-${file.name.replace(/\s/g, '_')}`;
+    const filePath = join(uploadDir, filename);
+    
     await writeFile(filePath, buffer);
+    
     const fileUrl = `${relativeUploadDir}/${filename}`;
     return NextResponse.json({ success: true, url: fileUrl });
+
   } catch (e) {
-    console.error('Error escribiendo el archivo:', e);
-    return NextResponse.json({ success: false, message: 'Error al guardar el archivo.' }, { status: 500 });
+    console.error('Error al procesar la subida de archivo de lección:', e);
+    return NextResponse.json({ success: false, message: 'Error interno al guardar el archivo.' }, { status: 500 });
   }
 }
