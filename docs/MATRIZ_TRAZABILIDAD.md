@@ -1,4 +1,3 @@
-
 # Matriz de Trazabilidad de Requisitos - NexusAlpri
 
 Este documento detalla la relación entre los requisitos funcionales, los roles de usuario y las áreas clave de la aplicación, explicando qué puede hacer cada rol, dónde lo hace, qué tipo de información se ve afectada y cuál es el resultado esperado.
