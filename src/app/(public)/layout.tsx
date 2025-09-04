@@ -32,7 +32,7 @@ export default async function PublicLayout({
         <div className="relative flex flex-col min-h-screen isolate">
             <DecorativeHeaderBackground />
             <PublicTopBar />
-            <main className="flex-1 flex flex-col items-center pb-16 md:pb-0">
+            <main className="flex-1 flex flex-col items-center pt-8 md:pt-0 pb-16 md:pb-0">
                 {children}
             </main>
             <div className="hidden md:block">

@@ -23,7 +23,7 @@ export function BottomNav() {
   }
   
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t z-50 shadow-[0_-5px_15px_-5px_hsl(var(--foreground)_/_0.1)]">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card/80 backdrop-blur-sm border-t z-50 shadow-[0_-5px_15px_-5px_hsl(var(--foreground)_/_0.1)]">
       <div className="mx-auto flex h-full max-w-md items-center justify-around px-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
