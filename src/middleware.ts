@@ -41,7 +41,7 @@ export const config = {
    * - _next/static (static files)
    * - _next/image (image optimization files)
    * - favicon.ico (favicon file)
-   * - uploads (the user's uploaded content)
+   * - uploads (the user's uploaded content) - THIS IS THE FIX
    */
    matcher: ['/((?!api|_next/static|_next/image|favicon.ico|uploads).*)'],
 };
