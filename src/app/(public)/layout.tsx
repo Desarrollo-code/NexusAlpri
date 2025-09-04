@@ -1,4 +1,3 @@
-
 // src/app/(public)/layout.tsx
 import { Footer } from '@/components/layout/footer';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
@@ -7,16 +6,26 @@ import { DecorativeHeaderBackground } from '@/components/layout/decorative-heade
 import React from 'react';
 import prisma from '@/lib/prisma';
 import Image from 'next/image';
-import { cn } from '@/lib/utils';
-import { getFontVariables } from '@/lib/fonts';
+
+// Función para obtener la URL de la marca de agua, con manejo de errores.
+async function getWatermarkUrl() {
+    try {
+        const settings = await prisma.platformSettings.findFirst({
+            select: { watermarkUrl: true }
+        });
+        return settings?.watermarkUrl;
+    } catch (error) {
+        console.error("Error fetching watermark, returning null:", error);
+        return null; // Devuelve null si la base de datos no está disponible.
+    }
+}
 
 export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const settings = await prisma.platformSettings.findFirst();
-  const fontVariables = await getFontVariables();
+  const watermarkUrl = await getWatermarkUrl();
 
   return (
     <>
@@ -32,10 +41,10 @@ export default async function PublicLayout({
             <div className="md:hidden">
                 <BottomNav />
             </div>
-            {settings?.watermarkUrl && (
+            {watermarkUrl && (
             <div className="fixed right-4 z-50 pointer-events-none bottom-20 md:bottom-4">
                 <Image
-                    src={settings.watermarkUrl}
+                    src={watermarkUrl}
                     alt="Alprigrama Watermark"
                     width={60}
                     height={60}

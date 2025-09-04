@@ -7,10 +7,10 @@ import { TitleProvider } from '@/contexts/title-context';
 import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
 
-// This function now fetches settings and determines font variables on the server.
+// Esta función ahora solo obtiene las fuentes, sin consultar la base de datos.
 async function getLayoutSettings() {
     return {
-        fontVariables: getFontVariables() // Get default fonts
+        fontVariables: await getFontVariables()
     };
 }
 
