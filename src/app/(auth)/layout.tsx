@@ -9,14 +9,12 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <div className="relative flex flex-col min-h-screen isolate">
-          <DecorativeHeaderBackground />
-          <PublicTopBar />
-          <main className="flex-1 flex flex-col items-center justify-center p-4">
-              {children}
-          </main>
-      </div>
-    </>
+    <div className="relative flex flex-col min-h-screen isolate">
+        <DecorativeHeaderBackground />
+        <PublicTopBar />
+        <main className="flex-1 flex flex-col items-center justify-center p-4">
+            {children}
+        </main>
+    </div>
   );
 }
