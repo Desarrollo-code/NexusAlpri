@@ -20,16 +20,27 @@ export function PublicTopBar() {
 
   return (
     <header className={cn(
-        "relative top-0 left-0 right-0 z-40",
-        "bg-transparent hidden md:block" // Ocultamos toda la barra en móvil por defecto
+        "top-0 left-0 right-0 z-40"
     )}>
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 flex items-center px-4 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg">
+          <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
+            <div className={cn("w-10 h-10 bg-white/90 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden", !settings?.logoUrl && "p-1.5")}>
+              {settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain p-1" quality={100} /></div> : <div className="w-full h-full rounded-md bg-muted" />}
+            </div>
+            <span className="text-lg font-bold tracking-wide whitespace-nowrap">
+              {settings?.platformName || 'NexusAlpri'}
+            </span>
+          </Link>
+      </div>
+
       {/* Desktop Top Bar */}
-      <div className="flex items-center justify-between px-4 lg:px-6 h-20">
+      <div className="hidden md:flex items-center justify-between px-4 lg:px-6 h-20">
         <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
           <div className={cn("w-12 h-12 bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden", !settings?.logoUrl && "p-2")}>
             {settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain p-1" quality={100} /></div> : <div className="w-full h-full rounded-md bg-muted" />}
           </div>
-          <span className="text-xl font-bold font-headline-alt tracking-wide whitespace-nowrap text-foreground">
+          <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-foreground">
             {settings?.platformName || 'NexusAlpri'}
           </span>
         </Link>
