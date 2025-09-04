@@ -7,7 +7,7 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 **Stack Tecnológico Principal:**
 *   **Framework:** Next.js 15+ (con App Router y Server Components)
 *   **Lenguaje:** TypeScript
-*   **Base de Datos:** MySQL (gestionada con Prisma ORM)
+*   **Base de Datos:** PostgreSQL (gestionada con Prisma ORM en Supabase)
 *   **Estilos:** Tailwind CSS
 *   **Componentes UI:** ShadCN
 *   **Autenticación:** JWT almacenado en cookies http-only
@@ -35,7 +35,7 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 1.  El cliente (navegador) solicita una página.
 2.  Un Server Component en Next.js puede obtener datos directamente o llamar a una API Route.
 3.  Las API Routes (`src/app/api/...`) manejan la lógica de negocio.
-4.  La lógica de la API utiliza el cliente de **Prisma** (`@/lib/prisma`) para interactuar con la base de datos MySQL.
+4.  La lógica de la API utiliza el cliente de **Prisma** (`@/lib/prisma`) para interactuar con la base de datos PostgreSQL.
 5.  Los datos se devuelven como JSON al componente o al cliente.
 
 ## 3. Lógicas de Negocio Clave
@@ -45,11 +45,11 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 El seguimiento del progreso es un sistema automático y robusto diseñado para reflejar la interacción real del usuario.
 
 1.  **Registro de Interacciones (Frontend):** La página de detalle del curso (`/courses/[courseId]`) detecta diferentes tipos de interacción sin necesidad de que el usuario haga clic en un botón:
-    *   **Lecciones Pasivas (Texto/Video/Archivo):** Se marca como completada automáticamente cuando el usuario **selecciona la lección** en la barra lateral. Esto dispara una llamada a `POST /api/progress/[userId]/[courseId]/lesson`.
+    *   **Lecciones Pasivas (Texto/Video/Archivo):** Se marca como completada automáticamente cuando el usuario **selecciona la lección** en la barra lateral (si no es de video) o cuando el **video llega al final**. Esto dispara una llamada a `POST /api/progress/[userId]/[courseId]/lesson`.
     *   **Lecciones Activas (Quices):** El componente `QuizViewer` gestiona el envío del quiz y su puntuación. Al finalizar, llama a `POST /api/progress/[userId]/[courseId]/quiz` con la nota obtenida.
 
 2.  **Almacenamiento de Datos (Backend):**
-    *   Cada una de estas interacciones se guarda como un registro individual en la tabla `LessonCompletionRecord`. Esta tabla almacena el ID de la lección, el tipo de interacción ('view' o 'quiz') y la puntuación si aplica.
+    *   Cada una de estas interacciones se guarda como un registro individual en la tabla `LessonCompletionRecord`. Esta tabla almacena el ID de la lección, el tipo de interacción ('view', 'video' o 'quiz') y la puntuación si aplica.
     *   Estos registros están vinculados a un `CourseProgress`, que agrupa todas las interacciones de un usuario para un curso específico.
 
 3.  **Consolidación y Cálculo Final:**
@@ -57,7 +57,7 @@ El seguimiento del progreso es un sistema automático y robusto diseñado para r
     *   Al hacer clic, se llama a la API `POST /api/progress/[userId]/[courseId]/consolidate`.
     *   Esta ruta ejecuta la lógica de negocio principal (`src/lib/progress.ts`), que:
         *   Lee todos los `LessonCompletionRecord` asociados a ese progreso.
-        *   Calcula una **puntuación final ponderada**. Las lecciones de 'view' aportan 100 puntos, mientras que las de 'quiz' aportan su nota (`score`). Se promedia el total.
+        *   Calcula una **puntuación final ponderada**. Las lecciones de 'view' o 'video' aportan 100 puntos, mientras que las de 'quiz' aportan su nota (`score`). Se promedia el total.
         *   Guarda este porcentaje final en el campo `progressPercentage` del modelo `CourseProgress`.
     *   La UI recibe este porcentaje final y lo muestra en el indicador circular de progreso.
 
@@ -132,16 +132,32 @@ El esquema se define en `prisma/schema.prisma`. Los modelos principales son:
 
 ### 4.2. Migraciones y Sincronización con Prisma
 
-Para entornos de desarrollo, se utiliza `prisma migrate` para generar y aplicar migraciones SQL. Para despliegues en producción o entornos sin estado, `prisma db push` es la herramienta recomendada para sincronizar el esquema directamente con la base de datos.
+Gestionar la estructura de tu base de datos es un proceso clave. Prisma ofrece dos comandos principales para esto: `migrate dev` y `db push`.
 
-**Para crear una nueva migración en desarrollo:**
-```bash
-npm run prisma:migrate -- --name "un_nombre_descriptivo_para_la_migracion"
+#### **Para Desarrollo Local (`migrate dev`)**
+
+Cuando estás desarrollando en tu máquina, quieres tener un historial de los cambios que haces en la base de datos. Para esto se usa `prisma migrate dev`.
+
+1.  **Modifica el esquema** en `prisma/schema.prisma`.
+2.  **Ejecuta el comando** para crear un archivo de migración que represente tus cambios:
+    ```bash
+    npm run prisma:migrate -- --name "un_nombre_descriptivo"
+    ```
+    **Importante:** No olvides el `--` después de `prisma:migrate`. Es necesario para pasar argumentos adicionales al script de Prisma.
+
+Este comando genera un archivo SQL en `prisma/migrations` y lo aplica a tu base de datos de desarrollo.
+
+#### **Para Producción (`db push`)**
+
+Cuando despliegas tu aplicación en un servicio como Vercel, no necesitas un historial de migraciones, solo quieres que la base de datos refleje el estado actual de tu `schema.prisma`. Para esto, usamos `prisma db push`.
+
+El script `build` en tu archivo `package.json` ya está configurado para ejecutar este comando automáticamente:
+```json
+"scripts": {
+  "build": "prisma db push && prisma generate && next build"
+}
 ```
-Esto crea un archivo SQL en la carpeta `prisma/migrations/`.
-
-**Para sincronizar la base de datos en producción (ej. Vercel):**
-El script `build` en `package.json` ejecuta `prisma db push` para asegurar que el esquema de la base de datos coincida con el `schema.prisma` actual.
+Esto significa que cada vez que Vercel construye tu aplicación, `prisma db push` se conecta a tu base de datos de Supabase y la actualiza para que coincida con tu esquema, creando las tablas si es la primera vez. **No necesitas hacer nada manualmente.**
 
 ## 5. Documentación de API Endpoints
 
@@ -149,7 +165,7 @@ Las rutas de la API se encuentran en `src/app/api/`. Algunos endpoints clave son
 *   `/api/auth/login`, `/api/auth/register`, `/api/auth/logout`, `/api/auth/me`: Manejan todo el ciclo de vida de la autenticación.
 *   `/api/users`: CRUD para la gestión de usuarios (solo Admins).
 *   `/api/courses`: CRUD para cursos.
-*   `/api/enrollments`: Para inscribir usuarios y ver inscripciones.
+*   `/api/enrollments`: `POST` para inscribir al usuario actual, `DELETE` para cancelar una inscripción (sea propia o de otro usuario si se tienen permisos).
 *   `/api/progress`: Para obtener y actualizar el progreso de los cursos.
 *   `/api/resources`: CRUD para la biblioteca de recursos.
 *   `/api/settings`: Para obtener y guardar la configuración de la plataforma.
@@ -158,21 +174,21 @@ La autenticación se realiza a través de un token JWT en una cookie http-only. 
 
 ## 6. Configuración del Entorno de Desarrollo
 
-1.  **Requisitos:** Node.js, npm, y una base de datos MySQL en ejecución.
+1.  **Requisitos:** Node.js, npm, y una instancia de PostgreSQL (puedes usar la de Supabase).
 2.  **Instalación:**
     ```bash
     npm install
     ```
 3.  **Variables de Entorno:**
-    Crea un archivo `.env` en la raíz del proyecto y define las siguientes variables:
+    Crea un archivo `.env` en la raíz del proyecto y define las siguientes variables. Usa la URL de conexión de tu proyecto de Supabase.
     ```env
-    DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE_NAME"
+    DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@[ID_PROYECTO].db.supabase.co:5432/postgres"
     JWT_SECRET="genera-una-cadena-aleatoria-muy-segura-aqui"
     RESEND_API_KEY="tu_api_key_de_resend"
     ```
-4.  **Aplicar Migraciones:**
+4.  **Aplicar Migraciones (para desarrollo):**
     ```bash
-    npm run prisma:migrate
+    npm run prisma:migrate -- --name "initial_setup"
     ```
 5.  **Ejecutar el Proyecto:**
     ```bash
