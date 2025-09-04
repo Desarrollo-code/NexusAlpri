@@ -1,3 +1,4 @@
+
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -71,26 +72,29 @@ const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => 
     };
 
     return (
-        
-            
-                Información Personal
-            
-            
-                
-                    
-                        Nombre
-                        
-                    
-                    
-                        Email
-                        
-                    
-                
-                
-                    
-                
-            
-        
+        <Card id="info-card-desktop">
+            <CardHeader>
+                <CardTitle>Información Personal</CardTitle>
+            </CardHeader>
+            <form onSubmit={handleInfoSubmit}>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="name">Nombre</Label>
+                        <Input id="name" value={name} onChange={e => setName(e.target.value)} disabled={isSavingInfo} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" value={user.email} disabled />
+                    </div>
+                </CardContent>
+                <CardFooter>
+                    <Button type="submit" disabled={isSavingInfo || name === user.name}>
+                        {isSavingInfo ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        Guardar Información
+                    </Button>
+                </CardFooter>
+            </form>
+        </Card>
     );
 };
 
@@ -129,47 +133,49 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
     };
     
     return (
-        
-            
-                Cambiar Contraseña
-            
-            
-                
-                    
-                        Contraseña Actual
-                        
-                            
-                             
-                                {showCurrentPassword ?  : }
-                            
-                        
-                    
-                    
-                        Nueva Contraseña
-                        
-                            
-                             
-                                {showNewPassword ?  : }
-                            
-                        
-                    
-                    
-                     
-                    
-                        Confirmar Nueva Contraseña
-                        
-                            
-                             
-                                {showConfirmPassword ?  : }
-                            
-                        
-                    
-                
-                
-                    Cambiar Contraseña
-                
-            
-        
+        <Card>
+            <CardHeader>
+                <CardTitle>Cambiar Contraseña</CardTitle>
+            </CardHeader>
+            <form onSubmit={handlePasswordSubmit}>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="current-password">Contraseña Actual</Label>
+                        <div className="relative">
+                            <Input id="current-password" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required disabled={isSavingPassword} />
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
+                                {showCurrentPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="new-password">Nueva Contraseña</Label>
+                        <div className="relative">
+                             <Input id="new-password" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required disabled={isSavingPassword}/>
+                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowNewPassword(!showNewPassword)}>
+                                {showNewPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                            </Button>
+                        </div>
+                    </div>
+                     <PasswordStrengthIndicator password={newPassword} isVisible={true} />
+                    <div className="space-y-2">
+                        <Label htmlFor="confirm-password">Confirmar Nueva Contraseña</Label>
+                         <div className="relative">
+                            <Input id="confirm-password" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required disabled={isSavingPassword}/>
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                                {showConfirmPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+                <CardFooter>
+                    <Button type="submit" disabled={isSavingPassword || !currentPassword || !newPassword || newPassword !== confirmPassword}>
+                        {isSavingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        Cambiar Contraseña
+                    </Button>
+                </CardFooter>
+            </form>
+        </Card>
     );
 };
 
@@ -247,138 +253,128 @@ const TwoFactorCard = ({ user, updateUser }: { user: any, updateUser: (data: any
     };
 
     return (
-         
-            
-                Autenticación de Dos Factores (2FA)
-            
-            
+         <Card id="card-2fa-desktop">
+            <CardHeader>
+                <CardTitle>Autenticación de Dos Factores (2FA)</CardTitle>
+            </CardHeader>
             {user.isTwoFactorEnabled ? (
-                
-                    
-                        
-                        
-                            2FA está activado en tu cuenta.
-                        
-                    
-                    
-                        
-                            Contraseña
-                            
-                            
+                <CardContent className="space-y-4">
+                    <div className="flex items-center gap-3 p-4 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg border border-green-200 dark:border-green-800">
+                        <CheckCircle className="h-5 w-5" />
+                        <p className="font-medium text-sm">2FA está activado en tu cuenta.</p>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="password-disable-2fa">Contraseña</Label>
+                        <Input id="password-disable-2fa" type="password" value={passwordForDisable} onChange={e => setPasswordForDisable2FA(e.target.value)} placeholder="Ingresa tu contraseña para desactivar" />
+                        <Button variant="destructive" onClick={handleDisable2FA} disabled={isDisabling2FA || !passwordForDisable}>
+                            {isDisabling2FA ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Shield className="mr-2 h-4 w-4"/>}
                             Desactivar 2FA
-                        
-                    
-                
+                        </Button>
+                    </div>
+                </CardContent>
             ) : qrCode ? (
-                 
-                    
-                        Escanea este código QR con tu aplicación de autenticación (ej. Google Authenticator).
-                    
-                    
-                    
-                        Código de Verificación
-                        
-                        
-                    
-                    Activar y Verificar
-                
+                 <CardContent className="space-y-4 text-center">
+                    <p className="text-sm text-muted-foreground">Escanea este código QR con tu aplicación de autenticación (ej. Google Authenticator).</p>
+                    <Image src={qrCode} alt="Código QR para 2FA" width={200} height={200} className="mx-auto" />
+                    <div className="space-y-2">
+                        <Label htmlFor="verification-code">Código de Verificación</Label>
+                        <Input id="verification-code" value={verificationCode} onChange={e => setVerificationCode(e.target.value)} placeholder="123456" maxLength={6}/>
+                    </div>
+                    <Button onClick={handleVerify2FA} disabled={isActivating2FA || verificationCode.length < 6}>
+                        {isActivating2FA ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4"/>}
+                        Activar y Verificar
+                    </Button>
+                </CardContent>
             ) : (
-                
-                    
-                        Añade una capa extra de seguridad a tu cuenta. Se te pedirá un código de verificación al iniciar sesión.
-                    
-                    Habilitar 2FA
-                
+                <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">Añade una capa extra de seguridad a tu cuenta. Se te pedirá un código de verificación al iniciar sesión.</p>
+                    <Button onClick={handleEnable2FA} disabled={isActivating2FA}>
+                        {isActivating2FA ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4"/>}
+                        Habilitar 2FA
+                    </Button>
+                </CardContent>
             )}
             
-        
+        </Card>
     );
 };
 
 const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { user: any, onAvatarChange: (e: any) => void, isUploading: boolean, uploadProgress: number }) => (
-     
-        
-            
-            
-        
-        
-            
-            
-            
-            
-            
-        
-         
-            
-                {user.name}
-                
+     <Card className="profile-card" id="profile-card-display">
+        <div className="card__img">
+            <div className="card__img--gradient" />
+        </div>
+        <div className="card__avatar">
+            <Avatar className="avatar">
+                 <AvatarImage src={user.avatar || undefined} />
+                 <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
+            </Avatar>
+            <label htmlFor="avatar-upload" className="absolute bottom-1 right-1 bg-background text-foreground rounded-full p-1.5 cursor-pointer hover:bg-muted transition-colors shadow-md">
+                <Camera className="h-5 w-5" />
+                <input id="avatar-upload" type="file" className="hidden" onChange={onAvatarChange} accept="image/*" disabled={isUploading}/>
+            </label>
+        </div>
+         <CardContent className="px-6 pb-6 pt-4">
+            <CardTitle className="text-2xl font-bold font-headline">{user.name}</CardTitle>
+            <CardDescription className="card__subtitle">
                 {user.email}
-            
-        
-        
+            </CardDescription>
+        </CardContent>
+        <CardFooter className="p-0">
             {isUploading && (
-                
-                    
-                
+                <div className="w-full">
+                    <UploadProgress value={uploadProgress} className="h-1 rounded-none" />
+                </div>
             )}
-        
-    
+        </CardFooter>
+    </Card>
 );
 
 const GamificationCard = ({ user, achievements, isLoadingAchievements }: { user: any, achievements: any[], isLoadingAchievements: boolean }) => {
     const { level, currentXPInLevel, xpForNextLevel, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
     return (
-     
-        
-            
-                Progreso y Logros
-            
-        
-        
+     <Card id="gamification-card-desktop">
+        <CardHeader>
+            <CardTitle>Progreso y Logros</CardTitle>
+        </CardHeader>
+        <CardContent>
+             <div className="flex justify-between items-end mb-1">
+                <p className="font-semibold text-primary">Nivel {level}</p>
+                <p className="text-sm text-muted-foreground">{user.xp || 0} XP</p>
+             </div>
+             <Progress value={progressPercentage} className="h-2"/>
+             <p className="text-xs text-right text-muted-foreground mt-1">
+                {currentXPInLevel} / {xpForNextLevel} XP para el siguiente nivel
+             </p>
              
-                
-                    Nivel {level}
-                    {user.xp || 0} XP
-                
-            
-             
-                
-                
-                 / {xpForNextLevel} XP para el siguiente nivel
-             
-             
-              
-                
-                    Logros Desbloqueados
-                    {isLoadingAchievements ? (
-                        
-                    ) : achievements.length > 0 ? (
-                        
-                            
-                                
-                                    
-                                        
-                                            
-                                        
-                                    
-                                    
-                                        
-                                            
-                                            
-                                        
-                                    
-                                
-                            
-                        
-                    ) : (
-                        
-                            Aún no has desbloqueado logros. ¡Sigue aprendiendo!
-                        
-                    )}
-                
-            
-        
-    
+              <div className="mt-6">
+                <h4 className="font-semibold mb-2">Logros Desbloqueados</h4>
+                {isLoadingAchievements ? (
+                    <p className="text-sm text-muted-foreground">Cargando...</p>
+                ) : achievements.length > 0 ? (
+                    <TooltipProvider>
+                        <div className="flex flex-wrap gap-3">
+                            {achievements.map((ach) => (
+                                <Tooltip key={ach.achievement.id}>
+                                    <TooltipTrigger>
+                                        <div className="h-10 w-10 bg-primary/10 text-primary rounded-full flex items-center justify-center border-2 border-primary/20">
+                                            <Award className="h-5 w-5" />
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p className="font-bold">{ach.achievement.name}</p>
+                                        <p>{ach.achievement.description}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            ))}
+                        </div>
+                    </TooltipProvider>
+                ) : (
+                    <p className="text-sm text-muted-foreground italic">Aún no has desbloqueado logros. ¡Sigue aprendiendo!</p>
+                )}
+            </div>
+        </CardContent>
+    </Card>
 )};
 
 
@@ -456,31 +452,31 @@ function ProfilePageContent() {
         }
     };
     
-    if (!user) return  
+    if (!user) return <Loader2 className="h-8 w-8 animate-spin" />;
     
     const isMobile = useIsMobile();
 
     return (
-        
+        <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="space-y-1">
+                    <p className="text-muted-foreground">Gestiona tu información personal y la seguridad de tu cuenta.</p>
+                </div>
+                 <Button variant="outline" size="sm" onClick={() => forceStartTour('profile', profileTour)}>
+                    <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
+                </Button>
+            </div>
             
-                
-                    
-                        Gestiona tu información personal y la seguridad de tu cuenta.
-                    
-                     Ver Guía
-                
-            
-            
-                
-                    
-                        
-                        
-                        
-                    
-                    
-                        
-                        
-                            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+                    <ProfileCard user={user} onAvatarChange={handleAvatarChange} isUploading={isUploading} uploadProgress={uploadProgress} />
+                    <GamificationCard user={user} achievements={achievements} isLoadingAchievements={isLoadingAchievements} />
+                </div>
+                <div className="lg:col-span-2">
+                     {isMobile ? (
+                        <div className="space-y-6">
+                            <InfoCard user={user} updateUser={updateUser} />
+                            <SecurityCard 
                                 user={user} 
                                 newPassword={newPassword}
                                 setNewPassword={setNewPassword}
@@ -489,33 +485,41 @@ function ProfilePageContent() {
                                 currentPassword={currentPassword}
                                 setCurrentPassword={setCurrentPassword}
                             />
-                        
-                        
-                    
-                     
-                        
-                            
-                                user={user} 
-                                newPassword={newPassword}
-                                setNewPassword={setNewPassword}
-                                confirmPassword={confirmPassword}
-                                setConfirmPassword={setConfirmPassword}
-                                currentPassword={currentPassword}
-                                setCurrentPassword={setCurrentPassword}
-                            />
-                            
-                        
-                    
-                
-            
-        
+                             <TwoFactorCard user={user} updateUser={updateUser} />
+                        </div>
+                     ) : (
+                         <div className="space-y-6">
+                            <InfoCard user={user} updateUser={updateUser} />
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Seguridad</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    <SecurityCard
+                                        user={user} 
+                                        newPassword={newPassword}
+                                        setNewPassword={setNewPassword}
+                                        confirmPassword={confirmPassword}
+                                        setConfirmPassword={setConfirmPassword}
+                                        currentPassword={currentPassword}
+                                        setCurrentPassword={setCurrentPassword}
+                                    />
+                                    <Separator/>
+                                    <TwoFactorCard user={user} updateUser={updateUser} />
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
     );
 }
 
 export default function ProfilePage() {
     const { isLoading, user } = useAuth();
     if (isLoading || !user) {
-        return ;
+        return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
     }
-    return ;
+    return <ProfilePageContent />;
 }

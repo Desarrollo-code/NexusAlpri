@@ -64,46 +64,50 @@ export function CourseCreationForm({ onSuccess }: CourseCreationFormProps) {
   };
 
   return (
-    
-      
-        
-          Título del Curso
-          
-            Ej: Fundamentos de Marketing Digital
-            
-        
-      
-      
-        
-          Descripción Breve
-          
-            Una descripción corta que enganche a los estudiantes.
-            
-        
-      
-      
-        
-          Categoría
-          
-            
-              
-                Selecciona una categoría...
-                {settings?.resourceCategories.sort().map((cat) => (
-                  
+    <form onSubmit={handleSubmit} className="grid gap-4">
+        <div className="space-y-1.5">
+            <Label htmlFor="title">Título del Curso</Label>
+            <Input 
+                id="title" 
+                value={title} 
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ej: Fundamentos de Marketing Digital"
+                required
+                disabled={isSubmitting}
+            />
+        </div>
+        <div className="space-y-1.5">
+            <Label htmlFor="description">Descripción Breve</Label>
+            <Textarea 
+                id="description" 
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Una descripción corta que enganche a los estudiantes."
+                required
+                disabled={isSubmitting}
+            />
+        </div>
+        <div className="space-y-1.5">
+            <Label htmlFor="category">Categoría</Label>
+            <Select name="category" required value={category} onValueChange={setCategory} disabled={isSubmitting}>
+              <SelectTrigger id="category">
+                <SelectValue placeholder="Selecciona una categoría..." />
+              </SelectTrigger>
+              <SelectContent>
+                {(settings?.resourceCategories || []).sort().map((cat) => (
+                  <SelectItem key={cat} value={cat}>
                     {cat}
-                  
+                  </SelectItem>
                 ))}
-              
-            
-          
-        
-      
-      
-        
-          
-          {isSubmitting ? 'Creando...' : 'Crear y Continuar'}
-        
-      
-    
+              </SelectContent>
+            </Select>
+        </div>
+        <div className="flex justify-end pt-4">
+            <Button type="submit" disabled={isSubmitting || !title || !description || !category}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                {isSubmitting ? 'Creando...' : 'Crear y Continuar'}
+            </Button>
+        </div>
+    </form>
   );
 }
