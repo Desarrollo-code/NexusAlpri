@@ -1,3 +1,4 @@
+
 // prisma/seed.ts
 import { PrismaClient, UserRole, AchievementSlug } from '@prisma/client';
 import bcrypt from 'bcryptjs';
@@ -24,19 +25,21 @@ async function main() {
 
   // --- 1. CONFIGURACIÓN Y LOGROS ---
   console.log('Verificando configuración y logros...');
-  const existingSettings = await prisma.platformSettings.findFirst();
-  if (!existingSettings) {
-    await prisma.platformSettings.create({
-        data: {
-            platformName: "NexusAlpri", allowPublicRegistration: true, enableEmailNotifications: true,
+  await prisma.platformSettings.upsert({
+      where: { id: 'cl-nexus-settings-default' },
+      update: {},
+      create: {
+            id: 'cl-nexus-settings-default',
+            platformName: "NexusAlpri", allowPublicRegistration: true, enableEmailNotifications: true, emailWhitelist: "",
             resourceCategories: "Recursos Humanos,TI y Seguridad,Marketing,Ventas,Legal,Operaciones,Finanzas,Formación Interna,Documentación de Producto,General",
             passwordMinLength: 8, passwordRequireUppercase: true, passwordRequireLowercase: true, passwordRequireNumber: true, passwordRequireSpecialChar: false,
             enableIdleTimeout: true, idleTimeoutMinutes: 20, require2faForAdmins: false,
             primaryColor: '#6366f1', secondaryColor: '#a5b4fc', accentColor: '#ec4899', backgroundColorLight: '#f8fafc',
             primaryColorDark: '#a5b4fc', backgroundColorDark: '#020617',
-        }
-    });
-  }
+            fontHeadline: 'Space Grotesk', fontBody: 'Inter'
+      }
+  });
+
   for (const ach of achievementsToSeed) {
     await prisma.achievement.upsert({ where: { slug: ach.slug }, update: {}, create: ach });
   }

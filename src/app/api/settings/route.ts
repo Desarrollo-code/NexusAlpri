@@ -10,10 +10,11 @@ export const dynamic = 'force-dynamic';
 // Este objeto define los valores por defecto que se usarán
 // si no hay ninguna configuración guardada en la base de datos.
 const DEFAULT_DB_SETTINGS = {
+  id: 'cl-nexus-settings-default', // Un ID predecible y único
   platformName: "NexusAlpri",
   allowPublicRegistration: true,
   enableEmailNotifications: true,
-  emailWhitelist: "alprigrama.com",
+  emailWhitelist: "",
   resourceCategories: "Recursos Humanos,TI y Seguridad,Marketing,Ventas,Legal,Operaciones,Finanzas,Formación Interna,Documentación de Producto,General",
   passwordMinLength: 8,
   passwordRequireUppercase: true,
@@ -35,6 +36,8 @@ const DEFAULT_DB_SETTINGS = {
   authImageUrl: null,
   aboutImageUrl: null,
   benefitsImageUrl: null,
+  fontHeadline: 'Space Grotesk',
+  fontBody: 'Inter'
 };
 
 const getFallbackSettings = (): PlatformSettings => {
@@ -51,13 +54,12 @@ export async function GET(req: NextRequest) {
     // Intenta conectar a la base de datos de forma explícita
     await prisma.$connect();
 
-    let dbSettings = await prisma.platformSettings.findFirst();
-
-    if (!dbSettings) {
-      dbSettings = await prisma.platformSettings.create({
-        data: DEFAULT_DB_SETTINGS,
-      });
-    }
+    // Utiliza upsert para crear la configuración si no existe
+    const dbSettings = await prisma.platformSettings.upsert({
+        where: { id: DEFAULT_DB_SETTINGS.id },
+        update: {}, // No actualiza nada si ya existe
+        create: DEFAULT_DB_SETTINGS, // Crea con los valores por defecto si no existe
+    });
     
     // Transforma los campos de string a array para el cliente
     const settingsToReturn: PlatformSettings = {
@@ -70,7 +72,7 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     console.error('[SETTINGS_GET_ERROR]', error);
-    // En caso de error de conexión, devuelve la configuración por defecto
+    // En caso de error de conexión u otro, devuelve la configuración por defecto
     const fallbackSettings = getFallbackSettings();
     return NextResponse.json(fallbackSettings);
   } finally {
@@ -123,7 +125,7 @@ export async function POST(req: NextRequest) {
 
     // Upsert para crear la configuración si no existe, o actualizarla si existe.
     const updatedDbSettings = await prisma.platformSettings.upsert({
-      where: { id: currentSettings?.id || 'non-existent-id-for-upsert' },
+      where: { id: currentSettings?.id || DEFAULT_DB_SETTINGS.id },
       update: dataToSave,
       create: { ...DEFAULT_DB_SETTINGS, ...dataToSave },
     });
