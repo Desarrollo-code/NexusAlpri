@@ -9,39 +9,39 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
 
-  // If user has a session cookie
+  // Si el usuario tiene una sesión
   if (sessionCookie) {
-    // If they are on an auth page, redirect to dashboard
+    // Si intenta acceder a una página de autenticación, redirigir al dashboard
     if (AUTH_ROUTES.some(route => pathname.startsWith(route))) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
-    // Otherwise, allow the request to proceed
+    // Si no, permitir el acceso
     return NextResponse.next();
   }
 
-  // If user does not have a session cookie
+  // Si el usuario NO tiene una sesión
   if (!sessionCookie) {
-    // And they are trying to access a protected app route
+    // Y está intentando acceder a una ruta protegida
     if (PROTECTED_ROUTE_REGEX.test(pathname)) {
-      // Redirect to sign-in page, preserving the intended destination
+      // Redirigir a la página de inicio de sesión, guardando la URL original
       const signInUrl = new URL('/sign-in', request.url);
       signInUrl.searchParams.set('redirectedFrom', pathname);
       return NextResponse.redirect(signInUrl);
     }
   }
 
-  // Allow all other requests (public pages, public API routes, etc.)
+  // Para todas las demás peticiones (páginas públicas, etc.), permitir el paso
   return NextResponse.next();
 }
 
 export const config = {
   /*
-   * Match all request paths except for the ones starting with:
-   * - api (API routes)
-   * - _next/static (static files)
-   * - _next/image (image optimization files)
-   * - favicon.ico (favicon file)
-   * - uploads (the user's uploaded content) - THIS IS THE FIX
+   * Coincide con todas las rutas de petición EXCEPTO las que comienzan con:
+   * - api (rutas de API)
+   * - _next/static (archivos estáticos de Next.js)
+   * - _next/image (archivos de optimización de imágenes)
+   * - favicon.ico (el ícono de la pestaña)
+   * - uploads (la carpeta pública con el contenido subido por el usuario)
    */
-   matcher: ['/((?!api|_next/static|_next/image|favicon.ico|uploads).*)'],
+   matcher: ['/((?!api|_next/static|_next/image|favicon.ico|uploads|.*\\..*).*)'],
 };
