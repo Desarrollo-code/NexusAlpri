@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
         password: hashedPassword,
         role: 'STUDENT', // Default role for public registration
         registeredDate: new Date(),
+        isActive: true, // Se añade el estado activo por defecto
       },
     });
 
