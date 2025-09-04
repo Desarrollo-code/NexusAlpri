@@ -7,6 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { CheckCircle, Zap, Users, BarChart, BookOpen, UserCheck, ShieldCheck, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import prisma from '@/lib/prisma';
+import type { PlatformSettings } from '@/types';
 
 const features = [
   {
@@ -47,8 +48,25 @@ const benefits = [
   },
 ];
 
+async function getPageSettings(): Promise<Partial<PlatformSettings>> {
+    try {
+        const settings = await prisma.platformSettings.findFirst({
+            select: {
+                platformName: true,
+                landingImageUrl: true,
+                benefitsImageUrl: true
+            }
+        });
+        return settings || {};
+    } catch (error) {
+        console.error("Failed to fetch settings for Landing page, using defaults:", error);
+        return {};
+    }
+}
+
+
 export default async function LandingPage() {
-  const settings = await prisma.platformSettings.findFirst();
+  const settings = await getPageSettings();
   const landingImageUrl = settings?.landingImageUrl || "https://placehold.co/600x600.png";
   const benefitsImageUrl = settings?.benefitsImageUrl || "https://placehold.co/600x400.png";
 

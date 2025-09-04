@@ -95,5 +95,10 @@ export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => 
 
 
 export async function getCurrentUser() {
-    return await getUserFromSession();
+    try {
+        return await getUserFromSession();
+    } catch(error) {
+        console.error("Error in getCurrentUser, likely DB connection issue:", error);
+        return null;
+    }
 }

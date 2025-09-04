@@ -6,10 +6,27 @@ import Image from 'next/image';
 import React from 'react';
 import prisma from '@/lib/prisma';
 import { cn } from '@/lib/utils';
+import type { PlatformSettings } from '@/types';
+
+async function getPageSettings(): Promise<Pick<PlatformSettings, 'aboutImageUrl'>> {
+    try {
+        const settings = await prisma.platformSettings.findFirst({
+            select: { aboutImageUrl: true }
+        });
+        return {
+            aboutImageUrl: settings?.aboutImageUrl || "https://placehold.co/600x400.png"
+        };
+    } catch (error) {
+        console.error("Failed to fetch settings for About page, using defaults:", error);
+        return {
+            aboutImageUrl: "https://placehold.co/600x400.png"
+        };
+    }
+}
+
 
 export default async function AboutPage() {
-  const settings = await prisma.platformSettings.findFirst();
-  const aboutImageUrl = settings?.aboutImageUrl || "https://placehold.co/600x400.png";
+  const { aboutImageUrl } = await getPageSettings();
 
   const techStack = [
     { name: 'Next.js', description: 'Framework de React para producción.', icon: <Code />, color: "text-primary" },
@@ -37,7 +54,7 @@ export default async function AboutPage() {
               </div>
               <div className="mx-auto aspect-video overflow-hidden rounded-xl sm:w-full relative shadow-2xl p-2 bg-muted/20">
                 <Image
-                  src={aboutImageUrl}
+                  src={aboutImageUrl!}
                   alt="About Us"
                   fill
                   className="object-contain"
