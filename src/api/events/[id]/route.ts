@@ -8,14 +8,14 @@ export const dynamic = 'force-dynamic';
 // PUT (update) an event
 export async function PUT(
   req: NextRequest, 
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const existingEvent = await prisma.calendarEvent.findUnique({
@@ -81,14 +81,14 @@ export async function PUT(
 // DELETE an event
 export async function DELETE(
   req: NextRequest, 
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
     const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     try {
         const existingEvent = await prisma.calendarEvent.findUnique({
@@ -105,7 +105,7 @@ export async function DELETE(
         }
         
         await prisma.calendarEvent.delete({ where: { id } });
-        return new NextResponse(null, { status: 204 });
+        return NextResponse.json({ success: true }, { status: 200 });
     } catch (error) {
         console.error('[EVENT_DELETE_ERROR]', error);
         return NextResponse.json({ message: 'Error al eliminar el evento' }, { status: 500 });

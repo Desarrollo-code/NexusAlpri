@@ -67,7 +67,7 @@ const FormFieldRenderer = ({ field, value, onChange }: { field: FullForm['fields
              <CardContent className="p-4">
                 <Label htmlFor={fieldId} className="text-base font-semibold">{field.label}{field.required && <span className="text-destructive ml-1">*</span>}</Label>
                 <div className="mt-3">{renderInput()}</div>
-            CardContent>
+            </CardContent>
         </Card>
     );
 };
@@ -141,11 +141,10 @@ export function FormViewer({ formId }: { formId: string }) {
                 <h2 className="text-2xl font-bold">¡Gracias!</h2>
                 <p className="text-muted-foreground mt-2">Tu respuesta al formulario "{form.title}" ha sido registrada.</p>
                 {finalScore !== null && (
-                    
-                        Tu puntuación final es:
-                        
-                        {finalScore.toFixed(0)}%
-                    
+                    <div className="mt-4 bg-primary/10 p-4 rounded-lg">
+                        <p className="text-sm text-primary">Tu puntuación final es:</p>
+                        <p className="text-3xl font-bold text-primary">{finalScore.toFixed(0)}%</p>
+                    </div>
                 )}
                 <Button className="mt-6" onClick={() => router.push('/dashboard')}>Volver al Panel Principal</Button>
             </Card>
@@ -154,24 +153,23 @@ export function FormViewer({ formId }: { formId: string }) {
     
     return (
         <Card className="max-w-3xl mx-auto my-8">
-            
-                
-                    {form.title}
-                    {form.description && {form.description}}
-                
-            
-            
-                
+            <CardHeader className="text-center">
+                <CardTitle className="text-3xl font-headline">{form.title}</CardTitle>
+                {form.description && <CardDescription className="text-base">{form.description}</CardDescription>}
+            </CardHeader>
+            <form onSubmit={handleSubmit}>
+                <CardContent className="space-y-6">
                     {form.fields.map(field => (
                         <FormFieldRenderer key={field.id} field={field} value={answers[field.id]} onChange={handleAnswerChange} />
                     ))}
-                    
-                        
-                            {isSubmitting ?  Enviar Respuesta
-                        
-                    
-                
-            
+                    <CardFooter className="p-0 pt-6">
+                        <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting}>
+                            {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin"/> : <Send className="mr-2 h-5 w-5"/>}
+                             Enviar Respuesta
+                        </Button>
+                    </CardFooter>
+                </CardContent>
+            </form>
         </Card>
     );
 }

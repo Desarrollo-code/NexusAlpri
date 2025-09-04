@@ -1,5 +1,4 @@
-
-      // src/components/settings-page.tsx
+// src/components/settings-page.tsx
 'use client';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -257,11 +256,6 @@ export default function SettingsPageComponent() {
       setIsLoading(false);
     }
   }, [globalSettings]);
-
-  if (!user || user.role !== 'ADMINISTRATOR') {
-    if (typeof window !== 'undefined') router.push('/dashboard');
-    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
-  }
   
   const handleInputChange = (field: keyof AppPlatformSettings, value: any) => {
     setFormState(prev => prev ? { ...prev, [field]: value } : null);
@@ -382,6 +376,11 @@ export default function SettingsPageComponent() {
     );
   }
 
+  if (!user || user.role !== 'ADMINISTRATOR') {
+    if (typeof window !== 'undefined') router.push('/dashboard');
+    return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
+  }
+  
   return (
     <div className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -590,8 +589,8 @@ export default function SettingsPageComponent() {
         <AlertDialogContent>
             <AlertDialogHeader><AlertDialogTitle>¿Confirmar Eliminación?</AlertDialogTitle><AlertDialogDescription>Se verificará si la categoría "<strong>{categoryToDelete}</strong>" está en uso. Si no lo está, se eliminará de la lista (deberás guardar los cambios para confirmar). Si está en uso, se te notificará.</AlertDialogDescription></AlertDialogHeader>
             <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"><AlertDialogCancel disabled={isCheckingCategory}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCategory} disabled={isCheckingCategory} className={buttonVariants({ variant: "destructive" })}>{isCheckingCategory ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar</AlertDialogAction></AlertDialogFooter>
-        AlertDialogContent>
-      AlertDialog>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
