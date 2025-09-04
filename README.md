@@ -1,3 +1,4 @@
+
 # NexusAlpri - Plataforma E-learning Corporativa
 
 NexusAlpri es una solución de e-learning moderna y completa, diseñada específicamente para las necesidades de formación interna de microempresas y organizaciones. Construida con un stack tecnológico de vanguardia (Next.js, TypeScript, Prisma, Tailwind CSS), ofrece una experiencia de usuario fluida, segura y altamente personalizable.

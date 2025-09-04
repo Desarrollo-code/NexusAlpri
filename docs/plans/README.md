@@ -1,3 +1,4 @@
+
 # Planes de Prueba por Rol
 
 Estos documentos describen los casos de uso y las pruebas funcionales desde la perspectiva de cada uno de los roles principales de la plataforma:

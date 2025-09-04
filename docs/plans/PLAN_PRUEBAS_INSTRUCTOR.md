@@ -1,3 +1,4 @@
+
 # Plan de Pruebas Funcionales - Rol Instructor
 
 Este documento describe las acciones a verificar para el rol de **Instructor**.
