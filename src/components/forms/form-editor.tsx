@@ -39,7 +39,7 @@ const generateUniqueId = (prefix: string): string => `${prefix}-${Date.now()}-${
 const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChange, onOptionAdd, onOptionDelete, onCorrectChange, isSaving }: { 
     field: FormField,
     isScoringEnabled: boolean,
-    onUpdate: (id: string, updates: Partial<FormField>) => void, 
+    onUpdate: (id: string, updates: Partial) => void, 
     onDelete: (id: string) => void,
     onOptionChange: (fieldId: string, optionIndex: number, updates: Partial<{text: string; points: number}>) => void,
     onOptionAdd: (fieldId: string) => void,
@@ -48,7 +48,7 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
     isSaving: boolean 
 }) => {
     
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleInputChange = (e: React.ChangeEvent) => {
         onUpdate(field.id, { [e.target.name]: e.target.value });
     };
 
@@ -70,62 +70,53 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
         const showScoring = isScoringEnabled && field.type === 'SINGLE_CHOICE';
 
         return (
-            <div className="flex items-center gap-2" key={option.id}>
+            
                 {field.type === 'SINGLE_CHOICE' ? (
-                    <RadioGroupItem value={option.id} id={optionId} />
+                    
                 ) : (
-                    <Checkbox id={optionId} checked={option.isCorrect} onCheckedChange={(checked) => onCorrectChange(field.id, option.id, !!checked)} />
+                    
                 )}
-                <Label htmlFor={optionId} className="flex-grow font-normal">
-                    <Input 
-                        value={option.text} 
-                        onChange={e => onOptionChange(field.id, index, { text: e.target.value })} 
-                        placeholder={`Opción ${index + 1}`} 
-                        disabled={isSaving}
-                    />
-                </Label>
+                 
+                    
+                        
+                            
+                        
+                    
+                
                 {showScoring && (
-                     <div className="flex items-center gap-1">
-                        <Input
-                            type="number"
-                            value={option.points || 0}
-                            onChange={(e) => handlePointsChange(index, e.target.value)}
-                            className="w-20 h-9"
-                            disabled={isSaving}
-                        />
-                         <span className="text-xs text-muted-foreground">pts</span>
-                    </div>
+                     
+                        
+                            
+                            
+                            pts
+                        
+                    
                 )}
-                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={(e) => { e.preventDefault(); onOptionDelete(field.id, index)}} disabled={isSaving}>
-                    <X className="h-4 w-4" />
-                </Button>
-            </div>
+                 
+                    
+                
+            
         );
     };
 
     if (field.type === 'SINGLE_CHOICE') {
         return (
-            <RadioGroup 
-                className="space-y-2 mt-2 pl-6" 
-                onValueChange={(val) => onCorrectChange(field.id, val, true)} 
-                value={options.find(opt => opt.isCorrect)?.id}
-            >
+            
+                
                 {options.map(renderOption)}
-                <Button variant="link" size="sm" type="button" onClick={() => onOptionAdd(field.id)} className="ml-0 p-0 h-auto">
-                    + Añadir opción
-                </Button>
-            </RadioGroup>
+                 + Añadir opción
+                
+            
         );
     }
     
     if (field.type === 'MULTIPLE_CHOICE') {
         return (
-            <div className="space-y-2 mt-2 pl-6">
+            
                 {options.map(renderOption)}
-                <Button variant="link" size="sm" type="button" onClick={() => onOptionAdd(field.id)} className="p-0 h-auto">
-                    + Añadir opción
-                </Button>
-            </div>
+                 + Añadir opción
+                
+            
         );
     }
 
@@ -134,52 +125,54 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
 
 
     return (
-      <Card className="bg-muted/30 p-4 border relative">
-          <div className="flex items-center gap-2 mb-4">
-              <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
-              <div className="flex-grow space-y-2">
-                  <Input 
-                      name="label"
-                      value={field.label}
-                      onChange={handleInputChange}
-                      placeholder="Escribe tu pregunta aquí..."
-                      className="text-base font-semibold border-transparent focus:border-input"
-                      disabled={isSaving}
-                  />
-                  <Input 
-                      name="placeholder"
-                      value={field.placeholder ?? ''}
-                      onChange={handleInputChange}
-                      placeholder="Texto de ejemplo o ayuda (opcional)"
-                      className="text-xs h-8"
-                      disabled={isSaving}
-                  />
-              </div>
-               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive" onClick={() => onDelete(field.id)} disabled={isSaving}>
-                  <Trash2 className="h-4 w-4" />
-              </Button>
-          </div>
+      
+          
+              
+                  
+                  
+                      
+                          Escribe tu pregunta aquí...
+                          
+                      
+                      
+                          Texto de ejemplo o ayuda (opcional)
+                          
+                      
+                  
+                   
+                      
+                  
+              
           
           {renderOptionsEditor()}
 
-          <div className="mt-4 pt-4 border-t flex justify-between items-center text-sm">
-              <div className="flex items-center space-x-2">
-                  <Switch id={`required-${field.id}`} checked={field.required} onCheckedChange={(c) => handleSwitchChange(c, 'required')} disabled={isSaving}/>
-                  <Label htmlFor={`required-${field.id}`}>Requerido</Label>
-              </div>
-               <Select value={field.type} onValueChange={(type) => onUpdate(field.id, { type: type as FormFieldType, options: type === 'SINGLE_CHOICE' || type === 'MULTIPLE_CHOICE' ? field.options : [] })}>
-                  <SelectTrigger className="w-[180px] h-9">
-                      <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                      <SelectItem value="SHORT_TEXT">Texto Corto</SelectItem>
-                      <SelectItem value="LONG_TEXT">Párrafo</SelectItem>
-                      <SelectItem value="SINGLE_CHOICE">Opción Única</SelectItem>
-                      <SelectItem value="MULTIPLE_CHOICE">Casillas</SelectItem>
-                  </SelectContent>
-              </Select>
-          </div>
-      </Card>
+          
+              
+                  
+                      
+                           Requerido
+                      
+                  
+                  
+                      
+                  
+                      
+                          
+                          
+                          
+                      
+                      
+                          
+                              Texto Corto
+                              Párrafo
+                              Opción Única
+                              Casillas
+                          
+                      
+                  
+              
+          
+      
     );
 };
 
@@ -191,17 +184,17 @@ export function FormEditor({ formId }: { formId: string }) {
     const { toast } = useToast();
     const { setPageTitle } = useTitle();
 
-    const [form, setForm] = useState<AppForm | null>(null);
+    const [form, setForm] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
     
-    const handleFormUpdate = (updates: Partial<AppForm>) => {
+    const handleFormUpdate = (updates: Partial) => {
         setForm(prev => prev ? { ...prev, ...updates } : null);
         setIsDirty(true);
     };
 
-    const handleFieldUpdate = (fieldId: string, updates: Partial<FormField>) => {
+    const handleFieldUpdate = (fieldId: string, updates: Partial) => {
        handleFormUpdate({
            fields: form!.fields.map(f => f.id === fieldId ? {...f, ...updates} : f)
        });
@@ -343,41 +336,41 @@ export function FormEditor({ formId }: { formId: string }) {
     }, [formId, router, toast, setPageTitle]);
 
     if (isLoading || !form) {
-        return <div className="flex items-center justify-center min-h-[calc(100vh-80px)]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
+        return ;
     }
 
     return (
-        <div className="space-y-6">
-            <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                 <div className="flex-grow space-y-1">
-                     <Input value={form.title} onChange={e => handleFormUpdate({ title: e.target.value })} className="text-2xl font-bold h-auto p-0 border-none focus-visible:ring-0 bg-transparent" />
-                     <Textarea value={form.description ?? ''} onChange={e => handleFormUpdate({ description: e.target.value })} placeholder="Añade una descripción para tu formulario..." className="text-muted-foreground border-none p-0 focus-visible:ring-0 h-auto resize-none bg-transparent"/>
-                 </div>
-                 <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
-                     <Link href={`/forms/${formId}/results`} className={cn(buttonVariants({variant: 'outline'}))}>
-                         <BarChart className="mr-2 h-4 w-4"/>Resultados
-                     </Link>
-                     <Link href={`/forms/${formId}/view`} target="_blank" className={cn(buttonVariants({variant: 'outline'}))}>
-                        <Eye className="mr-2 h-4 w-4"/>Vista Previa
-                     </Link>
-                     <Button onClick={handleSaveChanges} disabled={isSaving || !isDirty}>
-                         {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+        
+            
+                 
+                     
+                         
+                         
+                     
+                     
+                         
+                         Resultados
+                         
+                        Vista Previa
+                     
+                     
+                         
+                         {isSaving ?  : }
                          Guardar
-                     </Button>
-                 </div>
-            </header>
+                     
+                 
+            
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                <main className="lg:col-span-2 space-y-4">
-                    <DragDropContext onDragEnd={onDragEnd}>
-                        <Droppable droppableId="form-fields">
-                            {(provided) => (
-                                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-                                    {form.fields.map((field, index) => (
-                                         <Draggable key={field.id} draggableId={field.id} index={index}>
+            
+                
+                    
+                        
+                            
+                                {form.fields.map((field, index) => (
+                                         
                                              {(provided) => (
-                                                 <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                                                     <FieldEditor 
+                                                 
+                                                     
                                                          field={field} 
                                                          isScoringEnabled={!!form.isQuiz}
                                                          onUpdate={handleFieldUpdate} 
@@ -388,94 +381,119 @@ export function FormEditor({ formId }: { formId: string }) {
                                                          onCorrectChange={handleCorrectChange}
                                                          isSaving={isSaving}
                                                      />
-                                                 </div>
+                                                 
                                               )}
-                                         </Draggable>
+                                         
                                      ))}
                                      {provided.placeholder}
-                                </div>
-                            )}
-                        </Droppable>
-                    </DragDropContext>
-                     {form.fields.length === 0 && (
-                        <Card className="text-center border-2 border-dashed p-12">
-                            <CardHeader>
-                                <CardTitle>¡Empieza a construir!</CardTitle>
-                                <CardDescription>Usa los botones del panel derecho para añadir tu primera pregunta.</CardDescription>
-                            </CardHeader>
-                        </Card>
-                     )}
-                </main>
-                <aside className="lg:sticky lg:top-24 space-y-4">
-                     <Card>
-                         <CardHeader>
-                            <CardTitle className="text-base">Añadir Campo</CardTitle>
-                         </CardHeader>
-                         <CardContent className="grid grid-cols-2 gap-2">
-                            <Button variant="outline" size="sm" className="h-auto py-2 flex flex-col gap-1" onClick={() => addField('SHORT_TEXT')}><Type className="h-5 w-5 mb-1"/>Texto Corto</Button>
-                            <Button variant="outline" size="sm" className="h-auto py-2 flex flex-col gap-1" onClick={() => addField('LONG_TEXT')}><MessageSquare className="h-5 w-5 mb-1"/>Párrafo</Button>
-                            <Button variant="outline" size="sm" className="h-auto py-2 flex flex-col gap-1" onClick={() => addField('SINGLE_CHOICE')}><ListChecks className="h-5 w-5 mb-1"/>Opción Única</Button>
-                            <Button variant="outline" size="sm" className="h-auto py-2 flex flex-col gap-1" onClick={() => addField('MULTIPLE_CHOICE')}><CheckSquare className="h-5 w-5 mb-1"/>Casillas</Button>
-                         </CardContent>
-                     </Card>
-                      <Card>
-                         <CardHeader><CardTitle className="text-base">Configuración</CardTitle></CardHeader>
-                         <CardContent>
-                           <Tabs defaultValue="properties">
-                             <TabsList className="grid w-full grid-cols-2">
-                               <TabsTrigger value="properties">Propiedades</TabsTrigger>
-                               <TabsTrigger value="share">Compartir</TabsTrigger>
-                             </TabsList>
-                             <TabsContent value="properties" className="mt-4 space-y-4">
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <Label htmlFor="isQuiz" className="font-semibold">Habilitar Puntuación</Label>
-                                        <Switch id="isQuiz" checked={!!form.isQuiz} onCheckedChange={(c) => handleFormUpdate({ isQuiz: c })} />
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">Convierte este formulario en una evaluación con puntos por respuesta.</p>
-                                    {form.isQuiz && (
-                                        <Alert variant="default" className="mt-2">
-                                            <Info className="h-4 w-4" />
-                                            <AlertDescription className="text-xs">
-                                                Recuerda: la puntuación solo funciona para preguntas de <strong>Opción Única</strong>. Asigna puntos a las opciones para que el cálculo funcione.
-                                            </AlertDescription>
-                                        </Alert>
-                                    )}
-                                </div>
-                                <div className="space-y-2">
-                                     <Label>Estado del Formulario</Label>
-                                     <Select value={form.status} onValueChange={(s) => handleFormUpdate({ status: s as FormStatus })}>
-                                         <SelectTrigger><SelectValue/></SelectTrigger>
-                                         <SelectContent>
-                                             <SelectItem value="DRAFT">Borrador</SelectItem>
-                                             <SelectItem value="PUBLISHED">Publicado</SelectItem>
-                                             <SelectItem value="ARCHIVED">Archivado</SelectItem>
-                                         </SelectContent>
-                                     </Select>
-                                </div>
-                             </TabsContent>
-                             <TabsContent value="share" className="mt-4">
+                                
+                            
+                        
+                         {form.fields.length === 0 && (
+                            
+                                
+                                    
+                                        ¡Empieza a construir!
+                                        Usa los botones del panel derecho para añadir tu primera pregunta.
+                                    
+                                
+                            
+                         )}
+                
+                
+                     
+                         
+                            
+                                Añadir Campo
+                            
+                         
+                         
+                            
+                                
+                                    
+                                    
+                                        Texto Corto
+                                    
+                                    
+                                        Párrafo
+                                    
+                                    
+                                        Opción Única
+                                    
+                                    
+                                        Casillas
+                                    
+                                 
+                         
+                      
+                       
+                            
+                                Configuración
+                            
+                       
+                         
+                           
+                             
+                               Propiedades
+                               Compartir
+                             
+                             
+                                
+                                     
+                                         Habilitar Puntuación
+                                         
+                                     
+                                     Convierte este formulario en una evaluación con puntos por respuesta.
+                                     {form.isQuiz && (
+                                         
+                                             
+                                             
+                                                 Recuerda: la puntuación solo funciona para preguntas de . Asigna puntos a las opciones para que el cálculo funcione.
+                                             
+                                         
+                                     )}
+                                 
+                                 
+                                      
+                                      
+                                          
+                                              
+                                              
+                                              
+                                          
+                                          
+                                              Borrador
+                                              Publicado
+                                              Archivado
+                                          
+                                      
+                                 
+                             
+                             
+                               
                                {form.status === 'PUBLISHED' && (
-                                 <div className="space-y-2">
-                                     <Label>Enlace para Compartir</Label>
-                                     <div className="flex items-center gap-2">
-                                       <Input readOnly value={`${window.location.origin}/forms/${formId}/view`} />
-                                       <Button size="icon" variant="ghost" onClick={() => {
-                                           navigator.clipboard.writeText(`${window.location.origin}/forms/${formId}/view`);
-                                           toast({title: 'Copiado', description: 'El enlace ha sido copiado al portapapeles.'});
-                                         }}><Copy className="h-4 w-4"/></Button>
-                                     </div>
-                                 </div>
-                                )}
+                                 
+                                      
+                                          Enlace para Compartir
+                                          
+                                            
+                                            
+                                            
+                                        
+                                      
+                                 
+                               )}
                                 {form.status !== 'PUBLISHED' && (
-                                    <p className="text-sm text-center text-muted-foreground p-4 bg-muted rounded-md">Publica el formulario para obtener el enlace para compartir.</p>
+                                    
+                                        Publica el formulario para obtener el enlace para compartir.
+                                    
                                 )}
-                             </TabsContent>
-                           </Tabs>
-                         </CardContent>
-                      </Card>
-                </aside>
-            </div>
-        </div>
+                             
+                           
+                         
+                      
+                
+            
+        
     );
 }

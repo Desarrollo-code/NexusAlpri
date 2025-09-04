@@ -25,7 +25,7 @@ export function CourseCreationForm({ onSuccess }: CourseCreationFormProps) {
   const [category, setCategory] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!title || !description || !category) {
       toast({
@@ -64,56 +64,46 @@ export function CourseCreationForm({ onSuccess }: CourseCreationFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="course-title">Título del Curso</Label>
-        <Input
-          id="course-title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Ej: Fundamentos de Marketing Digital"
-          required
-          disabled={isSubmitting}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="course-description">Descripción Breve</Label>
-        <Textarea
-          id="course-description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Una descripción corta que enganche a los estudiantes."
-          required
-          disabled={isSubmitting}
-          rows={3}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="course-category">Categoría</Label>
-        <Select
-          value={category}
-          onValueChange={setCategory}
-          required
-          disabled={isSubmitting}
-        >
-          <SelectTrigger id="course-category">
-            <SelectValue placeholder="Selecciona una categoría..." />
-          </SelectTrigger>
-          <SelectContent>
-            {settings?.resourceCategories.sort().map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="pt-4">
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+    
+      
+        
+          Título del Curso
+          
+            Ej: Fundamentos de Marketing Digital
+            
+        
+      
+      
+        
+          Descripción Breve
+          
+            Una descripción corta que enganche a los estudiantes.
+            
+        
+      
+      
+        
+          Categoría
+          
+            
+              
+                Selecciona una categoría...
+                {settings?.resourceCategories.sort().map((cat) => (
+                  
+                    {cat}
+                  
+                ))}
+              
+            
+          
+        
+      
+      
+        
+          
           {isSubmitting ? 'Creando...' : 'Crear y Continuar'}
-        </Button>
-      </div>
-    </form>
+        
+      
+    
   );
 }
