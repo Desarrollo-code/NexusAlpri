@@ -1,4 +1,3 @@
-
 # Manual Técnico de NexusAlpri
 
 ## 1. Introducción
@@ -131,36 +130,18 @@ El esquema se define en `prisma/schema.prisma`. Los modelos principales son:
 *   **`LessonTemplate`, `TemplateBlock`**: Almacenan las estructuras de las lecciones reutilizables.
 *   **`Form`, `FormField`, `FormResponse`**: Modelos para el sistema de formularios y evaluaciones.
 
-### 4.2. Migraciones con Prisma
+### 4.2. Migraciones y Sincronización con Prisma
 
-Cada vez que modificas el archivo `schema.prisma`, la estructura de tu base de datos debe ser actualizada para reflejar esos cambios. Este proceso se gestiona con **Prisma Migrate**.
+Para entornos de desarrollo, se utiliza `prisma migrate` para generar y aplicar migraciones SQL. Para despliegues en producción o entornos sin estado, `prisma db push` es la herramienta recomendada para sincronizar el esquema directamente con la base de datos.
 
-Para crear y aplicar una nueva migración, ejecuta el siguiente comando en tu terminal:
+**Para crear una nueva migración en desarrollo:**
 ```bash
 npm run prisma:migrate -- --name "un_nombre_descriptivo_para_la_migracion"
 ```
+Esto crea un archivo SQL en la carpeta `prisma/migrations/`.
 
-**Ejemplo Práctico:**
-
-Supongamos que quieres añadir un campo `phoneNumber` a la tabla `User`.
-
-1.  **Modifica el esquema** en `prisma/schema.prisma`:
-    ```prisma
-    model User {
-      // ... otros campos
-      phoneNumber String?
-    }
-    ```
-2.  **Ejecuta el comando** en la terminal:
-    ```bash
-    npm run prisma:migrate -- --name "add_phone_number_to_user"
-    ```
-    **Importante:** No olvides el `--` después de `prisma:migrate`. Es necesario para pasar el argumento `--name` al script subyacente de Prisma.
-
-**¿Qué hace este comando?**
-1.  **Compara:** Analiza tu `schema.prisma` y lo compara con el estado actual de la base de datos.
-2.  **Genera un Archivo SQL:** Crea un nuevo archivo de migración dentro de la carpeta `prisma/migrations/`. Este archivo contiene las instrucciones SQL necesarias para actualizar la base de datos (ej. `CREATE TABLE`, `ALTER TABLE ... ADD COLUMN ...`, etc.). Darle un nombre descriptivo es una excelente práctica.
-3.  **Aplica la Migración:** Ejecuta el archivo SQL contra la base de datos, actualizando su estructura.
+**Para sincronizar la base de datos en producción (ej. Vercel):**
+El script `build` en `package.json` ejecuta `prisma db push` para asegurar que el esquema de la base de datos coincida con el `schema.prisma` actual.
 
 ## 5. Documentación de API Endpoints
 
