@@ -24,7 +24,7 @@ export function PublicTopBar() {
         "bg-transparent"
     )}>
       {/* Desktop Top Bar */}
-      <div className="hidden md:flex items-center justify-between px-4 lg:px-6 h-20">
+      <div className="flex items-center justify-between px-4 lg:px-6 h-20">
         <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
           <div className={cn("w-12 h-12 bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden", !settings?.logoUrl && "p-2")}>
             {settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain p-1" quality={100}/></div> : <div className="w-full h-full rounded-md bg-muted" />}
@@ -34,7 +34,7 @@ export function PublicTopBar() {
           </span>
         </Link>
         
-        <nav className="flex items-center gap-2 p-1 rounded-full bg-background/50 backdrop-blur-sm border border-border">
+        <nav className="hidden md:flex items-center gap-2 p-1 rounded-full bg-background/50 backdrop-blur-sm border border-border">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -49,7 +49,7 @@ export function PublicTopBar() {
           })}
         </nav>
         
-        <Button asChild className="flex" variant="default">
+        <Button asChild className="hidden md:flex" variant="default">
           <Link href="/sign-in">
               Acceder
           </Link>
