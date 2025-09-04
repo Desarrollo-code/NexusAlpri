@@ -8,7 +8,7 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 **Stack Tecnológico Principal:**
 *   **Framework:** Next.js 15+ (con App Router y Server Components)
 *   **Lenguaje:** TypeScript
-*   **Base de Datos:** MySQL (gestionada con Prisma ORM)
+*   **Base de Datos:** PostgreSQL (gestionada con Prisma ORM en Supabase)
 *   **Estilos:** Tailwind CSS
 *   **Componentes UI:** ShadCN
 *   **Autenticación:** JWT almacenado en cookies http-only
@@ -36,7 +36,7 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 1.  El cliente (navegador) solicita una página.
 2.  Un Server Component en Next.js puede obtener datos directamente o llamar a una API Route.
 3.  Las API Routes (`src/app/api/...`) manejan la lógica de negocio.
-4.  La lógica de la API utiliza el cliente de **Prisma** (`@/lib/prisma`) para interactuar con la base de datos MySQL.
+4.  La lógica de la API utiliza el cliente de **Prisma** (`@/lib/prisma`) para interactuar con la base de datos PostgreSQL.
 5.  Los datos se devuelven como JSON al componente o al cliente.
 
 ## 3. Lógicas de Negocio Clave
@@ -131,36 +131,34 @@ El esquema se define en `prisma/schema.prisma`. Los modelos principales son:
 *   **`LessonTemplate`, `TemplateBlock`**: Almacenan las estructuras de las lecciones reutilizables.
 *   **`Form`, `FormField`, `FormResponse`**: Modelos para el sistema de formularios y evaluaciones.
 
-### 4.2. Migraciones con Prisma
+### 4.2. Migraciones y Sincronización con Prisma
 
-Cada vez que modificas el archivo `schema.prisma`, la estructura de tu base de datos debe ser actualizada para reflejar esos cambios. Este proceso se gestiona con **Prisma Migrate**.
+Gestionar la estructura de tu base de datos es un proceso clave. Prisma ofrece dos comandos principales para esto: `migrate dev` y `db push`.
 
-Para crear y aplicar una nueva migración, ejecuta el siguiente comando en tu terminal:
-```bash
-npm run prisma:migrate -- --name "un_nombre_descriptivo_para_la_migracion"
-```
+#### **Para Desarrollo Local (`migrate dev`)**
 
-**Ejemplo Práctico:**
+Cuando estás desarrollando en tu máquina, quieres tener un historial de los cambios que haces en la base de datos. Para esto se usa `prisma migrate dev`.
 
-Supongamos que quieres añadir un campo `phoneNumber` a la tabla `User`.
-
-1.  **Modifica el esquema** en `prisma/schema.prisma`:
-    ```prisma
-    model User {
-      // ... otros campos
-      phoneNumber String?
-    }
-    ```
-2.  **Ejecuta el comando** en la terminal:
+1.  **Modifica el esquema** en `prisma/schema.prisma`.
+2.  **Ejecuta el comando** para crear un archivo de migración que represente tus cambios:
     ```bash
-    npm run prisma:migrate -- --name "add_phone_number_to_user"
+    npm run prisma:migrate -- --name "un_nombre_descriptivo"
     ```
-    **Importante:** No olvides el `--` después de `prisma:migrate`. Es necesario para pasar el argumento `--name` al script subyacente de Prisma.
+    **Importante:** No olvides el `--` después de `prisma:migrate`. Es necesario para pasar argumentos adicionales al script de Prisma.
 
-**¿Qué hace este comando?**
-1.  **Compara:** Analiza tu `schema.prisma` y lo compara con el estado actual de la base de datos.
-2.  **Genera un Archivo SQL:** Crea un nuevo archivo de migración dentro de la carpeta `prisma/migrations/`. Este archivo contiene las instrucciones SQL necesarias para actualizar la base de datos (ej. `CREATE TABLE`, `ALTER TABLE ... ADD COLUMN ...`, etc.). Darle un nombre descriptivo es una excelente práctica.
-3.  **Aplica la Migración:** Ejecuta el archivo SQL contra la base de datos, actualizando su estructura.
+Este comando genera un archivo SQL en `prisma/migrations` y lo aplica a tu base de datos de desarrollo.
+
+#### **Para Producción (`db push`)**
+
+Cuando despliegas tu aplicación en un servicio como Vercel, no necesitas un historial de migraciones, solo quieres que la base de datos refleje el estado actual de tu `schema.prisma`. Para esto, usamos `prisma db push`.
+
+El script `build` en tu archivo `package.json` ya está configurado para ejecutar este comando automáticamente:
+```json
+"scripts": {
+  "build": "prisma db push && prisma generate && next build"
+}
+```
+Esto significa que cada vez que Vercel construye tu aplicación, `prisma db push` se conecta a tu base de datos de Supabase y la actualiza para que coincida con tu esquema, creando las tablas si es la primera vez. **No necesitas hacer nada manualmente.**
 
 ## 5. Documentación de API Endpoints
 
@@ -177,21 +175,21 @@ La autenticación se realiza a través de un token JWT en una cookie http-only. 
 
 ## 6. Configuración del Entorno de Desarrollo
 
-1.  **Requisitos:** Node.js, npm, y una base de datos MySQL en ejecución.
+1.  **Requisitos:** Node.js, npm, y una instancia de PostgreSQL (puedes usar la de Supabase).
 2.  **Instalación:**
     ```bash
     npm install
     ```
 3.  **Variables de Entorno:**
-    Crea un archivo `.env` en la raíz del proyecto y define las siguientes variables:
+    Crea un archivo `.env` en la raíz del proyecto y define las siguientes variables. Usa la URL de conexión de tu proyecto de Supabase.
     ```env
-    DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE_NAME"
+    DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@[ID_PROYECTO].db.supabase.co:5432/postgres"
     JWT_SECRET="genera-una-cadena-aleatoria-muy-segura-aqui"
     RESEND_API_KEY="tu_api_key_de_resend"
     ```
-4.  **Aplicar Migraciones:**
+4.  **Aplicar Migraciones (para desarrollo):**
     ```bash
-    npm run prisma:migrate
+    npm run prisma:migrate -- --name "initial_setup"
     ```
 5.  **Ejecutar el Proyecto:**
     ```bash
@@ -207,4 +205,3 @@ La autenticación se realiza a través de un token JWT en una cookie http-only. 
 *   **Formularios:** Utilizar `react-hook-form` para la gestión de formularios complejos.
 *   **Código Asíncrono:** Utilizar `async/await` para operaciones asíncronas.
 *   **Comentarios:** Añadir comentarios JSDoc a funciones complejas y a las props de los componentes para clarificar su propósito.
-
