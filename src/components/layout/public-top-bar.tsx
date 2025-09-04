@@ -1,4 +1,3 @@
-
 // src/components/layout/public-top-bar.tsx
 'use client';
 
@@ -12,17 +11,12 @@ import { useAuth } from '@/contexts/auth-context';
 
 export function PublicTopBar() {
   const pathname = usePathname();
-  const { settings, user } = useAuth();
+  const { settings } = useAuth();
 
   const navItems = [
     { href: '/', label: 'Inicio', icon: Home },
     { href: '/about', label: 'Nosotros', icon: Info },
   ];
-  
-  // No mostrar esta barra si el usuario está autenticado.
-  if (user) {
-      return null;
-  }
 
   return (
     <header className={cn(
