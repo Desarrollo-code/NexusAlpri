@@ -40,8 +40,11 @@ La plataforma se organiza en torno a tres roles de usuario clave (Estudiante, In
 
 ## Stack Tecnológico
 
-*   **Framework:** Next.js (con App Router)
-*   **Lenguaje:** TypeScript
-*   **Estilos:** Tailwind CSS y ShadCN UI
-*   **Base de Datos:** MySQL con Prisma ORM
-*   **Autenticación:** JWT en cookies http-only con soporte para 2FA
+*   **Framework:** Next.js (con App Router) para el frontend y backend.
+*   **Despliegue:** Optimizado para **Vercel**.
+*   **Base de Datos y Backend:** **Supabase** (PostgreSQL) gestionado con Prisma ORM.
+*   **Lenguaje:** TypeScript.
+*   **Estilos:** Tailwind CSS y ShadCN UI.
+*   **Autenticación:** JWT en cookies http-only con soporte para 2FA.
+
+**Nota para el Despliegue:** Para conectar la aplicación con tu base de datos de Supabase, asegúrate de configurar la variable de entorno `DATABASE_URL` en Vercel con la cadena de conexión de tu proyecto de Supabase.
