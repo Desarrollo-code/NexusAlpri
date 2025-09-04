@@ -87,6 +87,8 @@ model User {
   quizAttempts        QuizAttempt[]
   sharedResources     Resource[]       @relation("SharedResources")
   sharedForms         Form[]           @relation("SharedForms")
+  notifications       Notification[]
+  courseProgresses    CourseProgress[]
 }
 
 model Course {
@@ -159,13 +161,13 @@ model Question {
 }
 
 model AnswerOption {
-  id              String          @id @default(uuid())
-  text            String
-  isCorrect       Boolean
-  feedback        String?
-  questionId      String
-  question        Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  AnswerAttempt   AnswerAttempt[]
+  id            String          @id @default(uuid())
+  text          String
+  isCorrect     Boolean
+  feedback      String?
+  questionId    String
+  question      Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  AnswerAttempt AnswerAttempt[]
 }
 
 model Enrollment {
@@ -243,7 +245,7 @@ model Resource {
   ispublic     Boolean    @default(true)
   tags         String?
   parentId     String?
-  parent       Resource?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  parent       Resource?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: SetNull, onUpdate: NoAction)
   children     Resource[] @relation("FolderHierarchy")
   sharedWith   User[]     @relation("SharedResources")
 }
@@ -303,7 +305,7 @@ model CalendarEvent {
 
 model Achievement {
   id          String          @id @default(uuid())
-  slug        String          @unique // Corregido: Ahora usa el tipo String
+  slug        String          @unique
   name        String
   description String
   icon        String
