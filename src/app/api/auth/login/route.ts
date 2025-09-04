@@ -50,16 +50,21 @@ function recordFailedAttempt(req: NextRequest, email: string, userId?: string) {
     }).catch(console.error); // Log DB errors without blocking the response
 }
 
-function recordSuccessfulLogin(req: NextRequest, userId: string) {
+function recordSuccessfulLogin(req: NextRequest, userId: string, is2FACompleted: boolean = false) {
     const ip = getIp(req);
-    const isInitialLogin = !req.nextUrl.searchParams.has('2fa'); // Check if it's the 2FA completion step
-    if (isInitialLogin) {
+    const details = is2FACompleted 
+        ? 'Login completado con 2FA.'
+        : 'Credenciales validadas, pendiente 2FA si está activo.';
+
+    // Solo se registra un evento de login exitoso por intento.
+    // Si no es 2FA, se registra ahora. Si es 2FA, se registrará al final.
+    if (!is2FACompleted) {
         prisma.securityLog.create({
             data: {
                 event: 'SUCCESSFUL_LOGIN',
                 ipAddress: ip,
                 userId: userId,
-                details: 'Credenciales validadas, pendiente 2FA si está activo.',
+                details: details,
                 userAgent: req.headers.get('user-agent'),
                 country: req.geo?.country,
                 city: req.geo?.city,
@@ -92,12 +97,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Credenciales inválidas' }, { status: 401 });
     }
     
-    // --- NUEVA VALIDACIÓN DE ESTADO ACTIVO ---
     if (!user.isActive) {
         recordFailedAttempt(req, email, user.id);
         return NextResponse.json({ message: 'Esta cuenta de usuario ha sido inactivada.' }, { status: 403 });
     }
-    // ----------------------------------------
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
@@ -105,25 +108,21 @@ export async function POST(req: NextRequest) {
       recordFailedAttempt(req, email, user.id);
       return NextResponse.json({ message: 'Credenciales inválidas' }, { status: 401 });
     }
-
-    // Don't clear rate limit or record full success until 2FA is passed
     
     if (user.isTwoFactorEnabled) {
-      recordSuccessfulLogin(req, user.id); // Log first step success
+      // Log successful credential validation, but don't create session yet
+      recordSuccessfulLogin(req, user.id, false); 
       return NextResponse.json({
         twoFactorRequired: true,
         userId: user.id,
       });
     }
     
-    // If no 2FA, clear rate limit, create session, and log full success
     loginAttempts.delete(ip);
-    recordSuccessfulLogin(req, user.id); // Log success
+    recordSuccessfulLogin(req, user.id, true); // Log full success as 2FA is not enabled
     
-    // Don't include password in the returned user object
     const { password: _, twoFactorSecret, ...userToReturn } = user;
     
-    // Create the session cookie
     await createSession(user.id);
 
     return NextResponse.json({ user: userToReturn });
