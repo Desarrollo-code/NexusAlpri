@@ -119,7 +119,7 @@ export default async function LandingPage() {
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button asChild size="lg" variant="primary-gradient">
+                  <Button asChild size="lg">
                     <Link
                       href="/sign-up"
                     >
@@ -258,7 +258,7 @@ export default async function LandingPage() {
                  <p className="max-w-2xl mx-auto mt-4 text-foreground md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar.
                  </p>
-                  <Button asChild size="lg" variant="primary-gradient" className="mt-8">
+                  <Button asChild size="lg" className="mt-8" variant="default">
                     <Link href="/sign-up">
                       Crear Mi Cuenta Gratis
                     </Link>

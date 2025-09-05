@@ -1,4 +1,3 @@
-
 // src/components/layout/public-top-bar.tsx
 'use client';
 
@@ -47,7 +46,7 @@ export function PublicTopBar() {
           })}
         </nav>
         
-        <Button asChild className="hidden md:flex" variant="outline">
+        <Button asChild className="hidden md:flex" variant="secondary">
           <Link href="/sign-in">
               Acceder
           </Link>
