@@ -1,4 +1,3 @@
-
 // src/components/layout/footer.tsx
 'use client';
 
