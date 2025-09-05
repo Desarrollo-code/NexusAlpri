@@ -114,51 +114,47 @@ El calendario está diseñado para ser flexible y mostrar solo la información r
         3.  El `id` del usuario está presente en la lista de `attendees` del evento.
     *   Esto asegura que el calendario de cada usuario esté limpio y sea relevante para él.
 
-## 4. Base de Datos
+## 4. Base de Datos y Migraciones con Prisma
 
-### 4.1. Esquema (Prisma)
+### 4.1. Conexión con Supabase
 
-El esquema se define en `prisma/schema.prisma`. Los modelos principales son:
-*   `User`: Almacena usuarios, roles y credenciales.
-*   `Course`, `Module`, `Lesson`: Estructura jerárquica de los cursos.
-*   `Quiz`, `Question`, `AnswerOption`: Componentes para las evaluaciones.
-*   **`CourseProgress`**: Guarda el progreso de un usuario en un curso. El campo `completedLessonIds` fue reemplazado por una relación al nuevo modelo `LessonCompletionRecord`. El campo `progressPercentage` guarda la nota final consolidada.
-*   **`LessonCompletionRecord`**: Nuevo modelo que almacena cada interacción con una lección (vista, quiz completado, etc.).
-*   `Resource`: Para la biblioteca de recursos (archivos y carpetas). Su campo `pin` almacena el hash del PIN de seguridad.
-*   `Announcement`, `CalendarEvent`, `Notification`: Para comunicación y eventos.
-*   `PlatformSettings`: Almacena la configuración global de la plataforma.
-*   **`SecurityLog`**: Registra eventos importantes de seguridad, como inicios de sesión (exitosos y fallidos), cambios de contraseña y cambios de rol.
-*   **`LessonTemplate`, `TemplateBlock`**: Almacenan las estructuras de las lecciones reutilizables.
-*   **`Form`, `FormField`, `FormResponse`**: Modelos para el sistema de formularios y evaluaciones.
+Para conectar tu aplicación con una base de datos de Supabase, el paso más importante es configurar correctamente tu variable de entorno `DATABASE_URL` en el archivo `.env`.
 
-### 4.2. Migraciones y Sincronización con Prisma
+1.  Ve a tu proyecto en Supabase.
+2.  Navega a **Configuración del Proyecto > Base de Datos**.
+3.  En la sección **Cadena de Conexión**, copia la URL del **Transaction pooler**.
+4.  Pégala en tu archivo `.env`:
 
-Gestionar la estructura de tu base de datos es un proceso clave. Prisma ofrece dos comandos principales para esto: `migrate dev` y `db push`.
-
-#### **Para Desarrollo Local (`migrate dev`)**
-
-Cuando estás desarrollando en tu máquina, quieres tener un historial de los cambios que haces en la base de datos. Para esto se usa `prisma migrate dev`.
-
-1.  **Modifica el esquema** en `prisma/schema.prisma`.
-2.  **Ejecuta el comando** para crear un archivo de migración que represente tus cambios:
-    ```bash
-    npm run prisma:migrate -- --name "un_nombre_descriptivo"
-    ```
-    **Importante:** No olvides el `--` después de `prisma:migrate`. Es necesario para pasar argumentos adicionales al script de Prisma.
-
-Este comando genera un archivo SQL en `prisma/migrations` y lo aplica a tu base de datos de desarrollo.
-
-#### **Para Producción (`db push`)**
-
-Cuando despliegas tu aplicación en un servicio como Vercel, no necesitas un historial de migraciones, solo quieres que la base de datos refleje el estado actual de tu `schema.prisma`. Para esto, usamos `prisma db push`.
-
-El script `build` en tu archivo `package.json` ya está configurado para ejecutar este comando automáticamente:
-```json
-"scripts": {
-  "build": "prisma db push && prisma generate && next build"
-}
+```env
+DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@[ID_PROYECTO].db.supabase.co:6543/postgres"
 ```
-Esto significa que cada vez que Vercel construye tu aplicación, `prisma db push` se conecta a tu base de datos de Supabase y la actualiza para que coincida con tu esquema, creando las tablas si es la primera vez. **No necesitas hacer nada manualmente.**
+
+**Importante:** Asegúrate de reemplazar `[TU_CONTRASEÑA]` con la contraseña real de tu base de datos. Los comandos de migración de Supabase (ej. `supabase db ...`) solo afectan la infraestructura de Supabase, no el esquema definido en Prisma. Para eso, usamos los comandos de Prisma.
+
+### 4.2. Gestión del Esquema de la Base de Datos
+
+El esquema se define en `prisma/schema.prisma`. Para aplicar cambios a tu base de datos, utiliza los siguientes comandos:
+
+*   **Para Desarrollo (`migrate dev`):**
+    Cuando modificas tu `schema.prisma` localmente, crea un nuevo archivo de migración y aplícalo a tu base de datos de desarrollo.
+    ```bash
+    npm run prisma:migrate
+    ```
+    Prisma te pedirá un nombre para la migración (ej: "add-user-phone-number").
+
+*   **Para Producción (`db push`):**
+    Cuando despliegas tu aplicación, no necesitas un historial de migraciones, solo quieres que la base de datos remota refleje el estado actual de tu `schema.prisma`. El script `build` en tu `package.json` ya está configurado para ejecutar este comando automáticamente. **No necesitas hacer nada manualmente al desplegar en Vercel.**
+    ```json
+    "scripts": {
+      "build": "prisma db push && prisma generate && next build"
+    }
+    ```
+
+*   **Para poblar la base de datos (seeding):**
+    Después de configurar una nueva base de datos, puedes llenarla con datos de prueba iniciales (usuario admin, cursos, etc.) con el siguiente comando:
+    ```bash
+    npm run prisma:seed
+    ```
 
 ## 5. Documentación de API Endpoints
 
@@ -181,15 +177,15 @@ La autenticación se realiza a través de un token JWT en una cookie http-only. 
     npm install
     ```
 3.  **Variables de Entorno:**
-    Crea un archivo `.env` en la raíz del proyecto y define las siguientes variables. Usa la URL de conexión de tu proyecto de Supabase.
+    Crea un archivo `.env` en la raíz del proyecto y define las siguientes variables.
     ```env
-    DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@[ID_PROYECTO].db.supabase.co:5432/postgres"
+    DATABASE_URL="tu_cadena_de_conexion_de_supabase_aqui"
     JWT_SECRET="genera-una-cadena-aleatoria-muy-segura-aqui"
     RESEND_API_KEY="tu_api_key_de_resend"
     ```
 4.  **Aplicar Migraciones (para desarrollo):**
     ```bash
-    npm run prisma:migrate -- --name "initial_setup"
+    npm run prisma:migrate
     ```
 5.  **Ejecutar el Proyecto:**
     ```bash
