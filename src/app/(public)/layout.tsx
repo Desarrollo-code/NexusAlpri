@@ -29,7 +29,7 @@ export default async function PublicLayout({
   const watermarkUrl = await getWatermarkUrl();
 
   return (
-    <ThemeProvider>
+    <ThemeProvider defaultTheme="light" forcedTheme="light">
         <div className="relative flex flex-col min-h-screen isolate bg-background text-foreground">
             <DecorativeHeaderBackground />
             <PublicTopBar />

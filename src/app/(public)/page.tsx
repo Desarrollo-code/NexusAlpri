@@ -150,7 +150,7 @@ export default async function LandingPage() {
           </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 bg-background/60 backdrop-blur-lg">
+        <section className="w-full py-12 md:py-24 bg-card/50">
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -169,7 +169,7 @@ export default async function LandingPage() {
                         key={index}
                         className={cn(
                           "relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden",
-                          "bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:-translate-y-2"
+                          "bg-card shadow-lg hover:shadow-xl hover:-translate-y-2 border"
                         )}
                       >
                        <div 
@@ -219,7 +219,7 @@ export default async function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 bg-background/60 backdrop-blur-lg">
+        <section className="w-full py-12 md:py-24 bg-card/50">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -231,7 +231,7 @@ export default async function LandingPage() {
                 </div>
                  <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 py-12">
                     {testimonials.map((testimonial, index) => (
-                        <Card key={index} className="bg-card/80 backdrop-blur-sm card-border-animated">
+                        <Card key={index} className="bg-card card-border-animated">
                            <CardContent className="pt-6">
                              <blockquote className="text-lg font-semibold leading-snug text-foreground">
                                “{testimonial.testimony}”
@@ -252,7 +252,7 @@ export default async function LandingPage() {
             </div>
         </section>
         
-         <section className="w-full py-20 md:py-32 text-center bg-background/60 backdrop-blur-lg">
+         <section className="w-full py-20 md:py-32 text-center">
             <div className="container px-4 md:px-6">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">¿Listo para Empezar?</h2>
                  <p className="max-w-2xl mx-auto mt-4 text-muted-foreground md:text-xl">
