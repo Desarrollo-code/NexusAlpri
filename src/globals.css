@@ -5,37 +5,27 @@
 
 @layer base {
   :root {
-      /* Paleta cálida y vintage para el tema claro */
-      --background: 35 40% 96%; /* Beige cálido */
-      --foreground: 25 30% 20%; /* Marrón oscuro */
-  
-      --card: 35 40% 98%;
-      --card-foreground: 25 30% 20%;
-  
-      --popover: 35 40% 98%;
-      --popover-foreground: 25 30% 20%;
-  
-      --primary: 28 65% 50%; /* Naranja quemado */
-      --primary-foreground: 40 100% 98%;
-  
-      --secondary: 85 25% 35%; /* Verde oliva apagado */
-      --secondary-foreground: 85 40% 95%;
-  
-      --muted: 35 25% 85%; /* Beige suave */
-      --muted-foreground: 25 15% 35%;
-  
-      --accent: 350 35% 40%; /* Vino burdeos */
-      --accent-foreground: 350 50% 95%;
-  
-      --destructive: 0 65% 45%; /* Rojo apagado */
-      --destructive-foreground: 0 0% 100%;
-  
-      --border: 35 20% 80%;
-      --input: 35 25% 80%;
-      --ring: 28 65% 50%;
-  
-      --radius: 0.5rem;
-  
+    /* Estos son valores de fallback, los reales se inyectan dinámicamente */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 262 84% 58%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 5% 65%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 342 91% 65%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 262 84% 58%;
+    --radius: 0.75rem;
     
     /* Colores para gráficos y eventos como fallback */
     --chart-1: 220 80% 60%; 
@@ -60,34 +50,25 @@
  
   .dark {
      /* Fallbacks para tema oscuro */
-     /* Paleta oscura: mantener neutra para lectura */
-     --background: 224 71% 12%;
-     --foreground: 0 0% 100%;
- 
-     --card: 224 71% 15%;
-     --card-foreground: 0 0% 100%;
- 
-     --popover: 224 71% 12%;
-     --popover-foreground: 0 0% 100%;
- 
-     --primary: 28 70% 60%;
-     --primary-foreground: 224 71% 12%;
- 
-     --secondary: 85 20% 30%;
-     --secondary-foreground: 0 0% 100%;
- 
-     --muted: 224 71% 20%;
-     --muted-foreground: 220 15% 65%;
- 
-     --accent: 350 40% 50%;
-     --accent-foreground: 224 71% 12%;
- 
-     --destructive: 0 63% 31%;
-     --destructive-foreground: 0 0% 100%;
- 
-     --border: 224 71% 20%;
-     --input: 224 71% 18%;
-     --ring: 28 70% 60%;
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+    --card: 240 5% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 4%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 262 84% 68%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4% 30%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 4% 15%;
+    --muted-foreground: 240 4% 65%;
+    --accent: 342 91% 75%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 4% 15%;
+    --input: 240 4% 15%;
+    --ring: 262 84% 68%;
   }
 }
  
