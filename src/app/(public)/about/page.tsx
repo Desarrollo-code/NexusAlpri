@@ -47,7 +47,7 @@ export default async function AboutPage() {
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline text-foreground">
                   Potenciando el Conocimiento, Impulsando el Crecimiento
                 </h1>
-                <p className="max-w-[600px] text-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                <p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                   NexusAlpri nació de la necesidad de una plataforma de e-learning corporativa que fuera a la vez potente y fácil de usar. Creemos que la formación continua es el motor del éxito organizacional y nuestra misión es proporcionar las herramientas para hacerlo posible.
                 </p>
               </div>
@@ -73,7 +73,7 @@ export default async function AboutPage() {
                   Tecnología
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">Construido con Herramientas Modernas</h2>
-                <p className="max-w-[900px] text-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                   Utilizamos un stack tecnológico de vanguardia para asegurar una experiencia de usuario rápida, segura y escalable.
                 </p>
               </div>

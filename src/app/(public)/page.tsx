@@ -114,7 +114,7 @@ export default async function LandingPage() {
                     <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Transforma tu Equipo.</span>
                   </h1>
-                  <p className="max-w-[600px] text-foreground md:text-xl">
+                  <p className="max-w-[600px] text-muted-foreground md:text-xl">
                     NexusAlpri es la plataforma de e-learning corporativa que se adapta a ti. Intuitiva, potente y segura.
                   </p>
                 </div>
@@ -158,7 +158,7 @@ export default async function LandingPage() {
                             Características Principales
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">Una Plataforma Todo en Uno</h2>
-                        <p className="max-w-[900px] text-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                        <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                             Desde la creación de contenido hasta el análisis de resultados, todo lo que necesitas para potenciar el talento de tu equipo está aquí.
                         </p>
                     </div>
@@ -210,7 +210,7 @@ export default async function LandingPage() {
                             <div className="flex-shrink-0">{benefit.icon}</div>
                             <div>
                                 <h3 className="text-xl font-bold text-foreground">{benefit.title}</h3>
-                                <p className="text-foreground">{benefit.description}</p>
+                                <p className="text-muted-foreground">{benefit.description}</p>
                             </div>
                           </div>
                        ))}
@@ -255,7 +255,7 @@ export default async function LandingPage() {
          <section className="w-full py-20 md:py-32 text-center bg-background/60 backdrop-blur-lg">
             <div className="container px-4 md:px-6">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">¿Listo para Empezar?</h2>
-                 <p className="max-w-2xl mx-auto mt-4 text-foreground md:text-xl">
+                 <p className="max-w-2xl mx-auto mt-4 text-muted-foreground md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar.
                  </p>
                   <Button asChild size="lg" className="mt-8" variant="default">

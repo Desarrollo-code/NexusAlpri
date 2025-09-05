@@ -6,6 +6,7 @@ import { DecorativeHeaderBackground } from '@/components/layout/decorative-heade
 import React from 'react';
 import prisma from '@/lib/prisma';
 import Image from 'next/image';
+import { ThemeProvider } from '@/components/theme-provider';
 
 // Función para obtener la URL de la marca de agua, con manejo de errores.
 async function getWatermarkUrl() {
@@ -28,7 +29,7 @@ export default async function PublicLayout({
   const watermarkUrl = await getWatermarkUrl();
 
   return (
-    <>
+    <ThemeProvider>
         <div className="relative flex flex-col min-h-screen isolate bg-background text-foreground">
             <DecorativeHeaderBackground />
             <PublicTopBar />
@@ -57,6 +58,6 @@ export default async function PublicLayout({
             </div>
         )}
         </div>
-    </>
+    </ThemeProvider>
   );
 }
