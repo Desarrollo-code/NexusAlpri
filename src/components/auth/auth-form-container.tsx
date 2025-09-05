@@ -191,33 +191,27 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
     );
 
     return (
-        <div className="w-full max-w-md mx-auto">
-            <div className="bg-card/50 backdrop-blur-lg border border-primary/10 shadow-2xl rounded-2xl p-8 space-y-6">
-                <div className="text-center space-y-3">
-                    <div className="inline-block p-3 bg-primary/10 border border-primary/20 rounded-xl">
-                        <div className="w-12 h-12">
-                             {settings?.logoUrl ? <Image src={settings.logoUrl} alt="Logo" width={48} height={48} className="object-contain" /> : <div className="w-full h-full bg-muted rounded-md"/>}
-                        </div>
-                    </div>
-                    <h1 className="text-3xl font-bold font-headline text-foreground">
-                        {view === 'signIn' ? 'Bienvenido de Nuevo' : 'Únete a la Plataforma'}
-                    </h1>
-                    <p className="text-muted-foreground">
-                        {view === 'signIn' ? 'Ingresa tus credenciales para continuar.' : 'Completa tus datos para empezar a aprender.'}
-                    </p>
-                </div>
-
-                 {error && (
-                    <Alert variant="destructive" className="mb-4">
-                         <AlertTitle>Error de Autenticación</AlertTitle>
-                        <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                )}
-                <AnimatePresence mode="wait">
-                    {view === 'signIn' ? SignInForm : SignUpForm}
-                </AnimatePresence>
+        <div className="w-full max-w-sm mx-auto">
+            <div className="text-center mb-6">
+                <h1 className="text-3xl font-bold font-headline text-foreground">
+                    {view === 'signIn' ? 'Bienvenido de Nuevo' : 'Únete a la Plataforma'}
+                </h1>
+                <p className="text-muted-foreground">
+                    {view === 'signIn' ? 'Ingresa tus credenciales para continuar.' : 'Completa tus datos para empezar a aprender.'}
+                </p>
             </div>
             
+            {error && (
+                <Alert variant="destructive" className="mb-4">
+                    <AlertTitle>Error de Autenticación</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
+            )}
+
+            <AnimatePresence mode="wait">
+                {view === 'signIn' ? SignInForm : SignUpForm}
+            </AnimatePresence>
+
             <div className="text-center text-sm mt-6">
                 {view === 'signIn' ? (
                     <>

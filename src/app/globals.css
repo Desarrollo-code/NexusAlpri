@@ -12,19 +12,19 @@
     --card-foreground: 220 15% 15%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 15%;
-    --primary: 210 90% 55%;
+    --primary: 240 5.9% 10%;
     --primary-foreground: 0 0% 100%;
     --secondary: 220 10% 90%;
     --secondary-foreground: 220 10% 10%;
     --muted: 220 10% 95%;
     --muted-foreground: 220 5% 45%;
-    --accent: 25 90% 60%;
+    --accent: 340 82.2% 56.9%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 80% 60%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 10% 88%;
     --input: 220 10% 92%;
-    --ring: 210 90% 55%;
+    --ring: 240 5.9% 10%;
     --radius: 0.75rem;
     
     /* Colores para gráficos y eventos */
@@ -46,6 +46,9 @@
     --sidebar-accent: hsl(var(--primary));
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
     --sidebar-border: 220 40% 10%;
+    
+    --primary-rgb: 99 102 241;
+    --accent-rgb: 236 72 153;
   }
  
   .dark {
