@@ -1,4 +1,3 @@
-
 // src/components/auth/auth-form-container.tsx
 'use client';
 
@@ -127,7 +126,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
             <form onSubmit={handleSignInSubmit} className="space-y-4">
                  <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} className="pl-10"/>
+                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-background/50"/>
                 </div>
                  <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -138,7 +137,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                         value={password} 
                         onChange={e => setPassword(e.target.value)} 
                         disabled={isLoading}
-                        className="pl-10"
+                        className="pl-10 h-12 bg-background/50"
                     />
                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
@@ -156,11 +155,11 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
             <form onSubmit={handleSignUpSubmit} className="space-y-4">
                 <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input type="text" placeholder="Nombre" required value={name} onChange={e => setName(e.target.value)} disabled={isLoading} className="pl-10" />
+                    <Input type="text" placeholder="Nombre" required value={name} onChange={e => setName(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-background/50" />
                 </div>
                 <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} className="pl-10" />
+                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-background/50" />
                 </div>
                  <div className="space-y-2">
                     <div className="relative">
@@ -174,7 +173,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                             disabled={isLoading} 
                             onFocus={() => setIsPasswordFocused(true)}
                             onBlur={() => !password && setIsPasswordFocused(false)}
-                            className="pl-10"
+                            className="pl-10 h-12 bg-background/50"
                         />
                          <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPassword(!showPassword)}>
                             {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
@@ -192,57 +191,49 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
     );
 
     return (
-        <div className="bg-card/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl mx-auto md:grid md:grid-cols-2">
-            <div className="hidden md:flex p-8 lg:p-12 relative text-white btn-primary-gradient flex-col justify-between">
-                <div className="relative z-10">
-                    <h2 className="text-3xl font-bold font-headline">{settings?.platformName || 'NexusAlpri'}</h2>
-                    <p className="mt-2 text-white/80 max-w-sm">Tu portal de conocimiento corporativo. Aprende, crece y avanza con nosotros.</p>
-                </div>
-                 {settings?.authImageUrl ? 
-                    <Image src={settings.authImageUrl} alt="Decorative background" fill className="object-cover opacity-20" data-ai-hint="abstract background" quality={100} />
-                    : <div className="absolute -bottom-1/4 -right-1/4 w-3/4 h-3/4 bg-white/10 rounded-full" />
-                 }
-            </div>
-
-            <div className="w-full p-6 sm:p-10 flex flex-col justify-center">
-                 <div className="text-center mb-6">
+        <div className="w-full max-w-md mx-auto">
+            <div className="bg-card/50 backdrop-blur-lg border border-primary/10 shadow-2xl rounded-2xl p-8 space-y-6">
+                <div className="text-center space-y-3">
+                    <div className="inline-block p-3 bg-primary/10 border border-primary/20 rounded-xl">
+                        <div className="w-12 h-12">
+                             {settings?.logoUrl ? <Image src={settings.logoUrl} alt="Logo" width={48} height={48} className="object-contain" /> : <div className="w-full h-full bg-muted rounded-md"/>}
+                        </div>
+                    </div>
                     <h1 className="text-3xl font-bold font-headline text-foreground">
-                        {view === 'signIn' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+                        {view === 'signIn' ? 'Bienvenido de Nuevo' : 'Únete a la Plataforma'}
                     </h1>
                     <p className="text-muted-foreground">
-                        {view === 'signIn' ? 'Bienvenido de nuevo' : 'Comienza tu viaje de aprendizaje'}
+                        {view === 'signIn' ? 'Ingresa tus credenciales para continuar.' : 'Completa tus datos para empezar a aprender.'}
                     </p>
                 </div>
 
                  {error && (
                     <Alert variant="destructive" className="mb-4">
-                         <AlertTitle>Error</AlertTitle>
+                         <AlertTitle>Error de Autenticación</AlertTitle>
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
                 )}
                 <AnimatePresence mode="wait">
                     {view === 'signIn' ? SignInForm : SignUpForm}
                 </AnimatePresence>
-                
-                 <Separator className="my-6" />
-
-                <div className="text-center text-sm">
-                    {view === 'signIn' ? (
-                        <>
-                           ¿No tienes una cuenta?{' '}
-                            <Button variant="link" className="p-0 h-auto" onClick={() => { setView('signUp'); resetFields(); }}>
-                                Registrarse
-                            </Button>
-                        </>
-                    ) : (
-                         <>
-                           ¿Ya tienes una cuenta?{' '}
-                            <Button variant="link" className="p-0 h-auto" onClick={() => { setView('signIn'); resetFields(); }}>
-                                Iniciar Sesión
-                            </Button>
-                        </>
-                    )}
-                </div>
+            </div>
+            
+            <div className="text-center text-sm mt-6">
+                {view === 'signIn' ? (
+                    <>
+                       <span className="text-muted-foreground">¿No tienes una cuenta?</span>{' '}
+                        <Button variant="link" className="p-0 h-auto text-primary" onClick={() => { setView('signUp'); resetFields(); }}>
+                            Regístrate
+                        </Button>
+                    </>
+                ) : (
+                     <>
+                       <span className="text-muted-foreground">¿Ya tienes una cuenta?</span>{' '}
+                        <Button variant="link" className="p-0 h-auto text-primary" onClick={() => { setView('signIn'); resetFields(); }}>
+                            Inicia Sesión
+                        </Button>
+                    </>
+                )}
             </div>
         </div>
     );

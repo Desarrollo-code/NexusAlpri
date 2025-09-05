@@ -1,24 +1,13 @@
 // src/app/(auth)/layout.tsx
-import { PublicTopBar } from '@/components/layout/public-top-bar';
 import React from 'react';
-import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
-import { BottomNav } from '@/components/layout/bottom-nav';
 import { ThemeProvider } from '@/components/theme-provider';
-import prisma from '@/lib/prisma';
-import Image from 'next/image';
-import { Footer } from '@/components/layout/footer';
+import { cn } from '@/lib/utils';
+import { getFontVariables } from '@/lib/fonts';
 
 // Función para obtener la URL de la marca de agua, con manejo de errores.
 async function getWatermarkUrl() {
-    try {
-        const settings = await prisma.platformSettings.findFirst({
-            select: { watermarkUrl: true }
-        });
-        return settings?.watermarkUrl;
-    } catch (error) {
-        console.error("Error fetching watermark, returning null:", error);
-        return null; // Devuelve null si la base de datos no está disponible.
-    }
+    // Simulamos la no disponibilidad de la DB en este layout para el diseño
+    return null;
 }
 
 export default async function AuthLayout({
@@ -26,33 +15,19 @@ export default async function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const watermarkUrl = await getWatermarkUrl();
+  const fontVariables = await getFontVariables();
 
   return (
-    <ThemeProvider defaultTheme="light" forcedTheme="light">
-        <div className="relative flex flex-col min-h-screen isolate bg-background text-foreground">
-            <DecorativeHeaderBackground />
-            <PublicTopBar />
-            <main className="flex-1 flex flex-col items-center justify-center p-4 pt-20 md:pt-4 pb-20 md:pb-4">
+    <ThemeProvider defaultTheme="dark" forcedTheme="dark">
+        <div className={cn("relative flex flex-col min-h-screen isolate bg-background text-foreground antialiased", fontVariables)}>
+             {/* Fondo Decorativo Mejorado */}
+             <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
+                <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/20 opacity-20 blur-[100px]"></div>
+            </div>
+            
+            <main className="flex-1 flex flex-col items-center justify-center p-4">
                 {children}
             </main>
-            <Footer />
-            <BottomNav />
-            {watermarkUrl && (
-            <div className="fixed right-4 z-50 pointer-events-none bottom-20 md:bottom-4">
-                <Image
-                    src={watermarkUrl}
-                    alt="Alprigrama Watermark"
-                    width={60}
-                    height={60}
-                    className="opacity-50"
-                    data-ai-hint="logo company"
-                    priority
-                    style={{ width: 'auto', height: 'auto' }}
-                    quality={100}
-                />
-            </div>
-        )}
         </div>
     </ThemeProvider>
   );
