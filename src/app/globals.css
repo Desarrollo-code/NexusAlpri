@@ -5,22 +5,22 @@
 
 @layer base {
   :root {
-    /* Nueva paleta de colores vibrante y diversa */
-    --background: 220 20% 99%; /* Blanco ligeramente azulado */
-    --foreground: 220 15% 15%; /* Casi negro */
+    /* Paleta de colores limpia con fondo blanco puro */
+    --background: 0 0% 100%; /* Blanco puro */
+    --foreground: 220 15% 15%;
     --card: 0 0% 100%;
     --card-foreground: 220 15% 15%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 15%;
-    --primary: 210 90% 55%; /* Azul vibrante */
+    --primary: 210 90% 55%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 90%; /* Gris claro neutro */
+    --secondary: 220 10% 90%;
     --secondary-foreground: 220 10% 10%;
     --muted: 220 10% 95%;
     --muted-foreground: 220 5% 45%;
-    --accent: 25 90% 60%; /* Naranja cálido */
+    --accent: 25 90% 60%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 80% 60%; /* Rojo claro */
+    --destructive: 0 80% 60%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 10% 88%;
     --input: 220 10% 92%;
@@ -28,11 +28,11 @@
     --radius: 0.75rem;
     
     /* Colores para gráficos y eventos */
-    --chart-1: hsl(var(--primary)); /* Azul */
-    --chart-2: hsl(var(--accent));  /* Naranja */
-    --chart-3: 160 70% 45%; /* Verde azulado (Teal) */
-    --chart-4: 50 95% 55%;  /* Amarillo */
-    --chart-5: 340 85% 65%; /* Rosa/Magenta */
+    --chart-1: hsl(var(--primary));
+    --chart-2: hsl(var(--accent));
+    --chart-3: 160 70% 45%;
+    --chart-4: 50 95% 55%;
+    --chart-5: 340 85% 65%;
     
     --event-blue: hsl(var(--chart-1));
     --event-green: hsl(var(--chart-3));
@@ -56,13 +56,13 @@
     --card-foreground: 220 10% 95%;
     --popover: 220, 15%, 8%;
     --popover-foreground: 220, 10%, 95%;
-    --primary: 210 90% 65%; /* Azul más brillante */
+    --primary: 210 90% 65%;
     --primary-foreground: 0 0% 100%;
     --secondary: 220 10% 20%;
     --secondary-foreground: 0 0% 98%;
     --muted: 220 10% 16%;
     --muted-foreground: 220 5% 65%;
-    --accent: 25 90% 65%; /* Naranja más brillante */
+    --accent: 25 90% 65%;
     --accent-foreground: 0 0% 10%;
     --destructive: 0 70% 60%;
     --destructive-foreground: 0 0% 98%;
