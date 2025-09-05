@@ -1,33 +1,50 @@
-
 // src/app/(public)/page.tsx
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Zap, Users, BarChart, BookOpen, UserCheck, ShieldCheck, Heart } from 'lucide-react';
+import { CheckCircle, Zap, Users, BarChart, BookOpen, UserCheck, ShieldCheck, Heart, Layers3, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import prisma from '@/lib/prisma';
 import type { PlatformSettings } from '@/types';
 
 const features = [
   {
-    icon: <Zap className="h-8 w-8 text-primary" />,
-    title: 'Aprendizaje Interactivo',
-    description: 'Crea cursos con videos, textos y quizzes dinámicos para mantener a tus equipos enganchados.',
+    icon: <Layers3 className="h-8 w-8 text-primary" />,
+    title: 'Gestión de Contenido Intuitiva',
+    description: 'Crea y organiza cursos con un editor de arrastrar y soltar, sin complicaciones técnicas.',
     gradient: 'from-primary/70 to-accent/70',
   },
   {
-    icon: <BarChart className="h-8 w-8 text-accent" />,
-    title: 'Seguimiento Automatizado',
-    description: 'El progreso se registra automáticamente, permitiéndote enfocarte en el contenido y no en el papeleo.',
+    icon: <BarChart3 className="h-8 w-8 text-primary" />,
+    title: 'Seguimiento y Analíticas',
+    description: 'Mide el progreso y el rendimiento con dashboards detallados para tomar decisiones informadas.',
     gradient: 'from-accent/70 to-primary/70',
   },
   {
-    icon: <ShieldCheck className="h-8 w-8 text-primary" />,
-    title: 'Seguridad y Roles',
-    description: 'Gestiona permisos detallados por rol (Estudiante, Instructor, Admin) y protege tu contenido.',
+    icon: <Users className="h-8 w-8 text-primary" />,
+    title: 'Roles y Permisos Granulares',
+    description: 'Un sistema robusto (Admin, Instructor, Estudiante) para administrar el acceso de forma segura.',
     gradient: 'from-primary/70 via-accent/70 to-primary/70',
   },
+  {
+    icon: <ShieldCheck className="h-8 w-8 text-primary" />,
+    title: 'Seguridad Corporativa',
+    description: 'Políticas de seguridad, auditorías y control total sobre los datos de tu organización.',
+    gradient: 'from-primary/70 to-accent/70',
+  },
+   {
+    icon: <Zap className="h-8 w-8 text-primary" />,
+    title: 'Experiencia de Usuario Moderna',
+    description: 'Una interfaz rápida, intuitiva y optimizada para cualquier dispositivo, centrada en el aprendizaje.',
+    gradient: 'from-accent/70 to-primary/70',
+  },
+  {
+    icon: <Heart className="h-8 w-8 text-primary" />,
+    title: 'Gamificación Integrada',
+    description: 'Involucra a tus equipos con puntos de experiencia y logros para aumentar la motivación.',
+    gradient: 'from-primary/70 via-accent/70 to-primary/70',
+  }
 ];
 
 const benefits = [
@@ -142,16 +159,16 @@ export default async function LandingPage() {
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">Una Plataforma Todo en Uno</h2>
                         <p className="max-w-[900px] text-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                            Desde la creación de contenido hasta el análisis de resultados, todo lo que necesitas está aquí.
+                            Desde la creación de contenido hasta el análisis de resultados, todo lo que necesitas para potenciar el talento de tu equipo está aquí.
                         </p>
                     </div>
                 </div>
-                <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3 lg:gap-8">
+                <div className="mx-auto grid max-w-5xl items-start gap-6 py-12 lg:grid-cols-3 lg:gap-8">
                    {features.map((feature, index) => (
                      <div 
                         key={index}
                         className={cn(
-                          "relative rounded-2xl p-8 text-center h-full transition-all duration-300 overflow-hidden",
+                          "relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden",
                           "bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:-translate-y-2"
                         )}
                       >
@@ -161,12 +178,12 @@ export default async function LandingPage() {
                             feature.gradient
                         )}
                        />
-                       <div className="relative z-10 flex flex-col items-center justify-center h-full">
-                         <div className="mb-4">
+                       <div className="relative z-10 flex flex-col items-start justify-start h-full">
+                         <div className="mb-4 bg-primary/10 p-3 rounded-lg">
                             {feature.icon}
                          </div>
-                         <h3 className="text-2xl font-bold font-headline mb-2 text-foreground">{feature.title}</h3>
-                         <p className="text-muted-foreground">{feature.description}</p>
+                         <h3 className="text-xl font-bold font-headline mb-2 text-foreground">{feature.title}</h3>
+                         <p className="text-sm text-muted-foreground">{feature.description}</p>
                        </div>
                      </div>
                    ))}
