@@ -142,9 +142,9 @@ Cuando estás desarrollando en tu máquina, quieres tener un historial de los ca
 1.  **Modifica el esquema** en `prisma/schema.prisma`.
 2.  **Ejecuta el comando** para crear un archivo de migración que represente tus cambios:
     ```bash
-    npm run prisma:migrate -- --name "un_nombre_descriptivo"
+    npm run prisma:migrate
     ```
-    **Importante:** No olvides el `--` después de `prisma:migrate`. Es necesario para pasar argumentos adicionales al script de Prisma.
+    **Nota:** Es posible que Prisma te pida un nombre para la migración (ej: "add-user-phone-number").
 
 Este comando genera un archivo SQL en `prisma/migrations` y lo aplica a tu base de datos de desarrollo.
 
@@ -189,7 +189,7 @@ La autenticación se realiza a través de un token JWT en una cookie http-only. 
     ```
 4.  **Aplicar Migraciones (para desarrollo):**
     ```bash
-    npm run prisma:migrate -- --name "initial_setup"
+    npm run prisma:migrate
     ```
 5.  **Ejecutar el Proyecto:**
     ```bash
