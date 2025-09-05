@@ -5,26 +5,26 @@
 
 @layer base {
   :root {
-    /* Nueva paleta pastel para el tema claro */
-    --background: 220 60% 99%; /* Un blanco muy claro, casi etéreo */
+    /* Nueva paleta vibrante y moderna para el tema claro */
+    --background: 0 0% 100%; /* Blanco puro */
     --foreground: 222 47% 11%; /* Negro azulado suave para texto */
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 63%; /* Azul pastel suave */
+    --primary: 240 50% 65%; /* Azul/violeta intenso */
     --primary-foreground: 0 0% 100%;
     --secondary: 220 15% 96%;
     --secondary-foreground: 222 47% 11%;
     --muted: 220 15% 96%;
     --muted-foreground: 220 9% 46%;
-    --accent: 340 82% 70%; /* Rosa pastel como acento */
-    --accent-foreground: 222 47% 11%;
+    --accent: 330 85% 65%; /* Rosa cálido y vibrante */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 221 83% 63%;
+    --ring: 240 50% 65%;
     --radius: 0.5rem;
   }
  
