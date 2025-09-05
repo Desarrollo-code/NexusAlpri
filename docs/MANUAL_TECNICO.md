@@ -1,3 +1,4 @@
+
 # Manual Técnico de NexusAlpri
 
 ## 1. Introducción
@@ -7,7 +8,7 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 **Stack Tecnológico Principal:**
 *   **Framework:** Next.js 15+ (con App Router y Server Components)
 *   **Lenguaje:** TypeScript
-*   **Base de Datos:** PostgreSQL (gestionada con Prisma ORM en Supabase)
+*   **Base de Datos y Backend:** **Supabase** (que proporciona una base de datos PostgreSQL, autenticación y almacenamiento). La interacción con la base de datos se gestiona a través del esquema definido en `prisma/schema.prisma`.
 *   **Estilos:** Tailwind CSS
 *   **Componentes UI:** ShadCN
 *   **Autenticación:** JWT almacenado en cookies http-only

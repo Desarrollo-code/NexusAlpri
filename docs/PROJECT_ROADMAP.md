@@ -20,7 +20,7 @@ Este documento describe el ciclo de vida y la ruta de desarrollo seguida para cr
 
 Antes de escribir una sola línea de código, se crearon los documentos fundamentales que servirían como guía durante todo el proceso. Este enfoque "document-driven" aseguró que el desarrollo estuviera siempre alineado con los objetivos.
 
-1.  **Manual Técnico (`MANUAL_TECNICO.md`):** Se definió el stack tecnológico (Next.js, Prisma, Tailwind), la arquitectura de carpetas, el flujo de datos y el esquema de la base de datos.
+1.  **Manual Técnico (`MANUAL_TECNICO.md`):** Se definió el stack tecnológico (Next.js, Supabase, Tailwind), la arquitectura de carpetas, el flujo de datos y el esquema de la base de datos (`schema.prisma`).
 2.  **Manual de Usuario (`MANUAL_USUARIO.md`):** Se redactó una guía detallada desde la perspectiva del estudiante, explicando cómo interactuar con la plataforma.
 3.  **Manual de Administración (`MANUAL_ADMINISTRACION.md`):** Se documentaron todos los procesos que un administrador realizaría, desde la gestión de usuarios hasta la configuración del sistema.
 4.  **Matriz de Trazabilidad (`MATRIZ_TRAZABILIDAD.md`):** Se creó una tabla exhaustiva que conectaba cada requisito funcional con un rol de usuario y un resultado esperado. Este documento se convirtió en el plan de pruebas funcionales.
@@ -31,8 +31,8 @@ Antes de escribir una sola línea de código, se crearon los documentos fundamen
 
 1.  **Inicialización del Proyecto:** Se creó un nuevo proyecto Next.js utilizando el App Router y TypeScript.
 2.  **Configuración de Estilos:** Se instaló y configuró Tailwind CSS y ShadCN UI, estableciendo la base para el sistema de diseño.
-3.  **Modelado de la Base de Datos:** Se escribió el `schema.prisma` basado en los requisitos definidos en los manuales, incluyendo todas las tablas (User, Course, Module, Lesson, Resource, etc.) y sus relaciones.
-4.  **Migración Inicial:** Se ejecutó `prisma migrate` para crear la estructura de la base de datos en MySQL.
+3.  **Modelado de la Base de Datos:** Se escribió el `schema.prisma` basado en los requisitos definidos en los manuales, incluyendo todas las tablas (User, Course, Module, Lesson, Resource, etc.) y sus relaciones, para ser usado con Supabase.
+4.  **Configuración de Despliegue:** Se configuró Vercel para conectarse a Supabase y se ajustó el script de `build` para sincronizar automáticamente el esquema de la base de datos en cada despliegue.
 5.  **Estructura de Carpetas:** Se organizó el proyecto siguiendo la arquitectura definida en el manual técnico, separando las rutas públicas, las de autenticación y las protegidas de la aplicación.
 
 ---
@@ -76,4 +76,3 @@ Con el backend funcional, el enfoque se trasladó a la experiencia del usuario.
 2.  **Iteración y Feedback:** Se realizaron ajustes finos a la interfaz y a la experiencia de usuario basados en la usabilidad y la coherencia visual (ej. mejora de colores en gráficos, ajuste de la tarjeta de perfil).
 3.  **Optimización:** Se revisó el código para mejorar el rendimiento, especialmente en la carga de datos y las interacciones del usuario.
 4.  **Preparación para Despliegue:** Se configuró el proyecto para un entorno de producción, asegurando que las variables de entorno y los scripts de construcción fueran correctos.
-
