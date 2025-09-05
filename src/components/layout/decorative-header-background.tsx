@@ -1,3 +1,4 @@
+
 // src/components/layout/decorative-header-background.tsx
 'use client';
 

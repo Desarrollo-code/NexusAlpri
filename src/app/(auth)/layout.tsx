@@ -1,3 +1,4 @@
+
 // src/app/(auth)/layout.tsx
 import { PublicTopBar } from '@/components/layout/public-top-bar';
 import React from 'react';

@@ -1,3 +1,4 @@
+
 // src/app/(public)/layout.tsx
 import { Footer } from '@/components/layout/footer';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
