@@ -29,7 +29,7 @@ export default async function PublicLayout({
 
   return (
     <>
-        <div className="relative flex flex-col min-h-screen isolate">
+        <div className="relative flex flex-col min-h-screen isolate bg-background text-foreground">
             <DecorativeHeaderBackground />
             <PublicTopBar />
             <main className="flex-1 flex flex-col items-center pt-24 md:pt-0 pb-16 md:pb-0">

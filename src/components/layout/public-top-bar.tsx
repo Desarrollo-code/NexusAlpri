@@ -20,25 +20,10 @@ export function PublicTopBar() {
   ];
 
   return (
-    <header className={cn(
-        "top-0 left-0 right-0 z-40"
-    )}>
-      {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-16 flex items-center px-4 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg">
-          <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
-            <div className={cn("w-10 h-10 bg-white/90 flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden", !settings?.logoUrl && "p-1.5")}>
-              {settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain p-1" quality={100} /></div> : <div className="w-full h-full rounded-md bg-muted" />}
-            </div>
-            <span className="text-lg font-bold tracking-wide whitespace-nowrap">
-              {settings?.platformName || 'NexusAlpri'}
-            </span>
-          </Link>
-      </div>
-
-      {/* Desktop Top Bar */}
-      <div className="hidden md:flex items-center justify-between px-4 lg:px-6 h-20">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-transparent">
+      <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-20">
         <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
-          <div className={cn("w-12 h-12 bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-inner flex-shrink-0 rounded-lg relative overflow-hidden", !settings?.logoUrl && "p-2")}>
+          <div className={cn("w-10 h-10 flex items-center justify-center flex-shrink-0 rounded-lg relative overflow-hidden", !settings?.logoUrl && "p-2 bg-white/20")}>
             {settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain p-1" quality={100} /></div> : <div className="w-full h-full rounded-md bg-muted" />}
           </div>
           <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-foreground">
@@ -46,12 +31,13 @@ export function PublicTopBar() {
           </span>
         </Link>
         
-        <nav className="flex items-center gap-2 p-1 rounded-full bg-background/50 backdrop-blur-sm border border-border">
+        <nav className="hidden md:flex items-center gap-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
-              <Button key={item.href} variant={isActive ? "secondary" : "ghost"} asChild className={cn(
-                  "rounded-full transition-colors",
+              <Button key={item.href} variant="ghost" asChild className={cn(
+                  "transition-colors text-foreground/80 hover:text-foreground hover:bg-white/10",
+                  isActive && "text-primary font-semibold"
               )}>
                   <Link href={item.href}>
                       {item.label}
@@ -61,7 +47,7 @@ export function PublicTopBar() {
           })}
         </nav>
         
-        <Button asChild className="flex" variant="default">
+        <Button asChild className="hidden md:flex" variant="outline">
           <Link href="/sign-in">
               Acceder
           </Link>

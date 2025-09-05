@@ -5,70 +5,50 @@
 
 @layer base {
   :root {
-    /* Nueva paleta de colores vibrante y diversa */
-    --background: 220 20% 99%; /* Blanco ligeramente azulado */
-    --foreground: 220 15% 15%; /* Casi negro */
+    /* Nueva paleta inspirada en el diseño de referencia */
+    --background: 220 60% 98%; /* Un blanco muy claro casi puro para el tema claro */
+    --foreground: 222 47% 11%; /* Negro azulado para texto en tema claro */
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 15%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 15%;
-    --primary: 210 90% 55%; /* Azul vibrante */
+    --popover-foreground: 222 47% 11%;
+    --primary: 221 83% 53%; /* Azul primario vibrante */
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 90%; /* Gris claro neutro */
-    --secondary-foreground: 220 10% 10%;
-    --muted: 220 10% 95%;
-    --muted-foreground: 220 5% 45%;
-    --accent: 25 90% 60%; /* Naranja cálido */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 80% 60%; /* Rojo claro */
+    --secondary: 220 15% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 220 15% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 220 15% 96%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 10% 88%;
-    --input: 220 10% 92%;
-    --ring: 210 90% 55%;
-    --radius: 0.75rem;
-    
-    /* Colores para gráficos y eventos */
-    --chart-1: hsl(var(--primary)); /* Azul */
-    --chart-2: hsl(var(--accent));  /* Naranja */
-    --chart-3: 160 70% 45%; /* Verde azulado (Teal) */
-    --chart-4: 50 95% 55%;  /* Amarillo */
-    --chart-5: 340 85% 65%; /* Rosa/Magenta */
-    
-    --event-blue: hsl(var(--chart-1));
-    --event-green: hsl(var(--chart-3));
-    --event-red: hsl(var(--destructive));
-    --event-orange: hsl(var(--chart-2));
-
-    /* Variables de la barra lateral (mantienen un estilo consistente) */
-    --sidebar-background: 220 40% 5%; 
-    --sidebar-foreground: 45 80% 70%;
-    --sidebar-muted-foreground: 45 50% 55%;
-    --sidebar-accent: hsl(var(--primary));
-    --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: 220 40% 10%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 221 83% 53%;
+    --radius: 0.5rem;
   }
  
   .dark {
-    /* Tema oscuro con colores complementarios */
-    --background: 220 15% 8%;
-    --foreground: 220 10% 95%;
-    --card: 220 15% 12%;
-    --card-foreground: 220 10% 95%;
-    --popover: 220, 15%, 8%;
-    --popover-foreground: 220, 10%, 95%;
-    --primary: 210 90% 65%; /* Azul más brillante */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 20%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 220 10% 16%;
-    --muted-foreground: 220 5% 65%;
-    --accent: 25 90% 65%; /* Naranja más brillante */
-    --accent-foreground: 0 0% 10%;
-    --destructive: 0 70% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 220 10% 20%;
-    --input: 220 10% 18%;
-    --ring: 210 90% 65%;
+    /* Paleta oscura basada en la imagen de referencia */
+    --background: 224 71% 12%; /* Azul oscuro de fondo */
+    --foreground: 0 0% 100%;    /* Texto blanco */
+    --card: 224 71% 15%;
+    --card-foreground: 0 0% 100%;
+    --popover: 224 71% 12%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 216 100% 75%; /* Un azul claro para acentos y botones */
+    --primary-foreground: 224 71% 12%;
+    --secondary: 224 71% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 224 71% 20%;
+    --muted-foreground: 220 15% 65%;
+    --accent: 216 100% 75%;
+    --accent-foreground: 224 71% 12%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 224 71% 20%;
+    --input: 224 71% 18%;
+    --ring: 216 100% 75%;
   }
 }
  
@@ -81,6 +61,7 @@
   }
 }
 
+/* ... resto de estilos ... */
 @layer components {
   .btn-primary-gradient {
     background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
@@ -205,27 +186,4 @@
 }
 .quill-editor .ql-editor {
   @apply min-h-[150px] resize-y;
-}
-
-/* Responsive adjustments for Quill toolbar on mobile */
-@media (max-width: 768px) {
-  .quill-editor .ql-toolbar {
-    @apply flex flex-wrap;
-  }
-  .quill-editor .ql-formats {
-    @apply mr-2 mb-1;
-  }
-  .quill-editor .ql-toolbar .ql-picker-label,
-  .quill-editor .ql-toolbar .ql-picker-options {
-    @apply text-xs;
-  }
-  .quill-editor .ql-toolbar .ql-stroke {
-     @apply !h-4 !w-4;
-  }
-   .quill-editor .ql-toolbar .ql-picker {
-     @apply !h-6;
-  }
-   .quill-editor .ql-toolbar button {
-     @apply !p-1 !h-6 !w-6;
-  }
 }
