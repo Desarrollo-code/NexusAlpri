@@ -51,7 +51,7 @@ export function PublicTopBar() {
         </nav>
         
         <div className="flex items-center justify-end flex-1">
-            <Button asChild className="hidden md:flex btn-primary-gradient">
+            <Button asChild variant="primary-gradient" className="hidden md:flex">
             <Link href="/sign-in">
                 Acceder
             </Link>
