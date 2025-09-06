@@ -1,3 +1,4 @@
+
 // src/app/(auth)/layout.tsx
 import React from 'react';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -8,6 +9,8 @@ import prisma from '@/lib/prisma';
 import type { PlatformSettings } from '@/types';
 import { PublicTopBar } from '@/components/layout/public-top-bar';
 import { BottomNav } from '@/components/layout/bottom-nav';
+import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
+
 
 async function getPageSettings(): Promise<Partial<PlatformSettings>> {
     try {
@@ -38,13 +41,12 @@ export default async function AuthLayout({
     <ThemeProvider defaultTheme="light" forcedTheme="light">
         <div className={cn("relative flex flex-col min-h-screen items-center justify-center bg-background antialiased", fontVariables)}>
              <div className="absolute inset-0 -z-10 h-full w-full bg-background">
-                <div className="absolute bottom-0 left-[-20%] right-0 top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(var(--primary-rgb),0.08),rgba(255,255,255,0))]"></div>
-                <div className="absolute bottom-0 right-[-20%] top-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle_farthest-side,rgba(var(--accent-rgb),0.08),rgba(255,255,255,0))]"></div>
+                <DecorativeHeaderBackground />
             </div>
             
             <PublicTopBar />
             
-            <main className="flex-1 flex items-center justify-center w-full p-4">
+            <main className="flex-1 flex items-center justify-center w-full p-4 pt-20 md:pt-4 pb-20 md:pb-4">
                {children}
             </main>
             

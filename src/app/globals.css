@@ -86,7 +86,7 @@
 
 @layer components {
   .btn-primary-gradient {
-    background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
+    background-image: linear-gradient(to right, #170b0e, #7e2243);
     color: hsl(var(--primary-foreground));
     transition: all 0.3s ease;
     background-size: 150% 100%;

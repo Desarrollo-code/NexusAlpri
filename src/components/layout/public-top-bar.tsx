@@ -1,3 +1,4 @@
+
 // src/components/layout/public-top-bar.tsx
 'use client';
 
