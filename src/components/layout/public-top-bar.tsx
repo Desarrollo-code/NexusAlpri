@@ -40,8 +40,8 @@ export function PublicTopBar() {
                 <Button key={item.href} variant="ghost" asChild className={cn(
                     "transition-colors rounded-full h-9",
                     isActive 
-                      ? "bg-card text-secondary-foreground font-semibold shadow-inner" 
-                      : "text-muted-foreground hover:text-secondary-foreground"
+                      ? "bg-accent text-accent-foreground font-semibold shadow" 
+                      : "bg-card text-secondary-foreground hover:bg-card/80"
                 )}>
                     <Link href={item.href}>
                         {item.label}
