@@ -1,3 +1,4 @@
+
 // src/components/settings-page.tsx
 'use client';
 
@@ -78,7 +79,6 @@ const UploadWidget = ({
                     alt={`Previsualización de ${label}`}
                     fill
                     className="object-contain rounded-md"
-                    unoptimized
                 />
             </div>
           </>
@@ -167,7 +167,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                         <div className="mt-2 p-4 rounded-md shadow-sm" style={{ backgroundColor: settings.backgroundColorLight || '#FFFFFF' }}>
                             <div className="flex items-center gap-2 mb-4">
                                 <div className="relative w-8 h-8">
-                                    {settings.logoUrl ? <Image unoptimized src={settings.logoUrl} alt="logo" fill className="object-contain" /> : <div className="w-8 h-8 rounded-md bg-muted" />}
+                                    {settings.logoUrl ? <Image src={settings.logoUrl} alt="logo" fill className="object-contain" /> : <div className="w-8 h-8 rounded-md bg-muted" />}
                                 </div>
                                 <h4 className="font-headline text-base font-bold" style={{ color: settings.primaryColor }}>{settings.platformName}</h4>
                             </div>
@@ -185,13 +185,13 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                             <div className="space-y-2">
                                 <Label className="text-xs">Página de Inicio (Landing)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
-                                    {settings.landingImageUrl ? <Image unoptimized src={settings.landingImageUrl} alt="Vista previa de la página de inicio" fill className="object-contain h-full w-full" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                    {settings.landingImageUrl ? <Image src={settings.landingImageUrl} alt="Vista previa de la página de inicio" fill className="object-contain h-full w-full" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                              <div className="space-y-2">
                                 <Label className="text-xs">Página de Acceso (Login)</Label>
                                 <div className="h-24 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
-                                     {settings.authImageUrl ? <Image unoptimized src={settings.authImageUrl} alt="Vista previa de la página de acceso" fill className="object-contain h-full w-full" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
+                                     {settings.authImageUrl ? <Image src={settings.authImageUrl} alt="Vista previa de la página de acceso" fill className="object-contain h-full w-full" /> : <span className="text-xs text-muted-foreground">Sin Imagen</span>}
                                 </div>
                             </div>
                         </div>
@@ -203,7 +203,7 @@ const ThemePreview = ({ settings }: { settings: AppPlatformSettings | null }) =>
                            <div className="mt-2 h-20 w-full rounded-md bg-muted flex items-center justify-center overflow-hidden relative p-2">
                                 <span className="text-sm text-muted-foreground z-10">Contenido de la app</span>
                                 <div className="absolute inset-0 p-2">
-                                    <Image unoptimized src={settings.watermarkUrl} alt="Vista previa de la marca de agua" fill className="object-contain w-full h-full opacity-20 z-0" />
+                                    <Image src={settings.watermarkUrl} alt="Vista previa de la marca de agua" fill className="object-contain w-full h-full opacity-20 z-0" />
                                 </div>
                            </div>
                         </div>

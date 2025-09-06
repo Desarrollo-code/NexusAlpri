@@ -1,3 +1,4 @@
+
 // src/app/(public)/about/page.tsx
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Database, Code, Wind, Feather } from 'lucide-react';
@@ -58,7 +59,6 @@ export default async function AboutPage() {
                   fill
                   className="object-contain"
                   data-ai-hint="team collaboration"
-                  quality={100}
                 />
               </div>
             </div>

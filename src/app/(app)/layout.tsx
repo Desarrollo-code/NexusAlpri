@@ -40,7 +40,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       </div>
       {settings?.watermarkUrl && (
         <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
-          <Image src={settings.watermarkUrl} alt="Alprigrama Watermark" width={60} height={60} className="opacity-50" data-ai-hint="logo company" priority style={{ width: 'auto', height: 'auto' }} quality={100} />
+          <Image src={settings.watermarkUrl} alt="Alprigrama Watermark" width={60} height={60} className="opacity-50" data-ai-hint="logo company" priority style={{ width: 'auto', height: 'auto' }} />
         </div>
       )}
       {isTourActive && (
