@@ -1,4 +1,3 @@
-
 // src/components/layout/public-top-bar.tsx
 'use client';
 
@@ -34,13 +33,15 @@ export function PublicTopBar() {
         </div>
         
         <nav className="hidden md:flex items-center justify-center flex-1">
-          <div className="flex items-center gap-1 bg-secondary/60 border rounded-full p-1 shadow-sm">
+          <div className="flex items-center gap-1 bg-secondary rounded-full p-1 shadow-sm">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Button key={item.href} variant="ghost" asChild className={cn(
                     "transition-colors rounded-full h-9",
-                    isActive ? "bg-card text-primary font-semibold" : "text-muted-foreground hover:text-foreground"
+                    isActive 
+                      ? "bg-card text-secondary-foreground font-semibold shadow-inner" 
+                      : "text-muted-foreground hover:text-secondary-foreground"
                 )}>
                     <Link href={item.href}>
                         {item.label}

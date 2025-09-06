@@ -1,4 +1,3 @@
-
 // src/app/(auth)/layout.tsx
 import React from 'react';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -39,7 +38,7 @@ export default async function AuthLayout({
   
   return (
     <ThemeProvider defaultTheme="light" forcedTheme="light">
-        <div className={cn("relative flex flex-col min-h-screen items-center justify-center bg-background antialiased", fontVariables)}>
+        <div className={cn("relative flex flex-col min-h-screen items-center bg-background antialiased", fontVariables)}>
              <div className="absolute inset-0 -z-10 h-full w-full bg-background">
                 <DecorativeHeaderBackground />
             </div>
