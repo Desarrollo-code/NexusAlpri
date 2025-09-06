@@ -5,39 +5,39 @@
 
 @layer base {
   :root {
-    /* Paleta de colores limpia con fondo blanco puro */
-    --background: 0 0% 100%; /* Blanco puro */
-    --foreground: 220 15% 15%;
+    /* Nueva paleta de colores vibrante y diversa */
+    --background: 220 20% 99%; /* Blanco ligeramente azulado */
+    --foreground: 220 15% 15%; /* Casi negro */
     --card: 0 0% 100%;
     --card-foreground: 220 15% 15%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 15%;
-    --primary: 240 5.9% 10%;
+    --primary: 345 60% 35%; /* Vinotinto Principal */
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 90%;
-    --secondary-foreground: 220 10% 10%;
-    --muted: 220 10% 95%;
-    --muted-foreground: 220 5% 45%;
-    --accent: 340 82.2% 56.9%;
+    --secondary: 345 20% 90%; /* Vinotinto claro para fondos */
+    --secondary-foreground: 345 60% 20%;
+    --muted: 345 20% 95%;
+    --muted-foreground: 345 10% 45%;
+    --accent: 35 90% 55%; /* Acento dorado/ámbar */
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 80% 60%;
+    --destructive: 0 80% 60%; /* Rojo claro */
     --destructive-foreground: 0 0% 100%;
-    --border: 220 10% 88%;
-    --input: 220 10% 92%;
-    --ring: 240 5.9% 10%;
+    --border: 345 20% 88%;
+    --input: 345 20% 92%;
+    --ring: 345 60% 35%;
     --radius: 0.75rem;
     
     /* Colores para gráficos y eventos */
-    --chart-1: hsl(var(--primary));
-    --chart-2: hsl(var(--accent));
-    --chart-3: 160 70% 45%;
-    --chart-4: 50 95% 55%;
-    --chart-5: 340 85% 65%;
+    --chart-1: hsl(var(--primary)); /* Vinotinto */
+    --chart-2: hsl(var(--accent));  /* Dorado */
+    --chart-3: 190 70% 45%; /* Cian */
+    --chart-4: 280 60% 60%; /* Púrpura */
+    --chart-5: 10 70% 60%; /* Salmón */
     
-    --event-blue: hsl(var(--chart-1));
-    --event-green: hsl(var(--chart-3));
+    --event-blue: 210 90% 55%;
+    --event-green: 140 80% 45%;
     --event-red: hsl(var(--destructive));
-    --event-orange: hsl(var(--chart-2));
+    --event-orange: hsl(var(--accent));
 
     /* Variables de la barra lateral (mantienen un estilo consistente) */
     --sidebar-background: 220 40% 5%; 
@@ -47,8 +47,8 @@
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
     --sidebar-border: 220 40% 10%;
     
-    --primary-rgb: 99 102 241;
-    --accent-rgb: 236 72 153;
+    --primary-rgb: 139 0 0;
+    --accent-rgb: 234 179 8;
   }
  
   .dark {
@@ -59,19 +59,19 @@
     --card-foreground: 220 10% 95%;
     --popover: 220, 15%, 8%;
     --popover-foreground: 220, 10%, 95%;
-    --primary: 210 90% 65%;
+    --primary: 345 70% 70%; /* Vinotinto más brillante para tema oscuro */
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 20%;
+    --secondary: 345 15% 20%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 220 10% 16%;
-    --muted-foreground: 220 5% 65%;
-    --accent: 25 90% 65%;
+    --muted: 345 15% 16%;
+    --muted-foreground: 345 10% 65%;
+    --accent: 35 90% 65%; /* Dorado más brillante */
     --accent-foreground: 0 0% 10%;
     --destructive: 0 70% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 10% 20%;
-    --input: 220 10% 18%;
-    --ring: 210 90% 65%;
+    --border: 345 15% 20%;
+    --input: 345 15% 18%;
+    --ring: 345 70% 70%;
   }
 }
  

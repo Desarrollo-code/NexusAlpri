@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { PasswordStrengthIndicator } from '@/components/password-strength-indicator';
+import { Card } from '../ui/card';
 
 const formVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -191,8 +192,11 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
     );
 
     return (
-        <div className="w-full max-w-sm mx-auto">
+        <Card className="w-full max-w-sm mx-auto bg-card/80 backdrop-blur-sm shadow-xl p-8">
             <div className="text-center mb-6">
+                 {settings?.logoUrl && (
+                    <Image src={settings.logoUrl} alt="Logo" width={64} height={64} className="mx-auto mb-4" />
+                 )}
                 <h1 className="text-3xl font-bold font-headline text-foreground">
                     {view === 'signIn' ? 'Bienvenido de Nuevo' : 'Únete a la Plataforma'}
                 </h1>
@@ -229,6 +233,6 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                     </>
                 )}
             </div>
-        </div>
+        </Card>
     );
 }
