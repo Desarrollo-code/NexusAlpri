@@ -37,7 +37,7 @@ export default async function AuthLayout({
   const settings = await getPageSettings();
   
   return (
-    <ThemeProvider defaultTheme="light" forcedTheme="light">
+    <ThemeProvider>
         <div className={cn("relative flex flex-col min-h-screen items-center bg-background antialiased", fontVariables)}>
              <div className="absolute inset-0 -z-10 h-full w-full bg-background">
                 <DecorativeHeaderBackground />
