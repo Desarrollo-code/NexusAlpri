@@ -39,161 +39,81 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 4.  La lógica de la API utiliza el cliente de **Prisma** (`@/lib/prisma`) para interactuar con la base de datos PostgreSQL.
 5.  Los datos se devuelven como JSON al componente o al cliente.
 
-## 3. Lógicas de Negocio Clave
+## 3. Base de Datos y Migraciones: La Guía Infalible
 
-### 3.1. Lógica de Progreso del Estudiante
+Esta sección es la guía definitiva para gestionar tu base de datos con Prisma y Supabase.
 
-El seguimiento del progreso es un sistema automático y robusto diseñado para reflejar la interacción real del usuario.
+### 3.1. Paso 1: Obtener la Cadena de Conexión CORRECTA
 
-1.  **Registro de Interacciones (Frontend):** La página de detalle del curso (`/courses/[courseId]`) detecta diferentes tipos de interacción sin necesidad de que el usuario haga clic en un botón:
-    *   **Lecciones Pasivas (Texto/Video/Archivo):** Se marca como completada automáticamente cuando el usuario **selecciona la lección** en la barra lateral (si no es de video) o cuando el **video llega al final**. Esto dispara una llamada a `POST /api/progress/[userId]/[courseId]/lesson`.
-    *   **Lecciones Activas (Quices):** El componente `QuizViewer` gestiona el envío del quiz y su puntuación. Al finalizar, llama a `POST /api/progress/[userId]/[courseId]/quiz` con la nota obtenida.
-
-2.  **Almacenamiento de Datos (Backend):**
-    *   Cada una de estas interacciones se guarda como un registro individual en la tabla `LessonCompletionRecord`. Esta tabla almacena el ID de la lección, el tipo de interacción ('view', 'video' o 'quiz') y la puntuación si aplica.
-    *   Estos registros están vinculados a un `CourseProgress`, que agrupa todas las interacciones de un usuario para un curso específico.
-
-3.  **Consolidación y Cálculo Final:**
-    *   La UI activa el botón **"Calcular Mi Puntuación Final"** solo cuando el sistema verifica que existen registros en `LessonCompletionRecord` para **todas** las lecciones del curso.
-    *   Al hacer clic, se llama a la API `POST /api/progress/[userId]/[courseId]/consolidate`.
-    *   Esta ruta ejecuta la lógica de negocio principal (`src/lib/progress.ts`), que:
-        *   Lee todos los `LessonCompletionRecord` asociados a ese progreso.
-        *   Calcula una **puntuación final ponderada**. Las lecciones de 'view' o 'video' aportan 100 puntos, mientras que las de 'quiz' aportan su nota (`score`). Se promedia el total.
-        *   Guarda este porcentaje final en el campo `progressPercentage` del modelo `CourseProgress`.
-    *   La UI recibe este porcentaje final y lo muestra en el indicador circular de progreso.
-
-### 3.2. Lógica de Formularios y Evaluaciones
-
-El sistema de formularios es una herramienta versátil para crear encuestas o evaluaciones con puntuación.
-
-1.  **Creación y Configuración (Instructores/Admins):**
-    *   Desde la página `/forms`, un usuario autorizado puede crear un nuevo formulario.
-    *   En el editor de formularios (`/forms/[formId]/edit`), se pueden añadir campos de distintos tipos (texto, párrafo, opción única, opción múltiple).
-    *   Se puede habilitar el modo **"Evaluación" (Quiz)**. Si está activo, permite asignar puntos a las opciones de respuesta (actualmente solo para campos de opción única), que se usarán para calcular una puntuación final.
-
-2.  **Envío y Compartición:**
-    *   **Envío de Respuestas (Estudiantes):** Los estudiantes acceden al formulario a través de su URL directa (`/forms/[formId]/view`) si está publicado, o si ha sido compartido con ellos.
-    *   **Lógica de Compartición:** Un instructor o administrador puede compartir un formulario con usuarios específicos usando el endpoint `PUT /api/forms/[id]`, que actualiza la relación `sharedWith` en el modelo `Form`.
-    *   Al enviar sus respuestas (`POST /api/forms/[id]/submit`), el sistema crea un registro `FormResponse`.
-    *   Si el formulario es una evaluación, el backend calcula automáticamente la puntuación total basándose en los puntos asignados a las opciones correctas y la almacena en el `FormResponse`.
-
-3.  **Análisis de Resultados (Instructores/Admins):**
-    *   La página de resultados (`/forms/[formId]/results`) obtiene los datos consolidados.
-    *   Muestra métricas clave como el número total de respuestas y la puntuación promedio (si es una evaluación).
-    *   Para cada pregunta, genera un resumen visual:
-        *   Para preguntas de opción múltiple o única, muestra gráficos de barras con la distribución de respuestas.
-        *   Para preguntas de texto, muestra una lista de las respuestas recibidas.
-
-### 3.3. Lógica de Notificaciones
-
-El sistema de notificaciones es proactivo y está automatizado para mantener a los usuarios informados.
-
-1.  **Creación Automática:** Las notificaciones se generan por eventos del sistema, no manualmente.
-    *   **Nuevo Anuncio:** Al publicarse un anuncio (`POST /api/announcements`), se crean notificaciones para todos los usuarios de la audiencia objetivo (ej. "Todos los Estudiantes").
-    *   **Curso Publicado:** Al cambiar el estado de un curso a `PUBLISHED` (`PATCH /api/courses/[id]/status`), se generan notificaciones para todos los usuarios de la plataforma.
-
-2.  **Personalización y Gestión:**
-    *   Cada notificación está vinculada a un `userId`, creando una bandeja de entrada personal.
-    *   Desde `/notifications`, un usuario puede ver todas sus notificaciones, marcarlas como leídas (individualmente o en masa) o eliminarlas. Estas acciones se gestionan en `GET`, `PATCH` y `DELETE` de `/api/notifications`.
-
-### 3.4. Lógica de Eventos del Calendario
-
-El calendario está diseñado para ser flexible y mostrar solo la información relevante para cada usuario.
-
-1.  **Creación y Audiencia (Roles `ADMINISTRATOR` e `INSTRUCTOR`):**
-    *   Al crear un evento (`POST /api/events`), se define una audiencia:
-        *   `ALL`: Visible para todos.
-        *   `ADMINISTRATOR`, `INSTRUCTOR`, `STUDENT`: Visible solo para usuarios con ese rol.
-        *   `SPECIFIC`: Visible solo para los usuarios seleccionados en la lista de `attendees`.
-
-2.  **Visualización Inteligente (Todos los roles):**
-    *   Cuando un usuario carga el calendario (`GET /api/events`), la API no devuelve todos los eventos.
-    *   Realiza una consulta a la base de datos que filtra los eventos donde el usuario actual cumpla una de las siguientes condiciones:
-        1.  El tipo de audiencia es `ALL`.
-        2.  El tipo de audiencia coincide con el `role` del usuario.
-        3.  El `id` del usuario está presente en la lista de `attendees` del evento.
-    *   Esto asegura que el calendario de cada usuario esté limpio y sea relevante para él.
-
-## 4. Base de Datos y Migraciones con Prisma
-
-### 4.1. Conexión con Supabase
-
-Para conectar tu aplicación con una base de datos de Supabase, el paso más importante es configurar correctamente tu variable de entorno `DATABASE_URL` en el archivo `.env`.
+Este es el paso más importante y donde ocurren la mayoría de los errores. Prisma necesita una conexión **directa** a la base de datos para poder crear y modificar las tablas (ejecutar migraciones).
 
 1.  Ve a tu proyecto en Supabase.
-2.  Navega a **Configuración del Proyecto > Base de Datos**.
-3.  En la sección **Cadena de Conexión**, copia la URL del **Transaction pooler**.
-4.  Pégala en tu archivo `.env`:
+2.  En el menú lateral, ve a **Project Settings** (el icono del engranaje) y luego a **Database**.
+3.  Busca la sección **Connection string**.
+4.  **IMPORTANTE:** Copia la URL que empieza con `postgresql://` y que utiliza el puerto **5432**. **NO uses la que tiene el puerto 6543 (Transaction pooler) para migraciones.**
+5.  Pégala en tu archivo `.env` en la raíz del proyecto:
 
 ```env
-DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@[ID_PROYECTO].db.supabase.co:6543/postgres"
+# Ejemplo de la cadena de conexión correcta
+DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@[ID_PROYECTO].db.supabase.co:5432/postgres"
+
+# Otras variables necesarias
+JWT_SECRET="genera-una-cadena-aleatoria-muy-segura-aqui"
+RESEND_API_KEY="tu_api_key_de_resend"
 ```
 
-**Importante:** Asegúrate de reemplazar `[TU_CONTRASEÑA]` con la contraseña real de tu base de datos. Los comandos de migración de Supabase (ej. `supabase db ...`) solo afectan la infraestructura de Supabase, no el esquema definido en Prisma. Para eso, usamos los comandos de Prisma.
+Reemplaza `[TU_CONTRASEÑA]` con la contraseña real de tu base de datos.
 
-### 4.2. Gestión del Esquema de la Base de Datos
+### 3.2. Paso 2: Entender los Comandos de Prisma
 
-El esquema se define en `prisma/schema.prisma`. Para aplicar cambios a tu base de datos, utiliza los siguientes comandos:
+*   **`npm run prisma:migrate` (Para Desarrollo):**
+    *   **¿Qué hace?** Compara tu `schema.prisma` con el estado anterior y genera un nuevo archivo de migración SQL en la carpeta `prisma/migrations`. Luego, aplica esa migración a la base de datos.
+    *   **¿Cuándo usarlo?** **Siempre** durante el desarrollo en tu máquina local cada vez que cambias el `schema.prisma`. Esto crea un historial de cambios que es esencial para mantener la base de datos consistente.
 
-*   **Para Desarrollo (`migrate dev`):**
-    Cuando modificas tu `schema.prisma` localmente, crea un nuevo archivo de migración y aplícalo a tu base de datos de desarrollo.
+*   **`npm run prisma:deploy` (Para Producción/Vercel):**
+    *   **¿Qué hace?** Compara tu `schema.prisma` directamente con la base de datos y la modifica para que coincidan. **No crea archivos de migración.**
+    *   **¿Cuándo usarlo?** Este comando es ideal para entornos de producción o de prueba (como Vercel) donde no necesitas un historial, solo quieres que la base de datos refleje el esquema actual. **No necesitas ejecutarlo manualmente**, ya que está incluido en el script de `build`.
+
+### 3.3. Guía Definitiva: Escenarios Comunes
+
+#### Escenario 1: Primera Configuración (Base de Datos Nueva)
+
+Si estás configurando el proyecto desde cero con una base de datos vacía en Supabase:
+
+1.  **Configura tu `.env`:** Asegúrate de que `DATABASE_URL` esté correctamente configurada como se explicó en el Paso 1 (usando el puerto **5432**).
+2.  **Sincroniza el Esquema:** Ejecuta el comando de "deploy" para crear todas las tablas y estructuras en tu base de datos por primera vez.
     ```bash
-    npm run prisma:migrate
+    npm run prisma:deploy
     ```
-    Prisma te pedirá un nombre para la migración (ej: "add-user-phone-number").
-
-*   **Para Producción (`db push`):**
-    Cuando despliegas tu aplicación, no necesitas un historial de migraciones, solo quieres que la base de datos remota refleje el estado actual de tu `schema.prisma`. El script `build` en tu `package.json` ya está configurado para ejecutar este comando automáticamente. **No necesitas hacer nada manualmente al desplegar en Vercel.**
-    ```json
-    "scripts": {
-      "build": "prisma db push && prisma generate && next build"
-    }
-    ```
-
-*   **Para poblar la base de datos (seeding):**
-    Después de configurar una nueva base de datos, puedes llenarla con datos de prueba iniciales (usuario admin, cursos, etc.) con el siguiente comando:
+3.  **Puebla con Datos Iniciales:** Ejecuta el comando "seed" para llenar la base de datos con el usuario administrador y datos de prueba.
     ```bash
     npm run prisma:seed
     ```
 
-## 5. Documentación de API Endpoints
+¡Y listo! Tu base de datos está configurada, poblada y lista para usar.
 
-Las rutas de la API se encuentran en `src/app/api/`. Algunos endpoints clave son:
-*   `/api/auth/login`, `/api/auth/register`, `/api/auth/logout`, `/api/auth/me`: Manejan todo el ciclo de vida de la autenticación.
-*   `/api/users`: CRUD para la gestión de usuarios (solo Admins).
-*   `/api/courses`: CRUD para cursos.
-*   `/api/enrollments`: `POST` para inscribir al usuario actual, `DELETE` para cancelar una inscripción (sea propia o de otro usuario si se tienen permisos).
-*   `/api/progress`: Para obtener y actualizar el progreso de los cursos.
-*   `/api/resources`: CRUD para la biblioteca de recursos.
-*   `/api/settings`: Para obtener y guardar la configuración de la plataforma.
+#### Escenario 2: Desarrollo Continuo (Aplicar Nuevos Cambios)
 
-La autenticación se realiza a través de un token JWT en una cookie http-only. El `middleware.ts` protege las rutas.
+Si ya tienes una base de datos funcionando y has hecho cambios en tu archivo `prisma/schema.prisma` (ej. añadir una nueva tabla o campo):
 
-## 6. Configuración del Entorno de Desarrollo
-
-1.  **Requisitos:** Node.js, npm, y una instancia de PostgreSQL (puedes usar la de Supabase).
-2.  **Instalación:**
-    ```bash
-    npm install
-    ```
-3.  **Variables de Entorno:**
-    Crea un archivo `.env` en la raíz del proyecto y define las siguientes variables.
-    ```env
-    DATABASE_URL="tu_cadena_de_conexion_de_supabase_aqui"
-    JWT_SECRET="genera-una-cadena-aleatoria-muy-segura-aqui"
-    RESEND_API_KEY="tu_api_key_de_resend"
-    ```
-4.  **Aplicar Migraciones (para desarrollo):**
+1.  **Modifica `prisma/schema.prisma`:** Haz los cambios que necesites en el esquema.
+2.  **Crea y Aplica la Migración:** Ejecuta el comando de desarrollo. Esto generará el archivo de migración y lo aplicará a tu base de datos.
     ```bash
     npm run prisma:migrate
     ```
-5.  **Ejecutar el Proyecto:**
-    ```bash
-    npm run dev
-    ```
-    La aplicación estará disponible en `http://localhost:9002`.
+    Prisma te pedirá que le des un nombre descriptivo a la migración (ej: `add_course_tags`).
 
-## 7. Estándares de Codificación
+### 3.4. ¿Y en Producción (Vercel)?
+
+**No necesitas hacer nada manualmente.** El script de `build` en tu `package.json` ya está configurado para ejecutar `prisma db push` (`npm run prisma:deploy`) automáticamente cada vez que Vercel despliega tu aplicación. Esto asegura que tu base de datos de producción siempre estará sincronizada con la última versión de tu `schema.prisma`.
+
+```json
+"scripts": {
+  "build": "npm run prisma:deploy && prisma generate && next build"
+}
+```
+
+## 4. Estándares de Codificación
 
 *   **TypeScript:** Utilizar tipado estricto siempre que sea posible.
 *   **Componentes:** Favorecer el uso de componentes de ShadCN (`@/components/ui`) y crear componentes reutilizables en `@/components/`.
