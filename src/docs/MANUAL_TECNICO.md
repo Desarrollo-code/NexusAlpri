@@ -50,7 +50,7 @@ Este es el paso más importante y donde ocurren la mayoría de los errores. Pris
 1.  Ve a tu proyecto en Supabase.
 2.  En el menú lateral, ve a **Project Settings** (el icono del engranaje) y luego a **Database**.
 3.  Busca la sección **Connection string**.
-4.  **IMPORTANTE:** Copia la URL que empieza con `postgresql://` y que utiliza el puerto **5432**. **NO uses la que tiene el puerto 6543 (Transaction pooler) para migraciones.**
+4.  **IMPORTANTE:** Copia la URL de la tarjeta **"Conexión directa"**, que empieza con `postgresql://` y que utiliza el puerto **5432**. **NO uses la que tiene el puerto 6543 (Agrupador de transacciones) para migraciones.**
 5.  Pégala en tu archivo `.env` en la raíz del proyecto:
 
 ```env
@@ -80,7 +80,7 @@ Reemplaza `[TU_CONTRASEÑA]` con la contraseña real de tu base de datos.
 
 Si estás configurando el proyecto desde cero con una base de datos vacía en Supabase:
 
-1.  **Configura tu `.env`:** Asegúrate de que `DATABASE_URL` esté correctamente configurada como se explicó en el Paso 1 (usando el puerto **5432**).
+1.  **Configura tu `.env`:** Asegúrate de que `DATABASE_URL` esté correctamente configurada como se explicó en el Paso 1 (usando la **Conexión directa** del puerto **5432**).
 2.  **Sincroniza el Esquema:** Ejecuta el comando de "deploy" para crear todas las tablas y estructuras en tu base de datos por primera vez.
     ```bash
     npm run prisma:deploy
