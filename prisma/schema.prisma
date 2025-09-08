@@ -1,17 +1,15 @@
 // prisma/schema.prisma
 
 datasource db {
-  provider          = "postgresql"
-  // ¡Pega aquí tu cadena de conexión DIRECTA (puerto 5432)!
-  url               = "postgresql://postgres:Amkj2025*..@db.gxpndcgiyrhcrrmuhhku.supabase.co:5432/postgres"
-  // Para la base de datos sombra, usa el puerto del pooler (6543)
-  shadowDatabaseUrl = "postgresql://postgres.gxpndcgiyrhcrrmuhhku:Amkj2025*..@aws-1-us-east-2.pooler.supabase.com:6543/postgres"
-  relationMode      = "prisma"
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 generator client {
   provider = "prisma-client-js"
 }
+
 
 // --- ENUMS ---
 
@@ -583,5 +581,3 @@ enum FormStatus {
   PUBLISHED
   ARCHIVED
 }
-
-```
