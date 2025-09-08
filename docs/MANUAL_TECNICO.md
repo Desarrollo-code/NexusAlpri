@@ -1,4 +1,3 @@
-
 # Manual Técnico de NexusAlpri
 
 ## 1. Introducción
