@@ -68,7 +68,7 @@ async function main() {
   console.log('Creando contenido global...');
   await prisma.announcement.upsert({
     where: { id: 'clseedannouncement01' }, update: {},
-    create: { id: 'clseedannouncement01', title: '¡Bienvenid@ a la nueva plataforma de aprendizaje!', content: '<p>Estamos muy emocionados de lanzar esta nueva herramienta para potenciar tu desarrollo profesional.</p>', authorId: adminUser.id, audience: '"ALL"' }
+    create: { id: 'clseedannouncement01', title: '¡Bienvenid@ a la nueva plataforma de aprendizaje!', content: '<p>Estamos muy emocionados de lanzar esta nueva herramienta para potenciar tu desarrollo profesional.</p>', authorId: adminUser.id, audience: 'ALL' }
   });
   await prisma.calendarEvent.upsert({
       where: { id: 'clseedevent01' }, update: {},
@@ -111,9 +111,13 @@ async function main() {
   const quiz1 = await prisma.quiz.upsert({ where: { id: 'clseedquiz01' }, update: {}, create: { id: 'clseedquiz01', title: 'Quiz de Marketing', contentBlockId: blockQuiz.id }});
   const question1 = await prisma.question.upsert({ where: { id: 'clseedquestion01' }, update: {}, create: { id: 'clseedquestion01', text: '¿Qué significa SEO?', quizId: quiz1.id, order: 0 }});
   
-  await prisma.answerOption.upsert({ where: { id: 'clseedans01' }, update: {}, create: { id: 'clseedans01', text: 'Search Engine Optimization', isCorrect: true, questionId: question1.id }});
-  await prisma.answerOption.upsert({ where: { id: 'clseedans02' }, update: {}, create: { id: 'clseedans02', text: 'Social Engagement Office', isCorrect: false, questionId: question1.id }});
-  await prisma.answerOption.upsert({ where: { id: 'clseedans03' }, update: {}, create: { id: 'clseedans03', text: 'Sales Efficiency Object', isCorrect: false, questionId: question1.id }});
+  await prisma.answerOption.createMany({
+    data: [
+        { text: 'Search Engine Optimization', isCorrect: true, questionId: question1.id },
+        { text: 'Social Engagement Office', isCorrect: false, questionId: question1.id },
+        { text: 'Sales Efficiency Object', isCorrect: false, questionId: question1.id }
+    ]
+  });
 
   const lesson2_2 = await prisma.lesson.upsert({ where: { id: 'clseedlesson22' }, update: {}, create: { id: 'clseedlesson22', title: 'Glosario de Términos (PDF)', moduleId: module2.id, order: 1 }});
   await prisma.contentBlock.upsert({ where: { id: 'clseedblock221' }, update: {}, create: { id: 'clseedblock221', type: 'FILE', content: '/uploads/placeholder.pdf', lessonId: lesson2_2.id, order: 0 }});
