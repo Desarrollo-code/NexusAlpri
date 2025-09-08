@@ -40,39 +40,102 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 
 ## 3. Base de Datos y Migraciones: La Guía Infalible
 
-Para que Prisma funcione correctamente tanto en tu computadora (desarrollo) como en Vercel (producción), es CRÍTICO usar dos cadenas de conexión diferentes.
+### 3.1. Paso 1: Obtener la Cadena de Conexión CORRECTA
 
-### 3.1. Para Desarrollo Local (Tu Computadora)
+Este es el paso más importante y donde ocurren la mayoría de los errores. Prisma necesita una conexión **directa** a la base de datos para poder crear y modificar las tablas (ejecutar migraciones).
 
-Para hacer cambios en la estructura de la base de datos (modificar el `schema.prisma`), **siempre** debes usar la **conexión directa**.
+1.  Ve a tu proyecto en Supabase.
+2.  En el menú lateral, ve a **Project Settings** (el icono del engranaje) y luego a **Database**.
+3.  Busca la sección **Connection string**.
+4.  **IMPORTANTE:** Copia la URL de la tarjeta **"Conexión directa"**, que empieza con `postgresql://` y que utiliza el puerto **5432**. **NO uses la que tiene el puerto 6543 (Agrupador de transacciones) para migraciones.**
+5.  Pégala en tu archivo `.env` en la raíz del proyecto:
 
-1.  **Obtener la Cadena de Conexión Directa:**
-    *   Ve a tu proyecto en Supabase: **Project Settings > Database**.
-    *   Copia la URL de la tarjeta que dice **"Direct connection"**. Empieza con `postgresql://` y usa el puerto **5432**.
-2.  **Configurar tu Archivo `.env` Local:**
-    *   Pega esa cadena en la variable `DATABASE_URL` de tu archivo `.env`. Este archivo es solo para tu máquina.
-3.  **Ejecutar Migraciones:**
-    *   En tu terminal, ejecuta: `npm run prisma:migrate`.
+```env
+# Ejemplo de la cadena de conexión correcta
+DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@[ID_PROYECTO].db.supabase.co:5432/postgres"
 
-### 3.2. Para Producción (Vercel)
+# Otras variables necesarias
+JWT_SECRET="genera-una-cadena-aleatoria-muy-segura-aqui"
+RESEND_API_KEY="tu_api_key_de_resend"
+```
 
-El entorno de producción de Vercel funciona de manera diferente. Para evitar errores de conexión (`Error 500`), debes usar el **agrupador de conexiones** de Supabase.
+Reemplaza `[TU_CONTRASEÑA]` con la contraseña real de tu base de datos.
 
-1.  **Obtener la Cadena del Pooler:**
-    *   Ve a tu proyecto en Supabase: **Project Settings > Database**.
-    *   Busca la sección **Connection string**.
-    *   **IMPORTANTE:** Copia la URL de la tarjeta que dice **"Transaction pooler"** o **"Session pooler"**. Esta cadena usa el puerto **6543**.
-2.  **Configurar las Variables de Entorno en Vercel:**
-    *   Ve al panel de tu proyecto en Vercel: **Settings > Environment Variables**.
-    *   Añade o actualiza la variable `DATABASE_URL` y pega la cadena de conexión del **pooler (puerto 6543)**.
-    *   **CRÍTICO:** Asegúrate de que también estén configuradas las variables `JWT_SECRET` y, si la usas, `RESEND_API_KEY`.
-    *   Verifica que todas las variables estén activas para el entorno de **"Production"**.
-3.  **Redesplegar:**
-    *   Haz un nuevo `git push` o usa la opción "Redeploy" en el panel de Vercel para aplicar los cambios.
+### 3.2. Paso 2: Permitir tu IP Local para Desarrollo (Solución al Error P1001)
 
-Esta estrategia asegura que las migraciones se puedan hacer localmente con los permisos correctos, y que la aplicación en producción use la conexión optimizada y permitida por Supabase para entornos serverless.
+Si al ejecutar `npm run prisma:migrate` en tu computadora local ves el error `P1001: Can't reach database server...`, es porque el firewall de Supabase está bloqueando tu conexión.
 
-## 4. Estándares de Codificación
+1.  **Obtén tu dirección IP pública:** Busca en Google "¿Cuál es mi IP?".
+2.  **Añade tu IP a Supabase:**
+    *   En Supabase, ve a **Project Settings > Database**.
+    *   Busca la sección **Network Restrictions**.
+    *   Haz clic en **`Add new rule`**.
+    *   Dale un nombre (ej. "Oficina Casa - [Tu Nombre]") y en `CIDR Address` pega tu IP seguida de `/32`. Ejemplo: `123.123.123.123/32`.
+    *   Guarda la regla.
+
+### 3.3. Paso 3: Permitir Conexiones desde Vercel (Solución al Error 500)
+
+Este es el paso **CRÍTICO** para que tu aplicación funcione en producción. Vercel usa servidores con IPs dinámicas, por lo que debes permitir que cualquier servidor se conecte. La seguridad la manejará tu `DATABASE_URL`, que es un secreto.
+
+1.  **Añade una regla para Vercel:**
+    *   En la misma sección de **Network Restrictions** en Supabase, haz clic de nuevo en **`Add new rule`**.
+    *   Dale un nombre claro, como `Vercel (Permitir Todas)`.
+    *   En el campo `CIDR Address`, escribe exactamente: `0.0.0.0/0`.
+    *   Guarda la regla.
+
+¡Y listo! Con esto, tanto tu máquina local como los servidores de Vercel tendrán permiso para conectarse a la base de datos.
+
+### 3.4. Paso 4: Ejecutar los Comandos de Prisma
+
+*   **En tu computadora (desarrollo):** Para aplicar cambios que hayas hecho en `schema.prisma`.
+    ```bash
+    npm run prisma:migrate
+    ```
+*   **En tu computadora (primera vez o si la BD está vacía):** Para crear las tablas por primera vez sin generar archivos de migración.
+    ```bash
+    npm run prisma:deploy
+    ```
+*   **Para poblar la base de datos con datos de prueba:**
+    ```bash
+    npm run prisma:seed
+    ```
+
+**Nota sobre Producción:** El script de `build` en `package.json` ya ejecuta `npm run prisma:deploy` automáticamente. No necesitas hacerlo manualmente en Vercel.
+
+## 4. Configuración para Producción (Vercel): La Guía Visual Definitiva
+
+El archivo `.env` es local y **no debe subirse a Git**. Para que la aplicación funcione en producción, debes configurar las variables de entorno directamente en el panel de Vercel.
+
+1.  Ve al panel de tu proyecto en Vercel.
+2.  Navega a **Settings > Environment Variables**.
+3.  Añade las siguientes variables, una por una:
+
+    *   **`DATABASE_URL`**:
+        *   **Nombre:** `DATABASE_URL`
+        *   **Valor:** Pega aquí la **misma** cadena de conexión directa de Supabase (la del puerto 5432) que usas en tu archivo `.env` local.
+        *   **Importancia:** Crítica. Sin esto, la aplicación no podrá conectarse a la base de datos y fallará.
+        *   **Verificación:** Asegúrate de que no haya espacios al principio o al final de la cadena que pegaste.
+
+    *   **`JWT_SECRET`**:
+        *   **Nombre:** `JWT_SECRET`
+        *   **Valor:** Genera una cadena de texto larga, segura y aleatoria. Puedes usar un generador de contraseñas en línea para crear una de 64 caracteres. **No uses la misma que en desarrollo.**
+        *   **Importancia:** Crítica. Es el secreto para la seguridad de las sesiones de usuario. La aplicación fallará sin esta variable.
+
+    *   **`RESEND_API_KEY`**:
+        *   **Nombre:** `RESEND_API_KEY`
+        *   **Valor:** Si usas Resend para enviar correos, pega aquí tu clave de API.
+        *   **Importancia:** Opcional. La aplicación funcionará sin ella, pero no podrá enviar correos transaccionales.
+
+4.  **Verificar el Alcance (Scope):** Al añadir cada variable, Vercel te preguntará para qué entornos aplicarla. Asegúrate de que **al menos la casilla "Production" esté marcada**.
+
+5.  **Guardar y Redesplegar:**
+    *   Haz clic en **"Save"** después de añadir cada variable.
+    *   Una vez que todas las variables estén configuradas, ve a la pestaña **"Deployments"** de tu proyecto en Vercel.
+    *   Busca el último despliegue, haz clic en el menú de los tres puntos (`...`) y selecciona **"Redeploy"** para forzar un nuevo despliegue con las variables de entorno actualizadas.
+
+> **Nota de Depuración:** Si después de configurar las variables en Vercel sigues viendo un error 500, revisa los logs de tu aplicación en el panel de Vercel. Las rutas de autenticación (`/api/auth/login` y `/api/auth/register`) ahora están mejoradas para detectar si las variables de entorno no están configuradas correctamente. Si el problema persiste, el error devuelto por la API debería ser "Error de configuración del servidor: Faltan variables de entorno críticas", confirmando que el problema reside en la configuración de Vercel.
+
+## 5. Estándares de Codificación
 
 *   **TypeScript:** Utilizar tipado estricto siempre que sea posible.
 *   **Componentes:** Favorecer el uso de componentes de ShadCN (`@/components/ui`) y crear componentes reutilizables en `@/components/`.
