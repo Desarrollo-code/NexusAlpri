@@ -105,7 +105,7 @@ export async function DELETE(
         }
         
         await prisma.calendarEvent.delete({ where: { id } });
-        return NextResponse.json({ success: true }, { status: 200 });
+        return new NextResponse(null, { status: 204 });
     } catch (error) {
         console.error('[EVENT_DELETE_ERROR]', error);
         return NextResponse.json({ message: 'Error al eliminar el evento' }, { status: 500 });

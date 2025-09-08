@@ -61,72 +61,72 @@ RESEND_API_KEY="tu_api_key_de_resend"
 
 Reemplaza `[TU_CONTRASEÑA]` con la contraseña real de tu base de datos.
 
-### 3.2. Paso 2: Entender los Comandos de Prisma
+### 3.2. Paso 2: Permitir tu IP Local para Desarrollo (Solución al Error P1001)
 
-*   **`npm run prisma:migrate` (Para Desarrollo):**
-    *   **¿Qué hace?** Compara tu `schema.prisma` con el estado anterior y genera un nuevo archivo de migración SQL en la carpeta `prisma/migrations`. Luego, aplica esa migración a la base de datos.
-    *   **¿Cuándo usarlo?** **Siempre** durante el desarrollo en tu máquina local cada vez que cambias el `schema.prisma`. Esto crea un historial de cambios que es esencial para mantener la base de datos consistente.
+Si al ejecutar `npm run prisma:migrate` en tu computadora local ves el error `P1001: Can't reach database server...`, es porque el firewall de Supabase está bloqueando tu conexión.
 
-*   **`npm run prisma:deploy` (Para Producción/Vercel):**
-    *   **¿Qué hace?** Compara tu `schema.prisma` directamente con la base de datos y la modifica para que coincidan. **No crea archivos de migración.**
-    *   **¿Cuándo usarlo?** Este comando es ideal para entornos de producción o de prueba (como Vercel) donde no necesitas un historial, solo quieres que la base de datos refleje el esquema actual. **No necesitas ejecutarlo manualmente**, ya que está incluido en el script de `build`.
+1.  **Obtén tu dirección IP pública:** Busca en Google "¿Cuál es mi IP?".
+2.  **Añade tu IP a Supabase:**
+    *   En Supabase, ve a **Project Settings > Database**.
+    *   Busca la sección **Network Restrictions**.
+    *   Haz clic en **`Add new rule`**.
+    *   Dale un nombre (ej. "Oficina Casa - [Tu Nombre]") y en `CIDR Address` pega tu IP seguida de `/32`. Ejemplo: `123.123.123.123/32`.
+    *   Guarda la regla.
 
-### 3.3. Guía Definitiva: Escenarios Comunes
+### 3.3. Paso 3: Permitir Conexiones desde Vercel (Solución al Error 500)
 
-#### Escenario 1: Primera Configuración (Base de Datos Nueva)
+Este es el paso **CRÍTICO** para que tu aplicación funcione en producción. Vercel usa servidores con IPs dinámicas, por lo que debes permitir que cualquier servidor se conecte. La seguridad la manejará tu `DATABASE_URL`, que es un secreto.
 
-Si estás configurando el proyecto desde cero con una base de datos vacía en Supabase:
+1.  **Añade una regla para Vercel:**
+    *   En la misma sección de **Network Restrictions** en Supabase, haz clic de nuevo en **`Add new rule`**.
+    *   Dale un nombre claro, como `Vercel (Permitir Todas)`.
+    *   En el campo `CIDR Address`, escribe exactamente: `0.0.0.0/0`.
+    *   Guarda la regla.
 
-1.  **Configura tu `.env`:** Asegúrate de que `DATABASE_URL` esté correctamente configurada como se explicó en el Paso 1 (usando la **Conexión directa** del puerto **5432**).
-2.  **Verifica las Restricciones de Red:** Sigue los pasos de la sección **"Solución de Problemas de Conexión (Error P1001)"** para asegurar que tu IP tiene acceso.
-3.  **Sincroniza el Esquema:** Ejecuta el comando de "deploy" para crear todas las tablas y estructuras en tu base de datos por primera vez.
+¡Y listo! Con esto, tanto tu máquina local como los servidores de Vercel tendrán permiso para conectarse a la base de datos.
+
+### 3.4. Paso 4: Ejecutar los Comandos de Prisma
+
+*   **En tu computadora (desarrollo):** Para aplicar cambios que hayas hecho en `schema.prisma`.
+    ```bash
+    npm run prisma:migrate
+    ```
+*   **En tu computadora (primera vez o si la BD está vacía):** Para crear las tablas por primera vez sin generar archivos de migración.
     ```bash
     npm run prisma:deploy
     ```
-4.  **Puebla con Datos Iniciales:** Ejecuta el comando "seed" para llenar la base de datos con el usuario administrador y datos de prueba.
+*   **Para poblar la base de datos con datos de prueba:**
     ```bash
     npm run prisma:seed
     ```
 
-¡Y listo! Tu base de datos está configurada, poblada y lista para usar.
+**Nota sobre Producción:** El script de `build` en `package.json` ya ejecuta `npm run prisma:deploy` automáticamente. No necesitas hacerlo manualmente en Vercel.
 
-#### Escenario 2: Desarrollo Continuo (Aplicar Nuevos Cambios)
+## 4. Configuración para Producción (Vercel)
 
-Si ya tienes una base de datos funcionando y has hecho cambios en tu archivo `prisma/schema.prisma` (ej. añadir una nueva tabla o campo):
+El archivo `.env` es local y **no debe subirse a Git**. Para que la aplicación funcione en producción, debes configurar las variables de entorno directamente en Vercel.
 
-1.  **Modifica `prisma/schema.prisma`:** Haz los cambios que necesites en el esquema.
-2.  **Crea y Aplica la Migración:** Ejecuta el comando de desarrollo. Esto generará el archivo de migración y lo aplicará a tu base de datos.
-    ```bash
-    npm run prisma:migrate
-    ```
-    Prisma te pedirá que le des un nombre descriptivo a la migración (ej: `add_course_tags`).
+1.  Ve al panel de tu proyecto en Vercel.
+2.  Navega a **Settings > Environment Variables**.
+3.  Añade las siguientes variables:
 
-### 3.4. Solución de Problemas de Conexión (Error P1001)
+    *   **`DATABASE_URL`**:
+        *   **Valor:** Pega aquí la **misma** cadena de conexión directa de Supabase (la del puerto 5432) que usas en tu archivo `.env` local.
+        *   **Importancia:** Crítica. Sin esto, la aplicación no podrá conectarse a la base de datos y fallará.
 
-Si al ejecutar un comando de Prisma ves el error `P1001: Can't reach database server at ...`, significa que tu computadora no puede conectarse al servidor de la base de datos. Si ya verificaste que tu cadena de conexión es correcta (usa el puerto 5432), el problema casi siempre es una restricción de red en Supabase.
+    *   **`JWT_SECRET`**:
+        *   **Valor:** Genera una cadena de texto larga, segura y aleatoria. Puedes usar un generador de contraseñas en línea para crear una de 64 caracteres.
+        *   **Importancia:** Crítica. Es el secreto para la seguridad de las sesiones de usuario. **No uses la misma que en desarrollo.**
 
-Por seguridad, la base de datos puede estar configurada para aceptar conexiones solo desde IPs conocidas. Sigue estos pasos para añadir tu dirección IP:
+    *   **`RESEND_API_KEY`**:
+        *   **Valor:** Si usas Resend para enviar correos, pega aquí tu clave de API.
+        *   **Importancia:** Opcional. La aplicación funcionará sin ella, pero no podrá enviar correos transaccionales.
 
-1.  **Obtén tu dirección IP pública:** Busca en Google "¿Cuál es mi IP?".
-2.  **Pídele a un administrador del proyecto de Supabase que haga lo siguiente:**
-    *   Ir a **Project Settings > Database**.
-    *   Buscar la sección **Network Restrictions**.
-    *   Hacer clic en **Add new rule**.
-    *   Darle un nombre a la regla (ej. "Oficina Casa - [Tu Nombre]") y pegar tu dirección IP en el campo `CIDR Address`. Si tu IP es `123.123.123.123`, debes escribirla como `123.123.123.123/32`.
-    *   Guardar la regla.
-3.  **Vuelve a intentar** ejecutar el comando de Prisma. La conexión ahora debería funcionar.
+4.  **Guarda los cambios.** Vercel automáticamente redesplegará tu proyecto con las nuevas variables de entorno, y la conexión a la base de datos debería funcionar correctamente.
 
-### 3.5. ¿Y en Producción (Vercel)?
+> **Nota de Depuración:** Si después de configurar las variables en Vercel sigues viendo un error 500, las rutas de autenticación (`/api/auth/login` y `/api/auth/register`) han sido mejoradas para detectar si las variables de entorno no están configuradas correctamente. Si el problema persiste, el error devuelto por la API debería ser "Error de configuración del servidor: Faltan variables de entorno críticas", confirmando que el problema reside en la configuración de Vercel.
 
-**No necesitas hacer nada manualmente.** El script de `build` en tu `package.json` ya está configurado para ejecutar `prisma db push` (`npm run prisma:deploy`) automáticamente cada vez que Vercel despliega tu aplicación. Esto asegura que tu base de datos de producción siempre estará sincronizada con la última versión de tu `schema.prisma`.
-
-```json
-"scripts": {
-  "build": "npm run prisma:deploy && prisma generate && next build"
-}
-```
-
-## 4. Estándares de Codificación
+## 5. Estándares de Codificación
 
 *   **TypeScript:** Utilizar tipado estricto siempre que sea posible.
 *   **Componentes:** Favorecer el uso de componentes de ShadCN (`@/components/ui`) y crear componentes reutilizables en `@/components/`.
@@ -134,4 +134,3 @@ Por seguridad, la base de datos puede estar configurada para aceptar conexiones 
 *   **Formularios:** Utilizar `react-hook-form` para la gestión de formularios complejos.
 *   **Código Asíncrono:** Utilizar `async/await` para operaciones asíncronas.
 *   **Comentarios:** Añadir comentarios JSDoc a funciones complejas y a las props de los componentes para clarificar su propósito.
-```

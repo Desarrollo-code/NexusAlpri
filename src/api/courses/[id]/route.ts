@@ -238,7 +238,7 @@ export async function DELETE(
 
     await prisma.course.delete({ where: { id: courseId } });
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`[DELETE_COURSE_ID: ${courseId}]`, error);
     return NextResponse.json({ message: "Error al eliminar el curso" }, { status: 500 });
