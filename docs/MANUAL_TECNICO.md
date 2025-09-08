@@ -50,7 +50,7 @@ Este es el paso más importante y donde ocurren la mayoría de los errores. Pris
 1.  Ve a tu proyecto en Supabase.
 2.  En el menú lateral, ve a **Project Settings** (el icono del engranaje) y luego a **Database**.
 3.  Busca la sección **Connection string**.
-4.  **IMPORTANTE:** Copia la URL que empieza con `postgresql://` y que utiliza el puerto **5432**. **NO uses la que tiene el puerto 6543 (Transaction pooler) para migraciones.**
+4.  **IMPORTANTE:** Copia la URL de la tarjeta **"Conexión directa"**, que empieza con `postgresql://` y que utiliza el puerto **5432**. **NO uses la que tiene el puerto 6543 (Agrupador de transacciones) para migraciones.**
 5.  Pégala en tu archivo `.env` en la raíz del proyecto:
 
 ```env
@@ -80,12 +80,13 @@ Reemplaza `[TU_CONTRASEÑA]` con la contraseña real de tu base de datos.
 
 Si estás configurando el proyecto desde cero con una base de datos vacía en Supabase:
 
-1.  **Configura tu `.env`:** Asegúrate de que `DATABASE_URL` esté correctamente configurada como se explicó en el Paso 1 (usando el puerto **5432**).
-2.  **Sincroniza el Esquema:** Ejecuta el comando de "deploy" para crear todas las tablas y estructuras en tu base de datos por primera vez.
+1.  **Configura tu `.env`:** Asegúrate de que `DATABASE_URL` esté correctamente configurada como se explicó en el Paso 1 (usando la **Conexión directa** del puerto **5432**).
+2.  **Verifica las Restricciones de Red:** Sigue los pasos de la sección **"Solución de Problemas de Conexión (Error P1001)"** para asegurar que tu IP tiene acceso.
+3.  **Sincroniza el Esquema:** Ejecuta el comando de "deploy" para crear todas las tablas y estructuras en tu base de datos por primera vez.
     ```bash
     npm run prisma:deploy
     ```
-3.  **Puebla con Datos Iniciales:** Ejecuta el comando "seed" para llenar la base de datos con el usuario administrador y datos de prueba.
+4.  **Puebla con Datos Iniciales:** Ejecuta el comando "seed" para llenar la base de datos con el usuario administrador y datos de prueba.
     ```bash
     npm run prisma:seed
     ```
@@ -103,7 +104,22 @@ Si ya tienes una base de datos funcionando y has hecho cambios en tu archivo `pr
     ```
     Prisma te pedirá que le des un nombre descriptivo a la migración (ej: `add_course_tags`).
 
-### 3.4. ¿Y en Producción (Vercel)?
+### 3.4. Solución de Problemas de Conexión (Error P1001)
+
+Si al ejecutar un comando de Prisma ves el error `P1001: Can't reach database server at ...`, significa que tu computadora no puede conectarse al servidor de la base de datos. Si ya verificaste que tu cadena de conexión es correcta (usa el puerto 5432), el problema casi siempre es una restricción de red en Supabase.
+
+Por seguridad, la base de datos puede estar configurada para aceptar conexiones solo desde IPs conocidas. Sigue estos pasos para añadir tu dirección IP:
+
+1.  **Obtén tu dirección IP pública:** Busca en Google "¿Cuál es mi IP?".
+2.  **Pídele a un administrador del proyecto de Supabase que haga lo siguiente:**
+    *   Ir a **Project Settings > Database**.
+    *   Buscar la sección **Network Restrictions**.
+    *   **¡CUIDADO!** No uses la opción para "Restringir el acceso desde todas las IPs". Debes buscar y hacer clic en el botón **`Add new rule`** (Añadir nueva regla).
+    *   Darle un nombre a la regla (ej. "Oficina Casa - [Tu Nombre]") y pegar tu dirección IP en el campo `CIDR Address`. Si tu IP es `123.123.123.123`, debes escribirla como `123.123.123.123/32`.
+    *   Guardar la regla.
+3.  **Vuelve a intentar** ejecutar el comando de Prisma. La conexión ahora debería funcionar.
+
+### 3.5. ¿Y en Producción (Vercel)?
 
 **No necesitas hacer nada manualmente.** El script de `build` en tu `package.json` ya está configurado para ejecutar `prisma db push` (`npm run prisma:deploy`) automáticamente cada vez que Vercel despliega tu aplicación. Esto asegura que tu base de datos de producción siempre estará sincronizada con la última versión de tu `schema.prisma`.
 
