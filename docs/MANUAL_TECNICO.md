@@ -138,6 +138,8 @@ El archivo `.env` es local y **no debe subirse a Git**. Para que la aplicación 
 
 4.  **Guarda los cambios.** Vercel automáticamente redesplegará tu proyecto con las nuevas variables de entorno, y la conexión a la base de datos debería funcionar correctamente.
 
+> **Nota de Depuración:** Si después de configurar las variables en Vercel sigues viendo un error 500, las rutas de autenticación (`/api/auth/login` y `/api/auth/register`) han sido mejoradas para detectar si las variables de entorno no están configuradas correctamente. Si el problema persiste, el error devuelto por la API debería ser "Error de configuración del servidor: Faltan variables de entorno críticas", confirmando que el problema reside en la configuración de Vercel.
+
 ## 5. Estándares de Codificación
 
 *   **TypeScript:** Utilizar tipado estricto siempre que sea posible.

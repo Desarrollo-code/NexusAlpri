@@ -75,6 +75,12 @@ function recordSuccessfulLogin(req: NextRequest, userId: string, is2FACompleted:
 
 // --- Login Route ---
 export async function POST(req: NextRequest) {
+  // --- VERIFICACIÓN DE VARIABLES DE ENTORNO ---
+  if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
+    console.error('Error Crítico: Faltan variables de entorno DATABASE_URL o JWT_SECRET en el servidor.');
+    return NextResponse.json({ message: 'Error de configuración del servidor: Faltan variables de entorno críticas.' }, { status: 500 });
+  }
+
   const ip = getIp(req);
 
   if (!checkRateLimit(ip)) {
