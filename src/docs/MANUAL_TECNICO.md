@@ -40,31 +40,33 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 
 ## 3. Base de Datos y Migraciones: La Guía Infalible
 
+Para que Prisma funcione correctamente tanto en tu computadora (desarrollo) como en Vercel (producción), es CRÍTICO usar dos cadenas de conexión diferentes.
+
 ### 3.1. Para Desarrollo Local (Tu Computadora)
 
-Para hacer cambios en la estructura de la base de datos (modificar el `schema.prisma`), **siempre** debes usar la conexión directa a la base de datos.
+Para hacer cambios en la estructura de la base de datos (modificar el `schema.prisma`), **siempre** debes usar la **conexión directa**.
 
 1.  **Obtener la Cadena de Conexión Directa:**
     *   Ve a tu proyecto en Supabase: **Project Settings > Database**.
     *   Copia la URL de la tarjeta que dice **"Direct connection"**. Empieza con `postgresql://` y usa el puerto **5432**.
-2.  **Configurar tu Archivo `.env`:**
-    *   Pega esa cadena en la variable `DATABASE_URL` de tu archivo `.env`.
+2.  **Configurar tu Archivo `.env` Local:**
+    *   Pega esa cadena en la variable `DATABASE_URL` de tu archivo `.env`. Este archivo es solo para tu máquina.
 3.  **Ejecutar Migraciones:**
     *   En tu terminal, ejecuta: `npm run prisma:migrate`.
 
 ### 3.2. Para Producción (Vercel)
 
-El entorno de producción de Vercel funciona de manera diferente. Para evitar errores de conexión (`Error 500`), debes usar el agrupador de conexiones de Supabase.
+El entorno de producción de Vercel funciona de manera diferente. Para evitar errores de conexión (`Error 500`), debes usar el **agrupador de conexiones** de Supabase.
 
 1.  **Obtener la Cadena del Pooler:**
     *   Ve a tu proyecto en Supabase: **Project Settings > Database**.
     *   Busca la sección **Connection string**.
     *   **IMPORTANTE:** Copia la URL de la tarjeta que dice **"Transaction pooler"** o **"Session pooler"**. Esta cadena usa el puerto **6543**.
 2.  **Configurar las Variables de Entorno en Vercel:**
-    *   Ve a tu proyecto en Vercel: **Settings > Environment Variables**.
+    *   Ve al panel de tu proyecto en Vercel: **Settings > Environment Variables**.
     *   Añade o actualiza la variable `DATABASE_URL` y pega la cadena de conexión del **pooler (puerto 6543)**.
-    *   Asegúrate de que también estén configuradas las variables `JWT_SECRET` y `RESEND_API_KEY`.
-    *   Verifica que las variables estén activas para el entorno de **"Production"**.
+    *   **CRÍTICO:** Asegúrate de que también estén configuradas las variables `JWT_SECRET` y, si la usas, `RESEND_API_KEY`.
+    *   Verifica que todas las variables estén activas para el entorno de **"Production"**.
 3.  **Redesplegar:**
     *   Haz un nuevo `git push` o usa la opción "Redeploy" en el panel de Vercel para aplicar los cambios.
 
