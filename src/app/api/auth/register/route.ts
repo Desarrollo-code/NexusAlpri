@@ -36,6 +36,25 @@ export async function POST(req: NextRequest) {
     if (existingUser) {
       return NextResponse.json({ message: 'El correo electrónico ya está en uso' }, { status: 409 });
     }
+    
+    // --- Validación de Contraseña ---
+    if (settings) {
+        if (password.length < settings.passwordMinLength) {
+            return NextResponse.json({ message: `La contraseña debe tener al menos ${settings.passwordMinLength} caracteres.` }, { status: 400 });
+        }
+        if (settings.passwordRequireUppercase && !/[A-Z]/.test(password)) {
+            return NextResponse.json({ message: "La contraseña debe contener al menos una mayúscula." }, { status: 400 });
+        }
+        if (settings.passwordRequireLowercase && !/[a-z]/.test(password)) {
+            return NextResponse.json({ message: "La contraseña debe contener al menos una minúscula." }, { status: 400 });
+        }
+        if (settings.passwordRequireNumber && !/\d/.test(password)) {
+            return NextResponse.json({ message: "La contraseña debe contener al menos un número." }, { status: 400 });
+        }
+        if (settings.passwordRequireSpecialChar && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+            return NextResponse.json({ message: "La contraseña debe contener al menos un carácter especial." }, { status: 400 });
+        }
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -58,6 +77,10 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error('[REGISTER_ERROR]', error);
-    return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
+    // Verificar si el error es de Prisma para un mensaje más específico
+    if (error instanceof Error && 'code' in error && (error as any).code?.startsWith('P')) {
+       return NextResponse.json({ message: 'Error de base de datos al crear el usuario.' }, { status: 500 });
+    }
+    return NextResponse.json({ message: 'Error interno del servidor al intentar registrar.' }, { status: 500 });
   }
 }
