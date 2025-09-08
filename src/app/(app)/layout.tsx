@@ -1,4 +1,3 @@
-
 // src/app/(app)/layout.tsx
 'use client';
 
@@ -16,41 +15,60 @@ import { SidebarHeader } from '@/components/layout/sidebar-header';
 import { TourProvider, useTour } from '@/contexts/tour-context';
 import { TourGuide } from '@/components/tour/tour-guide';
 import { ThemeProvider } from '@/components/theme-provider';
+import { PublicTopBar } from '@/components/layout/public-top-bar';
+import { BottomNav } from '@/components/layout/bottom-nav';
+import { Footer } from '@/components/layout/footer';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
-  const { settings } = useAuth();
+  const { user, settings } = useAuth();
   const { isMobile, isCollapsed } = useSidebar();
   const { isTourActive, steps, currentStepIndex, nextStep, stopTour } = useTour();
 
-  return (
-    <div className="flex h-screen bg-background text-foreground">
-      <Sidebar>
-        <SidebarHeader />
-        <SidebarContent />
-        <SidebarFooter />
-      </Sidebar>
-      <div className={cn("relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out", !isMobile && (isCollapsed ? "ml-20" : "ml-72"))}>
-        <TopBar />
-        <main className="flex-1 overflow-y-auto relative bg-background">
-          <DecorativeHeaderBackground />
-          <div className="relative z-10 p-4 md:p-6 lg:p-8">
-            {children}
+  // Si el usuario está logueado, muestra el layout de la aplicación (con sidebar, etc.)
+  if (user) {
+    return (
+        <div className="flex h-screen bg-background text-foreground">
+          <Sidebar>
+            <SidebarHeader />
+            <SidebarContent />
+            <SidebarFooter />
+          </Sidebar>
+          <div className={cn("relative flex-1 flex flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out", !isMobile && (isCollapsed ? "ml-20" : "ml-72"))}>
+            <TopBar />
+            <main className="flex-1 overflow-y-auto relative bg-background">
+              <DecorativeHeaderBackground />
+              <div className="relative z-10 p-4 md:p-6 lg:p-8">
+                {children}
+              </div>
+            </main>
           </div>
-        </main>
-      </div>
-      {settings?.watermarkUrl && (
-        <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
-          <Image src={settings.watermarkUrl} alt="Alprigrama Watermark" width={60} height={60} className="opacity-50" data-ai-hint="logo company" priority style={{ width: 'auto', height: 'auto' }} />
+          {settings?.watermarkUrl && (
+            <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
+              <Image src={settings.watermarkUrl} alt="Alprigrama Watermark" width={60} height={60} className="opacity-50" data-ai-hint="logo company" priority style={{ width: 'auto', height: 'auto' }} />
+            </div>
+          )}
+          {isTourActive && (
+            <TourGuide
+              steps={steps}
+              currentStepIndex={currentStepIndex}
+              onNext={nextStep}
+              onStop={stopTour}
+            />
+          )}
         </div>
-      )}
-      {isTourActive && (
-        <TourGuide
-          steps={steps}
-          currentStepIndex={currentStepIndex}
-          onNext={nextStep}
-          onStop={stopTour}
-        />
-      )}
+    );
+  }
+
+  // Si el usuario no está logueado, muestra el layout público
+  return (
+     <div className="relative flex flex-col min-h-screen isolate">
+        <DecorativeHeaderBackground />
+        <PublicTopBar />
+        <main className="flex-1 flex flex-col items-center justify-center p-4 pt-20 md:pt-4 pb-20 md:pb-4">
+            {children}
+        </main>
+        <Footer/>
+        <BottomNav />
     </div>
   );
 }
@@ -69,7 +87,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useIdleTimeout(handleIdleLogout, idleTimeoutMinutes, isIdleTimeoutEnabled);
 
-  if (isLoading || !user) {
+  if (isLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background text-foreground">
         <ColorfulLoader />
