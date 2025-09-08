@@ -8,7 +8,7 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 **Stack Tecnológico Principal:**
 *   **Framework:** Next.js 15+ (con App Router y Server Components)
 *   **Lenguaje:** TypeScript
-*   **Base de Datos y Backend:** **Supabase** (que proporciona una base de datos PostgreSQL, autenticación y almacenamiento). La interacción con la base de datos se gestiona a través del esquema definido en `prisma/schema.prisma`.
+*   **Base de Datos:** PostgreSQL (gestionada con Prisma ORM en Supabase)
 *   **Estilos:** Tailwind CSS
 *   **Componentes UI:** ShadCN
 *   **Autenticación:** JWT almacenado en cookies http-only
@@ -70,7 +70,7 @@ Reemplaza `[TU_CONTRASEÑA]` con la contraseña real de tu base de datos.
     *   **¿Qué hace?** Compara tu `schema.prisma` con el estado anterior y genera un nuevo archivo de migración SQL en la carpeta `prisma/migrations`. Luego, aplica esa migración a la base de datos.
     *   **¿Cuándo usarlo?** **Siempre** durante el desarrollo en tu máquina local cada vez que cambias el `schema.prisma`. Esto crea un historial de cambios que es esencial para mantener la base de datos consistente.
 
-*   **`npm run prisma:deploy` (`prisma db push`) (Para Producción/Vercel):**
+*   **`npm run prisma:deploy` (Para Producción/Vercel):**
     *   **¿Qué hace?** Compara tu `schema.prisma` directamente con la base de datos y la modifica para que coincidan. **No crea archivos de migración.**
     *   **¿Cuándo usarlo?** Este comando es ideal para entornos de producción o de prueba (como Vercel) donde no necesitas un historial, solo quieres que la base de datos refleje el esquema actual. **No necesitas ejecutarlo manualmente**, ya que está incluido en el script de `build`.
 
@@ -105,11 +105,11 @@ Si ya tienes una base de datos funcionando y has hecho cambios en tu archivo `pr
 
 ### 3.4. ¿Y en Producción (Vercel)?
 
-**No necesitas hacer nada manualmente.** El script de `build` en tu `package.json` ya está configurado para ejecutar `prisma db push` automáticamente cada vez que Vercel despliega tu aplicación. Esto asegura que tu base de datos de producción siempre estará sincronizada con la última versión de tu `schema.prisma`.
+**No necesitas hacer nada manualmente.** El script de `build` en tu `package.json` ya está configurado para ejecutar `prisma db push` (`npm run prisma:deploy`) automáticamente cada vez que Vercel despliega tu aplicación. Esto asegura que tu base de datos de producción siempre estará sincronizada con la última versión de tu `schema.prisma`.
 
 ```json
 "scripts": {
-  "build": "prisma db push && prisma generate && next build"
+  "build": "npm run prisma:deploy && prisma generate && next build"
 }
 ```
 
