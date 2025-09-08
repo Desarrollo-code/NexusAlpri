@@ -121,7 +121,7 @@ Por seguridad, la base de datos puede estar configurada para aceptar conexiones 
 
 ### 3.5. ¿Y en Producción (Vercel)?
 
-**No necesitas hacer nada manualmente.** El script de `build` en tu `package.json` ya está configurado para ejecutar `prisma db push` (`npm run prisma:deploy`) automáticamente cada vez que Vercel despliega tu aplicación. Esto asegura que tu base de datos de producción siempre estará sincronizada con la última versión de tu `schema.prisma`.
+**No necesitas hacer nada manualmente.** El script de `build` en tu `package.json` ya está configurado para ejecutar `npm run prisma:deploy` automáticamente cada vez que Vercel despliega tu aplicación. Esto asegura que tu base de datos de producción siempre estará sincronizada con la última versión de tu `schema.prisma`.
 
 ```json
 "scripts": {
