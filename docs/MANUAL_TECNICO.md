@@ -40,8 +40,6 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 
 ## 3. Base de Datos y Migraciones: La Guía Infalible
 
-Esta sección es la guía definitiva para gestionar tu base de datos con Prisma y Supabase.
-
 ### 3.1. Paso 1: Obtener la Cadena de Conexión CORRECTA
 
 Este es el paso más importante y donde ocurren la mayoría de los errores. Prisma necesita una conexión **directa** a la base de datos para poder crear y modificar las tablas (ejecutar migraciones).
@@ -71,7 +69,7 @@ Reemplaza `[TU_CONTRASEÑA]` con la contraseña real de tu base de datos.
 
 *   **`npm run prisma:deploy` (Para Producción/Vercel):**
     *   **¿Qué hace?** Compara tu `schema.prisma` directamente con la base de datos y la modifica para que coincidan. **No crea archivos de migración.**
-    *   **¿Cuándo usarlo?** Este comando es ideal para entornos de producción o de prueba (como Vercel) donde no necesitas un historial, solo quieres que la base de datos refleje el esquema actual. **No necesitas ejecutarlo manually**, ya que está incluido en el script de `build`.
+    *   **¿Cuándo usarlo?** Este comando es ideal para entornos de producción o de prueba (como Vercel) donde no necesitas un historial, solo quieres que la base de datos refleje el esquema actual. **No necesitas ejecutarlo manualmente**, ya que está incluido en el script de `build`.
 
 ### 3.3. Guía Definitiva: Escenarios Comunes
 
@@ -118,17 +116,29 @@ Por seguridad, la base de datos puede estar configurada para aceptar conexiones 
     *   Guardar la regla.
 3.  **Vuelve a intentar** ejecutar el comando de Prisma. La conexión ahora debería funcionar.
 
-### 3.5. ¿Y en Producción (Vercel)?
+## 4. Configuración para Producción (Vercel)
 
-**No necesitas hacer nada manualmente.** El script de `build` en tu `package.json` ya está configurado para ejecutar `npm run prisma:deploy` automáticamente cada vez que Vercel despliega tu aplicación. Esto asegura que tu base de datos de producción siempre estará sincronizada con la última versión de tu `schema.prisma`.
+El archivo `.env` es local y **no debe subirse a Git**. Para que la aplicación funcione en producción, debes configurar las variables de entorno directamente en Vercel.
 
-```json
-"scripts": {
-  "build": "npm run prisma:deploy && prisma generate && next build"
-}
-```
+1.  Ve al panel de tu proyecto en Vercel.
+2.  Navega a **Settings > Environment Variables**.
+3.  Añade las siguientes variables:
 
-## 4. Estándares de Codificación
+    *   **`DATABASE_URL`**:
+        *   **Valor:** Pega aquí la **misma** cadena de conexión directa de Supabase (la del puerto 5432) que usas en tu archivo `.env` local.
+        *   **Importancia:** Crítica. Sin esto, la aplicación no podrá conectarse a la base de datos y fallará.
+
+    *   **`JWT_SECRET`**:
+        *   **Valor:** Genera una cadena de texto larga, segura y aleatoria. Puedes usar un generador de contraseñas en línea para crear una de 64 caracteres.
+        *   **Importancia:** Crítica. Es el secreto para la seguridad de las sesiones de usuario. **No uses la misma que en desarrollo.**
+
+    *   **`RESEND_API_KEY`**:
+        *   **Valor:** Si usas Resend para enviar correos, pega aquí tu clave de API.
+        *   **Importancia:** Opcional. La aplicación funcionará sin ella, pero no podrá enviar correos transaccionales.
+
+4.  **Guarda los cambios.** Vercel automáticamente redesplegará tu proyecto con las nuevas variables de entorno, y la conexión a la base de datos debería funcionar correctamente.
+
+## 5. Estándares de Codificación
 
 *   **TypeScript:** Utilizar tipado estricto siempre que sea posible.
 *   **Componentes:** Favorecer el uso de componentes de ShadCN (`@/components/ui`) y crear componentes reutilizables en `@/components/`.
