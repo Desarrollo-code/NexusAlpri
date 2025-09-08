@@ -40,26 +40,31 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 
 ## 3. Base de Datos y Migraciones: La Guía Infalible
 
-### 3.1. Paso 1: Obtener la Cadena de Conexión CORRECTA
+### 3.1. Paso 1: Configurar el archivo `prisma/schema.prisma`
 
 Este es el paso más importante y donde ocurren la mayoría de los errores. Prisma necesita una conexión **directa** a la base de datos para poder crear y modificar las tablas (ejecutar migraciones).
 
-1.  Ve a tu proyecto en Supabase.
-2.  En el menú lateral, ve a **Project Settings** (el icono del engranaje) y luego a **Database**.
-3.  Busca la sección **Connection string**.
-4.  **IMPORTANTE:** Copia la URL de la tarjeta **"Conexión directa"**, que empieza con `postgresql://` y que utiliza el puerto **5432**. **NO uses la que tiene el puerto 6543 (Agrupador de transacciones) para migraciones.**
-5.  Pégala en tu archivo `.env` en la raíz del proyecto:
+1.  **Obtén tu Cadena de Conexión DIRECTA:**
+    *   Ve a tu proyecto en Supabase.
+    *   En el menú lateral, ve a **Project Settings** (el icono del engranaje) y luego a **Database**.
+    *   Busca la sección **Connection string**.
+    *   **IMPORTANTE:** Copia la URL de la tarjeta **"Direct connection"**, que empieza con `postgresql://` y que utiliza el puerto **5432**.
+2.  **Pégala en tu esquema:**
+    *   Abre el archivo `prisma/schema.prisma` en tu editor de código.
+    *   Busca la línea `url = "..."` dentro del bloque `datasource db { ... }`.
+    *   Reemplaza la URL de ejemplo con la cadena de conexión **DIRECTA** que acabas de copiar. Asegúrate de cambiar `[YOUR-PASSWORD]` por tu contraseña real.
+    *   Haz lo mismo para la `shadowDatabaseUrl`, pero asegúrate de que el puerto sea `6543`.
 
-```env
-# Ejemplo de la cadena de conexión correcta
-DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@[ID_PROYECTO].db.supabase.co:5432/postgres"
-
-# Otras variables necesarias
-JWT_SECRET="genera-una-cadena-aleatoria-muy-segura-aqui"
-RESEND_API_KEY="tu_api_key_de_resend"
+```prisma
+// Ejemplo de cómo debe quedar en prisma/schema.prisma
+datasource db {
+  provider          = "postgresql"
+  // ¡Pega aquí tu cadena de conexión DIRECTA (puerto 5432)!
+  url               = "postgresql://postgres:[TU_CONTRASEÑA]@[ID_PROYECTO].db.supabase.co:5432/postgres"
+  // Para la base de datos sombra, usa el puerto del pooler (6543)
+  shadowDatabaseUrl = "postgresql://postgres:[TU_CONTRASEÑA]@[ID_PROYECTO].pooler.supabase.co:6543/postgres?pgbouncer=true"
+}
 ```
-
-Reemplaza `[TU_CONTRASEÑA]` con la contraseña real de tu base de datos.
 
 ### 3.2. Paso 2: Permitir tu IP Local para Desarrollo (Solución al Error P1001)
 
@@ -73,19 +78,7 @@ Si al ejecutar `npm run prisma:migrate` en tu computadora local ves el error `P1
     *   Dale un nombre (ej. "Oficina Casa - [Tu Nombre]") y en `CIDR Address` pega tu IP seguida de `/32`. Ejemplo: `123.123.123.123/32`.
     *   Guarda la regla.
 
-### 3.3. Paso 3: Permitir Conexiones desde Vercel (Solución al Error 500)
-
-Este es el paso **CRÍTICO** para que tu aplicación funcione en producción. Vercel usa servidores con IPs dinámicas, por lo que debes permitir que cualquier servidor se conecte. La seguridad la manejará tu `DATABASE_URL`, que es un secreto.
-
-1.  **Añade una regla para Vercel:**
-    *   En la misma sección de **Network Restrictions** en Supabase, haz clic de nuevo en **`Add new rule`**.
-    *   Dale un nombre claro, como `Vercel (Permitir Todas)`.
-    *   En el campo `CIDR Address`, escribe exactamente: `0.0.0.0/0`.
-    *   Guarda la regla.
-
-¡Y listo! Con esto, tanto tu máquina local como los servidores de Vercel tendrán permiso para conectarse a la base de datos.
-
-### 3.4. Paso 4: Ejecutar los Comandos de Prisma
+### 3.3. Paso 3: Ejecutar los Comandos de Prisma
 
 *   **En tu computadora (desarrollo):** Para aplicar cambios que hayas hecho en `schema.prisma`.
     ```bash
@@ -100,11 +93,11 @@ Este es el paso **CRÍTICO** para que tu aplicación funcione en producción. Ve
     npm run prisma:seed
     ```
 
-**Nota sobre Producción:** El script de `build` en `package.json` ya ejecuta `npm run prisma:deploy` automáticamente. No necesitas hacerlo manualmente en Vercel.
+**Nota sobre Producción:** No necesitas hacer nada especial para Vercel. El script de `build` ya ejecuta `npm run prisma:deploy` automáticamente. Lo único que debes configurar en Vercel son las variables de entorno, como se explica a continuación.
 
-## 4. Configuración para Producción (Vercel): La Guía Visual Definitiva
+## 4. Configuración para Producción (Vercel)
 
-El archivo `.env` es local y **no debe subirse a Git**. Para que la aplicación funcione en producción, debes configurar las variables de entorno directamente en el panel de Vercel.
+Para que la aplicación funcione en producción, debes configurar las variables de entorno directamente en el panel de Vercel.
 
 1.  Ve al panel de tu proyecto en Vercel.
 2.  Navega a **Settings > Environment Variables**.
@@ -112,34 +105,17 @@ El archivo `.env` es local y **no debe subirse a Git**. Para que la aplicación 
 
     *   **`DATABASE_URL`**:
         *   **Nombre:** `DATABASE_URL`
-        *   **Valor:** Pega aquí la **misma** cadena de conexión directa de Supabase (la del puerto 5432) que usas en tu archivo `.env` local.
-        *   **Importancia:** Crítica. Sin esto, la aplicación no podrá conectarse a la base de datos y fallará.
-        *   **Verificación:** Asegúrate de que no haya espacios al principio o al final de la cadena que pegaste.
+        *   **Valor:** Aquí viene la diferencia clave. Ve a Supabase, a la misma sección de **Connection string**, y copia la URL de la tarjeta que dice **"Transaction pooler"** (la que usa el puerto **6543**). ¡Pega esa aquí!
+        *   **Importancia:** Crítica. Sin esto, la aplicación no podrá conectarse a la base de datos.
 
     *   **`JWT_SECRET`**:
         *   **Nombre:** `JWT_SECRET`
-        *   **Valor:** Genera una cadena de texto larga, segura y aleatoria. Puedes usar un generador de contraseñas en línea para crear una de 64 caracteres. **No uses la misma que en desarrollo.**
-        *   **Importancia:** Crítica. Es el secreto para la seguridad de las sesiones de usuario. La aplicación fallará sin esta variable.
+        *   **Valor:** Genera una cadena de texto larga, segura y aleatoria. **No uses la misma que en desarrollo.**
+        *   **Importancia:** Crítica. Es el secreto para la seguridad de las sesiones de usuario.
 
     *   **`RESEND_API_KEY`**:
         *   **Nombre:** `RESEND_API_KEY`
         *   **Valor:** Si usas Resend para enviar correos, pega aquí tu clave de API.
-        *   **Importancia:** Opcional. La aplicación funcionará sin ella, pero no podrá enviar correos transaccionales.
+        *   **Importancia:** Opcional.
 
-4.  **Verificar el Alcance (Scope):** Al añadir cada variable, Vercel te preguntará para qué entornos aplicarla. Asegúrate de que **al menos la casilla "Production" esté marcada**.
-
-5.  **Guardar y Redesplegar:**
-    *   Haz clic en **"Save"** después de añadir cada variable.
-    *   Una vez que todas las variables estén configuradas, ve a la pestaña **"Deployments"** de tu proyecto en Vercel.
-    *   Busca el último despliegue, haz clic en el menú de los tres puntos (`...`) y selecciona **"Redeploy"** para forzar un nuevo despliegue con las variables de entorno actualizadas.
-
-> **Nota de Depuración:** Si después de configurar las variables en Vercel sigues viendo un error 500, revisa los logs de tu aplicación en el panel de Vercel. Las rutas de autenticación (`/api/auth/login` y `/api/auth/register`) ahora están mejoradas para detectar si las variables de entorno no están configuradas correctamente. Si el problema persiste, el error devuelto por la API debería ser "Error de configuración del servidor: Faltan variables de entorno críticas", confirmando que el problema reside en la configuración de Vercel.
-
-## 5. Estándares de Codificación
-
-*   **TypeScript:** Utilizar tipado estricto siempre que sea posible.
-*   **Componentes:** Favorecer el uso de componentes de ShadCN (`@/components/ui`) y crear componentes reutilizables en `@/components/`.
-*   **Estilos:** Utilizar clases de Tailwind CSS. Evitar CSS en línea o archivos CSS separados.
-*   **Formularios:** Utilizar `react-hook-form` para la gestión de formularios complejos.
-*   **Código Asíncrono:** Utilizar `async/await` para operaciones asíncronas.
-*   **Comentarios:** Añadir comentarios JSDoc a funciones complejas y a las props de los componentes para clarificar su propósito.
+4.  **Guardar y Redesplegar:** Guarda las variables y haz un "Redeploy" desde el panel de Vercel para que los cambios surtan efecto.
