@@ -9,9 +9,9 @@ generator client {
 datasource db {
   provider          = "postgresql"
   // PEGA AQUÍ TU CADENA DE CONEXIÓN DIRECTA (PUERTO 5432)
-  url               = "postgresql://postgres:Alprigrama.2024@db.gxpndcgiyrhcrrmuhhku.supabase.co:5432/postgres"
+  url               = postgresql://postgres:Amkj2025*..@db.gxpndcgiyrhcrrmuhhku.supabase.co:5432/postgres
   // Para la base de datos sombra, usa el puerto del pooler (6543)
-  shadowDatabaseUrl = "postgresql://postgres.gxpndcgiyrhcrrmuhhku:Alprigrama.2024@aws-1-us-east-2.pooler.supabase.com:6543/postgres"
+  shadowDatabaseUrl = postgresql://postgres.gxpndcgiyrhcrrmuhhku:Amkj2025*..@aws-1-us-east-2.pooler.supabase.com:6543/postgres
   relationMode      = "prisma"
 }
 
