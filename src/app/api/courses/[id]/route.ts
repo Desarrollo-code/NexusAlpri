@@ -203,7 +203,7 @@ export async function PUT(
     return NextResponse.json(finalCourseState);
   } catch (error) {
     console.error(`[UPDATE_COURSE_ID: ${courseId}]`, error);
-    if (error instanceof prisma.Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+    if ((error as any).code === 'P2025') {
         return NextResponse.json({ message: "Error de guardado: Uno de los elementos a actualizar no fue encontrado." }, { status: 404 });
     }
     return NextResponse.json({ message: "Error al actualizar el curso" }, { status: 500 });
