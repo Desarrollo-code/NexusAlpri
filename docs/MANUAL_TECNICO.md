@@ -61,7 +61,7 @@ RESEND_API_KEY="tu_api_key_de_resend"
 
 Reemplaza `[TU_CONTRASEÑA]` con la contraseña real de tu base de datos.
 
-### 3.2. Paso 2: Configurar tu IP Local (Error P1001 en Desarrollo)
+### 3.2. Paso 2: Permitir tu IP Local para Desarrollo (Solución al Error P1001)
 
 Si al ejecutar `npm run prisma:migrate` en tu computadora local ves el error `P1001: Can't reach database server...`, es porque el firewall de Supabase está bloqueando tu conexión.
 
@@ -102,29 +102,38 @@ Este es el paso **CRÍTICO** para que tu aplicación funcione en producción. Ve
 
 **Nota sobre Producción:** El script de `build` en `package.json` ya ejecuta `npm run prisma:deploy` automáticamente. No necesitas hacerlo manualmente en Vercel.
 
-## 4. Configuración para Producción (Vercel)
+## 4. Configuración para Producción (Vercel): La Guía Visual Definitiva
 
-El archivo `.env` es local y **no debe subirse a Git**. Para que la aplicación funcione en producción, debes configurar las variables de entorno directamente en Vercel.
+El archivo `.env` es local y **no debe subirse a Git**. Para que la aplicación funcione en producción, debes configurar las variables de entorno directamente en el panel de Vercel.
 
 1.  Ve al panel de tu proyecto en Vercel.
 2.  Navega a **Settings > Environment Variables**.
-3.  Añade las siguientes variables:
+3.  Añade las siguientes variables, una por una:
 
     *   **`DATABASE_URL`**:
+        *   **Nombre:** `DATABASE_URL`
         *   **Valor:** Pega aquí la **misma** cadena de conexión directa de Supabase (la del puerto 5432) que usas en tu archivo `.env` local.
         *   **Importancia:** Crítica. Sin esto, la aplicación no podrá conectarse a la base de datos y fallará.
+        *   **Verificación:** Asegúrate de que no haya espacios al principio o al final de la cadena que pegaste.
 
     *   **`JWT_SECRET`**:
-        *   **Valor:** Genera una cadena de texto larga, segura y aleatoria. Puedes usar un generador de contraseñas en línea para crear una de 64 caracteres.
-        *   **Importancia:** Crítica. Es el secreto para la seguridad de las sesiones de usuario. **No uses la misma que en desarrollo.**
+        *   **Nombre:** `JWT_SECRET`
+        *   **Valor:** Genera una cadena de texto larga, segura y aleatoria. Puedes usar un generador de contraseñas en línea para crear una de 64 caracteres. **No uses la misma que en desarrollo.**
+        *   **Importancia:** Crítica. Es el secreto para la seguridad de las sesiones de usuario. La aplicación fallará sin esta variable.
 
     *   **`RESEND_API_KEY`**:
+        *   **Nombre:** `RESEND_API_KEY`
         *   **Valor:** Si usas Resend para enviar correos, pega aquí tu clave de API.
         *   **Importancia:** Opcional. La aplicación funcionará sin ella, pero no podrá enviar correos transaccionales.
 
-4.  **Guarda los cambios.** Vercel automáticamente redesplegará tu proyecto con las nuevas variables de entorno, y la conexión a la base de datos debería funcionar correctamente.
+4.  **Verificar el Alcance (Scope):** Al añadir cada variable, Vercel te preguntará para qué entornos aplicarla. Asegúrate de que **al menos la casilla "Production" esté marcada**.
 
-> **Nota de Depuración:** Si después de configurar las variables en Vercel sigues viendo un error 500, las rutas de autenticación (`/api/auth/login` y `/api/auth/register`) han sido mejoradas para detectar si las variables de entorno no están configuradas correctamente. Si el problema persiste, el error devuelto por la API debería ser "Error de configuración del servidor: Faltan variables de entorno críticas", confirmando que el problema reside en la configuración de Vercel.
+5.  **Guardar y Redesplegar:**
+    *   Haz clic en **"Save"** después de añadir cada variable.
+    *   Una vez que todas las variables estén configuradas, ve a la pestaña **"Deployments"** de tu proyecto en Vercel.
+    *   Busca el último despliegue, haz clic en el menú de los tres puntos (`...`) y selecciona **"Redeploy"** para forzar un nuevo despliegue con las variables de entorno actualizadas.
+
+> **Nota de Depuración:** Si después de configurar las variables en Vercel sigues viendo un error 500, revisa los logs de tu aplicación en el panel de Vercel. Las rutas de autenticación (`/api/auth/login` y `/api/auth/register`) ahora están mejoradas para detectar si las variables de entorno no están configuradas correctamente. Si el problema persiste, el error devuelto por la API debería ser "Error de configuración del servidor: Faltan variables de entorno críticas", confirmando que el problema reside en la configuración de Vercel.
 
 ## 5. Estándares de Codificación
 
