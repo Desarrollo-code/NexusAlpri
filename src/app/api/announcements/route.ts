@@ -1,4 +1,3 @@
-
 // src/app/api/announcements/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -152,4 +151,74 @@ export async function POST(req: NextRequest) {
     console.error('[ANNOUNCEMENT_POST_ERROR]', error);
     return NextResponse.json({ message: 'Error al crear el anuncio' }, { status: 500 });
   }
+}
+
+export async function PUT(req: NextRequest) {
+    const session = await getCurrentUser();
+    if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
+        return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
+    }
+
+    try {
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get('id');
+        if (!id) {
+             return NextResponse.json({ message: 'ID del anuncio es requerido' }, { status: 400 });
+        }
+
+        const announcement = await prisma.announcement.findUnique({ where: { id }});
+        if (!announcement) {
+            return NextResponse.json({ message: 'Anuncio no encontrado' }, { status: 404 });
+        }
+        if (session.role !== 'ADMINISTRATOR' && announcement.authorId !== session.id) {
+            return NextResponse.json({ message: 'No tienes permiso para editar este anuncio' }, { status: 403 });
+        }
+        
+        const body = await req.json();
+        const { title, content, audience } = body;
+        const audienceToStore = Array.isArray(audience) ? JSON.stringify(audience) : audience;
+
+        const updatedAnnouncement = await prisma.announcement.update({
+            where: { id },
+            data: { title, content, audience: audienceToStore },
+            include: { author: { select: { id: true, name: true } } }
+        });
+        
+        return NextResponse.json(updatedAnnouncement);
+
+    } catch (error) {
+        console.error('[ANNOUNCEMENT_PUT_ERROR]', error);
+        return NextResponse.json({ message: 'Error al actualizar el anuncio' }, { status: 500 });
+    }
+}
+
+export async function DELETE(req: NextRequest) {
+    const session = await getCurrentUser();
+    if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
+        return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
+    }
+
+    try {
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get('id');
+        if (!id) {
+             return NextResponse.json({ message: 'ID del anuncio es requerido' }, { status: 400 });
+        }
+
+        const announcement = await prisma.announcement.findUnique({ where: { id }});
+        if (!announcement) {
+            return NextResponse.json({ message: 'Anuncio no encontrado' }, { status: 404 });
+        }
+        if (session.role !== 'ADMINISTRATOR' && announcement.authorId !== session.id) {
+            return NextResponse.json({ message: 'No tienes permiso para eliminar este anuncio' }, { status: 403 });
+        }
+
+        await prisma.announcement.delete({ where: { id } });
+        
+        return new NextResponse(null, { status: 204 });
+
+    } catch (error) {
+        console.error('[ANNOUNCEMENT_DELETE_ERROR]', error);
+        return NextResponse.json({ message: 'Error al eliminar el anuncio' }, { status: 500 });
+    }
 }

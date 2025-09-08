@@ -1,4 +1,3 @@
-
 // src/app/api/quizzes/[quizId]/attempts/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -6,7 +5,7 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ quizId: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: { quizId: string } }) {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('userId');
 
@@ -15,7 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ quiz
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const { quizId } = await params;
+    const { quizId } = params;
 
     try {
         const count = await prisma.quizAttempt.count({

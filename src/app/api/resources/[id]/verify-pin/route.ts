@@ -5,14 +5,14 @@ import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
 
     try {
-        const { id } = await params;
+        const { id } = params;
         const { pin } = await req.json();
         if (!pin) {
             return NextResponse.json({ message: 'PIN es requerido' }, { status: 400 });

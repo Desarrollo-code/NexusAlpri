@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -9,14 +8,14 @@ export const dynamic = 'force-dynamic';
 // PUT (update) an event
 export async function PUT(
   req: NextRequest, 
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
   }
 
-  const { id } = await params;
+  const { id } = params;
 
   try {
     const existingEvent = await prisma.calendarEvent.findUnique({
@@ -82,14 +81,14 @@ export async function PUT(
 // DELETE an event
 export async function DELETE(
   req: NextRequest, 
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
     const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const { id } = await params;
+    const { id } = params;
 
     try {
         const existingEvent = await prisma.calendarEvent.findUnique({

@@ -3,9 +3,11 @@ import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const dynamic = 'force-dynamic';
+
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
-    const { id } = await params;
+    const { id } = params;
 
     if (!session || session.id !== id) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });

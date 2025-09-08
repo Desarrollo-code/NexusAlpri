@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
+import type { LessonCompletionRecord as AppLessonCompletionRecord } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 // Get progress for a specific user in a course
-export async function GET(req: NextRequest, { params }: { params: Promise<{ userId: string, courseId: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
     const session = await getCurrentUser();
-    const { userId, courseId } = await params;
+    const { userId, courseId } = params;
 
     // A user can only see their own progress. Admins/instructors might have different authorization logic.
     if (!session || (session.id !== userId && session.role === 'STUDENT')) {

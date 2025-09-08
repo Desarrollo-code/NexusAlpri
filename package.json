@@ -1,18 +1,17 @@
-
 {
   "name": "nextn",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev -p 9002",
-    "build": "npm run prisma:deploy && prisma generate && next build",
+    "build": "prisma generate && prisma db push && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma db push",
-    "prisma:seed": "prisma db seed",
+    "prisma:seed": "ts-node prisma/seed.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {
@@ -91,7 +90,7 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "postcss": "^8.4.39",
-    "prisma": "5.17.0",
+    "prisma": "^5.17.0",
     "tailwindcss": "^3.4.6"
   }
 }

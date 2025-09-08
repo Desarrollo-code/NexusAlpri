@@ -7,9 +7,9 @@ import type { NextRequest } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 // GET a specific resource
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     try {
-        const { id } = await params;
+        const { id } = params;
         const resource = await prisma.resource.findUnique({
             where: { id },
             include: {
@@ -34,14 +34,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 
 // PUT (update) a resource
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
     
     try {
-        const { id } = await params;
+        const { id } = params;
         const resourceToUpdate = await prisma.resource.findUnique({ where: { id } });
         if (!resourceToUpdate) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
@@ -72,14 +72,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 // DELETE a resource
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getCurrentUser();
     if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
     try {
-        const { id } = await params;
+        const { id } = params;
         const resourceToDelete = await prisma.resource.findUnique({ where: { id } });
         if (!resourceToDelete) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });

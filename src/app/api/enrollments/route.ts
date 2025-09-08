@@ -1,4 +1,3 @@
-
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -113,7 +112,7 @@ export async function DELETE(req: NextRequest) {
                 await tx.enrollment.delete({ where: { id: enrollmentToDelete.id } });
             });
         }
-        return NextResponse.json({ message: 'Inscripción cancelada' });
+        return NextResponse.json({ message: 'Inscripción cancelada' }, { status: 200 });
 
     } catch (error) {
         console.error('[ENROLLMENT_DELETE_ERROR]', error);

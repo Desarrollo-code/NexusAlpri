@@ -1,9 +1,8 @@
-
 // prisma/seed.ts
 import { PrismaClient, UserRole, AchievementSlug } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
-// Conexión explícita a la base de datos de producción para el script de seed
+// Conexión explícita a la base de datos para el script de seed
 const prisma = new PrismaClient({
   datasources: {
     db: {

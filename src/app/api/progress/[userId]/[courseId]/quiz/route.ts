@@ -6,10 +6,12 @@ import { recordLessonInteraction } from '@/lib/progress';
 import prisma from '@/lib/prisma';
 import { addXp, awardAchievement, XP_CONFIG, ACHIEVEMENT_SLUGS } from '@/lib/gamification';
 
+export const dynamic = 'force-dynamic';
+
 // Records a 'quiz' interaction with its score and individual answers
-export async function POST(req: NextRequest, { params }: { params: Promise<{ userId: string, courseId: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
     const session = await getCurrentUser();
-    const { userId, courseId } = await params;
+    const { userId, courseId } = params;
 
     if (!session || session.id !== userId) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
@@ -49,7 +51,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
             }
         }
         
-        const score = quiz?.questions.length ? (correctCount / quiz.questions.length) * 100 : 0;
+        const score = questions.length ? (correctCount / questions.length) * 100 : 0;
         
         const currentAttempts = await prisma.quizAttempt.count({ where: { userId, quizId } });
 
