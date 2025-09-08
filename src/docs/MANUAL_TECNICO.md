@@ -60,9 +60,10 @@ Este es el paso más importante y donde ocurren la mayoría de los errores. Pris
 datasource db {
   provider          = "postgresql"
   // ¡Pega aquí tu cadena de conexión DIRECTA (puerto 5432)!
-  url               = "postgresql://postgres:[TU_CONTRASEÑA]@[ID_PROYECTO].db.supabase.co:5432/postgres"
+  url               = "postgresql://postgres:[TU_CONTRASEÑA]@db.gxpndcgiyrhcrrmuhhku.supabase.co:5432/postgres"
   // Para la base de datos sombra, usa el puerto del pooler (6543)
-  shadowDatabaseUrl = "postgresql://postgres:[TU_CONTRASEÑA]@[ID_PROYECTO].pooler.supabase.co:6543/postgres?pgbouncer=true"
+  shadowDatabaseUrl = "postgresql://postgres.gxpndcgiyrhcrrmuhhku:[TU_CONTRASEÑA]@aws-1-us-east-2.pooler.supabase.com:6543/postgres"
+  relationMode      = "prisma"
 }
 ```
 
