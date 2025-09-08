@@ -71,7 +71,7 @@ Reemplaza `[TU_CONTRASEÑA]` con la contraseña real de tu base de datos.
 
 *   **`npm run prisma:deploy` (Para Producción/Vercel):**
     *   **¿Qué hace?** Compara tu `schema.prisma` directamente con la base de datos y la modifica para que coincidan. **No crea archivos de migración.**
-    *   **¿Cuándo usarlo?** Este comando es ideal para entornos de producción o de prueba (como Vercel) donde no necesitas un historial, solo quieres que la base de datos refleje el esquema actual. **No necesitas ejecutarlo manualmente**, ya que está incluido en el script de `build`.
+    *   **¿Cuándo usarlo?** Este comando es ideal para entornos de producción o de prueba (como Vercel) donde no necesitas un historial, solo quieres que la base de datos refleje el esquema actual. **No necesitas ejecutarlo manually**, ya que está incluido en el script de `build`.
 
 ### 3.3. Guía Definitiva: Escenarios Comunes
 
