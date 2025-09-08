@@ -47,4 +47,4 @@ La plataforma se organiza en torno a tres roles de usuario clave (Estudiante, In
 *   **Estilos:** Tailwind CSS y ShadCN UI.
 *   **Autenticación:** JWT en cookies http-only con soporte para 2FA.
 
-**Nota para el Despliegue:** Para conectar la aplicación con tu base de datos de Supabase, asegúrate de configurar la variable de entorno `DATABASE_URL` en Vercel con la cadena de conexión de tu proyecto de Supabase.
+**Nota para el Despliegue y Desarrollo:** Para conectar la aplicación con tu base de datos de Supabase, asegúrate de configurar la variable de entorno `DATABASE_URL` en tu archivo `.env` con la **cadena de conexión directa** (puerto 5432) de tu proyecto de Supabase. Puedes encontrarla en **Project Settings > Database > Connection string**.

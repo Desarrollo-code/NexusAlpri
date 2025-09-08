@@ -39,53 +39,53 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 4.  La lógica de la API utiliza el cliente de **Prisma** (`@/lib/prisma`) para interactuar con la base de datos PostgreSQL.
 5.  Los datos se devuelven como JSON al componente o al cliente.
 
-## 3. Base de Datos y Migraciones con Prisma
+## 3. Base de Datos y Migraciones: La Guía Infalible
 
 Esta sección es la guía definitiva para gestionar tu base de datos con Prisma y Supabase.
 
-### 3.1. Paso 1: Conexión con Supabase
+### 3.1. Paso 1: Obtener la Cadena de Conexión CORRECTA
 
-Este es el paso más importante. Antes de ejecutar cualquier comando, asegúrate de que tu aplicación pueda conectarse a tu base de datos de Supabase.
+Este es el paso más importante y donde ocurren la mayoría de los errores. Prisma necesita una conexión **directa** a la base de datos para poder crear y modificar las tablas (ejecutar migraciones).
 
 1.  Ve a tu proyecto en Supabase.
-2.  Navega a **Project Settings > Database**.
-3.  En la sección **Connection string**, copia la URL que empieza con `postgresql://`.
-4.  Pégala en tu archivo `.env` en la raíz del proyecto:
+2.  En el menú lateral, ve a **Project Settings** (el icono del engranaje) y luego a **Database**.
+3.  Busca la sección **Connection string**.
+4.  **IMPORTANTE:** Copia la URL que empieza con `postgresql://` y que utiliza el puerto **5432**. **NO uses la que tiene el puerto 6543 (Transaction pooler) para migraciones.**
+5.  Pégala en tu archivo `.env` en la raíz del proyecto:
 
 ```env
+# Ejemplo de la cadena de conexión correcta
 DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@[ID_PROYECTO].db.supabase.co:5432/postgres"
+
+# Otras variables necesarias
 JWT_SECRET="genera-una-cadena-aleatoria-muy-segura-aqui"
 RESEND_API_KEY="tu_api_key_de_resend"
 ```
 
-**Importante:** Reemplaza `[TU_CONTRASEÑA]` con la contraseña real de tu base de datos.
+Reemplaza `[TU_CONTRASEÑA]` con la contraseña real de tu base de datos.
 
 ### 3.2. Paso 2: Entender los Comandos de Prisma
 
-Prisma tiene dos comandos principales para gestionar la base de datos. Es crucial saber cuándo usar cada uno:
-
-*   **`prisma migrate dev` (Comando de Desarrollo):**
+*   **`npm run prisma:migrate` (Para Desarrollo):**
     *   **¿Qué hace?** Compara tu `schema.prisma` con el estado anterior y genera un nuevo archivo de migración SQL en la carpeta `prisma/migrations`. Luego, aplica esa migración a la base de datos.
-    *   **¿Cuándo usarlo?** **Siempre** durante el desarrollo en tu máquina local. Esto crea un historial de cambios que es esencial para mantener la base de datos consistente entre diferentes desarrolladores.
-    *   **Comando del Proyecto:** `npm run prisma:migrate`
+    *   **¿Cuándo usarlo?** **Siempre** durante el desarrollo en tu máquina local cada vez que cambias el `schema.prisma`. Esto crea un historial de cambios que es esencial para mantener la base de datos consistente.
 
-*   **`prisma db push` (Comando de Sincronización):**
+*   **`npm run prisma:deploy` (`prisma db push`) (Para Producción/Vercel):**
     *   **¿Qué hace?** Compara tu `schema.prisma` directamente con la base de datos y la modifica para que coincidan. **No crea archivos de migración.**
-    *   **¿Cuándo usarlo?** Es ideal para **entornos de producción o de prueba** (como Vercel) donde no necesitas un historial de migraciones, solo quieres que la base de datos refleje el esquema actual. También es útil para prototipado rápido.
-    *   **Comando del Proyecto:** `npm run prisma:deploy`
+    *   **¿Cuándo usarlo?** Este comando es ideal para entornos de producción o de prueba (como Vercel) donde no necesitas un historial, solo quieres que la base de datos refleje el esquema actual. **No necesitas ejecutarlo manualmente**, ya que está incluido en el script de `build`.
 
-### 3.3. Guía Infalible: Escenarios Comunes
+### 3.3. Guía Definitiva: Escenarios Comunes
 
 #### Escenario 1: Primera Configuración (Base de Datos Nueva)
 
-Sigue estos pasos si estás configurando el proyecto desde cero con una base de datos vacía en Supabase.
+Si estás configurando el proyecto desde cero con una base de datos vacía en Supabase:
 
-1.  **Configura tu `.env`:** Asegúrate de que `DATABASE_URL` esté correctamente configurada como se explicó en el Paso 1.
-2.  **Sincroniza el Esquema:** Ejecuta el comando de "deploy" para crear todas las tablas y estructuras en tu base de datos de Supabase por primera vez.
+1.  **Configura tu `.env`:** Asegúrate de que `DATABASE_URL` esté correctamente configurada como se explicó en el Paso 1 (usando el puerto **5432**).
+2.  **Sincroniza el Esquema:** Ejecuta el comando de "deploy" para crear todas las tablas y estructuras en tu base de datos por primera vez.
     ```bash
     npm run prisma:deploy
     ```
-3.  **Puebla con Datos Iniciales:** Ejecuta el comando "seed" para llenar la base de datos con el usuario administrador, cursos de prueba y configuración inicial.
+3.  **Puebla con Datos Iniciales:** Ejecuta el comando "seed" para llenar la base de datos con el usuario administrador y datos de prueba.
     ```bash
     npm run prisma:seed
     ```
@@ -94,10 +94,10 @@ Sigue estos pasos si estás configurando el proyecto desde cero con una base de 
 
 #### Escenario 2: Desarrollo Continuo (Aplicar Nuevos Cambios)
 
-Sigue estos pasos cuando ya tienes una base de datos funcionando y has hecho cambios en tu archivo `prisma/schema.prisma` (ej. añadir una nueva tabla o campo).
+Si ya tienes una base de datos funcionando y has hecho cambios en tu archivo `prisma/schema.prisma` (ej. añadir una nueva tabla o campo):
 
 1.  **Modifica `prisma/schema.prisma`:** Haz los cambios que necesites en el esquema.
-2.  **Crea la Migración:** Ejecuta el comando de desarrollo para generar el archivo de migración y aplicarlo a tu base de datos local (o de desarrollo).
+2.  **Crea y Aplica la Migración:** Ejecuta el comando de desarrollo. Esto generará el archivo de migración y lo aplicará a tu base de datos.
     ```bash
     npm run prisma:migrate
     ```
