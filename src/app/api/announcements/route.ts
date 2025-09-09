@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   let whereClause: any = {
     OR: [
       { audience: 'ALL' },
-      { audience: { contains: session.role } }, // Busca el rol como texto simple
+      { audience: session.role }, // Busca el rol como texto simple
     ],
   };
 
@@ -89,10 +89,8 @@ export async function POST(req: NextRequest) {
     if (!title || !content || !audience) {
         return NextResponse.json({ message: 'Título, contenido y audiencia son requeridos' }, { status: 400 });
     }
-
-    // --- LÓGICA DE GUARDADO CORREGIDA ---
-    // Asegura que si es un array, se guarde como un JSON string.
-    const audienceToStore = Array.isArray(audience) ? JSON.stringify(audience) : audience;
+    
+    const audienceToStore = Array.isArray(audience) ? audience[0] : audience;
 
     const newAnnouncement = await prisma.announcement.create({
       data: {
@@ -101,6 +99,7 @@ export async function POST(req: NextRequest) {
         audience: audienceToStore,
         authorId: session.id,
         date: new Date(),
+        priority: 'Normal'
       },
       include: {
         author: { select: { name: true, id: true } }
@@ -176,7 +175,7 @@ export async function PUT(req: NextRequest) {
         
         const body = await req.json();
         const { title, content, audience } = body;
-        const audienceToStore = Array.isArray(audience) ? JSON.stringify(audience) : audience;
+        const audienceToStore = Array.isArray(audience) ? audience[0] : audience;
 
         const updatedAnnouncement = await prisma.announcement.update({
             where: { id },
@@ -198,13 +197,13 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    try {
-        const { searchParams } = new URL(req.url);
-        const id = searchParams.get('id');
-        if (!id) {
-             return NextResponse.json({ message: 'ID del anuncio es requerido' }, { status: 400 });
-        }
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+    if (!id) {
+        return NextResponse.json({ message: 'ID del anuncio es requerido' }, { status: 400 });
+    }
 
+    try {
         const announcement = await prisma.announcement.findUnique({ where: { id }});
         if (!announcement) {
             return NextResponse.json({ message: 'Anuncio no encontrado' }, { status: 404 });
@@ -219,6 +218,10 @@ export async function DELETE(req: NextRequest) {
 
     } catch (error) {
         console.error('[ANNOUNCEMENT_DELETE_ERROR]', error);
+        if ((error as any).code === 'P2025') {
+            // This means the record was already deleted, which is fine.
+            return new NextResponse(null, { status: 204 });
+        }
         return NextResponse.json({ message: 'Error al eliminar el anuncio' }, { status: 500 });
     }
 }
