@@ -1,3 +1,4 @@
+
 // src/components/layout/public-top-bar.tsx
 'use client';
 
@@ -19,7 +20,7 @@ export function PublicTopBar() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-sm border-b">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-amber-50/80 via-amber-100/80 to-amber-50/80 dark:from-amber-950/80 dark:via-amber-900/80 dark:to-amber-950/80 backdrop-blur-sm border-b border-amber-200/80 dark:border-amber-800/80">
       <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-20">
         <div className="flex items-center justify-start flex-1">
           <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
@@ -33,7 +34,7 @@ export function PublicTopBar() {
         </div>
         
         <nav className="hidden md:flex items-center justify-center flex-1">
-          <div className="flex items-center gap-1 bg-secondary rounded-full p-1 shadow-sm">
+          <div className="flex items-center gap-1 bg-amber-100/50 dark:bg-amber-900/50 rounded-full p-1 shadow-sm">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -41,7 +42,7 @@ export function PublicTopBar() {
                     "transition-colors rounded-full h-9",
                     isActive 
                       ? "bg-accent text-accent-foreground font-semibold shadow" 
-                      : "bg-card text-secondary-foreground hover:bg-card/80"
+                      : "text-secondary-foreground hover:bg-card/80"
                 )}>
                     <Link href={item.href}>
                         {item.label}
