@@ -42,8 +42,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             let maxPoints = 0;
 
             for (const field of form.fields) {
-                // Solo procesar puntuación para SINGLE_CHOICE
-                if (field.type !== 'SINGLE_CHOICE') continue;
+                if (field.type !== 'SINGLE_CHOICE' && field.type !== 'MULTIPLE_CHOICE') continue;
 
                 const fieldOptions = field.options as any as FormFieldOption[];
                 if (!fieldOptions || fieldOptions.length === 0) continue;
@@ -53,13 +52,15 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
                     .reduce((sum, opt) => sum + (opt.points || 0), 0);
                 maxPoints += questionMaxPoints;
 
-                const userAnswerId = answers[field.id];
-                if (!userAnswerId) continue; 
+                const userAnswerIds = Array.isArray(answers[field.id]) ? answers[field.id] : [answers[field.id]];
+                if (!userAnswerIds) continue; 
                 
-                const selectedOption = fieldOptions.find(o => o.id === userAnswerId);
-                if (selectedOption?.isCorrect) {
-                    userPoints += selectedOption.points || 0;
-                }
+                userAnswerIds.forEach((answerId: string) => {
+                    const selectedOption = fieldOptions.find(o => o.id === answerId);
+                    if (selectedOption?.isCorrect) {
+                        userPoints += selectedOption.points || 0;
+                    }
+                });
             }
             
             finalScorePercentage = maxPoints > 0 ? (userPoints / maxPoints) * 100 : 0;

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const { courseId, userId } = await req.json(); // userId is optional
+        const { courseId, userId, enroll } = await req.json(); // enroll is a boolean for future use, assuming true for now
         const finalUserId = userId || session.id;
 
         if (!courseId) {

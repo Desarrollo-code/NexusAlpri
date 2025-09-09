@@ -34,9 +34,9 @@ export async function GET(req: NextRequest) {
   };
 
   if (filter === 'by-me') {
-    whereClause.authorId = session.id;
+    whereClause = { authorId: session.id };
   } else if (filter === 'by-others') {
-    whereClause.authorId = { not: session.id };
+    whereClause = { authorId: { not: session.id } };
   }
   
   try {
