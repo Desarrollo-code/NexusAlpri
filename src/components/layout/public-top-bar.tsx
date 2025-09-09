@@ -20,7 +20,7 @@ export function PublicTopBar() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-amber-50/80 via-amber-100/80 to-amber-50/80 dark:from-amber-950/80 dark:via-amber-900/80 dark:to-amber-950/80 backdrop-blur-sm border-b border-amber-200/80 dark:border-amber-800/80">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-blue-50/80 via-blue-100/80 to-blue-50/80 dark:from-blue-950/80 dark:via-blue-900/80 dark:to-blue-950/80 backdrop-blur-sm border-b border-blue-200/80 dark:border-blue-800/80">
       <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-20">
         <div className="flex items-center justify-start flex-1">
           <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
@@ -34,14 +34,14 @@ export function PublicTopBar() {
         </div>
         
         <nav className="hidden md:flex items-center justify-center flex-1">
-          <div className="flex items-center gap-1 bg-amber-100/50 dark:bg-amber-900/50 rounded-full p-1 shadow-sm">
+          <div className="flex items-center gap-1 bg-blue-100/50 dark:bg-blue-900/50 rounded-full p-1 shadow-sm">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Button key={item.href} variant="ghost" asChild className={cn(
                     "transition-colors rounded-full h-9",
                     isActive 
-                      ? "bg-accent text-accent-foreground font-semibold shadow" 
+                      ? "bg-primary text-primary-foreground font-semibold shadow" 
                       : "text-secondary-foreground hover:bg-card/80"
                 )}>
                     <Link href={item.href}>
