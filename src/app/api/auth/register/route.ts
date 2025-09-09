@@ -1,3 +1,4 @@
+// src/app/api/auth/register/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
@@ -70,7 +71,7 @@ export async function POST(req: NextRequest) {
         password: hashedPassword,
         role: 'STUDENT', // Default role for public registration
         registeredDate: new Date(),
-        isActive: true, // Se añade el estado activo por defecto
+        isActive: true,
       },
     });
 
@@ -82,7 +83,6 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error('[REGISTER_ERROR]', error);
-    // Verificar si el error es de Prisma para un mensaje más específico
     if (error instanceof Error && 'code' in error && (error as any).code?.startsWith('P')) {
        return NextResponse.json({ message: 'Error de base de datos al crear el usuario.' }, { status: 500 });
     }
