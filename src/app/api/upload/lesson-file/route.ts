@@ -1,7 +1,6 @@
-
-import { writeFile, mkdir } from 'fs/promises';
+// src/app/api/upload/lesson-file/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { join } from 'path';
+import { supabase } from '@/lib/supabase-client';
 
 export async function POST(request: NextRequest) {
   const data = await request.formData();
@@ -12,28 +11,26 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Define la ruta de guardado
-    const relativeUploadDir = '/uploads/lessons';
-    const uploadDir = join(process.cwd(), 'public', relativeUploadDir);
-
-    // Asegurarse de que el directorio exista
-    await mkdir(uploadDir, { recursive: true });
-
-    // Genera un nombre de archivo único para evitar colisiones
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
     const filename = `${uniqueSuffix}-${file.name.replace(/\s/g, '_')}`;
-    const filePath = join(uploadDir, filename);
     
-    await writeFile(filePath, buffer);
+    const { data: uploadData, error } = await supabase.storage
+      .from('lesson_files')
+      .upload(filename, file);
+
+    if (error) {
+      throw new Error(error.message);
+    }
     
-    const fileUrl = `${relativeUploadDir}/${filename}`;
-    return NextResponse.json({ success: true, url: fileUrl });
+    const { data: publicUrlData } = supabase.storage
+      .from('lesson_files')
+      .getPublicUrl(uploadData.path);
+      
+    return NextResponse.json({ success: true, url: publicUrlData.publicUrl });
 
   } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : 'Error desconocido.';
     console.error('Error al procesar la subida de archivo de lección:', e);
-    return NextResponse.json({ success: false, message: 'Error interno al guardar el archivo.' }, { status: 500 });
+    return NextResponse.json({ success: false, message: `Error interno al guardar el archivo: ${errorMessage}` }, { status: 500 });
   }
 }
