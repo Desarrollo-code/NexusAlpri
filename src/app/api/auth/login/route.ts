@@ -50,27 +50,19 @@ function recordFailedAttempt(req: NextRequest, email: string, userId?: string) {
     }).catch(console.error); // Log DB errors without blocking the response
 }
 
-function recordSuccessfulLogin(req: NextRequest, userId: string, is2FACompleted: boolean = false) {
+function recordSuccessfulLogin(req: NextRequest, userId: string, details: string) {
     const ip = getIp(req);
-    const details = is2FACompleted 
-        ? 'Login completado con 2FA.'
-        : 'Credenciales validadas, pendiente 2FA si está activo.';
-
-    // Solo se registra un evento de login exitoso por intento.
-    // Si no es 2FA, se registra ahora. Si es 2FA, se registrará al final.
-    if (!is2FACompleted) {
-        prisma.securityLog.create({
-            data: {
-                event: 'SUCCESSFUL_LOGIN',
-                ipAddress: ip,
-                userId: userId,
-                details: details,
-                userAgent: req.headers.get('user-agent'),
-                country: req.geo?.country,
-                city: req.geo?.city,
-            }
-        }).catch(console.error);
-    }
+    prisma.securityLog.create({
+        data: {
+            event: 'SUCCESSFUL_LOGIN',
+            ipAddress: ip,
+            userId: userId,
+            details: details,
+            userAgent: req.headers.get('user-agent'),
+            country: req.geo?.country,
+            city: req.geo?.city,
+        }
+    }).catch(console.error);
 }
 
 // --- Login Route ---
@@ -117,7 +109,7 @@ export async function POST(req: NextRequest) {
     
     if (user.isTwoFactorEnabled) {
       // Log successful credential validation, but don't create session yet
-      recordSuccessfulLogin(req, user.id, false); 
+      recordSuccessfulLogin(req, user.id, 'Credenciales válidas, pendiente 2FA.'); 
       return NextResponse.json({
         twoFactorRequired: true,
         userId: user.id,
@@ -125,7 +117,7 @@ export async function POST(req: NextRequest) {
     }
     
     loginAttempts.delete(ip);
-    recordSuccessfulLogin(req, user.id, true); // Log full success as 2FA is not enabled
+    recordSuccessfulLogin(req, user.id, 'Login exitoso (sin 2FA).'); // Log full success as 2FA is not enabled
     
     const { password: _, twoFactorSecret, ...userToReturn } = user;
     
