@@ -1,3 +1,4 @@
+// src/app/api/settings/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -6,8 +7,6 @@ import type { NextRequest } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-// Este objeto define los valores por defecto que se usarán
-// si no hay ninguna configuración guardada en la base de datos.
 const DEFAULT_DB_SETTINGS = {
   id: 'cl-nexus-settings-default', // Un ID predecible y único
   platformName: "NexusAlpri",
@@ -53,12 +52,13 @@ export async function GET(req: NextRequest) {
     // Intenta conectar a la base de datos de forma explícita
     await prisma.$connect();
 
-    // Utiliza upsert para crear la configuración si no existe
-    const dbSettings = await prisma.platformSettings.upsert({
-        where: { id: DEFAULT_DB_SETTINGS.id },
-        update: {}, // No actualiza nada si ya existe
-        create: DEFAULT_DB_SETTINGS, // Crea con los valores por defecto si no existe
-    });
+    let dbSettings = await prisma.platformSettings.findFirst();
+
+    if (!dbSettings) {
+      dbSettings = await prisma.platformSettings.create({
+        data: DEFAULT_DB_SETTINGS,
+      });
+    }
     
     // Transforma los campos de string a array para el cliente
     const settingsToReturn: PlatformSettings = {
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     console.error('[SETTINGS_GET_ERROR]', error);
-    // En caso de error de conexión u otro, devuelve la configuración por defecto
+    // En caso de error de conexión, devuelve la configuración por defecto
     const fallbackSettings = getFallbackSettings();
     return NextResponse.json(fallbackSettings);
   } finally {
