@@ -40,34 +40,23 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 
 ## 3. Base de Datos y Migraciones: La Guía Infalible
 
-### 3.1. Paso 1: Configurar el archivo `prisma/schema.prisma`
+### 3.1. Paso 1: Configurar el archivo `.env` para Desarrollo Local
 
-Este es el paso más importante y donde ocurren la mayoría de los errores. Prisma necesita una conexión **directa** a la base de datos para poder crear y modificar las tablas (ejecutar migraciones).
+Para hacer cambios en la estructura de la base de datos (modificar `schema.prisma`), **siempre** debes usar la conexión directa a la base de datos en tu entorno local.
 
-1.  **Obtén tu Cadena de Conexión DIRECTA:**
-    *   Ve a tu proyecto en Supabase.
-    *   En el menú lateral, ve a **Project Settings** (el icono del engranaje) y luego a **Database**.
-    *   Busca la sección **Connection string**.
-    *   **IMPORTANTE:** Copia la URL de la tarjeta **"Direct connection"**, que empieza con `postgresql://` y que utiliza el puerto **5432**.
-2.  **Pégala en tu esquema:**
-    *   Abre el archivo `prisma/schema.prisma` en tu editor de código.
-    *   Busca la línea `url = "..."` dentro del bloque `datasource db { ... }`.
-    *   Reemplaza la URL de ejemplo con la cadena de conexión **DIRECTA** que acabas de copiar. Asegúrate de cambiar `[YOUR-PASSWORD]` por tu contraseña real.
-    *   Haz lo mismo para la `shadowDatabaseUrl`, pero asegúrate de que el puerto sea `6543`.
+1.  **Obtener la Cadena de Conexión Directa:**
+    *   Ve a tu proyecto en Supabase: **Project Settings > Database**.
+    *   Copia la URL de la tarjeta que dice **"Direct connection"**. Empieza con `postgresql://` y usa el puerto **5432**.
+2.  **Configurar tu Archivo `.env`:**
+    *   Abre el archivo `.env` en la raíz de tu proyecto.
+    *   Asegúrate de que la variable `DATABASE_URL` contenga la cadena de conexión **DIRECTA (puerto 5432)** que acabas de copiar.
 
-```prisma
-// Ejemplo de cómo debe quedar en prisma/schema.prisma
-datasource db {
-  provider          = "postgresql"
-  // ¡Pega aquí tu cadena de conexión DIRECTA (puerto 5432)!
-  url               = "postgresql://postgres:[TU_CONTRASEÑA]@db.gxpndcgiyrhcrrmuhhku.supabase.co:5432/postgres"
-  // Para la base de datos sombra, usa el puerto del pooler (6543)
-  shadowDatabaseUrl = "postgresql://postgres.gxpndcgiyrhcrrmuhhku:[TU_CONTRASEÑA]@aws-1-us-east-2.pooler.supabase.com:6543/postgres"
-  relationMode      = "prisma"
-}
-```
+    ```dotenv
+    # Ejemplo en .env
+    DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@db.xxxxxxxx.supabase.co:5432/postgres"
+    ```
 
-### 3.2. Paso 2: Permitir tu IP Local para Desarrollo (Solución al Error P1001)
+### 3.2. Paso 2: Permitir tu IP Local (Solución al Error P1001)
 
 Si al ejecutar `npm run prisma:migrate` en tu computadora local ves el error `P1001: Can't reach database server...`, es porque el firewall de Supabase está bloqueando tu conexión.
 
@@ -94,7 +83,7 @@ Si al ejecutar `npm run prisma:migrate` en tu computadora local ves el error `P1
     npm run prisma:seed
     ```
 
-**Nota sobre Producción:** No necesitas hacer nada especial para Vercel. El script de `build` ya ejecuta `npm run prisma:deploy` automáticamente. Lo único que debes configurar en Vercel son las variables de entorno, como se explica a continuación.
+**Nota sobre `schema.prisma`:** No es necesario que pongas la `DATABASE_URL` directamente en el `schema.prisma`. Es mejor que solo contenga `env("DATABASE_URL")` para que tome la variable del archivo `.env`.
 
 ## 4. Configuración para Producción (Vercel)
 
