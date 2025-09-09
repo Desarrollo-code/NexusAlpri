@@ -15,20 +15,13 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const parentId = searchParams.get('parentId') || null;
     
-    // --- Start of Advanced Permission Logic ---
-    const permissionsClause = {
+    // --- Lógica de permisos simplificada y robusta ---
+    const whereClause: any = {
+        parentId,
         OR: [
-            { ispublic: true },
-            { uploaderId: session.id },
-            { sharedWith: { some: { id: session.id } } }
-        ]
-    };
-    // --- End of Advanced Permission Logic ---
-    
-    const whereClause = {
-        AND: [
-            { parentId },
-            permissionsClause,
+            { ispublic: true }, // Es público
+            { uploaderId: session.id }, // Lo subió el usuario actual
+            { sharedWith: { some: { id: session.id } } } // Está compartido con el usuario actual
         ]
     };
 
@@ -36,7 +29,7 @@ export async function GET(req: NextRequest) {
         const resources = await prisma.resource.findMany({
             where: whereClause,
             include: {
-                uploader: { select: { id: true, name: true, avatar: true } }, // Include avatar
+                uploader: { select: { id: true, name: true, avatar: true } },
                 sharedWith: { select: { id: true, name: true, avatar: true } }
             },
             orderBy: [
@@ -45,13 +38,12 @@ export async function GET(req: NextRequest) {
             ],
         });
         
-        // Don't expose the PIN hash to the client
-        const safeResources = resources.map(({ pin, tags, uploader, ...resource }) => ({
+        // No exponer el PIN hash al cliente
+        const safeResources = resources.map(({ pin, tags, ...resource }) => ({
             ...resource,
             tags: tags ? tags.split(',').filter(Boolean) : [],
             hasPin: !!pin,
-            uploaderName: uploader?.name || 'Sistema', // Add uploaderName
-            uploader: uploader, // Keep the uploader object with avatar
+            uploaderName: resource.uploader?.name || 'Sistema',
         }));
 
         return NextResponse.json({ resources: safeResources, totalResources: safeResources.length });
@@ -110,14 +102,13 @@ export async function POST(req: NextRequest) {
             }
         });
         
-        const { pin, tags: tagsString, uploader, ...safeResource } = newResource;
+        const { pin, tags: tagsString, ...safeResource } = newResource;
 
         return NextResponse.json({ 
             ...safeResource,
             tags: tagsString ? tagsString.split(',').filter(Boolean) : [],
             hasPin: !!pin,
-            uploaderName: uploader?.name || 'Sistema',
-            uploader: uploader
+            uploaderName: newResource.uploader?.name || 'Sistema'
         }, { status: 201 });
 
     } catch (error) {
