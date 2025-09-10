@@ -1,7 +1,7 @@
-
+// src/app/(public)/sign-up/[[...sign-up]]/page.tsx
 'use client';
 
-import AuthForm from '@/components/auth/auth-form-container';
+import AuthForm from '@/components/auth/auth-form';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
