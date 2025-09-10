@@ -40,72 +40,72 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 
 ## 3. Base de Datos y Migraciones: La Guía Infalible
 
-### 3.1. Paso 1: Configurar el archivo `.env` para Desarrollo Local
+### 3.1. Paso 1: Configurar la Conexión para Migraciones (¡Solución a TODOS los errores!)
 
-Para hacer cambios en la estructura de la base de datos (modificar `schema.prisma`), **siempre** debes usar la conexión directa a la base de datos en tu entorno local.
+Para ejecutar el comando `prisma migrate dev`, Prisma necesita una conexión especial con la base de datos que el gestor de conexiones (pooler) de Supabase no soporta por defecto. Esto causa los errores `P3014`, `P1017` y `P1002`.
 
-1.  **Obtener la Cadena de Conexión Directa:**
+**La solución es usar DOS variables de entorno diferentes:** una para la aplicación en general y otra específica para las migraciones.
+
+1.  **Obtener las Dos Cadenas de Conexión:**
     *   Ve a tu proyecto en Supabase: **Project Settings > Database**.
-    *   Copia la URL de la tarjeta que dice **"Direct connection"**. Empieza con `postgresql://` y usa el puerto **5432**.
-2.  **Configurar tu Archivo `.env`:**
+    *   **Para `DATABASE_URL`:** Copia la URL de la tarjeta **"Transaction pooler"** (usa el puerto **6543**).
+    *   **Para `DIRECT_URL`:** Copia la URL de la tarjeta **"Direct connection"** (usa el puerto **5432**).
+
+2.  **Configurar tu Archivo `.env` Local:**
     *   Abre el archivo `.env` en la raíz de tu proyecto.
-    *   Asegúrate de que la variable `DATABASE_URL` contenga la cadena de conexión **DIRECTA (puerto 5432)** que acabas de copiar.
+    *   Añade **ambas** variables:
 
     ```dotenv
-    # Ejemplo en .env
-    DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@db.xxxxxxxx.supabase.co:5432/postgres"
+    # Para el funcionamiento normal de la aplicación (consultas, etc.)
+    DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@db.xxxxxxxx.supabase.co:6543/postgres"
+
+    # ¡IMPORTANTE! Exclusivamente para migraciones (`prisma migrate`)
+    DIRECT_URL="postgresql://postgres:[TU_CONTRASEÑA]@db.xxxxxxxx.supabase.co:5432/postgres"
     ```
 
-### 3.2. Paso 2: Permitir tu IP Local (Solución al Error P1001)
+3.  **Configurar `schema.prisma`:**
+    *   Asegúrate de que tu archivo `prisma/schema.prisma` haga referencia a ambas variables. El campo `directUrl` es utilizado por `prisma migrate`, mientras que `url` es para el resto de operaciones.
 
-Si al ejecutar `npm run prisma:migrate` en tu computadora local ves el error `P1001: Can't reach database server...`, es porque el firewall de Supabase está bloqueando tu conexión.
+    ```prisma
+    // prisma/schema.prisma
+    datasource db {
+      provider  = "postgresql"
+      url       = env("DATABASE_URL")
+      directUrl = env("DIRECT_URL")
+    }
+    ```
 
-1.  **Obtén tu dirección IP pública:** Busca en Google "¿Cuál es mi IP?".
-2.  **Añade tu IP a Supabase:**
-    *   En Supabase, ve a **Project Settings > Database**.
-    *   Busca la sección **Network Restrictions**.
-    *   Haz clic en **`Add new rule`**.
-    *   Dale un nombre (ej. "Oficina Casa - [Tu Nombre]") y en `CIDR Address` pega tu IP seguida de `/32`. Ejemplo: `123.123.123.123/32`.
-    *   Guarda la regla.
+### 3.2. Paso 2: Permitir tu IP Local
+
+Si al ejecutar `npm run prisma:migrate` ves un error de conexión, es probable que necesites añadir tu IP a la lista de redes permitidas en Supabase.
+
+1.  **Obtén tu IP pública:** Busca en Google "¿Cuál es mi IP?".
+2.  **Añade tu IP a Supabase:** Ve a **Project Settings > Database > Network Restrictions** y añade una nueva regla con tu IP seguida de `/32` (ej. `123.123.123.123/32`).
 
 ### 3.3. Paso 3: Ejecutar los Comandos de Prisma
 
-*   **En tu computadora (desarrollo):** Para aplicar cambios que hayas hecho en `schema.prisma`.
+*   **Para aplicar cambios de `schema.prisma`:**
     ```bash
     npm run prisma:migrate
     ```
-*   **En tu computadora (primera vez o si la BD está vacía):** Para crear las tablas por primera vez sin generar archivos de migración.
+*   **Para aplicar solo el estado actual (sin crear archivo de migración):**
     ```bash
     npm run prisma:deploy
     ```
-*   **Para poblar la base de datos con datos de prueba:**
+*   **Para poblar con datos de prueba:**
     ```bash
     npm run prisma:seed
     ```
 
-**Nota sobre `schema.prisma`:** No es necesario que pongas la `DATABASE_URL` directamente en el `schema.prisma`. Es mejor que solo contenga `env("DATABASE_URL")` para que tome la variable del archivo `.env`.
-
 ## 4. Configuración para Producción (Vercel)
 
-Para que la aplicación funcione en producción, debes configurar las variables de entorno directamente en el panel de Vercel.
+En Vercel, solo necesitas la variable `DATABASE_URL` del pooler.
 
-1.  Ve al panel de tu proyecto en Vercel.
-2.  Navega a **Settings > Environment Variables**.
-3.  Añade las siguientes variables, una por una:
+1.  Ve a tu proyecto en Vercel: **Settings > Environment Variables**.
+2.  Añade las siguientes variables:
 
-    *   **`DATABASE_URL`**:
-        *   **Nombre:** `DATABASE_URL`
-        *   **Valor:** Aquí viene la diferencia clave. Ve a Supabase, a la misma sección de **Connection string**, y copia la URL de la tarjeta que dice **"Transaction pooler"** (la que usa el puerto **6543**). ¡Pega esa aquí!
-        *   **Importancia:** Crítica. Sin esto, la aplicación no podrá conectarse a la base de datos.
+    *   `DATABASE_URL`: Usa la URL del **"Transaction pooler"** (puerto 6543).
+    *   `JWT_SECRET`: Genera una nueva cadena secreta y segura.
+    *   `RESEND_API_KEY` (opcional): Tu clave de API de Resend.
 
-    *   **`JWT_SECRET`**:
-        *   **Nombre:** `JWT_SECRET`
-        *   **Valor:** Genera una cadena de texto larga, segura y aleatoria. **No uses la misma que en desarrollo.**
-        *   **Importancia:** Crítica. Es el secreto para la seguridad de las sesiones de usuario.
-
-    *   **`RESEND_API_KEY`**:
-        *   **Nombre:** `RESEND_API_KEY`
-        *   **Valor:** Si usas Resend para enviar correos, pega aquí tu clave de API.
-        *   **Importancia:** Opcional.
-
-4.  **Guardar y Redesplegar:** Guarda las variables y haz un "Redeploy" desde el panel de Vercel para que los cambios surtan efecto.
+3.  Guarda y haz un "Redeploy".
