@@ -53,6 +53,26 @@ export async function GET(req: NextRequest) {
     };
 
     try {
+        // --- Solución: Optimizar la obtención de cursos con inscripciones recientes ---
+        // 1. Obtener los IDs de los cursos que SÍ tuvieron inscripciones en el rango
+        const enrollmentsInDateRange = await prisma.enrollment.findMany({
+            where: { enrolledAt: dateFilter },
+            select: { courseId: true },
+            distinct: ['courseId']
+        });
+        const courseIdsWithRecentEnrollments = enrollmentsInDateRange.map(e => e.courseId);
+
+        // 2. Usar esa lista de IDs para la consulta principal
+        const coursesWithEnrollmentCounts = await prisma.course.findMany({ 
+            where: { 
+                status: 'PUBLISHED',
+                id: { in: courseIdsWithRecentEnrollments } 
+            }, 
+            select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: { where: { enrolledAt: dateFilter } } } } }, 
+            orderBy: { enrollments: { _count: 'desc' } }, 
+            take: 5 
+        });
+        
         const [
             totalUsersResult,
             totalCoursesResult,
@@ -63,7 +83,6 @@ export async function GET(req: NextRequest) {
             recentLoginLogs,
             newEnrollmentsLast7DaysCount, 
             allCourseProgressRaw,
-            coursesWithEnrollmentCounts,
             userRegistrationsByDay,
             courseCreationByDay,
             enrollmentsByDay,
@@ -91,12 +110,6 @@ export async function GET(req: NextRequest) {
             prisma.courseProgress.findMany({ 
                 where: { course: { status: 'PUBLISHED' }, completedAt: dateFilter }, 
                 select: { courseId: true, progressPercentage: true, userId: true } 
-            }),
-            prisma.course.findMany({ 
-                where: { status: 'PUBLISHED', enrollments: { some: { enrolledAt: dateFilter } } }, 
-                select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: { where: { enrolledAt: dateFilter } } } } }, 
-                orderBy: { enrollments: { _count: 'desc' } }, 
-                take: 5 
             }),
 
             // Consultas para el gráfico de tendencias (filtradas por fecha)
