@@ -2,40 +2,29 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Rutas que se consideran públicas y no requieren autenticación.
-// Todas las demás rutas, por defecto, se considerarán protegidas.
-const PUBLIC_ROUTES = ['/', '/about', '/sign-in', '/sign-up', '/sign-in/2fa'];
+const PROTECTED_ROUTE_PREFIXES = ['/dashboard', '/profile', '/manage-courses', '/my-courses', '/my-notes', '/resources', '/announcements', '/calendar', '/forms', '/enrollments', '/analytics', '/security-audit', '/settings', '/notifications'];
+const AUTH_ROUTE_PREFIXES = ['/sign-in', '/sign-up'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
 
-  const isPublicRoute = PUBLIC_ROUTES.some(path => {
-    if (path.endsWith('/')) {
-        return pathname === path;
-    }
-    return pathname.startsWith(path);
-  });
+  const isProtectedRoute = PROTECTED_ROUTE_PREFIXES.some(prefix => pathname.startsWith(prefix));
+  const isAuthRoute = AUTH_ROUTE_PREFIXES.some(prefix => pathname.startsWith(prefix));
 
-  // REGLA 1: Usuario con sesión intentando acceder a una ruta pública (que no sea la landing page)
-  if (sessionCookie && isPublicRoute && pathname !== '/') {
-      // Excepción para la página "about"
-      if (pathname.startsWith('/about')) {
-          return NextResponse.next();
-      }
-      // Redirige al dashboard si intenta ir a /sign-in, /sign-up, etc.
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+  // REGLA 1: Usuario con sesión intentando acceder a una ruta de autenticación
+  if (sessionCookie && isAuthRoute) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   // REGLA 2: Usuario SIN sesión intentando acceder a una ruta protegida
-  if (!sessionCookie && !isPublicRoute) {
-      const signInUrl = new URL('/sign-in', request.url);
-      signInUrl.searchParams.set('redirectedFrom', pathname); // Guardar la página a la que intentaba ir
-      return NextResponse.redirect(signInUrl);
+  if (!sessionCookie && isProtectedRoute) {
+    const signInUrl = new URL('/sign-in', request.url);
+    signInUrl.searchParams.set('redirectedFrom', pathname);
+    return NextResponse.redirect(signInUrl);
   }
 
-  // REGLA 3: Para todos los demás casos, permitir que la solicitud continúe.
-  // (Usuario con sesión en ruta protegida, o usuario sin sesión en ruta pública).
+  // REGLA 3: Para todos los demás casos (rutas públicas, o usuario con sesión en ruta protegida), permitir.
   return NextResponse.next();
 }
 
@@ -48,5 +37,5 @@ export const config = {
    * - favicon.ico (favicon file)
    * - uploads (publicly uploaded content)
    */
-   matcher: ['/((?!api|_next/static|_next/image|favicon.ico|uploads).*)'],
+   matcher: ['/((?!api|_next/static|_next/image|favicon.ico|uploads|.*\\..*).*)'],
 };

@@ -7,7 +7,6 @@ import { TitleProvider } from '@/contexts/title-context';
 import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
 import { ThemeProvider } from '@/components/theme-provider';
-import { AppContent } from '@/components/layout/app-content';
 
 async function getLayoutSettings() {
     return {
@@ -28,7 +27,7 @@ export default async function RootLayout({
         <ThemeProvider>
           <AuthProvider>
               <TitleProvider>
-                  <AppContent>{children}</AppContent>
+                  {children}
                   <Toaster />
               </TitleProvider>
           </AuthProvider>
