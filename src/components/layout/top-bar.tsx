@@ -1,4 +1,3 @@
-
 // src/components/layout/top-bar.tsx
 'use client';
 
@@ -84,8 +83,8 @@ export const TopBar = () => {
 
     return (
         <div className={cn(
-            "flex items-center justify-between h-20 px-4 shrink-0 border-b border-primary/10",
-            "bg-card/80 backdrop-blur-sm sticky top-0 z-40"
+            "flex items-center justify-between h-20 px-4 shrink-0 border-b",
+            "bg-gradient-to-r from-sidebar-background to-sidebar-background/95 text-sidebar-foreground border-sidebar-border sticky top-0 z-40"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
