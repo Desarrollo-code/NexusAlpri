@@ -22,23 +22,16 @@ export const fontMap: { [key: string]: NextFont } = {
 };
 
 /**
- * Gets the CSS variable class names for the fonts defined in the platform settings.
- * If settings are unavailable, it returns default fonts.
- * @returns A string containing the CSS variable classes for the fonts.
+ * Gets the CSS variable class names for the default fonts.
+ * This function NO LONGER queries the database to avoid blocking render.
+ * The dynamic font application is handled client-side by the ThemeProvider.
+ * @returns A string containing the CSS variable classes for the default fonts.
  */
-export async function getFontVariables(): Promise<string> {
-    try {
-        const settings = await prisma.platformSettings.findFirst({
-            select: { fontHeadline: true, fontBody: true }
-        });
-        const headlineFont = fontMap[settings?.fontHeadline || 'Space Grotesk'];
-        const bodyFont = fontMap[settings?.fontBody || 'Inter'];
-        return `${headlineFont.variable} ${bodyFont.variable}`;
-    } catch (error) {
-        console.error("Could not fetch font settings from DB, using defaults.", error);
-        // Return default fonts if DB is not available
-        return `${spaceGrotesk.variable} ${inter.variable}`;
-    }
+export function getFontVariables(): string {
+    // Return default fonts. The ThemeProvider will override them on the client if needed.
+    const headlineFont = fontMap['Space Grotesk'];
+    const bodyFont = fontMap['Inter'];
+    return `${headlineFont.variable} ${bodyFont.variable}`;
 }
 
 

@@ -48,25 +48,51 @@ const StyleInjector = () => {
     const { settings } = useAuth();
     const { theme } = useNextTheme();
     
-    const cssVariables = React.useMemo(() => {
-        if (!settings) return '';
+    React.useEffect(() => {
+        if (!settings || typeof window === 'undefined') return;
 
-        const isDark = theme === 'dark';
+        const root = document.documentElement;
+
+        const setVar = (varName: string, hex: string | null | undefined) => {
+            const hsl = hexToHsl(hex || '');
+            if (hsl) {
+                root.style.setProperty(varName, hsl);
+            }
+        };
+
+        // Set light theme variables
+        setVar('--primary', settings.primaryColor);
+        setVar('--secondary', settings.secondaryColor);
+        setVar('--accent', settings.accentColor);
+        setVar('--background', settings.backgroundColorLight);
+
+        // Set dark theme variables
+        // These are applied when the .dark class is present
+        setVar('--primary-dark', settings.primaryColorDark);
+        setVar('--background-dark', settings.backgroundColorDark);
+
+        // Update font variables
+        const fontVariables = settings.fontHeadline && settings.fontBody
+          ? `${settings.fontHeadline.variable} ${settings.fontBody.variable}`
+          : ''; // getFontVariables can now be simplified or this logic can be moved here
+        // This part requires a bigger refactor of how fonts are loaded, for now we focus on colors
         
-        const primary = isDark ? settings.primaryColorDark : settings.primaryColor;
-        const background = isDark ? settings.backgroundColorDark : settings.backgroundColorLight;
-        
-        return `
-          :root {
-            ${primary ? `--primary: ${hexToHsl(primary)};` : ''}
-            ${background ? `--background: ${hexToHsl(background)};` : ''}
-            ${settings.secondaryColor ? `--secondary: ${hexToHsl(settings.secondaryColor)};` : ''}
-            ${settings.accentColor ? `--accent: ${hexToHsl(settings.accentColor)};` : ''}
-          }
-        `.trim();
     }, [settings, theme]);
 
-    if (!cssVariables) return null;
+    if (!settings) return null;
+
+    const cssVariables = `
+      :root {
+        ${settings.primaryColor ? `--primary: ${hexToHsl(settings.primaryColor)};` : ''}
+        ${settings.secondaryColor ? `--secondary: ${hexToHsl(settings.secondaryColor)};` : ''}
+        ${settings.accentColor ? `--accent: ${hexToHsl(settings.accentColor)};` : ''}
+        ${settings.backgroundColorLight ? `--background: ${hexToHsl(settings.backgroundColorLight)};` : ''}
+      }
+      .dark {
+        ${settings.primaryColorDark ? `--primary: ${hexToHsl(settings.primaryColorDark)};` : ''}
+        ${settings.backgroundColorDark ? `--background: ${hexToHsl(settings.backgroundColorDark)};` : ''}
+      }
+    `.trim();
 
     return <style>{cssVariables}</style>;
 };

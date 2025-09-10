@@ -8,9 +8,10 @@ import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
 import { ThemeProvider } from '@/components/theme-provider';
 
+// This function is now simplified to not call the DB directly.
 async function getLayoutSettings() {
     return {
-        fontVariables: await getFontVariables()
+        fontVariables: getFontVariables() // No longer an async DB call
     };
 }
 
@@ -24,14 +25,14 @@ export default async function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning className={fontVariables}>
       <body className={cn("min-h-screen bg-background font-body antialiased")}>
-        <ThemeProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <ThemeProvider>
               <TitleProvider>
                   {children}
                   <Toaster />
               </TitleProvider>
-          </AuthProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );
