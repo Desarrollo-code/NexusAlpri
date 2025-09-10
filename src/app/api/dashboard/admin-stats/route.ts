@@ -54,8 +54,6 @@ export async function GET(req: NextRequest) {
     };
 
     try {
-        // --- Solución: Optimizar la obtención de cursos con inscripciones recientes ---
-        // 1. Obtener los IDs de los cursos que SÍ tuvieron inscripciones en el rango
         const enrollmentsInDateRange = await prisma.enrollment.findMany({
             where: { enrolledAt: dateFilter },
             select: { courseId: true },
@@ -63,7 +61,6 @@ export async function GET(req: NextRequest) {
         });
         const courseIdsWithRecentEnrollments = enrollmentsInDateRange.map(e => e.courseId);
 
-        // 2. Usar esa lista de IDs para la consulta principal
         const coursesWithEnrollmentCounts = await prisma.course.findMany({ 
             where: { 
                 status: 'PUBLISHED',
@@ -91,7 +88,6 @@ export async function GET(req: NextRequest) {
             topStudentsByEnrollmentRaw,
             topStudentsByCompletionRaw
         ] = await prisma.$transaction([
-            // Consultas para tarjetas de métricas (totales)
             prisma.user.count(),
             prisma.course.count(),
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
@@ -99,7 +95,6 @@ export async function GET(req: NextRequest) {
             prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
             prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
             
-            // Consultas para tarjetas de actividad reciente (filtradas por fecha)
             prisma.securityLog.findMany({ 
                 where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: subDays(new Date(), 7) } },
                 select: { userId: true },
@@ -107,18 +102,15 @@ export async function GET(req: NextRequest) {
             }),
             prisma.enrollment.count({ where: { enrolledAt: { gte: subDays(new Date(), 7) } } }), 
             
-            // Consultas para rankings (filtradas por fecha)
             prisma.courseProgress.findMany({ 
                 where: { course: { status: 'PUBLISHED' }, completedAt: dateFilter }, 
                 select: { courseId: true, progressPercentage: true, userId: true } 
             }),
 
-            // Consultas para el gráfico de tendencias (filtradas por fecha)
             prisma.user.groupBy({ by: ['registeredDate'], where: { registeredDate: dateFilter }, _count: { _all: true }, orderBy: { registeredDate: 'asc' } }),
             prisma.course.groupBy({ by: ['createdAt'], where: { createdAt: dateFilter }, _count: { _all: true }, orderBy: { createdAt: 'asc' } }),
             prisma.enrollment.groupBy({ by: ['enrolledAt'], where: { enrolledAt: dateFilter }, _count: { _all: true }, orderBy: { enrolledAt: 'asc' } }),
             
-            // --- CONSULTAS RAW CORREGIDAS PARA POSTGRESQL ---
              prisma.$queryRaw<RawInstructorResult[]>`
                 SELECT u.id, u.name, u.avatar, COUNT(c.id) as value
                 FROM "Course" c
@@ -241,5 +233,3 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Error al obtener estadísticas del dashboard' }, { status: 500 });
     }
 }
-
-    
