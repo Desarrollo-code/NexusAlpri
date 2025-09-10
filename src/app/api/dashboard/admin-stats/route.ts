@@ -1,4 +1,3 @@
-
 // src/app/api/dashboard/admin-stats/route.ts
 import prisma from '@/lib/prisma';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -54,12 +53,12 @@ export async function GET(req: NextRequest) {
     };
 
     try {
-        const enrollmentsInDateRange = await prisma.enrollment.findMany({
+        const enrollmentIdsInDateRange = await prisma.enrollment.findMany({
             where: { enrolledAt: dateFilter },
             select: { courseId: true },
             distinct: ['courseId']
         });
-        const courseIdsWithRecentEnrollments = enrollmentsInDateRange.map(e => e.courseId);
+        const courseIdsWithRecentEnrollments = enrollmentIdsInDateRange.map(e => e.courseId);
 
         const coursesWithEnrollmentCounts = await prisma.course.findMany({ 
             where: { 
@@ -77,7 +76,10 @@ export async function GET(req: NextRequest) {
             totalPublishedCoursesCount,
             totalEnrollmentsResult,
             usersByRole,
-            coursesByStatus,
+            //coursesByStatus,
+            draftCoursesCount,
+            publishedCoursesCount,
+            archivedCoursesCount,
             recentLoginLogs,
             newEnrollmentsLast7DaysCount, 
             allCourseProgressRaw,
@@ -93,8 +95,12 @@ export async function GET(req: NextRequest) {
             prisma.course.count({ where: { status: 'PUBLISHED' } }),
             prisma.enrollment.count(),
             prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
-            prisma.course.groupBy({ by: ['status'], _count: { _all: true } }),
             
+            // --- FIX: Replaced groupBy with explicit counts ---
+            prisma.course.count({ where: { status: 'DRAFT' } }),
+            prisma.course.count({ where: { status: 'PUBLISHED' } }),
+            prisma.course.count({ where: { status: 'ARCHIVED' } }),
+
             prisma.securityLog.findMany({ 
                 where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: subDays(new Date(), 7) } },
                 select: { userId: true },
@@ -113,8 +119,8 @@ export async function GET(req: NextRequest) {
             
              prisma.$queryRaw<RawInstructorResult[]>`
                 SELECT u.id, u.name, u.avatar, COUNT(c.id) as value
-                FROM "Course" c
-                JOIN "User" u ON c."instructorId" = u.id
+                FROM "User" u
+                JOIN "Course" c ON c."instructorId" = u.id
                 WHERE c."createdAt" >= ${startDate} AND c."createdAt" <= ${endDate}
                 GROUP BY u.id, u.name, u.avatar
                 ORDER BY COUNT(c.id) DESC
@@ -122,8 +128,8 @@ export async function GET(req: NextRequest) {
             `,
              prisma.$queryRaw<RawStudentResult[]>`
                 SELECT u.id, u.name, u.avatar, COUNT(e.id) as value
-                FROM "Enrollment" e
-                JOIN "User" u ON e."userId" = u.id
+                FROM "User" u
+                JOIN "Enrollment" e ON e."userId" = u.id
                 WHERE e."enrolledAt" >= ${startDate} AND e."enrolledAt" <= ${endDate}
                 GROUP BY u.id, u.name, u.avatar
                 ORDER BY COUNT(e.id) DESC
@@ -131,8 +137,8 @@ export async function GET(req: NextRequest) {
             `,
              prisma.$queryRaw<RawStudentResult[]>`
                 SELECT u.id, u.name, u.avatar, COUNT(cp.id) as value
-                FROM "CourseProgress" cp
-                JOIN "User" u ON cp."userId" = u.id
+                FROM "User" u
+                JOIN "CourseProgress" cp ON cp."userId" = u.id
                 WHERE cp."progressPercentage" = 100 AND cp."completedAt" >= ${startDate} AND cp."completedAt" <= ${endDate}
                 GROUP BY u.id, u.name, u.avatar
                 ORDER BY COUNT(cp.id) DESC
@@ -140,6 +146,14 @@ export async function GET(req: NextRequest) {
             `,
         ]);
         
+        // --- FIX: Manually construct the coursesByStatus array ---
+        const coursesByStatus = [
+            { status: 'DRAFT', count: draftCoursesCount },
+            { status: 'PUBLISHED', count: publishedCoursesCount },
+            { status: 'ARCHIVED', count: archivedCoursesCount },
+        ];
+
+
         const uniqueActiveUsers = recentLoginLogs.length;
         const dateRange = createDateRange(startDate, endDate);
 
@@ -211,8 +225,8 @@ export async function GET(req: NextRequest) {
             totalCourses: totalCoursesResult,
             totalPublishedCourses: totalPublishedCoursesCount,
             totalEnrollments: totalEnrollmentsResult,
-            usersByRole: usersByRole.map(u => ({ role: u.role, count: u._count._all })),
-            coursesByStatus: coursesByStatus.map(c => ({ status: c.status, count: c._count._all })),
+            usersByRole: usersByRole.map(u => ({ role: u.role as UserRole, count: u._count._all })),
+            coursesByStatus,
             recentLogins: uniqueActiveUsers,
             newEnrollmentsLast7Days: newEnrollmentsLast7DaysCount,
             userRegistrationTrend,
