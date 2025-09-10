@@ -2,43 +2,40 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PROTECTED_ROUTE_PREFIXES = [
-    '/dashboard', '/courses', '/my-courses', '/profile', 
-    '/manage-courses', '/users', '/settings', '/analytics', 
-    '/security-audit', '/enrollments', '/notifications', 
-    '/calendar', '/resources', '/my-notes', '/forms'
-];
-// CORRECCIÓN: Añadir la ruta explícita de 2FA
-const AUTH_ROUTE_PREFIXES = ['/sign-in', '/sign-up'];
+// Rutas que se consideran públicas y no requieren autenticación.
+// Todas las demás rutas, por defecto, se considerarán protegidas.
+const PUBLIC_ROUTES = ['/', '/about', '/sign-in', '/sign-up', '/sign-in/2fa'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
 
-  const isProtectedRoute = PROTECTED_ROUTE_PREFIXES.some(prefix => pathname.startsWith(prefix));
-  const isAuthRoute = AUTH_ROUTE_PREFIXES.some(prefix => pathname.startsWith(prefix));
+  const isPublicRoute = PUBLIC_ROUTES.some(path => {
+    if (path.endsWith('/')) {
+        return pathname === path;
+    }
+    return pathname.startsWith(path);
+  });
 
-  // 1. User has a session
-  if (sessionCookie) {
-    // If logged-in user tries to access an auth page, redirect to dashboard
-    if (isAuthRoute) {
+  // REGLA 1: Usuario con sesión intentando acceder a una ruta pública (que no sea la landing page)
+  if (sessionCookie && isPublicRoute && pathname !== '/') {
+      // Excepción para la página "about"
+      if (pathname.startsWith('/about')) {
+          return NextResponse.next();
+      }
+      // Redirige al dashboard si intenta ir a /sign-in, /sign-up, etc.
       return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-    // Otherwise, allow access
-    return NextResponse.next();
   }
 
-  // 2. User does not have a session
-  if (!sessionCookie) {
-    // If they try to access a protected route, redirect to sign-in
-    if (isProtectedRoute) {
+  // REGLA 2: Usuario SIN sesión intentando acceder a una ruta protegida
+  if (!sessionCookie && !isPublicRoute) {
       const signInUrl = new URL('/sign-in', request.url);
-      signInUrl.searchParams.set('redirectedFrom', pathname);
+      signInUrl.searchParams.set('redirectedFrom', pathname); // Guardar la página a la que intentaba ir
       return NextResponse.redirect(signInUrl);
-    }
   }
 
-  // 3. For all other cases (e.g., public pages for non-logged-in users), allow access
+  // REGLA 3: Para todos los demás casos, permitir que la solicitud continúe.
+  // (Usuario con sesión en ruta protegida, o usuario sin sesión en ruta pública).
   return NextResponse.next();
 }
 

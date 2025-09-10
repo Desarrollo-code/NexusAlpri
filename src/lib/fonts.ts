@@ -1,8 +1,8 @@
-
 // src/lib/fonts.ts
 import { Inter, Space_Grotesk, Source_Code_Pro, Roboto, Lato, Montserrat } from 'next/font/google';
 import type { NextFont } from 'next/dist/compiled/@next/font';
 import prisma from './prisma';
+import type { PlatformSettings } from '@/types';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-body' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-headline' });
@@ -28,7 +28,9 @@ export const fontMap: { [key: string]: NextFont } = {
  */
 export async function getFontVariables(): Promise<string> {
     try {
-        const settings = await prisma.platformSettings.findFirst();
+        const settings = await prisma.platformSettings.findFirst({
+            select: { fontHeadline: true, fontBody: true }
+        });
         const headlineFont = fontMap[settings?.fontHeadline || 'Space Grotesk'];
         const bodyFont = fontMap[settings?.fontBody || 'Inter'];
         return `${headlineFont.variable} ${bodyFont.variable}`;
@@ -36,5 +38,28 @@ export async function getFontVariables(): Promise<string> {
         console.error("Could not fetch font settings from DB, using defaults.", error);
         // Return default fonts if DB is not available
         return `${spaceGrotesk.variable} ${inter.variable}`;
+    }
+}
+
+
+// Nueva función para obtener solo la configuración de fuentes
+export async function getFontSettings(): Promise<Pick<PlatformSettings, 'fontHeadline' | 'fontBody'>> {
+    try {
+        const settings = await prisma.platformSettings.findFirst({
+            select: {
+                fontHeadline: true,
+                fontBody: true
+            }
+        });
+        return {
+            fontHeadline: settings?.fontHeadline || 'Space Grotesk',
+            fontBody: settings?.fontBody || 'Inter'
+        };
+    } catch (error) {
+        console.error("Failed to fetch font settings, using defaults:", error);
+        return {
+            fontHeadline: 'Space Grotesk',
+            fontBody: 'Inter'
+        };
     }
 }

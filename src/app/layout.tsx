@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
 import { ThemeProvider } from '@/components/theme-provider';
 
-// Esta función ahora solo obtiene las fuentes, sin consultar la base de datos.
+// Esta función ahora solo obtiene las fuentes, sin consultar la base de datos dos veces.
 async function getLayoutSettings() {
     return {
         fontVariables: await getFontVariables()
