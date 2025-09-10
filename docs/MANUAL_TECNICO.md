@@ -40,19 +40,24 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 
 ## 3. Base de Datos y Migraciones: La Guía Infalible
 
-### 3.1. Paso 1: Configurar el archivo `.env` para Desarrollo Local
+### 3.1. Paso 1: Configurar el archivo `.env` para Desarrollo Local (¡Solución al Error de "Shadow Database"!)
 
-Para hacer cambios en la estructura de la base de datos (modificar `schema.prisma`), **siempre** debes usar la conexión directa a la base de datos en tu entorno local.
+Para hacer cambios en la estructura de la base de datos (modificar `schema.prisma`) y ejecutar el comando `prisma migrate dev`, **es obligatorio y fundamental que uses la conexión directa a tu base de datos de Supabase**.
+
+El error `P3014: Prisma Migrate could not create the shadow database` ocurre porque la conexión por defecto (pooler, puerto 6543) no tiene permisos para crear bases de datos temporales, que es algo que Prisma necesita para las migraciones de desarrollo.
+
+**Sigue estos pasos para solucionarlo:**
 
 1.  **Obtener la Cadena de Conexión Directa:**
     *   Ve a tu proyecto en Supabase: **Project Settings > Database**.
-    *   Copia la URL de la tarjeta que dice **"Direct connection"**. Empieza con `postgresql://` y usa el puerto **5432**.
+    *   Copia la URL de la tarjeta que dice **"Direct connection"**. Es la que empieza con `postgresql://` y usa el puerto **5432**.
+
 2.  **Configurar tu Archivo `.env`:**
     *   Abre el archivo `.env` en la raíz de tu proyecto.
     *   Asegúrate de que la variable `DATABASE_URL` contenga la cadena de conexión **DIRECTA (puerto 5432)** que acabas de copiar.
 
     ```dotenv
-    # Ejemplo en .env
+    # Ejemplo en .env (USA ESTA PARA DESARROLLO LOCAL)
     DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@db.xxxxxxxx.supabase.co:5432/postgres"
     ```
 
@@ -87,7 +92,7 @@ Si al ejecutar `npm run prisma:migrate` en tu computadora local ves el error `P1
 
 ## 4. Configuración para Producción (Vercel)
 
-Para que la aplicación funcione en producción, debes configurar las variables de entorno directamente en el panel de Vercel.
+Para que la aplicación funcione en producción, debes configurar las variables de entorno directamente en el panel de Vercel. **En producción, sí debes usar la conexión del "Pooler"**.
 
 1.  Ve al panel de tu proyecto en Vercel.
 2.  Navega a **Settings > Environment Variables**.
@@ -96,7 +101,7 @@ Para que la aplicación funcione en producción, debes configurar las variables 
     *   **`DATABASE_URL`**:
         *   **Nombre:** `DATABASE_URL`
         *   **Valor:** Aquí viene la diferencia clave. Ve a Supabase, a la misma sección de **Connection string**, y copia la URL de la tarjeta que dice **"Transaction pooler"** (la que usa el puerto **6543**). ¡Pega esa aquí!
-        *   **Importancia:** Crítica. Sin esto, la aplicación no podrá conectarse a la base de datos.
+        *   **Importancia:** Crítica. Sin esto, la aplicación no podrá conectarse a la base de datos en producción.
 
     *   **`JWT_SECRET`**:
         *   **Nombre:** `JWT_SECRET`
