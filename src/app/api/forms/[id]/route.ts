@@ -3,6 +3,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { FormField, FormFieldType, FormFieldOption } from '@/types';
+import { checkCourseOwnership } from '@/lib/auth-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,19 +14,19 @@ async function checkPermissions(formId: string, session: any) {
   });
 
   if (!form) {
-    return NextResponse.json({ message: 'Formulario no encontrado' }, { status: 404 });
+    return { authorized: false, error: NextResponse.json({ message: 'Formulario no encontrado' }, { status: 404 }) };
   }
 
   if (session.role !== 'ADMINISTRATOR' && form.creatorId !== session.id) {
-    return NextResponse.json({ message: 'No tienes permiso para modificar este formulario' }, { status: 403 });
+    return { authorized: false, error: NextResponse.json({ message: 'No tienes permiso para acceder a este formulario' }, { status: 403 }) };
   }
 
-  return null; // Devuelve null si todo está bien
+  return { authorized: true, error: null }; // Devuelve null si todo está bien
 }
 
 // GET a specific form by ID with its fields
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const { id: formId } = params;
+  const { id: formId } = await params;
 
   try {
     const session = await getCurrentUser();
@@ -33,11 +34,15 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
 
+    const permission = await checkPermissions(formId, session);
+    if (!permission.authorized) return permission.error;
+
     const form = await prisma.form.findUnique({
       where: { id: formId },
       include: {
         fields: {
           orderBy: { order: 'asc' },
+          select: { id: true, label: true, type: true, required: true, placeholder: true, order: true, options: true }
         },
         sharedWith: {
             select: { id: true, name: true, avatar: true }
@@ -48,8 +53,17 @@ export async function GET(request: Request, { params }: { params: { id: string }
     if (!form) {
       return NextResponse.json({ message: 'Formulario no encontrado' }, { status: 404 });
     }
+    
+    // Parse options string to JSON object for each field
+    const formWithParsedOptions = {
+        ...form,
+        fields: form.fields.map(field => ({
+            ...field,
+            options: typeof field.options === 'string' ? JSON.parse(field.options) : field.options,
+        }))
+    };
 
-    return NextResponse.json(form);
+    return NextResponse.json(formWithParsedOptions);
   } catch (error) {
     console.error(`[GET_FORM_ID: ${formId}] Error al obtener el formulario:`, error);
     return NextResponse.json({ message: 'Error al obtener el formulario' }, { status: 500 });
@@ -58,15 +72,15 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 // PUT (update) a form, including its fields
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id: formId } = params;
+  const { id: formId } = await params;
 
   const session = await getCurrentUser();
   if (!session) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
 
-  const authError = await checkPermissions(formId, session);
-  if (authError) return authError;
+  const permission = await checkPermissions(formId, session);
+  if (!permission.authorized) return permission.error;
 
   try {
     const body = await req.json();
@@ -147,15 +161,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
 // DELETE a form
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id: formId } = params;
+  const { id: formId } = await params;
 
   const session = await getCurrentUser();
   if (!session) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
 
-  const authError = await checkPermissions(formId, session);
-  if (authError) return authError;
+  const permission = await checkPermissions(formId, session);
+  if (!permission.authorized) return permission.error;
 
   try {
     await prisma.form.delete({ where: { id: formId } });

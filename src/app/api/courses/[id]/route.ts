@@ -3,6 +3,7 @@ import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, ContentBlock, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption } from '@/types';
+import { checkCourseOwnership } from "@/lib/auth-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -72,23 +73,13 @@ export async function PUT(
   }
 
   const { id: courseId } = params;
+  
+  if (!(await checkCourseOwnership(session, courseId))) {
+      return NextResponse.json({ message: 'No tienes permiso para actualizar este curso' }, { status: 403 });
+  }
 
   try {
     const body: AppCourse = await req.json();
-
-    const courseToUpdate = await prisma.course.findUnique({
-      where: { id: courseId },
-      select: { instructorId: true },
-    });
-
-    if (!courseToUpdate) {
-      return NextResponse.json({ message: "Curso no encontrado" }, { status: 404 });
-    }
-
-    if (session.role !== "ADMINISTRATOR" && courseToUpdate.instructorId !== session.id) {
-      return NextResponse.json({ message: "No tienes permiso para actualizar este curso" }, { status: 403 });
-    }
-    
     const { modules, ...courseData } = body;
     
     await prisma.$transaction(async (tx) => {
@@ -216,28 +207,18 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const session = await getCurrentUser();
-  if (!session || (session.role !== "ADMINISTRATOR" && session.role !== "INSTRUCTOR")) {
-    return NextResponse.json({ message: "No autorizado" }, { status: 403 });
+  if (!session) {
+    return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
 
-  const { id: courseId } = params;
+  const { id: courseId } = await params;
+  
+  if (!(await checkCourseOwnership(session, courseId))) {
+      return NextResponse.json({ message: 'No tienes permiso para eliminar este curso' }, { status: 403 });
+  }
 
   try {
-    const courseToDelete = await prisma.course.findUnique({
-      where: { id: courseId },
-      select: { instructorId: true },
-    });
-
-    if (!courseToDelete) {
-      return NextResponse.json({ message: "Curso no encontrado" }, { status: 404 });
-    }
-
-    if (session.role === "INSTRUCTOR" && courseToDelete.instructorId !== session.id) {
-      return NextResponse.json({ message: "No tienes permiso para eliminar este curso" }, { status: 403 });
-    }
-
     await prisma.course.delete({ where: { id: courseId } });
-
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`[DELETE_COURSE_ID: ${courseId}]`, error);

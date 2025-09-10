@@ -42,25 +42,27 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             let maxPoints = 0;
 
             for (const field of form.fields) {
-                if (field.type !== 'SINGLE_CHOICE' && field.type !== 'MULTIPLE_CHOICE') continue;
+                if (field.type !== 'SINGLE_CHOICE') continue;
 
-                const fieldOptions = field.options as any as FormFieldOption[];
+                const fieldOptions = field.options as unknown as FormFieldOption[];
                 if (!fieldOptions || fieldOptions.length === 0) continue;
                 
                 const questionMaxPoints = fieldOptions
                     .filter(opt => opt.isCorrect)
                     .reduce((sum, opt) => sum + (opt.points || 0), 0);
+                
+                // Asegurarse que haya un puntaje máximo posible, si no, la pregunta no cuenta.
+                if (questionMaxPoints === 0) continue;
+
                 maxPoints += questionMaxPoints;
 
-                const userAnswerIds = Array.isArray(answers[field.id]) ? answers[field.id] : [answers[field.id]];
-                if (!userAnswerIds) continue; 
+                const userAnswerId = answers[field.id];
+                if (!userAnswerId) continue; 
                 
-                userAnswerIds.forEach((answerId: string) => {
-                    const selectedOption = fieldOptions.find(o => o.id === answerId);
-                    if (selectedOption?.isCorrect) {
-                        userPoints += selectedOption.points || 0;
-                    }
-                });
+                const selectedOption = fieldOptions.find(o => o.id === userAnswerId);
+                if (selectedOption?.isCorrect) {
+                    userPoints += selectedOption.points || 0;
+                }
             }
             
             finalScorePercentage = maxPoints > 0 ? (userPoints / maxPoints) * 100 : 0;
@@ -70,7 +72,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             data: {
                 formId,
                 userId: session.id,
-                score: finalScorePercentage, // Guardar el porcentaje
+                score: finalScorePercentage,
                 answers: {
                     create: Object.entries(answers).map(([fieldId, value]) => {
                         const fieldValue = Array.isArray(value) ? JSON.stringify(value) : String(value);

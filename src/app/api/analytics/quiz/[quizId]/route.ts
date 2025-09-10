@@ -2,6 +2,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { checkCourseOwnership } from '@/lib/auth-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,11 +17,20 @@ export async function GET(req: NextRequest, { params }: { params: { quizId: stri
     try {
         const quiz = await prisma.quiz.findUnique({
             where: { id: quizId },
-            include: { questions: { select: { id: true, text: true, order: true } } },
+            include: { 
+                questions: { select: { id: true, text: true, order: true } },
+                contentBlock: { select: { lesson: { select: { module: { select: { courseId: true } } } } } }
+            },
         });
 
         if (!quiz) {
             return NextResponse.json({ message: 'Quiz no encontrado' }, { status: 404 });
+        }
+
+        // Permission check
+        const courseId = quiz.contentBlock?.lesson?.module?.courseId;
+        if (!courseId || !(await checkCourseOwnership(session, courseId))) {
+            return NextResponse.json({ message: 'No tienes permiso para ver las analíticas de este quiz.' }, { status: 403 });
         }
 
         const attempts = await prisma.quizAttempt.findMany({
