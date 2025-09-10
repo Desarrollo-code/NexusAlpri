@@ -16,7 +16,7 @@ import { TourProvider, useTour } from '@/contexts/tour-context';
 import { TourGuide } from '@/components/tour/tour-guide';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
-  const { user, settings } = useAuth();
+  const { settings } = useAuth();
   const { isMobile, isCollapsed } = useSidebar();
   const { isTourActive, steps, currentStepIndex, nextStep, stopTour } = useTour();
 

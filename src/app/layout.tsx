@@ -7,8 +7,8 @@ import { TitleProvider } from '@/contexts/title-context';
 import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
 import { ThemeProvider } from '@/components/theme-provider';
+import { AppContent } from '@/components/layout/app-content';
 
-// Esta función ahora solo obtiene las fuentes, sin consultar la base de datos dos veces.
 async function getLayoutSettings() {
     return {
         fontVariables: await getFontVariables()
@@ -28,7 +28,7 @@ export default async function RootLayout({
         <ThemeProvider>
           <AuthProvider>
               <TitleProvider>
-                  {children}
+                  <AppContent>{children}</AppContent>
                   <Toaster />
               </TitleProvider>
           </AuthProvider>
