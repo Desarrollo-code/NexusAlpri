@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
             },
             orderBy: [
                 { type: 'asc' }, // Folders first
-                { uploadDate: 'desc' },
+                { createdAt: 'desc' }, // CORREGIDO: Usar 'createdAt' en lugar de 'uploadDate'
             ],
         });
         
