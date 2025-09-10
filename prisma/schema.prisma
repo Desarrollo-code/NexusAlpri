@@ -1,12 +1,13 @@
 // prisma/schema.prisma
-generator client {
-  provider = "prisma-client-js"
-}
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "foreignKeys"
+}
+
+generator client {
+  provider = "prisma-client-js"
 }
 
 
@@ -70,6 +71,30 @@ enum AchievementSlug {
   FIRST_COURSE_COMPLETED
   PERFECT_QUIZ_SCORE
   FIVE_COURSES_COMPLETED
+}
+
+// **AGREGADO PARA CORREGIR EL ERROR**
+enum FormStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+// **AGREGADO PARA CORREGIR EL ERROR**
+enum FormFieldType {
+  TEXT_INPUT
+  TEXT_AREA
+  NUMBER_INPUT
+  EMAIL_INPUT
+  DATE_INPUT
+  RADIO_GROUP
+  CHECKBOX_GROUP
+  SELECT
+}
+
+enum TemplateType {
+  SYSTEM
+  USER
 }
 
 // --- MODELS ---
