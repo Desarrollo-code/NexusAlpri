@@ -31,16 +31,20 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
         if (totalLessonsInCourse === 0) {
             return NextResponse.json({ progressPercentage: 100 });
         }
-
+        
+        // CORRECCIÓN: La lógica anterior no esperaba a que todas las lecciones estuvieran completadas.
         if (progress.completedLessons.length < totalLessonsInCourse) {
-            return NextResponse.json({ message: 'Aún no has completado todas las lecciones del curso.' }, { status: 400 });
+            return NextResponse.json({ message: 'Aún no has interactuado con todas las lecciones del curso.' }, { status: 400 });
         }
 
+        // CORRECCIÓN: Calcular la puntuación final ponderada.
         let totalScoreSum = 0;
         progress.completedLessons.forEach(record => {
+            // Si la lección fue un quiz, usa su puntuación guardada.
             if (record.type === 'quiz' && record.score !== null) {
                 totalScoreSum += record.score;
-            } else { // 'view' or quiz without score
+            } else { 
+                // Si fue una simple vista (texto, video, archivo), cuenta como 100%.
                 totalScoreSum += 100;
             }
         });
@@ -55,6 +59,7 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
             }
         });
         
+        // Otorgar logros por completar cursos
         await checkAndAwardCourseCompletionAchievements(userId);
         
         return NextResponse.json(updatedProgress);

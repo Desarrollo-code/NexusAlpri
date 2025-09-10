@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
       }
     } else {
       whereClause.status = 'PUBLISHED';
-      // Un usuario no puede inscribirse en un curso que él mismo ha creado.
+      // CORRECCIÓN: Un usuario no puede inscribirse en un curso que él mismo ha creado.
       if (userId) {
           whereClause.instructorId = { not: userId };
       }

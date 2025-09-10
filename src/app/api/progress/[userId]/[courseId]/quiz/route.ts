@@ -55,7 +55,7 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
         
         const currentAttempts = await prisma.quizAttempt.count({ where: { userId, quizId } });
 
-        // Record the general lesson interaction (for overall course progress)
+        // CORRECCIÓN: Registrar la interacción de la lección con la puntuación obtenida.
         await recordLessonInteraction({
             userId,
             courseId,
