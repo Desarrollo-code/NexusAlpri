@@ -39,13 +39,13 @@
     --event-red: hsl(var(--destructive));
     --event-orange: hsl(var(--accent));
 
-    /* Variables de la barra lateral (mantienen un estilo consistente) */
-    --sidebar-background: 220 40% 5%; 
-    --sidebar-foreground: 45 80% 70%;
-    --sidebar-muted-foreground: 45 50% 55%;
-    --sidebar-accent: hsl(var(--primary));
-    --sidebar-accent-foreground: hsl(var(--primary-foreground));
-    --sidebar-border: 220 40% 10%;
+    /* --- NUEVA PALETA PARA LA BARRA LATERAL --- */
+    --sidebar-background: 345 70% 10%; /* Vinotinto muy oscuro */
+    --sidebar-foreground: 35 80% 85%;   /* Dorado pálido para el texto principal */
+    --sidebar-muted-foreground: 35 50% 65%; /* Dorado más suave para texto secundario */
+    --sidebar-accent: hsl(var(--accent)); /* El acento dorado principal */
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-border: 345 70% 15%;    /* Borde vinotinto ligeramente más claro */
     
     --primary-rgb: 139 0 0;
     --accent-rgb: 234 179 8;
