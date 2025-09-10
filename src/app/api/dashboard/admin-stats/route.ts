@@ -251,7 +251,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json(responsePayload);
 
     } catch (error) {
-        console.error('[ADMIN_DASHBOARD_STATS_ERROR]', JSON.stringify(error, null, 2));
+        console.error('[ADMIN_DASHBOARD_STATS_ERROR] Ocurrió un error detallado:', JSON.stringify(error, null, 2));
         return NextResponse.json({ error: 'Error al obtener estadísticas del dashboard' }, { status: 500 });
     }
 }
