@@ -46,6 +46,9 @@ export async function GET(req: NextRequest) {
     // Define the date range for filtering
     const endDate = endDateParam ? endOfDay(parseISO(endDateParam)) : endOfDay(new Date());
     const startDate = startDateParam ? startOfDay(parseISO(startDateParam)) : startOfDay(subDays(endDate, 29));
+    
+    console.log(`[ADMIN_STATS] Fetching stats for date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+
 
     const dateFilter = {
         gte: startDate,
@@ -94,14 +97,14 @@ export async function GET(req: NextRequest) {
             
             // Consultas para rankings (filtradas por fecha)
             prisma.courseProgress.findMany({ 
-                where: { course: { status: 'PUBLISHED' }, completedAt: dateFilter }, 
+                where: { course: { status: 'PUBLISHED' }, completedAt: { gte: startDate, lte: endDate } }, 
                 select: { courseId: true, progressPercentage: true, userId: true } 
             }),
 
             // Consultas para el gráfico de tendencias (filtradas por fecha)
-            prisma.user.groupBy({ by: ['registeredDate'], where: { registeredDate: dateFilter }, _count: { _all: true }, orderBy: { registeredDate: 'asc' } }),
-            prisma.course.groupBy({ by: ['createdAt'], where: { createdAt: dateFilter }, _count: { _all: true }, orderBy: { createdAt: 'asc' } }),
-            prisma.enrollment.groupBy({ by: ['enrolledAt'], where: { enrolledAt: dateFilter }, _count: { _all: true }, orderBy: { enrolledAt: 'asc' } }),
+            prisma.user.groupBy({ by: ['registeredDate'], where: { registeredDate: { gte: startDate, lte: endDate } }, _count: { _all: true }, orderBy: { registeredDate: 'asc' } }),
+            prisma.course.groupBy({ by: ['createdAt'], where: { createdAt: { gte: startDate, lte: endDate } }, _count: { _all: true }, orderBy: { createdAt: 'asc' } }),
+            prisma.enrollment.groupBy({ by: ['enrolledAt'], where: { enrolledAt: { gte: startDate, lte: endDate } }, _count: { _all: true }, orderBy: { enrolledAt: 'asc' } }),
             
             // Consultas Raw para rankings de usuarios
             prisma.$queryRaw<RawInstructorResult[]>`
@@ -133,14 +136,14 @@ export async function GET(req: NextRequest) {
             `,
         ]);
         
-        // FIX: Manually construct the coursesByStatus array from separate counts
+        // Manually construct the coursesByStatus array from separate counts
         const coursesByStatus = [
             { status: 'DRAFT', count: draftCoursesCount },
             { status: 'PUBLISHED', count: publishedCoursesCount },
             { status: 'ARCHIVED', count: archivedCoursesCount },
         ];
 
-        // FIX: Efficiently get top courses by enrollment
+        // Efficiently get top courses by enrollment
         const enrollmentIdsInDateRange = await prisma.enrollment.findMany({
             where: { enrolledAt: dateFilter },
             select: { courseId: true },
@@ -248,7 +251,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json(responsePayload);
 
     } catch (error) {
-        console.error('[ADMIN_DASHBOARD_STATS_ERROR]', error);
+        console.error('[ADMIN_DASHBOARD_STATS_ERROR]', JSON.stringify(error, null, 2));
         return NextResponse.json({ error: 'Error al obtener estadísticas del dashboard' }, { status: 500 });
     }
 }
