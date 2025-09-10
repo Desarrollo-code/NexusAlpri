@@ -19,7 +19,7 @@ export function PublicTopBar() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 dark:from-blue-800 dark:via-blue-900 dark:to-blue-950 backdrop-blur-sm border-b border-blue-800/80 dark:border-blue-700/80">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-gray-900 via-slate-800 to-gray-900 backdrop-blur-sm border-b border-gray-700/80">
       <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-20">
         <div className="flex items-center justify-start flex-1">
           <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
@@ -33,15 +33,15 @@ export function PublicTopBar() {
         </div>
         
         <nav className="hidden md:flex items-center justify-center flex-1">
-          <div className="flex items-center gap-1 bg-white/10 rounded-full p-1 shadow-sm">
+          <div className="flex items-center gap-1 bg-white/5 rounded-full p-1 shadow-sm">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Button key={item.href} variant="ghost" asChild className={cn(
                     "transition-colors rounded-full h-9",
                     isActive 
-                      ? "bg-white/90 text-blue-800 font-semibold shadow" 
-                      : "text-white/80 hover:bg-white/20 hover:text-white"
+                      ? "bg-amber-400 text-gray-900 font-semibold shadow" 
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
                 )}>
                     <Link href={item.href}>
                         {item.label}
@@ -53,7 +53,7 @@ export function PublicTopBar() {
         </nav>
         
         <div className="flex items-center justify-end flex-1">
-            <Button asChild variant="outline" className="hidden md:flex bg-white/90 hover:bg-white text-blue-800 border-transparent hover:scale-105 transition-transform">
+            <Button asChild className="hidden md:flex bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold border-transparent hover:scale-105 transition-transform shadow-lg shadow-amber-500/20">
             <Link href="/sign-in">
                 Acceder
             </Link>
