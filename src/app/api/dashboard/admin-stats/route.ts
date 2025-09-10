@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
                 JOIN "User" u ON c."instructorId" = u.id
                 WHERE c."createdAt" >= ${startDate} AND c."createdAt" <= ${endDate}
                 GROUP BY u.id, u.name, u.avatar
-                ORDER BY value DESC
+                ORDER BY COUNT(c.id) DESC
                 LIMIT 5;
             `,
              prisma.$queryRaw<RawStudentResult[]>`
@@ -120,7 +120,7 @@ export async function GET(req: NextRequest) {
                 JOIN "User" u ON e."userId" = u.id
                 WHERE e."enrolledAt" >= ${startDate} AND e."enrolledAt" <= ${endDate}
                 GROUP BY u.id, u.name, u.avatar
-                ORDER BY value DESC
+                ORDER BY COUNT(e.id) DESC
                 LIMIT 5;
             `,
              prisma.$queryRaw<RawStudentResult[]>`
@@ -129,7 +129,7 @@ export async function GET(req: NextRequest) {
                 JOIN "User" u ON cp."userId" = u.id
                 WHERE cp."progressPercentage" = 100 AND cp."completedAt" >= ${startDate} AND cp."completedAt" <= ${endDate}
                 GROUP BY u.id, u.name, u.avatar
-                ORDER BY value DESC
+                ORDER BY COUNT(cp.id) DESC
                 LIMIT 5;
             `,
         ]);
