@@ -1,1 +1,0 @@
-// This file is deleted. The layout from (public) will be used instead.
