@@ -1,4 +1,3 @@
-
 // src/app/layout.tsx
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -7,6 +6,7 @@ import React from 'react';
 import { TitleProvider } from '@/contexts/title-context';
 import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
+import { ThemeProvider } from '@/components/theme-provider';
 
 // Esta función ahora solo obtiene las fuentes, sin consultar la base de datos.
 async function getLayoutSettings() {
@@ -14,7 +14,6 @@ async function getLayoutSettings() {
         fontVariables: await getFontVariables()
     };
 }
-
 
 export default async function RootLayout({
   children,
@@ -25,13 +24,15 @@ export default async function RootLayout({
   
   return (
     <html lang="es" suppressHydrationWarning className={fontVariables}>
-      <body className={cn("flex flex-col min-h-screen bg-background font-body")}>
-        <AuthProvider>
-            <TitleProvider>
-                {children}
-                <Toaster />
-            </TitleProvider>
-        </AuthProvider>
+      <body className={cn("min-h-screen bg-background font-body antialiased")}>
+        <ThemeProvider>
+          <AuthProvider>
+              <TitleProvider>
+                  {children}
+                  <Toaster />
+              </TitleProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
