@@ -53,7 +53,94 @@ export async function GET(req: NextRequest) {
     };
 
     try {
-<<<<<<< HEAD
+        const [
+            totalUsersResult,
+            totalCoursesResult,
+            totalPublishedCoursesCount,
+            totalEnrollmentsResult,
+            usersByRole,
+            draftCoursesCount,
+            publishedCoursesCount,
+            archivedCoursesCount,
+            recentLoginLogs,
+            newEnrollmentsLast7DaysCount,
+            allCourseProgressRaw,
+            userRegistrationsByDay,
+            courseCreationByDay,
+            enrollmentsByDay,
+            topInstructorsByCoursesRaw,
+            topStudentsByEnrollmentRaw,
+            topStudentsByCompletionRaw
+        ] = await prisma.$transaction([
+            // Consultas para tarjetas de métricas (totales)
+            prisma.user.count(),
+            prisma.course.count(),
+            prisma.course.count({ where: { status: 'PUBLISHED' } }),
+            prisma.enrollment.count(),
+            prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
+            
+            // FIX: Replaced groupBy with explicit counts for stability
+            prisma.course.count({ where: { status: 'DRAFT' } }),
+            prisma.course.count({ where: { status: 'PUBLISHED' } }),
+            prisma.course.count({ where: { status: 'ARCHIVED' } }),
+
+            // Consultas para tarjetas de actividad reciente (filtradas por fecha)
+            prisma.securityLog.findMany({ 
+                where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: subDays(new Date(), 7) } },
+                select: { userId: true },
+                distinct: ['userId']
+            }),
+            prisma.enrollment.count({ where: { enrolledAt: { gte: subDays(new Date(), 7) } } }),
+            
+            // Consultas para rankings (filtradas por fecha)
+            prisma.courseProgress.findMany({ 
+                where: { course: { status: 'PUBLISHED' }, completedAt: dateFilter }, 
+                select: { courseId: true, progressPercentage: true, userId: true } 
+            }),
+
+            // Consultas para el gráfico de tendencias (filtradas por fecha)
+            prisma.user.groupBy({ by: ['registeredDate'], where: { registeredDate: dateFilter }, _count: { _all: true }, orderBy: { registeredDate: 'asc' } }),
+            prisma.course.groupBy({ by: ['createdAt'], where: { createdAt: dateFilter }, _count: { _all: true }, orderBy: { createdAt: 'asc' } }),
+            prisma.enrollment.groupBy({ by: ['enrolledAt'], where: { enrolledAt: dateFilter }, _count: { _all: true }, orderBy: { enrolledAt: 'asc' } }),
+            
+            // Consultas Raw para rankings de usuarios
+            prisma.$queryRaw<RawInstructorResult[]>`
+                SELECT u.id, u.name, u.avatar, COUNT(c.id) as value
+                FROM "User" u
+                JOIN "Course" c ON c."instructorId" = u.id
+                WHERE c."createdAt" >= ${startDate} AND c."createdAt" <= ${endDate}
+                GROUP BY u.id, u.name, u.avatar
+                ORDER BY COUNT(c.id) DESC
+                LIMIT 5;
+            `,
+             prisma.$queryRaw<RawStudentResult[]>`
+                SELECT u.id, u.name, u.avatar, COUNT(e.id) as value
+                FROM "User" u
+                JOIN "Enrollment" e ON e."userId" = u.id
+                WHERE e."enrolledAt" >= ${startDate} AND e."enrolledAt" <= ${endDate}
+                GROUP BY u.id, u.name, u.avatar
+                ORDER BY COUNT(e.id) DESC
+                LIMIT 5;
+            `,
+             prisma.$queryRaw<RawStudentResult[]>`
+                SELECT u.id, u.name, u.avatar, COUNT(cp.id) as value
+                FROM "User" u
+                JOIN "CourseProgress" cp ON cp."userId" = u.id
+                WHERE cp."progressPercentage" = 100 AND cp."completedAt" >= ${startDate} AND cp."completedAt" <= ${endDate}
+                GROUP BY u.id, u.name, u.avatar
+                ORDER BY COUNT(cp.id) DESC
+                LIMIT 5;
+            `,
+        ]);
+        
+        // FIX: Manually construct the coursesByStatus array from separate counts
+        const coursesByStatus = [
+            { status: 'DRAFT', count: draftCoursesCount },
+            { status: 'PUBLISHED', count: publishedCoursesCount },
+            { status: 'ARCHIVED', count: archivedCoursesCount },
+        ];
+
+        // FIX: Efficiently get top courses by enrollment
         const enrollmentIdsInDateRange = await prisma.enrollment.findMany({
             where: { enrolledAt: dateFilter },
             select: { courseId: true },
@@ -70,130 +157,6 @@ export async function GET(req: NextRequest) {
             orderBy: { enrollments: { _count: 'desc' } }, 
             take: 5 
         });
-        
-=======
->>>>>>> c738c66364c7419d5f88737f8aebbc2bb3003412
-        const [
-            totalUsersResult,
-            totalCoursesResult,
-            totalPublishedCoursesCount,
-            totalEnrollmentsResult,
-            usersByRole,
-            //coursesByStatus,
-            draftCoursesCount,
-            publishedCoursesCount,
-            archivedCoursesCount,
-            recentLoginLogs,
-            newEnrollmentsLast7DaysCount, // Corregido para contar inscripciones
-            allCourseProgressRaw,
-            coursesWithEnrollmentCounts,
-            userRegistrationsByDay,
-            courseCreationByDay,
-            enrollmentsByDay,
-            topInstructorsByCoursesRaw,
-            topStudentsByEnrollmentRaw,
-            topStudentsByCompletionRaw
-        ] = await prisma.$transaction([
-            // Consultas para tarjetas de métricas (totales)
-            prisma.user.count(),
-            prisma.course.count(),
-            prisma.course.count({ where: { status: 'PUBLISHED' } }),
-            prisma.enrollment.count(),
-            prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
-            
-<<<<<<< HEAD
-            // --- FIX: Replaced groupBy with explicit counts ---
-            prisma.course.count({ where: { status: 'DRAFT' } }),
-            prisma.course.count({ where: { status: 'PUBLISHED' } }),
-            prisma.course.count({ where: { status: 'ARCHIVED' } }),
-
-=======
-            // Consultas para tarjetas de actividad reciente (filtradas por fecha)
->>>>>>> c738c66364c7419d5f88737f8aebbc2bb3003412
-            prisma.securityLog.findMany({ 
-                where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: subDays(new Date(), 7) } },
-                select: { userId: true },
-                distinct: ['userId']
-            }),
-            prisma.enrollment.count({ where: { enrolledAt: { gte: subDays(new Date(), 7) } } }), // CORREGIDO
-            
-            // Consultas para rankings (filtradas por fecha)
-            prisma.courseProgress.findMany({ 
-                where: { course: { status: 'PUBLISHED' }, completedAt: dateFilter }, 
-                select: { courseId: true, progressPercentage: true, userId: true } 
-            }),
-            prisma.course.findMany({ 
-                where: { status: 'PUBLISHED', enrollments: { some: { enrolledAt: dateFilter } } }, 
-                select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: { where: { enrolledAt: dateFilter } } } } }, 
-                orderBy: { enrollments: { _count: 'desc' } }, 
-                take: 5 
-            }),
-
-            // Consultas para el gráfico de tendencias (filtradas por fecha)
-            prisma.user.groupBy({ by: ['registeredDate'], where: { registeredDate: dateFilter }, _count: { _all: true }, orderBy: { registeredDate: 'asc' } }),
-            prisma.course.groupBy({ by: ['createdAt'], where: { createdAt: dateFilter }, _count: { _all: true }, orderBy: { createdAt: 'asc' } }),
-            prisma.enrollment.groupBy({ by: ['enrolledAt'], where: { enrolledAt: dateFilter }, _count: { _all: true }, orderBy: { enrolledAt: 'asc' } }),
-            
-            // Consultas Raw para rankings de usuarios (CORREGIDO: filtrado por fecha)
-             prisma.$queryRaw<RawInstructorResult[]>`
-                SELECT u.id, u.name, u.avatar, COUNT(c.id) as value
-<<<<<<< HEAD
-                FROM "User" u
-                JOIN "Course" c ON c."instructorId" = u.id
-                WHERE c."createdAt" >= ${startDate} AND c."createdAt" <= ${endDate}
-                GROUP BY u.id, u.name, u.avatar
-                ORDER BY COUNT(c.id) DESC
-=======
-                FROM Course c
-                JOIN User u ON c.instructorId = u.id
-                WHERE c.createdAt >= ${startDate} AND c.createdAt <= ${endDate}
-                GROUP BY u.id
-                ORDER BY value DESC
->>>>>>> c738c66364c7419d5f88737f8aebbc2bb3003412
-                LIMIT 5;
-            `,
-             prisma.$queryRaw<RawStudentResult[]>`
-                SELECT u.id, u.name, u.avatar, COUNT(e.id) as value
-<<<<<<< HEAD
-                FROM "User" u
-                JOIN "Enrollment" e ON e."userId" = u.id
-                WHERE e."enrolledAt" >= ${startDate} AND e."enrolledAt" <= ${endDate}
-                GROUP BY u.id, u.name, u.avatar
-                ORDER BY COUNT(e.id) DESC
-=======
-                FROM Enrollment e
-                JOIN User u ON e.userId = u.id
-                WHERE e.enrolledAt >= ${startDate} AND e.enrolledAt <= ${endDate}
-                GROUP BY u.id
-                ORDER BY value DESC
->>>>>>> c738c66364c7419d5f88737f8aebbc2bb3003412
-                LIMIT 5;
-            `,
-             prisma.$queryRaw<RawStudentResult[]>`
-                SELECT u.id, u.name, u.avatar, COUNT(cp.id) as value
-<<<<<<< HEAD
-                FROM "User" u
-                JOIN "CourseProgress" cp ON cp."userId" = u.id
-                WHERE cp."progressPercentage" = 100 AND cp."completedAt" >= ${startDate} AND cp."completedAt" <= ${endDate}
-                GROUP BY u.id, u.name, u.avatar
-                ORDER BY COUNT(cp.id) DESC
-=======
-                FROM CourseProgress cp
-                JOIN User u ON cp.userId = u.id
-                WHERE cp.progressPercentage = 100 AND cp.completedAt >= ${startDate} AND cp.completedAt <= ${endDate}
-                GROUP BY u.id
-                ORDER BY value DESC
->>>>>>> c738c66364c7419d5f88737f8aebbc2bb3003412
-                LIMIT 5;
-            `,
-        ]);
-        
-        // --- FIX: Manually construct the coursesByStatus array ---
-        const coursesByStatus = [
-            { status: 'DRAFT', count: draftCoursesCount },
-            { status: 'PUBLISHED', count: publishedCoursesCount },
-            { status: 'ARCHIVED', count: archivedCoursesCount },
-        ];
 
 
         const uniqueActiveUsers = recentLoginLogs.length;
@@ -270,7 +233,7 @@ export async function GET(req: NextRequest) {
             usersByRole: usersByRole.map(u => ({ role: u.role as UserRole, count: u._count._all })),
             coursesByStatus,
             recentLogins: uniqueActiveUsers,
-            newEnrollmentsLast7Days: newEnrollmentsLast7DaysCount, // CORREGIDO
+            newEnrollmentsLast7Days: newEnrollmentsLast7DaysCount,
             userRegistrationTrend,
             courseActivity,
             averageCompletionRate: Math.round(totalCompletionRate),
