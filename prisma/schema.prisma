@@ -1,13 +1,15 @@
 // prisma/schema.prisma
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "foreignKeys"
+}
+
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-}
 
 // --- ENUMS ---
 
@@ -74,17 +76,17 @@ enum SecurityLogEvent {
 // --- MODELS ---
 
 model User {
-  id                  String   @id @default(cuid())
+  id                  String           @id @default(cuid())
   name                String
-  email               String   @unique
+  email               String           @unique
   password            String
   avatar              String?
-  role                UserRole @default(STUDENT)
-  xp                  Int      @default(0)
-  registeredDate      DateTime @default(now())
+  role                UserRole         @default(STUDENT)
+  xp                  Int              @default(0)
+  registeredDate      DateTime         @default(now())
   lastLogin           DateTime?
-  isActive            Boolean  @default(true)
-  isTwoFactorEnabled  Boolean  @default(false)
+  isActive            Boolean          @default(true)
+  isTwoFactorEnabled  Boolean          @default(false)
   twoFactorSecret     String?
 
   coursesAsInstructor Course[]
@@ -92,14 +94,18 @@ model User {
   progress            CourseProgress[]
   notes               UserNote[]
   notifications       Notification[]
-  resourcesUploaded   Resource[]
-  createdEvents       CalendarEvent[] @relation("CreatedEvents")
-  attendedEvents      CalendarEvent[] @relation("EventAttendees")
+  resourcesUploaded   Resource[]       @relation("ResourceToUploader")
+  createdEvents       CalendarEvent[]  @relation("CreatedEvents")
+  attendedEvents      CalendarEvent[]  @relation("EventAttendees")
   achievements        UserAchievement[]
-  formsCreated        Form[] @relation("FormCreator")
-  formResponses       FormResponse[] @relation("FormResponder")
+  formsCreated        Form[]           @relation("FormCreator")
+  formResponses       FormResponse[]   @relation("FormResponder")
   quizAttempts        QuizAttempt[]
-  securityLogs        SecurityLog[] @relation("UserSecurityLogs")
+  securityLogs        SecurityLog[]    @relation("UserSecurityLogs")
+  resourcesSharedWith Resource[]       @relation("SharedResources")
+  announcements       Announcement[]   @relation("UserAnnouncements")
+  lessonTemplatesCreated LessonTemplate[] @relation("LessonTemplateCreator")
+  formsSharedWith     Form[]           @relation("FormSharedWith")
 
   @@map("users")
 }
@@ -316,7 +322,7 @@ model Announcement {
   authorId  String
   audience  String   // e.g., 'ALL', 'STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'
   priority  String   @default("Normal")
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author    User     @relation("UserAnnouncements", fields: [authorId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
@@ -373,13 +379,13 @@ model Resource {
   pin         String?
 
   uploaderId  String?
-  uploader    User?        @relation(fields: [uploaderId], references: [id], onDelete: SetNull)
+  uploader    User?        @relation("ResourceToUploader", fields: [uploaderId], references: [id], onDelete: SetNull)
 
   parentId    String?
   parent      Resource?    @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children    Resource[]   @relation("FolderHierarchy")
 
-  sharedWith  User[]
+  sharedWith  User[]       @relation("SharedResources")
 }
 
 model PlatformSettings {
@@ -450,19 +456,20 @@ model UserAchievement {
 }
 
 model LessonTemplate {
-  id              String   @id @default(cuid())
+  id              String         @id @default(cuid())
   name            String
   description     String?
-  type            String   // 'SYSTEM' or 'USER'
-  
+  type            String         // 'SYSTEM' or 'USER'
+
   creatorId       String?
-  creator         User?    @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  creator         User?          @relation("LessonTemplateCreator", fields: [creatorId], references: [id], onDelete: SetNull)
 
   originalLessonId String?
-  originalLesson   Lesson? @relation("LessonToTemplate", fields: [originalLessonId], references: [id], onDelete: SetNull)
+  originalLesson  Lesson? @relation("LessonToTemplate", fields: [originalLessonId], references: [id], onDelete: SetNull)
 
   templateBlocks  TemplateBlock[]
 }
+
 
 model TemplateBlock {
   id          String     @id @default(cuid())
@@ -473,20 +480,20 @@ model TemplateBlock {
 }
 
 model Form {
-    id            String        @id @default(cuid())
-    title         String
-    description   String?
-    status        FormStatus    @default(DRAFT)
-    isQuiz        Boolean       @default(false)
-    createdAt     DateTime      @default(now())
-    updatedAt     DateTime      @updatedAt
-    
-    creatorId     String
-    creator       User          @relation("FormCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  status      FormStatus     @default(DRAFT)
+  isQuiz      Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  
+  creatorId   String
+  creator     User           @relation("FormCreator", fields: [creatorId], references: [id], onDelete: Cascade)
 
-    fields        FormField[]
-    responses     FormResponse[]
-    sharedWith    User[]
+  fields      FormField[]
+  responses   FormResponse[]
+  sharedWith  User[]         @relation("FormSharedWith")
 }
 
 model FormField {
@@ -526,13 +533,13 @@ model FormAnswer {
 }
 
 model SecurityLog {
-  id            String            @id @default(cuid())
+  id            String          @id @default(cuid())
   userId        String?
-  user          User?             @relation("UserSecurityLogs", fields: [userId], references: [id], onDelete: SetNull)
-  event         SecurityLogEvent
+  user          User?           @relation("UserSecurityLogs", fields: [userId], references: [id], onDelete: SetNull)
+  event         SecurityLogEvent @default(SUCCESSFUL_LOGIN) // Add a default value
   ipAddress     String?
   userAgent     String?
-  createdAt     DateTime          @default(now())
+  createdAt     DateTime        @default(now())
   details       String?
   emailAttempt  String?
   country       String?
