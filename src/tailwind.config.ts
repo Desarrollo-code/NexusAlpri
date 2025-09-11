@@ -11,6 +11,9 @@ const config: Config = {
     {
       pattern: /bg-event-(blue|green|red|orange)/,
     },
+     {
+      pattern: /border-(blue|green|red|orange)-600/,
+    },
     {
       pattern: /text-event-(blue|green|red|orange)/,
     },
@@ -26,11 +29,11 @@ const config: Config = {
     },
     extend: {
       backgroundImage: {
-        'gradient-blue': 'linear-gradient(to right bottom, #3b82f6, #60a5fa)',
-        'gradient-green': 'linear-gradient(to right bottom, #16a34a, #4ade80)',
+        'gradient-blue': 'linear-gradient(to right bottom, hsl(var(--chart-1)), hsl(210, 90%, 65%))',
+        'gradient-green': 'linear-gradient(to right bottom, hsl(var(--chart-3)), hsl(160, 70%, 55%))',
         'gradient-purple': 'linear-gradient(to right bottom, #7e22ce, #a855f7)',
-        'gradient-orange': 'linear-gradient(to right bottom, #f97316, #fb923c)',
-        'gradient-pink': 'linear-gradient(to right bottom, #db2777, #f472b6)',
+        'gradient-orange': 'linear-gradient(to right bottom, hsl(var(--chart-2)), hsl(25, 90%, 70%))',
+        'gradient-pink': 'linear-gradient(to right bottom, hsl(var(--chart-5)), hsl(340, 85%, 75%))',
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -140,6 +143,24 @@ const config: Config = {
           '0%, 100%': { transform: 'scale(0.8)', opacity: 0.7 },
           '50%': { transform: 'scale(1.1)', opacity: 1 },
         },
+        'aurora-1': {
+            '0%, 100%': { transform: 'translate(0%, 0%) scale(1)', opacity: 0.2 },
+            '25%': { transform: 'translate(20%, -10%) scale(1.1)', opacity: 0.3 },
+            '50%': { transform: 'translate(10%, 20%) scale(0.9)', opacity: 0.25 },
+            '75%': { transform: 'translate(-10%, 10%) scale(1.2)', opacity: 0.3 },
+        },
+        'aurora-2': {
+            '0%, 100%': { transform: 'translate(0%, 0%) scale(1)', opacity: 0.2 },
+            '25%': { transform: 'translate(-15%, 10%) scale(0.9)', opacity: 0.25 },
+            '50%': { transform: 'translate(10%, -15%) scale(1.1)', opacity: 0.3 },
+            '75%': { transform: 'translate(5%, 5%) scale(1)', opacity: 0.2 },
+        },
+        'aurora-3': {
+            '0%, 100%': { transform: 'translate(0%, 0%) scale(1)', opacity: 0.15 },
+            '25%': { transform: 'translate(10%, 15%) scale(1.2)', opacity: 0.2 },
+            '50%': { transform: 'translate(-15%, -10%) scale(0.8)', opacity: 0.1 },
+            '75%': { transform: 'translate(5%, -5%) scale(1.1)', opacity: 0.18 },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -149,6 +170,9 @@ const config: Config = {
         'caret-blink': 'caret-blink 1.25s ease-out infinite',
         'spin-slow': 'spin-slow 3s linear infinite',
         'bloom': 'bloom 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'aurora-1': 'aurora-1 20s ease-in-out infinite',
+        'aurora-2': 'aurora-2 25s ease-in-out infinite',
+        'aurora-3': 'aurora-3 18s ease-in-out infinite',
       },
     },
   },

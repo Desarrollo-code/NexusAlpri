@@ -19,13 +19,14 @@ import {
   DropdownMenuRadioItem
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Settings, Palette, Check } from 'lucide-react';
+import { LogOut, User, Settings, Palette, Check, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { UserRole } from '@/types';
 import { AVAILABLE_THEMES } from '../theme-provider';
 import { Identicon } from '../ui/identicon';
 import { getRoleInSpanish } from '@/lib/security-log-utils';
+import { useTour } from '@/contexts/tour-context';
 
 
 function ThemeToggle() {
@@ -55,6 +56,8 @@ function ThemeToggle() {
 
 export function UserAvatarDropdown() {
   const { user, logout, settings } = useAuth();
+  const { forceStartTour } = useTour();
+
 
   if (!user) return null;
   
@@ -92,6 +95,10 @@ export function UserAvatarDropdown() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+         <DropdownMenuItem onClick={() => forceStartTour('profile', [])} className="cursor-pointer">
+            <Eye className="mr-2 h-4 w-4" />
+            <span>Ver Guía</span>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/profile" className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />
