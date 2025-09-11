@@ -22,8 +22,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9-_\.]/g, '_');
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-    const filename = `${uniqueSuffix}-${file.name.replace(/\s/g, '_')}`;
+    const filename = `${uniqueSuffix}-${safeFileName}`;
     
     const { data: uploadData, error } = await supabaseAdmin.storage
       .from('resource_library')
