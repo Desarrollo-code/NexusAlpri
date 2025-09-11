@@ -504,4 +504,5 @@ export default function AnalyticsPageWrapper() {
       </Card>
     </div>
   );
+  
 }
