@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek, isSameMonth, getDay, isBefore } from 'date-fns';
+import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek, isSameMonth, getDay, isBefore, isAfter } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
@@ -12,25 +12,26 @@ import { useIsMobile } from '@/hooks/use-mobile';
 const MAX_LANES_DESKTOP = 3;
 const MAX_LANES_MOBILE = 2; 
 
-const getEventColorClass = (color?: string, type: 'bg' | 'dot' = 'bg'): string => {
+const getEventColorClass = (color?: string): string => {
   const colorMap: Record<string, string> = {
-    blue: 'bg-event-blue text-white border-event-blue',
-    green: 'bg-event-green text-white border-event-green',
-    red: 'bg-event-red text-white border-event-red',
-    orange: 'bg-event-orange text-white border-event-orange',
-  };
-   const dotColorMap: Record<string, string> = {
     blue: 'bg-event-blue',
     green: 'bg-event-green',
     red: 'bg-event-red',
     orange: 'bg-event-orange',
   };
-
-  if (type === 'dot') {
-      return dotColorMap[color as string] || 'bg-primary';
-  }
-  return colorMap[color as string] || 'bg-primary border-primary/80 text-primary-foreground';
+  return colorMap[color as string] || 'bg-primary';
 };
+
+const getEventBorderColorClass = (color?: string): string => {
+  const colorMap: Record<string, string> = {
+    blue: 'border-event-blue',
+    green: 'border-event-green',
+    red: 'border-event-red',
+    orange: 'border-event-orange',
+  };
+  return colorMap[color as string] || 'border-primary';
+}
+
 
 const processEventsForWeek = (week: Date[], allEvents: CalendarEvent[]) => {
     const weekStart = week[0];
@@ -130,7 +131,7 @@ const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect
              <div className="mt-1 space-y-1">
                 {isMobile && eventsForDay.slice(0, maxLanes).map(event => (
                     <div key={event.id} className="flex items-center gap-1.5">
-                        <div className={cn("w-2 h-2 rounded-full", getEventColorClass(event.color, 'dot'))}></div>
+                        <div className={cn("w-2 h-2 rounded-full", getEventColorClass(event.color))}></div>
                         <span className="text-xs truncate text-muted-foreground">{event.title}</span>
                     </div>
                 ))}
@@ -176,7 +177,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
         const dayEvents = events.filter(event => {
             const eventStart = new Date(event.start);
             const eventEnd = new Date(event.end);
-            return isSameDay(day, eventStart) || isSameDay(day, eventEnd) || (isBefore(eventStart, day) && isBefore(day, eventEnd));
+            return isSameDay(day, eventStart) || isSameDay(day, eventEnd) || (isBefore(eventStart, day) && isAfter(day, eventStart));
         }).sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime());
         map.set(dayKey, dayEvents);
     });
@@ -217,8 +218,8 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                                   key={event.id}
                                   onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
                                   className={cn(
-                                      "pointer-events-auto cursor-pointer px-2 text-xs font-semibold flex items-center truncate transition-colors h-6 rounded-md",
-                                      getEventColorClass(event.color, 'bg')
+                                      "pointer-events-auto cursor-pointer px-2 text-xs font-semibold flex items-center truncate transition-colors h-6 rounded-md text-white",
+                                      getEventColorClass(event.color)
                                   )}
                                   style={{
                                       gridColumnStart: event.startCol,

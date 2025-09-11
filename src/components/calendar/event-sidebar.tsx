@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { format } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -24,6 +24,16 @@ const getEventColorClass = (color?: string): string => {
   return colorMap[color as string] || 'bg-primary';
 };
 
+const getEventBorderColorClass = (color?: string): string => {
+  const colorMap: Record<string, string> = {
+    blue: 'border-event-blue',
+    green: 'border-event-green',
+    red: 'border-event-red',
+    orange: 'border-event-orange',
+  };
+  return colorMap[color as string] || 'border-primary';
+}
+
 interface EventListProps {
   selectedDate: Date;
   events: CalendarEvent[];
@@ -40,10 +50,13 @@ const EventListItem = ({ event, onEditEvent }: { event: CalendarEvent, onEditEve
             </div>
             <div className="relative flex-grow pb-6">
                 <div className={cn("absolute left-0 top-2.5 h-full w-px", getEventColorClass(event.color))} />
-                <div className={cn("absolute left-[-4.5px] top-2.5 h-2.5 w-2.5 rounded-full bg-background border-2 border-event-blue", getEventColorClass(event.color).replace('bg-','border-'))} />
+                <div className={cn(
+                    "absolute left-[-4.5px] top-2.5 h-2.5 w-2.5 rounded-full bg-background border-2",
+                    getEventBorderColorClass(event.color)
+                )} />
                 <div className="pl-4">
                     <p className="font-semibold text-sm leading-tight text-foreground">{event.title}</p>
-                    <p className="text-xs text-muted-foreground">{event.description || 'Sin descripción'}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{event.description || 'Sin descripción'}</p>
                 </div>
             </div>
         </div>
@@ -55,11 +68,11 @@ export function EventList({ selectedDate, events, onEditEvent }: EventListProps)
   const isMobile = useIsMobile();
   
   const sortedEvents = React.useMemo(() => {
-    return [...events].sort((a, b) => {
+    return [...events].filter(e => isSameDay(new Date(e.start), selectedDate)).sort((a, b) => {
         if (a.allDay !== b.allDay) return a.allDay ? -1 : 1; // "Todo el día" primero
         return new Date(a.start).getTime() - new Date(b.start).getTime(); // Luego por hora
     });
-  }, [events]);
+  }, [events, selectedDate]);
 
   const dayOfWeek = format(selectedDate, "EEE", { locale: es }).toUpperCase();
   const dayOfMonth = format(selectedDate, "d", { locale: es });
