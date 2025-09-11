@@ -72,7 +72,7 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
         return (
             <div key={option.id} className="flex items-center gap-2 p-2 bg-background/50 rounded-md border">
                 {field.type === 'SINGLE_CHOICE' ? (
-                    <RadioGroupItem value={option.id} id={optionId} checked={option.isCorrect} onClick={() => onCorrectChange(field.id, option.id, true)} />
+                     <RadioGroupItem value={option.id} id={optionId} />
                 ) : (
                     <Checkbox id={optionId} checked={option.isCorrect} onCheckedChange={(checked) => onCorrectChange(field.id, option.id, !!checked)} />
                 )}
@@ -100,9 +100,17 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
     };
 
     if (field.type === 'SINGLE_CHOICE' || field.type === 'MULTIPLE_CHOICE') {
+        const correctOptionId = field.type === 'SINGLE_CHOICE' ? options.find(o => o.isCorrect)?.id : undefined;
+
         return (
             <div className="space-y-2 mt-2">
-                {options.map(renderOption)}
+                <RadioGroup 
+                    value={correctOptionId} 
+                    onValueChange={(value) => onCorrectChange(field.id, value, true)} 
+                    className="space-y-2"
+                >
+                  {options.map((option, index) => renderOption(option, index))}
+                </RadioGroup>
                 <Button variant="outline" size="sm" onClick={() => onOptionAdd(field.id)}>+ Añadir opción</Button>
             </div>
         );
