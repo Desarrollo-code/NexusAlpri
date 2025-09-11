@@ -127,7 +127,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           const fieldPayload = {
             label: fieldData.label,
             type: fieldData.type as FormFieldType,
-            options: (fieldData.options as unknown as FormFieldOption[]) || [],
+            options: (fieldData.options as unknown as FormFieldOption[]),
             required: fieldData.required || false,
             placeholder: fieldData.placeholder || null,
             order: index,
