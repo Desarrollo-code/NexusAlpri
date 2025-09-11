@@ -1,4 +1,3 @@
-
 import type {Config} from 'tailwindcss';
 
 const config: Config = {
@@ -9,13 +8,10 @@ const config: Config = {
   ],
   safelist: [
     {
-      pattern: /bg-event-(blue|green|red|orange)/,
-    },
-     {
-      pattern: /border-(blue|green|red|orange)-600/,
+      pattern: /bg-(blue|green|red|orange)-500/,
     },
     {
-      pattern: /text-event-(blue|green|red|orange)/,
+      pattern: /border-(blue|green|red|orange)-600/,
     },
   ],
   darkMode: ["class"],
@@ -85,12 +81,6 @@ const config: Config = {
           '3': 'hsl(var(--chart-3))',
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
-        },
-         event: {
-          blue: 'hsl(var(--event-blue))',
-          green: 'hsl(var(--event-green))',
-          red: 'hsl(var(--event-red))',
-          orange: 'hsl(var(--event-orange))',
         },
         sidebar: {
           background: 'hsl(var(--sidebar-background))',

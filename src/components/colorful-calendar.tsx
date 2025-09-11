@@ -13,18 +13,17 @@ const MAX_LANES_DESKTOP = 3;
 const MAX_LANES_MOBILE = 2; 
 
 const getEventColorClass = (color?: string, type: 'bg' | 'dot' = 'bg'): string => {
-  // Ahora usamos clases completas que estarán en la safelist de Tailwind.
   const colorMap: Record<string, string> = {
-    blue: 'bg-event-blue border-blue-600 text-white',
-    green: 'bg-event-green border-green-600 text-white',
-    red: 'bg-event-red border-red-600 text-white',
-    orange: 'bg-event-orange border-orange-600 text-white',
+    blue: 'bg-blue-500 border-blue-600 text-white',
+    green: 'bg-green-500 border-green-600 text-white',
+    red: 'bg-red-500 border-red-600 text-white',
+    orange: 'bg-orange-500 border-orange-600 text-white',
   };
    const dotColorMap: Record<string, string> = {
-    blue: 'bg-event-blue',
-    green: 'bg-event-green',
-    red: 'bg-event-red',
-    orange: 'bg-event-orange',
+    blue: 'bg-blue-500',
+    green: 'bg-green-500',
+    red: 'bg-red-500',
+    orange: 'bg-orange-500',
   };
 
   if (type === 'dot') {

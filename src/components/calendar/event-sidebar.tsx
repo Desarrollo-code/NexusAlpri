@@ -14,6 +14,16 @@ import { useAuth } from '@/contexts/auth-context';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Card } from '../ui/card';
 
+const getEventColorClass = (color?: string): string => {
+  const colorMap: Record<string, string> = {
+    blue: 'bg-blue-500',
+    green: 'bg-green-500',
+    red: 'bg-red-500',
+    orange: 'bg-orange-500',
+  };
+  return colorMap[color as string] || 'bg-primary';
+};
+
 interface EventListProps {
   selectedDate: Date;
   events: CalendarEvent[];
@@ -29,8 +39,8 @@ const EventListItem = ({ event, onEditEvent }: { event: CalendarEvent, onEditEve
                 </p>
             </div>
             <div className="relative flex-grow pb-6">
-                <div className="absolute left-0 top-2.5 h-full w-px bg-border group-hover:bg-primary transition-colors" />
-                <div className="absolute left-[-4.5px] top-2.5 h-2.5 w-2.5 rounded-full bg-background border-2 border-border group-hover:border-primary transition-colors" />
+                <div className={cn("absolute left-0 top-2.5 h-full w-px", getEventColorClass(event.color))} />
+                <div className={cn("absolute left-[-4.5px] top-2.5 h-2.5 w-2.5 rounded-full bg-background border-2", getEventColorClass(event.color).replace('bg-','border-'))} />
                 <div className="pl-4">
                     <p className="font-semibold text-sm leading-tight text-foreground">{event.title}</p>
                     <p className="text-xs text-muted-foreground">{event.description || 'Sin descripción'}</p>
