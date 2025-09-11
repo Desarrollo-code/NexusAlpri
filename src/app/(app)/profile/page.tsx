@@ -275,7 +275,7 @@ const TwoFactorCard = ({ user, updateUser }: { user: any, updateUser: (data: any
             ) : qrCode ? (
                  <CardContent className="space-y-4 text-center">
                     <p className="text-sm text-muted-foreground">Escanea este código QR con tu aplicación de autenticación (ej. Google Authenticator).</p>
-                    <Image src={qrCode} alt="Código QR para 2FA" width={200} height={200} className="mx-auto" />
+                    <Image src={qrCode} alt="Código QR para 2FA" width={200} height={200} className="mx-auto" quality={100} />
                     <div className="space-y-2">
                         <Label htmlFor="verification-code">Código de Verificación</Label>
                         <Input id="verification-code" value={verificationCode} onChange={e => setVerificationCode(e.target.value)} placeholder="123456" maxLength={6}/>

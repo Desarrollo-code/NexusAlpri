@@ -10,7 +10,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    unoptimized: false,
+    unoptimized: true,
   },
 };
 
