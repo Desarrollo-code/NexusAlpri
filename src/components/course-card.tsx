@@ -117,12 +117,12 @@ export function CourseCard({
     <>
     <Card className="group flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out">
         <Link href={mainLinkHref}>
-            <div className="aspect-video w-full relative overflow-hidden bg-muted/30 p-2">
+            <div className="aspect-video w-full relative overflow-hidden bg-muted/30">
                 <Image
                     src={course.imageUrl || `https://placehold.co/600x400.png`}
                     alt={course.title}
                     fill
-                    className="object-contain transition-transform duration-300 group-hover:scale-105"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                     data-ai-hint="online course abstract"
                     priority={priority}
                 />
