@@ -44,7 +44,7 @@ export function PublicTopBar() {
             <div className={cn("w-10 h-10 flex items-center justify-center flex-shrink-0 rounded-lg relative overflow-hidden", !settings?.logoUrl && "p-2 bg-white/20")}>
               {settings?.logoUrl ? <div className="relative w-full h-full"><Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className="object-contain p-1" /></div> : <div className="w-full h-full rounded-md bg-muted" />}
             </div>
-            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-white">
+            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap !text-white">
               {settings?.platformName || 'NexusAlpri'}
             </span>
           </Link>
@@ -71,7 +71,7 @@ export function PublicTopBar() {
         </nav>
         
         <div className="flex items-center justify-end flex-1">
-            <Button asChild className="hidden md:flex bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold border-transparent hover:scale-105 transition-transform shadow-lg shadow-amber-500/20">
+            <Button asChild className="hidden md:flex bg-blue-600 hover:bg-blue-700 text-white font-bold border-transparent hover:scale-105 transition-transform shadow-lg shadow-blue-500/20">
             <Link href="/sign-in">
                 Acceder
             </Link>
