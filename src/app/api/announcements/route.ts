@@ -197,38 +197,3 @@ export async function PUT(req: NextRequest) {
         return NextResponse.json({ message: 'Error al actualizar el anuncio' }, { status: 500 });
     }
 }
-
-export async function DELETE(req: NextRequest) {
-    const session = await getCurrentUser();
-    if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
-        return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
-    }
-
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
-    if (!id) {
-        return NextResponse.json({ message: 'ID del anuncio es requerido' }, { status: 400 });
-    }
-
-    try {
-        const announcement = await prisma.announcement.findUnique({ where: { id }});
-        if (!announcement) {
-            return NextResponse.json({ message: 'Anuncio no encontrado' }, { status: 404 });
-        }
-        if (session.role !== 'ADMINISTRATOR' && announcement.authorId !== session.id) {
-            return NextResponse.json({ message: 'No tienes permiso para eliminar este anuncio' }, { status: 403 });
-        }
-
-        await prisma.announcement.delete({ where: { id } });
-        
-        return new NextResponse(null, { status: 204 });
-
-    } catch (error) {
-        console.error('[ANNOUNCEMENT_DELETE_ERROR]', error);
-        if ((error as any).code === 'P2025') {
-            // This means the record was already deleted, which is fine.
-            return new NextResponse(null, { status: 204 });
-        }
-        return NextResponse.json({ message: 'Error al eliminar el anuncio' }, { status: 500 });
-    }
-}

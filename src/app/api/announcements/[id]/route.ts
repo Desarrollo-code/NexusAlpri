@@ -53,7 +53,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const body = await req.json();
     const { title, content, audience, priority } = body;
     
-    const audienceToStore = Array.isArray(audience) ? JSON.stringify(audience) : audience;
+    // El audience siempre debe ser un string simple.
+    const audienceToStore = Array.isArray(audience) ? audience[0] : audience;
 
     const updatedAnnouncement = await prisma.announcement.update({
       where: { id },
@@ -80,18 +81,33 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const announcement = await prisma.announcement.findUnique({ where: { id } });
 
     if (!announcement) {
-      return NextResponse.json({ message: 'Anuncio no encontrado' }, { status: 404 });
+      // Si el anuncio ya no existe, la operación es exitosa.
+      return new NextResponse(null, { status: 204 });
     }
     
     if (session.role !== 'ADMINISTRATOR' && announcement.authorId !== session.id) {
       return NextResponse.json({ message: 'No tienes permiso para eliminar este anuncio' }, { status: 403 });
     }
-
-    await prisma.announcement.delete({ where: { id } });
+    
+    // Transacción para eliminar el anuncio y sus notificaciones
+    await prisma.$transaction([
+      // 1. Eliminar notificaciones relacionadas con la página de anuncios general.
+      // Esta es una aproximación; una solución más robusta podría usar un `relatedId` y `relatedModel` en la notificación.
+      prisma.notification.deleteMany({
+          where: { 
+              title: {
+                  contains: `Nuevo Anuncio: ${announcement.title}`
+              }
+          } 
+      }),
+      // 2. Eliminar el anuncio
+      prisma.announcement.delete({ where: { id } })
+    ]);
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error('[ANNOUNCEMENT_DELETE_ERROR]', error);
+    // Si el error es porque el registro no se encontró (ej. P2025), se considera un éxito.
     if ((error as any).code === 'P2025') {
         return new NextResponse(null, { status: 204 });
     }
