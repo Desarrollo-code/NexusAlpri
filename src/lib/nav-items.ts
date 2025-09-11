@@ -1,3 +1,4 @@
+
 import type { NavItem, UserRole } from '@/types';
 import {
   LayoutDashboard,
@@ -70,6 +71,13 @@ const NAVIGATION_ITEMS: NavItem[] = [
     label: 'Calendario',
     icon: CalendarDays,
     path: '/calendar',
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+  },
+  {
+    id: 'notifications',
+    label: 'Notificaciones',
+    icon: Bell,
+    path: '/notifications',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
    {
