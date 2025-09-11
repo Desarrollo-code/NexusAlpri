@@ -91,13 +91,11 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     
     // Transacción para eliminar el anuncio y sus notificaciones
     await prisma.$transaction([
-      // 1. Eliminar notificaciones relacionadas con la página de anuncios general.
-      // Esta es una aproximación; una solución más robusta podría usar un `relatedId` y `relatedModel` en la notificación.
+      // 1. Eliminar notificaciones relacionadas con el anuncio específico.
       prisma.notification.deleteMany({
           where: { 
-              title: {
-                  contains: `Nuevo Anuncio: ${announcement.title}`
-              }
+              title: `Nuevo Anuncio: ${announcement.title}`,
+              link: '/announcements'
           } 
       }),
       // 2. Eliminar el anuncio
