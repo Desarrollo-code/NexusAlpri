@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek, isSameMonth, getDay, isBefore, isAfter } from 'date-fns';
+import { eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, startOfMonth, startOfWeek, isSameMonth, getDay, isBefore, isAfter, differenceInCalendarDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
@@ -38,29 +38,34 @@ const processEventsForWeek = (week: Date[], allEvents: CalendarEvent[]) => {
     const weekEnd = week[6];
 
     const relevantEvents = allEvents
-        .filter(event => new Date(event.end) >= weekStart && new Date(event.start) <= weekEnd)
+        .filter(event => {
+            const eventStart = new Date(event.start);
+            const eventEnd = new Date(event.end);
+            return eventEnd >= weekStart && eventStart <= weekEnd;
+        })
         .sort((a, b) => {
-            const durationA = new Date(a.end).getTime() - new Date(a.start).getTime();
-            const durationB = new Date(b.end).getTime() - new Date(b.start).getTime();
-            if (durationA !== durationB) return durationB - durationA;
+            const durationA = differenceInCalendarDays(new Date(a.end), new Date(a.start));
+            const durationB = differenceInCalendarDays(new Date(b.end), new Date(b.start));
+            if (durationA !== durationB) return durationB - durationA; // Longer events first
             return new Date(a.start).getTime() - new Date(b.start).getTime();
         });
 
     const positionedEvents: any[] = [];
     const lanes: (Date | null)[] = Array(10).fill(null); // Max 10 lanes for collision detection
-    
+
     relevantEvents.forEach(event => {
         const eventStart = new Date(event.start);
-        
-        let startCol = isBefore(eventStart, weekStart) ? 0 : getDay(eventStart);
-        let endCol = isBefore(weekEnd, new Date(event.end)) ? 6 : getDay(new Date(event.end));
-        let span = endCol - startCol + 1;
+        const eventEnd = new Date(event.end);
 
+        let startCol = isBefore(eventStart, weekStart) ? 0 : getDay(eventStart);
+        let endCol = isAfter(eventEnd, weekEnd) ? 6 : getDay(eventEnd);
+        let span = endCol - startCol + 1;
+        
         let laneIndex = -1;
         for (let i = 0; i < lanes.length; i++) {
             let laneIsFree = true;
             for (let d = startCol; d <= endCol; d++) {
-                if (lanes[i] && !isBefore(lanes[i]!, week[d])) {
+                if (lanes[i] && isAfter(lanes[i]!, week[d])) {
                     laneIsFree = false;
                     break;
                 }
@@ -71,19 +76,20 @@ const processEventsForWeek = (week: Date[], allEvents: CalendarEvent[]) => {
             }
         }
         
-        if (laneIndex !== -1) {
-            for (let d = startCol; d <= endCol; d++) {
-                 lanes[laneIndex] = new Date(event.end);
-            }
-            positionedEvents.push({
-                ...event,
-                startCol: startCol + 1,
-                span,
-                lane: laneIndex,
-                startsInWeek: !isBefore(eventStart, weekStart),
-                endsInWeek: !isBefore(weekEnd, new Date(event.end)),
-            });
+        if (laneIndex === -1) { laneIndex = lanes.length; lanes.push(null); }
+
+        for (let d = startCol; d <= endCol; d++) {
+            lanes[laneIndex] = eventEnd;
         }
+
+        positionedEvents.push({
+            ...event,
+            startCol: startCol + 1,
+            span,
+            lane: laneIndex,
+            startsInWeek: !isBefore(eventStart, weekStart),
+            endsInWeek: !isAfter(eventEnd, weekEnd),
+        });
     });
 
     return positionedEvents;
@@ -175,9 +181,9 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
     weeks.flat().forEach(day => {
         const dayKey = format(day, 'yyyy-MM-dd');
         const dayEvents = events.filter(event => {
-            const eventStart = new Date(event.start);
-            const eventEnd = new Date(event.end);
-            return isSameDay(day, eventStart) || isSameDay(day, eventEnd) || (isBefore(eventStart, day) && isAfter(day, eventStart));
+             const eventStart = new Date(event.start);
+             const eventEnd = new Date(event.end);
+             return !isAfter(day, eventEnd) && !isBefore(day, eventStart);
         }).sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime());
         map.set(dayKey, dayEvents);
     });
