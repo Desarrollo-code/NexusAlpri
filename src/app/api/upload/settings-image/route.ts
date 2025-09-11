@@ -1,8 +1,19 @@
 // src/app/api/upload/settings-image/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase-client';
+import { supabaseAdmin } from '@/lib/supabase-client';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
+  // Verificación de sesión para proteger la ruta
+  const session = await getCurrentUser();
+  if (!session) {
+    return NextResponse.json({ success: false, message: 'No autorizado.' }, { status: 401 });
+  }
+  
+  if (!supabaseAdmin) {
+    return NextResponse.json({ success: false, message: 'El cliente de administrador de Supabase no está configurado en el servidor.' }, { status: 500 });
+  }
+
   const data = await request.formData();
   const file: File | null = data.get('file') as unknown as File;
 
@@ -14,7 +25,7 @@ export async function POST(request: NextRequest) {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
     const filename = `${uniqueSuffix}-${file.name.replace(/\s/g, '_')}`;
 
-    const { data: uploadData, error } = await supabase.storage
+    const { data: uploadData, error } = await supabaseAdmin.storage
       .from('settings_images')
       .upload(filename, file);
 
@@ -22,7 +33,7 @@ export async function POST(request: NextRequest) {
       throw new Error(error.message);
     }
     
-    const { data: publicUrlData } = supabase.storage
+    const { data: publicUrlData } = supabaseAdmin.storage
       .from('settings_images')
       .getPublicUrl(uploadData.path);
       
