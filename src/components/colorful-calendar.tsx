@@ -14,16 +14,16 @@ const MAX_LANES_MOBILE = 2;
 
 const getEventColorClass = (color?: string, type: 'bg' | 'dot' = 'bg'): string => {
   const colorMap: Record<string, string> = {
-    blue: 'bg-blue-500 border-blue-600 text-white',
-    green: 'bg-green-500 border-green-600 text-white',
-    red: 'bg-red-500 border-red-600 text-white',
-    orange: 'bg-orange-500 border-orange-600 text-white',
+    blue: 'bg-event-blue text-white border-event-blue',
+    green: 'bg-event-green text-white border-event-green',
+    red: 'bg-event-red text-white border-event-red',
+    orange: 'bg-event-orange text-white border-event-orange',
   };
    const dotColorMap: Record<string, string> = {
-    blue: 'bg-blue-500',
-    green: 'bg-green-500',
-    red: 'bg-red-500',
-    orange: 'bg-orange-500',
+    blue: 'bg-event-blue',
+    green: 'bg-event-green',
+    red: 'bg-event-red',
+    orange: 'bg-event-orange',
   };
 
   if (type === 'dot') {
