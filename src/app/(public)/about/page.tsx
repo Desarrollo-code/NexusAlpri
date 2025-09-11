@@ -7,6 +7,8 @@ import prisma from '@/lib/prisma';
 import { cn } from '@/lib/utils';
 import type { PlatformSettings } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 async function getPageSettings(): Promise<Pick<PlatformSettings, 'aboutImageUrl'>> {
     try {
         const settings = await prisma.platformSettings.findFirst({

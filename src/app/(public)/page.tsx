@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils';
 import prisma from '@/lib/prisma';
 import type { PlatformSettings } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 const features = [
   {
     icon: <Layers3 className="h-8 w-8 text-blue-600" />,
