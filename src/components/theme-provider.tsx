@@ -5,6 +5,7 @@ import * as React from 'react';
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from 'next-themes';
 import { type ThemeProviderProps } from 'next-themes/dist/types';
 import { useAuth } from '@/contexts/auth-context';
+import { fontMap } from '@/lib/fonts';
 
 export const AVAILABLE_THEMES = [
   { value: 'light', label: 'Claro' },
@@ -46,55 +47,55 @@ const hexToHsl = (hex: string): string | null => {
 
 const StyleInjector = () => {
     const { settings } = useAuth();
-    const { theme } = useNextTheme();
     
     React.useEffect(() => {
         if (!settings || typeof window === 'undefined') return;
 
         const root = document.documentElement;
 
-        const setVar = (varName: string, hex: string | null | undefined) => {
+        const setVar = (varName: string, hex: string | null | undefined, isDark = false) => {
             const hsl = hexToHsl(hex || '');
             if (hsl) {
-                root.style.setProperty(varName, hsl);
+                if(isDark) {
+                     // For dark mode, we just need to set the variable inside the .dark selector,
+                     // which is handled by the <style> tag approach.
+                } else {
+                    root.style.setProperty(varName, hsl);
+                }
             }
         };
 
-        // Set light theme variables
-        setVar('--primary', settings.primaryColor);
-        setVar('--secondary', settings.secondaryColor);
-        setVar('--accent', settings.accentColor);
-        setVar('--background', settings.backgroundColorLight);
+        const cssVariables = `
+          :root {
+            ${settings.primaryColor ? `--primary: ${hexToHsl(settings.primaryColor)};` : ''}
+            ${settings.secondaryColor ? `--secondary: ${hexToHsl(settings.secondaryColor)};` : ''}
+            ${settings.accentColor ? `--accent: ${hexToHsl(settings.accentColor)};` : ''}
+            ${settings.backgroundColorLight ? `--background: ${hexToHsl(settings.backgroundColorLight)};` : ''}
+          }
+          .dark {
+            ${settings.primaryColorDark ? `--primary: ${hexToHsl(settings.primaryColorDark)};` : ''}
+            ${settings.backgroundColorDark ? `--background: ${hexToHsl(settings.backgroundColorDark)};` : ''}
+          }
+        `.trim().replace(/\s+/g, ' ');
 
-        // Set dark theme variables
-        // These are applied when the .dark class is present
-        setVar('--primary-dark', settings.primaryColorDark);
-        setVar('--background-dark', settings.backgroundColorDark);
-
-        // Update font variables
-        const fontVariables = settings.fontHeadline && settings.fontBody
-          ? `${settings.fontHeadline.variable} ${settings.fontBody.variable}`
-          : ''; // getFontVariables can now be simplified or this logic can be moved here
-        // This part requires a bigger refactor of how fonts are loaded, for now we focus on colors
+        let styleTag = document.getElementById('dynamic-theme-styles');
+        if (!styleTag) {
+            styleTag = document.createElement('style');
+            styleTag.id = 'dynamic-theme-styles';
+            document.head.appendChild(styleTag);
+        }
+        styleTag.innerHTML = cssVariables;
         
-    }, [settings, theme]);
+        // Update fonts
+        const headlineFont = fontMap[settings.fontHeadline || 'Space Grotesk'];
+        const bodyFont = fontMap[settings.fontBody || 'Inter'];
+        
+        root.style.setProperty('--font-headline', (headlineFont as any)?.style.fontFamily);
+        root.style.setProperty('--font-body', (bodyFont as any)?.style.fontFamily);
+        
+    }, [settings]);
 
-    if (!settings) return null;
-
-    const cssVariables = `
-      :root {
-        ${settings.primaryColor ? `--primary: ${hexToHsl(settings.primaryColor)};` : ''}
-        ${settings.secondaryColor ? `--secondary: ${hexToHsl(settings.secondaryColor)};` : ''}
-        ${settings.accentColor ? `--accent: ${hexToHsl(settings.accentColor)};` : ''}
-        ${settings.backgroundColorLight ? `--background: ${hexToHsl(settings.backgroundColorLight)};` : ''}
-      }
-      .dark {
-        ${settings.primaryColorDark ? `--primary: ${hexToHsl(settings.primaryColorDark)};` : ''}
-        ${settings.backgroundColorDark ? `--background: ${hexToHsl(settings.backgroundColorDark)};` : ''}
-      }
-    `.trim();
-
-    return <style>{cssVariables}</style>;
+    return null;
 };
 
 export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, 'themes'>) {
@@ -104,7 +105,7 @@ export function ThemeProvider({ children, ...props }: Omit<ThemeProviderProps, '
       attribute="class"
       defaultTheme="dark"
       enableSystem={false}
-      disableTransitionOnChange={false} // Allow transitions
+      disableTransitionOnChange={false}
       themes={AVAILABLE_THEMES.map(t => t.value)}
     >
       <StyleInjector />
