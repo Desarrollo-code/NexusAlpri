@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { PlatformSettings } from '@/types';
 import type { NextRequest } from 'next/server';
+import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -129,6 +130,10 @@ export async function POST(req: NextRequest) {
       create: { ...DEFAULT_DB_SETTINGS, ...dataToSave },
     });
     
+    // Revalidar las rutas públicas para que los cambios de imagen se reflejen
+    revalidatePath('/');
+    revalidatePath('/about');
+
     // Devuelve la configuración actualizada en el formato correcto para el cliente
     const settingsToReturn: PlatformSettings = {
         ...updatedDbSettings,

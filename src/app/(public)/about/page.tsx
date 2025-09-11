@@ -7,7 +7,7 @@ import prisma from '@/lib/prisma';
 import { cn } from '@/lib/utils';
 import type { PlatformSettings } from '@/types';
 
-export const dynamic = 'force-dynamic';
+// Se elimina 'force-dynamic' para permitir el caché y la revalidación bajo demanda.
 
 async function getPageSettings(): Promise<Pick<PlatformSettings, 'aboutImageUrl'>> {
     try {
