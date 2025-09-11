@@ -144,15 +144,7 @@ export default function AnnouncementsPage() {
     setAnnouncementToEdit(announcement);
     setFormTitle(announcement.title);
     setFormContent(announcement.content);
-    
-    if (announcement.audience === 'ALL') {
-        setFormAudience('ALL');
-    } else if (Array.isArray(announcement.audience) && announcement.audience.length > 0) {
-        setFormAudience(announcement.audience[0]);
-    } else {
-        setFormAudience('ALL');
-    }
-    
+    setFormAudience(announcement.audience as UserRole | 'ALL');
     setShowCreateEditModal(true);
   };
 
@@ -169,16 +161,14 @@ export default function AnnouncementsPage() {
     }
 
     setIsProcessing(true);
-    const method = announcementToEdit ? 'PUT' : 'POST';
-    const endpoint = announcementToEdit ? `/api/announcements/${announcementToEdit.id}` : '/api/announcements';
-    
-    const audiencePayload = formAudience === 'ALL' ? 'ALL' : [formAudience];
+    const isEditing = !!announcementToEdit;
+    const endpoint = isEditing ? `/api/announcements/${announcementToEdit!.id}` : '/api/announcements';
+    const method = isEditing ? 'PUT' : 'POST';
 
     const payload = {
         title: formTitle,
         content: formContent,
-        authorId: user.id, 
-        audience: audiencePayload,
+        audience: formAudience,
     };
 
     try {
@@ -190,20 +180,20 @@ export default function AnnouncementsPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to ${announcementToEdit ? 'update' : 'create'} announcement`);
+        throw new Error(errorData.message || `Failed to ${isEditing ? 'update' : 'create'} announcement`);
       }
       
       toast({ 
-          title: announcementToEdit ? "Anuncio Actualizado" : "Anuncio Creado", 
-          description: `El anuncio "${formTitle}" ha sido ${announcementToEdit ? 'actualizado' : 'publicado'}.` 
+          title: isEditing ? "Anuncio Actualizado" : "Anuncio Creado", 
+          description: `El anuncio "${formTitle}" ha sido ${isEditing ? 'actualizado' : 'publicado'}.` 
       });
       setShowCreateEditModal(false);
       resetFormAndState();
       fetchAnnouncements();
     } catch (err) {
       toast({ 
-          title: `Error al ${announcementToEdit ? 'actualizar' : 'crear'} anuncio`, 
-          description: err instanceof Error ? err.message : `No se pudo ${announcementToEdit ? 'actualizar' : 'crear'} el anuncio.`, 
+          title: `Error al ${isEditing ? 'actualizar' : 'crear'} anuncio`, 
+          description: err instanceof Error ? err.message : `No se pudo ${isEditing ? 'actualizar' : 'crear'} el anuncio.`, 
           variant: "destructive" 
       });
     } finally {

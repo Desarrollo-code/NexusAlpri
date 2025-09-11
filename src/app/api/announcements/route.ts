@@ -117,7 +117,6 @@ export async function POST(req: NextRequest) {
     }
     const allTargetUsers = await prisma.user.findMany(targetUsersQuery);
     
-    // CORRECCIÓN: Excluir al autor del anuncio de los destinatarios de la notificación.
     const usersToNotify = allTargetUsers.filter(user => user.id !== session.id);
 
     if (usersToNotify.length > 0) {

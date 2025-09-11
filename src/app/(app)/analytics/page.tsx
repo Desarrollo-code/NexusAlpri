@@ -73,7 +73,7 @@ const userRolesChartConfig = {
   count: { label: "Usuarios" },
   STUDENT: { label: "Estudiantes", color: "hsl(210 90% 55%)" },
   INSTRUCTOR: { label: "Instructores", color: "hsl(140 80% 45%)" },
-  ADMINISTRATOR: { label: "Admins", color: "hsl(260 85% 60%)" },
+  ADMINISTRATOR: { label: "Administradores", color: "hsl(260 85% 60%)" },
 } satisfies ChartConfig;
 
 const courseStatusChartConfig = {
