@@ -16,7 +16,6 @@ import { TourProvider, useTour } from '@/contexts/tour-context';
 import { TourGuide } from '@/components/tour/tour-guide';
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
-  const { settings } = useAuth();
   const { isMobile, isCollapsed } = useSidebar();
   const { isTourActive, steps, currentStepIndex, nextStep, stopTour } = useTour();
 
@@ -37,11 +36,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             </div>
           </main>
         </div>
-        {settings?.watermarkUrl && (
-          <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
-            <Image src={settings.watermarkUrl} alt="Alprigrama Watermark" width={60} height={60} className="opacity-50" data-ai-hint="logo company" priority style={{ width: 'auto', height: 'auto' }} />
-          </div>
-        )}
         {isTourActive && (
           <TourGuide
             steps={steps}

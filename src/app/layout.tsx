@@ -7,6 +7,7 @@ import { TitleProvider } from '@/contexts/title-context';
 import { cn } from '@/lib/utils';
 import { getFontVariables } from '@/lib/fonts';
 import { ThemeProvider } from '@/components/theme-provider';
+import AppWatermark from '@/components/layout/app-watermark';
 
 // This function is now simplified to not call the DB directly.
 async function getLayoutSettings() {
@@ -29,6 +30,7 @@ export default async function RootLayout({
           <ThemeProvider>
               <TitleProvider>
                   {children}
+                  <AppWatermark />
                   <Toaster />
               </TitleProvider>
           </ThemeProvider>
