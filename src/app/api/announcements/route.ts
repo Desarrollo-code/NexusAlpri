@@ -24,19 +24,23 @@ export async function GET(req: NextRequest) {
   
   const isPaginated = pageParam && pageSizeParam;
 
-  // --- LÓGICA DE BÚSQUEDA CORREGIDA ---
-  // Ahora la búsqueda es más flexible y maneja todos los casos.
   let whereClause: any = {
     OR: [
       { audience: 'ALL' },
-      { audience: session.role }, // Busca el rol como texto simple
+      { audience: session.role as UserRole },
     ],
   };
 
-  if (filter === 'by-me') {
+  if (filter === 'by-me' && (session.role === 'ADMINISTRATOR' || session.role === 'INSTRUCTOR')) {
     whereClause = { authorId: session.id };
-  } else if (filter === 'by-others') {
-    whereClause = { authorId: { not: session.id } };
+  } else if (filter === 'by-others' && (session.role === 'ADMINISTRATOR' || session.role === 'INSTRUCTOR')) {
+    whereClause = { 
+        authorId: { not: session.id },
+        OR: [
+            { audience: 'ALL' },
+            { audience: session.role as UserRole },
+        ]
+     };
   }
   
   try {
@@ -107,7 +111,7 @@ export async function POST(req: NextRequest) {
     });
 
     const settings = await prisma.platformSettings.findFirst();
-    let targetUsersQuery: any = {};
+    let targetUsersQuery: Prisma.UserFindManyArgs = {};
     if (audienceToStore !== 'ALL') {
         targetUsersQuery = { where: { role: audienceToStore as UserRole } };
     }
@@ -117,11 +121,16 @@ export async function POST(req: NextRequest) {
     const usersToNotify = allTargetUsers.filter(user => user.id !== session.id);
 
     if (usersToNotify.length > 0) {
+      // Función para limpiar HTML
+      const stripHtml = (html: string) => html.replace(/<[^>]*>?/gm, '');
+      const plainTextContent = stripHtml(content);
+      const description = plainTextContent.substring(0, 100) + (plainTextContent.length > 100 ? '...' : '');
+
       await prisma.notification.createMany({
         data: usersToNotify.map(user => ({
           userId: user.id,
           title: `Nuevo Anuncio: ${title}`,
-          description: content.substring(0, 100) + (content.length > 100 ? '...' : ''),
+          description: description, // Usar el texto limpio y truncado
           link: '/announcements'
         }))
       });
