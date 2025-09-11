@@ -3,14 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { getCurrentUser } from '@/lib/auth';
 
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb', // Aumentar el límite a 10MB
-    },
-  },
-};
-
 export async function POST(request: NextRequest) {
   // Verificación de sesión para proteger la ruta
   const session = await getCurrentUser();
