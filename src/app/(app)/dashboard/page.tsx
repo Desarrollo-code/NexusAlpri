@@ -402,7 +402,7 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
                     {taughtCourses.map(course => (
                       <Card key={course.id} className="shadow-sm hover:shadow-md transition-shadow card-border-animated">
                         <div className="aspect-video relative w-full rounded-t-lg overflow-hidden bg-muted/30">
-                           {course.imageUrl && <Image src={course.imageUrl} alt={course.title} fill className="object-cover" data-ai-hint="online learning teacher" />}
+                           {course.imageUrl && <Image src={course.imageUrl} alt={course.title} fill className="object-cover" quality={100} data-ai-hint="online learning teacher" />}
                         </div>
                         <CardHeader><CardTitle className="text-lg">{course.title}</CardTitle><CardDescription className="text-xs">{course.modulesCount} módulos. Estado: <span className="capitalize">{course.status.toLowerCase()}</span></CardDescription></CardHeader>
                         <CardFooter><Button asChild className="w-full" size="sm"><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2"/> Editar Contenido</Link></Button></CardFooter>
@@ -483,31 +483,32 @@ export default function DashboardPage() {
     setError(null);
     try {
         const announcementsParams = new URLSearchParams({ pageSize: '2', filter: 'by-others' });
-        const promises: Promise<any>[] = [fetch(`/api/announcements?${announcementsParams.toString()}`)];
+        const promises = [
+            fetch(`/api/announcements?${announcementsParams.toString()}`)
+        ];
         
         if (user.role === 'ADMINISTRATOR') {
             promises.push(fetch('/api/dashboard/admin-stats'));
             promises.push(fetch('/api/security/logs?pageSize=5'));
-        }
-        if (user.role === 'INSTRUCTOR') {
+        } else if (user.role === 'INSTRUCTOR') {
             const queryParams = new URLSearchParams({ manageView: 'true', userId: user.id, userRole: user.role, pageSize: '4' });
             promises.push(fetch(`/api/courses?${queryParams.toString()}`));
-        }
-        if (user.role === 'STUDENT') {
+        } else if (user.role === 'STUDENT') {
             promises.push(fetch(`/api/enrollment/${user.id}`));
         }
 
         const responses = await Promise.all(promises);
-        
-        for (const res of responses) {
+        const dataPromises = responses.map(res => {
             if (!res.ok) {
-                const errorData = await res.json().catch(() => ({ message: `Error en la petición: ${res.statusText}` }));
-                throw new Error(errorData.message || 'Una de las peticiones de datos falló');
+                // Return a resolved promise with an error structure
+                return res.json().then(errorData => Promise.resolve({ error: true, message: errorData.message || `Error: ${res.statusText}` })).catch(() => Promise.resolve({ error: true, message: `Error: ${res.statusText}`}));
             }
-        }
-        
-        const [announcementsRes, ...roleSpecificRes] = responses;
-        const announcementsJson = await announcementsRes.json();
+            return res.json();
+        });
+
+        const allData = await Promise.all(dataPromises);
+
+        const announcementsJson = allData[0].error ? { announcements: [] } : allData[0];
         const announcementsData = announcementsJson.announcements || [];
 
         const dashboardPayload: DashboardData = {
@@ -523,24 +524,26 @@ export default function DashboardPage() {
             myDashboardCourses: [],
             securityLogs: [],
         };
-
-        let resIndex = 0;
-        if (user.role === 'ADMINISTRATOR') {
-            if (roleSpecificRes[resIndex]) dashboardPayload.adminStats = await roleSpecificRes[resIndex].json();
-            resIndex++;
-            if (roleSpecificRes[resIndex]) {
-                const securityLogsJson = await roleSpecificRes[resIndex].json();
-                dashboardPayload.securityLogs = securityLogsJson.logs || [];
-            }
+        
+        let roleSpecificData = allData[1];
+        if (roleSpecificData && roleSpecificData.error) {
+           console.warn(`Failed to fetch role-specific data: ${roleSpecificData.message}`);
+           roleSpecificData = null; // Nullify if there was an error
         }
-        if (user.role === 'INSTRUCTOR' && roleSpecificRes[0]) {
-            const taughtCoursesResponse = await roleSpecificRes[0].json();
+
+        if (user.role === 'ADMINISTRATOR') {
+            if (roleSpecificData) dashboardPayload.adminStats = roleSpecificData;
+            const securityLogsData = allData[2];
+            if (securityLogsData && !securityLogsData.error) {
+                dashboardPayload.securityLogs = securityLogsData.logs || [];
+            }
+        } else if (user.role === 'INSTRUCTOR' && roleSpecificData) {
+            const taughtCoursesResponse = roleSpecificData;
             const taughtCoursesData = Array.isArray(taughtCoursesResponse.courses) ? taughtCoursesResponse.courses : [];
             dashboardPayload.instructorStats = { taught: taughtCoursesResponse.totalCourses || 0 };
             dashboardPayload.taughtCourses = taughtCoursesData.map(mapApiCourseToAppCourse);
-        }
-        if (user.role === 'STUDENT' && roleSpecificRes[0]) {
-            const enrolledData: any[] = await roleSpecificRes[0].json();
+        } else if (user.role === 'STUDENT' && roleSpecificData) {
+            const enrolledData: any[] = roleSpecificData;
             const mappedCourses: EnrolledCourse[] = enrolledData.map(item => ({
               id: item.id, title: item.title, description: item.description, instructor: item.instructorName || 'N/A',
               imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, duration: item.duration, modules: [], 
@@ -554,7 +557,7 @@ export default function DashboardPage() {
         
         setData(dashboardPayload);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al obtener las estadísticas del dashboard');
+      setError(err instanceof Error ? err.message : 'Error al obtener los datos del dashboard');
     } finally {
       setIsLoading(false);
     }

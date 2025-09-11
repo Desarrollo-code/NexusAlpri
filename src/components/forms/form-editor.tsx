@@ -99,21 +99,26 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
         );
     };
 
-    if (field.type === 'SINGLE_CHOICE' || field.type === 'MULTIPLE_CHOICE') {
-        const correctOptionId = field.type === 'SINGLE_CHOICE' ? options.find(o => o.isCorrect)?.id : undefined;
-
+    if (field.type === 'SINGLE_CHOICE') {
+        const correctOptionId = options.find(o => o.isCorrect)?.id;
+        return (
+             <RadioGroup 
+                value={correctOptionId} 
+                onValueChange={(value) => onCorrectChange(field.id, value, true)} 
+                className="space-y-2 mt-2"
+            >
+              {options.map((option, index) => renderOption(option, index))}
+              <Button variant="outline" size="sm" onClick={() => onOptionAdd(field.id)}>+ Añadir opción</Button>
+            </RadioGroup>
+        );
+    }
+    if (field.type === 'MULTIPLE_CHOICE') {
         return (
             <div className="space-y-2 mt-2">
-                <RadioGroup 
-                    value={correctOptionId} 
-                    onValueChange={(value) => onCorrectChange(field.id, value, true)} 
-                    className="space-y-2"
-                >
-                  {options.map((option, index) => renderOption(option, index))}
-                </RadioGroup>
+                {options.map((option, index) => renderOption(option, index))}
                 <Button variant="outline" size="sm" onClick={() => onOptionAdd(field.id)}>+ Añadir opción</Button>
             </div>
-        );
+        )
     }
     
     return null;
