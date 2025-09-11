@@ -1,4 +1,5 @@
-import prisma from '@/lib/prisma';
+// src/lib/progress.ts
+import prisma from './prisma';
 import type { LessonCompletionRecord as AppLessonCompletionRecord } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -7,8 +8,8 @@ interface RecordInteractionParams {
     userId: string;
     courseId: string;
     lessonId: string;
-    type: 'view' | 'quiz';
-    score?: number;
+    type: 'view' | 'quiz' | 'video';
+    score?: number | null;
 }
 
 /**
@@ -36,13 +37,16 @@ export async function recalculateProgress({ userId, courseId }: { userId: string
     }
 
     const completedLessonsCount = progress.completedLessons.length;
+    // El progreso porcentual es sobre lecciones vistas, no sobre la nota.
+    // La nota final se calcula al consolidar.
     const newPercentage = Math.round((completedLessonsCount / totalLessonsCount) * 100);
     
     const updatedProgress = await prisma.courseProgress.update({
         where: { id: progress.id },
         data: { 
             progressPercentage: newPercentage,
-            completedAt: newPercentage === 100 ? new Date() : null,
+            // Solo marcar como completado si el porcentaje es 100 Y se ha solicitado consolidar.
+            // La consolidación se encarga de la fecha.
         }
     });
 
@@ -55,7 +59,7 @@ export async function recalculateProgress({ userId, courseId }: { userId: string
  * This is used for incremental updates.
  * @returns {Promise<boolean>} - Returns true if a new interaction was created, false if it already existed.
  */
-export async function recordLessonInteraction({ userId, courseId, lessonId, type, score }: RecordInteractionParams): Promise<boolean> {
+export async function recordLessonInteraction({ userId, courseId, lessonId, type, score = null }: RecordInteractionParams): Promise<boolean> {
     const enrollment = await prisma.enrollment.findUnique({
         where: { userId_courseId: { userId, courseId } },
         include: { progress: true }
@@ -67,13 +71,18 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
 
     const progressId = enrollment.progress.id;
     
-    // Check if the record already exists
     const existingRecord = await prisma.lessonCompletionRecord.findUnique({
         where: { progressId_lessonId: { progressId, lessonId } }
     });
     
     if (existingRecord) {
-        // If it exists, it's not a new interaction
+        // If it's a quiz, update the score, but it's not a "new" interaction for progress calculation.
+        if (type === 'quiz' && score !== null && existingRecord.score !== score) {
+            await prisma.lessonCompletionRecord.update({
+                where: { id: existingRecord.id },
+                data: { score }
+            });
+        }
         return false;
     }
 
@@ -83,7 +92,7 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
             progressId: progressId,
             lessonId: lessonId,
             type: type,
-            score: score,
+            score: score, // Guardamos la nota del quiz aquí
         }
     });
     

@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import { recordLessonInteraction } from '@/lib/progress';
+import { recordLessonInteraction, recalculateProgress } from '@/lib/progress';
 import prisma from '@/lib/prisma';
 import { addXp, awardAchievement, XP_CONFIG, ACHIEVEMENT_SLUGS } from '@/lib/gamification';
 
@@ -24,8 +24,16 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
             return NextResponse.json({ message: 'lessonId, quizId y answers son requeridos.' }, { status: 400 });
         }
         
+        const quiz = await prisma.quiz.findUnique({ 
+            where: { id: quizId },
+            include: { questions: { include: { options: true } } }
+        });
+        
+        if (!quiz) {
+            return NextResponse.json({ message: "Quiz no encontrado." }, { status: 404 });
+        }
+        
         // Check attempt limit
-        const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
         if (quiz?.maxAttempts !== null) {
             const attemptCount = await prisma.quizAttempt.count({ where: { userId, quizId }});
             if (attemptCount >= quiz.maxAttempts) {
@@ -33,17 +41,8 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
             }
         }
 
-        const questions = await prisma.question.findMany({
-            where: { quizId: quizId },
-            include: { options: true }
-        });
-
-        if (questions.length === 0) {
-            return NextResponse.json({ message: "No se encontraron preguntas para este quiz." }, { status: 404 });
-        }
-
         let correctCount = 0;
-        for (const question of questions) {
+        for (const question of quiz.questions) {
             const correctOption = question.options.find(o => o.isCorrect);
             const userAnswer = answers[question.id];
             if (correctOption && userAnswer === correctOption.id) {
@@ -51,30 +50,27 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
             }
         }
         
-        const score = questions.length ? (correctCount / questions.length) * 100 : 0;
+        const score = quiz.questions.length > 0 ? (correctCount / quiz.questions.length) * 100 : 0;
         
-        const currentAttempts = await prisma.quizAttempt.count({ where: { userId, quizId } });
-
-        // CORRECCIÓN: Registrar la interacción de la lección con la puntuación obtenida.
-        await recordLessonInteraction({
+        // 1. Guardar la nota en el registro de la lección
+        const interactionRecorded = await recordLessonInteraction({
             userId,
             courseId,
             lessonId,
             type: 'quiz',
             score,
         });
+        
+        // 2. Recalcular el porcentaje de lecciones vistas
+        await recalculateProgress({ userId, courseId });
 
         // --- Gamification Logic ---
         await addXp(userId, XP_CONFIG.COMPLETE_QUIZ);
-        if (score >= 80) {
-            await addXp(userId, XP_CONFIG.PASS_QUIZ);
-        }
-        if (score === 100) {
-            await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.PERFECT_SCORE });
-        }
-        // --------------------------
-
-        // Save the detailed quiz attempt
+        if (score >= 80) await addXp(userId, XP_CONFIG.PASS_QUIZ);
+        if (score === 100) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.PERFECT_SCORE });
+        
+        const currentAttempts = await prisma.quizAttempt.count({ where: { userId, quizId } });
+        // 3. Guardar el intento detallado (para analíticas futuras)
         const newAttempt = await prisma.quizAttempt.create({
             data: {
                 userId,
@@ -87,9 +83,6 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
                         selectedOptionId: selectedOptionId as string,
                     }))
                 }
-            },
-            include: {
-                answers: true
             }
         });
 

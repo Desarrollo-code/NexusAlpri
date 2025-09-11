@@ -31,16 +31,15 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
             return NextResponse.json({ progressPercentage: 100 });
         }
         
-        // CORRECCIÓN: La lógica anterior no esperaba a que todas las lecciones estuvieran completadas.
         if (progress.completedLessons.length < totalLessonsInCourse) {
             return NextResponse.json({ message: 'Aún no has interactuado con todas las lecciones del curso.' }, { status: 400 });
         }
 
-        // CORRECCIÓN: Calcular la puntuación final ponderada.
+        // --- LÓGICA DE CÁLCULO DE NOTA FINAL ---
         let totalScoreSum = 0;
         progress.completedLessons.forEach(record => {
-            // Si la lección fue un quiz, usa su puntuación guardada.
-            if (record.type === 'quiz' && record.score !== null) {
+            // Si la lección fue un quiz y tiene una nota, usa su puntuación guardada.
+            if (record.type === 'quiz' && typeof record.score === 'number') {
                 totalScoreSum += record.score;
             } else { 
                 // Si fue una simple vista (texto, video, archivo), cuenta como 100%.
@@ -48,7 +47,9 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
             }
         });
         
-        const finalPercentage = Math.round(totalScoreSum / totalLessonsInCourse);
+        const finalPercentage = totalLessonsInCourse > 0 
+            ? Math.round(totalScoreSum / totalLessonsInCourse)
+            : 100;
 
         const updatedProgress = await prisma.courseProgress.update({
             where: { id: progress.id },
