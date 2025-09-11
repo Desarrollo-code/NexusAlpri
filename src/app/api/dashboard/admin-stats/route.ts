@@ -8,7 +8,6 @@ import type { UserRole, CourseStatus } from '@/types';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-    console.log("[ADMIN_STATS] Request received at:", new Date().toISOString());
     const session = await getCurrentUser();
     if (!session || session.role !== 'ADMINISTRATOR') {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });

@@ -485,8 +485,8 @@ export default function DashboardPage() {
         const promises: Promise<any>[] = [fetch(`/api/announcements?${announcementsParams.toString()}`)];
         
         if (user.role === 'ADMINISTRATOR') {
-            promises.push(fetch('/api/dashboard/admin-stats', { credentials: 'include' }));
-            promises.push(fetch('/api/security/logs?pageSize=5', { credentials: 'include' }));
+            promises.push(fetch('/api/dashboard/admin-stats'));
+            promises.push(fetch('/api/security/logs?pageSize=5'));
         }
         if (user.role === 'INSTRUCTOR') {
             const queryParams = new URLSearchParams({ manageView: 'true', userId: user.id, userRole: user.role, pageSize: '4' });
