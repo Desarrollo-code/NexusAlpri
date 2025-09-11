@@ -84,7 +84,7 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-20 px-4 shrink-0 border-b sticky top-0 z-40",
-            "bg-gradient-to-r from-slate-900 to-gray-800 text-white border-gray-700"
+            "bg-gradient-to-b from-blue-900 to-blue-700 text-white border-blue-800"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -149,7 +149,7 @@ export const TopBar = () => {
                          </div>
                     </PopoverContent>
                  </Popover>
-                <Separator orientation="vertical" className="h-8 bg-gray-600" />
+                <Separator orientation="vertical" className="h-8 bg-blue-600" />
                 <UserAvatarDropdown />
             </div>
              {headerActions && <div className="md:hidden mt-4 flex items-center gap-2 w-full">{headerActions}</div>}
