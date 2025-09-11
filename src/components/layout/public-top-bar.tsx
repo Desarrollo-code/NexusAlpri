@@ -26,7 +26,7 @@ export function PublicTopBar() {
   // Muestra un esqueleto de carga mientras el AuthProvider inicializa
   if (isLoading) {
     return (
-      <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-gray-900 via-slate-800 to-gray-900 text-white border-b border-gray-700/80">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-b from-blue-900 to-blue-800 text-white border-b border-blue-700/80">
         <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-20">
             <div className="flex items-center justify-start flex-1" />
             <div className="flex items-center justify-center flex-1" />
@@ -37,7 +37,7 @@ export function PublicTopBar() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-gray-900 via-slate-800 to-gray-900 backdrop-blur-sm border-b border-gray-700/80">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-b from-blue-900 to-blue-800 backdrop-blur-sm border-b border-blue-700/80">
       <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-20">
         <div className="flex items-center justify-start flex-1">
           <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
