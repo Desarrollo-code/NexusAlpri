@@ -202,9 +202,9 @@ const VideoPlayer = ({ videoUrl, lessonTitle, onVideoEnd }: { videoUrl: string, 
         <div ref={containerRef} className="aspect-video w-full max-w-4xl mx-auto my-4 rounded-lg overflow-hidden shadow-md relative group bg-black">
             <YouTube
                 videoId={videoId}
-                opts={opts}
                 className="w-full h-full"
                 onEnd={onVideoEnd}
+                opts={opts}
             />
             {showRotateHint && (
                 <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white pointer-events-none transition-opacity duration-300 opacity-100 group-hover:opacity-0">
@@ -288,7 +288,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
     
     let endpoint = `/api/progress/${user.id}/${courseId}/lesson`;
-    let payload: any = { lessonId };
+    let payload: any = { lessonId, type };
     if (type === 'quiz') {
         endpoint = `/api/progress/${user.id}/${courseId}/quiz`;
         payload.score = score;
@@ -310,7 +310,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             if (!courseRes.ok) throw new Error("Course not found");
             const courseData = await courseRes.json();
             setCourse(courseData);
-            setPageTitle(courseData.title);
 
             if (user) {
                 const enrollmentRes = await fetch(`/api/enrollment/status/${user.id}/${courseId}`);
@@ -342,7 +341,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         }
     };
     fetchData();
-  }, [courseId, user, toast, setPageTitle]);
+  }, [courseId, user, toast]);
   
   useEffect(() => {
     setShowBackButton(true);
@@ -351,25 +350,25 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   
   useEffect(() => {
     if (isLoading) return;
+    
+    const lesson = allLessons.find(l => l.id === selectedLessonId);
+    const lessonTitle = lesson ? lesson.title : (course?.title || 'Curso');
+    setPageTitle(lessonTitle);
+
     const lessonToSelect = lessonIdFromQuery || firstLessonId;
-    if (lessonToSelect) {
-      if(selectedLessonId !== lessonToSelect) {
-        setSelectedLessonId(lessonToSelect);
-      }
-      
-      const lesson = allLessons.find(l => l.id === lessonToSelect);
-      const isVideoLesson = lesson?.contentBlocks.some(b => b.type === 'VIDEO');
-      
-      // Do not auto-complete video lessons on click
-      if (user && isEnrolled && !isCreatorViewingCourse && !isVideoLesson) {
-        recordInteraction(lessonToSelect, 'view');
-      }
-    } else if (!selectedLessonId && firstLessonId) {
-        setSelectedLessonId(firstLessonId);
+    if (lessonToSelect && selectedLessonId !== lessonToSelect) {
+      setSelectedLessonId(lessonToSelect);
     }
-  }, [isLoading, course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, selectedLessonId, allLessons]);
+    
+    const isVideoLesson = lesson?.contentBlocks.some(b => b.type === 'VIDEO');
+      
+    // Do not auto-complete video lessons on click
+    if (user && isEnrolled && !isCreatorViewingCourse && !isVideoLesson && lessonToSelect) {
+      recordInteraction(lessonToSelect, 'view');
+    }
+  }, [isLoading, course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, selectedLessonId, allLessons, setPageTitle]);
   
-  const handleQuizSubmitted = useCallback((lessonId: string, score: number) => {
+  const handleQuizSubmitted = useCallback((lessonId: string, quizId: string, score: number) => {
     recordInteraction(lessonId, 'quiz', score);
   }, [recordInteraction]);
   
@@ -392,12 +391,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     return null;
   }, [selectedLessonId, course]);
 
-  useEffect(() => {
-      if (course) {
-          // Mantener el título del curso en la barra superior
-          setPageTitle(course.title);
-      }
-  }, [course, setPageTitle]);
 
   const filteredModules = useMemo(() => {
     if (!course) return [];
@@ -664,12 +657,12 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
         {/* Floating Action Buttons */}
         {isMobile && (
-            <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
-                <Button size="icon" className="rounded-full h-14 w-14 shadow-lg" onClick={() => router.push('/my-courses')}>
-                    <ArrowLeft className="h-6 w-6" />
+            <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
+                <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => router.push('/my-courses')}>
+                    <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <Button size="icon" className="rounded-full h-14 w-14 shadow-lg" onClick={() => setIsNotesPanelOpen(!isNotesPanelOpen)}>
-                    <Notebook className="h-6 w-6" />
+                <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsNotesPanelOpen(!isNotesPanelOpen)}>
+                    <Notebook className="h-5 w-5" />
                 </Button>
             </div>
         )}
