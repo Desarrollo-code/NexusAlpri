@@ -84,22 +84,22 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-20 px-4 shrink-0 border-b sticky top-0 z-40",
-            "bg-gradient-to-b from-blue-900 to-blue-800 text-white border-blue-700/80"
+            "bg-card text-card-foreground"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
                  {isMobile && (
-                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white">
+                    <Button onClick={toggleSidebar} variant="ghost" size="icon">
                         <PanelLeft className="h-5 w-5"/>
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                  )}
                  {showBackButton && (
-                     <Button variant="ghost" size="sm" onClick={() => router.back()} className="text-white hover:bg-white/10 hover:text-white">
+                     <Button variant="ghost" size="sm" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4 mr-2"/> Volver
                     </Button>
                  )}
-                 <h1 className="text-xl font-semibold truncate text-white/90">{pageTitle}</h1>
+                 <h1 className="text-xl font-semibold truncate">{pageTitle}</h1>
             </div>
 
             {/* Right side */}
@@ -107,7 +107,7 @@ export const TopBar = () => {
                  {headerActions && <div className="hidden md:flex items-center gap-2">{headerActions}</div>}
                  <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative text-white/80 hover:text-white hover:bg-white/10">
+                        <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
                             <Bell className="h-5 w-5"/>
                             {unreadCount > 0 && (
                                 <span className="absolute top-1 right-1 flex h-4 w-4">
@@ -149,10 +149,10 @@ export const TopBar = () => {
                          </div>
                     </PopoverContent>
                  </Popover>
-                <Separator orientation="vertical" className="h-8 bg-blue-600" />
+                <Separator orientation="vertical" className="h-8" />
                 <UserAvatarDropdown />
             </div>
-             {headerActions && <div className="md:hidden mt-4 flex items-center gap-2 w-full">{headerActions}</div>}
+            {headerActions && <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card/80 backdrop-blur-sm border-t p-2 flex justify-end gap-2 z-50">{headerActions}</div>}
         </div>
     );
 };

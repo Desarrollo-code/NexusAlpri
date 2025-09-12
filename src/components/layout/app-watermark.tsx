@@ -16,8 +16,7 @@ export default function AppWatermark() {
       return (
         <div className={cn(
             "fixed z-[9999] pointer-events-none",
-            "bottom-16 ml-80", // Posición en móvil
-            "md:bottom-4 md:left-auto md:right-4 md:transform-none md:ml-0" // Posición en escritorio
+            "bottom-4 right-4" // Posición fija en la esquina inferior derecha para todas las vistas de la app
         )}>
           <Image 
             src={settings.watermarkUrl} 
