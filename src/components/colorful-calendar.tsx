@@ -1,4 +1,3 @@
-
 // src/components/colorful-calendar.tsx
 'use client';
 
@@ -136,11 +135,10 @@ const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect
                 </time>
             </div>
              <div className="mt-1 space-y-1">
-                {isMobile && eventsForDay.slice(0, maxLanes).map(event => (
-                    <div key={event.id} className="flex items-center gap-1.5">
-                        <div className={cn("w-2 h-2 rounded-full", getEventColorClass(event.color))}></div>
-                        <span className="text-xs truncate text-muted-foreground">{event.title}</span>
-                    </div>
+                {eventsForDay.slice(0, maxLanes).map(event => (
+                     <div key={event.id} className={cn("text-xs p-1 rounded-md text-white truncate", getEventColorClass(event.color))}>
+                        {event.title}
+                     </div>
                 ))}
             </div>
 
