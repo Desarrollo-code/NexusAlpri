@@ -393,12 +393,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }, [selectedLessonId, course]);
 
   useEffect(() => {
-      if (selectedLesson) {
-          setPageTitle(selectedLesson.title);
-      } else if (course) {
+      if (course) {
           setPageTitle(course.title);
       }
-  }, [selectedLesson, course, setPageTitle]);
+  }, [course, setPageTitle]);
 
   const filteredModules = useMemo(() => {
     if (!course) return [];
