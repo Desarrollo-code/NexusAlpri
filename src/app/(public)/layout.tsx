@@ -21,7 +21,7 @@ export default function PublicLayout({
         
         <PublicTopBar />
         
-        <main className="flex-1 flex flex-col items-center w-full pt-20 md:pt-24 pb-20 md:pb-8">
+        <main className="flex-1 flex flex-col items-center w-full pt-20 md:pt-8 pb-16">
             {children}
         </main>
         
