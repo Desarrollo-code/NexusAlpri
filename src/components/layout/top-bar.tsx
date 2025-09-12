@@ -33,7 +33,7 @@ const timeSince = (date: Date): string => {
 };
 
 export const TopBar = () => {
-    const { toggleSidebar } = useSidebar();
+    const { toggleSidebar, isCollapsed } = useSidebar();
     const { pageTitle, headerActions, showBackButton } = useTitle();
     const router = useRouter();
     const isMobile = useIsMobile();
@@ -85,18 +85,18 @@ export const TopBar = () => {
 
     return (
         <div className={cn(
-            "flex items-center justify-between h-20 px-4 shrink-0 border-b sticky top-0 z-40",
+            "flex items-center justify-between h-20 px-4 shrink-0 border-b sticky top-0 z-30", // z-index ajustado
             "bg-card text-card-foreground"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
-                 {isMobile && (
+                 {!isMobile && (
                     <Button onClick={toggleSidebar} variant="ghost" size="icon">
                         <PanelLeft className="h-5 w-5"/>
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                  )}
-                 {showBackButton && isMobile && (
+                 {showBackButton && (
                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4"/>
                         <span className="sr-only">Volver</span>

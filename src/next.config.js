@@ -7,20 +7,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
-      },
-      {
-        protocol: 'https',
-        hostname: 'izefimwyuayfvektsstg.supabase.co',
-      },
-       {
-        protocol: 'https',
-        hostname: 'i.ytimg.com',
-      }
-    ],
+    unoptimized: true,
   },
 };
 
