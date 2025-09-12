@@ -17,7 +17,7 @@ export default function AppWatermark() {
         <div className={cn(
             "fixed z-[9999] pointer-events-none",
              // En móvil, se posiciona arriba de la BottomNav.
-            "bottom-[4.5rem] right-4 md:bottom-4"
+            "bottom-4 right-4"
         )}>
           <Image 
             src={settings.watermarkUrl} 

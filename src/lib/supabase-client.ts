@@ -13,7 +13,7 @@ if (!supabaseServiceKey) {
     console.warn('SUPABASE_SERVICE_ROLE_KEY is not set. Admin client will not be available.');
 }
 
-// Cliente público para el lado del cliente (navegador)
+// Cliente público para el lado del cliente (navegador) - Ya no se usará para subidas
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Cliente de administrador para el lado del servidor (API Routes)

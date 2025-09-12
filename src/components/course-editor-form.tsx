@@ -198,9 +198,12 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
             if (!file) return;
             setIsFileUploading(true);
             setFileUploadProgress(0);
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
             try {
-                // Sube directamente a Supabase
-                const result = await uploadWithProgress('lesson_files', file, setFileUploadProgress);
+                const result = await uploadWithProgress('/api/upload/lesson-file', formData, setFileUploadProgress);
                 onUpdate('content', result.url);
                 toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
             } catch (err) {
@@ -601,8 +604,11 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             setIsUploadingImage(true);
             setUploadProgress(0);
 
+            const formData = new FormData();
+            formData.append('file', file);
+
             try {
-                const result = await uploadWithProgress('course_images', file, setUploadProgress);
+                const result = await uploadWithProgress('/api/upload/course-image', formData, setUploadProgress);
                 updateCourseField('imageUrl', result.url);
                 toast({ title: 'Imagen Subida', description: 'La imagen de portada se ha actualizado.'});
             } catch (err) {

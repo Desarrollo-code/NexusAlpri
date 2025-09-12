@@ -1,52 +1,54 @@
 // src/lib/upload-with-progress.ts
-import { supabase } from '@/lib/supabase-client';
-
 /**
- * Sube un archivo directamente a un bucket de Supabase Storage con reporte de progreso.
- * @param bucketName El nombre del bucket de Supabase (ej. 'avatars').
- * @param file El archivo a subir.
+ * Sube un archivo a través de una API route de Next.js con reporte de progreso.
+ * @param apiPath La ruta de la API que maneja la subida (ej. '/api/upload/avatars').
+ * @param formData El objeto FormData que contiene el archivo.
  * @param onProgress Una función callback que se llama con el porcentaje de progreso.
- * @returns Una promesa que se resuelve con la URL pública del archivo subido.
+ * @returns Una promesa que se resuelve con el objeto de respuesta de la API (debe incluir la URL).
  */
 export function uploadWithProgress(
-  bucketName: string,
-  file: File,
+  apiPath: string,
+  formData: FormData,
   onProgress: (percentage: number) => void
 ): Promise<{ url: string }> {
-  return new Promise(async (resolve, reject) => {
-    
-    // Crear un nombre de archivo único para evitar colisiones
-    const safeFileName = file.name.replace(/[^a-zA-Z0-9-_\.]/g, '_');
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-    const filePath = `${uniqueSuffix}-${safeFileName}`;
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
 
-    const { data: uploadData, error } = await supabase.storage
-      .from(bucketName)
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false,
-      });
+    xhr.open('POST', apiPath, true);
 
-    // Manejo de errores de Supabase
-    if (error) {
-      console.error('Supabase upload error:', error);
-      return reject(new Error(`Error de Supabase: ${error.message}`));
-    }
-    
-    // Obtener la URL pública del archivo subido
-    const { data: publicUrlData } = supabase.storage
-      .from(bucketName)
-      .getPublicUrl(uploadData.path);
-      
-    if (!publicUrlData) {
-        return reject(new Error('No se pudo obtener la URL pública del archivo.'));
-    }
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percentage = Math.round((event.loaded * 100) / event.total);
+        onProgress(percentage);
+      }
+    };
 
-    // Simular progreso ya que el SDK v2 no lo soporta nativamente en el cliente.
-    // Una implementación más avanzada podría usar TUS para subidas reanudables y progreso real.
-    onProgress(50);
-    setTimeout(() => onProgress(100), 300);
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          if (response.success) {
+            resolve(response);
+          } else {
+            reject(new Error(response.message || 'La API de subida retornó un error.'));
+          }
+        } catch (e) {
+          reject(new Error('Respuesta inválida desde la API de subida.'));
+        }
+      } else {
+        try {
+            const errorResponse = JSON.parse(xhr.responseText);
+            reject(new Error(errorResponse.message || `Error del servidor: ${xhr.statusText}`));
+        } catch (e) {
+            reject(new Error(`Error del servidor: ${xhr.status} ${xhr.statusText}`));
+        }
+      }
+    };
 
-    resolve({ url: publicUrlData.publicUrl });
+    xhr.onerror = () => {
+      reject(new Error('Error de red al intentar subir el archivo.'));
+    };
+
+    xhr.send(formData);
   });
 }

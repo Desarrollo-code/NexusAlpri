@@ -7,7 +7,6 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    unoptimized: false, // Asegurarnos que la optimización esté activada
     remotePatterns: [
       {
         protocol: 'https',
@@ -23,6 +22,11 @@ const nextConfig = {
         hostname: 'i.ytimg.com',
       }
     ],
+  },
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb', // Aumentar el límite a 10MB
+    },
   },
 };
 
