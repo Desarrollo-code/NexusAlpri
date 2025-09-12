@@ -1,4 +1,3 @@
-// src/components/layout/app-watermark.tsx
 'use client';
 
 import { useAuth } from "@/contexts/auth-context";
@@ -24,7 +23,6 @@ export default function AppWatermark() {
             data-ai-hint="logo company" 
             priority 
             quality={100}
-            style={{ width: 'auto', height: 'auto' }} 
           />
         </div>
       );
