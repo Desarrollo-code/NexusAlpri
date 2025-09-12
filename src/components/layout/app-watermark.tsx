@@ -18,8 +18,8 @@ export default function AppWatermark() {
           <Image 
             src={settings.watermarkUrl} 
             alt="Marca de agua" 
-            width={120} 
-            height={120} 
+            width={80} 
+            height={80} 
             className="opacity-50" 
             data-ai-hint="logo company" 
             priority 
