@@ -12,32 +12,32 @@ import type { PlatformSettings } from '@/types';
 
 const features = [
   {
-    icon: <Layers3 className="h-8 w-8 text-blue-600" />,
+    icon: <Layers3 className="h-10 w-10 md:h-8 md:w-8 text-blue-600" />,
     title: 'Gestión de Contenido Intuitiva',
     description: 'Crea y organiza cursos con un editor de arrastrar y soltar, sin complicaciones técnicas.',
   },
   {
-    icon: <BarChart3 className="h-8 w-8 text-blue-600" />,
+    icon: <BarChart3 className="h-10 w-10 md:h-8 md:w-8 text-blue-600" />,
     title: 'Seguimiento y Analíticas',
     description: 'Mide el progreso y el rendimiento con dashboards detallados para tomar decisiones informadas.',
   },
   {
-    icon: <Users className="h-8 w-8 text-blue-600" />,
+    icon: <Users className="h-10 w-10 md:h-8 md:w-8 text-blue-600" />,
     title: 'Roles y Permisos Granulares',
     description: 'Un sistema robusto (Admin, Instructor, Estudiante) para administrar el acceso de forma segura.',
   },
   {
-    icon: <ShieldCheck className="h-8 w-8 text-blue-600" />,
+    icon: <ShieldCheck className="h-10 w-10 md:h-8 md:w-8 text-blue-600" />,
     title: 'Seguridad Corporativa',
     description: 'Políticas de seguridad, auditorías y control total sobre los datos de tu organización.',
   },
    {
-    icon: <Zap className="h-8 w-8 text-blue-600" />,
+    icon: <Zap className="h-10 w-10 md:h-8 md:w-8 text-blue-600" />,
     title: 'Experiencia de Usuario Moderna',
     description: 'Una interfaz rápida, intuitiva y optimizada para cualquier dispositivo, centrada en el aprendizaje.',
   },
   {
-    icon: <Heart className="h-8 w-8 text-blue-600" />,
+    icon: <Heart className="h-10 w-10 md:h-8 md:w-8 text-blue-600" />,
     title: 'Gamificación Integrada',
     description: 'Involucra a tus equipos con puntos de experiencia y logros para aumentar la motivación.',
   }
@@ -45,17 +45,17 @@ const features = [
 
 const benefits = [
   {
-    icon: <BookOpen className="h-10 w-10 text-blue-600" />,
+    icon: <BookOpen className="h-12 w-12 md:h-10 md:w-10 text-blue-600" />,
     title: 'Para Estudiantes',
     description: 'Accede a tus cursos desde cualquier lugar, sigue tu progreso y obtén certificados al finalizar.',
   },
   {
-    icon: <UserCheck className="h-10 w-10 text-orange-500" />,
+    icon: <UserCheck className="h-12 w-12 md:h-10 md:w-10 text-orange-500" />,
     title: 'Para Instructores',
     description: 'Crea y gestiona tu contenido con una interfaz drag-and-drop y analiza el rendimiento de tus alumnos.',
   },
   {
-    icon: <Users className="h-10 w-10 text-blue-600" />,
+    icon: <Users className="h-12 w-12 md:h-10 md:w-10 text-blue-600" />,
     title: 'Para Administradores',
     description: 'Supervisa toda la actividad, gestiona usuarios y personaliza la plataforma a la medida de tu empresa.',
   },
@@ -195,7 +195,7 @@ export default async function LandingPage() {
                        {benefits.map((benefit, index) => (
                           <div key={index} className="flex items-start gap-4">
                             <div className="flex-shrink-0">{benefit.icon}</div>
-                            <div>
+                            <div className="flex-grow">
                                 <h3 className="text-xl font-bold text-slate-800">{benefit.title}</h3>
                                 <p className="text-slate-600">{benefit.description}</p>
                             </div>
