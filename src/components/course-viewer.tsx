@@ -349,17 +349,16 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }, [setShowBackButton]);
   
   useEffect(() => {
-    if (isLoading) return;
-    
-    const lesson = allLessons.find(l => l.id === selectedLessonId);
-    const lessonTitle = lesson ? lesson.title : (course?.title || 'Curso');
-    setPageTitle(lessonTitle);
+    if (isLoading || !course) return;
 
+    setPageTitle(course.title); // Siempre mostrar el título del curso
+    
     const lessonToSelect = lessonIdFromQuery || firstLessonId;
     if (lessonToSelect && selectedLessonId !== lessonToSelect) {
       setSelectedLessonId(lessonToSelect);
     }
     
+    const lesson = allLessons.find(l => l.id === lessonToSelect);
     const isVideoLesson = lesson?.contentBlocks.some(b => b.type === 'VIDEO');
       
     // Do not auto-complete video lessons on click
