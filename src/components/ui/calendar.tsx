@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -16,10 +17,10 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
 
 const getEventColorClass = (color?: string): string => {
   const colorMap: Record<string, string> = {
-    blue: 'bg-blue-500',
-    green: 'bg-green-500',
-    red: 'bg-red-500',
-    orange: 'bg-orange-500',
+    blue: 'bg-event-blue',
+    green: 'bg-event-green',
+    red: 'bg-event-red',
+    orange: 'bg-event-orange',
   };
   return colorMap[color as string] || 'bg-primary';
 };
@@ -52,9 +53,9 @@ function Calendar({
         <div className="relative w-full h-full flex flex-col items-center justify-center">
             <span>{dayProps.date.getDate()}</span>
             {dayEvents.length > 0 && (
-                <div className="absolute bottom-1 flex items-center justify-center gap-0.5">
+                <div className="absolute bottom-1 flex items-center justify-center gap-1">
                     {dayEvents.slice(0, 3).map(event => (
-                        <div key={event.id} className={cn("h-1.5 w-1.5 rounded-full", getEventColorClass(event.color))} />
+                        <div key={event.id} className={cn("h-2 w-2 rounded-full", getEventColorClass(event.color))} />
                     ))}
                 </div>
             )}
@@ -69,10 +70,15 @@ function Calendar({
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
-        caption: "hidden",
-        caption_label: "hidden", 
-        nav: "hidden",
-        nav_button: "hidden", 
+        caption: "flex justify-center pt-1 relative items-center",
+        caption_label: "text-sm font-medium",
+        nav: "space-x-1 flex items-center",
+        nav_button: cn(
+          buttonVariants({ variant: "outline" }),
+          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+        ),
+        nav_button_previous: "absolute left-1",
+        nav_button_next: "absolute right-1",
         table: "w-full border-collapse space-y-1",
         head_row: "flex",
         head_cell:
@@ -95,6 +101,8 @@ function Calendar({
       }}
       locale={es} // Aseguramos el locale español
       components={{
+        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
+        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
         DayContent: DayContentWithEvents,
       }}
       {...props}
