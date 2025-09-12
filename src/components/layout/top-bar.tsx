@@ -15,6 +15,7 @@ import type { Notification } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useTitle } from "@/contexts/title-context";
 import { useRouter } from "next/navigation";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const timeSince = (date: Date): string => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -32,9 +33,10 @@ const timeSince = (date: Date): string => {
 };
 
 export const TopBar = () => {
-    const { isMobile, toggleSidebar } = useSidebar();
+    const { toggleSidebar } = useSidebar();
     const { pageTitle, headerActions, showBackButton } = useTitle();
     const router = useRouter();
+    const isMobile = useIsMobile();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const { toast } = useToast();
@@ -94,7 +96,7 @@ export const TopBar = () => {
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                  )}
-                 {showBackButton && (
+                 {showBackButton && isMobile && (
                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4"/>
                         <span className="sr-only">Volver</span>

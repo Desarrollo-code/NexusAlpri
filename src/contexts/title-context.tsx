@@ -1,4 +1,3 @@
-
 // src/contexts/title-context.tsx
 'use client';
 
@@ -9,8 +8,8 @@ interface TitleContextType {
   setPageTitle: (title: string) => void;
   headerActions: ReactNode | null;
   setHeaderActions: (actions: ReactNode | null) => void;
-  showBackButton: boolean; // Nueva propiedad
-  setShowBackButton: (show: boolean) => void; // Nueva función
+  showBackButton: boolean;
+  setShowBackButton: (show: boolean) => void;
 }
 
 const TitleContext = createContext<TitleContextType | undefined>(undefined);
@@ -18,7 +17,7 @@ const TitleContext = createContext<TitleContextType | undefined>(undefined);
 export const TitleProvider = ({ children }: { children: ReactNode }) => {
   const [pageTitle, setPageTitle] = useState('Panel Principal');
   const [headerActions, setHeaderActions] = useState<ReactNode | null>(null);
-  const [showBackButton, setShowBackButton] = useState(false); // Estado para el botón de volver
+  const [showBackButton, setShowBackButton] = useState(false);
 
   const setActions = useCallback((actions: ReactNode | null) => {
     setHeaderActions(actions);

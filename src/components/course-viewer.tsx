@@ -228,7 +228,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const { setPageTitle } = useTitle();
+  const { setPageTitle, setShowBackButton } = useTitle();
 
   const [course, setCourse] = useState<AppCourse | null>(null);
   const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(null);
@@ -343,6 +343,11 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     };
     fetchData();
   }, [courseId, user, toast, setPageTitle]);
+  
+  useEffect(() => {
+    setShowBackButton(true);
+    return () => setShowBackButton(false);
+  }, [setShowBackButton]);
   
   useEffect(() => {
     if (isLoading) return;
@@ -617,23 +622,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         
         {/* --- Main Content --- */}
         <div className="flex-1 flex flex-col min-w-0">
-             <header className="flex-shrink-0 h-16 bg-card border-b flex items-center px-4 justify-between">
-                <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => (isMobile ? setIsMobileSheetOpen(true) : setIsSidebarVisible(!isSidebarVisible))}>
-                        <PanelLeft className="h-5 w-5" />
-                    </Button>
-                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.back()}>
-                        <ArrowLeft className="h-4 w-4"/>
-                        <span className="sr-only">Volver</span>
-                    </Button>
-                </div>
-                {isEnrolled && !isCreatorViewingCourse && selectedLessonId && (
-                   <Button variant="outline" size="sm" onClick={() => setIsNotesPanelOpen(!isNotesPanelOpen)}>
-                        <Notebook className="h-4 w-4 mr-2"/>
-                        Mis Apuntes
-                    </Button>
-                )}
-            </header>
             <main className="flex-1 overflow-hidden flex">
                  <div className={cn(
                     "flex-1 transition-all duration-300 ease-in-out",
