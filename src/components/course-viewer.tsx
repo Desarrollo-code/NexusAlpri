@@ -657,12 +657,14 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         {/* Floating Action Buttons */}
         {isMobile && (
             <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
-                <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => router.push('/my-courses')}>
-                    <ArrowLeft className="h-5 w-5" />
+                <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsMobileSheetOpen(true)}>
+                    <PanelLeft className="h-5 w-5" />
                 </Button>
-                <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsNotesPanelOpen(!isNotesPanelOpen)}>
-                    <Notebook className="h-5 w-5" />
-                </Button>
+                {isEnrolled && !isCreatorViewingCourse && (
+                  <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsNotesPanelOpen(!isNotesPanelOpen)}>
+                      <Notebook className="h-5 w-5" />
+                  </Button>
+                )}
             </div>
         )}
     </div>
