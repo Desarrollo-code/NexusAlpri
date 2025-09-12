@@ -622,8 +622,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => (isMobile ? setIsMobileSheetOpen(true) : setIsSidebarVisible(!isSidebarVisible))}>
                         <PanelLeft className="h-5 w-5" />
                     </Button>
-                     <Button variant="ghost" size="sm" onClick={() => router.back()}>
-                        <ArrowLeft className="h-4 w-4 mr-2"/> Volver
+                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.back()}>
+                        <ArrowLeft className="h-4 w-4"/>
+                        <span className="sr-only">Volver</span>
                     </Button>
                 </div>
                 {isEnrolled && !isCreatorViewingCourse && selectedLessonId && (

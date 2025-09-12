@@ -95,8 +95,9 @@ export const TopBar = () => {
                     </Button>
                  )}
                  {showBackButton && (
-                     <Button variant="ghost" size="sm" onClick={() => router.back()}>
-                        <ArrowLeft className="h-4 w-4 mr-2"/> Volver
+                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.back()}>
+                        <ArrowLeft className="h-4 w-4"/>
+                        <span className="sr-only">Volver</span>
                     </Button>
                  )}
                  <h1 className="text-xl font-semibold truncate">{pageTitle}</h1>
@@ -152,7 +153,11 @@ export const TopBar = () => {
                 <Separator orientation="vertical" className="h-8" />
                 <UserAvatarDropdown />
             </div>
-            {headerActions && <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card/80 backdrop-blur-sm border-t p-2 flex justify-end gap-2 z-50">{headerActions}</div>}
+            {headerActions && (
+              <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t p-2 flex justify-around gap-2 z-50">
+                {headerActions}
+              </div>
+            )}
         </div>
     );
 };

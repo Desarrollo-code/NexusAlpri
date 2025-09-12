@@ -250,10 +250,10 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
         };
 
         return (
-            <div ref={ref} {...rest} className="flex items-center gap-2 bg-muted/50 p-2 rounded">
-                 <GripVertical className="h-5 w-5 text-muted-foreground" />
+            <div ref={ref} {...rest} className="flex items-start gap-2 bg-muted/50 p-2 rounded">
+                 <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab mt-2" />
                  <div className="flex-grow">{renderBlockContent()}</div>
-                 <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                 <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
             </div>
         );
     }
@@ -380,17 +380,17 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     useEffect(() => {
         const EditorActions = () => (
-            <div className="flex items-center gap-2">
-                <Button asChild variant="outline" size="sm">
+            <>
+                <Button asChild variant="outline" size="sm" className="flex-1">
                     <Link href={`/courses/${courseId}`} target="_blank">
                         <Eye className="mr-2 h-4 w-4" /> Vista Previa
                     </Link>
                 </Button>
-                <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} size="sm">
+                <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} size="sm" className="flex-1">
                     {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                    {isSaving ? 'Guardando...' : 'Guardar'}
                 </Button>
-            </div>
+            </>
         );
 
         if (course) {
@@ -581,7 +581,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
              if (!sourceLesson || !destLesson) return;
 
              const [movedItem] = sourceLesson.contentBlocks.splice(source.index, 1);
-             destModule.contentBlocks.splice(destination.index, 0, movedItem);
+             destLesson.contentBlocks.splice(destination.index, 0, movedItem);
         }
         
         handleStateUpdate(() => newCourse);
