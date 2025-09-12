@@ -22,23 +22,46 @@ export async function GET(req: NextRequest) {
     const startDate = startDateParam ? startOfDay(parseISO(startDateParam)) : startOfDay(subDays(endDate, 29));
 
     try {
-        const topStudentsByCompletionData = await prisma.user.findMany({
+        // --- Consulta de los mejores estudiantes por completitud ---
+        // Se separa en 2 pasos para mayor eficiencia y evitar errores de timeout.
+        // 1. Agrupar y contar cursos completados por usuario.
+        const completedProgress = await prisma.courseProgress.groupBy({
+            by: ['userId'],
             where: {
-                role: 'STUDENT',
-                courseProgress: { some: { progressPercentage: { gte: 99 } } }
+                progressPercentage: { gte: 99 },
+                user: { role: 'STUDENT' }
             },
-            include: {
+            _count: {
+                userId: true
+            },
+            orderBy: {
                 _count: {
-                    select: {
-                        courseProgress: { where: { progressPercentage: { gte: 99 } } }
-                    }
+                    userId: 'desc'
                 }
-            }
+            },
+            take: 5
         });
-        
-        const sortedTopStudents = topStudentsByCompletionData
-            .sort((a, b) => (b._count?.courseProgress || 0) - (a._count?.courseProgress || 0))
-            .slice(0, 5);
+
+        // 2. Obtener la información de los usuarios top.
+        const topStudentIds = completedProgress.map(p => p.userId);
+        let sortedTopStudents: { id: string; name: string | null; avatar: string | null; value: number }[] = [];
+        if (topStudentIds.length > 0) {
+            const topStudentUsers = await prisma.user.findMany({
+                where: { id: { in: topStudentIds } },
+                select: { id: true, name: true, avatar: true }
+            });
+
+            // Mapear y ordenar según el conteo
+            sortedTopStudents = topStudentUsers.map(user => {
+                const progressCount = completedProgress.find(p => p.userId === user.id);
+                return {
+                    id: user.id,
+                    name: user.name,
+                    avatar: user.avatar,
+                    value: progressCount?._count.userId || 0
+                };
+            }).sort((a, b) => b.value - a.value);
+        }
 
 
         const [
@@ -153,7 +176,7 @@ export async function GET(req: NextRequest) {
             topCoursesByCompletion,
             lowestCoursesByCompletion,
             topStudentsByEnrollment: topStudentsByEnrollment.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, value: u._count.enrollments })),
-            topStudentsByCompletion: sortedTopStudents.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, value: u._count.courseProgress })),
+            topStudentsByCompletion: sortedTopStudents,
             topInstructorsByCourses: topInstructorsByCourses.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, value: u._count.courses })),
         };
 

@@ -481,42 +481,41 @@ export default function DashboardPage() {
     
     setIsLoading(true);
     setError(null);
+    
+    const fetchWithFallback = async (url: string) => {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ message: `Error: ${res.statusText}` }));
+                throw new Error(errorData.message || `Error: ${res.statusText}`);
+            }
+            return res.json();
+        } catch (err) {
+            console.error(`Failed to fetch ${url}:`, err);
+            // Throw the error to be caught by the main try-catch block
+            throw err;
+        }
+    };
+    
     try {
       const announcementsParams = new URLSearchParams({ pageSize: '2', filter: 'by-others' });
-      const promises = [
-        fetch(`/api/announcements?${announcementsParams.toString()}`)
+      const promises: Promise<any>[] = [
+        fetchWithFallback(`/api/announcements?${announcementsParams.toString()}`)
       ];
       
-      let adminStatsPromise = null;
-      let securityLogsPromise = null;
-      let taughtCoursesPromise = null;
-      let enrolledCoursesPromise = null;
-
       if (user.role === 'ADMINISTRATOR') {
-          adminStatsPromise = fetch('/api/dashboard/admin-stats');
-          securityLogsPromise = fetch('/api/security/logs?pageSize=5');
-          promises.push(adminStatsPromise, securityLogsPromise);
+          promises.push(fetchWithFallback('/api/dashboard/admin-stats'));
+          promises.push(fetchWithFallback('/api/security/logs?pageSize=5'));
       } else if (user.role === 'INSTRUCTOR') {
           const queryParams = new URLSearchParams({ manageView: 'true', userId: user.id, userRole: user.role, pageSize: '4' });
-          taughtCoursesPromise = fetch(`/api/courses?${queryParams.toString()}`);
-          promises.push(taughtCoursesPromise);
+          promises.push(fetchWithFallback(`/api/courses?${queryParams.toString()}`));
       } else if (user.role === 'STUDENT') {
-          enrolledCoursesPromise = fetch(`/api/enrollment/${user.id}`);
-          promises.push(enrolledCoursesPromise);
+          promises.push(fetchWithFallback(`/api/enrollment/${user.id}`));
       }
 
       const responses = await Promise.all(promises);
-      
-      for (const res of responses) {
-          if (!res.ok) {
-              const errorData = await res.json().catch(() => ({ message: `Error: ${res.statusText}` }));
-              throw new Error(errorData.message || `Error: ${res.statusText}`);
-          }
-      }
 
-      const allData = await Promise.all(responses.map(res => res.json()));
-
-      const announcementsJson = allData[0];
+      const announcementsJson = responses[0];
       const announcementsData = announcementsJson.announcements || [];
       const dashboardPayload: DashboardData = {
           adminStats: null,
@@ -530,14 +529,14 @@ export default function DashboardPage() {
       
       let dataIndex = 1;
       if (user.role === 'ADMINISTRATOR') {
-          dashboardPayload.adminStats = allData[dataIndex++] || null;
-          dashboardPayload.securityLogs = (allData[dataIndex++] || { logs: [] }).logs;
+          dashboardPayload.adminStats = responses[dataIndex++] || null;
+          dashboardPayload.securityLogs = (responses[dataIndex++] || { logs: [] }).logs;
       } else if (user.role === 'INSTRUCTOR') {
-          const taughtCoursesResponse = allData[dataIndex++];
+          const taughtCoursesResponse = responses[dataIndex++];
           dashboardPayload.instructorStats = { taught: taughtCoursesResponse.totalCourses || 0 };
           dashboardPayload.taughtCourses = (taughtCoursesResponse.courses || []).map(mapApiCourseToAppCourse);
       } else if (user.role === 'STUDENT') {
-          const enrolledData: any[] = allData[dataIndex++];
+          const enrolledData: any[] = responses[dataIndex++];
           const mappedCourses: EnrolledCourse[] = enrolledData.map(item => ({
             id: item.id, title: item.title, description: item.description, instructor: item.instructorName || 'N/A',
             imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, duration: item.duration, modules: [], 
@@ -552,7 +551,6 @@ export default function DashboardPage() {
       setData(dashboardPayload);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al obtener los datos del dashboard');
-      console.error("Failed to fetch dashboard data:", err);
     } finally {
       setIsLoading(false);
     }

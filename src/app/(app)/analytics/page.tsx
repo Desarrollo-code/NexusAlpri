@@ -189,6 +189,19 @@ function DonutChartCard({ title, data, config, id }: { title: string, data: any[
 }
 
 function CourseRankingCard({ title, courses, metric, icon: Icon, unit = '', id }: { title: string, courses: any[], metric: string, icon: React.ElementType, unit?: string, id?: string }) {
+    if (!courses) {
+        return (
+            <Card className="card-border-animated" id={id}>
+                 <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Icon className="text-primary"/>{title}</CardTitle>
+                </CardHeader>
+                 <CardContent>
+                    <p className="text-sm text-muted-foreground text-center py-8">Datos no disponibles.</p>
+                </CardContent>
+            </Card>
+        )
+    }
+
     return (
         <Card className="card-border-animated" id={id}>
             <CardHeader>
@@ -225,6 +238,19 @@ function CourseRankingCard({ title, courses, metric, icon: Icon, unit = '', id }
 }
 
 function UserRankingCard({ title, users, metric, icon: Icon, unit = '', id }: { title: string; users: any[]; metric: string; icon: React.ElementType; unit?: string, id?: string }) {
+    if (!users) {
+        return (
+            <Card className="card-border-animated" id={id}>
+                 <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Icon className="text-primary"/>{title}</CardTitle>
+                </CardHeader>
+                 <CardContent>
+                    <p className="text-sm text-muted-foreground text-center py-8">Datos no disponibles.</p>
+                </CardContent>
+            </Card>
+        )
+    }
+    
     return (
         <Card className="card-border-animated" id={id}>
             <CardHeader>
