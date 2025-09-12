@@ -1,3 +1,4 @@
+
 // src/app/api/dashboard/admin-stats/route.ts
 import prisma from '@/lib/prisma';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -17,27 +18,19 @@ export async function GET(req: NextRequest) {
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
 
-    // Define a default 30-day range if no dates are provided
     const endDate = endDateParam ? endOfDay(parseISO(endDateParam)) : new Date();
     const startDate = startDateParam ? startOfDay(parseISO(startDateParam)) : startOfDay(subDays(endDate, 29));
 
     try {
-        // --- Correction: Separate the problematic query ---
         const topStudentsByCompletionData = await prisma.user.findMany({
             where: {
                 role: 'STUDENT',
-                courseProgress: {
-                    some: {
-                        progressPercentage: { gte: 99 }
-                    }
-                }
+                courseProgress: { some: { progressPercentage: { gte: 99 } } }
             },
             include: {
                 _count: {
                     select: {
-                        courseProgress: {
-                            where: { progressPercentage: { gte: 99 } }
-                        }
+                        courseProgress: { where: { progressPercentage: { gte: 99 } } }
                     }
                 }
             }
@@ -75,7 +68,6 @@ export async function GET(req: NextRequest) {
                 distinct: ['userId']
             }),
             prisma.enrollment.count({ where: { enrolledAt: { gte: subDays(new Date(), 7) } } }),
-             // --- User registration trend query ---
             prisma.user.groupBy({
                 by: ['registeredDate'],
                 where: {
@@ -87,7 +79,6 @@ export async function GET(req: NextRequest) {
                 _count: { _all: true },
                 orderBy: { registeredDate: 'asc' },
             }),
-            // --- Course Analytics Queries ---
             prisma.course.findMany({
                 where: { status: 'PUBLISHED' },
                 orderBy: { enrollments: { _count: 'desc' } },
@@ -98,7 +89,6 @@ export async function GET(req: NextRequest) {
                 where: { progressPercentage: { gte: 99 } },
                 select: { course: { select: { id: true, title: true, imageUrl: true } } }
             }),
-            // --- User Analytics Queries ---
             prisma.user.findMany({
                 where: { role: 'STUDENT' },
                 orderBy: { enrollments: { _count: 'desc' } },
@@ -113,7 +103,6 @@ export async function GET(req: NextRequest) {
             }),
         ]);
 
-        // --- Process User Registration Trend ---
         const dailyRegistrations = new Map<string, number>();
         const intervalDays = eachDayOfInterval({ start: startDate, end: endDate });
         intervalDays.forEach(day => {
@@ -127,8 +116,6 @@ export async function GET(req: NextRequest) {
         });
         const userRegistrationTrend = Array.from(dailyRegistrations.entries()).map(([date, count]) => ({ date, count }));
 
-
-        // --- Process Course Completion Analytics ---
         const completionCounts = courseCompletions.reduce((acc, { course }) => {
             acc[course.id] = (acc[course.id] || 0) + 1;
             return acc;
