@@ -125,7 +125,7 @@ export const TopBar = () => {
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
-                 {isMobile ? (
+                 {isMobile && (
                     showBackButton ? (
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.back()}>
                             <ArrowLeft className="h-4 w-4"/>
@@ -137,13 +137,7 @@ export const TopBar = () => {
                             <span className="sr-only">Toggle Menu</span>
                         </Button>
                     )
-                 ) : (
-                     <Button onClick={toggleSidebar} variant="ghost" size="icon">
-                        <PanelLeft className="h-5 w-5"/>
-                        <span className="sr-only">Toggle Sidebar</span>
-                    </Button>
                  )}
-                {currentPageIcon && <GradientIcon icon={currentPageIcon} isActive={true} />}
                  <h1 className="text-xl font-semibold truncate">{currentPageTitle}</h1>
             </div>
 
