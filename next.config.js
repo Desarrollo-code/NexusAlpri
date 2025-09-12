@@ -14,12 +14,32 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'izefimwyuayfvektsstg.supabase.co',
-        pathname: '/storage/v1/object/public/**',
+        hostname: 'i.ytimg.com',
       },
       {
         protocol: 'https',
-        hostname: 'i.ytimg.com',
+        hostname: 'izefimwyuayfvektsstg.supabase.co',
+        pathname: '/storage/v1/object/public/avatars/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'izefimwyuayfvektsstg.supabase.co',
+        pathname: '/storage/v1/object/public/course_images/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'izefimwyuayfvektsstg.supabase.co',
+        pathname: '/storage/v1/object/public/settings_images/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'izefimwyuayfvektsstg.supabase.co',
+        pathname: '/storage/v1/object/public/lesson_files/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'izefimwyuayfvektsstg.supabase.co',
+        pathname: '/storage/v1/object/public/resource_library/**',
       },
     ],
   },
