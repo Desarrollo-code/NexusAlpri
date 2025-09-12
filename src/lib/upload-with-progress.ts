@@ -1,7 +1,7 @@
 // src/lib/upload-with-progress.ts
 /**
  * Sube un archivo a través de una API route de Next.js con reporte de progreso.
- * @param apiPath La ruta de la API que maneja la subida (ej. '/api/upload/avatars').
+ * @param apiPath La ruta de la API que maneja la subida (ej. '/api/upload/avatar').
  * @param formData El objeto FormData que contiene el archivo.
  * @param onProgress Una función callback que se llama con el porcentaje de progreso.
  * @returns Una promesa que se resuelve con el objeto de respuesta de la API (debe incluir la URL).

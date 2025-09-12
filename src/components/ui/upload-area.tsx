@@ -20,6 +20,10 @@ export function UploadArea({ onFileSelect, disabled }: UploadAreaProps) {
     } else {
       onFileSelect(null);
     }
+    // Reset a el valor del input para permitir subir el mismo archivo de nuevo
+    if(event.target) {
+        event.target.value = '';
+    }
   };
   
   const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {

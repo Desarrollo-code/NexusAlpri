@@ -3,21 +3,18 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // ¡Nueva variable!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Supabase URL and Anon Key must be provided in public environment variables.');
+    throw new Error('Las variables de entorno de Supabase (URL y Anon Key) deben ser proporcionadas.');
 }
 
 if (!supabaseServiceKey) {
-    console.warn('SUPABASE_SERVICE_ROLE_KEY is not set. Admin client will not be available.');
+    console.warn('ADVERTENCIA: La variable SUPABASE_SERVICE_ROLE_KEY no está configurada. El cliente de administrador de Supabase no estará disponible y las operaciones de backend fallarán.');
 }
 
-// Cliente público para el lado del cliente (navegador) - Ya no se usará para subidas
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
 // Cliente de administrador para el lado del servidor (API Routes)
-// Este cliente puede saltarse las políticas de RLS. ¡Úsalo con cuidado y solo en el backend!
+// Este cliente puede saltarse las políticas de RLS. Úsalo con cuidado y solo en el backend.
 export const supabaseAdmin = supabaseServiceKey 
     ? createClient(supabaseUrl, supabaseServiceKey, {
         auth: {
