@@ -6,9 +6,9 @@ import { createSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-// --- Rate Limiting Logic ---
+// --- Rate Limiting Logic (In-memory, suitable for single-instance deployments) ---
 const loginAttempts = new Map<string, { count: number; expiry: number }>();
-const RATE_LIMIT_COUNT = 10; // Max attempts
+const RATE_LIMIT_COUNT = 10;
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
 function getIp(req: NextRequest) {
@@ -17,26 +17,20 @@ function getIp(req: NextRequest) {
 
 function checkRateLimit(ip: string): boolean {
     const record = loginAttempts.get(ip);
-    if (!record) return true; // No record, allow attempt
-
-    // If window has expired, reset the record
-    if (Date.now() > record.expiry) {
+    if (!record || Date.now() > record.expiry) {
         loginAttempts.delete(ip);
         return true;
     }
-    
-    // Check if count exceeds the limit
     return record.count < RATE_LIMIT_COUNT;
 }
 
 function recordFailedAttempt(req: NextRequest, email: string, userId?: string) {
     const ip = getIp(req);
-    // Record in-memory for rate limiting
     const record = loginAttempts.get(ip) || { count: 0, expiry: Date.now() + RATE_LIMIT_WINDOW_MS };
     record.count++;
     loginAttempts.set(ip, record);
     
-    // Record in database for auditing
+    // Asynchronously log to DB without blocking the response
     prisma.securityLog.create({
         data: {
             event: 'FAILED_LOGIN_ATTEMPT',
@@ -47,11 +41,13 @@ function recordFailedAttempt(req: NextRequest, email: string, userId?: string) {
             country: req.geo?.country,
             city: req.geo?.city,
         },
-    }).catch(console.error); // Log DB errors without blocking the response
+    }).catch(console.error);
 }
 
 function recordSuccessfulLogin(req: NextRequest, userId: string, details: string) {
     const ip = getIp(req);
+    loginAttempts.delete(ip);
+    
     prisma.securityLog.create({
         data: {
             event: 'SUCCESSFUL_LOGIN',
@@ -67,16 +63,14 @@ function recordSuccessfulLogin(req: NextRequest, userId: string, details: string
 
 // --- Login Route ---
 export async function POST(req: NextRequest) {
-  // --- VERIFICACIÓN DE VARIABLES DE ENTORNO ---
   if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
-    console.error('Error Crítico: Faltan variables de entorno DATABASE_URL o JWT_SECRET en el servidor.');
-    return NextResponse.json({ message: 'Error de configuración del servidor: Faltan variables de entorno críticas.' }, { status: 500 });
+    console.error('Error Crítico: Faltan variables de entorno DATABASE_URL o JWT_SECRET.');
+    return NextResponse.json({ message: 'Error de configuración del servidor.' }, { status: 500 });
   }
 
   const ip = getIp(req);
-
   if (!checkRateLimit(ip)) {
-      return NextResponse.json({ message: 'Demasiados intentos de inicio de sesión. Por favor, inténtalo de nuevo más tarde.' }, { status: 429 });
+      return NextResponse.json({ message: 'Demasiados intentos de inicio de sesión. Inténtalo de nuevo más tarde.' }, { status: 429 });
   }
 
   try {
@@ -90,6 +84,7 @@ export async function POST(req: NextRequest) {
       where: { email: email.toLowerCase() },
     });
 
+    // REFINADO: Se realizan todas las comprobaciones antes de decidir si el login es válido o no.
     if (!user || !user.password) {
       recordFailedAttempt(req, email);
       return NextResponse.json({ message: 'Credenciales inválidas' }, { status: 401 });
@@ -101,26 +96,24 @@ export async function POST(req: NextRequest) {
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
     if (!isPasswordValid) {
       recordFailedAttempt(req, email, user.id);
       return NextResponse.json({ message: 'Credenciales inválidas' }, { status: 401 });
     }
     
+    // --- Login Válido a partir de este punto ---
+
     if (user.isTwoFactorEnabled) {
-      // Log successful credential validation, but don't create session yet
-      recordSuccessfulLogin(req, user.id, 'Credenciales válidas, pendiente 2FA.'); 
+      recordSuccessfulLogin(req, user.id, 'Credenciales válidas, pendiente 2FA.');
       return NextResponse.json({
         twoFactorRequired: true,
         userId: user.id,
       });
     }
     
-    loginAttempts.delete(ip);
-    recordSuccessfulLogin(req, user.id, 'Login exitoso (sin 2FA).'); // Log full success as 2FA is not enabled
+    recordSuccessfulLogin(req, user.id, 'Login exitoso (sin 2FA).');
     
     const { password: _, twoFactorSecret, ...userToReturn } = user;
-    
     await createSession(user.id);
 
     return NextResponse.json({ user: userToReturn });

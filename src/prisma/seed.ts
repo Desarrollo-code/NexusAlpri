@@ -47,7 +47,8 @@ async function main() {
   // --- 2. USUARIOS ---
   console.log('Creando usuarios de prueba...');
   const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@nexus.com' }, update: {},
+    where: { email: 'admin@nexus.com' },
+    update: { password: hashedPassword }, // Forzar la actualización de la contraseña
     create: { email: 'admin@nexus.com', name: 'Admin Nexus', password: hashedPassword, role: UserRole.ADMINISTRATOR, isActive: true },
   });
   const instructorUser = await prisma.user.upsert({
