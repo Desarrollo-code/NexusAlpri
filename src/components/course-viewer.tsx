@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -630,12 +630,13 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                         {selectedLesson ? (
                             <div>
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4 flex-wrap">
+                                    <Layers className="h-4 w-4" />
                                     <span>{course.title}</span>
                                     <ChevronRight className="h-4 w-4"/>
                                     <span className="font-semibold text-foreground">{selectedLesson.moduleTitle}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-                                    <BookOpenText className="h-5 w-5 text-primary" />
+                                    <GraduationCap className="h-5 w-5 text-primary" />
                                     <h2>{selectedLesson.title}</h2>
                                 </div>
                                 {(selectedLesson.contentBlocks || []).map(block => renderContentBlock(block))}
