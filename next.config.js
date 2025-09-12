@@ -15,13 +15,18 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'izefimwyuayfvektsstg.supabase.co',
-        pathname: '/storage/v1/object/public/**', // Agrega esta línea
+        pathname: '/storage/v1/object/public/**',
       },
-        {
+      {
         protocol: 'https',
         hostname: 'i.ytimg.com',
-      }
+      },
     ],
+  },
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
   },
 };
 
