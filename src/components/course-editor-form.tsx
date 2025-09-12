@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -406,7 +407,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         );
 
         if (course) {
-            setPageTitle(`${course.title}`);
+            setPageTitle(`Editando: ${course.title}`);
             setHeaderActions(<EditorActions />);
             setShowBackButton(true);
         }
