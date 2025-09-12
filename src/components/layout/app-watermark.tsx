@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/contexts/auth-context";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 export default function AppWatermark() {
     const { settings, isLoading } = useAuth();
@@ -13,7 +14,11 @@ export default function AppWatermark() {
     
     if (settings?.watermarkUrl) {
       return (
-        <div className="fixed bottom-4 right-4 z-[9999] pointer-events-none">
+        <div className={cn(
+            "fixed z-[9999] pointer-events-none",
+            "bottom-20 left-1/2 -translate-x-[40%]", // Posición en móvil
+            "md:bottom-4 md:left-auto md:right-4 md:transform-none" // Posición en escritorio
+        )}>
           <Image 
             src={settings.watermarkUrl} 
             alt="Marca de agua" 
