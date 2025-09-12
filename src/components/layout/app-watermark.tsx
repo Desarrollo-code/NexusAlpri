@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useAuth } from "@/contexts/auth-context";
@@ -17,7 +18,7 @@ export default function AppWatermark() {
         <div className={cn(
             "fixed z-[9999] pointer-events-none",
              // En móvil, se posiciona arriba de la BottomNav.
-            "bottom-4 right-4"
+            "bottom-20 md:bottom-4 right-4"
         )}>
           <Image 
             src={settings.watermarkUrl} 
