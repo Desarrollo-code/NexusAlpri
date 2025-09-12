@@ -731,7 +731,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                             <div className="space-y-2">
                                 <Label>Imagen de Portada</Label>
                                 {course.imageUrl && !isUploadingImage ? (
-                                    <div className="relative aspect-video w-full rounded-md border overflow-hidden p-2 bg-muted/20 mt-2">
+                                    <div className="relative h-32 w-full rounded-md border overflow-hidden p-2 bg-muted/20 mt-2">
                                         <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-contain p-2" />
                                         <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 rounded-full h-7 w-7" onClick={() => updateCourseField('imageUrl', null)} disabled={isSaving || isUploadingImage}><XCircle className="h-4 w-4" /></Button>
                                     </div>
@@ -1023,3 +1023,4 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
         </Dialog>
     )
 };
+
