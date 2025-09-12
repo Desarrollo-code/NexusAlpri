@@ -83,7 +83,7 @@ export const Sidebar = ({ children }: { children: React.ReactNode }) => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 ease-in-out shadow-xl",
-          "bg-card border-r border-border",
+          "bg-sidebar-background border-r border-sidebar-border",
           isMobile ? `w-72 ${mobileClasses}` : desktopClasses
         )}
       >
@@ -123,7 +123,7 @@ const SidebarSectionHeader = ({ label }: { label: string }) => {
     if (isCollapsed) return null;
     return (
       <h2 className={cn(
-          "px-4 text-xs font-semibold uppercase text-muted-foreground tracking-wider transition-all duration-300"
+          "px-4 text-xs font-semibold uppercase text-sidebar-muted-foreground tracking-wider transition-all duration-300"
       )}>
           {label}
       </h2>
@@ -149,8 +149,8 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 py-3 rounded-lg transition-all duration-300 font-medium group/menu-item relative",
         isCollapsed && !isMobile ? "justify-center px-0" : "px-4",
         isActive
-          ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          ? "bg-sidebar-accent/10 text-sidebar-accent"
+          : "text-sidebar-muted-foreground hover:bg-white/5 hover:text-sidebar-foreground"
       )}>
         <GradientIcon icon={item.icon} isActive={isActive} />
         {showText && <span className="whitespace-nowrap">{item.label}</span>}
@@ -184,13 +184,13 @@ export const SidebarFooter = () => {
   if (isMobile) return null; // No collapse button on mobile
 
   return (
-    <div className={cn("p-3 border-t border-border flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
+    <div className={cn("p-3 border-t border-sidebar-border flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
         <Button
           onClick={toggleSidebar}
           variant="ghost"
           size="icon"
           className={cn(
-            "h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground transition-transform duration-300",
+            "h-8 w-8 text-sidebar-muted-foreground hover:bg-white/10 hover:text-sidebar-foreground transition-transform duration-300",
             isCollapsed && "rotate-180"
           )}
         >

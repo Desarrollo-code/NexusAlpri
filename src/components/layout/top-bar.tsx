@@ -121,7 +121,7 @@ export const TopBar = () => {
     return (
         <div className={cn(
             "flex items-center justify-between h-20 px-4 shrink-0 border-b sticky top-0 z-30", // z-index ajustado
-            "bg-card text-card-foreground"
+            "bg-card/80 backdrop-blur-sm text-card-foreground"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
