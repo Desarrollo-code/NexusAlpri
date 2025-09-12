@@ -1,4 +1,3 @@
-
 // src/components/layout/top-bar.tsx
 'use client';
 
@@ -47,22 +46,32 @@ export const TopBar = () => {
     const { toast } = useToast();
 
     // --- LÓGICA PARA OBTENER EL ÍCONO DE LA PÁGINA ACTUAL ---
-    const currentPageIcon = useMemo(() => {
-        if (!user?.role) return null;
+    const { icon: currentPageIcon, title: currentPageTitle } = useMemo(() => {
+        if (!user?.role) return { icon: null, title: pageTitle };
         const navItems = getNavItemsForRole(user.role);
         
-        const findItem = (items: NavItem[]): NavItem | undefined => {
+        const findItem = (items: NavItem[], path: string): NavItem | undefined => {
             for (const item of items) {
-                if (item.path && pathname.startsWith(item.path) && item.path !== '/') return item;
+                if (item.path && path.startsWith(item.path) && (item.path !== '/' || path === '/')) {
+                    if (path === item.path || path.startsWith(item.path + '/')) {
+                        return item;
+                    }
+                }
                 if (item.children) {
-                    const found = findItem(item.children);
+                    const found = findItem(item.children, path);
                     if (found) return found;
                 }
             }
         };
-        const currentItem = findItem(navItems);
-        return currentItem?.icon || null;
-    }, [pathname, user?.role]);
+        const currentItem = findItem(navItems, pathname);
+
+        // For dynamic routes like /courses/[courseId], use the dynamic pageTitle
+        if (pathname.includes('/courses/') && !pathname.endsWith('/courses')) {
+            return { icon: currentItem?.icon || null, title: pageTitle };
+        }
+
+        return { icon: currentItem?.icon || null, title: currentItem?.label || pageTitle };
+    }, [pathname, user?.role, pageTitle]);
 
 
     useEffect(() => {
@@ -131,11 +140,11 @@ export const TopBar = () => {
                  ) : (
                      <Button onClick={toggleSidebar} variant="ghost" size="icon">
                         <PanelLeft className="h-5 w-5"/>
-                        <span className="sr-only">Toggle Menu</span>
+                        <span className="sr-only">Toggle Sidebar</span>
                     </Button>
                  )}
-                {isMobile && currentPageIcon && <GradientIcon icon={currentPageIcon} isActive={true} />}
-                 <h1 className="text-xl font-semibold truncate">{pageTitle}</h1>
+                {currentPageIcon && <GradientIcon icon={currentPageIcon} isActive={true} />}
+                 <h1 className="text-xl font-semibold truncate">{currentPageTitle}</h1>
             </div>
 
             {/* Right side */}
@@ -188,8 +197,8 @@ export const TopBar = () => {
                 <Separator orientation="vertical" className="h-8" />
                 <UserAvatarDropdown />
             </div>
-            {headerActions && (
-              <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t p-2 flex justify-around gap-2 z-50">
+            {headerActions && isMobile && (
+              <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t p-2 flex justify-around gap-2 z-50">
                 {headerActions}
               </div>
             )}

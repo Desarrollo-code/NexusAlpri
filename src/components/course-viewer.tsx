@@ -394,6 +394,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
   useEffect(() => {
       if (course) {
+          // Mantener el título del curso en la barra superior
           setPageTitle(course.title);
       }
   }, [course, setPageTitle]);
@@ -629,12 +630,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                         <div className="p-4 md:p-6 lg:p-8">
                         {selectedLesson ? (
                             <div>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4 flex-wrap">
-                                    <Layers className="h-4 w-4" />
-                                    <span>{course.title}</span>
-                                    <ChevronRight className="h-4 w-4"/>
-                                    <span className="font-semibold text-foreground">{selectedLesson.moduleTitle}</span>
-                                </div>
                                 <div className="flex items-center gap-2 text-lg font-semibold mb-4">
                                     <GraduationCap className="h-5 w-5 text-primary" />
                                     <h2>{selectedLesson.title}</h2>
@@ -666,6 +661,18 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                 </aside>
             </main>
         </div>
+
+        {/* Floating Action Buttons */}
+        {isMobile && (
+            <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
+                <Button size="icon" className="rounded-full h-14 w-14 shadow-lg" onClick={() => router.push('/my-courses')}>
+                    <ArrowLeft className="h-6 w-6" />
+                </Button>
+                <Button size="icon" className="rounded-full h-14 w-14 shadow-lg" onClick={() => setIsNotesPanelOpen(!isNotesPanelOpen)}>
+                    <Notebook className="h-6 w-6" />
+                </Button>
+            </div>
+        )}
     </div>
   );
 }
