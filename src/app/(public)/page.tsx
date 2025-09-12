@@ -100,7 +100,7 @@ export default async function LandingPage() {
 
   return (
       <div className="flex-1 z-10 text-slate-800">
-        <section className="w-full py-20 md:py-32 lg:py-40">
+        <section className="w-full py-12 md:py-20 lg:py-24">
           <div className="container px-4 md:px-6">
             <div className="grid items-center gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
               <div className="flex flex-col justify-center space-y-4">
@@ -146,7 +146,7 @@ export default async function LandingPage() {
           </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 bg-slate-50">
+        <section className="w-full py-12 md:py-16 bg-slate-50">
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -178,7 +178,7 @@ export default async function LandingPage() {
             </div>
         </section>
 
-        <section className="w-full py-12 md:py-24">
+        <section className="w-full py-12 md:py-16">
             <div className="container px-4 md:px-6">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                      <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-2xl">
@@ -192,8 +192,8 @@ export default async function LandingPage() {
                         />
                      </div>
                     <div className="space-y-8">
-                       {benefits.map((benefit, index) => (
-                          <div key={index} className="flex items-start gap-4">
+                       {benefits.map((benefit) => (
+                          <div key={benefit.title} className="flex items-start gap-4">
                             <div className="flex-shrink-0">{benefit.icon}</div>
                             <div className="flex-grow">
                                 <h3 className="text-xl font-bold text-slate-800">{benefit.title}</h3>
@@ -206,7 +206,7 @@ export default async function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 bg-slate-50">
+        <section className="w-full py-12 md:py-16 bg-slate-50">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -217,8 +217,8 @@ export default async function LandingPage() {
                     </div>
                 </div>
                  <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 py-12">
-                    {testimonials.map((testimonial, index) => (
-                        <Card key={index} className="bg-white">
+                    {testimonials.map((testimonial) => (
+                        <Card key={testimonial.name} className="bg-white">
                            <CardContent className="pt-6">
                              <blockquote className="text-lg font-semibold leading-snug text-slate-800">
                                “{testimonial.testimony}”
@@ -239,7 +239,7 @@ export default async function LandingPage() {
             </div>
         </section>
         
-         <section className="w-full py-20 md:py-32 text-center">
+         <section className="w-full py-12 md:py-20 text-center">
             <div className="container px-4 md:px-6">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">¿Listo para Empezar?</h2>
                  <p className="max-w-2xl mx-auto mt-4 text-slate-600 md:text-xl">
