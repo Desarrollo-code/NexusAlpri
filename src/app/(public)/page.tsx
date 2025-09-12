@@ -160,9 +160,9 @@ export default async function LandingPage() {
                     </div>
                 </div>
                 <div className="mx-auto grid max-w-5xl items-start gap-6 py-12 lg:grid-cols-3 lg:gap-8">
-                   {features.map((feature, index) => (
+                   {features.map((feature) => (
                      <div 
-                        key={index}
+                        key={feature.title}
                         className="relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-white shadow-lg hover:shadow-xl hover:-translate-y-2 border"
                       >
                        <div className="relative z-10 flex flex-col items-start justify-start h-full">
@@ -181,7 +181,7 @@ export default async function LandingPage() {
         <section className="w-full py-12 md:py-24">
             <div className="container px-4 md:px-6">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
-                     <div className="mx-auto aspect-video overflow-hidden rounded-xl sm:w-full relative shadow-2xl">
+                     <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-2xl">
                         <Image
                             src={benefitsImageUrl}
                             alt="Benefits"
