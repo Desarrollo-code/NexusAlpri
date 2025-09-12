@@ -7,7 +7,22 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    unoptimized: true,
+    unoptimized: false, // Asegurarnos que la optimización esté activada
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'izefimwyuayfvektsstg.supabase.co',
+        pathname: '/storage/v1/object/public/**', // Agrega esta línea
+      },
+        {
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+      }
+    ],
   },
 };
 
