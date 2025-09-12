@@ -220,7 +220,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
                 case 'FILE': 
                     if (isImageFile) {
                         return (
-                             <div className="relative w-full aspect-video rounded-md border bg-muted/20 overflow-hidden">
+                            <div className="relative w-full aspect-video rounded-md border bg-muted/20 overflow-hidden">
                                 <Image src={block.content} alt="Previsualización" fill className="object-contain p-2" />
                                 <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 rounded-full z-10" onClick={() => onUpdate('content', '')}>
                                     <XCircle className="h-4 w-4" />
@@ -390,12 +390,12 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     useEffect(() => {
         const EditorActions = () => (
             <>
-                <Button asChild variant="outline" size="sm" className="flex-1">
+                <Button asChild variant="outline" size="sm" className="hidden sm:flex">
                     <Link href={`/courses/${courseId}`} target="_blank">
                         <Eye className="mr-2 h-4 w-4" /> Vista Previa
                     </Link>
                 </Button>
-                <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} size="sm" className="flex-1">
+                <Button onClick={handleSaveCourse} disabled={isSaving || !isDirty} size="sm">
                     {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                     {isSaving ? 'Guardando...' : 'Guardar'}
                 </Button>
@@ -646,7 +646,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     return (
         <div className="space-y-6 pb-24 md:pb-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 <div className="lg:col-span-2 space-y-6">
                     <Card>
                         <CardHeader><CardTitle>Información General</CardTitle><CardDescription>Detalles básicos y descripción.</CardDescription></CardHeader>
@@ -726,13 +726,16 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                            
                             <div className="space-y-2">
                                 <Label>Imagen de Portada</Label>
-                                <UploadArea onFileSelect={(file) => handleFileChange({ target: { files: [file] } } as any)} disabled={isSaving || isUploadingImage} />
-                                {isUploadingImage && <Progress value={uploadProgress} className="mt-2" />}
-                                {course.imageUrl && (
+                                {course.imageUrl ? (
                                     <div className="relative aspect-video w-full rounded-md border overflow-hidden p-2 bg-muted/20 mt-2">
                                         <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-contain p-2" onError={() => updateCourseField('imageUrl', null)} data-ai-hint="online course" quality={100} />
                                         <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 rounded-full h-7 w-7" onClick={() => updateCourseField('imageUrl', null)} disabled={isSaving || isUploadingImage}><XCircle className="h-4 w-4" /></Button>
                                     </div>
+                                ) : (
+                                    <>
+                                        <UploadArea onFileSelect={(file) => handleFileChange({ target: { files: [file] } } as any)} disabled={isSaving || isUploadingImage} />
+                                        {isUploadingImage && <Progress value={uploadProgress} className="mt-2" />}
+                                    </>
                                 )}
                             </div>
                         </CardContent>
