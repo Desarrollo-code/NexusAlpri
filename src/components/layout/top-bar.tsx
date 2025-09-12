@@ -10,12 +10,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
 import { useAuth } from "@/contexts/auth-context";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import type { Notification } from "@/types";
+import { useEffect, useState, useMemo } from "react";
+import type { Notification, NavItem } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useTitle } from "@/contexts/title-context";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getNavItemsForRole } from "@/lib/nav-items";
+import { GradientIcon } from "../ui/gradient-icon";
 
 const timeSince = (date: Date): string => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -35,11 +37,32 @@ const timeSince = (date: Date): string => {
 export const TopBar = () => {
     const { toggleSidebar, isCollapsed } = useSidebar();
     const { pageTitle, headerActions, showBackButton } = useTitle();
+    const { user } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
     const isMobile = useIsMobile();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const { toast } = useToast();
+
+    // --- LÓGICA PARA OBTENER EL ÍCONO DE LA PÁGINA ACTUAL ---
+    const currentPageIcon = useMemo(() => {
+        if (!user?.role) return null;
+        const navItems = getNavItemsForRole(user.role);
+        
+        const findItem = (items: NavItem[]): NavItem | undefined => {
+            for (const item of items) {
+                if (item.path && pathname.startsWith(item.path) && item.path !== '/') return item;
+                if (item.children) {
+                    const found = findItem(item.children);
+                    if (found) return found;
+                }
+            }
+        };
+        const currentItem = findItem(navItems);
+        return currentItem?.icon || null;
+    }, [pathname, user?.role]);
+
 
     useEffect(() => {
         const fetchNotifications = async () => {
@@ -96,12 +119,13 @@ export const TopBar = () => {
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                  )}
-                 {showBackButton && (
+                 {showBackButton && isMobile && (
                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4"/>
                         <span className="sr-only">Volver</span>
                     </Button>
                  )}
+                {isMobile && currentPageIcon && <GradientIcon icon={currentPageIcon} isActive={true} />}
                  <h1 className="text-xl font-semibold truncate">{pageTitle}</h1>
             </div>
 
