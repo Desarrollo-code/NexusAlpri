@@ -53,13 +53,13 @@ export default async function AboutPage() {
                   NexusAlpri nació de la necesidad de una plataforma de e-learning corporativa que fuera a la vez potente y fácil de usar. Creemos que la formación continua es el motor del éxito organizacional y nuestra misión es proporcionar las herramientas para hacerlo posible.
                 </p>
               </div>
-              <div className="mx-auto aspect-video overflow-hidden rounded-xl sm:w-full relative shadow-2xl p-2 bg-slate-100">
+              <div className="mx-auto aspect-video overflow-hidden rounded-xl sm:w-full relative shadow-2xl bg-slate-100">
                 <Image
                   src={aboutImageUrl!}
                   alt="About Us"
                   fill
                   quality={100}
-                  className="object-contain"
+                  className="object-cover"
                   data-ai-hint="team collaboration"
                 />
               </div>
