@@ -224,7 +224,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
                 case 'FILE': 
                     if (block.content && isImageFile) {
                         return (
-                            <div className="relative w-full aspect-video rounded-md border bg-muted/20 overflow-hidden">
+                            <div className="relative w-full h-48 rounded-md border bg-muted/20 overflow-hidden">
                                 <Image src={block.content} alt="Previsualización" fill className="object-contain p-2" />
                                 <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 rounded-full z-10" onClick={() => onUpdate('content', '')}>
                                     <XCircle className="h-4 w-4" />
@@ -1023,4 +1023,5 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
         </Dialog>
     )
 };
+
 
