@@ -195,7 +195,6 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
         const { toast } = useToast();
 
         const handleFileSelect = async (file: File | null) => {
-            console.log("[DEBUG] Archivo seleccionado en handleFileSelect:", file);
             if (!file) return;
 
             setIsFileUploading(true);
@@ -206,11 +205,9 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
             
             try {
                 const result = await uploadWithProgress('/api/upload/lesson-file', formData, setFileUploadProgress);
-                console.log("[DEBUG] Resultado de la subida:", result);
                 onUpdate('content', result.url);
                 toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
             } catch (err) {
-                 console.error("[DEBUG] Error en la subida:", err);
                  toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
             } finally {
                 setIsFileUploading(false);
@@ -219,8 +216,6 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
 
         const renderBlockContent = () => {
             const isImageFile = block.content && /\.(jpg|jpeg|png|gif|webp)$/i.test(block.content);
-            
-            console.log(`[DEBUG] Renderizando bloque de contenido. URL: ${block.content}`);
             
             switch(block.type) {
                 case 'TEXT': return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." disabled={isSaving} />;
@@ -736,7 +731,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                 <Label>Imagen de Portada</Label>
                                 {course.imageUrl && !isUploadingImage ? (
                                     <div className="relative aspect-video w-full rounded-md border overflow-hidden p-2 bg-muted/20 mt-2">
-                                        <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-contain p-2" onError={() => updateCourseField('imageUrl', null)} data-ai-hint="online course" quality={100} />
+                                        <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-contain p-2" onError={() => updateCourseField('imageUrl', null)} />
                                         <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 rounded-full h-7 w-7" onClick={() => updateCourseField('imageUrl', null)} disabled={isSaving || isUploadingImage}><XCircle className="h-4 w-4" /></Button>
                                     </div>
                                 ) : (
