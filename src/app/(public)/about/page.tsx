@@ -38,7 +38,7 @@ export default async function AboutPage() {
   ];
 
   return (
-    <div className="flex-1 z-10 text-slate-800 space-y-12 md:space-y-16 w-full">
+    <div className="flex-1 z-10 text-slate-800 space-y-8 md:space-y-12 w-full">
         <section className="w-full">
           <div className="container px-4 md:px-6">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">

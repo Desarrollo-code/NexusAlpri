@@ -99,7 +99,7 @@ export default async function LandingPage() {
   ]
 
   return (
-      <div className="flex-1 z-10 text-slate-800 space-y-12 md:space-y-16 w-full">
+      <div className="flex-1 z-10 text-slate-800 space-y-8 md:space-y-12 w-full">
         <section className="w-full">
           <div className="container px-4 md:px-6">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
@@ -146,7 +146,7 @@ export default async function LandingPage() {
           </div>
         </section>
         
-        <section className="w-full bg-slate-50 py-4 md:py-10">
+        <section className="w-full bg-slate-50 py-8 md:py-12">
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -206,7 +206,7 @@ export default async function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full bg-slate-50 py-4 md:py-10">
+        <section className="w-full bg-slate-50 py-8 md:py-12">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -239,7 +239,7 @@ export default async function LandingPage() {
             </div>
         </section>
         
-         <section className="w-full text-center py-4 md:py-8">
+         <section className="w-full text-center py-8">
             <div className="container px-4 md:px-6">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">¿Listo para Empezar?</h2>
                  <p className="max-w-2xl mx-auto mt-4 text-slate-600 md:text-xl">
