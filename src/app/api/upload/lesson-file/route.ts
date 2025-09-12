@@ -4,7 +4,6 @@ import { supabaseAdmin } from '@/lib/supabase-client';
 import { getCurrentUser } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
-  // Verificación de sesión para proteger la ruta
   const session = await getCurrentUser();
   if (!session) {
     return NextResponse.json({ success: false, message: 'No autorizado.' }, { status: 401 });
@@ -14,14 +13,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, message: 'El cliente de administrador de Supabase no está configurado en el servidor.' }, { status: 500 });
   }
 
-  const data = await request.formData();
-  const file: File | null = data.get('file') as unknown as File;
-
-  if (!file) {
-    return NextResponse.json({ success: false, message: 'No se ha subido ningún archivo.' }, { status: 400 });
-  }
-
   try {
+    const data = await request.formData();
+    const file: File | null = data.get('file') as unknown as File;
+
+    if (!file) {
+      return NextResponse.json({ success: false, message: 'No se ha subido ningún archivo.' }, { status: 400 });
+    }
+
     const safeFileName = file.name.replace(/[^a-zA-Z0-9-_\.]/g, '_');
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
     const filename = `${uniqueSuffix}-${safeFileName}`;
