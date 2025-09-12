@@ -479,7 +479,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             return (
                 <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center">
                     <div className="relative aspect-video w-full max-w-4xl p-2">
-                        <Image src={block.content} alt={`Preview: ${selectedLesson?.title}`} fill className="object-contain" onError={(e) => { e.currentTarget.src="https://placehold.co/800x600/EEE/AAA?text=Imagen+no+disponible"; }} data-ai-hint="lesson file" />
+                        <Image src={block.content} alt={`Preview: ${selectedLesson?.title}`} fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson file" />
                     </div>
                 </div>
             );
