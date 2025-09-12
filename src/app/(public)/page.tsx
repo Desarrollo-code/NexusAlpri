@@ -45,17 +45,17 @@ const features = [
 
 const benefits = [
   {
-    icon: <BookOpen className="h-12 w-12 md:h-10 md:w-10 text-blue-600" />,
+    icon: <BookOpen className="h-12 w-12 text-blue-600" />,
     title: 'Para Estudiantes',
     description: 'Accede a tus cursos desde cualquier lugar, sigue tu progreso y obtén certificados al finalizar.',
   },
   {
-    icon: <UserCheck className="h-12 w-12 md:h-10 md:w-10 text-orange-500" />,
+    icon: <UserCheck className="h-12 w-12 text-orange-500" />,
     title: 'Para Instructores',
     description: 'Crea y gestiona tu contenido con una interfaz drag-and-drop y analiza el rendimiento de tus alumnos.',
   },
   {
-    icon: <Users className="h-12 w-12 md:h-10 md:w-10 text-blue-600" />,
+    icon: <Users className="h-12 w-12 text-blue-600" />,
     title: 'Para Administradores',
     description: 'Supervisa toda la actividad, gestiona usuarios y personaliza la plataforma a la medida de tu empresa.',
   },
@@ -99,10 +99,10 @@ export default async function LandingPage() {
   ]
 
   return (
-      <div className="flex-1 z-10 text-slate-800">
-        <section className="w-full py-12 md:py-20 lg:py-24">
+      <div className="flex-1 z-10 text-slate-800 space-y-16 md:space-y-20">
+        <section className="w-full">
           <div className="container px-4 md:px-6">
-            <div className="grid items-center gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
+            <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
                   <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-slate-900">
@@ -146,7 +146,7 @@ export default async function LandingPage() {
           </div>
         </section>
         
-        <section className="w-full py-12 md:py-16 bg-slate-50">
+        <section className="w-full bg-slate-50 py-12 md:py-16">
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -160,7 +160,7 @@ export default async function LandingPage() {
                     </div>
                 </div>
                 <div className="mx-auto grid max-w-5xl items-start gap-6 py-12 lg:grid-cols-3 lg:gap-8">
-                   {features.map((feature) => (
+                   {features.map((feature, index) => (
                      <div 
                         key={feature.title}
                         className="relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-white shadow-lg hover:shadow-xl hover:-translate-y-2 border"
@@ -178,7 +178,7 @@ export default async function LandingPage() {
             </div>
         </section>
 
-        <section className="w-full py-12 md:py-16">
+        <section className="w-full">
             <div className="container px-4 md:px-6">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                      <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-2xl">
@@ -239,7 +239,7 @@ export default async function LandingPage() {
             </div>
         </section>
         
-         <section className="w-full py-12 md:py-20 text-center">
+         <section className="w-full text-center">
             <div className="container px-4 md:px-6">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">¿Listo para Empezar?</h2>
                  <p className="max-w-2xl mx-auto mt-4 text-slate-600 md:text-xl">

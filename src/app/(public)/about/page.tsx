@@ -38,8 +38,8 @@ export default async function AboutPage() {
   ];
 
   return (
-    <>
-        <section className="w-full py-12 md:py-20 lg:py-24 z-10 text-slate-800">
+    <div className="flex-1 z-10 text-slate-800 space-y-16 md:space-y-20 w-full">
+        <section className="w-full">
           <div className="container px-4 md:px-6">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-2xl bg-slate-100 order-first lg:order-last">
@@ -67,7 +67,7 @@ export default async function AboutPage() {
           </div>
         </section>
 
-        <section className="w-full py-12 md:py-16 z-10 bg-slate-50 text-slate-800">
+        <section className="w-full py-12 md:py-16 bg-slate-50">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
@@ -97,6 +97,6 @@ export default async function AboutPage() {
             </div>
           </div>
         </section>
-    </>
+    </div>
   );
 }
