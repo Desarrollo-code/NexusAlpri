@@ -195,7 +195,9 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
         const { toast } = useToast();
 
         const handleFileSelect = async (file: File | null) => {
+            console.log("[DEBUG] Archivo seleccionado en handleFileSelect:", file);
             if (!file) return;
+
             setIsFileUploading(true);
             setFileUploadProgress(0);
             
@@ -204,9 +206,11 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
             
             try {
                 const result = await uploadWithProgress('/api/upload/lesson-file', formData, setFileUploadProgress);
+                console.log("[DEBUG] Resultado de la subida:", result);
                 onUpdate('content', result.url);
                 toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
             } catch (err) {
+                 console.error("[DEBUG] Error en la subida:", err);
                  toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
             } finally {
                 setIsFileUploading(false);
@@ -215,7 +219,9 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
 
         const renderBlockContent = () => {
             const isImageFile = block.content && /\.(jpg|jpeg|png|gif|webp)$/i.test(block.content);
-
+            
+            console.log(`[DEBUG] Renderizando bloque de contenido. URL: ${block.content}`);
+            
             switch(block.type) {
                 case 'TEXT': return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." disabled={isSaving} />;
                 case 'VIDEO': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;

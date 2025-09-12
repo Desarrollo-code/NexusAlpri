@@ -26,17 +26,24 @@ export async function POST(request: NextRequest) {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
     const filename = `${uniqueSuffix}-${safeFileName}`;
     
+    console.log(`[DEBUG] Intentando subir archivo a Supabase: '${filename}' en bucket 'lesson_files'`);
+
     const { data: uploadData, error } = await supabaseAdmin.storage
       .from('lesson_files')
       .upload(filename, file);
 
     if (error) {
+      console.error('[DEBUG] Error de Supabase al subir:', error);
       throw new Error(error.message);
     }
     
+    console.log('[DEBUG] Subida a Supabase exitosa. Path:', uploadData.path);
+
     const { data: publicUrlData } = supabaseAdmin.storage
       .from('lesson_files')
       .getPublicUrl(uploadData.path);
+    
+    console.log('[DEBUG] URL pública obtenida de Supabase:', publicUrlData.publicUrl);
       
     return NextResponse.json({ success: true, url: publicUrlData.publicUrl });
 
