@@ -68,11 +68,11 @@ export function EventList({ selectedDate, events, onEditEvent }: EventListProps)
   const isMobile = useIsMobile();
   
   const sortedEvents = React.useMemo(() => {
-    return [...events].filter(e => isSameDay(new Date(e.start), selectedDate)).sort((a, b) => {
+    return events.sort((a, b) => {
         if (a.allDay !== b.allDay) return a.allDay ? -1 : 1; // "Todo el día" primero
         return new Date(a.start).getTime() - new Date(b.start).getTime(); // Luego por hora
     });
-  }, [events, selectedDate]);
+  }, [events]);
 
   const dayOfWeek = format(selectedDate, "EEE", { locale: es }).toUpperCase();
   const dayOfMonth = format(selectedDate, "d", { locale: es });
