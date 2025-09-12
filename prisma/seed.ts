@@ -47,7 +47,8 @@ async function main() {
   // --- 2. USUARIOS ---
   console.log('Creando usuarios de prueba...');
   const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@nexus.com' }, update: {},
+    where: { email: 'admin@nexus.com' },
+    update: { password: hashedPassword }, // Forzar la actualización de la contraseña
     create: { email: 'admin@nexus.com', name: 'Admin Nexus', password: hashedPassword, role: UserRole.ADMINISTRATOR, isActive: true },
   });
   const instructorUser = await prisma.user.upsert({
@@ -68,7 +69,7 @@ async function main() {
   console.log('Creando contenido global...');
   await prisma.announcement.upsert({
     where: { id: 'clseedannouncement01' }, update: {},
-    create: { id: 'clseedannouncement01', title: '¡Bienvenid@ a la nueva plataforma de aprendizaje!', content: '<p>Estamos muy emocionados de lanzar esta nueva herramienta para potenciar tu desarrollo profesional.</p>', authorId: adminUser.id, audience: 'ALL' }
+    create: { id: 'clseedannouncement01', title: '¡Bienvenid@ a la nueva plataforma de aprendizaje!', content: '<p>Estamos muy emocionados de lanzar esta nueva herramienta para potenciar tu desarrollo profesional.</p>', authorId: adminUser.id, audience: 'ALL', priority: 'Normal' }
   });
   await prisma.calendarEvent.upsert({
       where: { id: 'clseedevent01' }, update: {},
