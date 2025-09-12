@@ -146,7 +146,7 @@ export default async function LandingPage() {
           </div>
         </section>
         
-        <section className="w-full bg-slate-50 py-8 md:py-12">
+        <section className="w-full bg-slate-50 py-4 md:py-10">
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -206,7 +206,7 @@ export default async function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full bg-slate-50 py-8 md:py-12">
+        <section className="w-full bg-slate-50 py-4 md:py-10">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
