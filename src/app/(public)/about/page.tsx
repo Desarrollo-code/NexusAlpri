@@ -58,6 +58,7 @@ export default async function AboutPage() {
                   src={aboutImageUrl!}
                   alt="About Us"
                   fill
+                  quality={100}
                   className="object-contain"
                   data-ai-hint="team collaboration"
                 />

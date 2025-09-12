@@ -196,7 +196,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
         <AuthFormContainer>
             <div className="text-center mb-6">
                  {settings?.logoUrl && (
-                    <Image src={settings.logoUrl} alt="Logo" width={64} height={64} className="mx-auto mb-4" />
+                    <Image src={settings.logoUrl} alt="Logo" width={64} height={64} className="mx-auto mb-4" quality={100} />
                  )}
                 <h1 className="text-3xl font-bold font-headline text-white">
                     {view === 'signIn' ? 'Bienvenido de Nuevo' : 'Únete a la Plataforma'}

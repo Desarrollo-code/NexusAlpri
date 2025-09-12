@@ -124,6 +124,7 @@ export function CourseCard({
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                     data-ai-hint="online course abstract"
+                    quality={100}
                     priority={priority}
                 />
                 <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-colors" />

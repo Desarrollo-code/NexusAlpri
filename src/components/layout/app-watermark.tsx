@@ -23,6 +23,7 @@ export default function AppWatermark() {
             className="opacity-50" 
             data-ai-hint="logo company" 
             priority 
+            quality={100}
             style={{ width: 'auto', height: 'auto' }} 
           />
         </div>

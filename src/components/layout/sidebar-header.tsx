@@ -24,7 +24,7 @@ export const SidebarHeader = () => {
          )}>
             {settings?.logoUrl ? 
               <div className="relative w-full h-full">
-                <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" className={cn("object-contain", isCollapsed ? 'p-1.5' : 'p-1')} />
+                <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" quality={100} className={cn("object-contain", isCollapsed ? 'p-1.5' : 'p-1')} />
               </div> 
               : <div className="w-full h-full rounded-md bg-muted" />
             }
