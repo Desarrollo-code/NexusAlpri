@@ -66,6 +66,8 @@ export const TopBar = () => {
 
 
     useEffect(() => {
+        if (!user) return; // No hacer fetch si no hay usuario
+
         const fetchNotifications = async () => {
             try {
                 const response = await fetch('/api/notifications');
@@ -81,7 +83,7 @@ export const TopBar = () => {
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 60000); // Poll every 60 seconds
         return () => clearInterval(interval);
-    }, []);
+    }, [user]); // Añadir user como dependencia
 
     const markAsRead = async (ids: string[] | 'all') => {
         try {
