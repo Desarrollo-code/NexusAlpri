@@ -1,58 +1,52 @@
 // src/lib/upload-with-progress.ts
+import { supabase } from '@/lib/supabase-client';
 
 /**
- * Sube un archivo a un endpoint de API usando XMLHttpRequest para poder
- * reportar el progreso de la subida.
- * @param url El endpoint de la API al que se subirá el archivo.
- * @param formData El objeto FormData que contiene el archivo.
+ * Sube un archivo directamente a un bucket de Supabase Storage con reporte de progreso.
+ * @param bucketName El nombre del bucket de Supabase (ej. 'avatars').
+ * @param file El archivo a subir.
  * @param onProgress Una función callback que se llama con el porcentaje de progreso.
- * @returns Una promesa que se resuelve con la respuesta JSON del servidor.
+ * @returns Una promesa que se resuelve con la URL pública del archivo subido.
  */
 export function uploadWithProgress(
-  url: string,
-  formData: FormData,
+  bucketName: string,
+  file: File,
   onProgress: (percentage: number) => void
 ): Promise<{ url: string }> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
+  return new Promise(async (resolve, reject) => {
+    
+    // Crear un nombre de archivo único para evitar colisiones
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9-_\.]/g, '_');
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+    const filePath = `${uniqueSuffix}-${safeFileName}`;
 
-    // Event listener para el progreso de la subida
-    xhr.upload.addEventListener("progress", (event) => {
-      if (event.lengthComputable) {
-        const percentage = Math.round((event.loaded * 100) / event.total);
-        onProgress(percentage);
-      }
-    });
+    const { data: uploadData, error } = await supabase.storage
+      .from(bucketName)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
 
-    // Event listener para cuando la petición se completa
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          if (response.success) {
-            resolve(response);
-          } else {
-            reject(new Error(response.message || 'El servidor devolvió un error.'));
-          }
-        } catch (e) {
-          reject(new Error('Respuesta inválida del servidor.'));
-        }
-      } else {
-        try {
-            const response = JSON.parse(xhr.responseText);
-            reject(new Error(response.message || `Error del servidor: ${xhr.statusText}`));
-        } catch(e) {
-             reject(new Error(`Error de comunicación con el servidor: ${xhr.status} ${xhr.statusText}`));
-        }
-      }
-    });
+    // Manejo de errores de Supabase
+    if (error) {
+      console.error('Supabase upload error:', error);
+      return reject(new Error(`Error de Supabase: ${error.message}`));
+    }
+    
+    // Obtener la URL pública del archivo subido
+    const { data: publicUrlData } = supabase.storage
+      .from(bucketName)
+      .getPublicUrl(uploadData.path);
+      
+    if (!publicUrlData) {
+        return reject(new Error('No se pudo obtener la URL pública del archivo.'));
+    }
 
-    // Event listener para errores de red
-    xhr.addEventListener("error", () => {
-      reject(new Error("Error de red durante la subida."));
-    });
+    // Simular progreso ya que el SDK v2 no lo soporta nativamente en el cliente.
+    // Una implementación más avanzada podría usar TUS para subidas reanudables y progreso real.
+    onProgress(50);
+    setTimeout(() => onProgress(100), 300);
 
-    xhr.open("POST", url, true);
-    xhr.send(formData);
+    resolve({ url: publicUrlData.publicUrl });
   });
 }

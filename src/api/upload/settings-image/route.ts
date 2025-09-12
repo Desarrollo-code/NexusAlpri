@@ -1,4 +1,4 @@
-// src/app/api/upload/avatar/route.ts
+// src/app/api/upload/settings-image/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { getCurrentUser } from '@/lib/auth';
@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   if (!session) {
     return NextResponse.json({ success: false, message: 'No autorizado.' }, { status: 401 });
   }
-
+  
   if (!supabaseAdmin) {
     return NextResponse.json({ success: false, message: 'El cliente de administrador de Supabase no está configurado en el servidor.' }, { status: 500 });
   }
@@ -22,30 +22,27 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Limpia el nombre del archivo para hacerlo seguro para Supabase
     const safeFileName = file.name.replace(/[^a-zA-Z0-9-_\.]/g, '_');
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
     const filename = `${uniqueSuffix}-${safeFileName}`;
 
     const { data: uploadData, error } = await supabaseAdmin.storage
-      .from('avatars')
+      .from('settings_images')
       .upload(filename, file);
 
     if (error) {
-      // El error de Supabase ahora será más detallado
       throw new Error(error.message);
     }
-
-    const { data: publicUrlData } = supabaseAdmin.storage
-      .from('avatars')
-      .getPublicUrl(uploadData.path);
     
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from('settings_images')
+      .getPublicUrl(uploadData.path);
+      
     return NextResponse.json({ success: true, url: publicUrlData.publicUrl });
 
   } catch (e) {
-    const errorMessage = e instanceof Error ? e.message : 'Error desconocido al subir el avatar.';
-    console.error('Error al procesar la subida del avatar:', e);
-    // Devolvemos el mensaje de error de Supabase al cliente para un mejor diagnóstico
+    const errorMessage = e instanceof Error ? e.message : 'Error desconocido.';
+    console.error('Error al procesar la subida de imagen de configuración:', e);
     return NextResponse.json({ success: false, message: `Error interno al guardar el archivo: ${errorMessage}` }, { status: 500 });
   }
 }

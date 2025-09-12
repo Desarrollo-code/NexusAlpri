@@ -1,4 +1,4 @@
-// src/app/api/upload/avatar/route.ts
+// src/app/api/upload/lesson-file/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { getCurrentUser } from '@/lib/auth';
@@ -22,30 +22,27 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Limpia el nombre del archivo para hacerlo seguro para Supabase
     const safeFileName = file.name.replace(/[^a-zA-Z0-9-_\.]/g, '_');
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
     const filename = `${uniqueSuffix}-${safeFileName}`;
-
+    
     const { data: uploadData, error } = await supabaseAdmin.storage
-      .from('avatars')
+      .from('lesson_files')
       .upload(filename, file);
 
     if (error) {
-      // El error de Supabase ahora será más detallado
       throw new Error(error.message);
     }
-
-    const { data: publicUrlData } = supabaseAdmin.storage
-      .from('avatars')
-      .getPublicUrl(uploadData.path);
     
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from('lesson_files')
+      .getPublicUrl(uploadData.path);
+      
     return NextResponse.json({ success: true, url: publicUrlData.publicUrl });
 
   } catch (e) {
-    const errorMessage = e instanceof Error ? e.message : 'Error desconocido al subir el avatar.';
-    console.error('Error al procesar la subida del avatar:', e);
-    // Devolvemos el mensaje de error de Supabase al cliente para un mejor diagnóstico
+    const errorMessage = e instanceof Error ? e.message : 'Error desconocido.';
+    console.error('Error al procesar la subida de archivo de lección:', e);
     return NextResponse.json({ success: false, message: `Error interno al guardar el archivo: ${errorMessage}` }, { status: 500 });
   }
 }

@@ -198,10 +198,9 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
             if (!file) return;
             setIsFileUploading(true);
             setFileUploadProgress(0);
-            const formData = new FormData();
-            formData.append('file', file);
             try {
-                const result = await uploadWithProgress('/api/upload/lesson-file', formData, setFileUploadProgress);
+                // Sube directamente a Supabase
+                const result = await uploadWithProgress('lesson_files', file, setFileUploadProgress);
                 onUpdate('content', result.url);
                 toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
             } catch (err) {
@@ -218,7 +217,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
                 case 'TEXT': return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." disabled={isSaving} />;
                 case 'VIDEO': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
                 case 'FILE': 
-                    if (isImageFile) {
+                    if (block.content && isImageFile) {
                         return (
                             <div className="relative w-full aspect-video rounded-md border bg-muted/20 overflow-hidden">
                                 <Image src={block.content} alt="Previsualización" fill className="object-contain p-2" />
@@ -232,7 +231,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
                         <div className="w-full space-y-2">
                             <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} />
                             {isFileUploading && <Progress value={fileUploadProgress} />}
-                            {block.content && (
+                            {block.content && !isImageFile && (
                                 <div className="text-xs text-muted-foreground flex items-center gap-2">
                                     <FileGenericIcon className="h-3 w-3" />
                                     <span className="truncate">URL actual: {block.content}</span>
@@ -599,14 +598,11 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
-            
             setIsUploadingImage(true);
             setUploadProgress(0);
 
             try {
-                const result = await uploadWithProgress('/api/upload/course-image', formData, setUploadProgress);
+                const result = await uploadWithProgress('course_images', file, setUploadProgress);
                 updateCourseField('imageUrl', result.url);
                 toast({ title: 'Imagen Subida', description: 'La imagen de portada se ha actualizado.'});
             } catch (err) {
