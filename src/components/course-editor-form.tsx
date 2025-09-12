@@ -728,14 +728,14 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                            
                             <div className="space-y-2">
                                 <Label>Imagen de Portada</Label>
-                                {course.imageUrl ? (
+                                {course.imageUrl && !isUploadingImage ? (
                                     <div className="relative aspect-video w-full rounded-md border overflow-hidden p-2 bg-muted/20 mt-2">
                                         <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-contain p-2" onError={() => updateCourseField('imageUrl', null)} data-ai-hint="online course" quality={100} />
                                         <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 rounded-full h-7 w-7" onClick={() => updateCourseField('imageUrl', null)} disabled={isSaving || isUploadingImage}><XCircle className="h-4 w-4" /></Button>
                                     </div>
                                 ) : (
                                     <>
-                                        <UploadArea onFileSelect={(file) => handleFileChange({ target: { files: [file] } } as any)} disabled={isSaving || isUploadingImage} />
+                                        <UploadArea onFileSelect={(file) => { if(file) handleFileChange({ target: { files: [file] } } as any) }} disabled={isSaving || isUploadingImage} />
                                         {isUploadingImage && <Progress value={uploadProgress} className="mt-2" />}
                                     </>
                                 )}
