@@ -46,6 +46,7 @@ import { QuizAnalyticsView } from '@/components/analytics/quiz-analytics-view';
 import { Calendar } from '@/components/ui/calendar';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { UploadArea } from '@/components/ui/upload-area';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
 
 
 // === TIPOS E INTERFACES ===
@@ -200,12 +201,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
             const formData = new FormData();
             formData.append('file', file);
             try {
-                const res = await fetch('/api/upload/lesson-file', {
-                    method: 'POST',
-                    body: formData,
-                });
-                if (!res.ok) throw new Error('Error al subir el archivo.');
-                const result = await res.json();
+                const result = await uploadWithProgress('/api/upload/lesson-file', formData, setFileUploadProgress);
                 onUpdate('content', result.url);
                 toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
             } catch (err) {
@@ -610,12 +606,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             setUploadProgress(0);
 
             try {
-                const res = await fetch('/api/upload/course-image', {
-                    method: 'POST',
-                    body: formData,
-                });
-                if (!res.ok) throw new Error('Error al subir la imagen.');
-                const result = await res.json();
+                const result = await uploadWithProgress('/api/upload/course-image', formData, setUploadProgress);
                 updateCourseField('imageUrl', result.url);
                 toast({ title: 'Imagen Subida', description: 'La imagen de portada se ha actualizado.'});
             } catch (err) {
