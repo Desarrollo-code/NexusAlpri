@@ -159,7 +159,7 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
                   <CardContent className="h-[350px] p-0 pr-4">
                    <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
                     <ResponsiveContainer>
-                        <AreaChart data={stats.courseActivity} margin={{ top: 20, right: 20, bottom: 50, left: 0 }}>
+                        <AreaChart data={stats.userRegistrationTrend} margin={{ top: 20, right: 20, bottom: 50, left: 0 }}>
                            <defs>
                               <linearGradient id="colorNewCourses" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor="var(--color-newCourses)" stopOpacity={0.8}/>
@@ -508,7 +508,12 @@ export default function DashboardPage() {
 
         const allData = await Promise.all(dataPromises);
 
-        const announcementsJson = allData[0].error ? { announcements: [] } : allData[0];
+        // Handle potential error in the first promise (announcements)
+        if (allData[0] && allData[0].error) {
+            throw new Error(`Failed to fetch announcements: ${allData[0].message}`);
+        }
+
+        const announcementsJson = allData[0];
         const announcementsData = announcementsJson.announcements || [];
 
         const dashboardPayload: DashboardData = {
@@ -528,7 +533,7 @@ export default function DashboardPage() {
         let roleSpecificData = allData[1];
         if (roleSpecificData && roleSpecificData.error) {
            console.warn(`Failed to fetch role-specific data: ${roleSpecificData.message}`);
-           roleSpecificData = null; // Nullify if there was an error
+           throw new Error(`Failed to fetch role-specific data: ${roleSpecificData.message}`);
         }
 
         if (user.role === 'ADMINISTRATOR') {

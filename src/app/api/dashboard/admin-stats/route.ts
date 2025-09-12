@@ -22,6 +22,32 @@ export async function GET(req: NextRequest) {
     const startDate = startDateParam ? startOfDay(parseISO(startDateParam)) : startOfDay(subDays(endDate, 29));
 
     try {
+        // --- Correction: Separate the problematic query ---
+        const topStudentsByCompletionData = await prisma.user.findMany({
+            where: {
+                role: 'STUDENT',
+                courseProgress: {
+                    some: {
+                        progressPercentage: { gte: 99 }
+                    }
+                }
+            },
+            include: {
+                _count: {
+                    select: {
+                        courseProgress: {
+                            where: { progressPercentage: { gte: 99 } }
+                        }
+                    }
+                }
+            }
+        });
+        
+        const sortedTopStudents = topStudentsByCompletionData
+            .sort((a, b) => (b._count?.courseProgress || 0) - (a._count?.courseProgress || 0))
+            .slice(0, 5);
+
+
         const [
             totalUsersResult,
             totalCoursesResult,
@@ -35,7 +61,6 @@ export async function GET(req: NextRequest) {
             topCoursesByEnrollment,
             courseCompletions,
             topStudentsByEnrollment,
-            topStudentsByCompletion,
             topInstructorsByCourses,
         ] = await prisma.$transaction([
             prisma.user.count(),
@@ -79,12 +104,6 @@ export async function GET(req: NextRequest) {
                 orderBy: { enrollments: { _count: 'desc' } },
                 take: 5,
                 select: { id: true, name: true, avatar: true, _count: { select: { enrollments: true } } }
-            }),
-            prisma.user.findMany({
-                where: { role: 'STUDENT' },
-                orderBy: { courseProgress: { _count: 'desc' } },
-                take: 5,
-                select: { id: true, name: true, avatar: true, _count: { select: { courseProgress: true } } }
             }),
             prisma.user.findMany({
                 where: { role: 'INSTRUCTOR' },
@@ -147,7 +166,7 @@ export async function GET(req: NextRequest) {
             topCoursesByCompletion,
             lowestCoursesByCompletion,
             topStudentsByEnrollment: topStudentsByEnrollment.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, value: u._count.enrollments })),
-            topStudentsByCompletion: topStudentsByCompletion.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, value: u._count.courseProgress })),
+            topStudentsByCompletion: sortedTopStudents.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, value: u._count.courseProgress })),
             topInstructorsByCourses: topInstructorsByCourses.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, value: u._count.courses })),
         };
 
