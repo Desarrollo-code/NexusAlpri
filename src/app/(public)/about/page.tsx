@@ -42,6 +42,16 @@ export default async function AboutPage() {
         <section className="w-full py-12 md:py-24 lg:py-32 z-10 text-slate-800">
           <div className="container px-4 md:px-6">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
+               <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-2xl bg-slate-100 order-first lg:order-last">
+                <Image
+                  src={aboutImageUrl!}
+                  alt="About Us"
+                  fill
+                  quality={100}
+                  className="object-cover"
+                  data-ai-hint="team collaboration"
+                />
+              </div>
               <div className="space-y-4">
                 <div className="inline-block rounded-lg bg-blue-100 text-blue-800 px-3 py-1 text-sm font-semibold">
                   Nuestra Misión
@@ -52,16 +62,6 @@ export default async function AboutPage() {
                 <p className="max-w-[600px] text-slate-600 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                   NexusAlpri nació de la necesidad de una plataforma de e-learning corporativa que fuera a la vez potente y fácil de usar. Creemos que la formación continua es el motor del éxito organizacional y nuestra misión es proporcionar las herramientas para hacerlo posible.
                 </p>
-              </div>
-              <div className="mx-auto aspect-video overflow-hidden rounded-xl sm:w-full relative shadow-2xl bg-slate-100">
-                <Image
-                  src={aboutImageUrl!}
-                  alt="About Us"
-                  fill
-                  quality={100}
-                  className="object-cover"
-                  data-ai-hint="team collaboration"
-                />
               </div>
             </div>
           </div>
