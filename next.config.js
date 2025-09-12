@@ -7,7 +7,6 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    unoptimized: false,
     remotePatterns: [
       {
         protocol: 'https',
@@ -16,12 +15,12 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'izefimwyuayfvektsstg.supabase.co',
-        pathname: '/storage/v1/object/public/**', // This is the crucial line.
+        pathname: '/storage/v1/object/public/**',
       },
-        {
+      {
         protocol: 'https',
         hostname: 'i.ytimg.com',
-      }
+      },
     ],
   },
   api: {
