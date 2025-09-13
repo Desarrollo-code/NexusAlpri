@@ -1,4 +1,3 @@
-
 import type {Config} from 'tailwindcss';
 
 const config: Config = {
@@ -86,11 +85,11 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
-         event: {
-          blue: 'hsl(var(--event-blue))',
-          green: 'hsl(var(--event-green))',
-          red: 'hsl(var(--event-red))',
-          orange: 'hsl(var(--event-orange))',
+        event: {
+          blue: '#3b82f6',
+          green: '#22c55e',
+          red: '#ef4444',
+          orange: '#f97316',
         },
         sidebar: {
           background: 'hsl(var(--sidebar-background))',

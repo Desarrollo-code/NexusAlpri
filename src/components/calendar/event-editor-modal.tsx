@@ -246,19 +246,24 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
                   <div className="sm:col-span-2"><Label htmlFor="event-description">Descripción</Label><Textarea id="event-description" value={formDescription} onChange={e => setFormDescription(e.target.value)} disabled={isSaving} rows={3} /></div>
                   <div className="sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4"><div className="flex items-center space-x-2 flex-shrink-0"><Switch id="all-day" checked={formAllDay} onCheckedChange={setFormAllDay} disabled={isSaving} /><Label htmlFor="all-day">Todo el día</Label></div>{!formAllDay && (<div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow w-full"><div><Label htmlFor="start-date">Inicio</Label><Input id="start-date" type="datetime-local" value={formStartDate} onChange={e => setFormStartDate(e.target.value)} required disabled={isSaving} /></div><div><Label htmlFor="end-date">Fin</Label><Input id="end-date" type="datetime-local" value={formEndDate} onChange={e => setFormEndDate(e.target.value)} required disabled={isSaving} /></div></div>)}</div>
                   <div className="sm:col-span-2 space-y-2">
-                    <Label>Color del Evento</Label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-2 mt-2 justify-start">
-                      {eventColors.map(({ value, color, label }) => (
-                        <div key={value} className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => setFormColor(value)}>
-                           <div className={cn("relative h-8 w-8 rounded-full transition-all duration-200 ease-in-out", color)}>
-                            {formColor === value && (
-                                <div className="absolute inset-0 rounded-full border-2 border-primary ring-2 ring-offset-2 ring-primary bg-white/30" />
-                            )}
+                      <Label>Color del Evento</Label>
+                      <RadioGroup value={formColor} onValueChange={setFormColor} className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-2 mt-2 justify-start">
+                        {eventColors.map(({ value, color, label }) => (
+                          <div key={value}>
+                             <RadioGroupItem value={value} id={`color-${value}`} className="sr-only" />
+                             <Label 
+                                htmlFor={`color-${value}`}
+                                className={cn(
+                                    "flex flex-col items-center justify-center rounded-md border-2 p-3 cursor-pointer transition-colors",
+                                    formColor === value ? "border-primary ring-2 ring-primary" : "border-muted-foreground/20 hover:border-primary/50"
+                                )}
+                             >
+                                <div className={cn("w-5 h-5 rounded-full mb-1.5", color)} />
+                                <span className="text-xs font-medium">{label}</span>
+                             </Label>
                           </div>
-                          <span className={cn("text-xs text-center", formColor === value ? "text-primary font-semibold" : "text-muted-foreground")}>{label}</span>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </RadioGroup>
                   </div>
                   <div className="sm:col-span-2"><Separator /></div>
                   <div className="sm:col-span-2 space-y-2">
