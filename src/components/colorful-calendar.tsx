@@ -140,9 +140,8 @@ const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect
             </div>
              <div className="mt-1 space-y-1">
                 {singleDayEvents.slice(0, maxLanes).map(event => (
-                     <div key={event.id} onClick={(e) => { e.stopPropagation(); onEventClick(event); }} className="text-xs flex items-start gap-1.5 p-1 rounded-md text-foreground truncate cursor-pointer hover:bg-muted">
-                        <div className={cn("h-2 w-2 rounded-full mt-1 shrink-0", getEventColorClass(event.color))} />
-                        <span className="truncate flex-grow">{event.title}</span>
+                     <div key={event.id} onClick={(e) => { e.stopPropagation(); onEventClick(event); }} className={cn("text-xs flex items-start gap-1.5 p-1 rounded-md text-foreground truncate cursor-pointer", getEventColorClass(event.color))}>
+                        <span className="truncate flex-grow text-white font-semibold">{event.title}</span>
                      </div>
                 ))}
             </div>
@@ -229,8 +228,10 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                                   key={event.id}
                                   onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
                                   className={cn(
-                                      "pointer-events-auto cursor-pointer px-2 text-xs font-semibold flex items-center truncate transition-colors h-6 rounded-md text-white",
-                                      getEventColorClass(event.color)
+                                      "pointer-events-auto cursor-pointer px-2 text-xs font-semibold flex items-center truncate transition-colors h-6 text-white",
+                                      getEventColorClass(event.color),
+                                      event.startsInWeek ? "rounded-l-md" : "",
+                                      event.endsInWeek ? "rounded-r-md" : ""
                                   )}
                                   style={{
                                       gridColumnStart: event.startCol,
