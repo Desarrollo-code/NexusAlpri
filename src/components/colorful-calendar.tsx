@@ -23,21 +23,10 @@ const getEventColorClass = (color?: string, type: 'bg' | 'border' | 'text' = 'bg
 };
 
 
-interface DayCellProps {
-  day: Date;
-  month: Date;
-  selectedDay: Date;
-  onDateSelect: (date: Date) => void;
-  onEventClick: (event: CalendarEvent) => void;
-  eventsForDay: CalendarEvent[];
-}
-
-const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect, onEventClick, eventsForDay }) => {
+const DayCell = ({ day, month, selectedDay, onDateSelect }: { day: Date, month: Date, selectedDay: Date, onDateSelect: (d: Date) => void }) => {
     const today = new Date();
     const dayKey = format(day, 'yyyy-MM-dd');
     const holiday = isHoliday(day, 'CO');
-
-    const moreCount = eventsForDay.length > 2 ? eventsForDay.length - 2 : 0;
     
     return (
         <div
@@ -49,37 +38,121 @@ const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect
                 "min-h-[120px]"
             )}
         >
-            <div className="flex justify-between items-center mb-1 flex-shrink-0">
-                <time
-                    dateTime={dayKey}
-                    className={cn("flex items-center justify-center text-xs sm:text-sm rounded-full h-7 w-7",
-                        isSameDay(day, today) && "bg-primary text-primary-foreground font-bold",
-                        holiday && "text-red-500 font-semibold"
-                    )}
-                >
-                    {format(day, 'd')}
-                </time>
-            </div>
-             <div className="mt-1 space-y-1">
-                {eventsForDay.slice(0, 2).map(event => (
-                     <div 
-                        key={event.id} 
-                        onClick={(e) => { e.stopPropagation(); onEventClick(event); }} 
-                        className={cn(
-                            "text-xs p-1 rounded-md truncate cursor-pointer font-semibold border",
-                            getEventColorClass(event.color, 'bg'),
-                            getEventColorClass(event.color, 'border'),
-                            getEventColorClass(event.color, 'text'),
-                        )}
-                    >
-                        {event.title}
-                     </div>
+            <time
+                dateTime={dayKey}
+                className={cn("flex items-center justify-center text-xs sm:text-sm rounded-full h-7 w-7",
+                    isSameDay(day, today) && "bg-primary text-primary-foreground font-bold",
+                    holiday && "text-red-500 font-semibold"
+                )}
+            >
+                {format(day, 'd')}
+            </time>
+        </div>
+    );
+}
+
+const WeekRow = ({ week, month, events, selectedDay, onDateSelect, onEventClick }: { week: Date[], month: Date, events: CalendarEvent[], selectedDay: Date, onDateSelect: (d:Date)=>void, onEventClick: (e:CalendarEvent)=>void }) => {
+    const eventsInWeek = events.filter(event => 
+        isBefore(new Date(event.start), endOfWeek(week[0], {weekStartsOn: 0})) && 
+        isAfter(new Date(event.end), startOfWeek(week[0], {weekStartsOn: 0}))
+    );
+    
+    const singleDayEvents = eventsInWeek.filter(e => differenceInCalendarDays(new Date(e.end), new Date(e.start)) === 0);
+    const multiDayEvents = eventsInWeek.filter(e => differenceInCalendarDays(new Date(e.end), new Date(e.start)) > 0);
+
+    const eventsByDay = React.useMemo(() => {
+        const map = new Map<string, CalendarEvent[]>();
+        singleDayEvents.forEach(event => {
+            const dayKey = format(new Date(event.start), 'yyyy-MM-dd');
+            if (!map.has(dayKey)) map.set(dayKey, []);
+            map.get(dayKey)!.push(event);
+        });
+        return map;
+    }, [singleDayEvents]);
+
+    const multiDayLanes = React.useMemo(() => {
+        const lanes: (CalendarEvent | null)[][] = [];
+        const sortedMultiDay = multiDayEvents.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+
+        for (const event of sortedMultiDay) {
+            let placed = false;
+            for (const lane of lanes) {
+                if (lane.every(e => !e || isAfter(new Date(event.start), new Date(e.end)) || isBefore(new Date(event.end), new Date(e.start)))) {
+                    lane.push(event);
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) {
+                lanes.push([event]);
+            }
+        }
+        return lanes;
+    }, [multiDayEvents]);
+
+    return (
+        <div className="grid grid-cols-7 relative">
+            {week.map((day) => {
+                 const dayKey = format(day, 'yyyy-MM-dd');
+                 const dayEvents = eventsByDay.get(dayKey) || [];
+                 return (
+                    <div key={day.toString()} className="relative">
+                        <DayCell day={day} month={month} selectedDay={selectedDay} onDateSelect={onDateSelect} />
+                        <div className="absolute top-10 left-0 right-0 p-1 space-y-1">
+                             {dayEvents.slice(0, 2).map(event => (
+                                 <div 
+                                    key={event.id}
+                                    onClick={() => onEventClick(event)}
+                                    className={cn("text-xs p-1 rounded-md truncate cursor-pointer font-semibold border", getEventColorClass(event.color, 'bg'), getEventColorClass(event.color, 'border'), getEventColorClass(event.color, 'text'))}
+                                >
+                                    {event.title}
+                                </div>
+                            ))}
+                             {dayEvents.length > 2 && <div className="text-xs font-semibold text-primary mt-auto pl-1">+ {dayEvents.length - 2} más</div>}
+                        </div>
+                    </div>
+                );
+            })}
+             <div className="absolute top-10 left-0 right-0 h-full">
+                {multiDayLanes.map((lane, laneIndex) => (
+                     <div key={laneIndex} className="absolute w-full" style={{ top: `${laneIndex * 28}px` }}>
+                        {lane.map(event => {
+                             if (!event) return null;
+                            const eventStart = new Date(event.start);
+                            const eventEnd = new Date(event.end);
+                            const weekStart = week[0];
+                            const weekEnd = week[6];
+
+                            const startDay = getDay(max([eventStart, weekStart]));
+                            const endDay = getDay(min([eventEnd, weekEnd]));
+                            
+                            const span = endDay - startDay + 1;
+
+                            return (
+                                <div
+                                    key={event.id}
+                                    onClick={() => onEventClick(event)}
+                                    className={cn(
+                                        "absolute h-6 px-2 text-xs font-semibold flex items-center truncate cursor-pointer",
+                                        getEventColorClass(event.color, 'bg'),
+                                        getEventColorClass(event.color, 'text')
+                                    )}
+                                    style={{
+                                        left: `calc(${(100 / 7) * startDay}% + 2px)`,
+                                        width: `calc(${(100 / 7) * span}% - 4px)`,
+                                        borderTopLeftRadius: isSameDay(eventStart, week[startDay]) ? '0.375rem' : '0',
+                                        borderBottomLeftRadius: isSameDay(eventStart, week[startDay]) ? '0.375rem' : '0',
+                                        borderTopRightRadius: isSameDay(eventEnd, week[endDay]) ? '0.375rem' : '0',
+                                        borderBottomRightRadius: isSameDay(eventEnd, week[endDay]) ? '0.375rem' : '0',
+                                    }}
+                                >
+                                    {event.title}
+                                </div>
+                            )
+                        })}
+                    </div>
                 ))}
             </div>
-
-             {moreCount > 0 && (
-                <div className="text-xs font-semibold text-primary mt-auto pl-1">+ {moreCount} más</div>
-            )}
         </div>
     );
 };
@@ -107,23 +180,6 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
     return weeksArray;
   }, [month]);
 
-  const eventsByDay = React.useMemo(() => {
-    const map = new Map<string, CalendarEvent[]>();
-    events.forEach(event => {
-        const eventStart = new Date(event.start);
-        const eventEnd = new Date(event.end);
-        const dateRange = eachDayOfInterval({ start: eventStart, end: eventEnd });
-        dateRange.forEach(date => {
-            const dayKey = format(date, 'yyyy-MM-dd');
-            if (!map.has(dayKey)) {
-                map.set(dayKey, []);
-            }
-            map.get(dayKey)!.push(event);
-        })
-    });
-    return map;
-  }, [events]);
-
   return (
     <div className={cn("flex flex-col h-full bg-card border-l border-t rounded-lg", className)}>
         <div className="grid grid-cols-7 flex-shrink-0">
@@ -133,25 +189,16 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
         </div>
         <div className="flex-grow grid grid-cols-1" style={{ gridTemplateRows: `repeat(${weeks.length}, minmax(0, 1fr))` }}>
             {weeks.map((week, weekIndex) => (
-                    <div key={weekIndex} className="grid grid-cols-7 relative">
-                         {week.map((day) => {
-                             const dayKey = format(day, 'yyyy-MM-dd');
-                             const eventsForDay = eventsByDay.get(dayKey) || [];
-                             return (
-                                 <DayCell
-                                     key={day.toString()}
-                                     day={day}
-                                     month={month}
-                                     selectedDay={selectedDay}
-                                     onDateSelect={onDateSelect}
-                                     onEventClick={onEventClick}
-                                     eventsForDay={eventsForDay}
-                                 />
-                             )
-                         })}
-                    </div>
-                )
-            )}
+                <WeekRow 
+                   key={weekIndex}
+                   week={week}
+                   month={month}
+                   events={events}
+                   selectedDay={selectedDay}
+                   onDateSelect={onDateSelect}
+                   onEventClick={onEventClick}
+                />
+            ))}
         </div>
     </div>
   );
