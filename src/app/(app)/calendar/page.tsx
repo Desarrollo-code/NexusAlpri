@@ -325,7 +325,7 @@ export default function CalendarPage() {
         </header>
 
         <main className={cn("flex-grow min-h-0", isMobile ? 'flex flex-col gap-4' : 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6')}>
-          <div className={cn("md:col-span-2 lg:col-span-3 flex flex-col min-h-0", isMobile ? "" : "bg-card p-2 sm:p-4 border rounded-lg shadow-sm")} id="calendar-main-view">
+          <div className={cn("md:col-span-2 lg:col-span-3 flex flex-col min-h-0", isMobile ? "" : "p-0")} id="calendar-main-view">
             {isLoading ? (
               <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
             ) : error ? (
@@ -361,7 +361,7 @@ export default function CalendarPage() {
                 </>
             )}
           </div>
-          <aside className="md:col-span-1 lg:col-span-1 md:bg-card md:p-4 md:border rounded-lg md:shadow-sm" id="calendar-event-list">
+          <aside className="md:col-span-1 lg:col-span-1 md:bg-card md:p-0 md:border rounded-lg md:shadow-sm" id="calendar-event-list">
             <EventList 
               selectedDate={selectedDate}
               events={eventsForSelectedDate}
