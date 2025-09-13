@@ -8,6 +8,8 @@ import { es } from 'date-fns/locale';
 import type { CalendarEvent } from '@/types';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { Popover, PopoverTrigger, PopoverContent } from '../ui/popover';
+import { Button } from '../ui/button';
 
 const getEventColorClass = (color?: string): string => {
   const colorMap: Record<string, string> = {
@@ -27,6 +29,40 @@ interface DatePickerSidebarProps {
     onEventClick: (event: CalendarEvent) => void;
 }
 
+const DateDisplay = ({ date, onDateSelect }: { date: Date, onDateSelect: (d: Date) => void }) => {
+    const dayOfWeek = format(date, "EEE", { locale: es }).toUpperCase();
+    const dayOfMonth = format(date, "d", { locale: es });
+    const [isOpen, setIsOpen] = React.useState(false);
+
+    const handleDateSelect = (day: Date | undefined) => {
+        if (day) {
+            onDateSelect(day);
+            setIsOpen(false);
+        }
+    }
+
+    return (
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+            <PopoverTrigger asChild>
+                <div className="flex flex-col items-center justify-center h-28 w-28 rounded-2xl bg-primary text-primary-foreground shadow-lg cursor-pointer transform hover:scale-105 transition-transform mx-auto">
+                    <span className="text-sm font-bold tracking-widest text-primary-foreground/70">{dayOfWeek}</span>
+                    <span className="text-5xl font-bold leading-tight">{dayOfMonth}</span>
+                </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+                 <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={handleDateSelect}
+                    locale={es}
+                    showOutsideDays
+                    initialFocus
+                 />
+            </PopoverContent>
+        </Popover>
+    )
+}
+
 export function DatePickerSidebar({ selectedDate, onDateSelect, events, onEventClick }: DatePickerSidebarProps) {
 
     const eventsForSelectedDate = useMemo(() => {
@@ -37,16 +73,8 @@ export function DatePickerSidebar({ selectedDate, onDateSelect, events, onEventC
     
     return (
         <Card className="h-full flex flex-col">
-            <div className="p-2 border-b">
-                 <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(day) => day && onDateSelect(day)}
-                    className="p-0"
-                    locale={es}
-                    showOutsideDays
-                    events={events}
-                 />
+            <div className="p-4 border-b">
+                 <DateDisplay date={selectedDate} onDateSelect={onDateSelect} />
             </div>
             <CardContent className="p-4 flex-grow flex flex-col min-h-0">
                 <h3 className="font-semibold text-sm mb-3">
@@ -79,4 +107,3 @@ export function DatePickerSidebar({ selectedDate, onDateSelect, events, onEventC
         </Card>
     );
 }
-
