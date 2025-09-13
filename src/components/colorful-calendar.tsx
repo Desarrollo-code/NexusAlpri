@@ -10,16 +10,14 @@ import { isHoliday } from '@/lib/holidays';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 
-const getEventColorClass = (color?: string, type: 'bg' | 'border' | 'text' = 'bg'): string => {
-  const colorMap: Record<string, Record<string, string>> = {
-    blue: { bg: 'bg-event-blue/20', border: 'border-event-blue', text: 'text-event-blue' },
-    green: { bg: 'bg-event-green/20', border: 'border-event-green', text: 'text-event-green' },
-    red: { bg: 'bg-event-red/20', border: 'border-event-red', text: 'text-event-red' },
-    orange: { bg: 'bg-event-orange/20', border: 'border-event-orange', text: 'text-event-orange' },
-    primary: { bg: 'bg-primary/20', border: 'border-primary', text: 'text-primary' },
+const getEventColorClass = (color?: string): string => {
+  const colorMap: Record<string, string> = {
+    blue: 'bg-event-blue',
+    green: 'bg-event-green',
+    red: 'bg-event-red',
+    orange: 'bg-event-orange',
   };
-  const safeColor = color || 'primary';
-  return (colorMap[safeColor] || colorMap.primary)[type];
+  return colorMap[color as string] || 'bg-primary';
 };
 
 
@@ -103,7 +101,10 @@ const WeekRow = ({ week, month, events, selectedDay, onDateSelect, onEventClick 
                                  <div 
                                     key={event.id}
                                     onClick={() => onEventClick(event)}
-                                    className={cn("text-xs p-1 rounded-md truncate cursor-pointer font-semibold border", getEventColorClass(event.color, 'bg'), getEventColorClass(event.color, 'border'), getEventColorClass(event.color, 'text'))}
+                                    className={cn(
+                                        "text-xs p-1 rounded-md truncate cursor-pointer font-semibold text-primary-foreground",
+                                        getEventColorClass(event.color)
+                                    )}
                                 >
                                     {event.title}
                                 </div>
@@ -133,9 +134,8 @@ const WeekRow = ({ week, month, events, selectedDay, onDateSelect, onEventClick 
                                     key={event.id}
                                     onClick={() => onEventClick(event)}
                                     className={cn(
-                                        "absolute h-6 px-2 text-xs font-semibold flex items-center truncate cursor-pointer",
-                                        getEventColorClass(event.color, 'bg'),
-                                        getEventColorClass(event.color, 'text')
+                                        "absolute h-6 px-2 text-xs font-semibold flex items-center truncate cursor-pointer text-primary-foreground",
+                                        getEventColorClass(event.color)
                                     )}
                                     style={{
                                         left: `calc(${(100 / 7) * startDay}% + 2px)`,
