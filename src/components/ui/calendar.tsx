@@ -57,13 +57,11 @@ function Calendar({
         row: "flex w-full mt-2",
         cell: cn(
           "h-9 w-9 text-center text-sm p-0 relative",
-          "[&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md",
           "focus-within:relative focus-within:z-20",
-          "has-[[data-has-event=true]]:bg-primary/10 has-[[data-has-event=true]]:rounded-md"
         ),
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
+          "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
         ),
         day_selected:
           "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
@@ -82,7 +80,11 @@ function Calendar({
         DayContent: ({ date }) => {
            const dayKey = format(date, 'yyyy-MM-dd');
            const hasEvent = eventsByDay.has(dayKey);
-           return <div data-has-event={hasEvent}>{date.getDate()}</div>
+           return (
+             <div className={cn("relative w-full h-full flex items-center justify-center", hasEvent && !isSameDay(date, props.selected as Date) && "bg-primary/10 rounded-md")}>
+                {date.getDate()}
+             </div>
+           );
         }
       }}
       {...props}

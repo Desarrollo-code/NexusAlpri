@@ -29,7 +29,7 @@ interface DatePickerSidebarProps {
     onEventClick: (event: CalendarEvent) => void;
 }
 
-const DateDisplay = ({ date, onDateSelect }: { date: Date, onDateSelect: (d: Date) => void }) => {
+const DateDisplay = ({ date, onDateSelect, events }: { date: Date, onDateSelect: (d: Date) => void, events: CalendarEvent[] }) => {
     const dayOfWeek = format(date, "EEE", { locale: es }).toUpperCase();
     const dayOfMonth = format(date, "d", { locale: es });
     const [isOpen, setIsOpen] = React.useState(false);
@@ -57,6 +57,7 @@ const DateDisplay = ({ date, onDateSelect }: { date: Date, onDateSelect: (d: Dat
                     locale={es}
                     showOutsideDays
                     initialFocus
+                    events={events} // Pasar los eventos al calendario del popover
                  />
             </PopoverContent>
         </Popover>
@@ -74,10 +75,10 @@ export function DatePickerSidebar({ selectedDate, onDateSelect, events, onEventC
     return (
         <Card className="h-full flex flex-col">
             <div className="p-4 border-b">
-                 <DateDisplay date={selectedDate} onDateSelect={onDateSelect} />
+                 <DateDisplay date={selectedDate} onDateSelect={onDateSelect} events={events} />
             </div>
             <CardContent className="p-4 flex-grow flex flex-col min-h-0">
-                <h3 className="font-semibold text-sm mb-3">
+                <h3 className="font-semibold text-sm mb-3" id="calendar-event-list">
                     Eventos para el {format(selectedDate, "d 'de' MMMM", { locale: es })}
                 </h3>
                 <ScrollArea className="flex-grow">
