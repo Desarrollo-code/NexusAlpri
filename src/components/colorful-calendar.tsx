@@ -151,7 +151,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                          })}
                     </div>
                 )
-            })}
+            )}
         </div>
     </div>
   );
