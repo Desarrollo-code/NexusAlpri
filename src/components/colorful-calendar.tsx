@@ -139,9 +139,15 @@ const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect
             </div>
              <div className="mt-1 space-y-1">
                 {eventsForDay.slice(0, 2).map(event => (
-                     <div key={event.id} onClick={(e) => { e.stopPropagation(); onEventClick(event); }} className={cn("text-xs flex items-center gap-1.5 p-1 rounded-md text-foreground truncate cursor-pointer")}>
-                        <div className={cn("h-2 w-2 rounded-full flex-shrink-0", getEventColorClass(event.color))} />
-                        <span className="truncate flex-grow font-medium">{event.title}</span>
+                     <div 
+                        key={event.id} 
+                        onClick={(e) => { e.stopPropagation(); onEventClick(event); }} 
+                        className={cn(
+                            "text-xs p-1 rounded-md truncate cursor-pointer text-white font-semibold",
+                            getEventColorClass(event.color)
+                        )}
+                    >
+                        {event.title}
                      </div>
                 ))}
             </div>
