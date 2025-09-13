@@ -9,18 +9,20 @@ import { isHoliday } from '@/lib/holidays';
 
 const getEventColorClass = (color?: string): string => {
   const colorMap: Record<string, string> = {
-    blue: 'bg-event-blue',
-    green: 'bg-event-green',
-    red: 'bg-event-red',
-    orange: 'bg-event-orange',
+    blue: 'bg-event-blue text-primary-foreground',
+    green: 'bg-event-green text-primary-foreground',
+    red: 'bg-event-red text-primary-foreground',
+    orange: 'bg-event-orange text-primary-foreground',
   };
-  return colorMap[color as string] || 'bg-primary';
+  return colorMap[color as string] || 'bg-primary text-primary-foreground';
 };
 
-const DayCell = ({ day, month, onDateSelect }: { 
+const DayCell = ({ day, month, onDateSelect, events, onEventClick }: { 
     day: Date, 
     month: Date, 
     onDateSelect: (d: Date) => void,
+    events: CalendarEvent[],
+    onEventClick: (e: CalendarEvent) => void,
 }) => {
     const today = new Date();
     const holiday = isHoliday(day, 'CO');
@@ -43,18 +45,35 @@ const DayCell = ({ day, month, onDateSelect }: {
             >
                 {format(day, 'd')}
             </time>
+             <div className="flex-grow overflow-y-auto thin-scrollbar pr-1">
+                <div className="space-y-1 mt-1">
+                    {events.map(event => (
+                        <div 
+                            key={event.id}
+                            onClick={(e) => {e.stopPropagation(); onEventClick(event);}}
+                            className={cn(
+                                "text-xs p-1 rounded-md truncate cursor-pointer font-semibold",
+                                getEventColorClass(event.color)
+                            )}
+                        >
+                            {event.title}
+                        </div>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 }
 
 interface WeekRowProps {
   week: Date[];
+  month: Date;
   events: CalendarEvent[];
   onEventClick: (e: CalendarEvent) => void;
   onSlotClick: (d: Date) => void;
 }
 
-const WeekRow = ({ week, events, onEventClick, onSlotClick }: WeekRowProps) => {
+const WeekRow = ({ week, month, events, onEventClick, onSlotClick }: WeekRowProps) => {
     const weekStart = week[0];
     const weekEnd = week[6];
 
@@ -62,15 +81,17 @@ const WeekRow = ({ week, events, onEventClick, onSlotClick }: WeekRowProps) => {
         const singleDayEvents: CalendarEvent[] = [];
         const multiDayEvents: CalendarEvent[] = [];
 
-        events.forEach(event => {
+        const weekEvents = events.filter(event => {
             const start = new Date(event.start);
             const end = new Date(event.end);
-            if (isBefore(start, weekEnd) && isAfter(end, weekStart)) {
-                if (isSameDay(start, end)) {
-                    singleDayEvents.push(event);
-                } else {
-                    multiDayEvents.push(event);
-                }
+            return isBefore(start, weekEnd) && isAfter(end, weekStart);
+        });
+
+        weekEvents.forEach(event => {
+            if (isSameDay(new Date(event.start), new Date(event.end))) {
+                singleDayEvents.push(event);
+            } else {
+                multiDayEvents.push(event);
             }
         });
         
@@ -81,7 +102,8 @@ const WeekRow = ({ week, events, onEventClick, onSlotClick }: WeekRowProps) => {
             let placed = false;
             for (let i = 0; i < lanes.length; i++) {
                 const lane = lanes[i];
-                if (lane.every(e => new Date(event.start) >= new Date(e.end) || new Date(event.end) <= new Date(e.start))) {
+                const hasOverlap = lane.some(e => new Date(event.start) < new Date(e.end) && new Date(event.end) > new Date(e.start));
+                if (!hasOverlap) {
                     lane.push(event);
                     placed = true;
                     break;
@@ -104,14 +126,20 @@ const WeekRow = ({ week, events, onEventClick, onSlotClick }: WeekRowProps) => {
 
     return (
         <div className="grid grid-cols-7 relative">
-            {week.map((day) => (
-                <DayCell 
-                    key={day.toISOString()}
-                    day={day}
-                    month={weekStart}
-                    onDateSelect={onSlotClick}
-                />
-            ))}
+            {week.map((day) => {
+                 const dayKey = format(day, 'yyyy-MM-dd');
+                 const dayEvents = singleDayEventsByDay.get(dayKey) || [];
+                return (
+                    <DayCell 
+                        key={day.toISOString()}
+                        day={day}
+                        month={month}
+                        onDateSelect={onSlotClick}
+                        events={dayEvents}
+                        onEventClick={onEventClick}
+                    />
+                 )
+            })}
             <div className="absolute top-8 left-0 right-0 h-full pointer-events-none">
                 {multiDayEventsWithLanes.map((lane, laneIndex) => (
                     <div key={laneIndex} className="absolute w-full" style={{ top: `${laneIndex * 24}px`, height: '22px' }}>
@@ -119,8 +147,8 @@ const WeekRow = ({ week, events, onEventClick, onSlotClick }: WeekRowProps) => {
                             const eventStart = new Date(event.start);
                             const eventEnd = new Date(event.end);
 
-                            const startDayIndex = getDay(max([eventStart, weekStart]));
-                            const endDayIndex = getDay(min([eventEnd, weekEnd]));
+                            const startDayIndex = isBefore(eventStart, weekStart) ? 0 : getDay(eventStart);
+                            const endDayIndex = isAfter(eventEnd, weekEnd) ? 6 : getDay(eventEnd);
 
                             const span = endDayIndex - startDayIndex + 1;
                             if (span <= 0) return null;
@@ -131,12 +159,12 @@ const WeekRow = ({ week, events, onEventClick, onSlotClick }: WeekRowProps) => {
                             return (
                                 <div
                                     key={event.id}
-                                    onClick={() => onEventClick(event)}
+                                    onClick={(e) => {e.stopPropagation(); onEventClick(event);}}
                                     className={cn(
-                                        "absolute h-full px-2 text-xs font-semibold text-primary-foreground flex items-center truncate cursor-pointer pointer-events-auto",
+                                        "absolute h-full px-2 text-xs font-semibold flex items-center truncate cursor-pointer pointer-events-auto",
                                         getEventColorClass(event.color),
-                                        isStartOfEvent ? 'rounded-l-md' : '',
-                                        isEndOfEvent ? 'rounded-r-md' : ''
+                                        isStartOfEvent && "rounded-l-md",
+                                        isEndOfEvent && "rounded-r-md"
                                     )}
                                     style={{
                                         left: `calc(${(100 / 7) * startDayIndex}% + 1px)`,
@@ -150,36 +178,6 @@ const WeekRow = ({ week, events, onEventClick, onSlotClick }: WeekRowProps) => {
                     </div>
                 ))}
             </div>
-             <div className="absolute top-8 left-0 right-0 grid grid-cols-7 h-full pointer-events-none">
-                 {week.map((day, dayIndex) => {
-                     const dayKey = format(day, 'yyyy-MM-dd');
-                     const dayEvents = singleDayEventsByDay.get(dayKey) || [];
-                     const multiDayLanesCount = multiDayEventsWithLanes.length;
-                     const availableLanes = 3 - multiDayLanesCount;
-
-                     return (
-                         <div key={dayKey} className="relative px-1 pt-px" style={{ paddingTop: `${multiDayLanesCount * 24}px`}}>
-                            <div className="space-y-1 pointer-events-auto">
-                                {dayEvents.slice(0, availableLanes).map(event => (
-                                     <div 
-                                        key={event.id}
-                                        onClick={() => onEventClick(event)}
-                                        className={cn(
-                                            "text-xs p-1 rounded-md truncate cursor-pointer font-semibold text-primary-foreground",
-                                            getEventColorClass(event.color)
-                                        )}
-                                    >
-                                        {event.title}
-                                    </div>
-                                ))}
-                                {dayEvents.length > availableLanes && (
-                                    <div className="text-xs font-bold text-primary pl-1">+ {dayEvents.length - availableLanes} más</div>
-                                )}
-                            </div>
-                         </div>
-                     )
-                 })}
-             </div>
         </div>
     )
 }
@@ -215,6 +213,7 @@ export function MonthView({ currentDate, events, onEventClick, onSlotClick }: Mo
                  <WeekRow
                     key={weekIndex}
                     week={week}
+                    month={currentDate}
                     events={events}
                     onEventClick={onEventClick}
                     onSlotClick={onSlotClick}
