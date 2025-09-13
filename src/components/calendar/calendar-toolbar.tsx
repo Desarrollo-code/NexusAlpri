@@ -1,7 +1,7 @@
 // src/components/calendar/calendar-toolbar.tsx
 'use client';
 import React from 'react';
-import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from 'date-fns';
+import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, startOfWeek, endOfWeek } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Calendar, Rows, Columns } from 'lucide-react';
 import { Button } from '@/components/ui/button';
