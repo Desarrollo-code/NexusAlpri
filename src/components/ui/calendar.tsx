@@ -15,17 +15,6 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
     events?: CalendarEvent[];
 }
 
-const getEventColorClass = (color?: string): string => {
-  const colorMap: Record<string, string> = {
-    blue: 'bg-event-blue',
-    green: 'bg-event-green',
-    red: 'bg-event-red',
-    orange: 'bg-event-orange',
-  };
-  return colorMap[color as string] || 'bg-primary';
-};
-
-
 function Calendar({
   className,
   classNames,
@@ -44,24 +33,6 @@ function Calendar({
     });
     return map;
   }, [events]);
-
-  const DayContentWithEvents: DayContentRenderer = (dayProps) => {
-    const dayKey = format(dayProps.date, 'yyyy-MM-dd');
-    const dayEvents = eventsByDay.get(dayKey) || [];
-
-    return (
-        <div className="relative w-full h-full flex flex-col items-center justify-center">
-            <span>{dayProps.date.getDate()}</span>
-            {dayEvents.length > 0 && (
-                <div className="absolute bottom-1 flex items-center justify-center gap-1">
-                    {dayEvents.slice(0, 3).map(event => (
-                        <div key={event.id} className={cn("h-2 w-2 rounded-full", getEventColorClass(event.color))} />
-                    ))}
-                </div>
-            )}
-        </div>
-    )
-  };
 
   return (
     <DayPicker
@@ -84,7 +55,12 @@ function Calendar({
         head_cell:
           "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
         row: "flex w-full mt-2",
-        cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+        cell: cn(
+          "h-9 w-9 text-center text-sm p-0 relative",
+          "[&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md",
+          "focus-within:relative focus-within:z-20",
+          "has-[[data-has-event=true]]:bg-primary/10 has-[[data-has-event=true]]:rounded-md"
+        ),
         day: cn(
           buttonVariants({ variant: "ghost" }),
           "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
@@ -103,7 +79,11 @@ function Calendar({
       components={{
         IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-        DayContent: DayContentWithEvents,
+        DayContent: ({ date }) => {
+           const dayKey = format(date, 'yyyy-MM-dd');
+           const hasEvent = eventsByDay.has(dayKey);
+           return <div data-has-event={hasEvent}>{date.getDate()}</div>
+        }
       }}
       {...props}
     />
