@@ -12,12 +12,12 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const getEventColorClass = (color?: string): string => {
   const colorMap: Record<string, string> = {
-    blue: 'bg-event-blue',
-    green: 'bg-event-green',
-    red: 'bg-event-red',
-    orange: 'bg-event-orange',
+    blue: 'bg-event-blue text-white',
+    green: 'bg-event-green text-white',
+    red: 'bg-event-red text-white',
+    orange: 'bg-event-orange text-white',
   };
-  return colorMap[color as string] || 'bg-primary';
+  return colorMap[color as string] || 'bg-primary text-primary-foreground';
 };
 
 
@@ -75,7 +75,7 @@ const WeekRow = ({ week, month, events, selectedDay, onDateSelect, onEventClick 
         for (const event of sortedMultiDay) {
             let placed = false;
             for (const lane of lanes) {
-                if (lane.every(e => !e || isAfter(new Date(event.start), new Date(e.end)) || isBefore(new Date(event.end), new Date(e.start)))) {
+                if (lane.every(e => !e || new Date(event.start) >= new Date(e.end) || new Date(event.end) <= new Date(e.start))) {
                     lane.push(event);
                     placed = true;
                     break;
@@ -93,6 +93,8 @@ const WeekRow = ({ week, month, events, selectedDay, onDateSelect, onEventClick 
             {week.map((day) => {
                  const dayKey = format(day, 'yyyy-MM-dd');
                  const dayEvents = eventsByDay.get(dayKey) || [];
+                 const totalEvents = dayEvents.length + multiDayEvents.filter(e => isSameDay(day, new Date(e.start)) || (isBefore(new Date(e.start), day) && isAfter(new Date(e.end), day))).length;
+
                  return (
                     <div key={day.toString()} className="relative">
                         <DayCell day={day} month={month} selectedDay={selectedDay} onDateSelect={onDateSelect} />
@@ -102,21 +104,21 @@ const WeekRow = ({ week, month, events, selectedDay, onDateSelect, onEventClick 
                                     key={event.id}
                                     onClick={() => onEventClick(event)}
                                     className={cn(
-                                        "text-xs p-1 rounded-md truncate cursor-pointer font-semibold text-primary-foreground",
+                                        "text-xs p-1 rounded-md truncate cursor-pointer font-semibold",
                                         getEventColorClass(event.color)
                                     )}
                                 >
                                     {event.title}
                                 </div>
                             ))}
-                             {dayEvents.length > 2 && <div className="text-xs font-semibold text-primary mt-auto pl-1">+ {dayEvents.length - 2} más</div>}
+                             {totalEvents > 2 && <div className="text-xs font-semibold text-primary mt-auto pl-1">+ {totalEvents - 2} más</div>}
                         </div>
                     </div>
                 );
             })}
-             <div className="absolute top-10 left-0 right-0 h-full">
+             <div className="absolute top-10 left-0 right-0 h-full pointer-events-none">
                 {multiDayLanes.map((lane, laneIndex) => (
-                     <div key={laneIndex} className="absolute w-full" style={{ top: `${laneIndex * 28}px` }}>
+                     <div key={laneIndex} className="absolute w-full" style={{ top: `${laneIndex * 28}px`, height: '24px' }}>
                         {lane.map(event => {
                              if (!event) return null;
                             const eventStart = new Date(event.start);
@@ -134,7 +136,7 @@ const WeekRow = ({ week, month, events, selectedDay, onDateSelect, onEventClick 
                                     key={event.id}
                                     onClick={() => onEventClick(event)}
                                     className={cn(
-                                        "absolute h-6 px-2 text-xs font-semibold flex items-center truncate cursor-pointer text-primary-foreground",
+                                        "absolute h-full px-2 text-xs font-semibold flex items-center truncate cursor-pointer pointer-events-auto",
                                         getEventColorClass(event.color)
                                     )}
                                     style={{
