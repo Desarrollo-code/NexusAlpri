@@ -41,7 +41,9 @@ const processEventsForWeek = (week: Date[], allEvents: CalendarEvent[]) => {
         .filter(event => {
             const eventStart = new Date(event.start);
             const eventEnd = new Date(event.end);
-            return eventEnd >= weekStart && eventStart <= weekEnd;
+            const duration = differenceInCalendarDays(eventEnd, eventStart);
+            // Solo procesar eventos que duran más de un día o que no son de día completo
+            return duration > 0 && eventEnd >= weekStart && eventStart <= weekEnd;
         })
         .sort((a, b) => {
             const durationA = differenceInCalendarDays(new Date(a.end), new Date(a.start));
@@ -101,17 +103,19 @@ interface DayCellProps {
   month: Date;
   selectedDay: Date;
   onDateSelect: (date: Date) => void;
+  onEventClick: (event: CalendarEvent) => void;
   eventsForDay: CalendarEvent[];
 }
 
-const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect, eventsForDay }) => {
+const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect, onEventClick, eventsForDay }) => {
     const today = new Date();
     const dayKey = format(day, 'yyyy-MM-dd');
     const holiday = isHoliday(day, 'CO');
     const isMobile = useIsMobile();
     const maxLanes = isMobile ? MAX_LANES_MOBILE : MAX_LANES_DESKTOP;
 
-    const moreCount = eventsForDay.length > maxLanes ? eventsForDay.length - maxLanes : 0;
+    const singleDayEvents = eventsForDay.filter(e => differenceInCalendarDays(new Date(e.end), new Date(e.start)) === 0);
+    const moreCount = singleDayEvents.length > maxLanes ? singleDayEvents.length - maxLanes : 0;
     
     return (
         <div
@@ -135,9 +139,10 @@ const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect
                 </time>
             </div>
              <div className="mt-1 space-y-1">
-                {eventsForDay.slice(0, maxLanes).map(event => (
-                     <div key={event.id} className={cn("text-xs p-1 rounded-md text-white truncate", getEventColorClass(event.color))}>
-                        {event.title}
+                {singleDayEvents.slice(0, maxLanes).map(event => (
+                     <div key={event.id} onClick={(e) => { e.stopPropagation(); onEventClick(event); }} className="text-xs flex items-start gap-1.5 p-1 rounded-md text-foreground truncate cursor-pointer hover:bg-muted">
+                        <div className={cn("h-2 w-2 rounded-full mt-1 shrink-0", getEventColorClass(event.color))} />
+                        <span className="truncate flex-grow">{event.title}</span>
                      </div>
                 ))}
             </div>
@@ -211,6 +216,7 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                                  month={month}
                                  selectedDay={selectedDay}
                                  onDateSelect={onDateSelect}
+                                 onEventClick={onEventClick}
                                  eventsForDay={eventsForDay}
                              />
                          )
