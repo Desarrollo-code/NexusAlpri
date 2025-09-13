@@ -6,15 +6,16 @@ import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
 import { isHoliday } from '@/lib/holidays';
+import { ScrollArea } from '../ui/scroll-area';
 
 const getEventColorClass = (color?: string): string => {
   const colorMap: Record<string, string> = {
-    blue: 'bg-event-blue text-primary-foreground',
-    green: 'bg-event-green text-primary-foreground',
-    red: 'bg-event-red text-primary-foreground',
-    orange: 'bg-event-orange text-primary-foreground',
+    blue: 'bg-event-blue',
+    green: 'bg-event-green',
+    red: 'bg-event-red',
+    orange: 'bg-event-orange',
   };
-  return colorMap[color as string] || 'bg-primary text-primary-foreground';
+  return colorMap[color as string] || 'bg-primary';
 };
 
 const DayCell = ({ day, month, onDateSelect, events, onEventClick }: { 
@@ -45,14 +46,14 @@ const DayCell = ({ day, month, onDateSelect, events, onEventClick }: {
             >
                 {format(day, 'd')}
             </time>
-             <div className="flex-grow overflow-y-auto thin-scrollbar pr-1">
+             <ScrollArea className="flex-grow pr-1 thin-scrollbar">
                 <div className="space-y-1 mt-1">
                     {events.map(event => (
                         <div 
                             key={event.id}
                             onClick={(e) => {e.stopPropagation(); onEventClick(event);}}
                             className={cn(
-                                "text-xs p-1 rounded-md truncate cursor-pointer font-semibold",
+                                "text-xs p-1 rounded-md truncate cursor-pointer font-semibold text-primary-foreground",
                                 getEventColorClass(event.color)
                             )}
                         >
@@ -60,126 +61,9 @@ const DayCell = ({ day, month, onDateSelect, events, onEventClick }: {
                         </div>
                     ))}
                 </div>
-            </div>
+            </ScrollArea>
         </div>
     );
-}
-
-interface WeekRowProps {
-  week: Date[];
-  month: Date;
-  events: CalendarEvent[];
-  onEventClick: (e: CalendarEvent) => void;
-  onSlotClick: (d: Date) => void;
-}
-
-const WeekRow = ({ week, month, events, onEventClick, onSlotClick }: WeekRowProps) => {
-    const weekStart = week[0];
-    const weekEnd = week[6];
-
-    const { multiDayEventsWithLanes, singleDayEventsByDay } = useMemo(() => {
-        const singleDayEvents: CalendarEvent[] = [];
-        const multiDayEvents: CalendarEvent[] = [];
-
-        const weekEvents = events.filter(event => {
-            const start = new Date(event.start);
-            const end = new Date(event.end);
-            return isBefore(start, weekEnd) && isAfter(end, weekStart);
-        });
-
-        weekEvents.forEach(event => {
-            if (isSameDay(new Date(event.start), new Date(event.end))) {
-                singleDayEvents.push(event);
-            } else {
-                multiDayEvents.push(event);
-            }
-        });
-        
-        multiDayEvents.sort((a,b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-
-        const lanes: CalendarEvent[][] = [];
-        multiDayEvents.forEach(event => {
-            let placed = false;
-            for (let i = 0; i < lanes.length; i++) {
-                const lane = lanes[i];
-                const hasOverlap = lane.some(e => new Date(event.start) < new Date(e.end) && new Date(event.end) > new Date(e.start));
-                if (!hasOverlap) {
-                    lane.push(event);
-                    placed = true;
-                    break;
-                }
-            }
-            if (!placed) {
-                lanes.push([event]);
-            }
-        });
-
-        const singleDayEventsByDay = new Map<string, CalendarEvent[]>();
-        singleDayEvents.forEach(event => {
-            const dayKey = format(new Date(event.start), 'yyyy-MM-dd');
-            if(!singleDayEventsByDay.has(dayKey)) singleDayEventsByDay.set(dayKey, []);
-            singleDayEventsByDay.get(dayKey)!.push(event);
-        });
-
-        return { multiDayEventsWithLanes: lanes, singleDayEventsByDay };
-    }, [weekStart, weekEnd, events]);
-
-    return (
-        <div className="grid grid-cols-7 relative">
-            {week.map((day) => {
-                 const dayKey = format(day, 'yyyy-MM-dd');
-                 const dayEvents = singleDayEventsByDay.get(dayKey) || [];
-                return (
-                    <DayCell 
-                        key={day.toISOString()}
-                        day={day}
-                        month={month}
-                        onDateSelect={onSlotClick}
-                        events={dayEvents}
-                        onEventClick={onEventClick}
-                    />
-                 )
-            })}
-            <div className="absolute top-8 left-0 right-0 h-full pointer-events-none">
-                {multiDayEventsWithLanes.map((lane, laneIndex) => (
-                    <div key={laneIndex} className="absolute w-full" style={{ top: `${laneIndex * 24}px`, height: '22px' }}>
-                        {lane.map(event => {
-                            const eventStart = new Date(event.start);
-                            const eventEnd = new Date(event.end);
-
-                            const startDayIndex = isBefore(eventStart, weekStart) ? 0 : getDay(eventStart);
-                            const endDayIndex = isAfter(eventEnd, weekEnd) ? 6 : getDay(eventEnd);
-
-                            const span = endDayIndex - startDayIndex + 1;
-                            if (span <= 0) return null;
-                            
-                            const isStartOfEvent = isSameDay(eventStart, week[startDayIndex]);
-                            const isEndOfEvent = isSameDay(eventEnd, week[endDayIndex]);
-
-                            return (
-                                <div
-                                    key={event.id}
-                                    onClick={(e) => {e.stopPropagation(); onEventClick(event);}}
-                                    className={cn(
-                                        "absolute h-full px-2 text-xs font-semibold flex items-center truncate cursor-pointer pointer-events-auto",
-                                        getEventColorClass(event.color),
-                                        isStartOfEvent && "rounded-l-md",
-                                        isEndOfEvent && "rounded-r-md"
-                                    )}
-                                    style={{
-                                        left: `calc(${(100 / 7) * startDayIndex}% + 1px)`,
-                                        width: `calc(${(100 / 7) * span}% - 2px)`,
-                                    }}
-                                >
-                                    {event.title}
-                                </div>
-                            )
-                        })}
-                    </div>
-                ))}
-            </div>
-        </div>
-    )
 }
 
 interface MonthViewProps {
@@ -201,6 +85,25 @@ export function MonthView({ currentDate, events, onEventClick, onSlotClick }: Mo
     return weeksArray;
   }, [currentDate]);
 
+  const eventsByDay = useMemo(() => {
+    const map = new Map<string, CalendarEvent[]>();
+    events.forEach(event => {
+        const start = new Date(event.start);
+        const end = new Date(event.end);
+        for (let day = start; day <= end; day.setDate(day.getDate() + 1)) {
+             const dayKey = format(day, 'yyyy-MM-dd');
+             if (!map.has(dayKey)) {
+                map.set(dayKey, []);
+             }
+             // Add event only once per day to avoid duplicates in the list
+             if (!map.get(dayKey)?.some(e => e.id === event.id)) {
+                 map.get(dayKey)!.push(event);
+             }
+        }
+    });
+    return map;
+  }, [events]);
+
   return (
     <div className="flex flex-col h-full">
         <div className="grid grid-cols-7 flex-shrink-0">
@@ -210,14 +113,22 @@ export function MonthView({ currentDate, events, onEventClick, onSlotClick }: Mo
         </div>
         <div className="flex-grow grid grid-cols-1" style={{ gridTemplateRows: `repeat(${weeks.length}, minmax(0, 1fr))` }}>
              {weeks.map((week, weekIndex) => (
-                 <WeekRow
-                    key={weekIndex}
-                    week={week}
-                    month={currentDate}
-                    events={events}
-                    onEventClick={onEventClick}
-                    onSlotClick={onSlotClick}
-                 />
+                <div key={weekIndex} className="grid grid-cols-7">
+                    {week.map(day => {
+                        const dayKey = format(day, 'yyyy-MM-dd');
+                        const dayEvents = eventsByDay.get(dayKey) || [];
+                        return (
+                            <DayCell
+                                key={day.toISOString()}
+                                day={day}
+                                month={currentDate}
+                                onDateSelect={onSlotClick}
+                                events={dayEvents}
+                                onEventClick={onEventClick}
+                            />
+                        )
+                    })}
+                </div>
             ))}
         </div>
     </div>

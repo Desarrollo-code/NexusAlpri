@@ -34,7 +34,7 @@ export default function CalendarPage() {
   const [error, setError] = useState<string | null>(null);
   
   const [currentDate, setCurrentDate] = useState(startOfToday());
-  const [view, setView] = useState<CalendarView>('week');
+  const [view, setView] = useState<CalendarView>('month');
   
   const [showEventModal, setShowEventModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -101,7 +101,7 @@ export default function CalendarPage() {
         case 'month': return <MonthView {...viewProps} />;
         case 'week': return <WeekView {...viewProps} />;
         case 'day': return <DayView {...viewProps} />;
-        default: return <WeekView {...viewProps} />;
+        default: return <MonthView {...viewProps} />;
     }
   }
 
@@ -144,7 +144,7 @@ export default function CalendarPage() {
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-full text-destructive"><AlertTriangle className="h-8 w-8 mb-2" />Error al cargar: {error}</div>
           ) : (
-             <div className={cn("h-full w-full", "overflow-auto thin-scrollbar")}>
+             <div className={cn("h-full w-full", view !== 'month' && "overflow-auto thin-scrollbar")}>
                 {renderView()}
              </div>
           )}

@@ -33,11 +33,6 @@
     --chart-3: 160 70% 45%; /* Verde azulado (Teal) */
     --chart-4: 50 95% 55%;  /* Amarillo */
     --chart-5: 340 85% 65%; /* Rosa/Magenta */
-    
-    --event-blue: 217 89% 61%;
-    --event-green: 142 71% 45%;
-    --event-red: 0 84% 60%;
-    --event-orange: 25 95% 53%;
 
     /* Variables de la barra lateral (mantienen un estilo consistente) */
     --sidebar-background: 220 40% 5%; 
@@ -69,11 +64,6 @@
     --border: 220 10% 20%;
     --input: 220 10% 18%;
     --ring: 210 90% 65%;
-
-    --event-blue: 217 89% 61%;
-    --event-green: 142 71% 45%;
-    --event-red: 0 84% 60%;
-    --event-orange: 25 95% 53%;
   }
 }
  
