@@ -33,71 +33,6 @@ const getEventBorderColorClass = (color?: string): string => {
 }
 
 
-const processEventsForWeek = (week: Date[], allEvents: CalendarEvent[]) => {
-    const weekStart = week[0];
-    const weekEnd = week[6];
-
-    const relevantEvents = allEvents
-        .filter(event => {
-            const eventStart = new Date(event.start);
-            const eventEnd = new Date(event.end);
-            const duration = differenceInCalendarDays(eventEnd, eventStart);
-            // Solo procesar eventos que duran más de un día o que no son de día completo
-            return duration > 0 && eventEnd >= weekStart && eventStart <= weekEnd;
-        })
-        .sort((a, b) => {
-            const durationA = differenceInCalendarDays(new Date(a.end), new Date(a.start));
-            const durationB = differenceInCalendarDays(new Date(b.end), new Date(b.start));
-            if (durationA !== durationB) return durationB - durationA; // Longer events first
-            return new Date(a.start).getTime() - new Date(b.start).getTime();
-        });
-
-    const positionedEvents: any[] = [];
-    const lanes: (Date | null)[] = Array(10).fill(null); // Max 10 lanes for collision detection
-
-    relevantEvents.forEach(event => {
-        const eventStart = new Date(event.start);
-        const eventEnd = new Date(event.end);
-
-        let startCol = isBefore(eventStart, weekStart) ? 0 : getDay(eventStart);
-        let endCol = isAfter(eventEnd, weekEnd) ? 6 : getDay(eventEnd);
-        let span = endCol - startCol + 1;
-        
-        let laneIndex = -1;
-        for (let i = 0; i < lanes.length; i++) {
-            let laneIsFree = true;
-            for (let d = startCol; d <= endCol; d++) {
-                if (lanes[i] && isAfter(lanes[i]!, week[d])) {
-                    laneIsFree = false;
-                    break;
-                }
-            }
-            if (laneIsFree) {
-                laneIndex = i;
-                break;
-            }
-        }
-        
-        if (laneIndex === -1) { laneIndex = lanes.length; lanes.push(null); }
-
-        for (let d = startCol; d <= endCol; d++) {
-            lanes[laneIndex] = eventEnd;
-        }
-
-        positionedEvents.push({
-            ...event,
-            startCol: startCol + 1,
-            span,
-            lane: laneIndex,
-            startsInWeek: !isBefore(eventStart, weekStart),
-            endsInWeek: !isAfter(eventEnd, weekEnd),
-        });
-    });
-
-    return positionedEvents;
-};
-
-
 interface DayCellProps {
   day: Date;
   month: Date;
@@ -111,11 +46,10 @@ const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect
     const today = new Date();
     const dayKey = format(day, 'yyyy-MM-dd');
     const holiday = isHoliday(day, 'CO');
-    const isMobile = useIsMobile();
-    const maxLanes = isMobile ? MAX_LANES_MOBILE : MAX_LANES_DESKTOP;
 
+    // Muestra eventos de un solo día como puntos
     const singleDayEvents = eventsForDay.filter(e => differenceInCalendarDays(new Date(e.end), new Date(e.start)) === 0);
-    const moreCount = singleDayEvents.length > maxLanes ? singleDayEvents.length - maxLanes : 0;
+    const moreCount = singleDayEvents.length > 2 ? singleDayEvents.length - 2 : 0;
     
     return (
         <div
@@ -124,7 +58,7 @@ const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect
                 "relative p-1.5 flex flex-col bg-card group transition-colors hover:bg-muted/50 cursor-pointer border-r border-b",
                 !isSameMonth(day, month) && "bg-muted/30 text-muted-foreground/50",
                 isSameDay(day, selectedDay) && "bg-primary/10",
-                isMobile ? "min-h-[90px]" : "min-h-[120px]"
+                "min-h-[120px]"
             )}
         >
             <div className="flex justify-between items-center mb-1 flex-shrink-0">
@@ -139,9 +73,10 @@ const DayCell: React.FC<DayCellProps> = ({ day, month, selectedDay, onDateSelect
                 </time>
             </div>
              <div className="mt-1 space-y-1">
-                {singleDayEvents.slice(0, maxLanes).map(event => (
-                     <div key={event.id} onClick={(e) => { e.stopPropagation(); onEventClick(event); }} className={cn("text-xs flex items-start gap-1.5 p-1 rounded-md text-foreground truncate cursor-pointer", getEventColorClass(event.color))}>
-                        <span className="truncate flex-grow text-white font-semibold">{event.title}</span>
+                {singleDayEvents.slice(0, 2).map(event => (
+                     <div key={event.id} onClick={(e) => { e.stopPropagation(); onEventClick(event); }} className={cn("text-xs flex items-start gap-1.5 p-1 rounded-md text-foreground truncate cursor-pointer")}>
+                        <div className={cn("h-2 w-2 rounded-full mt-1 flex-shrink-0", getEventColorClass(event.color))} />
+                        <span className="truncate flex-grow font-medium">{event.title}</span>
                      </div>
                 ))}
             </div>
@@ -164,9 +99,6 @@ interface ColorfulCalendarProps {
 }
 
 export default function ColorfulCalendar({ month, events, selectedDay, onDateSelect, onEventClick, className }: ColorfulCalendarProps) {
-  const isMobile = useIsMobile();
-  const MAX_LANES = isMobile ? MAX_LANES_MOBILE : MAX_LANES_DESKTOP;
-  
   const weeks = React.useMemo(() => {
     const start = startOfWeek(startOfMonth(month), { weekStartsOn: 0 });
     const end = endOfWeek(endOfMonth(month), { weekStartsOn: 0 });
@@ -178,7 +110,6 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
     return weeksArray;
   }, [month]);
 
-  const positionedEventsByWeek = React.useMemo(() => weeks.map(week => processEventsForWeek(week, events)), [weeks, events]);
   const dailyEvents = React.useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
     weeks.flat().forEach(day => {
@@ -220,30 +151,6 @@ export default function ColorfulCalendar({ month, events, selectedDay, onDateSel
                              />
                          )
                      })}
-                    <div className="absolute inset-0 grid-cols-7 pointer-events-none p-1 pt-10 gap-y-1 hidden md:grid" style={{ gridTemplateRows: `repeat(${MAX_LANES}, minmax(0, 1fr))` }}>
-                        {positionedEventsByWeek[weekIndex]
-                          .filter(event => event.lane < MAX_LANES)
-                          .map(event => (
-                              <div
-                                  key={event.id}
-                                  onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
-                                  className={cn(
-                                      "pointer-events-auto cursor-pointer px-2 text-xs font-semibold flex items-center truncate transition-colors h-6 text-white",
-                                      getEventColorClass(event.color),
-                                      event.startsInWeek ? "rounded-l-md" : "",
-                                      event.endsInWeek ? "rounded-r-md" : ""
-                                  )}
-                                  style={{
-                                      gridColumnStart: event.startCol,
-                                      gridColumnEnd: `span ${event.span}`,
-                                      gridRowStart: event.lane + 1,
-                                  }}
-                              >
-                                  {event.title}
-                              </div>
-                          ))
-                        }
-                    </div>
                 </div>
             ))}
         </div>
