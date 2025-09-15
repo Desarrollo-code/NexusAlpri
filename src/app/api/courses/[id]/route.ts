@@ -105,14 +105,14 @@ export async function PUT(
             await tx.module.deleteMany({ where: { id: { in: modulesToDelete.map(m => m.id) } }});
         }
         
-        // 3. Upsert modules and their nested content
+        // 3. Create or update modules and their nested content
         for (const [moduleIndex, moduleData] of modules.entries()) {
             const isNewModule = moduleData.id.startsWith('new-');
             let savedModule;
 
             if (isNewModule) {
                 savedModule = await tx.module.create({
-                    data: { title: moduleData.title, order: moduleIndex, courseId: courseId },
+                    data: { title: moduleData.title, order: moduleIndex, course: { connect: { id: courseId } } },
                 });
             } else {
                  savedModule = await tx.module.update({
