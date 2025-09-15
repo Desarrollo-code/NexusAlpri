@@ -108,11 +108,18 @@ export async function PUT(
         // 3. Upsert modules and their nested content
         for (const [moduleIndex, moduleData] of modules.entries()) {
             const isNewModule = moduleData.id.startsWith('new-');
-            const savedModule = await tx.module.upsert({
-                where: { id: isNewModule ? `__NEVER_FIND__${moduleData.id}` : moduleData.id },
-                create: { title: moduleData.title, order: moduleIndex, courseId: courseId }, // Pass courseId here
-                update: { title: moduleData.title, order: moduleIndex },
-            });
+            let savedModule;
+
+            if (isNewModule) {
+                savedModule = await tx.module.create({
+                    data: { title: moduleData.title, order: moduleIndex, courseId: courseId },
+                });
+            } else {
+                 savedModule = await tx.module.update({
+                    where: { id: moduleData.id },
+                    data: { title: moduleData.title, order: moduleIndex },
+                });
+            }
             
             const existingLessons = await tx.lesson.findMany({ where: { moduleId: savedModule.id }, select: { id: true } });
             const incomingLessonIds = new Set(moduleData.lessons.map(l => !l.id.startsWith('new-') ? l.id : undefined).filter(Boolean));
@@ -122,11 +129,18 @@ export async function PUT(
 
             for (const [lessonIndex, lessonData] of moduleData.lessons.entries()) {
                 const isNewLesson = lessonData.id.startsWith('new-');
-                const savedLesson = await tx.lesson.upsert({
-                    where: { id: isNewLesson ? `__NEVER_FIND__${lessonData.id}` : lessonData.id },
-                    create: { title: lessonData.title, order: lessonIndex, moduleId: savedModule.id },
-                    update: { title: lessonData.title, order: lessonIndex },
-                });
+                let savedLesson;
+
+                if (isNewLesson) {
+                    savedLesson = await tx.lesson.create({
+                        data: { title: lessonData.title, order: lessonIndex, moduleId: savedModule.id },
+                    });
+                } else {
+                    savedLesson = await tx.lesson.update({
+                        where: { id: lessonData.id },
+                        data: { title: lessonData.title, order: lessonIndex },
+                    });
+                }
                 
                 const existingBlocks = await tx.contentBlock.findMany({ where: { lessonId: savedLesson.id }, select: { id: true }});
                 const incomingBlockIds = new Set(lessonData.contentBlocks.map(b => !b.id.startsWith('new-') ? b.id : undefined).filter(Boolean));
@@ -136,19 +150,33 @@ export async function PUT(
 
                 for (const [blockIndex, blockData] of lessonData.contentBlocks.entries()) {
                     const isNewBlock = blockData.id.startsWith('new-');
-                    const savedBlock = await tx.contentBlock.upsert({
-                        where: { id: isNewBlock ? `__NEVER_FIND__${blockData.id}` : blockData.id },
-                        create: { type: blockData.type, content: blockData.content || '', order: blockIndex, lessonId: savedLesson.id },
-                        update: { type: blockData.type, content: blockData.content || '', order: blockIndex },
-                    });
+                    let savedBlock;
+
+                    if (isNewBlock) {
+                        savedBlock = await tx.contentBlock.create({
+                            data: { type: blockData.type, content: blockData.content || '', order: blockIndex, lessonId: savedLesson.id }
+                        });
+                    } else {
+                        savedBlock = await tx.contentBlock.update({
+                            where: { id: blockData.id },
+                            data: { type: blockData.type, content: blockData.content || '', order: blockIndex },
+                        });
+                    }
 
                     if (blockData.type === 'QUIZ' && blockData.quiz) {
                         const isNewQuiz = blockData.quiz.id.startsWith('new-');
-                        const savedQuiz = await tx.quiz.upsert({
-                             where: { id: isNewQuiz ? `__NEVER_FIND__${blockData.quiz.id}` : blockData.quiz.id },
-                             create: { title: blockData.quiz.title, description: blockData.quiz.description || '', contentBlockId: savedBlock.id },
-                             update: { title: blockData.quiz.title, description: blockData.quiz.description || '' },
-                        });
+                        let savedQuiz;
+
+                        if (isNewQuiz) {
+                            savedQuiz = await tx.quiz.create({
+                                data: { title: blockData.quiz.title, description: blockData.quiz.description || '', contentBlockId: savedBlock.id }
+                            });
+                        } else {
+                            savedQuiz = await tx.quiz.update({
+                                where: { id: blockData.quiz.id },
+                                data: { title: blockData.quiz.title, description: blockData.quiz.description || '' },
+                            });
+                        }
                         
                         const existingQuestions = await tx.question.findMany({where: { quizId: savedQuiz.id }, select: { id: true }});
                         const incomingQuestionIds = new Set(blockData.quiz.questions.map(q => !q.id.startsWith('new-') ? q.id : undefined).filter(Boolean));
@@ -157,11 +185,18 @@ export async function PUT(
 
                         for(const [qIndex, questionData] of blockData.quiz.questions.entries()){
                             const isNewQuestion = questionData.id.startsWith('new-');
-                            const savedQuestion = await tx.question.upsert({
-                                where: { id: isNewQuestion ? `__NEVER_FIND__${questionData.id}` : questionData.id },
-                                create: { text: questionData.text, order: qIndex, quizId: savedQuiz.id },
-                                update: { text: questionData.text, order: qIndex },
-                            });
+                            let savedQuestion;
+
+                            if (isNewQuestion) {
+                                savedQuestion = await tx.question.create({
+                                    data: { text: questionData.text, order: qIndex, quizId: savedQuiz.id }
+                                });
+                            } else {
+                                savedQuestion = await tx.question.update({
+                                    where: { id: questionData.id },
+                                    data: { text: questionData.text, order: qIndex },
+                                });
+                            }
 
                             const existingOptions = await tx.answerOption.findMany({where: {questionId: savedQuestion.id}, select: {id: true}});
                             const incomingOptionIds = new Set(questionData.options.map(o => !o.id.startsWith('new-') ? o.id : undefined).filter(Boolean));
@@ -170,11 +205,16 @@ export async function PUT(
 
                             for(const optionData of questionData.options){
                                 const isNewOption = optionData.id.startsWith('new-');
-                                await tx.answerOption.upsert({
-                                    where: {id: isNewOption ? `__NEVER_FIND__${optionData.id}` : optionData.id},
-                                    create: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback, questionId: savedQuestion.id },
-                                    update: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback },
-                                });
+                                if (isNewOption) {
+                                    await tx.answerOption.create({
+                                        data: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback, questionId: savedQuestion.id }
+                                    });
+                                } else {
+                                    await tx.answerOption.update({
+                                        where: { id: optionData.id },
+                                        data: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback },
+                                    });
+                                }
                             }
                         }
                     }
