@@ -110,7 +110,7 @@ export async function PUT(
             const isNewModule = moduleData.id.startsWith('new-');
             const savedModule = await tx.module.upsert({
                 where: { id: isNewModule ? `__NEVER_FIND__${moduleData.id}` : moduleData.id },
-                create: { title: moduleData.title, order: moduleIndex, courseId },
+                create: { title: moduleData.title, order: moduleIndex, courseId: courseId }, // Pass courseId here
                 update: { title: moduleData.title, order: moduleIndex },
             });
             
@@ -211,7 +211,7 @@ export async function DELETE(
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
 
-  const { id: courseId } = await params;
+  const { id: courseId } = params;
   
   if (!(await checkCourseOwnership(session, courseId))) {
       return NextResponse.json({ message: 'No tienes permiso para eliminar este curso' }, { status: 403 });
