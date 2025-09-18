@@ -1,5 +1,6 @@
+
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -161,24 +162,16 @@ export interface UserNote {
 
 // --- RESOURCES ---
 export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER';
+export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
 
-export interface EnterpriseResource {
-    id: string;
-    title: string;
-    description?: string | null;
-    type: ResourceType;
-    category: string | null;
+export interface EnterpriseResource extends Omit<PrismaResource, 'tags'> {
     tags: string[];
-    url?: string | null;
-    uploadDate: string;
-    uploaderId?: string | null;
     uploaderName: string;
-    uploader?: { id: string, name: string | null, avatar: string | null } | null;
     hasPin: boolean;
-    parentId: string | null;
-    ispublic: boolean;
+    uploader?: { id: string, name: string | null, avatar: string | null } | null;
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
 }
+
 
 // --- ANNOUNCEMENTS ---
 export interface Announcement {
@@ -269,13 +262,14 @@ export interface AdminDashboardStats {
     totalCourses: number;
     totalPublishedCourses: number;
     totalEnrollments: number;
+    totalResources: number;
+    totalAnnouncements: number;
+    totalForms: number;
     usersByRole: { role: UserRole; count: number }[];
     coursesByStatus: { status: CourseStatus; count: number }[];
     recentLogins: number;
-    newUsersLast7Days: number;
     newEnrollmentsLast7Days: number;
     userRegistrationTrend: { date: string, count: number }[];
-    courseActivity: { date: string, newCourses: number, publishedCourses: number, newEnrollments: number }[];
     averageCompletionRate: number;
     topCoursesByEnrollment: CourseInfo[];
     topCoursesByCompletion: CourseInfo[];

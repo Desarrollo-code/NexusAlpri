@@ -1,3 +1,4 @@
+
 // src/app/(app)/analytics/page.tsx
 'use client';
 
@@ -25,6 +26,9 @@ import {
   FilePlus2 as CourseIcon,
   HelpCircle,
   Calendar as CalendarIcon,
+  Folder,
+  Megaphone,
+  FileText
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -375,17 +379,14 @@ function AdminAnalyticsPage() {
     if (isLoading) {
         return (
             <div className="space-y-8">
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                    <Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" />
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4">
+                    {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-32" />)}
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <Skeleton className="h-96" /><Skeleton className="h-96" /><Skeleton className="h-96" />
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Skeleton className="h-[450px]" /><Skeleton className="h-[450px]" />
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <Skeleton className="h-96" /><Skeleton className="h-96" /><Skeleton className="h-96" />
                 </div>
             </div>
         )
@@ -452,12 +453,15 @@ function AdminAnalyticsPage() {
                 </Button>
              </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-4" id="analytics-metric-cards">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8 gap-4 mt-4" id="analytics-metric-cards">
             <MetricCard title="Total Usuarios" value={stats?.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
-            <MetricCard title="Total Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
             <MetricCard title="Total Cursos" value={stats?.totalCourses || 0} icon={Library} gradient="bg-gradient-orange" />
+            <MetricCard title="Inscripciones" value={stats?.totalEnrollments || 0} icon={GraduationCap} gradient="bg-gradient-purple" />
             <MetricCard title="Cursos Publicados" value={stats?.totalPublishedCourses || 0} icon={BookOpenCheck} gradient="bg-gradient-green" />
-            <MetricCard title="Tasa de Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio de todos los cursos" gradient="bg-gradient-pink" />
+            <MetricCard title="Recursos" value={stats?.totalResources || 0} icon={Folder} gradient="bg-gradient-to-r from-sky-500 to-cyan-400" />
+            <MetricCard title="Anuncios" value={stats?.totalAnnouncements || 0} icon={Megaphone} gradient="bg-gradient-to-r from-rose-500 to-pink-500" />
+            <MetricCard title="Formularios" value={stats?.totalForms || 0} icon={FileText} gradient="bg-gradient-to-r from-amber-500 to-yellow-400" />
+            <MetricCard title="Finalización" value={stats?.averageCompletionRate || 0} icon={BadgePercent} suffix="%" description="Promedio" gradient="bg-gradient-pink" />
         </div>
         
         <Separator />
