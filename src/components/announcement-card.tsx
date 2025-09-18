@@ -44,7 +44,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
         </div>
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-xs pt-1">
             <div className="flex items-center gap-1.5">
-                <Avatar className="h-5 w-5"><AvatarFallback><Identicon userId={announcement.author?.id || 'system'} /></AvatarFallback></Avatar>
+                <Avatar className="h-5 w-5"><AvatarImage src={announcement.author?.avatar || undefined} /><AvatarFallback><Identicon userId={announcement.author?.id || 'system'} /></AvatarFallback></Avatar>
                 <span>{announcement.author?.name || 'Sistema'}</span>
             </div>
              <div className="flex items-center gap-1.5"><Clock className="h-3 w-3" /><span>{formatDate(announcement.date)}</span></div>
