@@ -21,42 +21,6 @@ export async function GET(req: NextRequest) {
     const startDate = startDateParam ? startOfDay(parseISO(startDateParam)) : startOfDay(subDays(endDate, 29));
 
     try {
-        const completedProgress = await prisma.courseProgress.groupBy({
-            by: ['userId'],
-            where: {
-                progressPercentage: { gte: 99 },
-                user: { role: 'STUDENT' }
-            },
-            _count: {
-                userId: true
-            },
-            orderBy: {
-                _count: {
-                    userId: 'desc'
-                }
-            },
-            take: 5
-        });
-
-        const topStudentIds = completedProgress.map(p => p.userId);
-        let sortedTopStudents: { id: string; name: string | null; avatar: string | null; value: number }[] = [];
-        if (topStudentIds.length > 0) {
-            const topStudentUsers = await prisma.user.findMany({
-                where: { id: { in: topStudentIds } },
-                select: { id: true, name: true, avatar: true }
-            });
-
-            sortedTopStudents = topStudentUsers.map(user => {
-                const progressCount = completedProgress.find(p => p.userId === user.id);
-                return {
-                    id: user.id,
-                    name: user.name,
-                    avatar: user.avatar,
-                    value: progressCount?._count.userId || 0
-                };
-            }).sort((a, b) => b.value - a.value);
-        }
-
         const [
             totalUsersResult,
             totalCoursesResult,
@@ -68,9 +32,10 @@ export async function GET(req: NextRequest) {
             newEnrollmentsLast7DaysCount,
             userRegistrations,
             topCoursesByEnrollment,
-            courseCompletions,
+            allCoursesWithProgress,
             topStudentsByEnrollment,
             topInstructorsByCourses,
+            topStudentsByCompletionData
         ] = await prisma.$transaction([
             prisma.user.count(),
             prisma.course.count(),
@@ -90,7 +55,7 @@ export async function GET(req: NextRequest) {
                     registeredDate: {
                         gte: startDate,
                         lte: endDate,
-                        not: null, // <-- SOLUCIÓN: Excluir usuarios sin fecha de registro
+                        not: null,
                     },
                 },
                 _count: { _all: true },
@@ -102,9 +67,17 @@ export async function GET(req: NextRequest) {
                 take: 5,
                 select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } }
             }),
-            prisma.courseProgress.findMany({
-                where: { progressPercentage: { gte: 99 } },
-                select: { course: { select: { id: true, title: true, imageUrl: true } } }
+            prisma.course.findMany({
+                where: { status: 'PUBLISHED' },
+                include: {
+                    enrollments: {
+                        include: {
+                            progress: {
+                                select: { progressPercentage: true }
+                            }
+                        }
+                    }
+                }
             }),
             prisma.user.findMany({
                 where: { role: 'STUDENT' },
@@ -118,6 +91,24 @@ export async function GET(req: NextRequest) {
                 take: 5,
                 select: { id: true, name: true, avatar: true, _count: { select: { courses: true } } }
             }),
+             prisma.user.findMany({
+                where: {
+                    role: 'STUDENT',
+                    progress: { some: { progressPercentage: { gte: 99 } } }
+                },
+                select: {
+                    id: true, name: true, avatar: true,
+                    _count: {
+                        select: { progress: { where: { progressPercentage: { gte: 99 } } } }
+                    }
+                },
+                orderBy: {
+                    progress: {
+                        _count: 'desc'
+                    }
+                },
+                take: 5
+            })
         ]);
 
         const dailyRegistrations = new Map<string, number>();
@@ -133,29 +124,22 @@ export async function GET(req: NextRequest) {
         });
         const userRegistrationTrend = Array.from(dailyRegistrations.entries()).map(([date, count]) => ({ date, count }));
 
-        const completionCounts = courseCompletions.reduce((acc, { course }) => {
-            if (course) { // Make sure course is not null
-              acc[course.id] = (acc[course.id] || 0) + 1;
-            }
-            return acc;
-        }, {} as Record<string, number>);
-
-        const allEnrollments = await prisma.enrollment.groupBy({
-            by: ['courseId'],
-            _count: { _all: true },
+        const completionRates = allCoursesWithProgress.map(course => {
+            const completedCount = course.enrollments.filter(e => e.progress?.progressPercentage && e.progress.progressPercentage >= 99).length;
+            const totalEnrolled = course.enrollments.length;
+            // Prevent division by zero
+            const rate = totalEnrolled > 0 ? (completedCount / totalEnrolled) * 100 : 0;
+            return { id: course.id, title: course.title, imageUrl: course.imageUrl, value: rate };
         });
 
-        const completionRates = allEnrollments.map(enroll => {
-            const course = courseCompletions.find(c => c.course?.id === enroll.courseId)?.course;
-            if (!course || enroll._count._all === 0) return null;
-            const rate = ((completionCounts[course.id] || 0) / enroll._count._all) * 100;
-            return { id: course.id, title: course.title, imageUrl: course.imageUrl, value: rate };
-        }).filter(Boolean);
-
-        const averageCompletionRate = completionRates.length > 0 ? completionRates.reduce((acc, curr) => acc + curr!.value, 0) / completionRates.length : 0;
+        const averageCompletionRate = completionRates.length > 0 ? completionRates.reduce((acc, curr) => acc + curr.value, 0) / completionRates.length : 0;
         
-        const topCoursesByCompletion = [...completionRates].sort((a, b) => b!.value - a!.value).slice(0, 5);
-        const lowestCoursesByCompletion = [...completionRates].sort((a, b) => a!.value - b!.value).slice(0, 5);
+        const topCoursesByCompletion = [...completionRates].sort((a, b) => b.value - a.value).slice(0, 5);
+        const lowestCoursesByCompletion = [...completionRates].sort((a, b) => a.value - b.value).slice(0, 5);
+        
+        const topStudentsByCompletion = topStudentsByCompletionData.map(u => ({
+            id: u.id, name: u.name, avatar: u.avatar, value: u._count.progress
+        }));
         
         const responsePayload = {
             totalUsers: totalUsersResult,
@@ -172,7 +156,7 @@ export async function GET(req: NextRequest) {
             topCoursesByCompletion,
             lowestCoursesByCompletion,
             topStudentsByEnrollment: topStudentsByEnrollment.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, value: u._count.enrollments })),
-            topStudentsByCompletion: sortedTopStudents,
+            topStudentsByCompletion: topStudentsByCompletion,
             topInstructorsByCourses: topInstructorsByCourses.map(u => ({ id: u.id, name: u.name, avatar: u.avatar, value: u._count.courses })),
         };
 

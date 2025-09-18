@@ -71,16 +71,16 @@ const formatDateTooltip = (dateString: string) => {
 
 const userRolesChartConfig = {
   count: { label: "Usuarios" },
-  STUDENT: { label: "Estudiantes", color: "hsl(210 90% 55%)" },
-  INSTRUCTOR: { label: "Instructores", color: "hsl(140 80% 45%)" },
-  ADMINISTRATOR: { label: "Administradores", color: "hsl(260 85% 60%)" },
+  STUDENT: { label: "Estudiantes", color: "hsl(var(--chart-1))" },
+  INSTRUCTOR: { label: "Instructores", color: "hsl(var(--chart-2))" },
+  ADMINISTRATOR: { label: "Administradores", color: "hsl(var(--chart-3))" },
 } satisfies ChartConfig;
 
 const courseStatusChartConfig = {
     count: { label: "Cursos" },
-    DRAFT: { label: "Borrador", color: "hsl(35 90% 55%)" },
-    PUBLISHED: { label: "Publicado", color: "hsl(140 80% 45%)" },
-    ARCHIVED: { label: "Archivado", color: "hsl(220 10% 60%)" },
+    DRAFT: { label: "Borrador", color: "hsl(var(--chart-4))" },
+    PUBLISHED: { label: "Publicado", color: "hsl(var(--chart-3))" },
+    ARCHIVED: { label: "Archivado", color: "hsl(var(--chart-5))" },
 } satisfies ChartConfig;
 
 const renderActiveShape = (props: any) => {
@@ -336,23 +336,21 @@ function AdminAnalyticsPage() {
 
     const userRolesChartData = useMemo(() => {
         if (!stats?.usersByRole) return [];
-        const order: ('STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR')[] = ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'];
-        return order.map(role => ({
+        return ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'].map(role => ({
             role: role,
-            label: userRolesChartConfig[role]?.label || role,
+            label: userRolesChartConfig[role as 'STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR']?.label || role,
             count: stats.usersByRole.find(item => item.role === role)?.count || 0,
-            fill: userRolesChartConfig[role]?.color || 'hsl(var(--muted))'
+            fill: userRolesChartConfig[role as 'STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR']?.color || 'hsl(var(--muted))'
         }));
     }, [stats?.usersByRole]);
     
     const courseStatusChartData = useMemo(() => {
         if (!stats?.coursesByStatus) return [];
-        const order: ('DRAFT' | 'PUBLISHED' | 'ARCHIVED')[] = ['DRAFT', 'PUBLISHED', 'ARCHIVED'];
-        return order.map(status => ({
+        return ['DRAFT', 'PUBLISHED', 'ARCHIVED'].map(status => ({
             status: status,
-            label: courseStatusChartConfig[status]?.label || status,
+            label: courseStatusChartConfig[status as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED']?.label || status,
             count: stats.coursesByStatus.find(item => item.status === status)?.count || 0,
-            fill: courseStatusChartConfig[status]?.color || 'hsl(var(--muted))'
+            fill: courseStatusChartConfig[status as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED']?.color || 'hsl(var(--muted))'
         })).filter(item => item.count > 0);
     }, [stats?.coursesByStatus]);
 
