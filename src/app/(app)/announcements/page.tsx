@@ -50,6 +50,7 @@ interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audie
 }
 
 const PAGE_SIZE = 6; // 2x3 grid
+const MAX_FILE_SIZE_MB = 4; // Límite de 4MB para los adjuntos
 
 export default function AnnouncementsPage() {
   const { user } = useAuth();
@@ -101,7 +102,7 @@ export default function AnnouncementsPage() {
       const params = new URLSearchParams();
       params.append('page', String(currentPage));
       params.append('pageSize', String(PAGE_SIZE));
-      if (activeTab) {
+      if (activeTab && user?.role !== 'STUDENT') {
           params.append('filter', activeTab);
       }
 
@@ -122,7 +123,7 @@ export default function AnnouncementsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast, currentPage, activeTab]);
+  }, [toast, currentPage, activeTab, user?.role]);
 
   useEffect(() => {
     fetchAnnouncements();
@@ -163,6 +164,17 @@ export default function AnnouncementsPage() {
   const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        toast({
+          title: "Archivo Demasiado Grande",
+          description: `El tamaño del archivo no puede superar los ${MAX_FILE_SIZE_MB} MB.`,
+          variant: "destructive",
+        });
+        e.target.value = ''; // Reset input
+        return;
+      }
+      
       const formData = new FormData();
       formData.append('file', file);
 
@@ -403,7 +415,7 @@ export default function AnnouncementsPage() {
           <AlertTriangle className="h-8 w-8 mb-2" />
           <p className="font-semibold">Error al cargar anuncios</p>
           <p className="text-sm">{error}</p>
-          <Button onClick={() => router.refresh()} variant="outline" className="mt-4">Reintentar</Button>
+          <Button onClick={() => fetchAnnouncements()} variant="outline" className="mt-4">Reintentar</Button>
         </div>
       ) : allAnnouncements.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
