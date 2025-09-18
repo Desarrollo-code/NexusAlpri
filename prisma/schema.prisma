@@ -1,8 +1,8 @@
 // prisma/schema.prisma
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "foreignKeys"
 }
 
 generator client {
@@ -123,6 +123,9 @@ model User {
   createdTemplates      LessonTemplate[]
   // Relación con formularios creados
   createdForms          Form[]
+  // Relaciones inversas añadidas
+  securityLogs          SecurityLog[]
+  courseProgress        CourseProgress[]
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
 }
@@ -166,6 +169,8 @@ model Course {
   instructorId    String?
   modules         Module[]
   enrollments     Enrollment[]
+  // Relación inversa añadida
+  courseProgress  CourseProgress[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
@@ -252,7 +257,7 @@ model AnswerOption {
   // Relaciones
   question      Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
   questionId    String
-  answerAttempts AnswerAttempt[] 
+  answerAttempts AnswerAttempt[]
 }
 
 // -------------------
@@ -398,7 +403,7 @@ model Notification {
   type       String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  
+
   @@index([userId])
 }
 
@@ -473,7 +478,7 @@ model CalendarEvent {
   audienceType        String   // ALL, ADMINISTRATOR, INSTRUCTOR, STUDENT, SPECIFIC
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
-  
+
   @@index([creatorId])
 }
 
@@ -533,7 +538,7 @@ model UserAchievement {
   userId       String
   achievement  Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
   achievementId String
-  
+
   @@unique([userId, achievementId])
 }
 
@@ -579,7 +584,7 @@ model Form {
   fields      FormField[]
   responses   FormResponse[]
   sharedWith  User[]   @relation("SharedForms")
-  
+
   @@index([creatorId])
 }
 
