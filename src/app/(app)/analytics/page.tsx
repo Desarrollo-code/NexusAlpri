@@ -134,6 +134,17 @@ function DonutChartCard({ title, data, config, id }: { title: string, data: any[
   const onPieLeave = useCallback(() => {
     setActiveIndex(undefined);
   }, [setActiveIndex]);
+
+  if (!data || data.length === 0) {
+    return (
+        <Card className="card-border-animated h-full" id={id}>
+             <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
+             <CardContent className="h-80 flex items-center justify-center">
+                 <p className="text-sm text-muted-foreground">Datos no disponibles.</p>
+             </CardContent>
+        </Card>
+    );
+  }
   
   return (
     <Card className="card-border-animated h-full" id={id}>
@@ -530,3 +541,5 @@ export default function AnalyticsPageWrapper() {
   );
   
 }
+
+    
