@@ -1,4 +1,3 @@
-
 // src/app/api/dashboard/admin-stats/route.ts
 import prisma from '@/lib/prisma';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -32,133 +31,109 @@ export async function GET(req: NextRequest) {
     
     try {
         // --- Basic Counts ---
-        const totalUsersPromise = safeQuery(prisma.user.count(), 0);
-        const totalCoursesPromise = safeQuery(prisma.course.count(), 0);
-        const totalPublishedCoursesPromise = safeQuery(prisma.course.count({ where: { status: 'PUBLISHED' } }), 0);
-        const totalEnrollmentsPromise = safeQuery(prisma.enrollment.count(), 0);
-        const totalResourcesPromise = safeQuery(prisma.enterpriseResource.count(), 0);
-        const totalAnnouncementsPromise = safeQuery(prisma.announcement.count(), 0);
-        const totalFormsPromise = safeQuery(prisma.form.count(), 0);
-
+        const totalUsers = await safeQuery(prisma.user.count(), 0);
+        const totalCourses = await safeQuery(prisma.course.count(), 0);
+        const totalPublishedCourses = await safeQuery(prisma.course.count({ where: { status: 'PUBLISHED' } }), 0);
+        const totalEnrollments = await safeQuery(prisma.enrollment.count(), 0);
+        const totalResources = await safeQuery(prisma.enterpriseResource.count(), 0);
+        const totalAnnouncements = await safeQuery(prisma.announcement.count(), 0);
+        const totalForms = await safeQuery(prisma.form.count(), 0);
 
         // --- Groupings ---
-        const usersByRolePromise = safeQuery(prisma.user.groupBy({ by: ['role'], _count: { id: true } }), []);
-        const coursesByStatusPromise = safeQuery(prisma.course.groupBy({ by: ['status'], _count: { id: true } }), []);
+        const usersByRole = await safeQuery(prisma.user.groupBy({ by: ['role'], _count: { id: true } }), []);
+        const coursesByStatus = await safeQuery(prisma.course.groupBy({ by: ['status'], _count: { id: true } }), []);
         
         // --- Time-based Stats ---
         const sevenDaysAgo = subDays(new Date(), 7);
-        const recentLoginsPromise = safeQuery(prisma.securityLog.count({
+        const recentLogins = await safeQuery(prisma.securityLog.count({
             where: { event: 'SUCCESSFUL_LOGIN', createdAt: { gte: sevenDaysAgo } },
             distinct: ['userId']
         }), 0);
-        const newEnrollmentsLast7DaysPromise = safeQuery(prisma.enrollment.count({ where: { enrolledAt: { gte: sevenDaysAgo } } }), 0);
+        const newEnrollmentsLast7Days = await safeQuery(prisma.enrollment.count({ where: { enrolledAt: { gte: sevenDaysAgo } } }), 0);
         
-        // --- Course and User Rankings ---
-        const topCoursesByEnrollmentPromise = safeQuery(prisma.course.findMany({
+        // --- Trends ---
+        let userRegistrationTrend: { date: string, count: number }[] = [];
+        try {
+            const userRegistrations = await prisma.user.findMany({
+                where: { registeredDate: { gte: startDate, lte: endDate, not: null } },
+                select: { registeredDate: true }
+            });
+            const dailyRegistrations = new Map<string, number>();
+            const intervalDays = eachDayOfInterval({ start: startDate, end: endDate });
+            intervalDays.forEach(day => { dailyRegistrations.set(format(day, 'yyyy-MM-dd'), 0); });
+            
+            userRegistrations.forEach(reg => {
+                if (reg.registeredDate) {
+                  const dayKey = format(reg.registeredDate, 'yyyy-MM-dd');
+                  if (dailyRegistrations.has(dayKey)) {
+                    dailyRegistrations.set(dayKey, (dailyRegistrations.get(dayKey) || 0) + 1);
+                  }
+                }
+            });
+            userRegistrationTrend = Array.from(dailyRegistrations.entries()).map(([date, count]) => ({ date, count }));
+        } catch (e) { console.error("Error calculating user registration trend:", e); }
+
+
+        // --- Rankings (More complex queries, handled safely) ---
+        const topCoursesByEnrollment = await safeQuery(prisma.course.findMany({
             where: { status: 'PUBLISHED' },
             orderBy: { enrollments: { _count: 'desc' } },
             take: 5,
             select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } }
         }), []);
 
-        const allCoursesWithProgressPromise = safeQuery(prisma.course.findMany({
-            where: { status: 'PUBLISHED', enrollments: { some: {} } },
-            include: { enrollments: { include: { progress: { select: { progressPercentage: true } } } } }
-        }), []);
+        let completionRates: { id: string; title: string; imageUrl: string | null; value: number; }[] = [];
+        try {
+            const allCoursesWithProgress = await prisma.course.findMany({
+                where: { status: 'PUBLISHED', enrollments: { some: {} } },
+                include: { enrollments: { include: { progress: { select: { progressPercentage: true } } } } }
+            });
+            completionRates = allCoursesWithProgress.map(course => {
+                const validProgress = course.enrollments.map(e => e.progress?.progressPercentage).filter(p => p !== null && p !== undefined);
+                const rate = validProgress.length > 0 ? (validProgress.reduce((acc, curr) => acc! + curr!, 0)! / validProgress.length) : 0;
+                return { id: course.id, title: course.title, imageUrl: course.imageUrl, value: rate };
+            });
+        } catch (e) { console.error("Error calculating completion rates:", e); }
 
-        const topStudentsByEnrollmentPromise = safeQuery(prisma.user.findMany({
+
+        const topStudentsByEnrollment = await safeQuery(prisma.user.findMany({
             where: { role: 'STUDENT' },
             orderBy: { enrollments: { _count: 'desc' } },
             take: 5,
             select: { id: true, name: true, avatar: true, _count: { select: { enrollments: true } } }
         }), []);
 
-        const topStudentsByCompletionDataPromise = safeQuery(prisma.courseProgress.groupBy({
-            by: ['userId'],
-            where: { progressPercentage: { gte: 100 } },
-            _count: { userId: true },
-            orderBy: { _count: { userId: 'desc' } },
-            take: 5
-        }), []);
-        
-        const topInstructorsByCoursesPromise = safeQuery(prisma.user.findMany({
+        let topStudentsByCompletion: { id: string; name: string | null; avatar: string | null; value: number; }[] = [];
+        try {
+            const topStudentsByCompletionData = await prisma.courseProgress.groupBy({
+                by: ['userId'], where: { progressPercentage: { gte: 100 } },
+                _count: { _all: true }, orderBy: { _count: { userId: 'desc' } }, take: 5
+            });
+            const topStudentIds = topStudentsByCompletionData.map(item => item.userId);
+            const topStudentDetails = topStudentIds.length > 0 ? await prisma.user.findMany({
+                where: { id: { in: topStudentIds } },
+                select: { id: true, name: true, avatar: true }
+            }) : [];
+            topStudentsByCompletion = topStudentsByCompletionData.map(data => {
+                const userDetail = topStudentDetails.find(u => u.id === data.userId);
+                return { id: data.userId, name: userDetail?.name || null, avatar: userDetail?.avatar || null, value: data._count._all };
+            }).sort((a,b) => b.value - a.value);
+        } catch (e) { console.error("Error calculating top students by completion:", e); }
+
+
+        const topInstructorsByCourses = await safeQuery(prisma.user.findMany({
             where: { role: 'INSTRUCTOR' },
             orderBy: { courses: { _count: 'desc' } },
             take: 5,
             select: { id: true, name: true, avatar: true, _count: { select: { courses: true } } }
         }), []);
-        
-        const userRegistrationsPromise = safeQuery(prisma.user.findMany({
-            where: { registeredDate: { gte: startDate, lte: endDate, not: null } },
-            select: { registeredDate: true }
-        }), []);
 
-        const [
-            totalUsers, totalCourses, totalPublishedCourses, totalEnrollments, totalResources, totalAnnouncements, totalForms,
-            usersByRole, coursesByStatus,
-            recentLogins, newEnrollmentsLast7Days,
-            userRegistrations,
-            topCoursesByEnrollment,
-            allCoursesWithProgress,
-            topStudentsByEnrollment,
-            topStudentsByCompletionData,
-            topInstructorsByCourses
-        ] = await Promise.all([
-            totalUsersPromise, totalCoursesPromise, totalPublishedCoursesPromise, totalEnrollmentsPromise, totalResourcesPromise, totalAnnouncementsPromise, totalFormsPromise,
-            usersByRolePromise, coursesByStatusPromise,
-            recentLoginsPromise, newEnrollmentsLast7DaysPromise,
-            userRegistrationsPromise,
-            topCoursesByEnrollmentPromise,
-            allCoursesWithProgressPromise,
-            topStudentsByEnrollmentPromise,
-            topStudentsByCompletionDataPromise,
-            topInstructorsByCoursesPromise,
-        ]);
-        
-        const dailyRegistrations = new Map<string, number>();
-        const intervalDays = eachDayOfInterval({ start, end: endDate });
-        intervalDays.forEach(day => { dailyRegistrations.set(format(day, 'yyyy-MM-dd'), 0); });
-        
-        userRegistrations.forEach(reg => {
-            if (reg.registeredDate) {
-              const dayKey = format(reg.registeredDate, 'yyyy-MM-dd');
-              if (dailyRegistrations.has(dayKey)) {
-                dailyRegistrations.set(dayKey, (dailyRegistrations.get(dayKey) || 0) + 1);
-              }
-            }
-        });
-        const userRegistrationTrend = Array.from(dailyRegistrations.entries()).map(([date, count]) => ({ date, count }));
-        
-        const completionRates = allCoursesWithProgress.map(course => {
-            const completedCount = course.enrollments.filter(e => e.progress?.progressPercentage && e.progress.progressPercentage >= 100).length;
-            const rate = course.enrollments.length > 0 ? (completedCount / course.enrollments.length) * 100 : 0;
-            return { id: course.id, title: course.title, imageUrl: course.imageUrl, value: rate };
-        });
-
-        const topStudentIds = topStudentsByCompletionData.map(item => item.userId);
-        const topStudentDetails = topStudentIds.length > 0 ? await safeQuery(prisma.user.findMany({
-            where: { id: { in: topStudentIds } },
-            select: { id: true, name: true, avatar: true }
-        }), []) : [];
-
-        const topStudentsByCompletion = topStudentsByCompletionData.map(data => {
-            const userDetail = topStudentDetails.find(u => u.id === data.userId);
-            return { id: data.userId, name: userDetail?.name, avatar: userDetail?.avatar, value: data._count.userId };
-        }).sort((a,b) => b.value - a.value);
         
         const responsePayload: AdminDashboardStats = {
-            totalUsers,
-            totalCourses,
-            totalPublishedCourses,
-            totalEnrollments,
-            totalResources,
-            totalAnnouncements,
-            totalForms,
+            totalUsers, totalCourses, totalPublishedCourses, totalEnrollments, totalResources, totalAnnouncements, totalForms,
             usersByRole: usersByRole.map(group => ({ role: group.role, count: group._count.id })),
             coursesByStatus: coursesByStatus.map(group => ({ status: group.status, count: group._count.id })),
-            recentLogins,
-            newEnrollmentsLast7Days,
-            userRegistrationTrend,
+            recentLogins, newEnrollmentsLast7Days, userRegistrationTrend,
             averageCompletionRate: completionRates.length > 0 ? completionRates.reduce((acc, curr) => acc + curr.value, 0) / completionRates.length : 0,
             topCoursesByEnrollment: topCoursesByEnrollment.map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: c._count.enrollments })),
             topCoursesByCompletion: [...completionRates].sort((a, b) => b.value - a.value).slice(0, 5),

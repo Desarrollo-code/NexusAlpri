@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
       });
 
       if (settings?.enableEmailNotifications) {
-        const recipientEmails = usersToNotify.map(u => u.email).filter(Boolean);
+        const recipientEmails = usersToNotify.map(u => u.email).filter(Boolean) as string[];
         if (recipientEmails.length > 0) {
             await sendEmail({
                 to: recipientEmails,
