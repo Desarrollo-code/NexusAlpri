@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
         where: whereClause,
         orderBy: { date: 'desc' },
         include: { 
-            author: { select: { id: true, name: true } },
+            author: { select: { id: true, name: true, avatar: true } },
             attachments: true,
         },
     };
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
         },
       },
       include: {
-        author: { select: { name: true, id: true } },
+        author: { select: { name: true, id: true, avatar: true } },
         attachments: true
       }
     });
