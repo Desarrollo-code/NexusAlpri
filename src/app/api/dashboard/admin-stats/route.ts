@@ -21,9 +21,6 @@ export async function GET(req: NextRequest) {
     const startDate = startDateParam ? startOfDay(parseISO(startDateParam)) : startOfDay(subDays(endDate, 29));
 
     try {
-        // --- Consulta de los mejores estudiantes por completitud ---
-        // Se separa en 2 pasos para mayor eficiencia y evitar errores de timeout.
-        // 1. Agrupar y contar cursos completados por usuario.
         const completedProgress = await prisma.courseProgress.groupBy({
             by: ['userId'],
             where: {
@@ -41,7 +38,6 @@ export async function GET(req: NextRequest) {
             take: 5
         });
 
-        // 2. Obtener la información de los usuarios top.
         const topStudentIds = completedProgress.map(p => p.userId);
         let sortedTopStudents: { id: string; name: string | null; avatar: string | null; value: number }[] = [];
         if (topStudentIds.length > 0) {
@@ -50,7 +46,6 @@ export async function GET(req: NextRequest) {
                 select: { id: true, name: true, avatar: true }
             });
 
-            // Mapear y ordenar según el conteo
             sortedTopStudents = topStudentUsers.map(user => {
                 const progressCount = completedProgress.find(p => p.userId === user.id);
                 return {
@@ -61,7 +56,6 @@ export async function GET(req: NextRequest) {
                 };
             }).sort((a, b) => b.value - a.value);
         }
-
 
         const [
             totalUsersResult,
@@ -96,6 +90,7 @@ export async function GET(req: NextRequest) {
                     registeredDate: {
                         gte: startDate,
                         lte: endDate,
+                        not: null, // <-- SOLUCIÓN: Excluir usuarios sin fecha de registro
                     },
                 },
                 _count: { _all: true },

@@ -189,7 +189,7 @@ function DonutChartCard({ title, data, config, id }: { title: string, data: any[
 }
 
 function CourseRankingCard({ title, courses, metric, icon: Icon, unit = '', id }: { title: string, courses: any[], metric: string, icon: React.ElementType, unit?: string, id?: string }) {
-    if (!courses) {
+    if (!courses || courses.length === 0) {
         return (
             <Card className="card-border-animated" id={id}>
                  <CardHeader>
@@ -238,7 +238,7 @@ function CourseRankingCard({ title, courses, metric, icon: Icon, unit = '', id }
 }
 
 function UserRankingCard({ title, users, metric, icon: Icon, unit = '', id }: { title: string; users: any[]; metric: string; icon: React.ElementType; unit?: string, id?: string }) {
-    if (!users) {
+    if (!users || users.length === 0) {
         return (
             <Card className="card-border-animated" id={id}>
                  <CardHeader>
