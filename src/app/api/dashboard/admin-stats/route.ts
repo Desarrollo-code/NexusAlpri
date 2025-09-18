@@ -54,20 +54,53 @@ export async function GET(req: NextRequest) {
         where: { registeredDate: { gte: startDate, lte: endDate, not: null } }, // Explicitly exclude nulls
         select: { registeredDate: true }
     }), [], 'userRegistrations');
+
+    const courseCreations = await safeQuery(prisma.course.findMany({
+        where: { createdAt: { gte: startDate, lte: endDate } },
+        select: { createdAt: true }
+    }), [], 'courseCreations');
+
+    const enrollmentCreations = await safeQuery(prisma.enrollment.findMany({
+        where: { enrolledAt: { gte: startDate, lte: endDate } },
+        select: { enrolledAt: true }
+    }), [], 'enrollmentCreations');
     
-    const dailyRegistrations = new Map<string, number>();
+    const dailyData = new Map<string, { registrations: number; newCourses: number; newEnrollments: number }>();
     const intervalDays = eachDayOfInterval({ start: startDate, end: endDate });
-    intervalDays.forEach(day => { dailyRegistrations.set(format(day, 'yyyy-MM-dd'), 0); });
+    intervalDays.forEach(day => {
+        dailyData.set(format(day, 'yyyy-MM-dd'), { registrations: 0, newCourses: 0, newEnrollments: 0 });
+    });
     
     userRegistrations.forEach(reg => {
         if (reg.registeredDate) {
           const dayKey = format(reg.registeredDate, 'yyyy-MM-dd');
-          if (dailyRegistrations.has(dayKey)) {
-            dailyRegistrations.set(dayKey, (dailyRegistrations.get(dayKey) || 0) + 1);
+          if (dailyData.has(dayKey)) {
+            dailyData.get(dayKey)!.registrations++;
           }
         }
     });
-    const userRegistrationTrend = Array.from(dailyRegistrations.entries()).map(([date, count]) => ({ date, count }));
+
+    courseCreations.forEach(course => {
+        const dayKey = format(course.createdAt, 'yyyy-MM-dd');
+        if(dailyData.has(dayKey)) {
+            dailyData.get(dayKey)!.newCourses++;
+        }
+    });
+
+    enrollmentCreations.forEach(enrollment => {
+        const dayKey = format(enrollment.enrolledAt, 'yyyy-MM-dd');
+        if(dailyData.has(dayKey)) {
+            dailyData.get(dayKey)!.newEnrollments++;
+        }
+    });
+
+    const userRegistrationTrend = Array.from(dailyData.entries()).map(([date, counts]) => ({ 
+        date, 
+        count: counts.registrations, 
+        newCourses: counts.newCourses, 
+        newEnrollments: counts.newEnrollments 
+    }));
+
 
     // --- Rankings (More complex queries, handled safely) ---
     const topCoursesByEnrollment = await safeQuery(prisma.course.findMany({
