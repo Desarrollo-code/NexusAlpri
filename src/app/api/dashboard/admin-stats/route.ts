@@ -134,7 +134,9 @@ export async function GET(req: NextRequest) {
         const userRegistrationTrend = Array.from(dailyRegistrations.entries()).map(([date, count]) => ({ date, count }));
 
         const completionCounts = courseCompletions.reduce((acc, { course }) => {
-            acc[course.id] = (acc[course.id] || 0) + 1;
+            if (course) { // Make sure course is not null
+              acc[course.id] = (acc[course.id] || 0) + 1;
+            }
             return acc;
         }, {} as Record<string, number>);
 
@@ -144,7 +146,7 @@ export async function GET(req: NextRequest) {
         });
 
         const completionRates = allEnrollments.map(enroll => {
-            const course = courseCompletions.find(c => c.course.id === enroll.courseId)?.course;
+            const course = courseCompletions.find(c => c.course?.id === enroll.courseId)?.course;
             if (!course || enroll._count._all === 0) return null;
             const rate = ((completionCounts[course.id] || 0) / enroll._count._all) * 100;
             return { id: course.id, title: course.title, imageUrl: course.imageUrl, value: rate };
