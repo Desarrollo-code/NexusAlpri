@@ -1,4 +1,3 @@
-
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -52,7 +51,7 @@ import { resourcesTour } from '@/lib/tour-steps';
 
 // --- Main Page Component ---
 export default function ResourcesPage() {
-  const { user, settings } = useAuth();
+  const { user, settings, isLoading: isAuthLoading } = useAuth();
   const { toast } = useToast();
   const { setPageTitle } = useTitle();
   const isMobile = useIsMobile();
@@ -60,7 +59,7 @@ export default function ResourcesPage() {
 
   const [allApiResources, setAllApiResources] = useState<AppResourceType[]>([]);
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -102,7 +101,7 @@ export default function ResourcesPage() {
   }, [setPageTitle, startTour]);
 
   const fetchResources = useCallback(async () => {
-    setIsLoading(true);
+    setIsLoadingData(true);
     setError(null);
     const params = new URLSearchParams();
     if (currentFolderId) params.append('parentId', currentFolderId);
@@ -116,7 +115,7 @@ export default function ResourcesPage() {
       setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido');
       toast({ title: "Error al cargar recursos", description: err instanceof Error ? err.message : 'No se pudo cargar la biblioteca.', variant: "destructive"});
     } finally {
-      setIsLoading(false);
+      setIsLoadingData(false);
     }
   }, [toast, currentFolderId]);
 
@@ -133,11 +132,12 @@ export default function ResourcesPage() {
 
 
   useEffect(() => {
+    if (isAuthLoading) return; // Wait until auth state is resolved
     fetchResources();
     if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
       fetchAllUsers();
     }
-  }, [fetchResources, fetchAllUsers, user?.role]);
+  }, [isAuthLoading, fetchResources, fetchAllUsers, user?.role]);
 
     const folders = useMemo(() => {
         return allApiResources
@@ -440,7 +440,7 @@ export default function ResourcesPage() {
       </Card>
       
       <div className="flex-grow overflow-auto -mx-4 px-4 mt-4 thin-scrollbar">
-          {isLoading ? (
+          {isAuthLoading || isLoadingData ? (
               <div className="flex justify-center items-center h-full py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
           ) : error ? (
               <div className="flex flex-col items-center justify-center h-full py-12 text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p></div>
