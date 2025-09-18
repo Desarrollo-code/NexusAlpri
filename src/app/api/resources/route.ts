@@ -15,10 +15,12 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const parentId = searchParams.get('parentId') || null;
+    // CORRECCIÓN CRÍTICA: Tratar un string vacío como null.
+    let parentId = searchParams.get('parentId');
+    if (parentId === '') parentId = null;
     
     const baseWhere: Prisma.ResourceWhereInput = {
-        parentId,
+        parentId: parentId,
         status: 'ACTIVE',
         OR: [
             { expiresAt: null },
@@ -54,7 +56,7 @@ export async function GET(req: NextRequest) {
             ],
         });
         
-        // CORRECCIÓN CRÍTICA: Manejo seguro de uploader y tags nulos.
+        // Manejo seguro de datos nulos para uploader y tags.
         const safeResources = resources.map(({ pin, tags, uploader, ...resource }) => ({
             ...resource,
             uploader: uploader,
