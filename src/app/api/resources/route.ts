@@ -2,6 +2,7 @@
 import prisma from '@/lib/prisma';
 import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
+import { Prisma } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,15 +16,30 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const parentId = searchParams.get('parentId') || null;
     
-    // --- Lógica de permisos simplificada y robusta ---
-    const whereClause: any = {
+    // Base filter: active status and not expired
+    const baseWhere: Prisma.ResourceWhereInput = {
         parentId,
+        status: 'ACTIVE',
         OR: [
-            { ispublic: true }, // Es público
-            { uploaderId: session.id }, // Lo subió el usuario actual
-            { sharedWith: { some: { id: session.id } } } // Está compartido con el usuario actual
+            { expiresAt: null },
+            { expiresAt: { gte: new Date() } }
         ]
     };
+    
+    // Permissions filter: either public, or user is uploader, or it's shared with them.
+    const permissionsWhere: Prisma.ResourceWhereInput = {
+        OR: [
+            { ispublic: true },
+            { uploaderId: session.id },
+            { sharedWith: { some: { id: session.id } } }
+        ]
+    };
+    
+    // For admins, show everything that is active.
+    // For others, apply permission filters.
+    const whereClause: Prisma.ResourceWhereInput = session.role === 'ADMINISTRATOR' 
+        ? baseWhere 
+        : { AND: [baseWhere, permissionsWhere] };
 
     try {
         const resources = await prisma.resource.findMany({
@@ -62,7 +78,7 @@ export async function POST(req: NextRequest) {
     
     try {
         const body = await req.json();
-        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds } = body;
+        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt } = body;
 
         if (!title || !type) {
             return NextResponse.json({ message: 'Título y tipo son requeridos' }, { status: 400 });
@@ -80,6 +96,8 @@ export async function POST(req: NextRequest) {
             category: category || 'General',
             tags: Array.isArray(tags) ? tags.join(',') : '',
             ispublic: isPublic === true,
+            status: 'ACTIVE',
+            expiresAt: expiresAt ? new Date(expiresAt) : null,
             uploader: { connect: { id: session.id } },
         };
         
