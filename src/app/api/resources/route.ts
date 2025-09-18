@@ -9,8 +9,12 @@ export const dynamic = 'force-dynamic';
 // GET resources
 export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
-    if (!session) {
-      return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
+    
+    // CORRECCIÓN: Validación estricta de la sesión y el rol del usuario.
+    // Si la sesión o el rol no existen, no se puede construir la consulta de permisos,
+    // lo que causaba el error 500. Ahora devolvemos un error de autorización claro.
+    if (!session || !session.role) {
+      return NextResponse.json({ message: 'No autorizado o sesión inválida' }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -25,17 +29,22 @@ export async function GET(req: NextRequest) {
         ]
     };
     
-    const permissionsWhere: Prisma.ResourceWhereInput = {
-        OR: [
-            { ispublic: true },
-            { uploaderId: session.id },
-            { sharedWith: { some: { id: session.id } } }
-        ]
-    };
-    
-    const whereClause: Prisma.ResourceWhereInput = session.role === 'ADMINISTRATOR' 
-        ? baseWhere 
-        : { AND: [baseWhere, permissionsWhere] };
+    let whereClause: Prisma.ResourceWhereInput;
+
+    if (session.role === 'ADMINISTRATOR') {
+        // El administrador ve todo, no necesita cláusulas de permisos adicionales.
+        whereClause = baseWhere;
+    } else {
+        // Para otros roles, se aplican las reglas de permisos.
+        const permissionsWhere: Prisma.ResourceWhereInput = {
+            OR: [
+                { ispublic: true },
+                { uploaderId: session.id },
+                { sharedWith: { some: { id: session.id } } }
+            ]
+        };
+        whereClause = { AND: [baseWhere, permissionsWhere] };
+    }
 
     try {
         const resources = await prisma.resource.findMany({
@@ -50,7 +59,7 @@ export async function GET(req: NextRequest) {
             ],
         });
         
-        // No exponer el PIN hash al cliente y manejar uploaderName de forma segura
+        // Manejo seguro de campos que pueden ser nulos.
         const safeResources = resources.map(({ pin, tags, ...resource }) => ({
             ...resource,
             tags: tags ? tags.split(',').filter(Boolean) : [],
