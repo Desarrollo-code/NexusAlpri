@@ -40,10 +40,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import { getIconForFileType } from '@/lib/resource-utils';
+import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
-interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
+interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience' | 'attachments'> {
   author: { id: string; name: string; email?: string } | null;
   audience: UserRole[] | 'ALL' | string;
+  attachments: Attachment[];
 }
 
 const PAGE_SIZE = 6; // 2x3 grid
@@ -152,7 +155,7 @@ export default function AnnouncementsPage() {
     setAnnouncementToEdit(announcement);
     setFormTitle(announcement.title);
     setFormContent(announcement.content);
-    setFormAudience(announcement.audience as UserRole | 'ALL');
+    setFormAudience((Array.isArray(announcement.audience) ? announcement.audience[0] : announcement.audience) as UserRole | 'ALL');
     setFormAttachments(announcement.attachments || []);
     setShowCreateEditModal(true);
   };
@@ -279,15 +282,15 @@ export default function AnnouncementsPage() {
                   Crear Anuncio
                 </Button>
               </DialogTrigger>
-              <DialogContent className="w-[95vw] max-w-2xl rounded-lg max-h-[90vh] flex flex-col">
+              <DialogContent className="w-[95vw] max-w-2xl rounded-lg max-h-[90vh] flex flex-col p-0">
                 <form onSubmit={handleSaveAnnouncement} id="announcement-form">
-                  <DialogHeader className="p-6 pb-0">
+                  <DialogHeader className="p-6 pb-4 border-b">
                     <DialogTitle>{announcementToEdit ? 'Editar Anuncio' : 'Crear Nuevo Anuncio'}</DialogTitle>
                     <DialogDescription>
                       {announcementToEdit ? 'Modifica los detalles del anuncio.' : 'Redacta y publica un nuevo comunicado para los usuarios.'}
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="overflow-y-auto px-6 py-4 thin-scrollbar">
+                  <div className="overflow-y-auto px-6 py-4 thin-scrollbar flex-1">
                   <div className="grid gap-4">
                     <div className="space-y-1">
                       <Label htmlFor="title">Título <span className="text-destructive">*</span></Label>
@@ -323,20 +326,22 @@ export default function AnnouncementsPage() {
                          </div>
                          {isUploading && <Progress value={uploadProgress} className="h-2"/>}
                          {formAttachments.length > 0 && (
-                            <div className="space-y-2">
-                                {formAttachments.map((att, index) => {
-                                  const Icon = getIconForFileType(att.type);
-                                  return (
-                                    <div key={index} className="flex items-center gap-2 text-sm bg-muted/50 p-2 rounded-md">
-                                       <Icon className="h-4 w-4 shrink-0" />
-                                       <span className="truncate flex-grow">{att.name}</span>
-                                       <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => setFormAttachments(prev => prev.filter((_, i) => i !== index))}>
-                                          <Trash2 className="h-3 w-3 text-destructive" />
-                                       </Button>
-                                    </div>
-                                  )
-                                })}
-                            </div>
+                            <ScrollArea className="h-32">
+                                <div className="space-y-2 pr-4">
+                                    {formAttachments.map((att, index) => {
+                                    const Icon = getIconForFileType(att.type);
+                                    return (
+                                        <div key={index} className="flex items-center gap-2 text-sm bg-muted/50 p-2 rounded-md">
+                                        <Icon className="h-4 w-4 shrink-0" />
+                                        <span className="truncate flex-grow">{att.name}</span>
+                                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => setFormAttachments(prev => prev.filter((_, i) => i !== index))}>
+                                            <Trash2 className="h-3 w-3 text-destructive" />
+                                        </Button>
+                                        </div>
+                                    )
+                                    })}
+                                </div>
+                            </ScrollArea>
                          )}
                        </div>
                     </div>
@@ -362,13 +367,10 @@ export default function AnnouncementsPage() {
                           </SelectContent>
                         </Select>
                     </div>
-                    <p className="text-xs text-muted-foreground text-center pt-2">
-                        Los campos marcados con <span className="text-destructive">*</span> son obligatorios.
-                    </p>
                     </div>
                     </div>
                     </form>
-                    <DialogFooter className="p-6 pt-4 flex-row justify-end gap-2">
+                    <DialogFooter className="p-6 pt-4 flex-row justify-end gap-2 border-t">
                       <Button type="button" variant="outline" onClick={() => { setShowCreateEditModal(false); resetFormAndState();}} disabled={isProcessing}>Cancelar</Button>
                       <Button type="submit" form="announcement-form" disabled={isProcessing}>
                         {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (announcementToEdit ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />) }
@@ -409,8 +411,8 @@ export default function AnnouncementsPage() {
             <AnnouncementCard 
                 key={announcement.id} 
                 announcement={announcement}
-                onDelete={openDeleteConfirmation}
                 onEdit={handleOpenEditModal}
+                onDelete={openDeleteConfirmation}
             />
           ))}
         </div>
@@ -476,4 +478,3 @@ export default function AnnouncementsPage() {
     </div>
   );
 }
-

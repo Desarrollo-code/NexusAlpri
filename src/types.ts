@@ -207,6 +207,7 @@ export interface Notification {
 export type EventAudienceType = 'ALL' | UserRole | 'SPECIFIC';
 
 export interface Attachment {
+    id?: string;
     name: string;
     url: string;
     type: string;

@@ -48,17 +48,33 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
                 <span>{announcement.author?.name || 'Sistema'}</span>
             </div>
              <div className="flex items-center gap-1.5"><Clock className="h-3 w-3" /><span>{formatDate(announcement.date)}</span></div>
-             <Badge variant="secondary" className="capitalize">{announcement.audience}</Badge>
+             <Badge variant="secondary" className="capitalize">{(Array.isArray(announcement.audience) ? announcement.audience[0] : announcement.audience) || 'ALL'}</Badge>
         </div>
       </CardHeader>
       <CardContent className="flex-grow space-y-4">
         <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: announcement.content }} />
         
         {imageAttachments.length > 0 && (
-            <div className="grid grid-cols-2 gap-2">
-                {imageAttachments.map(att => (
-                    <div key={att.id} className="relative aspect-video rounded-md overflow-hidden">
+            <div className={cn(
+                "grid gap-2",
+                imageAttachments.length === 1 ? "grid-cols-1" :
+                imageAttachments.length === 2 ? "grid-cols-2" :
+                "grid-cols-2 grid-rows-2" // Para 3 o 4 imágenes
+            )}>
+                {imageAttachments.slice(0, 4).map((att, index) => (
+                    <div 
+                        key={att.id || index}
+                        className={cn(
+                            "relative aspect-video rounded-md overflow-hidden",
+                            imageAttachments.length === 3 && index === 0 && "row-span-2"
+                        )}
+                    >
                         <Image src={att.url} alt={att.name} fill className="object-cover" />
+                         {imageAttachments.length > 4 && index === 3 && (
+                           <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-lg">
+                             +{imageAttachments.length - 4}
+                           </div>
+                         )}
                     </div>
                 ))}
             </div>
