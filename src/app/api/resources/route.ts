@@ -16,7 +16,6 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const parentId = searchParams.get('parentId') || null;
     
-    // Base filter: active status and not expired
     const baseWhere: Prisma.ResourceWhereInput = {
         parentId,
         status: 'ACTIVE',
@@ -26,7 +25,6 @@ export async function GET(req: NextRequest) {
         ]
     };
     
-    // Permissions filter: either public, or user is uploader, or it's shared with them.
     const permissionsWhere: Prisma.ResourceWhereInput = {
         OR: [
             { ispublic: true },
@@ -35,8 +33,6 @@ export async function GET(req: NextRequest) {
         ]
     };
     
-    // For admins, show everything that is active.
-    // For others, apply permission filters.
     const whereClause: Prisma.ResourceWhereInput = session.role === 'ADMINISTRATOR' 
         ? baseWhere 
         : { AND: [baseWhere, permissionsWhere] };
@@ -59,7 +55,7 @@ export async function GET(req: NextRequest) {
             ...resource,
             tags: tags ? tags.split(',').filter(Boolean) : [], // Safe handling of null tags
             hasPin: !!pin,
-            uploaderName: resource.uploader?.name || 'Sistema',
+            uploaderName: resource.uploader ? resource.uploader.name || 'Sistema' : 'Sistema', // FIX: Safely access uploader name
         }));
 
         return NextResponse.json({ resources: safeResources, totalResources: safeResources.length });
@@ -126,7 +122,7 @@ export async function POST(req: NextRequest) {
             ...safeResource,
             tags: tagsString ? tagsString.split(',').filter(Boolean) : [],
             hasPin: !!pin,
-            uploaderName: newResource.uploader?.name || 'Sistema'
+            uploaderName: newResource.uploader ? newResource.uploader.name || 'Sistema' : 'Sistema', // FIX: Safely access uploader name
         }, { status: 201 });
 
     } catch (error) {
