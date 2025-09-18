@@ -10,9 +10,6 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
     
-    // CORRECCIÓN: Validación estricta de la sesión y el rol del usuario.
-    // Si la sesión o el rol no existen, no se puede construir la consulta de permisos,
-    // lo que causaba el error 500. Ahora devolvemos un error de autorización claro.
     if (!session || !session.role) {
       return NextResponse.json({ message: 'No autorizado o sesión inválida' }, { status: 401 });
     }
@@ -32,10 +29,8 @@ export async function GET(req: NextRequest) {
     let whereClause: Prisma.ResourceWhereInput;
 
     if (session.role === 'ADMINISTRATOR') {
-        // El administrador ve todo, no necesita cláusulas de permisos adicionales.
         whereClause = baseWhere;
     } else {
-        // Para otros roles, se aplican las reglas de permisos.
         const permissionsWhere: Prisma.ResourceWhereInput = {
             OR: [
                 { ispublic: true },
@@ -59,12 +54,13 @@ export async function GET(req: NextRequest) {
             ],
         });
         
-        // Manejo seguro de campos que pueden ser nulos.
-        const safeResources = resources.map(({ pin, tags, ...resource }) => ({
+        // CORRECCIÓN CRÍTICA: Manejo seguro de uploader y tags nulos.
+        const safeResources = resources.map(({ pin, tags, uploader, ...resource }) => ({
             ...resource,
+            uploader: uploader,
             tags: tags ? tags.split(',').filter(Boolean) : [],
             hasPin: !!pin,
-            uploaderName: resource.uploader ? resource.uploader.name || 'Sistema' : 'Sistema',
+            uploaderName: uploader ? uploader.name || 'Sistema' : 'Sistema',
         }));
 
         return NextResponse.json({ resources: safeResources, totalResources: safeResources.length });
@@ -125,13 +121,14 @@ export async function POST(req: NextRequest) {
             }
         });
         
-        const { pin, tags: tagsString, ...safeResource } = newResource;
+        const { pin, tags: tagsString, uploader, ...safeResource } = newResource;
 
         return NextResponse.json({ 
             ...safeResource,
+            uploader: uploader,
             tags: tagsString ? tagsString.split(',').filter(Boolean) : [],
             hasPin: !!pin,
-            uploaderName: newResource.uploader ? newResource.uploader.name || 'Sistema' : 'Sistema',
+            uploaderName: uploader ? uploader.name || 'Sistema' : 'Sistema',
         }, { status: 201 });
 
     } catch (error) {
