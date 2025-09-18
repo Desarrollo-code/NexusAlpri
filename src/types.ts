@@ -163,7 +163,7 @@ export interface UserNote {
 export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER';
 export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
 
-export interface EnterpriseResource extends PrismaResource {
+export interface EnterpriseResource extends Omit<PrismaResource, 'tags'> {
     tags: string[];
     uploaderName: string;
     hasPin: boolean;

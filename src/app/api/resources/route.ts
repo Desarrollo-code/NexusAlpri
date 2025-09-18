@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
         // No exponer el PIN hash al cliente
         const safeResources = resources.map(({ pin, tags, ...resource }) => ({
             ...resource,
-            tags: tags ? tags.split(',').filter(Boolean) : [],
+            tags: tags ? tags.split(',').filter(Boolean) : [], // Safe handling of null tags
             hasPin: !!pin,
             uploaderName: resource.uploader?.name || 'Sistema',
         }));
