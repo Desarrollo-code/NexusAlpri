@@ -50,12 +50,12 @@ export async function GET(req: NextRequest) {
             ],
         });
         
-        // No exponer el PIN hash al cliente
+        // No exponer el PIN hash al cliente y manejar uploaderName de forma segura
         const safeResources = resources.map(({ pin, tags, ...resource }) => ({
             ...resource,
-            tags: tags ? tags.split(',').filter(Boolean) : [], // Safe handling of null tags
+            tags: tags ? tags.split(',').filter(Boolean) : [],
             hasPin: !!pin,
-            uploaderName: resource.uploader ? resource.uploader.name || 'Sistema' : 'Sistema', // FIX: Safely access uploader name
+            uploaderName: resource.uploader ? resource.uploader.name || 'Sistema' : 'Sistema',
         }));
 
         return NextResponse.json({ resources: safeResources, totalResources: safeResources.length });
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
             ...safeResource,
             tags: tagsString ? tagsString.split(',').filter(Boolean) : [],
             hasPin: !!pin,
-            uploaderName: newResource.uploader ? newResource.uploader.name || 'Sistema' : 'Sistema', // FIX: Safely access uploader name
+            uploaderName: newResource.uploader ? newResource.uploader.name || 'Sistema' : 'Sistema',
         }, { status: 201 });
 
     } catch (error) {

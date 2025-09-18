@@ -57,6 +57,8 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
         return <FallbackIcon resource={resource} />;
     };
 
+    const Icon = !isFolder ? getIconForType(resource.type) : null;
+
     return (
         <div className="w-full">
             <Card 
@@ -74,7 +76,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                 <div className="p-3">
                     <div className="flex justify-between items-start gap-2">
                         <div className="flex items-start gap-2 flex-grow overflow-hidden">
-                          {React.createElement(getIconForType(resource.type), { className: "h-4 w-4 shrink-0 mt-0.5" })}
+                          {Icon && React.createElement(Icon, { className: "h-4 w-4 shrink-0 mt-0.5" })}
                           <p className="font-medium text-sm leading-tight break-words">{resource.title}</p>
                         </div>
                         {canModify && (
@@ -113,7 +115,7 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                             </DropdownMenu>
                         )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1 pl-6">
+                    <p className={cn("text-xs text-muted-foreground mt-1", !isFolder && "pl-6")}>
                         {new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                 </div>
@@ -123,5 +125,3 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
 });
 ResourceGridItem.displayName = 'ResourceGridItem';
 export { ResourceGridItem };
-
-    
