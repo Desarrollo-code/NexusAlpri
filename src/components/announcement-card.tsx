@@ -1,3 +1,4 @@
+
 // src/components/announcement-card.tsx
 'use client';
 
