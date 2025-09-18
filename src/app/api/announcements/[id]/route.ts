@@ -104,19 +104,15 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       return NextResponse.json({ message: 'No tienes permiso para eliminar este anuncio' }, { status: 403 });
     }
     
-    await prisma.$transaction([
-      prisma.notification.deleteMany({
-          where: { 
-              title: `Nuevo Anuncio: ${announcement.title}`,
-              link: '/announcements'
-          } 
-      }),
-      prisma.announcement.delete({ where: { id } })
-    ]);
+    // Al eliminar el anuncio, la base de datos se encargará de eliminar en cascada
+    // las notificaciones asociadas gracias a la nueva relación y la acción `onDelete`.
+    await prisma.announcement.delete({ where: { id } });
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error('[ANNOUNCEMENT_DELETE_ERROR]', error);
+    // Prisma's P2025 error code means "Record to delete does not exist."
+    // In this case, the deletion is successful from the client's perspective.
     if ((error as any).code === 'P2025') {
         return new NextResponse(null, { status: 204 });
     }

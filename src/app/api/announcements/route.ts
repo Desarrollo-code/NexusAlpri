@@ -145,7 +145,8 @@ export async function POST(req: NextRequest) {
           userId: user.id,
           title: `Nuevo Anuncio: ${title}`,
           description: description,
-          link: '/announcements'
+          link: '/announcements',
+          announcementId: newAnnouncement.id, // VINCULAR LA NOTIFICACIÓN AL ANUNCIO
         }))
       });
 
