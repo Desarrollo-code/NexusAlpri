@@ -1,7 +1,7 @@
 // prisma/schema.prisma
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -203,16 +203,16 @@ model Lesson {
 }
 
 model ContentBlock {
-  id       String     @id @default(cuid())
-  type     LessonType
-  content  String?    @db.Text
-  order    Int
+  id        String     @id @default(cuid())
+  type      LessonType
+  content   String?    @db.Text
+  order     Int
   // Relaciones
-  lesson   Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  lessonId String
-  quiz     Quiz?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  lesson    Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId  String
+  quiz      Quiz?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@index([lessonId])
 }
@@ -252,7 +252,7 @@ model AnswerOption {
   // Relaciones
   question      Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
   questionId    String
-  answerAttempts AnswerAttempt[] // Corrected name
+  answerAttempts AnswerAttempt[] 
 }
 
 // -------------------
@@ -388,6 +388,19 @@ model ResourcePermission {
   @@unique([resourceId, userId, type])
 }
 
+model Notification {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  title      String
+  content    String   @db.Text
+  read       Boolean  @default(false)
+  type       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  @@index([userId])
+}
 
 model Announcement {
   id          String               @id @default(cuid())
