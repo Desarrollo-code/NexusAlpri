@@ -1,57 +1,60 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-generator client {
-  provider = "prisma-client-js"
-}
+ // prisma/schema.prisma
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+provider      = "postgresql"
+url           = env("DATABASE_URL")
+relationMode = "foreignKeys"
+}
+
+generator client {
+provider = "prisma-client-js"
 }
 
 // ------------------------------
 // --- MODELOS DE AUTENTICACIÓN Y USUARIO ---
 // ------------------------------
 
+
 model User {
-  id                  String                @id @default(cuid())
+  id                  String               @id @default(cuid())
   name                String
-  email               String                @unique
+  email               String               @unique
   password            String
   avatar              String?
-  role                UserRole              @default(STUDENT)
-  registeredDate      DateTime              @default(now())
+  role                UserRole             @default(STUDENT)
+  registeredDate      DateTime             @default(now())
   lastLogin           DateTime?
-  isActive            Boolean               @default(true)
+  isActive            Boolean              @default(true)
   theme               String?
   // 2FA
   twoFactorSecret     String?
-  isTwoFactorEnabled  Boolean               @default(false)
+  isTwoFactorEnabled  Boolean              @default(false)
   // Gamification
-  xp                  Int                   @default(0)
+  xp                  Int                  @default(0)
   // Relaciones
-  courses             Course[] // Cursos que imparte
-  enrollments         Enrollment[] // Cursos en los que está inscrito
+  courses             Course[]             // Cursos que imparte
+  enrollments         Enrollment[]         // Cursos en los que está inscrito
   courseProgress      CourseProgress[]
   announcements       Announcement[]
-  resources           EnterpriseResource[]
+  resources           EnterpriseResource[] @relation("UploadedResources") // <-- Relación con los recursos subidos
+  sharedResources     EnterpriseResource[] @relation("SharedResources")  // <-- Relación con los recursos compartidos
   notifications       Notification[]
   achievements        UserAchievement[]
   notes               UserNote[]
   // Formularios
-  formsCreated        Form[]                @relation("FormCreator")
+  formsCreated        Form[]               @relation("FormCreator")
   formResponses       FormResponse[]
-  formsSharedWith     Form[]                @relation("FormSharedWith")
+  formsSharedWith     Form[]               @relation("FormSharedWith")
   // Calendario
-  createdEvents       CalendarEvent[]       @relation("EventCreator")
-  attendedEvents      CalendarEvent[]       @relation("EventAttendees")
+  createdEvents       CalendarEvent[]      @relation("EventCreator")
+  attendedEvents      CalendarEvent[]      @relation("EventAttendees")
   quizAttempts        QuizAttempt[]
   lessonTemplates     LessonTemplate[]
+  securityLogs        SecurityLog[]
 
   @@map("users")
 }
+
 
 enum UserRole {
   STUDENT
@@ -102,6 +105,7 @@ model Course {
   instructor      User             @relation(fields: [instructorId], references: [id], onDelete: Cascade)
   modules         Module[]
   enrollments     Enrollment[]
+  courseProgress  CourseProgress[]
 
   @@map("courses")
 }
@@ -436,26 +440,26 @@ model Notification {
 }
 
 model EnterpriseResource {
-  id           String   @id @default(cuid())
-  title        String
-  description  String?
-  type         ResourceType
-  status       ResourceStatus @default(ACTIVE)
-  category     String?
-  tags         String? // Comma-separated
-  url          String?
-  uploadDate   DateTime @default(now())
-  expiresAt    DateTime?
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  type        ResourceType
+  status      ResourceStatus @default(ACTIVE)
+  category    String?
+  tags        String? // Comma-separated
+  url         String?
+  uploadDate  DateTime       @default(now())
+  expiresAt   DateTime?
   // Relaciones
-  uploaderId   String
-  uploader     User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  uploaderId  String
+  uploader    User           @relation("UploadedResources", fields: [uploaderId], references: [id], onDelete: Cascade)
   // Pin & Sharing
-  pin          String?
-  parentId     String?
-  parent       EnterpriseResource? @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
-  children     EnterpriseResource[] @relation("FolderChildren")
-  ispublic     Boolean @default(true)
-  sharedWith   User[]
+  pin         String?
+  parentId    String?
+  parent      EnterpriseResource? @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children    EnterpriseResource[] @relation("FolderChildren")
+  ispublic    Boolean        @default(true)
+  sharedWith  User[]         @relation("SharedResources")
 
   @@map("enterprise_resources")
 }
