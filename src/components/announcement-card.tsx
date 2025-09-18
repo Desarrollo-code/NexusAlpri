@@ -57,7 +57,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete }: Announcemen
         {imageAttachments.length > 0 && (
             <div className="grid grid-cols-2 gap-2">
                 {imageAttachments.map(att => (
-                    <div key={att.id} className="relative aspect-square rounded-md overflow-hidden">
+                    <div key={att.id} className="relative aspect-video rounded-md overflow-hidden">
                         <Image src={att.url} alt={att.name} fill className="object-cover" />
                     </div>
                 ))}

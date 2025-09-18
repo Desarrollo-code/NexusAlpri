@@ -70,6 +70,7 @@ export interface AnswerOption {
     text: string;
     isCorrect: boolean;
     feedback?: string | null;
+    points?: number;
 }
 
 export interface Question {
@@ -208,6 +209,8 @@ export type EventAudienceType = 'ALL' | UserRole | 'SPECIFIC';
 export interface Attachment {
     name: string;
     url: string;
+    type: string;
+    size: number;
 }
 
 export interface CalendarEvent {

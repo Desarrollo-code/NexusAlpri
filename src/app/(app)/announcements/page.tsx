@@ -4,10 +4,10 @@
 
 import { AnnouncementCard } from '@/components/announcement-card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import type { Announcement as AnnouncementType, UserRole } from '@/types'; 
-import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit } from 'lucide-react';
+import type { Announcement as AnnouncementType, UserRole, Attachment } from '@/types'; 
+import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, ChangeEvent } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   Dialog,
@@ -37,6 +37,9 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { useTitle } from '@/contexts/title-context';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Progress } from '@/components/ui/progress';
+import { getIconForFileType } from '@/lib/resource-utils';
 
 interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
   author: { id: string; name: string; email?: string } | null;
@@ -65,10 +68,14 @@ export default function AnnouncementsPage() {
   const [showCreateEditModal, setShowCreateEditModal] = useState(false);
   const [announcementToEdit, setAnnouncementToEdit] = useState<DisplayAnnouncement | null>(null);
 
-  const [formAudience, setFormAudience] = useState<UserRole | 'ALL'>('ALL');
   const [formTitle, setFormTitle] = useState('');
   const [formContent, setFormContent] = useState('');
-
+  const [formAudience, setFormAudience] = useState<UserRole | 'ALL'>('ALL');
+  const [formAttachments, setFormAttachments] = useState<Attachment[]>([]);
+  
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  
   const [announcementToDelete, setAnnouncementToDelete] = useState<DisplayAnnouncement | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -132,6 +139,7 @@ export default function AnnouncementsPage() {
     setFormTitle('');
     setFormContent('');
     setFormAudience('ALL');
+    setFormAttachments([]);
     setAnnouncementToEdit(null);
   }
 
@@ -145,7 +153,29 @@ export default function AnnouncementsPage() {
     setFormTitle(announcement.title);
     setFormContent(announcement.content);
     setFormAudience(announcement.audience as UserRole | 'ALL');
+    setFormAttachments(announcement.attachments || []);
     setShowCreateEditModal(true);
+  };
+  
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      try {
+        const result = await uploadWithProgress('/api/upload/announcement-attachment', formData, setUploadProgress);
+        const newAttachment: Attachment = { name: file.name, url: result.url, type: file.type, size: file.size };
+        setFormAttachments(prev => [...prev, newAttachment]);
+      } catch (err) {
+        toast({ title: "Error de Subida", description: (err as Error).message, variant: "destructive" });
+      } finally {
+        setIsUploading(false);
+      }
+    }
   };
 
 
@@ -169,6 +199,7 @@ export default function AnnouncementsPage() {
         title: formTitle,
         content: formContent,
         audience: formAudience,
+        attachments: formAttachments,
     };
 
     try {
@@ -279,6 +310,37 @@ export default function AnnouncementsPage() {
                           disabled={isProcessing}
                         />
                     </div>
+                    
+                    <div className="space-y-1">
+                       <Label>Adjuntos</Label>
+                       <div className="p-3 border rounded-lg space-y-3">
+                         <div className="flex items-center gap-2">
+                            <Input type="file" id="attachment-upload" className="hidden" onChange={handleFileUpload} disabled={isUploading || isProcessing} />
+                            <label htmlFor="attachment-upload" className={buttonVariants({ variant: 'outline', size: 'sm', className: 'w-full cursor-pointer' })}>
+                              <UploadCloud className="mr-2 h-4 w-4" />
+                               Subir archivo...
+                            </label>
+                         </div>
+                         {isUploading && <Progress value={uploadProgress} className="h-2"/>}
+                         {formAttachments.length > 0 && (
+                            <div className="space-y-2">
+                                {formAttachments.map((att, index) => {
+                                  const Icon = getIconForFileType(att.type);
+                                  return (
+                                    <div key={index} className="flex items-center gap-2 text-sm bg-muted/50 p-2 rounded-md">
+                                       <Icon className="h-4 w-4 shrink-0" />
+                                       <span className="truncate flex-grow">{att.name}</span>
+                                       <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => setFormAttachments(prev => prev.filter((_, i) => i !== index))}>
+                                          <Trash2 className="h-3 w-3 text-destructive" />
+                                       </Button>
+                                    </div>
+                                  )
+                                })}
+                            </div>
+                         )}
+                       </div>
+                    </div>
+
 
                     <div className="space-y-1">
                       <Label htmlFor="audience">Dirigido a <span className="text-destructive">*</span></Label>
@@ -414,3 +476,4 @@ export default function AnnouncementsPage() {
     </div>
   );
 }
+
