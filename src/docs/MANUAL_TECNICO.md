@@ -8,6 +8,7 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 *   **Framework:** Next.js 15+ (con App Router y Server Components)
 *   **Lenguaje:** TypeScript
 *   **Base de Datos:** PostgreSQL (gestionada con Prisma ORM en Supabase)
+*   **Almacenamiento:** Supabase Storage.
 *   **Estilos:** Tailwind CSS
 *   **Componentes UI:** ShadCN
 *   **Autenticación:** JWT almacenado en cookies http-only
@@ -97,7 +98,28 @@ Si al ejecutar `npm run prisma:migrate` ves un error de conexión, es probable q
     npm run prisma:seed
     ```
 
-## 4. Configuración para Producción (Vercel)
+## 4. Almacenamiento de Archivos (Supabase Storage)
+
+La aplicación utiliza Supabase Storage para guardar todos los archivos subidos por los usuarios (avatares, imágenes de cursos, documentos, etc.).
+
+### **¡MUY IMPORTANTE! Creación Manual de Buckets**
+
+Para que la subida de archivos funcione, **debes crear manualmente los "buckets" (contenedores) en tu proyecto de Supabase**. Si no lo haces, recibirás un error **"Bucket not found"**.
+
+**Pasos:**
+1.  Ve a tu proyecto en Supabase y haz clic en el ícono de **Storage** en el menú lateral.
+2.  Haz clic en **"Create a new bucket"**.
+3.  Crea un **bucket público** con los siguientes nombres (es crucial que sean exactos):
+    *   `avatars`
+    *   `course_images`
+    *   `settings_images`
+    *   `lesson_files`
+    *   `resource_library`
+    *   `announcement_attachments`
+
+Asegúrate de que cada bucket esté marcado como **público** para que los archivos se puedan visualizar en la aplicación.
+
+## 5. Configuración para Producción (Vercel)
 
 En Vercel, solo necesitas la variable `DATABASE_URL` del pooler.
 
@@ -107,5 +129,7 @@ En Vercel, solo necesitas la variable `DATABASE_URL` del pooler.
     *   `DATABASE_URL`: Usa la URL del **"Transaction pooler"** (puerto 6543).
     *   `JWT_SECRET`: Genera una nueva cadena secreta y segura.
     *   `RESEND_API_KEY` (opcional): Tu clave de API de Resend.
+    *   `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Las claves públicas de tu proyecto de Supabase.
+    *   `SUPABASE_SERVICE_ROLE_KEY`: La clave de servicio (secreta) de tu proyecto.
 
 3.  Guarda y haz un "Redeploy".
