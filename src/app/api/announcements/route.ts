@@ -1,3 +1,4 @@
+
 // src/app/api/announcements/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -24,23 +25,26 @@ export async function GET(req: NextRequest) {
   
   const isPaginated = pageParam && pageSizeParam;
 
-  let whereClause: any = {
-    OR: [
-      { audience: 'ALL' },
-      { audience: session.role as UserRole },
-    ],
-  };
+  let whereClause: any = {};
 
-  if (filter === 'by-me' && (session.role === 'ADMINISTRATOR' || session.role === 'INSTRUCTOR')) {
-    whereClause = { authorId: session.id };
-  } else if (filter === 'by-others' && (session.role === 'ADMINISTRATOR' || session.role === 'INSTRUCTOR')) {
-    whereClause = { 
-        authorId: { not: session.id },
-        OR: [
-            { audience: 'ALL' },
-            { audience: session.role as UserRole },
-        ]
-     };
+  // Lógica de filtrado reconstruida para ser más clara y robusta
+  if (session.role === 'ADMINISTRATOR' && filter === 'all') {
+    // Admin en la pestaña "Todos" ve todo, sin filtro de audiencia.
+  } else if (filter === 'by-me') {
+    whereClause.authorId = session.id;
+  } else if (filter === 'by-others') {
+    whereClause.authorId = { not: session.id };
+    // Al ver "otros", un admin o instructor solo ve lo que es público o para su rol.
+    whereClause.OR = [
+        { audience: 'ALL' },
+        { audience: session.role as UserRole },
+    ];
+  } else {
+    // Vista por defecto para todos los usuarios (incluye admin en "by-others")
+    whereClause.OR = [
+        { audience: 'ALL' },
+        { audience: session.role as UserRole },
+    ];
   }
   
   try {
