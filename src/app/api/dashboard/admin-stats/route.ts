@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
 
-    const endDate = endDateParam ? endOfDay(parseISO(endDateParam)) : new Date();
+    const endDate = endDateParam ? endOfDay(parseISO(endDateParam)) : endOfDay(new Date());
     const startDate = startDateParam ? startOfDay(parseISO(startDateParam)) : startOfDay(subDays(endDate, 29));
     
     try {
@@ -36,24 +36,10 @@ export async function GET(req: NextRequest) {
         const totalPublishedCoursesPromise = prisma.course.count({ where: { status: 'PUBLISHED' } });
         const totalEnrollmentsPromise = prisma.enrollment.count();
 
-        const [
-            totalUsers, totalCourses, totalPublishedCourses, totalEnrollments
-        ] = await Promise.all([
-            safeQuery(totalUsersPromise, 0),
-            safeQuery(totalCoursesPromise, 0),
-            safeQuery(totalPublishedCoursesPromise, 0),
-            safeQuery(totalEnrollmentsPromise, 0),
-        ]);
-
         // --- Groupings ---
-        const usersByRolePromise = prisma.user.groupBy({ by: ['role'], _count: { id: true } });
-        const coursesByStatusPromise = prisma.course.groupBy({ by: ['status'], _count: { id: true } });
+        const usersByRolePromise = prisma.user.groupBy({ by: ['role'], _count: { _all: true } });
+        const coursesByStatusPromise = prisma.course.groupBy({ by: ['status'], _count: { _all: true } });
         
-        const [usersByRole, coursesByStatus] = await Promise.all([
-             safeQuery(usersByRolePromise, []),
-             safeQuery(coursesByStatusPromise, []),
-        ]);
-
         // --- Time-based Stats ---
         const sevenDaysAgo = subDays(new Date(), 7);
         const recentLoginsPromise = prisma.securityLog.count({
@@ -62,40 +48,86 @@ export async function GET(req: NextRequest) {
         });
         const newEnrollmentsLast7DaysPromise = prisma.enrollment.count({ where: { enrolledAt: { gte: sevenDaysAgo } } });
         
-        const [recentLogins, newEnrollmentsLast7Days] = await Promise.all([
-            safeQuery(recentLoginsPromise, 0),
-            safeQuery(newEnrollmentsLast7DaysPromise, 0)
-        ]);
+        // --- Course and User Rankings ---
+        const topCoursesByEnrollmentPromise = prisma.course.findMany({
+            where: { status: 'PUBLISHED' },
+            orderBy: { enrollments: { _count: 'desc' } },
+            take: 5,
+            select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } }
+        });
 
-        // --- User Registration Trend ---
-        const userRegistrations = await safeQuery(prisma.user.groupBy({
-            by: ['registeredDate'],
-            where: { registeredDate: { gte: startDate, lte: endDate, not: null } },
+        const allCoursesWithProgressPromise = prisma.course.findMany({
+            where: { status: 'PUBLISHED', enrollments: { some: {} } },
+            include: { enrollments: { include: { progress: { select: { progressPercentage: true } } } } }
+        });
+
+        const topStudentsByEnrollmentPromise = prisma.user.findMany({
+            where: { role: 'STUDENT' },
+            orderBy: { enrollments: { _count: 'desc' } },
+            take: 5,
+            select: { id: true, name: true, avatar: true, _count: { select: { enrollments: true } } }
+        });
+
+        const topStudentsByCompletionDataPromise = prisma.courseProgress.groupBy({
+            by: ['userId'],
+            where: { progressPercentage: { gte: 100 } },
             _count: { _all: true },
-            orderBy: { registeredDate: 'asc' },
-        }), []);
+            orderBy: { _count: { userId: 'desc' } },
+            take: 5
+        });
+
+        const topInstructorsByCoursesPromise = prisma.user.findMany({
+            where: { role: 'INSTRUCTOR' },
+            orderBy: { courses: { _count: 'desc' } },
+            take: 5,
+            select: { id: true, name: true, avatar: true, _count: { select: { courses: true } } }
+        });
+
+        // --- User Registration Trend (CORRECTED LOGIC) ---
+        const userRegistrationsPromise = prisma.user.findMany({
+            where: { registeredDate: { gte: startDate, lte: endDate, not: null } },
+            select: { registeredDate: true }
+        });
+
+        const [
+            totalUsers, totalCourses, totalPublishedCourses, totalEnrollments,
+            usersByRole, coursesByStatus,
+            recentLogins, newEnrollmentsLast7Days,
+            userRegistrations,
+            topCoursesByEnrollment,
+            allCoursesWithProgress,
+            topStudentsByEnrollment,
+            topStudentsByCompletionData,
+            topInstructorsByCourses
+        ] = await Promise.all([
+            safeQuery(totalUsersPromise, 0),
+            safeQuery(totalCoursesPromise, 0),
+            safeQuery(totalPublishedCoursesPromise, 0),
+            safeQuery(totalEnrollmentsPromise, 0),
+            safeQuery(usersByRolePromise, []),
+            safeQuery(coursesByStatusPromise, []),
+            safeQuery(recentLoginsPromise, 0),
+            safeQuery(newEnrollmentsLast7DaysPromise, 0),
+            safeQuery(userRegistrationsPromise, []),
+            safeQuery(topCoursesByEnrollmentPromise, []),
+            safeQuery(allCoursesWithProgressPromise, []),
+            safeQuery(topStudentsByEnrollmentPromise, []),
+            safeQuery(topStudentsByCompletionDataPromise, []),
+            safeQuery(topInstructorsByCoursesPromise, []),
+        ]);
 
         const dailyRegistrations = new Map<string, number>();
         const intervalDays = eachDayOfInterval({ start: startDate, end: endDate });
         intervalDays.forEach(day => { dailyRegistrations.set(format(day, 'yyyy-MM-dd'), 0); });
         userRegistrations.forEach(reg => {
-            const dayKey = format(reg.registeredDate!, 'yyyy-MM-dd');
-            dailyRegistrations.set(dayKey, (dailyRegistrations.get(dayKey) || 0) + reg._count._all);
+            if (reg.registeredDate) {
+              const dayKey = format(reg.registeredDate, 'yyyy-MM-dd');
+              if (dailyRegistrations.has(dayKey)) {
+                dailyRegistrations.set(dayKey, (dailyRegistrations.get(dayKey) || 0) + 1);
+              }
+            }
         });
         const userRegistrationTrend = Array.from(dailyRegistrations.entries()).map(([date, count]) => ({ date, count }));
-        
-        // --- Course and User Rankings ---
-        const topCoursesByEnrollment = await safeQuery(prisma.course.findMany({
-            where: { status: 'PUBLISHED' },
-            orderBy: { enrollments: { _count: 'desc' } },
-            take: 5,
-            select: { id: true, title: true, imageUrl: true, _count: { select: { enrollments: true } } }
-        }), []);
-        
-        const allCoursesWithProgress = await safeQuery(prisma.course.findMany({
-            where: { status: 'PUBLISHED', enrollments: { some: {} } },
-            include: { enrollments: { include: { progress: { select: { progressPercentage: true } } } } }
-        }), []);
         
         const completionRates = allCoursesWithProgress.map(course => {
             const completedCount = course.enrollments.filter(e => e.progress?.progressPercentage && e.progress.progressPercentage >= 100).length;
@@ -103,20 +135,6 @@ export async function GET(req: NextRequest) {
             return { id: course.id, title: course.title, imageUrl: course.imageUrl, value: rate };
         });
 
-        const topStudentsByEnrollment = await safeQuery(prisma.user.findMany({
-            where: { role: 'STUDENT' },
-            orderBy: { enrollments: { _count: 'desc' } },
-            take: 5,
-            select: { id: true, name: true, avatar: true, _count: { select: { enrollments: true } } }
-        }), []);
-
-        const topStudentsByCompletionData = await safeQuery(prisma.courseProgress.groupBy({
-            by: ['userId'],
-            where: { progressPercentage: { gte: 100 } },
-            _count: { _all: true },
-            orderBy: { _count: { userId: 'desc' } },
-            take: 5
-        }), []);
         const topStudentIds = topStudentsByCompletionData.map(item => item.userId);
         const topStudentDetails = topStudentIds.length > 0 ? await safeQuery(prisma.user.findMany({
             where: { id: { in: topStudentIds } },
@@ -126,21 +144,14 @@ export async function GET(req: NextRequest) {
             const userDetail = topStudentDetails.find(u => u.id === data.userId);
             return { id: data.userId, name: userDetail?.name, avatar: userDetail?.avatar, value: data._count._all };
         }).sort((a,b) => b.value - a.value);
-
-        const topInstructorsByCourses = await safeQuery(prisma.user.findMany({
-            where: { role: 'INSTRUCTOR' },
-            orderBy: { courses: { _count: 'desc' } },
-            take: 5,
-            select: { id: true, name: true, avatar: true, _count: { select: { courses: true } } }
-        }), []);
         
         const responsePayload: AdminDashboardStats = {
             totalUsers,
             totalCourses,
             totalPublishedCourses,
             totalEnrollments,
-            usersByRole: usersByRole.map(group => ({ role: group.role, count: group._count.id })),
-            coursesByStatus: coursesByStatus.map(group => ({ status: group.status, count: group._count.id })),
+            usersByRole: usersByRole.map(group => ({ role: group.role, count: group._count._all })),
+            coursesByStatus: coursesByStatus.map(group => ({ status: group.status, count: group._count._all })),
             recentLogins,
             newEnrollmentsLast7Days,
             userRegistrationTrend,
@@ -160,5 +171,3 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ message: 'Error al obtener estadísticas del dashboard' }, { status: 500 });
     }
 }
-
-    

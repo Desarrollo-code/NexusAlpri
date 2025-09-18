@@ -79,7 +79,7 @@ const userRolesChartConfig = {
 const courseStatusChartConfig = {
     count: { label: "Cursos" },
     DRAFT: { label: "Borrador", color: "hsl(var(--chart-4))" },
-    PUBLISHED: { label: "Publicado", color: "hsl(var(--chart-3))" },
+    PUBLISHED: { label: "Publicado", color: "hsl(var(--chart-1))" },
     ARCHIVED: { label: "Archivado", color: "hsl(var(--chart-5))" },
 } satisfies ChartConfig;
 
@@ -352,7 +352,7 @@ function AdminAnalyticsPage() {
             label: userRolesChartConfig[role as 'STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR']?.label || role,
             count: stats.usersByRole.find(item => item.role === role)?.count || 0,
             fill: userRolesChartConfig[role as 'STUDENT' | 'INSTRUCTOR' | 'ADMINISTRATOR']?.color || 'hsl(var(--muted))'
-        }));
+        })).filter(item => item.count > 0);
     }, [stats?.usersByRole]);
     
     const courseStatusChartData = useMemo(() => {
@@ -368,7 +368,7 @@ function AdminAnalyticsPage() {
     const registrationTrendChartConfig = {
       count: {
         label: "Nuevos Usuarios",
-        color: "hsl(var(--primary))",
+        color: "hsl(var(--chart-1))",
       },
     } satisfies ChartConfig;
 
