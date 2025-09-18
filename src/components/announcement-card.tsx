@@ -1,4 +1,4 @@
-
+// src/components/announcement-card.tsx
 'use client';
 
 import { useState } from 'react';
@@ -6,10 +6,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Announcement, UserRole } from '@/types';
-import { User, Clock, Edit, Trash2 } from 'lucide-react';
+import type { Announcement } from '@/types';
+import { User, Clock, Edit, Trash2, Paperclip, File as FileIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Identicon } from './ui/identicon';
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
+import { getIconForFileType } from '@/lib/resource-utils';
 
 interface AnnouncementCardProps {
   announcement: Announcement;
@@ -17,100 +20,71 @@ interface AnnouncementCardProps {
   onDelete?: (announcementId: string) => void;
 }
 
-const TRUNCATE_WORDS = 30; // Truncar por palabras en lugar de caracteres
-
 export function AnnouncementCard({ announcement, onEdit, onDelete }: AnnouncementCardProps) {
   const { user } = useAuth();
-  const [isExpanded, setIsExpanded] = useState(false);
-
   const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === announcement.author?.id));
-
-  const getAudienceText = (audience: UserRole[] | 'ALL' | string): string => {
-    if (audience === 'ALL') return 'Todos';
-    if (Array.isArray(audience)) {
-        return audience.map(r => r.charAt(0).toUpperCase() + r.slice(1).toLowerCase()).join(', ');
-    }
-    if (typeof audience === 'string') {
-        try {
-            const parsed = JSON.parse(audience);
-            if(Array.isArray(parsed)) return parsed.map(r => r.charAt(0).toUpperCase() + r.slice(1).toLowerCase()).join(', ');
-        } catch(e) {
-            // It's not a JSON array string
-        }
-        return audience;
-    }
-    return 'Desconocido';
-  }
   
   const formatDate = (dateString: string) => {
     try {
-      return new Date(dateString).toLocaleDateString('es-ES', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        timeZone: 'America/Bogota',
-      });
+      return new Date(dateString).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Bogota' });
     } catch (error) {
       return 'Fecha inválida';
     }
   };
 
-  const stripHtml = (html: string) => {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return doc.body.textContent || "";
-  }
-
-  const plainTextContent = stripHtml(announcement.content);
-  const words = plainTextContent.split(' ');
-  const isTruncated = words.length > TRUNCATE_WORDS;
-
-  const toggleExpand = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      e.preventDefault();
-      setIsExpanded(!isExpanded);
-  }
+  const imageAttachments = announcement.attachments?.filter(att => att.type.startsWith('image/')) || [];
+  const fileAttachments = announcement.attachments?.filter(att => !att.type.startsWith('image/')) || [];
 
   return (
     <Card className="flex flex-col h-full group card-border-animated">
       <CardHeader>
         <div className="flex justify-between items-start gap-2">
             <CardTitle className="text-xl font-headline">{announcement.title}</CardTitle>
-            {announcement.priority === 'Urgente' && (
-                <Badge variant="destructive">{announcement.priority}</Badge>
-            )}
+            {announcement.priority === 'Urgente' && <Badge variant="destructive">{announcement.priority}</Badge>}
         </div>
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-xs pt-1">
             <div className="flex items-center gap-1.5">
-                <Avatar className="h-5 w-5">
-                    {announcement.author?.id ? <AvatarImage src={undefined} alt={announcement.author?.name || 'Sistema'} /> : null}
-                    <AvatarFallback className="text-xs">
-                        {announcement.author?.id ? <Identicon userId={announcement.author.id} /> : 'S'}
-                    </AvatarFallback>
-                </Avatar>
+                <Avatar className="h-5 w-5"><AvatarFallback><Identicon userId={announcement.author?.id || 'system'} /></AvatarFallback></Avatar>
                 <span>{announcement.author?.name || 'Sistema'}</span>
             </div>
-             <div className="flex items-center gap-1.5">
-                <Clock className="h-3 w-3" />
-                <span>{formatDate(announcement.date)}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-                 <Badge variant="secondary" className="capitalize">{getAudienceText(announcement.audience)}</Badge>
-            </div>
+             <div className="flex items-center gap-1.5"><Clock className="h-3 w-3" /><span>{formatDate(announcement.date)}</span></div>
+             <Badge variant="secondary" className="capitalize">{announcement.audience}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="flex-grow">
-        <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
-           <div dangerouslySetInnerHTML={{ __html: announcement.content }} />
-        </div>
+      <CardContent className="flex-grow space-y-4">
+        <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: announcement.content }} />
+        
+        {imageAttachments.length > 0 && (
+            <div className="grid grid-cols-2 gap-2">
+                {imageAttachments.map(att => (
+                    <div key={att.id} className="relative aspect-square rounded-md overflow-hidden">
+                        <Image src={att.url} alt={att.name} fill className="object-cover" />
+                    </div>
+                ))}
+            </div>
+        )}
+
+        {fileAttachments.length > 0 && (
+            <div className="space-y-2">
+                <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5"><Paperclip className="h-3 w-3"/>Archivos Adjuntos</h4>
+                <div className="space-y-2">
+                    {fileAttachments.map(att => {
+                         const FileTypeIcon = getIconForFileType(att.type);
+                         return (
+                            <a key={att.id} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors">
+                                <FileTypeIcon className="h-5 w-5 text-primary shrink-0"/>
+                                <span className="text-sm font-medium truncate flex-grow">{att.name}</span>
+                            </a>
+                        )
+                    })}
+                </div>
+            </div>
+        )}
       </CardContent>
       {canModify && onEdit && onDelete && (
         <CardFooter className="border-t pt-3 pb-3 justify-end gap-2">
-            <Button variant="ghost" size="sm" onClick={() => onEdit(announcement)}>
-                <Edit className="mr-2 h-4 w-4" /> Editar
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => onDelete(announcement.id)}>
-                <Trash2 className="mr-2 h-4 w-4" /> Eliminar
-            </Button>
+            <Button variant="ghost" size="sm" onClick={() => onEdit(announcement)}><Edit className="mr-2 h-4 w-4" /> Editar</Button>
+            <Button variant="outline" size="sm" onClick={() => onDelete(announcement.id)}><Trash2 className="mr-2 h-4 w-4" /> Eliminar</Button>
         </CardFooter>
       )}
     </Card>

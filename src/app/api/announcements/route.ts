@@ -1,4 +1,3 @@
-
 // src/app/api/announcements/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -45,6 +44,15 @@ export async function GET(req: NextRequest) {
   }
   
   try {
+    const commonFindOptions = {
+        where: whereClause,
+        orderBy: { date: 'desc' },
+        include: { 
+            author: { select: { id: true, name: true } },
+            attachments: true,
+        },
+    };
+
     if (isPaginated) {
         const page = parseInt(pageParam, 10);
         const pageSize = parseInt(pageSizeParam, 10);
@@ -52,23 +60,17 @@ export async function GET(req: NextRequest) {
 
         const [announcements, totalAnnouncements] = await prisma.$transaction([
             prisma.announcement.findMany({
-                where: whereClause,
-                orderBy: { date: 'desc' },
-                include: { author: { select: { id: true, name: true } } },
+                ...commonFindOptions,
                 skip: skip,
                 take: pageSize,
             }),
-            prisma.announcement.count({
-                where: whereClause
-            })
+            prisma.announcement.count({ where: whereClause })
         ]);
         
         return NextResponse.json({ announcements, totalAnnouncements });
     } else {
         const announcements = await prisma.announcement.findMany({
-            where: whereClause,
-            orderBy: { date: 'desc' },
-            include: { author: { select: { id: true, name: true } } },
+            ...commonFindOptions,
             take: 4, 
         });
         const totalAnnouncements = await prisma.announcement.count({ where: whereClause });
@@ -89,7 +91,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, content, audience } = body;
+    const { title, content, audience, attachments } = body;
 
     if (!title || !content || !audience) {
         return NextResponse.json({ message: 'Título, contenido y audiencia son requeridos' }, { status: 400 });
@@ -104,10 +106,19 @@ export async function POST(req: NextRequest) {
         audience: audienceToStore,
         authorId: session.id,
         date: new Date(),
-        priority: 'Normal'
+        priority: 'Normal',
+        attachments: {
+          create: attachments?.map((att: { name: string; url: string; type: string; size: number }) => ({
+            name: att.name,
+            url: att.url,
+            type: att.type,
+            size: att.size,
+          })) || [],
+        },
       },
       include: {
-        author: { select: { name: true, id: true } }
+        author: { select: { name: true, id: true } },
+        attachments: true
       }
     });
 
@@ -121,7 +132,6 @@ export async function POST(req: NextRequest) {
     const usersToNotify = allTargetUsers.filter(user => user.id !== session.id);
 
     if (usersToNotify.length > 0) {
-      // Función para limpiar HTML y obtener texto plano.
       const stripHtml = (html: string) => html.replace(/<[^>]*>?/gm, '');
       const plainTextContent = stripHtml(content);
       const description = plainTextContent.substring(0, 100) + (plainTextContent.length > 100 ? '...' : '');
@@ -130,7 +140,7 @@ export async function POST(req: NextRequest) {
         data: usersToNotify.map(user => ({
           userId: user.id,
           title: `Nuevo Anuncio: ${title}`,
-          description: description, // Usar el texto limpio y truncado
+          description: description,
           link: '/announcements'
         }))
       });

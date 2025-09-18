@@ -1,4 +1,3 @@
-
 // src/app/api/announcements/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -18,7 +17,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const { id } = params;
     const announcement = await prisma.announcement.findUnique({
       where: { id },
-      include: { author: { select: { id: true, name: true } } },
+      include: { 
+          author: { select: { id: true, name: true } },
+          attachments: true 
+      },
     });
 
     if (!announcement) {
@@ -52,15 +54,28 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     const body = await req.json();
-    const { title, content, audience, priority } = body;
+    const { title, content, audience, priority, attachments } = body;
     
-    // El audience siempre debe ser un string simple.
     const audienceToStore = Array.isArray(audience) ? audience[0] : audience;
 
     const updatedAnnouncement = await prisma.announcement.update({
       where: { id },
-      data: { title, content, audience: audienceToStore, priority },
-      include: { author: { select: { id: true, name: true } } },
+      data: {
+        title,
+        content,
+        audience: audienceToStore,
+        priority,
+        attachments: {
+          deleteMany: {}, // Clear existing attachments
+          create: attachments.map((att: { name: string; url: string; type: string; size: number }) => ({
+            name: att.name,
+            url: att.url,
+            type: att.type,
+            size: att.size,
+          })),
+        },
+      },
+      include: { author: { select: { id: true, name: true } }, attachments: true },
     });
 
     return NextResponse.json(updatedAnnouncement);
@@ -82,7 +97,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const announcement = await prisma.announcement.findUnique({ where: { id } });
 
     if (!announcement) {
-      // Si el anuncio ya no existe, la operación es exitosa.
       return new NextResponse(null, { status: 204 });
     }
     
@@ -90,23 +104,19 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       return NextResponse.json({ message: 'No tienes permiso para eliminar este anuncio' }, { status: 403 });
     }
     
-    // Transacción para eliminar el anuncio y sus notificaciones
     await prisma.$transaction([
-      // 1. Eliminar notificaciones relacionadas con el anuncio específico.
       prisma.notification.deleteMany({
           where: { 
               title: `Nuevo Anuncio: ${announcement.title}`,
               link: '/announcements'
           } 
       }),
-      // 2. Eliminar el anuncio
       prisma.announcement.delete({ where: { id } })
     ]);
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error('[ANNOUNCEMENT_DELETE_ERROR]', error);
-    // Si el error es porque el registro no se encontró (ej. P2025), se considera un éxito.
     if ((error as any).code === 'P2025') {
         return new NextResponse(null, { status: 204 });
     }

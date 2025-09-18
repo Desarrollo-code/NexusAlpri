@@ -19,10 +19,19 @@ export const getIconForType = (type: AppResourceType['type']): React.ComponentTy
 
     const { icon: Icon, color } = iconMap[type] || iconMap.OTHER;
     
-    // Return a new component that applies the color class
     return ({ className, ...props }) => <Icon className={cn(color, className)} {...props} />;
 };
 
+export const getIconForFileType = (mimeType: string) => {
+    if (mimeType.startsWith('image/')) return FileTextIcon;
+    if (mimeType.startsWith('video/')) return VideoIcon;
+    if (mimeType === 'application/pdf') return FileTextIcon;
+    if (mimeType.includes('word')) return FileTextIcon;
+    if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return FileTextIcon;
+    if (mimeType.includes('sheet') || mimeType.includes('excel')) return FileTextIcon;
+    if (mimeType.includes('zip') || mimeType.includes('archive')) return ZipIcon;
+    return FileQuestion;
+}
 
 export const getYoutubeVideoId = (url: string | undefined): string | null => {
     if (!url) return null;

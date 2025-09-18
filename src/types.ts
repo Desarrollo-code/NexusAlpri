@@ -1,6 +1,5 @@
-
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -32,7 +31,6 @@ export interface PlatformSettings {
     passwordRequireNumber: boolean;
     passwordRequireSpecialChar: boolean;
     resourceCategories: string[];
-    // New theme properties
     primaryColor?: string;
     secondaryColor?: string;
     accentColor?: string;
@@ -57,7 +55,7 @@ export interface NavItem {
     roles: UserRole[];
     path?: string;
     badge?: string;
-    color?: string; // Propiedad opcional para el color del ícono
+    color?: string;
     children?: NavItem[];
 }
 
@@ -190,6 +188,7 @@ export interface Announcement {
     author: { id: string, name: string | null } | null;
     audience: UserRole[] | 'ALL' | string;
     priority?: 'Normal' | 'Urgente';
+    attachments: AnnouncementAttachment[];
 }
 
 // --- NOTIFICATIONS ---
@@ -317,4 +316,4 @@ export type AppForm = PrismaForm & {
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
 };
 
-export { type FormStatus, type FormFieldType };
+export { type FormStatus, type FormFieldType, type AnnouncementAttachment };
