@@ -110,7 +110,7 @@ export async function PUT(
             const isNewModule = moduleData.id.startsWith('new-');
             const savedModule = await tx.module.upsert({
                 where: { id: isNewModule ? `__NEVER_FIND__${moduleData.id}` : moduleData.id },
-                create: { title: moduleData.title, order: moduleIndex, courseId },
+                create: { title: moduleData.title, order: moduleIndex, courseId: courseId },
                 update: { title: moduleData.title, order: moduleIndex },
             });
             
@@ -144,19 +144,16 @@ export async function PUT(
 
                     if (blockData.type === 'QUIZ' && blockData.quiz) {
                         const isNewQuiz = blockData.quiz.id.startsWith('new-');
+                        const quizPayload = {
+                            title: blockData.quiz.title,
+                            description: blockData.quiz.description || '',
+                            contentBlockId: savedBlock.id,
+                            maxAttempts: blockData.quiz.maxAttempts,
+                        };
                         const savedQuiz = await tx.quiz.upsert({
                             where: { id: isNewQuiz ? `__NEVER_FIND__${blockData.quiz.id}` : blockData.quiz.id },
-                            create: {
-                                title: blockData.quiz.title,
-                                description: blockData.quiz.description || '',
-                                contentBlockId: savedBlock.id,
-                                maxAttempts: blockData.quiz.maxAttempts,
-                            },
-                            update: {
-                                title: blockData.quiz.title,
-                                description: blockData.quiz.description || '',
-                                maxAttempts: blockData.quiz.maxAttempts,
-                            },
+                            create: quizPayload,
+                            update: quizPayload,
                         });
                         
                         const questionsToProcess = blockData.quiz.questions || [];
@@ -183,8 +180,8 @@ export async function PUT(
                                 const isNewOption = optionData.id.startsWith('new-');
                                 await tx.answerOption.upsert({
                                     where: {id: isNewOption ? `__NEVER_FIND__${optionData.id}` : optionData.id},
-                                    create: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback, questionId: savedQuestion.id, points: 10 },
-                                    update: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback },
+                                    create: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback, questionId: savedQuestion.id, points: optionData.points || (optionData.isCorrect ? 10 : 0) },
+                                    update: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback, points: optionData.points || (optionData.isCorrect ? 10 : 0) },
                                 });
                             }
                         }
