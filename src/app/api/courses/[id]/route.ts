@@ -143,8 +143,8 @@ export async function PUT(
                     });
 
                     if (blockData.type === 'QUIZ' && blockData.quiz) {
-                         const isNewQuiz = blockData.quiz.id.startsWith('new-');
-                         const savedQuiz = await tx.quiz.upsert({
+                        const isNewQuiz = blockData.quiz.id.startsWith('new-');
+                        const savedQuiz = await tx.quiz.upsert({
                             where: { id: isNewQuiz ? `__NEVER_FIND__${blockData.quiz.id}` : blockData.quiz.id },
                             create: {
                                 title: blockData.quiz.title,
@@ -159,25 +159,27 @@ export async function PUT(
                             },
                         });
                         
+                        const questionsToProcess = blockData.quiz.questions || [];
                         const existingQuestions = await tx.question.findMany({where: { quizId: savedQuiz.id }, select: { id: true }});
-                        const incomingQuestionIds = new Set((blockData.quiz.questions || []).map(q => !q.id.startsWith('new-') ? q.id : undefined).filter(Boolean));
+                        const incomingQuestionIds = new Set(questionsToProcess.map(q => !q.id.startsWith('new-') ? q.id : undefined).filter(Boolean));
                         const questionsToDelete = existingQuestions.filter(q => !incomingQuestionIds.has(q.id));
                         if(questionsToDelete.length > 0) await tx.question.deleteMany({where: {id: {in: questionsToDelete.map(q=>q.id)}}});
 
-                        for(const [qIndex, questionData] of (blockData.quiz.questions || []).entries()){
+                        for(const [qIndex, questionData] of questionsToProcess.entries()){
                             const isNewQuestion = questionData.id.startsWith('new-');
                             const savedQuestion = await tx.question.upsert({
                                 where: { id: isNewQuestion ? `__NEVER_FIND__${questionData.id}` : questionData.id },
                                 create: { text: questionData.text, order: qIndex, quizId: savedQuiz.id, type: 'SINGLE_CHOICE' },
                                 update: { text: questionData.text, order: qIndex },
                             });
-
+                            
+                            const optionsToProcess = questionData.options || [];
                             const existingOptions = await tx.answerOption.findMany({where: {questionId: savedQuestion.id}, select: {id: true}});
-                            const incomingOptionIds = new Set((questionData.options || []).map(o => !o.id.startsWith('new-') ? o.id : undefined).filter(Boolean));
+                            const incomingOptionIds = new Set(optionsToProcess.map(o => !o.id.startsWith('new-') ? o.id : undefined).filter(Boolean));
                             const optionsToDelete = existingOptions.filter(o => !incomingOptionIds.has(o.id));
                             if(optionsToDelete.length > 0) await tx.answerOption.deleteMany({where: {id: {in: optionsToDelete.map(o=>o.id)}}});
 
-                            for(const optionData of (questionData.options || [])){
+                            for(const optionData of optionsToProcess){
                                 const isNewOption = optionData.id.startsWith('new-');
                                 await tx.answerOption.upsert({
                                     where: {id: isNewOption ? `__NEVER_FIND__${optionData.id}` : optionData.id},
