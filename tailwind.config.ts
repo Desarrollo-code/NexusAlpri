@@ -86,10 +86,10 @@ const config: Config = {
           '5': 'hsl(var(--chart-5))',
         },
         event: {
-          blue: '#3b82f6',
-          green: '#22c55e',
-          red: '#ef4444',
-          orange: '#f97316',
+          blue: 'hsl(var(--event-blue))',
+          green: 'hsl(var(--event-green))',
+          red: 'hsl(var(--event-red))',
+          orange: 'hsl(var(--event-orange))',
         },
         sidebar: {
           background: 'hsl(var(--sidebar-background))',
