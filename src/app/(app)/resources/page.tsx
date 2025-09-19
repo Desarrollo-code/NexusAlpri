@@ -101,8 +101,10 @@ export default function ResourcesPage() {
   }, [setPageTitle, startTour]);
 
   const fetchResources = useCallback(async () => {
+    if (isAuthLoading) return; // Wait until auth state is resolved
     setIsLoadingData(true);
     setError(null);
+    
     const params = new URLSearchParams();
     if (currentFolderId) params.append('parentId', currentFolderId);
     
@@ -117,7 +119,7 @@ export default function ResourcesPage() {
     } finally {
       setIsLoadingData(false);
     }
-  }, [toast, currentFolderId]);
+  }, [toast, currentFolderId, isAuthLoading]);
 
   const fetchAllUsers = useCallback(async () => {
     try {
@@ -132,12 +134,11 @@ export default function ResourcesPage() {
 
 
   useEffect(() => {
-    if (isAuthLoading) return; // Wait until auth state is resolved
     fetchResources();
     if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
       fetchAllUsers();
     }
-  }, [isAuthLoading, fetchResources, fetchAllUsers, user?.role]);
+  }, [fetchResources, fetchAllUsers, user?.role]);
 
     const folders = useMemo(() => {
         return allApiResources
@@ -440,7 +441,7 @@ export default function ResourcesPage() {
       </Card>
       
       <div className="flex-grow overflow-auto -mx-4 px-4 mt-4 thin-scrollbar">
-          {isAuthLoading || isLoadingData ? (
+          {isLoadingData ? (
               <div className="flex justify-center items-center h-full py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
           ) : error ? (
               <div className="flex flex-col items-center justify-center h-full py-12 text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p></div>
@@ -471,10 +472,10 @@ export default function ResourcesPage() {
                         ) : (
                           <div className="border rounded-lg overflow-hidden">
                             <div className="hidden md:grid grid-cols-12 gap-4 p-3 border-b bg-muted/50 text-xs font-semibold text-muted-foreground">
-                                <div className="col-span-5">Nombre</div>
+                                <div className="col-span-6">Nombre</div>
                                 <div className="col-span-2">Subido por</div>
-                                <div className="col-span-2">Categoría</div>
-                                <div className="col-span-2">Fecha</div>
+                                <div className="col-span-2 hidden lg:block">Fecha</div>
+                                <div className="col-span-1 hidden md:block">Acceso</div>
                                 <div className="col-span-1 text-right">Acciones</div>
                             </div>
                             <div className="divide-y">
