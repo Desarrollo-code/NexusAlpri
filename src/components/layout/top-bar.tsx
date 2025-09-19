@@ -120,8 +120,8 @@ export const TopBar = () => {
 
     return (
         <div className={cn(
-            "flex items-center justify-between h-20 px-4 shrink-0 border-b sticky top-0 z-30", // z-index ajustado
-            "bg-gradient-to-r from-blue-800 to-blue-900 text-white"
+            "flex items-center justify-between h-20 px-4 shrink-0 border-b sticky top-0 z-30",
+            "bg-gradient-to-b from-blue-900 via-blue-700 to-blue-900 text-white"
         )}>
             {/* Left side */}
             <div className="flex items-center gap-2 flex-1 min-w-0">

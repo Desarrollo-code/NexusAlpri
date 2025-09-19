@@ -12,7 +12,7 @@ export function AuthenticatedPublicHeader() {
   const { settings } = useAuth();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-b from-blue-900 to-blue-800 backdrop-blur-sm border-b border-blue-700/80">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-b from-blue-900 via-blue-700 to-blue-900 backdrop-blur-sm border-b border-blue-700/80">
       <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-20">
         <div className="flex items-center justify-start flex-1">
           <Link href="/dashboard" className="flex items-center justify-center gap-3" prefetch={false}>

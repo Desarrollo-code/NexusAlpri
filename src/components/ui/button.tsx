@@ -45,16 +45,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }), "gap-2")}
+        className={cn(buttonVariants({ variant, size, className }), "inline-flex items-center justify-center gap-2")}
         ref={ref}
         {...props}
       >
-        <span className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/20 to-transparent opacity-50 blur-[2px]"></span>
         {children}
       </Comp>
     )
   }
 )
+
 Button.displayName = "Button"
 
 export { Button, buttonVariants }
