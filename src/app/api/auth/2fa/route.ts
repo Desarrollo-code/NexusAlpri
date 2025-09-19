@@ -1,10 +1,10 @@
 // src/app/api/auth/2fa/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
 import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
 import bcrypt from 'bcryptjs';
 import { createSession, getCurrentUser } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 

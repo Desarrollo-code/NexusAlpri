@@ -1,8 +1,8 @@
 // src/app/api/courses/route.ts
 import { NextResponse, NextRequest } from 'next/server';
-import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { UserRole, CourseStatus } from '@/types';
+import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 

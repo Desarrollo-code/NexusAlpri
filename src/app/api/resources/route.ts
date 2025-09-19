@@ -1,23 +1,27 @@
 // src/app/api/resources/route.ts
-import prisma from '@/lib/prisma';
 import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 
+const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 // GET resources
 export async function GET(req: NextRequest) {
-    try {
-        const session = await getCurrentUser();
+    const session = await getCurrentUser();
     
-        if (!session || !session.id || !session.role) {
-          return NextResponse.json({ message: 'No autorizado o sesión inválida' }, { status: 401 });
-        }
+    if (!session || !session.id || !session.role) {
+      return NextResponse.json({ message: 'No autorizado o sesión inválida.' }, { status: 401 });
+    }
 
+    try {
         const { searchParams } = new URL(req.url);
         let parentId = searchParams.get('parentId');
-        if (parentId === '') parentId = null;
+        
+        // Manejo explícito para parentId vacío
+        if (parentId === '') {
+            parentId = null;
+        }
         
         const baseWhere: Prisma.ResourceWhereInput = {
             parentId: parentId,
@@ -58,18 +62,21 @@ export async function GET(req: NextRequest) {
         const safeResources = resources.map(({ pin, tags, uploader, ...resource }) => ({
             ...resource,
             uploader: uploader,
-            tags: tags ? tags.split(',').filter(Boolean) : [],
+            // Asegura que tags sea un array aunque sea null
+            tags: tags ? tags.split(',').filter(Boolean) : [], 
             hasPin: !!pin,
-            uploaderName: uploader ? uploader.name || 'Sistema' : 'Sistema',
+            // Asegura que uploaderName tenga un valor por defecto
+            uploaderName: uploader ? uploader.name || 'Sistema' : 'Sistema', 
         }));
 
         return NextResponse.json({ resources: safeResources, totalResources: safeResources.length });
 
     } catch (error) {
         console.error('[RESOURCES_GET_ERROR]', error);
-        return NextResponse.json({ message: 'Error al obtener los recursos' }, { status: 500 });
+        return NextResponse.json({ message: `Error al obtener los recursos: ${(error as Error).message}` }, { status: 500 });
     }
 }
+
 
 // POST a new resource (file or folder)
 export async function POST(req: NextRequest) {

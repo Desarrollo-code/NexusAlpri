@@ -1,14 +1,13 @@
 
 // src/app/api/announcements/route.ts
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import { sendEmail } from '@/lib/email';
 import { AnnouncementEmail } from '@/components/emails/announcement-email';
 import type { UserRole } from '@/types';
 import { Prisma } from '@prisma/client';
-
+import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 

@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
+import { PrismaClient } from '@prisma/client';
 
+const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 // GET all users (ADMIN only)

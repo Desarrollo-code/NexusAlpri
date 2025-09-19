@@ -1,7 +1,7 @@
 // src/app/api/users/[id]/status/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
-import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 

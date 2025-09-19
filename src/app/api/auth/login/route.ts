@@ -1,8 +1,8 @@
 // src/app/api/auth/login/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { createSession } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
