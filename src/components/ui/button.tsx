@@ -11,15 +11,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-gradient-to-b from-primary/90 to-primary text-primary-foreground border border-primary/50 shadow-primary/20",
+          "bg-gradient-to-b from-primary/95 to-primary text-primary-foreground border-b-4 border-primary/40",
         destructive:
-          "bg-gradient-to-b from-destructive/90 to-destructive text-destructive-foreground border border-destructive/50 shadow-destructive/20",
+          "bg-gradient-to-b from-destructive/95 to-destructive text-destructive-foreground border-b-4 border-destructive/40",
         outline:
           "border-2 border-input bg-background/50 hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-gradient-to-b from-secondary/90 to-secondary text-secondary-foreground border border-secondary/50 shadow-secondary/20",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-gradient-to-b from-secondary/95 to-secondary text-secondary-foreground border-b-4 border-secondary/40",
+        ghost: "hover:bg-accent hover:text-accent-foreground shadow-none border-0",
+        link: "text-primary underline-offset-4 hover:underline shadow-none border-0",
       },
       size: {
         default: "h-10 px-6 py-2",
@@ -35,10 +35,6 @@ const buttonVariants = cva(
   }
 )
 
-// Pseudo-elemento para el brillo glossy
-const glossyEffect = "before:content-[''] before:absolute before:top-0 before:left-0 before:w-full before:h-1/2 before:rounded-full before:bg-gradient-to-b before:from-white/50 before:to-transparent before:opacity-80 before:blur-[1px]"
-
-
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
@@ -51,13 +47,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const isGlossy = variant === "default" || variant === "destructive" || variant === "secondary";
     return (
       <Comp
-        className={cn(
-          buttonVariants({ variant, size, className }),
-          isGlossy && glossyEffect
-        )}
+        className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
-      />
+      >
+        {isGlossy && <span className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/40 to-transparent opacity-50 blur-[2px]" />}
+        <span className="relative z-10">{props.children}</span>
+      </Comp>
     )
   }
 )
