@@ -173,15 +173,25 @@ export interface EnterpriseResource extends Omit<PrismaResource, 'tags'> {
 
 
 // --- ANNOUNCEMENTS ---
+export interface Reaction {
+    userId: string;
+    reaction: string;
+}
+
 export interface Announcement {
     id: string;
     title: string;
     content: string;
     date: string;
-    author: { id: string, name: string | null } | null;
+    author: { id: string; name: string | null; avatar?: string | null; } | null;
     audience: UserRole[] | 'ALL' | string;
     priority?: 'Normal' | 'Urgente';
     attachments: AnnouncementAttachment[];
+    reads: { userId: string }[];
+    reactions: Reaction[];
+    _count?: {
+      reads: number;
+    };
 }
 
 // --- NOTIFICATIONS ---
