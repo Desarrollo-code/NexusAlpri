@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
             },
             orderBy: [
                 { type: 'asc' }, // Folders first
-                { createdAt: 'desc' },
+                { uploadDate: 'desc' },
             ],
         });
         
