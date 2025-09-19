@@ -1,4 +1,3 @@
-// src/app/api/resources/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { PrismaClient, Prisma } from '@prisma/client';
@@ -24,7 +23,7 @@ export async function GET(req: NextRequest) {
             parentId = null;
         }
         
-        const baseWhere: Prisma.ResourceWhereInput = {
+        const baseWhere: Prisma.EnterpriseResourceWhereInput = {
             parentId: parentId,
             status: 'ACTIVE',
             OR: [
@@ -33,12 +32,12 @@ export async function GET(req: NextRequest) {
             ]
         };
         
-        let whereClause: Prisma.ResourceWhereInput;
+        let whereClause: Prisma.EnterpriseResourceWhereInput;
 
         if (session.role === 'ADMINISTRATOR') {
             whereClause = baseWhere;
         } else {
-            const permissionsWhere: Prisma.ResourceWhereInput = {
+            const permissionsWhere: Prisma.EnterpriseResourceWhereInput = {
                 OR: [
                     { ispublic: true },
                     { uploaderId: session.id },
@@ -48,7 +47,7 @@ export async function GET(req: NextRequest) {
             whereClause = { AND: [baseWhere, permissionsWhere] };
         }
 
-        const resources = await prisma.resource.findMany({
+        const resources = await prisma.enterpriseResource.findMany({
             where: whereClause,
             include: {
                 uploader: { select: { id: true, name: true, avatar: true } },
@@ -73,7 +72,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ resources: safeResources, totalResources: safeResources.length });
 
     } catch (error) {
-        console.error('[RESOURCES_GET_ERROR]', error);
+        console.error('[RESOURCES_GET_ERROR]', (error as Error).message);
         return NextResponse.json({ message: `Error al obtener los recursos: ${(error as Error).message}` }, { status: 500 });
     }
 }
@@ -123,7 +122,7 @@ export async function POST(req: NextRequest) {
             };
         }
 
-        const newResource = await prisma.resource.create({
+        const newResource = await prisma.enterpriseResource.create({
             data,
              include: {
                 uploader: { select: { id: true, name: true, avatar: true } },
@@ -141,7 +140,7 @@ export async function POST(req: NextRequest) {
         }, { status: 201 });
 
     } catch (error) {
-        console.error('[RESOURCE_POST_ERROR]', error);
+        console.error('[RESOURCE_POST_ERROR]', (error as Error).message);
         return NextResponse.json({ message: 'Error al crear el recurso' }, { status: 500 });
     }
 }
