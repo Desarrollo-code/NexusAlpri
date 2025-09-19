@@ -43,15 +43,13 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
-    const isGlossy = variant === "default" || variant === "destructive" || variant === "secondary";
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
       >
-        {isGlossy && <span className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/40 to-transparent opacity-50 blur-[2px]" />}
-        <Slot className="relative z-10">{children}</Slot>
+        {children}
       </Comp>
     )
   }
