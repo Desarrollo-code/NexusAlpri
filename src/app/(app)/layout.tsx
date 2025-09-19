@@ -62,7 +62,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useIdleTimeout(handleIdleLogout, idleTimeoutMinutes, isIdleTimeoutEnabled);
 
-  if (isLoading || !user) {
+  // Durante la carga inicial, muestra el loader.
+  if (isLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background text-foreground">
         <ColorfulLoader />
@@ -70,6 +71,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // Después de la carga, si no hay usuario (ej. durante el build), también muestra el loader
+  // para evitar que se intente renderizar un estado inválido.
+  if (!user) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-background text-foreground">
+        <ColorfulLoader />
+      </div>
+    );
+  }
+
+  // Solo renderiza el layout completo si hay un usuario.
   return (
     <SidebarProvider>
       <TourProvider>
