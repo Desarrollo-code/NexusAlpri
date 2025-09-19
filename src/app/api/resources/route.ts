@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     try {
         const session = await getCurrentUser();
     
-        if (!session || !session.role) {
+        if (!session || !session.id || !session.role) {
           return NextResponse.json({ message: 'No autorizado o sesión inválida' }, { status: 401 });
         }
 

@@ -26,7 +26,7 @@ async function encrypt(payload: JWTPayload): Promise<string> {
     userId: payload.userId,
     expires: payload.expires.toISOString(),
   };
-  return await new SignJWT(jwtPayload)
+  return await new SignJWT({ payload: jwtPayload }) // ENCAPSULAMOS DENTRO DE 'payload'
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('7d')
@@ -36,7 +36,8 @@ async function encrypt(payload: JWTPayload): Promise<string> {
 async function decrypt(input: string): Promise<any> {
   try {
     const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
-    return payload;
+    // DEBEMOS BUSCAR DENTRO DEL OBJETO 'payload'
+    return payload.payload;
   } catch (error) {
     // Log the specific error for better debugging in production logs
     console.error("Error decrypting JWT:", error);
@@ -50,12 +51,12 @@ export async function createSession(userId: string) {
   
   const cookieStore = await cookies();
   cookieStore.set('session', session, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
-  path: '/',
-  sameSite: 'lax',
-});
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
+    path: '/',
+    sameSite: 'lax',
+  });
 }
 
 export async function deleteSession() {
