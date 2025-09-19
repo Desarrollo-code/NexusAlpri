@@ -85,7 +85,7 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
-        event: {
+         event: {
           blue: 'hsl(var(--event-blue))',
           green: 'hsl(var(--event-green))',
           red: 'hsl(var(--event-red))',
