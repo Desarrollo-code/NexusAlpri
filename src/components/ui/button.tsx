@@ -45,11 +45,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(buttonVariants({ variant, size, className }), "gap-2")}
         ref={ref}
         {...props}
       >
-        <span className="relative z-10">{children}</span>
+        <span className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/20 to-transparent opacity-50 blur-[2px]"></span>
+        {children}
       </Comp>
     )
   }
