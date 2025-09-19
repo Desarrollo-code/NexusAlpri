@@ -8,42 +8,41 @@ export const dynamic = 'force-dynamic';
 
 // GET resources
 export async function GET(req: NextRequest) {
-    const session = await getCurrentUser();
+    try {
+        const session = await getCurrentUser();
     
-    if (!session || !session.role) {
-      return NextResponse.json({ message: 'No autorizado o sesión inválida' }, { status: 401 });
-    }
+        if (!session || !session.role) {
+          return NextResponse.json({ message: 'No autorizado o sesión inválida' }, { status: 401 });
+        }
 
-    const { searchParams } = new URL(req.url);
-    // CORRECCIÓN CRÍTICA: Tratar un string vacío como null.
-    let parentId = searchParams.get('parentId');
-    if (parentId === '') parentId = null;
-    
-    const baseWhere: Prisma.ResourceWhereInput = {
-        parentId: parentId,
-        status: 'ACTIVE',
-        OR: [
-            { expiresAt: null },
-            { expiresAt: { gte: new Date() } }
-        ]
-    };
-    
-    let whereClause: Prisma.ResourceWhereInput;
-
-    if (session.role === 'ADMINISTRATOR') {
-        whereClause = baseWhere;
-    } else {
-        const permissionsWhere: Prisma.ResourceWhereInput = {
+        const { searchParams } = new URL(req.url);
+        let parentId = searchParams.get('parentId');
+        if (parentId === '') parentId = null;
+        
+        const baseWhere: Prisma.ResourceWhereInput = {
+            parentId: parentId,
+            status: 'ACTIVE',
             OR: [
-                { ispublic: true },
-                { uploaderId: session.id },
-                { sharedWith: { some: { id: session.id } } }
+                { expiresAt: null },
+                { expiresAt: { gte: new Date() } }
             ]
         };
-        whereClause = { AND: [baseWhere, permissionsWhere] };
-    }
+        
+        let whereClause: Prisma.ResourceWhereInput;
 
-    try {
+        if (session.role === 'ADMINISTRATOR') {
+            whereClause = baseWhere;
+        } else {
+            const permissionsWhere: Prisma.ResourceWhereInput = {
+                OR: [
+                    { ispublic: true },
+                    { uploaderId: session.id },
+                    { sharedWith: { some: { id: session.id } } }
+                ]
+            };
+            whereClause = { AND: [baseWhere, permissionsWhere] };
+        }
+
         const resources = await prisma.resource.findMany({
             where: whereClause,
             include: {
@@ -56,7 +55,6 @@ export async function GET(req: NextRequest) {
             ],
         });
         
-        // Manejo seguro de datos nulos para uploader y tags.
         const safeResources = resources.map(({ pin, tags, uploader, ...resource }) => ({
             ...resource,
             uploader: uploader,
@@ -66,6 +64,7 @@ export async function GET(req: NextRequest) {
         }));
 
         return NextResponse.json({ resources: safeResources, totalResources: safeResources.length });
+
     } catch (error) {
         console.error('[RESOURCES_GET_ERROR]', error);
         return NextResponse.json({ message: 'Error al obtener los recursos' }, { status: 500 });
