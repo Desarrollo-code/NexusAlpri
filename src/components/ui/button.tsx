@@ -10,13 +10,13 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-gradient-to-b from-primary/95 to-primary text-primary-foreground border-b-4 border-primary/40",
+          "bg-primary text-primary-foreground hover:bg-primary/90 border-b-4 border-primary/70",
         destructive:
-          "bg-gradient-to-b from-destructive/95 to-destructive text-destructive-foreground border-b-4 border-destructive/40",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 border-b-4 border-destructive/70",
         outline:
           "border-2 border-input bg-background/50 hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-gradient-to-b from-secondary/95 to-secondary text-secondary-foreground border-b-4 border-secondary/40",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-b-4 border-secondary/70",
         ghost: "hover:bg-accent hover:text-accent-foreground shadow-none border-0",
         link: "text-primary underline-offset-4 hover:underline shadow-none border-0",
       },
@@ -49,7 +49,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         {...props}
       >
-        {children}
+        <span className="relative z-10">{children}</span>
       </Comp>
     )
   }
