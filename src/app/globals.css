@@ -33,6 +33,12 @@
     --chart-4: 50 95% 55%;  /* Amarillo */
     --chart-5: 340 85% 65%; /* Rosa/Magenta */
 
+    /* Colores para calendario */
+    --event-blue: 210 80% 50%;
+    --event-green: 145 65% 45%;
+    --event-red: 0 75% 55%;
+    --event-orange: 25 85% 55%;
+
     /* Variables de la barra lateral (mantienen un estilo consistente) */
     --sidebar-background: 220 40% 5%; 
     --sidebar-foreground: 45 80% 70%;
@@ -63,6 +69,12 @@
     --border: 220 10% 20%;
     --input: 220 10% 18%;
     --ring: 210 90% 65%;
+
+    /* Colores de eventos para tema oscuro */
+    --event-blue: 210 70% 60%;
+    --event-green: 145 55% 55%;
+    --event-red: 0 65% 60%;
+    --event-orange: 25 75% 60%;
   }
 }
  
@@ -76,17 +88,6 @@
 }
 
 @layer components {
-  .btn-primary-gradient {
-    background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
-    color: hsl(var(--primary-foreground));
-    transition: all 0.3s ease;
-    background-size: 150% 100%;
-  }
-  .btn-primary-gradient:hover {
-      background-position: right center;
-      box-shadow: 0 4px 15px 0 hsl(var(--primary) / 0.3);
-  }
-
   .animated-underline {
     @apply relative inline-block;
   }

@@ -145,7 +145,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                         {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
                     </Button>
                  </div>
-                <Button type="submit" className="w-full !mt-6 h-12 text-base bg-blue-600 hover:bg-blue-700 text-white" disabled={isLoading}>
+                <Button type="submit" className="w-full !mt-6 h-12 text-base" disabled={isLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Ingresar'}
                 </Button>
             </form>
@@ -185,7 +185,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                          <PasswordStrengthIndicator password={password} isVisible={isPasswordFocused || password.length > 0} />
                     </AnimatePresence>
                  </div>
-                <Button type="submit" className="w-full !mt-6 h-12 text-base bg-blue-600 hover:bg-blue-700 text-white" disabled={isLoading}>
+                <Button type="submit" className="w-full !mt-6 h-12 text-base" disabled={isLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Crear Cuenta'}
                 </Button>
             </form>

@@ -86,7 +86,7 @@ export default function TwoFactorAuthForm() {
             </div>
             <Button
                 type="submit"
-                className="w-full h-11 text-base btn-primary-gradient"
+                className="w-full h-11 text-base"
                 disabled={isLoading || token.length < 6}
             >
                 {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ShieldCheck className="mr-2 h-5 w-5" />}
