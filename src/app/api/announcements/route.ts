@@ -1,3 +1,4 @@
+
 // src/app/api/announcements/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
@@ -52,7 +53,13 @@ export async function GET(req: NextRequest) {
         include: { 
             author: { select: { id: true, name: true, avatar: true } },
             attachments: true,
-            reads: { select: { user: { select: { id: true, name: true, avatar: true }} } },
+            reads: { 
+                select: { 
+                    user: { 
+                        select: { id: true, name: true, avatar: true }
+                    } 
+                } 
+            },
             reactions: { 
                 select: { 
                     userId: true, 

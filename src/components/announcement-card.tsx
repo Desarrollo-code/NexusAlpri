@@ -1,3 +1,4 @@
+
 // src/components/announcement-card.tsx
 'use client';
 
@@ -133,8 +134,9 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
         if (!acc[r.reaction]) {
             acc[r.reaction] = [];
         }
-        const reactionUser = r.user || r; // Handle both nested and flat structures
-        if (reactionUser && reactionUser.id && reactionUser.name) {
+        // This handles both the structure from the API and the optimistic update.
+        const reactionUser = r.user; 
+        if (reactionUser && reactionUser.id) {
             acc[r.reaction].push(reactionUser);
         }
         return acc;
