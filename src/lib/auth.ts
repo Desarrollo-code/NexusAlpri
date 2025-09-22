@@ -22,11 +22,8 @@ interface JWTPayload {
 }
 
 async function encrypt(payload: JWTPayload): Promise<string> {
-  const jwtPayload: Record<string, unknown> = {
-    userId: payload.userId,
-    expires: payload.expires.toISOString(),
-  };
-  return await new SignJWT({ payload: jwtPayload }) // ENCAPSULAMOS DENTRO DE 'payload'
+  // CORRECCIÓN: El payload se pasa directamente, sin anidarlo dentro de otro objeto.
+  return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('7d')
@@ -36,8 +33,8 @@ async function encrypt(payload: JWTPayload): Promise<string> {
 async function decrypt(input: string): Promise<any> {
   try {
     const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
-    // DEBEMOS BUSCAR DENTRO DEL OBJETO 'payload'
-    return payload.payload;
+    // CORRECCIÓN: El payload es el objeto principal, no está anidado.
+    return payload;
   } catch (error) {
     // Log the specific error for better debugging in production logs
     console.error("Error decrypting JWT:", error);
