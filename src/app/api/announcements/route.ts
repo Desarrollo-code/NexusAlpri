@@ -52,8 +52,8 @@ export async function GET(req: NextRequest) {
         include: { 
             author: { select: { id: true, name: true, avatar: true } },
             attachments: true,
-            reads: { select: { userId: true } },
-            reactions: { select: { userId: true, reaction: true } },
+            reads: { select: { user: { select: { id: true, name: true, avatar: true }} } },
+            reactions: { select: { userId: true, reaction: true, user: { select: { id: true, name: true, avatar: true }} } },
             _count: { select: { reads: true } },
         },
     };
@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
         const pageSize = parseInt(pageSizeParam, 10);
         const skip = (page - 1) * pageSize;
 
-        const [announcements, totalAnnouncements] = await prisma.$transaction([
+        const [announcementsFromDb, totalAnnouncements] = await prisma.$transaction([
             prisma.announcement.findMany({
                 ...commonFindOptions,
                 skip: skip,
@@ -72,12 +72,21 @@ export async function GET(req: NextRequest) {
             prisma.announcement.count({ where: whereClause })
         ]);
         
+        const announcements = announcementsFromDb.map(ann => ({
+            ...ann,
+            reads: ann.reads.map(r => r.user),
+        }));
+        
         return NextResponse.json({ announcements, totalAnnouncements });
     } else {
-        const announcements = await prisma.announcement.findMany({
+        const announcementsFromDb = await prisma.announcement.findMany({
             ...commonFindOptions,
             take: 4, 
         });
+        const announcements = announcementsFromDb.map(ann => ({
+            ...ann,
+            reads: ann.reads.map(r => r.user),
+        }));
         const totalAnnouncements = await prisma.announcement.count({ where: whereClause });
         return NextResponse.json({ announcements, totalAnnouncements });
     }

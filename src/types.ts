@@ -176,6 +176,11 @@ export interface EnterpriseResource extends Omit<PrismaResource, 'tags'> {
 export interface Reaction {
     userId: string;
     reaction: string;
+    user: {
+      id: string;
+      name: string | null;
+      avatar?: string | null;
+    };
 }
 
 export interface Announcement {
@@ -187,7 +192,7 @@ export interface Announcement {
     audience: UserRole[] | 'ALL' | string;
     priority?: 'Normal' | 'Urgente';
     attachments: AnnouncementAttachment[];
-    reads: { userId: string }[];
+    reads: { id: string; name: string | null; avatar?: string | null; }[];
     reactions: Reaction[];
     _count?: {
       reads: number;

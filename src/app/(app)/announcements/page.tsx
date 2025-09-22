@@ -145,6 +145,22 @@ export default function AnnouncementsPage() {
           )
       );
   };
+  
+   const handleRead = (announcementId: string, userId: string) => {
+      // Optimistic update
+      setAllAnnouncements(prev => prev.map(ann => {
+        if (ann.id === announcementId && !ann.reads.some(r => r.id === userId)) {
+          return {
+            ...ann,
+            reads: [...ann.reads, { id: userId, name: user?.name || null, avatar: user?.avatar || null }],
+            _count: { reads: (ann._count?.reads || 0) + 1 }
+          };
+        }
+        return ann;
+      }));
+      // Call API
+      fetch(`/api/announcements/${announcementId}/read`, { method: 'POST' });
+  };
 
   const resetFormAndState = () => {
     setFormTitle('');
@@ -433,6 +449,7 @@ export default function AnnouncementsPage() {
                 onEdit={handleOpenEditModal}
                 onDelete={openDeleteConfirmation}
                 onReactionChange={handleReactionChange}
+                onRead={handleRead}
             />
           ))}
         </div>

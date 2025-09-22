@@ -16,6 +16,8 @@ import { getIconForFileType } from '@/lib/resource-utils';
 import { useInView } from 'framer-motion';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
+import { ScrollArea } from './ui/scroll-area';
+import { Separator } from './ui/separator';
 
 const EMOJI_REACTIONS = ['👍', '❤️', '🎉', '💡', '🤔'];
 
@@ -26,6 +28,28 @@ interface AnnouncementCardProps {
   onReactionChange?: (announcementId: string, updatedReactions: Reaction[]) => void;
   onRead?: (announcementId: string, userId: string) => void;
 }
+
+const UserListPopover = ({ trigger, title, users }: { trigger: React.ReactNode, title: string, users: {id: string, name: string | null, avatar?: string | null}[] }) => (
+    <Popover>
+        <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+        <PopoverContent className="w-64 p-0">
+            <div className="p-3 font-semibold text-sm border-b">{title} ({users.length})</div>
+            <ScrollArea className="max-h-60">
+                <div className="p-2 space-y-1">
+                    {users.length > 0 ? users.map(user => (
+                        <div key={user.id} className="flex items-center gap-2 p-1.5 rounded-md">
+                            <Avatar className="h-7 w-7">
+                                <AvatarImage src={user.avatar || undefined} />
+                                <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm font-medium">{user.name}</span>
+                        </div>
+                    )) : <p className="text-xs text-center text-muted-foreground p-4">Nadie por aquí.</p>}
+                </div>
+            </ScrollArea>
+        </PopoverContent>
+    </Popover>
+);
 
 export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionChange, onRead }: AnnouncementCardProps) {
   const { user } = useAuth();
@@ -53,9 +77,22 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   const handleReaction = async (reaction: string) => {
     if (!user || !onReactionChange) return;
 
-    const newReactions = announcement.reactions.filter(r => r.userId !== user.id);
-    if (userReaction !== reaction) {
-      newReactions.push({ userId: user.id, reaction });
+    // Optimistic update
+    const currentReactions = announcement.reactions || [];
+    let newReactions = [...currentReactions];
+    const existingReactionIndex = newReactions.findIndex(r => r.userId === user.id);
+
+    if (existingReactionIndex > -1) {
+        if (newReactions[existingReactionIndex].reaction === reaction) {
+            // Un-react
+            newReactions.splice(existingReactionIndex, 1);
+        } else {
+            // Change reaction
+            newReactions[existingReactionIndex].reaction = reaction;
+        }
+    } else {
+        // New reaction
+        newReactions.push({ userId: user.id, reaction: reaction, user: {id: user.id, name: user.name, avatar: user.avatar } });
     }
     onReactionChange(announcement.id, newReactions);
     
@@ -66,17 +103,23 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
             body: JSON.stringify({ reaction }),
         });
     } catch(e) {
-        // Revert UI on error
         console.error("Failed to update reaction", e);
-        onReactionChange(announcement.id, announcement.reactions);
+        // Revert UI on error
+        onReactionChange(announcement.id, currentReactions);
     }
   };
 
   const groupedReactions = useMemo(() => {
+    if (!announcement.reactions) return {};
     return announcement.reactions.reduce((acc, r) => {
-        acc[r.reaction] = (acc[r.reaction] || 0) + 1;
+        if (!acc[r.reaction]) {
+            acc[r.reaction] = [];
+        }
+        if (r.user) {
+            acc[r.reaction].push(r.user);
+        }
         return acc;
-    }, {} as Record<string, number>);
+    }, {} as Record<string, {id: string, name: string|null, avatar?: string|null}[]>);
   }, [announcement.reactions]);
   
   const formatDate = (dateString: string) => {
@@ -132,7 +175,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
         )}
       </CardContent>
       <CardFooter className="border-t pt-3 pb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
                  <Popover>
                     <PopoverTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary"><SmilePlus className="h-4 w-4"/></Button>
@@ -145,23 +188,37 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                         </div>
                     </PopoverContent>
                  </Popover>
-                 {Object.entries(groupedReactions).map(([reaction, count]) => (
-                    <Badge key={reaction} variant="secondary" className="cursor-default">{reaction} {count}</Badge>
-                 ))}
+                  <div className="flex items-center gap-1">
+                    {Object.entries(groupedReactions).map(([reaction, users]) => (
+                        <UserListPopover
+                            key={reaction}
+                            title={`Reaccionaron con ${reaction}`}
+                            users={users}
+                            trigger={<Badge variant="secondary" className="cursor-pointer">{reaction} {users.length}</Badge>}
+                        />
+                    ))}
+                  </div>
             </div>
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                         <div className="flex items-center gap-1.5 text-muted-foreground">
-                            <span className="text-xs">{announcement._count?.reads ?? announcement.reads.length}</span>
-                            {readStatusIcon}
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>{userHasRead ? 'Visto por ti' : 'Pendiente de ver'}</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+            
+             <UserListPopover
+                title="Visto por"
+                users={announcement.reads || []}
+                trigger={
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                 <div className="flex items-center gap-1.5 text-muted-foreground cursor-pointer">
+                                    <span className="text-xs">{announcement._count?.reads ?? announcement.reads.length}</span>
+                                    {readStatusIcon}
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{userHasRead ? 'Visto por ti' : 'Pendiente de ver'}. Haz clic para ver todos.</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                }
+             />
             
             {canModify && onEdit && onDelete && (
                 <div className="flex items-center gap-1">
