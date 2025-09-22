@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
-const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 // GET enrollments for a specific course

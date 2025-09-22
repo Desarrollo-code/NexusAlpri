@@ -1,8 +1,6 @@
 // src/lib/progress.ts
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import type { LessonCompletionRecord as AppLessonCompletionRecord } from '@/types';
-
-const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 

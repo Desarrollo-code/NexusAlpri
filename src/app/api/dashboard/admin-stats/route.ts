@@ -1,11 +1,9 @@
 // src/app/api/dashboard/admin-stats/route.ts
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { NextResponse, type NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { subDays, startOfDay, endOfDay, parseISO, format, eachDayOfInterval } from 'date-fns';
 import type { UserRole, CourseStatus, AdminDashboardStats } from '@/types';
-
-const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 

@@ -4,9 +4,7 @@ import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
 import bcrypt from 'bcryptjs';
 import { createSession, getCurrentUser } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma'; // Volver a usar la instancia central
 
 export const dynamic = 'force-dynamic';
 

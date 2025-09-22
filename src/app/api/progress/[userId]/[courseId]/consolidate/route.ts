@@ -1,11 +1,10 @@
 // src/app/api/progress/[userId]/[courseId]/consolidate/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import { checkAndAwardCourseCompletionAchievements } from '@/lib/gamification';
 
-const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {

@@ -1,8 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 
-const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 export async function GET(

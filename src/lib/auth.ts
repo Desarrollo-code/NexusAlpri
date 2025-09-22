@@ -3,9 +3,7 @@ import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
 import { cache } from 'react';
 import type { User as PrismaUser } from '@prisma/client';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma'; // Usar la instancia centralizada
 
 // Fallback to a value derived from DATABASE_URL if JWT_SECRET is not set.
 // This ensures functionality in environments like Render's free tier

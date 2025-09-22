@@ -1,9 +1,7 @@
 // src/app/api/auth/me/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma'; // Volver a usar la instancia central
 
 export const dynamic = 'force-dynamic';
 

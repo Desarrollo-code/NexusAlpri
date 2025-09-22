@@ -1,10 +1,8 @@
 // src/app/api/enrollment/status/[userId]/[courseId]/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-
-const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 // Check if a user is enrolled in a specific course

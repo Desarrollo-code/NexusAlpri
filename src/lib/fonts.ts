@@ -1,10 +1,8 @@
 // src/lib/fonts.ts
 import { Inter, Space_Grotesk, Source_Code_Pro, Roboto, Lato, Montserrat } from 'next/font/google';
 import type { NextFont } from 'next/dist/compiled/@next/font';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import type { PlatformSettings } from '@/types';
-
-const prisma = new PrismaClient();
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-body' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-headline' });

@@ -1,8 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 
-const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 // GET all available lesson templates

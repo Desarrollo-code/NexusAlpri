@@ -1,9 +1,7 @@
-
 import { Resend } from 'resend';
 import { type ReactElement } from 'react';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 
-const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 // Ensure RESEND_API_KEY is set in environment variables
