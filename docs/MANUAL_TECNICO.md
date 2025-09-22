@@ -39,36 +39,43 @@ Este documento proporciona una visión técnica de la arquitectura, base de dato
 4.  La lógica de la API utiliza el cliente de **Prisma** (`@/lib/prisma`) para interactuar con la base de datos PostgreSQL.
 5.  Los datos se devuelven como JSON al componente o al cliente.
 
-## 3. Base de Datos y Migraciones: La Guía Infalible
+## 3. Endpoints de API Clave
 
-### 3.1. Paso 1: Configurar la Conexión para Migraciones (¡Solución a TODOS los errores!)
+*   `/api/auth/...`: Endpoints para registro (`register`), inicio de sesión (`login`), cierre de sesión (`logout`) y gestión de 2FA.
+*   `/api/courses/...`: CRUD completo para cursos, módulos, lecciones y bloques de contenido.
+*   `/api/enrollments/...`: Gestión de inscripciones y cancelaciones.
+*   `/api/progress/...`: Endpoints para registrar y calcular el progreso de los estudiantes.
+*   `/api/announcements/...`: CRUD para anuncios y endpoints para registrar lecturas (`/read`) y reacciones (`/react`).
+*   `/api/resources/...`: CRUD para la biblioteca de recursos, incluyendo la gestión de carpetas y la verificación de PIN.
+*   `/api/forms/...`: CRUD completo para formularios, incluyendo la gestión de campos y el envío de respuestas.
+*   `/api/users/...`: CRUD para usuarios (creación, edición, cambio de estado y rol).
+*   `/api/settings/...`: Endpoint para obtener y actualizar la configuración global de la plataforma.
+*   `/api/security/...`: Endpoints para obtener los logs (`/logs`) y estadísticas (`/stats`) de seguridad.
 
-Para ejecutar el comando `prisma migrate dev`, Prisma necesita una conexión especial con la base de datos que el gestor de conexiones (pooler) de Supabase no soporta por defecto. Esto causa los errores `P3014`, `P1017` y `P1002`.
+## 4. Base de Datos y Migraciones
 
-**La solución es usar DOS variables de entorno diferentes:** una para la aplicación en general y otra específica para las migraciones.
+### 4.1. Configuración de Conexión
 
-1.  **Obtener las Dos Cadenas de Conexión:**
+Para ejecutar `prisma migrate dev` o `prisma db push`, Prisma necesita una conexión directa a la base de datos que el gestor de conexiones (pooler) de Supabase no soporta.
+
+**La solución es usar DOS variables de entorno diferentes:**
+
+1.  **Obtener las Cadenas de Conexión:**
     *   Ve a tu proyecto en Supabase: **Project Settings > Database**.
-    *   **Para `DATABASE_URL`:** Copia la URL de la tarjeta **"Transaction pooler"** (usa el puerto **6543**).
-    *   **Para `DIRECT_URL`:** Copia la URL de la tarjeta **"Direct connection"** (usa el puerto **5432**).
+    *   **`DATABASE_URL`:** Copia la URL de la tarjeta **"Connection string"** que usa el puerto **6543** (Transaction Mode).
+    *   **`DIRECT_URL`:** Copia la URL de la tarjeta **"Direct connection"** que usa el puerto **5432**.
 
-2.  **Configurar tu Archivo `.env` Local:**
-    *   Abre el archivo `.env` en la raíz de tu proyecto.
-    *   Añade **ambas** variables:
-
+2.  **Configurar `.env`:**
     ```dotenv
     # Para el funcionamiento normal de la aplicación (consultas, etc.)
-    DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@db.xxxxxxxx.supabase.co:6543/postgres"
+    DATABASE_URL="postgresql://postgres:[TU_CONTRASEÑA]@db.xxxxxxxx.supabase.co:6543/postgres?pgbouncer=true"
 
-    # ¡IMPORTANTE! Exclusivamente para migraciones (`prisma migrate`)
+    # ¡IMPORTANTE! Exclusivamente para migraciones y seeding (`prisma migrate`, `prisma db seed`)
     DIRECT_URL="postgresql://postgres:[TU_CONTRASEÑA]@db.xxxxxxxx.supabase.co:5432/postgres"
     ```
 
 3.  **Configurar `schema.prisma`:**
-    *   Asegúrate de que tu archivo `prisma/schema.prisma` haga referencia a ambas variables. El campo `directUrl` es utilizado por `prisma migrate`, mientras que `url` es para el resto de operaciones.
-
     ```prisma
-    // prisma/schema.prisma
     datasource db {
       provider  = "postgresql"
       url       = env("DATABASE_URL")
@@ -76,54 +83,27 @@ Para ejecutar el comando `prisma migrate dev`, Prisma necesita una conexión esp
     }
     ```
 
-### 3.2. Paso 2: Permitir tu IP Local
+### 4.2. Comandos de Prisma
 
-Si al ejecutar `npm run prisma:migrate` ves un error de conexión, es probable que necesites añadir tu IP a la lista de redes permitidas en Supabase.
-
-1.  **Obtén tu IP pública:** Busca en Google "¿Cuál es mi IP?".
-2.  **Añade tu IP a Supabase:** Ve a **Project Settings > Database > Network Restrictions** y añade una nueva regla con tu IP seguida de `/32` (ej. `123.123.123.123/32`).
-
-### 3.3. Paso 3: Ejecutar los Comandos de Prisma
-
-*   **Para aplicar cambios de `schema.prisma` en desarrollo:**
+*   **Aplicar cambios de `schema.prisma` en desarrollo:**
     ```bash
     npm run prisma:migrate
     ```
-*   **Para aplicar las migraciones en producción (el comando del build):**
+*   **Aplicar las migraciones en producción:**
     ```bash
     npm run prisma:deploy
     ```
-*   **Para poblar con datos de prueba:**
+*   **Poblar con datos de prueba:**
     ```bash
     npm run prisma:seed
     ```
 
-## 4. Almacenamiento de Archivos (Supabase Storage)
+## 5. Almacenamiento de Archivos (Supabase Storage)
 
-La aplicación utiliza Supabase Storage para guardar todos los archivos subidos por los usuarios (avatares, imágenes de cursos, documentos, etc.).
+Para que la subida de archivos funcione, **debes crear manualmente los "buckets" públicos** en Supabase: `avatars`, `course_images`, `settings_images`, `lesson_files`, `resource_library`, `announcement_attachments`.
 
-### **¡MUY IMPORTANTE! Creación Manual de Buckets**
-
-Para que la subida de archivos funcione, **debes crear manualmente los "buckets" (contenedores) en tu proyecto de Supabase**. Si no lo haces, recibirás un error **"Bucket not found"**.
-
-**Pasos:**
-1.  Ve a tu proyecto en Supabase y haz clic en el ícono de **Storage** en el menú lateral.
-2.  Haz clic en **"Create a new bucket"**.
-3.  Crea un **bucket público** con los siguientes nombres (es crucial que sean exactos):
-    *   `avatars`
-    *   `course_images`
-    *   `settings_images`
-    *   `lesson_files`
-    *   `resource_library`
-    *   `announcement_attachments`
-
-Asegúrate de que cada bucket esté marcado como **público** para que los archivos se puedan visualizar en la aplicación.
-
-## 5. Configuración para Producción (Vercel)
+## 6. Configuración para Producción (Vercel)
 
 1.  Ve a tu proyecto en Vercel: **Settings > Environment Variables**.
-2.  Añade las siguientes variables (además de `JWT_SECRET`, `RESEND_API_KEY`, etc.):
-    *   `DATABASE_URL`: Usa la URL del **"Transaction pooler"** (puerto 6543).
-    *   `DIRECT_URL`: Usa la URL de la **"Direct connection"** (puerto 5432).
-
-3.  Guarda y haz un "Redeploy". El script de `build` (`prisma migrate deploy && ...`) se encargará de sincronizar la base de datos correctamente.
+2.  Añade `DATABASE_URL` (con el puerto 6543) y `DIRECT_URL` (con el puerto 5432), además del resto de secretos (`JWT_SECRET`, etc.).
+3.  El script de `build` (`prisma migrate deploy && ...`) se encargará de sincronizar la base de datos correctamente.

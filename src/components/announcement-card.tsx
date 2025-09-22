@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { Announcement, Reaction, UserRole } from '@/types';
-import { User, Clock, Edit, Trash2, Paperclip, Check, CheckCheck, SmilePlus } from 'lucide-react';
+import { User, Clock, Edit, Trash2, Paperclip, Check, CheckCheck, SmilePlus, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Identicon } from './ui/identicon';
 import Image from 'next/image';
@@ -225,11 +225,11 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                             <TooltipTrigger asChild>
                                  <div className="flex items-center gap-1.5 text-muted-foreground cursor-pointer">
                                     <span className="text-xs">{announcement._count?.reads ?? (announcement.reads || []).length}</span>
-                                    {readStatusIcon}
+                                    <Eye className="h-4 w-4 text-muted-foreground" />
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>{userHasRead ? 'Visto por ti' : 'Pendiente de ver'}. Haz clic para ver todos.</p>
+                                <p>Clic para ver quién lo ha leído.</p>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>

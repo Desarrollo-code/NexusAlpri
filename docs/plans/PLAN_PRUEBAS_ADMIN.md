@@ -54,3 +54,4 @@ Este documento describe las acciones a verificar para el rol de **Administrador*
 | :--- | :--- |
 | **6.1. Ver contenido de prueba** | Verifica que el "Anuncio de Bienvenida" aparece en `/announcements`, el evento "Reunión Trimestral" en `/calendar`, y la carpeta/archivo en `/resources`. |
 | **6.2. Editar contenido** | Edita el anuncio existente o el evento del calendario. Los cambios deben persistir. |
+| **6.3. Interactuar con anuncio** | Reacciona al "Anuncio de Bienvenida". Haz clic en el contador de vistas y reacciones para confirmar que tu usuario aparece en la lista. |

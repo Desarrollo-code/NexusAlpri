@@ -14,7 +14,7 @@ El administrador tiene control total sobre la plataforma.
 | **A-02** | | Crear un nuevo usuario con nombre, email, contraseña y rol. | `/users` (Modal) | Creación de un nuevo registro de usuario. | El nuevo usuario aparece en la lista. El usuario puede iniciar sesión con las credenciales proporcionadas. |
 | **A-03** | | Editar la información de un usuario existente (nombre, email). | `/users` (Modal) | Actualización de la información de un usuario. | Los cambios se reflejan inmediatamente en la lista de usuarios. |
 | **A-04** | | Cambiar el rol de un usuario. | `/users` (Modal) | Rol del usuario, Registro de seguridad. | El nuevo rol del usuario se muestra en la lista. Se genera un log de seguridad. |
-| **A-05** | | Eliminar un usuario de la plataforma (excepto a sí mismo). | `/users` | Eliminación de datos del usuario, inscripciones y progreso. | El usuario desaparece de la lista. El usuario ya no puede iniciar sesión. |
+| **A-05** | | Inactivar o activar un usuario (excepto a sí mismo). | `/users` | Estado `isActive` del usuario. | El estado del usuario cambia visualmente y el acceso del usuario se bloquea/desbloquea. |
 | **A-06** | **Gestión de Cursos** | Crear un nuevo curso (borrador inicial). | `/manage-courses` (Modal) | Creación de un nuevo registro de curso. | Se redirige a la página de edición del nuevo curso. El curso aparece en la lista como "Borrador". |
 | **A-07** | | Editar toda la información de cualquier curso (título, imagen, etc.). | `/manage-courses/[id]/edit` | Actualización de la información de un curso. | Los cambios se guardan y persisten al recargar la página. |
 | **A-08** | | Añadir, editar, reordenar y eliminar contenido en cualquier curso. | `/manage-courses/[id]/edit` | Estructura completa del curso (módulos, lecciones, etc.). | La estructura del curso se actualiza visualmente y se guarda correctamente. |
@@ -28,6 +28,7 @@ El administrador tiene control total sobre la plataforma.
 | **A-16** | **Formularios** | Crear y editar cualquier formulario o evaluación. | `/forms`, `/forms/[id]/edit` | Formularios y sus preguntas. | El formulario se crea o actualiza, permitiendo la configuración de preguntas. |
 | **A-17** | | Ver los resultados de cualquier formulario. | `/forms/[id]/results` | Respuestas de los usuarios. | Se muestran gráficos y tablas con los resultados consolidados de las respuestas. |
 | **A-18** | | Compartir un formulario con usuarios específicos. | `/forms` (Modal) | Relación de compartición del formulario. | El formulario se vuelve visible y accesible para los usuarios seleccionados. |
+| **A-19** | **Anuncios** | Ver quién ha reaccionado y quién ha leído cualquier anuncio. | `/announcements` (Popover) | Datos de lecturas y reacciones. | Al hacer clic en los contadores, se muestra una lista de usuarios. |
 
 ---
 
@@ -47,7 +48,8 @@ El instructor gestiona sus propios cursos y estudiantes.
 | **I-08** | | Subir, editar y eliminar los recursos que ha subido a la biblioteca. | `/resources` | Recursos de la biblioteca. | El instructor puede gestionar los archivos que él mismo ha subido. |
 | **I-09** | **Formularios** | Crear, editar y eliminar los formularios que ha creado. | `/forms` | Formularios del instructor. | El instructor puede gestionar sus propios formularios, pero no los de otros. |
 | **I-10** | | Ver los resultados de sus propios formularios. | `/forms/[id]/results` | Respuestas de sus formularios. | El instructor puede analizar las respuestas de los formularios que ha creado. |
-| **I-11** | **Perfil** | Editar su propio perfil y gestionar su contraseña y 2FA. | `/profile` | Información de su propia cuenta. | El usuario puede actualizar su nombre, avatar y seguridad personal. |
+| **I-11** | **Anuncios** | Ver quién ha reaccionado y quién ha leído los anuncios. | `/announcements` (Popover) | Datos de lecturas y reacciones. | Al hacer clic en los contadores, se muestra una lista de usuarios. |
+| **I-12** | **Perfil** | Editar su propio perfil y gestionar su contraseña y 2FA. | `/profile` | Información de su propia cuenta. | El usuario puede actualizar su nombre, avatar y seguridad personal. |
 
 ---
 
@@ -71,7 +73,7 @@ El estudiante consume el contenido formativo de la plataforma.
 | **S-12** | | Cerrar sesión de forma segura. | (Botón en Layout) | Cierre de su sesión actual. | El usuario es desconectado y redirigido a la página de inicio de sesión. |
 | **S-13** | **Notificaciones** | Ver y gestionar sus notificaciones personales. | `/notifications` (Popover y página) | Sus notificaciones personales. | El estudiante puede ver una lista de sus notificaciones, marcarlas como leídas o eliminarlas. |
 | **S-14** | **Calendario** | Ver los eventos del calendario que le conciernen. | `/calendar` | Eventos del calendario. | El estudiante puede ver un calendario con los eventos dirigidos a él, a su rol o a todos. |
-| **S-15** | **Anuncios** | Ver los anuncios relevantes para él. | `/announcements` | Anuncios de la plataforma. | El estudiante ve los anuncios dirigidos a él, a su rol o a todos los usuarios. |
+| **S-15** | **Anuncios** | Reaccionar a un anuncio y ver quién más ha reaccionado o visto. | `/announcements` (Popover) | Datos de lecturas y reacciones. | El estudiante puede añadir un emoji de reacción. Al hacer clic en los contadores, ve la lista de usuarios. |
 | **S-16** | **Mis Cursos** | Ver una lista dedicada de los cursos en los que está inscrito. | `/my-courses` | Sus inscripciones, su progreso. | La página muestra solo los cursos en los que está inscrito, con su progreso visible. |
 | **S-17** | **Mis Apuntes** | Ver y gestionar todas las notas tomadas en los cursos. | `/my-notes` | Sus notas personales. | La página muestra una lista de sus notas, organizadas por curso, y permite acceder a ellas. |
 | **S-18** | **Formularios** | Ver y responder formularios públicos o compartidos con él. | `/forms` | Formularios disponibles, Envío de respuestas. | El estudiante puede ver la lista de formularios activos y enviar sus respuestas. |

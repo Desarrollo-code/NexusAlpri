@@ -66,6 +66,8 @@ Aquí encontrarás documentos, guías y políticas de la empresa.
 ### 4.5. Anuncios y Calendario
 
 *   **Anuncios:** Mantente al día con las últimas noticias y comunicados de la empresa.
+    *   **Reaccionar:** Haz clic en el icono de la carita sonriente para añadir una reacción a un anuncio.
+    *   **Ver Interacciones:** Haz clic en el contador de vistas (icono de ojo) o en las insignias de reacciones para ver quiénes han interactuado con el anuncio.
 *   **Calendario:** Visualiza los próximos eventos, talleres o fechas importantes. Los eventos pueden tener colores para diferenciarlos.
 
 ### 4.6. Gestionar tu Perfil
@@ -74,6 +76,7 @@ Haz clic en tu avatar en la esquina superior derecha y selecciona "Perfil" para:
 *   Cambiar tu nombre y foto de perfil.
 *   Cambiar tu contraseña.
 *   Activar o desactivar la Autenticación de Dos Factores (2FA) para mayor seguridad.
+*   Ver tus puntos de experiencia (XP) y logros desbloqueados.
 
 ## 5. Preguntas Frecuentes (FAQ)
 

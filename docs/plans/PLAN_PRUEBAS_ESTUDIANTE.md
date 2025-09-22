@@ -48,9 +48,15 @@ Este documento describe las acciones a verificar para el rol de **Estudiante**.
 | **5.1. Navegar y ver recursos** | Ve a la biblioteca. Deberías poder entrar a la carpeta "Documentos de RRHH" y ver el archivo "Guía de Beneficios". |
 | **5.2. Acceder a recurso protegido** | Haz clic en "Guía de Beneficios". El sistema te pedirá un PIN. Ingresa `1234`. Deberías poder previsualizar o descargar el archivo. |
 
-### 6. Perfil (`/profile`)
+### 6. Anuncios (`/announcements`)
 
 | Acción a Realizar | Verificación Esperada |
 | :--- | :--- |
-| **6.1. Ver progreso y logros** | Como Laura, ve a tu perfil. Deberías ver tus puntos de experiencia (XP) y el logro "Primer Paso" por tu primera inscripción. |
-| **6.2. Editar información** | Cambia tu nombre. El cambio debe reflejarse en la tarjeta de perfil y en la barra superior. |
+| **6.1. Ver e interactuar (Laura)** | Como Laura, ve a `/announcements`. Reacciona al "Anuncio de Bienvenida" con un emoji. Haz clic en el contador de vistas (icono del ojo) y verifica que tu nombre aparece. Haz clic en la insignia de tu reacción y verifica que apareces en esa lista. |
+
+### 7. Perfil (`/profile`)
+
+| Acción a Realizar | Verificación Esperada |
+| :--- | :--- |
+| **7.1. Ver progreso y logros** | Como Laura, ve a tu perfil. Deberías ver tus puntos de experiencia (XP) y el logro "Primer Paso" por tu primera inscripción. |
+| **7.2. Editar información** | Cambia tu nombre. El cambio debe reflejarse en la tarjeta de perfil y en la barra superior. |

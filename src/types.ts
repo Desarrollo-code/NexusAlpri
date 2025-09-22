@@ -313,9 +313,9 @@ export interface FormFieldOption {
   points: number;
 }
 
-export interface FormField extends Omit<PrismaFormField, 'options'> {
+export type FormField = Omit<PrismaFormField, 'options'> & {
   options: FormFieldOption[];
-}
+};
 
 export type AppForm = PrismaForm & {
     fields: FormField[];

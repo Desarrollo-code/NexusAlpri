@@ -82,7 +82,9 @@ El sistema de progreso está diseñado para ser automático y reflejar la intera
     *   **Tipos de Archivo:** Soporta la subida de documentos, videos, imágenes o la adición de enlaces externos.
     *   **Control de Acceso:** Un recurso puede ser **Público** (visible para todos) o **Privado**. Si es privado, se puede compartir con usuarios específicos.
     *   **Seguridad con PIN:** Se puede añadir una capa extra de seguridad a cualquier recurso protegiéndolo con un PIN numérico.
-*   **Anuncios (`/announcements`):** Los administradores e instructores pueden crear anuncios. Estos pueden ser dirigidos a toda la plataforma o a roles específicos (ej. "Solo para Estudiantes").
+*   **Anuncios (`/announcements`):** Los administradores e instructores pueden crear anuncios.
+    * **Dirigidos:** Pueden ser para toda la plataforma o a roles específicos (ej. "Solo para Estudiantes").
+    * **Interactividad:** Los usuarios pueden **reaccionar** a los anuncios con emojis. Es posible ver **quién ha reaccionado** y **quién ha visto** cada anuncio, fomentando la interacción.
 *   **Calendario (`/calendar`):** Permite crear eventos, definir su fecha, hora, y una audiencia (todos, un rol específico, o una lista de asistentes seleccionados). El calendario de cada usuario solo muestra los eventos que le conciernen.
 *   **Mis Apuntes (`/my-notes`):** Una sección donde los estudiantes pueden ver todas las notas que han tomado dentro de las lecciones, organizadas por curso y módulo en un formato de "tablero de corcho".
 
