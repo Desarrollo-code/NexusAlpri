@@ -1,10 +1,12 @@
 // src/app/api/settings/route.ts
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 import { getCurrentUser } from '@/lib/auth';
 import type { PlatformSettings } from '@/types';
 import type { NextRequest } from 'next/server';
 import { revalidatePath } from 'next/cache';
+
+const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 

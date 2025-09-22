@@ -1,7 +1,9 @@
 // src/app/api/enrollments/course/[courseId]/details/route.ts
 import { NextResponse, NextRequest } from 'next/server';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 import { getCurrentUser } from '@/lib/auth';
+
+const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 

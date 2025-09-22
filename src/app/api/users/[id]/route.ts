@@ -1,7 +1,10 @@
+// src/app/api/users/[id]/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+
+const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 

@@ -1,7 +1,10 @@
+// src/app/api/users/[id]/change-password/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 

@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { createSession } from '@/lib/auth';
 import type { User } from '@/types';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 

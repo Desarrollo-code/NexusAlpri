@@ -5,8 +5,9 @@ import type { NextRequest } from 'next/server';
 import { sendEmail } from '@/lib/email';
 import { AnnouncementEmail } from '@/components/emails/announcement-email';
 import type { UserRole } from '@/types';
-import { Prisma } from '@prisma/client';
-import prisma from '@/lib/prisma';
+import { PrismaClient, Prisma } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 

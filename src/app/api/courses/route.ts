@@ -2,7 +2,9 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { UserRole, CourseStatus } from '@/types';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 

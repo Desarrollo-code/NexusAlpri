@@ -1,9 +1,11 @@
 // src/app/api/courses/[id]/route.ts
 import { NextResponse, NextRequest } from "next/server";
-import prisma from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 import { getCurrentUser } from "@/lib/auth";
 import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, ContentBlock, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption } from '@/types';
 import { checkCourseOwnership } from "@/lib/auth-utils";
+
+const prisma = new PrismaClient();
 
 export const dynamic = "force-dynamic";
 

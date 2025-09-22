@@ -1,7 +1,10 @@
+// src/app/api/enrollments/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 import { getCurrentUser } from '@/lib/auth';
 import { addXp, checkAndAwardFirstEnrollment, XP_CONFIG } from '@/lib/gamification';
+
+const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 

@@ -4,7 +4,9 @@ import { authenticator } from 'otplib';
 import qrcode from 'qrcode';
 import bcrypt from 'bcryptjs';
 import { createSession, getCurrentUser } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 
