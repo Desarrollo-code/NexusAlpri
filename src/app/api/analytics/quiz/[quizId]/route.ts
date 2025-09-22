@@ -1,9 +1,10 @@
 // src/app/api/analytics/quiz/[quizId]/route.ts
 import { NextResponse, NextRequest } from 'next/server';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 import { getCurrentUser } from '@/lib/auth';
 import { checkCourseOwnership } from '@/lib/auth-utils';
 
+const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest, { params }: { params: { quizId: string } }) {

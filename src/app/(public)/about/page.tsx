@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Database, Code, Wind, Feather } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 import { cn } from '@/lib/utils';
 import type { PlatformSettings } from '@/types';
+
+const prisma = new PrismaClient();
 
 // Se elimina 'force-dynamic' para permitir el caché y la revalidación bajo demanda.
 
