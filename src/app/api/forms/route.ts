@@ -1,9 +1,10 @@
 // src/app/api/forms/route.ts
 import { NextResponse, NextRequest } from 'next/server';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 import { getCurrentUser } from '@/lib/auth';
 import type { FormStatus, UserRole } from '@/types';
 
+const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 // GET all forms based on user role and tab

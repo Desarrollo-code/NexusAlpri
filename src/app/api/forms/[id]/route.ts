@@ -1,10 +1,11 @@
 // src/app/api/forms/[id]/route.ts
 import { NextResponse, NextRequest } from 'next/server';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 import { getCurrentUser } from '@/lib/auth';
 import type { FormField, FormFieldType, FormFieldOption } from '@/types';
 import { checkCourseOwnership } from '@/lib/auth-utils';
 
+const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 async function checkPermissions(formId: string, session: any) {
@@ -26,7 +27,7 @@ async function checkPermissions(formId: string, session: any) {
 
 // GET a specific form by ID with its fields
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const { id: formId } = await params;
+  const { id: formId } = params;
 
   try {
     const session = await getCurrentUser();
@@ -72,7 +73,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 // PUT (update) a form, including its fields
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id: formId } = await params;
+  const { id: formId } = params;
 
   const session = await getCurrentUser();
   if (!session) {
@@ -161,7 +162,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
 // DELETE a form
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id: formId } = await params;
+  const { id: formId } = params;
 
   const session = await getCurrentUser();
   if (!session) {
