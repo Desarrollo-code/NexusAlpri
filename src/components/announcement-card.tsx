@@ -1,4 +1,3 @@
-
 // src/components/announcement-card.tsx
 'use client';
 
@@ -42,7 +41,7 @@ const UserListPopover = ({ trigger, title, users }: { trigger: React.ReactNode, 
             <div className="p-3 font-semibold text-sm border-b">{title} ({users.length})</div>
             <ScrollArea className="max-h-60">
                 <div className="p-2 space-y-1">
-                    {users.length > 0 ? users.map(user => (
+                    {users && users.length > 0 ? users.map(user => (
                         <div key={user.id} className="flex items-center gap-2 p-1.5 rounded-md">
                             <Avatar className="h-7 w-7">
                                 <AvatarImage src={user.avatar || undefined} />
@@ -97,16 +96,16 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
 
     // Optimistic update
     const currentReactions = announcement.reactions || [];
-    let newReactions: Reaction[] = JSON.parse(JSON.stringify(currentReactions)); // Deep copy
+    let newReactions: Reaction[] = JSON.parse(JSON.stringify(currentReactions));
     const existingReactionIndex = newReactions.findIndex(r => r.userId === user.id);
 
     if (existingReactionIndex > -1) {
-        if (newReactions[existingReactionIndex].reaction === reaction) {
+        if (newReactions[existingReactionIndex].reaction === reaction) { // Toggle off
             newReactions.splice(existingReactionIndex, 1);
-        } else {
+        } else { // Change reaction
             newReactions[existingReactionIndex].reaction = reaction;
         }
-    } else {
+    } else { // Add new reaction
         newReactions.push({
           userId: user.id,
           reaction: reaction,
@@ -123,7 +122,6 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
         });
     } catch(e) {
         console.error("Failed to update reaction", e);
-        // Revert UI on error
         onReactionChange(announcement.id, currentReactions);
     }
   };
@@ -131,14 +129,11 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   const groupedReactions = useMemo(() => {
     if (!announcement.reactions) return {};
     return announcement.reactions.reduce((acc, r) => {
+        if (!r.user) return acc; // Skip if user data is missing
         if (!acc[r.reaction]) {
             acc[r.reaction] = [];
         }
-        // This handles both the structure from the API and the optimistic update.
-        const reactionUser = r.user; 
-        if (reactionUser && reactionUser.id) {
-            acc[r.reaction].push(reactionUser);
-        }
+        acc[r.reaction].push(r.user);
         return acc;
     }, {} as Record<string, UserDisplayInfo[]>);
   }, [announcement.reactions]);
