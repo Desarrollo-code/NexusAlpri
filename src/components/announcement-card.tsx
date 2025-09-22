@@ -60,7 +60,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   
   const userHasRead = useMemo(() => {
       if (!user) return false;
-      return announcement.reads?.some(read => read.userId === user.id);
+      return announcement.reads?.some(readUser => readUser.id === user.id);
   }, [announcement.reads, user]);
   
   const userReaction = useMemo(() => {

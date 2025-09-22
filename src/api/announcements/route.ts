@@ -1,13 +1,12 @@
 // src/app/api/announcements/route.ts
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import { sendEmail } from '@/lib/email';
 import { AnnouncementEmail } from '@/components/emails/announcement-email';
 import type { UserRole } from '@/types';
+import prisma from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
-
 
 export const dynamic = 'force-dynamic';
 
@@ -24,48 +23,70 @@ export async function GET(req: NextRequest) {
   
   const isPaginated = pageParam && pageSizeParam;
 
-  // --- LÓGICA DE BÚSQUEDA CORREGIDA ---
-  // Ahora la búsqueda es más flexible y maneja todos los casos.
-  let whereClause: any = {
-    OR: [
-      { audience: 'ALL' },
-      { audience: session.role }, // Busca el rol como texto simple
-    ],
-  };
+  let whereClause: any = {};
 
-  if (filter === 'by-me') {
+  // Lógica de filtrado reconstruida para ser más clara y robusta
+  if (session.role === 'ADMINISTRATOR' && filter === 'all') {
+    // Admin en la pestaña "Todos" ve todo, sin filtro de audiencia.
+  } else if (filter === 'by-me') {
     whereClause.authorId = session.id;
   } else if (filter === 'by-others') {
     whereClause.authorId = { not: session.id };
+    // Al ver "otros", un admin o instructor solo ve lo que es público o para su rol.
+    whereClause.OR = [
+        { audience: 'ALL' },
+        { audience: session.role as UserRole },
+    ];
+  } else {
+    // Vista por defecto para todos los usuarios (incluye admin en "by-others")
+    whereClause.OR = [
+        { audience: 'ALL' },
+        { audience: session.role as UserRole },
+    ];
   }
   
   try {
+    const commonFindOptions = {
+        where: whereClause,
+        orderBy: { date: 'desc' },
+        include: { 
+            author: { select: { id: true, name: true, avatar: true } },
+            attachments: true,
+            reads: { select: { user: { select: { id: true, name: true, avatar: true }} } },
+            reactions: { select: { userId: true, reaction: true, user: { select: { id: true, name: true, avatar: true }} } },
+            _count: { select: { reads: true } },
+        },
+    };
+
     if (isPaginated) {
         const page = parseInt(pageParam, 10);
         const pageSize = parseInt(pageSizeParam, 10);
         const skip = (page - 1) * pageSize;
 
-        const [announcements, totalAnnouncements] = await prisma.$transaction([
+        const [announcementsFromDb, totalAnnouncements] = await prisma.$transaction([
             prisma.announcement.findMany({
-                where: whereClause,
-                orderBy: { date: 'desc' },
-                include: { author: { select: { id: true, name: true } } },
+                ...commonFindOptions,
                 skip: skip,
                 take: pageSize,
             }),
-            prisma.announcement.count({
-                where: whereClause
-            })
+            prisma.announcement.count({ where: whereClause })
         ]);
+        
+        const announcements = announcementsFromDb.map(ann => ({
+            ...ann,
+            reads: ann.reads.map(r => r.user),
+        }));
         
         return NextResponse.json({ announcements, totalAnnouncements });
     } else {
-        const announcements = await prisma.announcement.findMany({
-            where: whereClause,
-            orderBy: { date: 'desc' },
-            include: { author: { select: { id: true, name: true } } },
+        const announcementsFromDb = await prisma.announcement.findMany({
+            ...commonFindOptions,
             take: 4, 
         });
+        const announcements = announcementsFromDb.map(ann => ({
+            ...ann,
+            reads: ann.reads.map(r => r.user),
+        }));
         const totalAnnouncements = await prisma.announcement.count({ where: whereClause });
         return NextResponse.json({ announcements, totalAnnouncements });
     }
@@ -84,7 +105,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, content, audience } = body;
+    const { title, content, audience, attachments } = body;
 
     if (!title || !content || !audience) {
         return NextResponse.json({ message: 'Título, contenido y audiencia son requeridos' }, { status: 400 });
@@ -99,37 +120,48 @@ export async function POST(req: NextRequest) {
         audience: audienceToStore,
         authorId: session.id,
         date: new Date(),
-        priority: 'Normal'
+        priority: 'Normal',
+        attachments: {
+          create: attachments?.map((att: { name: string; url: string; type: string; size: number }) => ({
+            name: att.name,
+            url: att.url,
+            type: att.type,
+            size: att.size,
+          })) || [],
+        },
       },
       include: {
-        author: { select: { name: true, id: true } }
+        author: { select: { name: true, id: true, avatar: true } },
+        attachments: true
       }
     });
 
     const settings = await prisma.platformSettings.findFirst();
-    let targetUsersQuery: any = {};
-    if (audience !== 'ALL') {
-        const roles = Array.isArray(audience) ? audience : [audience]; 
-        if (Array.isArray(roles)) {
-            targetUsersQuery = { where: { role: { in: roles as UserRole[] } } };
-        }
+    let targetUsersQuery: Prisma.UserFindManyArgs = {};
+    if (audienceToStore !== 'ALL') {
+        targetUsersQuery = { where: { role: audienceToStore as UserRole } };
     }
     const allTargetUsers = await prisma.user.findMany(targetUsersQuery);
     
     const usersToNotify = allTargetUsers.filter(user => user.id !== session.id);
 
     if (usersToNotify.length > 0) {
+      const stripHtml = (html: string) => html.replace(/<[^>]*>?/gm, '');
+      const plainTextContent = stripHtml(content);
+      const description = plainTextContent.substring(0, 100) + (plainTextContent.length > 100 ? '...' : '');
+
       await prisma.notification.createMany({
         data: usersToNotify.map(user => ({
           userId: user.id,
           title: `Nuevo Anuncio: ${title}`,
-          description: content.substring(0, 100) + (content.length > 100 ? '...' : ''),
-          link: '/announcements'
+          description: description,
+          link: '/announcements',
+          announcementId: newAnnouncement.id, // VINCULAR LA NOTIFICACIÓN AL ANUNCIO
         }))
       });
 
       if (settings?.enableEmailNotifications) {
-        const recipientEmails = usersToNotify.map(u => u.email).filter(Boolean);
+        const recipientEmails = usersToNotify.map(u => u.email).filter(Boolean) as string[];
         if (recipientEmails.length > 0) {
             await sendEmail({
                 to: recipientEmails,
@@ -150,78 +182,4 @@ export async function POST(req: NextRequest) {
     console.error('[ANNOUNCEMENT_POST_ERROR]', error);
     return NextResponse.json({ message: 'Error al crear el anuncio' }, { status: 500 });
   }
-}
-
-export async function PUT(req: NextRequest) {
-    const session = await getCurrentUser();
-    if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
-        return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
-    }
-
-    try {
-        const { searchParams } = new URL(req.url);
-        const id = searchParams.get('id');
-        if (!id) {
-             return NextResponse.json({ message: 'ID del anuncio es requerido' }, { status: 400 });
-        }
-
-        const announcement = await prisma.announcement.findUnique({ where: { id }});
-        if (!announcement) {
-            return NextResponse.json({ message: 'Anuncio no encontrado' }, { status: 404 });
-        }
-        if (session.role !== 'ADMINISTRATOR' && announcement.authorId !== session.id) {
-            return NextResponse.json({ message: 'No tienes permiso para editar este anuncio' }, { status: 403 });
-        }
-        
-        const body = await req.json();
-        const { title, content, audience } = body;
-        const audienceToStore = Array.isArray(audience) ? audience[0] : audience;
-
-        const updatedAnnouncement = await prisma.announcement.update({
-            where: { id },
-            data: { title, content, audience: audienceToStore },
-            include: { author: { select: { id: true, name: true } } }
-        });
-        
-        return NextResponse.json(updatedAnnouncement);
-
-    } catch (error) {
-        console.error('[ANNOUNCEMENT_PUT_ERROR]', error);
-        return NextResponse.json({ message: 'Error al actualizar el anuncio' }, { status: 500 });
-    }
-}
-
-export async function DELETE(req: NextRequest) {
-    const session = await getCurrentUser();
-    if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
-        return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
-    }
-
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
-    if (!id) {
-        return NextResponse.json({ message: 'ID del anuncio es requerido' }, { status: 400 });
-    }
-
-    try {
-        const announcement = await prisma.announcement.findUnique({ where: { id }});
-        if (!announcement) {
-            return NextResponse.json({ message: 'Anuncio no encontrado' }, { status: 404 });
-        }
-        if (session.role !== 'ADMINISTRATOR' && announcement.authorId !== session.id) {
-            return NextResponse.json({ message: 'No tienes permiso para eliminar este anuncio' }, { status: 403 });
-        }
-
-        await prisma.announcement.delete({ where: { id } });
-        
-        return new NextResponse(null, { status: 204 });
-
-    } catch (error) {
-        console.error('[ANNOUNCEMENT_DELETE_ERROR]', error);
-        if ((error as any).code === 'P2025') {
-            // This means the record was already deleted, which is fine.
-            return new NextResponse(null, { status: 204 });
-        }
-        return NextResponse.json({ message: 'Error al eliminar el anuncio' }, { status: 500 });
-    }
 }
