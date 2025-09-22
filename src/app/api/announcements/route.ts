@@ -53,7 +53,13 @@ export async function GET(req: NextRequest) {
             author: { select: { id: true, name: true, avatar: true } },
             attachments: true,
             reads: { select: { user: { select: { id: true, name: true, avatar: true }} } },
-            reactions: { select: { userId: true, reaction: true, user: { select: { id: true, name: true, avatar: true }} } },
+            reactions: { 
+                select: { 
+                    userId: true, 
+                    reaction: true, 
+                    user: { select: { id: true, name: true, avatar: true }} 
+                } 
+            },
             _count: { select: { reads: true } },
         },
     };

@@ -1,4 +1,3 @@
-
 // src/types.ts
 import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource } from "@prisma/client";
 
@@ -330,5 +329,3 @@ export type AppForm = PrismaForm & {
 };
 
 export { type FormStatus, type FormFieldType, type AnnouncementAttachment };
-
-    
