@@ -76,15 +76,15 @@ async function main() {
       create: { id: 'clseedevent01', title: 'Reunión Trimestral de Resultados', start: new Date(new Date().getFullYear(), new Date().getMonth(), 15, 10, 0), end: new Date(new Date().getFullYear(), new Date().getMonth(), 15, 11, 30), audienceType: 'ALL', creatorId: adminUser.id, color: 'blue', attachments: [] }
   });
   const pinHash = await bcrypt.hash('1234', 10);
-  const folder = await prisma.resource.upsert({
-      where: { id: 'clseedfolder01' }, update: {},
-      create: { id: 'clseedfolder01', title: 'Documentos de RRHH', type: 'FOLDER', uploaderId: adminUser.id, ispublic: true }
-  });
-  await prisma.resource.upsert({
-      where: { id: 'clseedresource01' }, update: {},
-      create: { id: 'clseedresource01', title: 'Guía de Beneficios 2024', type: 'DOCUMENT', uploaderId: adminUser.id, parentId: folder.id, url: '/uploads/placeholder.pdf', pin: pinHash, ispublic: true, category: 'Recursos Humanos' }
-  });
-  console.log('Contenido global creado.');
+  const folder = await prisma.enterpriseResource.upsert({ // <-- CAMBIO AQUÍ
+      where: { id: 'clseedfolder01' }, update: {},
+      create: { id: 'clseedfolder01', title: 'Documentos de RRHH', type: 'FOLDER', uploaderId: adminUser.id, ispublic: true }
+  });
+  await prisma.enterpriseResource.upsert({ // <-- Y TAMBIÉN AQUÍ
+      where: { id: 'clseedresource01' }, update: {},
+      create: { id: 'clseedresource01', title: 'Guía de Beneficios 2024', type: 'DOCUMENT', uploaderId: adminUser.id, parentId: folder.id, url: '/uploads/placeholder.pdf', pin: pinHash, ispublic: true, category: 'Recursos Humanos' }
+  });
+  console.log('Contenido global creado.');
 
   // --- 4. CURSOS ---
   console.log('Creando cursos de prueba...');

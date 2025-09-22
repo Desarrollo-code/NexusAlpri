@@ -1,282 +1,38 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "UserRole" AS ENUM ('ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT');
 
-  - The values [SHORT_TEXT,LONG_TEXT] on the enum `FormFieldType` will be removed. If these variants are still used in the database, this will fail.
-  - You are about to drop the column `attemptId` on the `AnswerAttempt` table. All the data in the column will be lost.
-  - You are about to drop the column `createdAt` on the `CalendarEvent` table. All the data in the column will be lost.
-  - You are about to drop the column `updatedAt` on the `CalendarEvent` table. All the data in the column will be lost.
-  - You are about to drop the `Answer` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `_FormSharedWith` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `_SharedResources` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `achievements` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `announcement_attachments` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `announcements` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `answer_options` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `content_blocks` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `course_progress` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `courses` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `enrollments` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `enterprise_resources` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `form_fields` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `form_responses` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `forms` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `lesson_completion_records` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `lesson_templates` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `lessons` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `modules` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `notifications` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `platform_settings` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `questions` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `quiz_attempts` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `quizzes` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `template_blocks` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `user_achievements` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `user_notes` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `users` table. If the table is not empty, all the data it contains will be lost.
-  - Added the required column `quizAttemptId` to the `AnswerAttempt` table without a default value. This is not possible if the table is not empty.
-  - Changed the type of `audienceType` on the `CalendarEvent` table. No cast exists, the column would be dropped and recreated, which cannot be done if there is data, since the column is required.
-  - Made the column `color` on table `CalendarEvent` required. This step will fail if there are existing NULL values in that column.
+-- CreateEnum
+CREATE TYPE "LessonType" AS ENUM ('TEXT', 'VIDEO', 'QUIZ', 'FILE');
 
-*/
+-- CreateEnum
+CREATE TYPE "CourseStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
+
+-- CreateEnum
+CREATE TYPE "QuestionType" AS ENUM ('SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'TRUE_FALSE');
+
+-- CreateEnum
+CREATE TYPE "ResourceType" AS ENUM ('FOLDER', 'DOCUMENT', 'GUIDE', 'MANUAL', 'POLICY', 'VIDEO', 'EXTERNAL_LINK', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "ResourceStatus" AS ENUM ('ACTIVE', 'ARCHIVED');
+
 -- CreateEnum
 CREATE TYPE "EventAudienceType" AS ENUM ('ALL', 'ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT', 'SPECIFIC');
 
--- AlterEnum
-BEGIN;
-CREATE TYPE "FormFieldType_new" AS ENUM ('TEXT', 'TEXTAREA', 'SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'TRUE_FALSE', 'DATE', 'EMAIL', 'NUMBER');
-ALTER TABLE "FormField" ALTER COLUMN "type" TYPE "FormFieldType_new" USING ("type"::text::"FormFieldType_new");
-ALTER TYPE "FormFieldType" RENAME TO "FormFieldType_old";
-ALTER TYPE "FormFieldType_new" RENAME TO "FormFieldType";
-DROP TYPE "FormFieldType_old";
-COMMIT;
+-- CreateEnum
+CREATE TYPE "SecurityLogEvent" AS ENUM ('SUCCESSFUL_LOGIN', 'FAILED_LOGIN_ATTEMPT', 'PASSWORD_CHANGE_SUCCESS', 'TWO_FACTOR_ENABLED', 'TWO_FACTOR_DISABLED', 'USER_ROLE_CHANGED');
 
--- DropForeignKey
-ALTER TABLE "Answer" DROP CONSTRAINT "Answer_fieldId_fkey";
+-- CreateEnum
+CREATE TYPE "TemplateType" AS ENUM ('SYSTEM', 'USER');
 
--- DropForeignKey
-ALTER TABLE "Answer" DROP CONSTRAINT "Answer_responseId_fkey";
+-- CreateEnum
+CREATE TYPE "AchievementSlug" AS ENUM ('FIRST_ENROLLMENT', 'FIRST_COURSE_COMPLETED', 'PERFECT_QUIZ_SCORE', 'FIVE_COURSES_COMPLETED');
 
--- DropForeignKey
-ALTER TABLE "AnswerAttempt" DROP CONSTRAINT "AnswerAttempt_attemptId_fkey";
+-- CreateEnum
+CREATE TYPE "FormStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
 
--- DropForeignKey
-ALTER TABLE "AnswerAttempt" DROP CONSTRAINT "AnswerAttempt_questionId_fkey";
-
--- DropForeignKey
-ALTER TABLE "AnswerAttempt" DROP CONSTRAINT "AnswerAttempt_selectedOptionId_fkey";
-
--- DropForeignKey
-ALTER TABLE "CalendarEvent" DROP CONSTRAINT "CalendarEvent_creatorId_fkey";
-
--- DropForeignKey
-ALTER TABLE "SecurityLog" DROP CONSTRAINT "SecurityLog_userId_fkey";
-
--- DropForeignKey
-ALTER TABLE "_EventAttendees" DROP CONSTRAINT "_EventAttendees_B_fkey";
-
--- DropForeignKey
-ALTER TABLE "_FormSharedWith" DROP CONSTRAINT "_FormSharedWith_A_fkey";
-
--- DropForeignKey
-ALTER TABLE "_FormSharedWith" DROP CONSTRAINT "_FormSharedWith_B_fkey";
-
--- DropForeignKey
-ALTER TABLE "_SharedResources" DROP CONSTRAINT "_SharedResources_A_fkey";
-
--- DropForeignKey
-ALTER TABLE "_SharedResources" DROP CONSTRAINT "_SharedResources_B_fkey";
-
--- DropForeignKey
-ALTER TABLE "announcement_attachments" DROP CONSTRAINT "announcement_attachments_announcementId_fkey";
-
--- DropForeignKey
-ALTER TABLE "announcements" DROP CONSTRAINT "announcements_authorId_fkey";
-
--- DropForeignKey
-ALTER TABLE "answer_options" DROP CONSTRAINT "answer_options_questionId_fkey";
-
--- DropForeignKey
-ALTER TABLE "content_blocks" DROP CONSTRAINT "content_blocks_lessonId_fkey";
-
--- DropForeignKey
-ALTER TABLE "course_progress" DROP CONSTRAINT "course_progress_courseId_fkey";
-
--- DropForeignKey
-ALTER TABLE "course_progress" DROP CONSTRAINT "course_progress_enrollmentId_fkey";
-
--- DropForeignKey
-ALTER TABLE "course_progress" DROP CONSTRAINT "course_progress_userId_fkey";
-
--- DropForeignKey
-ALTER TABLE "courses" DROP CONSTRAINT "courses_instructorId_fkey";
-
--- DropForeignKey
-ALTER TABLE "enrollments" DROP CONSTRAINT "enrollments_courseId_fkey";
-
--- DropForeignKey
-ALTER TABLE "enrollments" DROP CONSTRAINT "enrollments_userId_fkey";
-
--- DropForeignKey
-ALTER TABLE "enterprise_resources" DROP CONSTRAINT "enterprise_resources_parentId_fkey";
-
--- DropForeignKey
-ALTER TABLE "enterprise_resources" DROP CONSTRAINT "enterprise_resources_uploaderId_fkey";
-
--- DropForeignKey
-ALTER TABLE "form_fields" DROP CONSTRAINT "form_fields_formId_fkey";
-
--- DropForeignKey
-ALTER TABLE "form_responses" DROP CONSTRAINT "form_responses_formId_fkey";
-
--- DropForeignKey
-ALTER TABLE "form_responses" DROP CONSTRAINT "form_responses_userId_fkey";
-
--- DropForeignKey
-ALTER TABLE "forms" DROP CONSTRAINT "forms_creatorId_fkey";
-
--- DropForeignKey
-ALTER TABLE "lesson_completion_records" DROP CONSTRAINT "lesson_completion_records_lessonId_fkey";
-
--- DropForeignKey
-ALTER TABLE "lesson_completion_records" DROP CONSTRAINT "lesson_completion_records_progressId_fkey";
-
--- DropForeignKey
-ALTER TABLE "lesson_templates" DROP CONSTRAINT "lesson_templates_creatorId_fkey";
-
--- DropForeignKey
-ALTER TABLE "lessons" DROP CONSTRAINT "lessons_moduleId_fkey";
-
--- DropForeignKey
-ALTER TABLE "modules" DROP CONSTRAINT "modules_courseId_fkey";
-
--- DropForeignKey
-ALTER TABLE "notifications" DROP CONSTRAINT "notifications_announcementId_fkey";
-
--- DropForeignKey
-ALTER TABLE "notifications" DROP CONSTRAINT "notifications_userId_fkey";
-
--- DropForeignKey
-ALTER TABLE "questions" DROP CONSTRAINT "questions_quizId_fkey";
-
--- DropForeignKey
-ALTER TABLE "quiz_attempts" DROP CONSTRAINT "quiz_attempts_quizId_fkey";
-
--- DropForeignKey
-ALTER TABLE "quiz_attempts" DROP CONSTRAINT "quiz_attempts_userId_fkey";
-
--- DropForeignKey
-ALTER TABLE "quizzes" DROP CONSTRAINT "quizzes_contentBlockId_fkey";
-
--- DropForeignKey
-ALTER TABLE "template_blocks" DROP CONSTRAINT "template_blocks_templateId_fkey";
-
--- DropForeignKey
-ALTER TABLE "user_achievements" DROP CONSTRAINT "user_achievements_achievementId_fkey";
-
--- DropForeignKey
-ALTER TABLE "user_achievements" DROP CONSTRAINT "user_achievements_userId_fkey";
-
--- DropForeignKey
-ALTER TABLE "user_notes" DROP CONSTRAINT "user_notes_lessonId_fkey";
-
--- DropForeignKey
-ALTER TABLE "user_notes" DROP CONSTRAINT "user_notes_userId_fkey";
-
--- AlterTable
-ALTER TABLE "AnswerAttempt" DROP COLUMN "attemptId",
-ADD COLUMN     "quizAttemptId" TEXT NOT NULL;
-
--- AlterTable
-ALTER TABLE "CalendarEvent" DROP COLUMN "createdAt",
-DROP COLUMN "updatedAt",
-DROP COLUMN "audienceType",
-ADD COLUMN     "audienceType" "EventAudienceType" NOT NULL,
-ALTER COLUMN "color" SET NOT NULL,
-ALTER COLUMN "color" SET DEFAULT 'blue';
-
--- DropTable
-DROP TABLE "Answer";
-
--- DropTable
-DROP TABLE "_FormSharedWith";
-
--- DropTable
-DROP TABLE "_SharedResources";
-
--- DropTable
-DROP TABLE "achievements";
-
--- DropTable
-DROP TABLE "announcement_attachments";
-
--- DropTable
-DROP TABLE "announcements";
-
--- DropTable
-DROP TABLE "answer_options";
-
--- DropTable
-DROP TABLE "content_blocks";
-
--- DropTable
-DROP TABLE "course_progress";
-
--- DropTable
-DROP TABLE "courses";
-
--- DropTable
-DROP TABLE "enrollments";
-
--- DropTable
-DROP TABLE "enterprise_resources";
-
--- DropTable
-DROP TABLE "form_fields";
-
--- DropTable
-DROP TABLE "form_responses";
-
--- DropTable
-DROP TABLE "forms";
-
--- DropTable
-DROP TABLE "lesson_completion_records";
-
--- DropTable
-DROP TABLE "lesson_templates";
-
--- DropTable
-DROP TABLE "lessons";
-
--- DropTable
-DROP TABLE "modules";
-
--- DropTable
-DROP TABLE "notifications";
-
--- DropTable
-DROP TABLE "platform_settings";
-
--- DropTable
-DROP TABLE "questions";
-
--- DropTable
-DROP TABLE "quiz_attempts";
-
--- DropTable
-DROP TABLE "quizzes";
-
--- DropTable
-DROP TABLE "template_blocks";
-
--- DropTable
-DROP TABLE "user_achievements";
-
--- DropTable
-DROP TABLE "user_notes";
-
--- DropTable
-DROP TABLE "users";
+-- CreateEnum
+CREATE TYPE "FormFieldType" AS ENUM ('TEXT', 'TEXTAREA', 'SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'TRUE_FALSE', 'DATE', 'EMAIL', 'NUMBER');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -503,6 +259,24 @@ CREATE TABLE "AnnouncementReaction" (
 );
 
 -- CreateTable
+CREATE TABLE "CalendarEvent" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "start" TIMESTAMP(3) NOT NULL,
+    "end" TIMESTAMP(3) NOT NULL,
+    "allDay" BOOLEAN NOT NULL DEFAULT false,
+    "location" TEXT,
+    "audienceType" "EventAudienceType" NOT NULL,
+    "color" TEXT NOT NULL DEFAULT 'blue',
+    "creatorId" TEXT NOT NULL,
+    "videoConferenceLink" TEXT,
+    "attachments" JSONB[],
+
+    CONSTRAINT "CalendarEvent_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Notification" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -591,6 +365,16 @@ CREATE TABLE "QuizAttempt" (
 );
 
 -- CreateTable
+CREATE TABLE "AnswerAttempt" (
+    "id" TEXT NOT NULL,
+    "quizAttemptId" TEXT NOT NULL,
+    "questionId" TEXT NOT NULL,
+    "selectedOptionId" TEXT NOT NULL,
+
+    CONSTRAINT "AnswerAttempt_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "PlatformSettings" (
     "id" TEXT NOT NULL DEFAULT 'cl-nexus-settings-default',
     "platformName" TEXT NOT NULL DEFAULT 'NexusAlpri',
@@ -626,6 +410,22 @@ CREATE TABLE "PlatformSettings" (
 );
 
 -- CreateTable
+CREATE TABLE "SecurityLog" (
+    "id" TEXT NOT NULL,
+    "event" "SecurityLogEvent" NOT NULL,
+    "ipAddress" TEXT,
+    "userAgent" TEXT,
+    "city" TEXT,
+    "country" TEXT,
+    "userId" TEXT,
+    "emailAttempt" TEXT,
+    "details" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "SecurityLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "LessonTemplate" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -649,6 +449,12 @@ CREATE TABLE "TemplateBlock" (
 
 -- CreateTable
 CREATE TABLE "_SharedWithUsers" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "_EventAttendees" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
 );
@@ -741,18 +547,6 @@ CREATE INDEX "QuizAttempt_userId_idx" ON "QuizAttempt"("userId");
 CREATE INDEX "QuizAttempt_quizId_idx" ON "QuizAttempt"("quizId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_SharedWithUsers_AB_unique" ON "_SharedWithUsers"("A", "B");
-
--- CreateIndex
-CREATE INDEX "_SharedWithUsers_B_index" ON "_SharedWithUsers"("B");
-
--- CreateIndex
-CREATE UNIQUE INDEX "_SharedWithUsersForm_AB_unique" ON "_SharedWithUsersForm"("A", "B");
-
--- CreateIndex
-CREATE INDEX "_SharedWithUsersForm_B_index" ON "_SharedWithUsersForm"("B");
-
--- CreateIndex
 CREATE INDEX "AnswerAttempt_quizAttemptId_idx" ON "AnswerAttempt"("quizAttemptId");
 
 -- CreateIndex
@@ -760,6 +554,24 @@ CREATE INDEX "SecurityLog_userId_idx" ON "SecurityLog"("userId");
 
 -- CreateIndex
 CREATE INDEX "SecurityLog_event_idx" ON "SecurityLog"("event");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_SharedWithUsers_AB_unique" ON "_SharedWithUsers"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_SharedWithUsers_B_index" ON "_SharedWithUsers"("B");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_EventAttendees_AB_unique" ON "_EventAttendees"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_EventAttendees_B_index" ON "_EventAttendees"("B");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_SharedWithUsersForm_AB_unique" ON "_SharedWithUsersForm"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_SharedWithUsersForm_B_index" ON "_SharedWithUsersForm"("B");
 
 -- AddForeignKey
 ALTER TABLE "Course" ADD CONSTRAINT "Course_instructorId_fkey" FOREIGN KEY ("instructorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -898,6 +710,9 @@ ALTER TABLE "_SharedWithUsers" ADD CONSTRAINT "_SharedWithUsers_A_fkey" FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE "_SharedWithUsers" ADD CONSTRAINT "_SharedWithUsers_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_EventAttendees" ADD CONSTRAINT "_EventAttendees_A_fkey" FOREIGN KEY ("A") REFERENCES "CalendarEvent"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_EventAttendees" ADD CONSTRAINT "_EventAttendees_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
