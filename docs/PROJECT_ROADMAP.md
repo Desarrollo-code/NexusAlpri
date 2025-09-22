@@ -1,4 +1,3 @@
-
 # Ruta de Desarrollo y Fases del Proyecto NexusAlpri
 
 Este documento describe el ciclo de vida y la ruta de desarrollo seguida para crear la plataforma NexusAlpri, desde la concepción inicial hasta la implementación de sus características clave.

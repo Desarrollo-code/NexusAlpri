@@ -1,4 +1,3 @@
-
 # Plan de Pruebas Funcionales - Rol Administrador
 
 Este documento describe las acciones a verificar para el rol de **Administrador**.

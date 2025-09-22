@@ -1,4 +1,3 @@
-
 # Descripción Detallada de la Plataforma NexusAlpri
 
 Este documento proporciona una visión integral y detallada de la arquitectura, funcionalidades y lógicas de negocio de NexusAlpri, una plataforma de e-learning corporativa.
