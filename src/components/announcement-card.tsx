@@ -1,3 +1,4 @@
+
 // src/components/announcement-card.tsx
 'use client';
 
@@ -17,7 +18,6 @@ import { useInView } from 'framer-motion';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
 import { ScrollArea } from './ui/scroll-area';
-import { Separator } from './ui/separator';
 
 const EMOJI_REACTIONS = ['👍', '❤️', '🎉', '💡', '🤔'];
 
@@ -208,7 +208,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                         <Tooltip>
                             <TooltipTrigger asChild>
                                  <div className="flex items-center gap-1.5 text-muted-foreground cursor-pointer">
-                                    <span className="text-xs">{announcement._count?.reads ?? announcement.reads.length}</span>
+                                    <span className="text-xs">{announcement._count?.reads ?? (announcement.reads || []).length}</span>
                                     {readStatusIcon}
                                 </div>
                             </TooltipTrigger>
@@ -230,3 +230,5 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
     </Card>
   );
 }
+
+    

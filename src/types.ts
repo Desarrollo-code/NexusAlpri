@@ -1,3 +1,4 @@
+
 // src/types.ts
 import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource } from "@prisma/client";
 
@@ -283,7 +284,7 @@ export interface AdminDashboardStats {
     coursesByStatus: { status: CourseStatus; count: number }[];
     recentLogins: number;
     newEnrollmentsLast7Days: number;
-    userRegistrationTrend: { date: string, count: number }[];
+    userRegistrationTrend: { date: string, count: number, newCourses: number, newEnrollments: number }[];
     averageCompletionRate: number;
     topCoursesByEnrollment: CourseInfo[];
     topCoursesByCompletion: CourseInfo[];
@@ -329,3 +330,5 @@ export type AppForm = PrismaForm & {
 };
 
 export { type FormStatus, type FormFieldType, type AnnouncementAttachment };
+
+    
