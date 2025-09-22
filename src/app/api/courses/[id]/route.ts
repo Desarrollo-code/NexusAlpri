@@ -156,34 +156,28 @@ export async function PUT(
                             update: quizPayload,
                         });
                         
-                        const questionsToProcess = blockData.quiz.questions || [];
-                        const existingQuestions = await tx.question.findMany({where: { quizId: savedQuiz.id }, select: { id: true }});
-                        const incomingQuestionIds = new Set(questionsToProcess.map(q => !q.id.startsWith('new-') ? q.id : undefined).filter(Boolean));
-                        const questionsToDelete = existingQuestions.filter(q => !incomingQuestionIds.has(q.id));
-                        if(questionsToDelete.length > 0) await tx.question.deleteMany({where: {id: {in: questionsToDelete.map(q=>q.id)}}});
+                        // --- SOLUCIÓN: BORRAR Y RECREAR PREGUNTAS/OPCIONES ---
+                        // 1. Borrar todas las preguntas existentes para este quiz
+                        await tx.question.deleteMany({ where: { quizId: savedQuiz.id }});
 
-                        for(const [qIndex, questionData] of questionsToProcess.entries()){
-                            const isNewQuestion = questionData.id.startsWith('new-');
-                            const savedQuestion = await tx.question.upsert({
-                                where: { id: isNewQuestion ? `__NEVER_FIND__${questionData.id}` : questionData.id },
-                                create: { text: questionData.text, order: qIndex, quizId: savedQuiz.id, type: 'SINGLE_CHOICE' },
-                                update: { text: questionData.text, order: qIndex },
+                        // 2. Re-crear todas las preguntas y sus opciones
+                        for(const [qIndex, questionData] of (blockData.quiz.questions || []).entries()){
+                           await tx.question.create({
+                                data: {
+                                    text: questionData.text,
+                                    order: qIndex,
+                                    quizId: savedQuiz.id,
+                                    type: 'SINGLE_CHOICE', // Asumiendo tipo por defecto
+                                    options: {
+                                        create: (questionData.options || []).map(optionData => ({
+                                            text: optionData.text,
+                                            isCorrect: optionData.isCorrect,
+                                            feedback: optionData.feedback,
+                                            points: optionData.points || (optionData.isCorrect ? 10 : 0)
+                                        }))
+                                    }
+                                },
                             });
-                            
-                            const optionsToProcess = questionData.options || [];
-                            const existingOptions = await tx.answerOption.findMany({where: {questionId: savedQuestion.id}, select: {id: true}});
-                            const incomingOptionIds = new Set(optionsToProcess.map(o => !o.id.startsWith('new-') ? o.id : undefined).filter(Boolean));
-                            const optionsToDelete = existingOptions.filter(o => !incomingOptionIds.has(o.id));
-                            if(optionsToDelete.length > 0) await tx.answerOption.deleteMany({where: {id: {in: optionsToDelete.map(o=>o.id)}}});
-
-                            for(const optionData of optionsToProcess){
-                                const isNewOption = optionData.id.startsWith('new-');
-                                await tx.answerOption.upsert({
-                                    where: {id: isNewOption ? `__NEVER_FIND__${optionData.id}` : optionData.id},
-                                    create: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback, questionId: savedQuestion.id, points: optionData.points || (optionData.isCorrect ? 10 : 0) },
-                                    update: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback, points: optionData.points || (optionData.isCorrect ? 10 : 0) },
-                                });
-                            }
                         }
                     }
                 }
