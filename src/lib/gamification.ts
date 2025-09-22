@@ -1,5 +1,7 @@
 // src/lib/gamification.ts
-import prisma from './prisma';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 
