@@ -27,8 +27,8 @@
     --radius: 0.75rem;
     
     /* Colores para gráficos y eventos */
-    --chart-1: hsl(var(--primary)); /* Azul */
-    --chart-2: hsl(var(--accent));  /* Naranja */
+    --chart-1: 210 90% 55%; /* Azul */
+    --chart-2: 25 90% 60%;  /* Naranja */
     --chart-3: 160 70% 45%; /* Verde azulado (Teal) */
     --chart-4: 50 95% 55%;  /* Amarillo */
     --chart-5: 340 85% 65%; /* Rosa/Magenta */
