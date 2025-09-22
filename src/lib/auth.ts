@@ -3,16 +3,14 @@ import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
 import { cache } from 'react';
 import type { User as PrismaUser } from '@prisma/client';
-import prisma from '@/lib/prisma'; // Usar la instancia centralizada
+import prisma from '@/lib/prisma';
 
-// Fallback to a value derived from DATABASE_URL if JWT_SECRET is not set.
-// This ensures functionality in environments like Render's free tier
-// where setting many environment variables can be cumbersome.
-const secretKey = process.env.JWT_SECRET || process.env.DATABASE_URL;
+// IMPORTANT: JWT_SECRET is the single source of truth for the secret key.
+const secretKey = process.env.JWT_SECRET;
 
 if (!secretKey) {
-  // This will now only fail if neither JWT_SECRET nor DATABASE_URL are set.
-  throw new Error('La variable de entorno JWT_SECRET o DATABASE_URL debe estar configurada.');
+  // This will now only fail if JWT_SECRET is not set.
+  throw new Error('La variable de entorno JWT_SECRET debe estar configurada.');
 }
 const key = new TextEncoder().encode(secretKey);
 
@@ -22,7 +20,6 @@ interface JWTPayload {
 }
 
 async function encrypt(payload: JWTPayload): Promise<string> {
-  // CORRECCIÓN: El payload se pasa directamente, sin anidarlo dentro de otro objeto.
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -33,10 +30,8 @@ async function encrypt(payload: JWTPayload): Promise<string> {
 async function decrypt(input: string): Promise<any> {
   try {
     const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
-    // CORRECCIÓN: El payload es el objeto principal, no está anidado.
     return payload;
   } catch (error) {
-    // Log the specific error for better debugging in production logs
     console.error("Error decrypting JWT:", error);
     return null;
   }
