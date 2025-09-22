@@ -1,9 +1,7 @@
 // src/lib/auth-utils.ts
 import 'server-only';
 import type { User } from '@/types';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 /**
  * Checks if a user has ownership or admin rights over a course.
