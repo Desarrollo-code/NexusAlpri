@@ -1,10 +1,10 @@
-
 // src/app/api/security/logs/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 import { getCurrentUser } from '@/lib/auth';
 import type { SecurityLogEvent } from '@/types';
 
+const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {

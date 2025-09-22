@@ -3,9 +3,10 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import { recordLessonInteraction, recalculateProgress } from '@/lib/progress';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 import { addXp, awardAchievement, XP_CONFIG, ACHIEVEMENT_SLUGS } from '@/lib/gamification';
 
+const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 // Records a 'quiz' interaction with its score and individual answers

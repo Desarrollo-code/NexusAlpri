@@ -1,8 +1,9 @@
 // src/app/api/quizzes/[quizId]/attempts/route.ts
 import { NextResponse, NextRequest } from 'next/server';
-import prisma from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 import { getCurrentUser } from '@/lib/auth';
 
+const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest, { params }: { params: { quizId: string } }) {
