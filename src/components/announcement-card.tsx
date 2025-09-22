@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Announcement, Reaction } from '@/types';
+import type { Announcement, Reaction, UserRole } from '@/types';
 import { User, Clock, Edit, Trash2, Paperclip, Check, CheckCheck, SmilePlus } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Identicon } from './ui/identicon';
@@ -55,6 +55,17 @@ const UserListPopover = ({ trigger, title, users }: { trigger: React.ReactNode, 
         </PopoverContent>
     </Popover>
 );
+
+const getAudienceInSpanish = (audience: UserRole[] | 'ALL' | string) => {
+    const audienceValue = Array.isArray(audience) ? audience[0] : audience;
+    switch(audienceValue) {
+        case 'ALL': return 'Todos';
+        case 'STUDENT': return 'Estudiantes';
+        case 'INSTRUCTOR': return 'Instructores';
+        case 'ADMINISTRATOR': return 'Admins';
+        default: return 'Todos';
+    }
+}
 
 
 export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionChange, onRead }: AnnouncementCardProps) {
@@ -122,9 +133,9 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
         if (!acc[r.reaction]) {
             acc[r.reaction] = [];
         }
-        // Ensure user object exists and has required properties
-        if (r.user && r.user.id && r.user.name) {
-            acc[r.reaction].push(r.user);
+        const reactionUser = r.user || r; // Handle both nested and flat structures
+        if (reactionUser && reactionUser.id && reactionUser.name) {
+            acc[r.reaction].push(reactionUser);
         }
         return acc;
     }, {} as Record<string, UserDisplayInfo[]>);
@@ -156,7 +167,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                 <span>{announcement.author?.name || 'Sistema'}</span>
             </div>
              <div className="flex items-center gap-1.5"><Clock className="h-3 w-3" /><span>{formatDate(announcement.date)}</span></div>
-             <Badge variant="secondary" className="capitalize">{(Array.isArray(announcement.audience) ? announcement.audience[0] : announcement.audience) || 'ALL'}</Badge>
+             <Badge variant="secondary">{getAudienceInSpanish(announcement.audience)}</Badge>
         </div>
       </CardHeader>
       <CardContent className="flex-grow space-y-4">
