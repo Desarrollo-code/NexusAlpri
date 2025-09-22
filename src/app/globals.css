@@ -27,16 +27,11 @@
     --radius: 0.75rem;
     
     /* Colores para gráficos y eventos */
-    --chart-1: 210 90% 55%; /* Azul vibrante (Primary) */
-    --chart-2: 25 90% 60%;  /* Naranja cálido (Accent) */
+    --chart-1: hsl(var(--primary)); /* Azul */
+    --chart-2: hsl(var(--accent));  /* Naranja */
     --chart-3: 160 70% 45%; /* Verde azulado (Teal) */
     --chart-4: 50 95% 55%;  /* Amarillo */
     --chart-5: 340 85% 65%; /* Rosa/Magenta */
-    
-    --event-blue: hsl(var(--chart-1));
-    --event-green: hsl(var(--chart-3));
-    --event-red: hsl(var(--destructive));
-    --event-orange: hsl(var(--chart-2));
 
     /* Variables de la barra lateral (mantienen un estilo consistente) */
     --sidebar-background: 220 40% 5%; 
