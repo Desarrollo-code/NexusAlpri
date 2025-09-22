@@ -1,4 +1,3 @@
-
 // src/components/announcement-card.tsx
 'use client';
 
@@ -29,7 +28,13 @@ interface AnnouncementCardProps {
   onRead?: (announcementId: string, userId: string) => void;
 }
 
-const UserListPopover = ({ trigger, title, users }: { trigger: React.ReactNode, title: string, users: {id: string, name: string | null, avatar?: string | null}[] }) => (
+type UserDisplayInfo = {
+  id: string;
+  name: string | null;
+  avatar?: string | null;
+};
+
+const UserListPopover = ({ trigger, title, users }: { trigger: React.ReactNode, title: string, users: UserDisplayInfo[] }) => (
     <Popover>
         <PopoverTrigger asChild>{trigger}</PopoverTrigger>
         <PopoverContent className="w-64 p-0">
@@ -42,7 +47,7 @@ const UserListPopover = ({ trigger, title, users }: { trigger: React.ReactNode, 
                                 <AvatarImage src={user.avatar || undefined} />
                                 <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
                             </Avatar>
-                            <span className="text-sm font-medium">{user.name}</span>
+                            <span className="text-sm font-medium">{user.name || 'Usuario Desconocido'}</span>
                         </div>
                     )) : <p className="text-xs text-center text-muted-foreground p-4">Nadie por aquí.</p>}
                 </div>
@@ -50,6 +55,7 @@ const UserListPopover = ({ trigger, title, users }: { trigger: React.ReactNode, 
         </PopoverContent>
     </Popover>
 );
+
 
 export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionChange, onRead }: AnnouncementCardProps) {
   const { user } = useAuth();
@@ -79,20 +85,21 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
 
     // Optimistic update
     const currentReactions = announcement.reactions || [];
-    let newReactions = [...currentReactions];
+    let newReactions: Reaction[] = JSON.parse(JSON.stringify(currentReactions)); // Deep copy
     const existingReactionIndex = newReactions.findIndex(r => r.userId === user.id);
 
     if (existingReactionIndex > -1) {
         if (newReactions[existingReactionIndex].reaction === reaction) {
-            // Un-react
             newReactions.splice(existingReactionIndex, 1);
         } else {
-            // Change reaction
             newReactions[existingReactionIndex].reaction = reaction;
         }
     } else {
-        // New reaction
-        newReactions.push({ userId: user.id, reaction: reaction, user: {id: user.id, name: user.name, avatar: user.avatar } });
+        newReactions.push({
+          userId: user.id,
+          reaction: reaction,
+          user: { id: user.id, name: user.name, avatar: user.avatar }
+        });
     }
     onReactionChange(announcement.id, newReactions);
     
@@ -108,18 +115,19 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
         onReactionChange(announcement.id, currentReactions);
     }
   };
-
+  
   const groupedReactions = useMemo(() => {
     if (!announcement.reactions) return {};
     return announcement.reactions.reduce((acc, r) => {
         if (!acc[r.reaction]) {
             acc[r.reaction] = [];
         }
-        if (r.user) {
+        // Ensure user object exists and has required properties
+        if (r.user && r.user.id && r.user.name) {
             acc[r.reaction].push(r.user);
         }
         return acc;
-    }, {} as Record<string, {id: string, name: string|null, avatar?: string|null}[]>);
+    }, {} as Record<string, UserDisplayInfo[]>);
   }, [announcement.reactions]);
   
   const formatDate = (dateString: string) => {
@@ -230,5 +238,3 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
     </Card>
   );
 }
-
-    
