@@ -4,7 +4,7 @@
 
 import { AnnouncementCard } from '@/components/announcement-card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import type { Announcement as AnnouncementType, UserRole, Attachment } from '@/types'; 
+import type { Announcement as AnnouncementType, UserRole, Attachment, Reaction } from '@/types'; 
 import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useState, useMemo, useEffect, useCallback, ChangeEvent } from 'react';
@@ -32,8 +32,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import type { Announcement as PrismaAnnouncement, User as PrismaUser } from '@prisma/client';
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { useTitle } from '@/contexts/title-context';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -43,8 +42,8 @@ import { getIconForFileType } from '@/lib/resource-utils';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience' | 'attachments'> {
-  author: { id: string; name: string; email?: string } | null;
+interface DisplayAnnouncement extends AnnouncementType {
+  author: { id: string; name: string; email?: string, avatar?: string | null } | null;
   audience: UserRole[] | 'ALL' | string;
   attachments: Attachment[];
 }
@@ -137,6 +136,14 @@ export default function AnnouncementsPage() {
 
   const handleTabChange = (tab: string) => {
     router.push(`${pathname}?${createQueryString({ tab, page: 1 })}`);
+  };
+
+  const handleReactionChange = (announcementId: string, updatedReactions: Reaction[]) => {
+      setAllAnnouncements(prev => 
+          prev.map(ann => 
+              ann.id === announcementId ? { ...ann, reactions: updatedReactions } : ann
+          )
+      );
   };
 
   const resetFormAndState = () => {
@@ -425,6 +432,7 @@ export default function AnnouncementsPage() {
                 announcement={announcement}
                 onEdit={handleOpenEditModal}
                 onDelete={openDeleteConfirmation}
+                onReactionChange={handleReactionChange}
             />
           ))}
         </div>
