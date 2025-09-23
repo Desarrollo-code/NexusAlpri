@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     try {
         const { id } = params;
-        const resource = await prisma.resource.findUnique({
+        const resource = await prisma.enterpriseResource.findUnique({
             where: { id },
             include: {
                 uploader: { select: { id: true, name: true } },
@@ -43,7 +43,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     
     try {
         const { id } = params;
-        const resourceToUpdate = await prisma.resource.findUnique({ where: { id } });
+        const resourceToUpdate = await prisma.enterpriseResource.findUnique({ where: { id } });
         if (!resourceToUpdate) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
@@ -53,7 +53,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
         const { title, category, tags, description, isPublic, sharedWithUserIds, expiresAt, status } = await req.json();
 
-        const updatedResource = await prisma.resource.update({
+        const updatedResource = await prisma.enterpriseResource.update({
             where: { id },
             data: { 
                 title, 
@@ -83,7 +83,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     try {
         const { id } = params;
-        const resourceToDelete = await prisma.resource.findUnique({ where: { id } });
+        const resourceToDelete = await prisma.enterpriseResource.findUnique({ where: { id } });
         if (!resourceToDelete) {
             return NextResponse.json({ message: 'Recurso no encontrado' }, { status: 404 });
         }
@@ -92,13 +92,13 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         }
         
         if (resourceToDelete.type === 'FOLDER') {
-            const children = await prisma.resource.findMany({ where: { parentId: id } });
+            const children = await prisma.enterpriseResource.findMany({ where: { parentId: id } });
             if (children.length > 0) {
                 return NextResponse.json({ message: 'No se puede eliminar una carpeta que contiene otros recursos.' }, { status: 409 });
             }
         }
 
-        await prisma.resource.delete({ where: { id } });
+        await prisma.enterpriseResource.delete({ where: { id } });
         
         return new NextResponse(null, { status: 204 });
     } catch (error) {
