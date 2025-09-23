@@ -320,7 +320,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             try {
                 setIsLoading(true);
                 const response = await fetch(`/api/courses/${courseId}`);
-                if (!response.ok) throw new Error("Course not found");
+                if (!response.ok) throw new Error("Curso no encontrado");
                 const courseData: AppCourse = await response.json();
                 setCourse(courseData);
             } catch (err) {
