@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import type { PlatformSettings } from '@/types';
+import type { PlatformSettings as AppPlatformSettings } from '@/types';
 import type { NextRequest } from 'next/server';
 import { revalidatePath } from 'next/cache';
 
@@ -39,7 +39,7 @@ const DEFAULT_DB_SETTINGS = {
   fontBody: 'Inter'
 };
 
-const getFallbackSettings = (): PlatformSettings => {
+const getFallbackSettings = (): AppPlatformSettings => {
     return {
         ...DEFAULT_DB_SETTINGS,
         resourceCategories: DEFAULT_DB_SETTINGS.resourceCategories.split(','),
@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
     }
     
     // Transforma los campos de string a array para el cliente
-    const settingsToReturn: PlatformSettings = {
+    const settingsToReturn: AppPlatformSettings = {
         ...dbSettings,
         resourceCategories: dbSettings.resourceCategories ? dbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: dbSettings.emailWhitelist || '',
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
     revalidatePath('/about');
 
     // Devuelve la configuración actualizada en el formato correcto para el cliente
-    const settingsToReturn: PlatformSettings = {
+    const settingsToReturn: AppPlatformSettings = {
         ...updatedDbSettings,
         resourceCategories: updatedDbSettings.resourceCategories ? updatedDbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: updatedDbSettings.emailWhitelist || '',

@@ -1,4 +1,3 @@
-
 // src/app/api/auth/me/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
@@ -31,5 +30,3 @@ export async function GET() {
     return NextResponse.json({ message: "Error al obtener datos del usuario" }, { status: 500 });
   }
 }
-
-    
