@@ -162,18 +162,22 @@ export async function PUT(
                                 create: { text: questionData.text, type: 'SINGLE_CHOICE', order: qIndex, quizId: savedQuiz.id },
                                 update: { text: questionData.text, order: qIndex },
                             });
+                            
+                            // Delete existing options before creating new ones to prevent conflicts
+                            if (!isNewQuestion) {
+                                await tx.answerOption.deleteMany({ where: { questionId: savedQuestion.id } });
+                            }
 
-                            const existingOptions = await tx.answerOption.findMany({where: {questionId: savedQuestion.id}, select: {id: true}});
-                            const incomingOptionIds = new Set(questionData.options.map(o => !o.id.startsWith('new-') ? o.id : undefined).filter(Boolean));
-                            const optionsToDelete = existingOptions.filter(o => !incomingOptionIds.has(o.id));
-                            if(optionsToDelete.length > 0) await tx.answerOption.deleteMany({where: {id: {in: optionsToDelete.map(o=>o.id)}}});
-
-                            for(const optionData of questionData.options){
-                                const isNewOption = optionData.id.startsWith('new-');
-                                await tx.answerOption.upsert({
-                                    where: {id: isNewOption ? `__NEVER_FIND__${optionData.id}` : optionData.id},
-                                    create: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback, points: optionData.points, questionId: savedQuestion.id },
-                                    update: { text: optionData.text, isCorrect: optionData.isCorrect, feedback: optionData.feedback, points: optionData.points },
+                            // Create all options from scratch for this question
+                             if (questionData.options && questionData.options.length > 0) {
+                                await tx.answerOption.createMany({
+                                    data: questionData.options.map(optionData => ({
+                                        text: optionData.text,
+                                        isCorrect: optionData.isCorrect || false,
+                                        feedback: optionData.feedback,
+                                        points: optionData.points,
+                                        questionId: savedQuestion.id
+                                    }))
                                 });
                             }
                         }
@@ -225,5 +229,3 @@ export async function DELETE(
     return NextResponse.json({ message: "Error al eliminar el curso" }, { status: 500 });
   }
 }
-
-    
