@@ -24,31 +24,31 @@ export async function GET(req: NextRequest) {
   const isPaginated = pageParam && pageSizeParam;
 
   let whereClause: Prisma.AnnouncementWhereInput = {};
-  let orderBy: Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput | Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput[] = [
-    { isPinned: 'desc' },
-    { date: 'desc' }
-  ];
 
-  // --- LÓGICA DE FILTRADO REFACTORIZADA ---
-  if (filter === 'pinned') {
-      whereClause.isPinned = true;
-  } else if (filter === 'trending') {
-      orderBy = [{ reactions: { _count: 'desc' } }, { date: 'desc' }];
-  }
-
-  // Lógica de Audiencia Base - Siempre se aplica a menos que el admin vea "Todos"
-  if (session.role !== 'ADMINISTRATOR' || (session.role === 'ADMINISTRATOR' && filter !== 'all')) {
+  // 1. Filtro base de audiencia: El usuario solo debe ver lo que le corresponde.
+  if (session.role !== 'ADMINISTRATOR') {
     whereClause.OR = [
       { audience: 'ALL' },
       { audience: session.role as UserRole },
     ];
   }
-  
-  // Lógica de Pestañas
+
+  // 2. Filtro de pestañas (si aplica)
   if (filter === 'by-me') {
-      whereClause.authorId = session.id;
+    whereClause.authorId = session.id;
   } else if (filter === 'by-others') {
-      whereClause.authorId = { not: session.id };
+    whereClause.authorId = { not: session.id };
+  } else if (filter === 'pinned') {
+    whereClause.isPinned = true;
+  }
+  
+  // 3. Ordenamiento
+  let orderBy: Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput[] = [
+    { isPinned: 'desc' },
+    { date: 'desc' }
+  ];
+  if (filter === 'trending') {
+      orderBy = [{ reactions: { _count: 'desc' } }, { date: 'desc' }];
   }
   
   try {
@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
     } else {
         const announcementsFromDb = await prisma.announcement.findMany({
             ...commonFindOptions,
-            take: Number(searchParams.get('pageSize') || 4), // Permitir que el pageSize se pase sin paginación
+            take: Number(searchParams.get('pageSize') || 4),
         });
         const announcements = announcementsFromDb.map(ann => ({
             ...ann,
@@ -139,6 +139,7 @@ export async function POST(req: NextRequest) {
         authorId: session.id,
         date: new Date(),
         priority: 'Normal',
+        isPinned: false,
         attachments: {
           create: attachments?.map((att: { name: string; url: string; type: string; size: number }) => ({
             name: att.name,
