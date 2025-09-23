@@ -827,8 +827,8 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
             text: 'Nueva Pregunta',
             order: localQuiz.questions.length,
             options: [
-                { id: generateUniqueId('option'), text: 'Opción 1', isCorrect: true, feedback: '' },
-                { id: generateUniqueId('option'), text: 'Opción 2', isCorrect: false, feedback: '' }
+                { id: generateUniqueId('option'), text: 'Opción 1', isCorrect: true, points: 10 },
+                { id: generateUniqueId('option'), text: 'Opción 2', isCorrect: false, points: 0 }
             ]
         };
         setLocalQuiz(prev => ({ ...prev, questions: [...prev.questions, newQuestion] }));
@@ -1023,5 +1023,3 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
         </Dialog>
     )
 };
-
-
