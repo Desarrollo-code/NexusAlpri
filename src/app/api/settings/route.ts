@@ -50,14 +50,14 @@ const getFallbackSettings = (): PlatformSettings => {
 // GET /api/settings - Fetches platform settings
 export async function GET(req: NextRequest) {
   try {
-    // Intenta conectar a la base de datos de forma explícita
-    await prisma.$connect();
-
     let dbSettings = await prisma.platformSettings.findFirst();
 
     if (!dbSettings) {
-      dbSettings = await prisma.platformSettings.create({
-        data: DEFAULT_DB_SETTINGS,
+      console.log('[SETTINGS_GET] No se encontró configuración, creando una por defecto...');
+      dbSettings = await prisma.platformSettings.upsert({
+        where: { id: DEFAULT_DB_SETTINGS.id },
+        update: {},
+        create: DEFAULT_DB_SETTINGS,
       });
     }
     
@@ -75,9 +75,6 @@ export async function GET(req: NextRequest) {
     // En caso de error de conexión, devuelve la configuración por defecto
     const fallbackSettings = getFallbackSettings();
     return NextResponse.json(fallbackSettings);
-  } finally {
-      // Asegúrate de desconectar para evitar conexiones abiertas innecesarias
-      await prisma.$disconnect().catch(() => {});
   }
 }
 
@@ -112,7 +109,7 @@ export async function POST(req: NextRequest) {
         if (deletedCategories.length > 0) {
             for (const category of deletedCategories) {
                 const courseCount = await prisma.course.count({ where: { category } });
-                const resourceCount = await prisma.resource.count({ where: { category } });
+                const resourceCount = await prisma.enterpriseResource.count({ where: { category } });
                 const totalUsage = courseCount + resourceCount;
                 if (totalUsage > 0) {
                     return NextResponse.json({

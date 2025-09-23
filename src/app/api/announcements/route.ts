@@ -11,15 +11,19 @@ import { Prisma } from '@prisma/client';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
+  console.log('[ANNOUNCEMENTS_API] Recibida solicitud GET');
   const session = await getCurrentUser();
   if (!session) {
+    console.error('[ANNOUNCEMENTS_API] Error: No autorizado, no se encontró sesión.');
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
+  console.log(`[ANNOUNCEMENTS_API] Sesión válida para: ${session.email}, Rol: ${session.role}`);
 
   const { searchParams } = new URL(req.url);
   const pageParam = searchParams.get('page');
   const pageSizeParam = searchParams.get('pageSize');
   const filter = searchParams.get('filter'); // all, by-me, by-others, pinned, trending
+  console.log(`[ANNOUNCEMENTS_API] Parámetros: page=${pageParam}, pageSize=${pageSizeParam}, filter=${filter}`);
   
   const isPaginated = pageParam && pageSizeParam;
 
@@ -32,6 +36,7 @@ export async function GET(req: NextRequest) {
       { audience: session.role as UserRole },
     ];
   }
+  console.log('[ANNOUNCEMENTS_API] Cláusula "where" inicial (audiencia):', JSON.stringify(whereClause));
 
   // 2. Filtro de pestañas (si aplica)
   if (filter === 'by-me') {
@@ -41,6 +46,7 @@ export async function GET(req: NextRequest) {
   } else if (filter === 'pinned') {
     whereClause.isPinned = true;
   }
+  console.log('[ANNOUNCEMENTS_API] Cláusula "where" final (con filtros):', JSON.stringify(whereClause));
   
   // 3. Ordenamiento
   let orderBy: Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput[] = [
@@ -52,7 +58,7 @@ export async function GET(req: NextRequest) {
   }
   
   try {
-    const commonFindOptions = {
+    const commonFindOptions: Prisma.AnnouncementFindManyArgs = {
         where: whereClause,
         orderBy: orderBy,
         include: { 
@@ -95,17 +101,20 @@ export async function GET(req: NextRequest) {
             reads: ann.reads.map(r => r.user),
         }));
         
+        console.log(`[ANNOUNCEMENTS_API] Éxito. Encontrados ${announcements.length} anuncios (paginado).`);
         return NextResponse.json({ announcements, totalAnnouncements });
     } else {
+        const take = Number(searchParams.get('pageSize') || 4);
         const announcementsFromDb = await prisma.announcement.findMany({
             ...commonFindOptions,
-            take: Number(searchParams.get('pageSize') || 4),
+            take: take,
         });
         const announcements = announcementsFromDb.map(ann => ({
             ...ann,
             reads: ann.reads.map(r => r.user),
         }));
         const totalAnnouncements = await prisma.announcement.count({ where: whereClause });
+        console.log(`[ANNOUNCEMENTS_API] Éxito. Encontrados ${announcements.length} anuncios (no paginado, take=${take}).`);
         return NextResponse.json({ announcements, totalAnnouncements });
     }
 

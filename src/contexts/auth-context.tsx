@@ -1,4 +1,3 @@
-
 // src/contexts/auth-context.tsx
 'use client';
 
@@ -43,6 +42,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { setTheme } = useTheme();
 
   const fetchSessionData = useCallback(async () => {
+    console.log('[AuthContext] Iniciando fetchSessionData...');
     try {
         const [settingsRes, userRes] = await Promise.all([
             fetch('/api/settings'),
@@ -51,19 +51,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
         setSettings(settingsData);
+        console.log('[AuthContext] Configuración cargada:', settingsData.platformName);
         
         if (userRes.ok) {
           const userData = await userRes.json();
           setUser(userData.user);
+          console.log('[AuthContext] Sesión de usuario encontrada:', userData.user.email);
         } else {
           setUser(null);
+          console.log('[AuthContext] No se encontró sesión de usuario (status: ' + userRes.status + ').');
         }
     } catch (error) {
-        console.error("Failed to fetch session data:", error);
+        console.error("[AuthContext] Fallo al obtener los datos de la sesión:", error);
         setUser(null);
         setSettings(DEFAULT_SETTINGS);
     } finally {
         setIsLoading(false);
+        console.log('[AuthContext] finalizó fetchSessionData.');
     }
   }, []);
 
@@ -82,7 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
     } catch (error) {
-      console.error("Failed to call logout API", error);
+      console.error("Fallo al llamar a la API de logout", error);
     } finally {
       setUser(null);
       setTheme('dark'); 
@@ -132,7 +136,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
   }
   return context;
 };

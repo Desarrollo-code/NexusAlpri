@@ -4,7 +4,12 @@ import { PrismaClient } from '@prisma/client';
 // Este patrón previene la creación de múltiples instancias de PrismaClient
 // en el entorno de desarrollo debido al hot-reloading de Next.js.
 const prismaClientSingleton = () => {
-  return new PrismaClient();
+  return new PrismaClient({
+    log:
+      process.env.NODE_ENV === 'development'
+        ? ['query', 'error', 'warn']
+        : ['error'],
+  });
 };
 
 declare global {
