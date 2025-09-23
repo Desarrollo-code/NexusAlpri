@@ -187,11 +187,9 @@ export function CourseCard({
             )}
             {viewMode === 'management' && (
               <>
-                <Button asChild size="sm" variant="secondary" onClick={(e) => e.stopPropagation()}>
-                  <Link href={`/manage-courses/${course.id}/edit`}>
-                    <Edit className="mr-2 h-4 w-4" /> Editar
-                  </Link>
-                </Button>
+                <div className="text-xs text-muted-foreground">
+                  {course.modulesCount} módulos. Estado: <span className="font-semibold">{getStatusInSpanish(course.status)}</span>
+                </div>
                 <ManagementDropdown course={course} onStatusChange={onStatusChange} onDelete={onDelete} isProcessing={isProcessingStatus} />
               </>
             )}
@@ -214,7 +212,6 @@ export function CourseCard({
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
-    </AlertDialog>
     </>
   );
 }
