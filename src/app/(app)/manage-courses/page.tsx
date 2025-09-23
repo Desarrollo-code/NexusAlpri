@@ -452,3 +452,4 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: 
         </DropdownMenu>
     );
 }
+
