@@ -338,6 +338,7 @@ model Announcement {
   author          User                   @relation(fields: [authorId], references: [id])
   audience        String // 'ALL', 'ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'
   priority        String                 @default("Normal")
+  isPinned           Boolean              @default(false)
   attachments     AnnouncementAttachment[]
   reads           AnnouncementRead[]
   reactions       AnnouncementReaction[]
