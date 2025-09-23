@@ -115,103 +115,104 @@ export function CourseCard({
 
   return (
     <>
-    <Card className="group flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out">
-        <Link href={mainLinkHref}>
-            <div className="aspect-video w-full relative overflow-hidden bg-muted/30">
-                <Image
-                    src={course.imageUrl || `https://placehold.co/600x400.png`}
-                    alt={course.title}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    data-ai-hint="online course abstract"
-                    quality={100}
-                    priority={priority}
-                />
-                <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-colors" />
-                {typeof progress === 'number' && (
-                    <div className="absolute top-2 right-2 bg-background/50 backdrop-blur-sm rounded-full">
-                        <CircularProgress value={progress} size={40} strokeWidth={4} valueTextClass="text-xs font-semibold" />
-                    </div>
-                )}
-                {viewMode === 'management' && (
-                    <Badge className="absolute top-2 left-2" variant={course.status === 'PUBLISHED' ? 'default' : 'secondary'}>
-                        {getStatusInSpanish(course.status)}
-                    </Badge>
-                )}
-            </div>
-        </Link>
-        <CardHeader className="p-4">
-          <div className="flex justify-between items-start gap-2">
-            <CardTitle className="text-base font-headline leading-tight mb-1 line-clamp-2">
-                <Link href={mainLinkHref} className="animated-underline">{course.title}</Link>
-            </CardTitle>
-             {viewMode === 'catalog' && isEnrolled && (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 -mr-2 -mt-1 shrink-0" onClick={e => e.stopPropagation()}>
-                            <MoreVertical className="h-4 w-4"/>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
-                        <DropdownMenuItem className="text-destructive focus:bg-destructive/10" onSelect={() => setShowUnenrollConfirm(true)}>
-                            <X className="mr-2 h-4 w-4"/> Cancelar Inscripción
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-             )}
-          </div>
-          <div className="text-xs text-muted-foreground pt-1 flex flex-col gap-1.5">
-            <div className="flex items-center"><User className="mr-1.5 h-3 w-3" /> Por {course.instructor}</div>
-            <div className="flex items-center"><Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount} Módulos</div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-4 pt-0 flex-grow">
-          {course.description && (
-            <p className="text-sm text-muted-foreground">
-              {descriptionToShow}
-              {isTruncated && !isExpanded && '... '}
-              {isTruncated && (
-                 <button
-                    onClick={toggleExpand}
-                    className="text-primary font-semibold animated-underline"
-                >
-                    {isExpanded ? 'Leer menos' : 'Leer más'}
-                </button>
+      <Card className="group flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out">
+          <Link href={mainLinkHref}>
+              <div className="aspect-video w-full relative overflow-hidden bg-muted/30">
+                  <Image
+                      src={course.imageUrl || `https://placehold.co/600x400.png`}
+                      alt={course.title}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      data-ai-hint="online course abstract"
+                      quality={100}
+                      priority={priority}
+                  />
+                  <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-colors" />
+                  {typeof progress === 'number' && (
+                      <div className="absolute top-2 right-2 bg-background/50 backdrop-blur-sm rounded-full">
+                          <CircularProgress value={progress} size={40} strokeWidth={4} valueTextClass="text-xs font-semibold" />
+                      </div>
+                  )}
+                  {viewMode === 'management' && (
+                      <Badge className="absolute top-2 left-2" variant={course.status === 'PUBLISHED' ? 'default' : 'secondary'}>
+                          {getStatusInSpanish(course.status)}
+                      </Badge>
+                  )}
+              </div>
+          </Link>
+          <CardHeader className="p-4">
+            <div className="flex justify-between items-start gap-2">
+              <CardTitle className="text-base font-headline leading-tight mb-1 line-clamp-2">
+                  <Link href={mainLinkHref} className="animated-underline">{course.title}</Link>
+              </CardTitle>
+              {viewMode === 'catalog' && isEnrolled && (
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 -mr-2 -mt-1 shrink-0" onClick={e => e.stopPropagation()}>
+                              <MoreVertical className="h-4 w-4"/>
+                          </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
+                          <DropdownMenuItem className="text-destructive focus:bg-destructive/10" onSelect={() => setShowUnenrollConfirm(true)}>
+                              <X className="mr-2 h-4 w-4"/> Cancelar Inscripción
+                          </DropdownMenuItem>
+                      </DropdownMenuContent>
+                  </DropdownMenu>
               )}
-            </p>
-          )}
-        </CardContent>
-        <CardFooter className="p-4 border-t pt-3 flex items-center justify-between mt-auto">
-            {viewMode === 'catalog' && (
-                <EnrollmentButton isEnrolled={isEnrolled} handleEnrollment={handleEnrollment} isProcessing={isProcessingEnrollment} mainLinkHref={mainLinkHref} />
+            </div>
+            <div className="text-xs text-muted-foreground pt-1 flex flex-col gap-1.5">
+              <div className="flex items-center"><User className="mr-1.5 h-3 w-3" /> Por {course.instructor}</div>
+              <div className="flex items-center"><Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount} Módulos</div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 flex-grow">
+            {course.description && (
+              <p className="text-sm text-muted-foreground">
+                {descriptionToShow}
+                {isTruncated && !isExpanded && '... '}
+                {isTruncated && (
+                  <button
+                      onClick={toggleExpand}
+                      className="text-primary font-semibold animated-underline"
+                  >
+                      {isExpanded ? 'Leer menos' : 'Leer más'}
+                  </button>
+                )}
+              </p>
             )}
-            {viewMode === 'management' && (
-              <>
-                <div className="text-xs text-muted-foreground">
-                  {course.modulesCount} módulos. Estado: <span className="font-semibold">{getStatusInSpanish(course.status)}</span>
-                </div>
-                <ManagementDropdown course={course} onStatusChange={onStatusChange} onDelete={onDelete} isProcessing={isProcessingStatus} />
-              </>
-            )}
-        </CardFooter>
-    </Card>
+          </CardContent>
+          <CardFooter className="p-4 border-t pt-3 flex items-center justify-between mt-auto">
+              {viewMode === 'catalog' && (
+                  <EnrollmentButton isEnrolled={isEnrolled} handleEnrollment={handleEnrollment} isProcessing={isProcessingEnrollment} mainLinkHref={mainLinkHref} />
+              )}
+              {viewMode === 'management' && (
+                <>
+                  <div className="text-xs text-muted-foreground">
+                    {course.modulesCount} módulos. Estado: <span className="font-semibold">{getStatusInSpanish(course.status)}</span>
+                  </div>
+                  <ManagementDropdown course={course} onStatusChange={onStatusChange} onDelete={onDelete} isProcessing={isProcessingStatus} />
+                </>
+              )}
+          </CardFooter>
+      </Card>
 
-    <AlertDialog open={showUnenrollConfirm} onOpenChange={setShowUnenrollConfirm}>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle className="flex items-center gap-2"><AlertTriangle className="text-destructive"/>¿Estás seguro de cancelar la inscripción?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    Perderás todo tu progreso en el curso "<strong>{course.title}</strong>" y tendrás que volver a inscribirte para acceder a él. Esta acción no se puede deshacer.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel disabled={isProcessingEnrollment}>No, mantener inscripción</AlertDialogCancel>
-                <AlertDialogAction onClick={(e) => handleEnrollment(e, false)} disabled={isProcessingEnrollment} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                    {isProcessingEnrollment && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                    Sí, cancelar mi inscripción
-                </AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
+      <AlertDialog open={showUnenrollConfirm} onOpenChange={setShowUnenrollConfirm}>
+          <AlertDialogContent>
+              <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2"><AlertTriangle className="text-destructive"/>¿Estás seguro de cancelar la inscripción?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                      Perderás todo tu progreso en el curso "<strong>{course.title}</strong>" y tendrás que volver a inscribirte para acceder a él. Esta acción no se puede deshacer.
+                  </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isProcessingEnrollment}>No, mantener inscripción</AlertDialogCancel>
+                  <AlertDialogAction onClick={(e) => handleEnrollment(e, false)} disabled={isProcessingEnrollment} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                      {isProcessingEnrollment && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                      Sí, cancelar mi inscripción
+                  </AlertDialogAction>
+              </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
