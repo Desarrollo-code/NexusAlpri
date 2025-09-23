@@ -50,6 +50,7 @@ Esta sección es el centro de control para todo el contenido formativo.
 **Ruta:** `/announcements`
 *   Crea anuncios para toda la plataforma o para roles específicos (Estudiantes, Instructores, etc.).
 *   Edita o elimina anuncios existentes.
+*   **Supervisa la Interacción:** Haz clic en los contadores de vistas (icono de ojo) y en las insignias de emojis para ver qué usuarios han leído el anuncio y cómo han reaccionado.
 
 ### 4.2. Calendario
 
@@ -108,5 +109,5 @@ Esta sección te permite personalizar el comportamiento de toda la plataforma.
 
 ## 6. Mantenimiento y Monitoreo
 
-*   **Copias de Seguridad:** La responsabilidad de las copias de seguridad de la base de datos recae en la configuración de la infraestructura del servidor de la base de datos (MySQL). Asegúrate de tener una política de copias de seguridad regular.
+*   **Copias de Seguridad:** La responsabilidad de las copias de seguridad de la base de datos recae en la configuración de la infraestructura del servidor de la base de datos (PostgreSQL en Supabase). Asegúrate de tener una política de copias de seguridad regular.
 *   **Logs del Sistema:** Los logs de la aplicación (errores, accesos) son gestionados por el entorno de despliegue (ej. Vercel, Docker, un servidor PM2). Consulta la documentación de tu proveedor de hosting para acceder a ellos.
