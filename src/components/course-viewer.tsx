@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X, GraduationCap } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X, GraduationCap, Expand } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -246,6 +246,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   const [isSidebarVisible, setIsSidebarVisible] = useState(!isMobile);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [isNotesPanelOpen, setIsNotesPanelOpen] = useState(false);
+  const [imageToView, setImageToView] = useState<string | null>(null);
 
   const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
   const totalLessonsCount = allLessons.length;
@@ -468,9 +469,12 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         
         if (isImage) {
             return (
-                <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center">
+                 <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center group relative cursor-pointer" onClick={() => setImageToView(block.content)}>
                     <div className="relative aspect-video w-full max-w-4xl p-2">
                         <Image src={block.content} alt={`Preview: ${selectedLesson?.title}`} fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson file" />
+                    </div>
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Expand className="h-12 w-12 text-white"/>
                     </div>
                 </div>
             );
@@ -667,6 +671,20 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                 )}
             </div>
         )}
+
+        {/* Image Viewer Modal */}
+        <Dialog open={!!imageToView} onOpenChange={(isOpen) => !isOpen && setImageToView(null)}>
+            <DialogContent className="w-screen h-screen max-w-full max-h-full p-2 bg-black/80 backdrop-blur-sm border-0">
+                <div className="relative w-full h-full">
+                    <Image
+                        src={imageToView || ''}
+                        alt="Vista ampliada de la imagen de la lección"
+                        fill
+                        className="object-contain"
+                    />
+                </div>
+            </DialogContent>
+        </Dialog>
     </div>
   );
 }
