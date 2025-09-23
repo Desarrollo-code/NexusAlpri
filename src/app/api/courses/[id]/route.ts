@@ -1,3 +1,4 @@
+
 // src/app/api/courses/[id]/route.ts
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
@@ -153,39 +154,27 @@ export async function PUT(
                         // --- SOLUCIÓN DEFINITIVA: Borrar y recrear preguntas y opciones ---
                         await tx.question.deleteMany({ where: { quizId: savedQuiz.id } });
 
-                        if (blockData.quiz.questions && blockData.quiz.questions.length > 0) {
-                             await tx.question.createMany({
-                                data: blockData.quiz.questions.map((q, qIndex) => ({
-                                    id: q.id.startsWith('new-') ? undefined : q.id,
-                                    text: q.text,
+                        for (const [qIndex, questionData] of blockData.quiz.questions.entries()) {
+                            const newQuestion = await tx.question.create({
+                                data: {
+                                    text: questionData.text,
                                     type: 'SINGLE_CHOICE', // Asumiendo tipo por defecto
                                     order: qIndex,
                                     quizId: savedQuiz.id,
-                                })),
-                             });
-
-                            // Re-fetch las preguntas recién creadas para obtener sus nuevos IDs
-                            const newQuestions = await tx.question.findMany({ where: { quizId: savedQuiz.id } });
-
-                            // Crear las opciones para cada pregunta
-                            const allOptionsData: any[] = [];
-                            newQuestions.forEach((newQ, qIndex) => {
-                                const originalQuestion = blockData.quiz.questions[qIndex];
-                                if (originalQuestion && originalQuestion.options) {
-                                    originalQuestion.options.forEach(opt => {
-                                        allOptionsData.push({
-                                            text: opt.text,
-                                            isCorrect: opt.isCorrect || false,
-                                            feedback: opt.feedback,
-                                            points: opt.points,
-                                            questionId: newQ.id
-                                        });
-                                    });
                                 }
                             });
-                             if(allOptionsData.length > 0) {
-                                 await tx.answerOption.createMany({ data: allOptionsData });
-                             }
+
+                            if (questionData.options && questionData.options.length > 0) {
+                                await tx.answerOption.createMany({
+                                    data: questionData.options.map(opt => ({
+                                        text: opt.text,
+                                        isCorrect: opt.isCorrect || false,
+                                        feedback: opt.feedback,
+                                        points: opt.points,
+                                        questionId: newQuestion.id,
+                                    }))
+                                });
+                            }
                         }
                     }
                 }
