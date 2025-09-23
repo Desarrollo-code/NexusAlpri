@@ -1,4 +1,3 @@
-
 // src/app/(app)/dashboard/page.tsx
 'use client';
 
@@ -483,22 +482,18 @@ export default function DashboardPage() {
     setError(null);
     
     const fetchWithFallback = async (url: string) => {
-        try {
-            const res = await fetch(url);
-            if (!res.ok) {
-                const errorData = await res.json().catch(() => ({ message: `Error: ${res.statusText}` }));
-                throw new Error(errorData.message || `Error: ${res.statusText}`);
-            }
-            return res.json();
-        } catch (err) {
-            console.error(`Failed to fetch ${url}:`, err);
-            // Throw the error to be caught by the main try-catch block
-            throw err;
+        const res = await fetch(url);
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error(`Failed to fetch ${url}:`, res.status, errorText);
+            // Lanza un error para que Promise.all falle
+            throw new Error(`Error al obtener datos de ${url}`);
         }
+        return res.json();
     };
     
     try {
-      const announcementsParams = new URLSearchParams({ pageSize: '2', filter: 'by-others' });
+      const announcementsParams = new URLSearchParams({ pageSize: '2' });
       const promises: Promise<any>[] = [
         fetchWithFallback(`/api/announcements?${announcementsParams.toString()}`)
       ];

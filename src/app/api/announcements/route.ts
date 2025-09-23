@@ -23,34 +23,39 @@ export async function GET(req: NextRequest) {
   
   const isPaginated = pageParam && pageSizeParam;
 
-  let whereClause: any = {};
-  let orderBy: any[] = [{ isPinned: 'desc' }, { date: 'desc' }];
+  let whereClause: Prisma.AnnouncementWhereInput = {};
+  let orderBy: Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput[] = [];
 
+  // Define la base de ordenamiento
+  orderBy.push({ isPinned: 'desc' }, { date: 'desc' });
+
+  // Construye la cláusula WHERE según el filtro
   if (filter === 'pinned') {
-      whereClause.isPinned = true;
+      whereClause = { ...whereClause, isPinned: true };
   } else if (filter === 'trending') {
       orderBy = [{ reactions: { _count: 'desc' } }, { date: 'desc' }];
-  } else {
-    // Lógica de filtrado reconstruida para ser más clara y robusta
-    if (session.role === 'ADMINISTRATOR' && filter === 'all') {
-      // Admin en la pestaña "Todos" ve todo, sin filtro de audiencia.
-    } else if (filter === 'by-me') {
-      whereClause.authorId = session.id;
-    } else if (filter === 'by-others') {
-      whereClause.authorId = { not: session.id };
-      // Al ver "otros", un admin o instructor solo ve lo que es público o para su rol.
-      whereClause.OR = [
-          { audience: 'ALL' },
-          { audience: session.role as UserRole },
-      ];
-    } else {
-      // Vista por defecto para todos los usuarios (incluye admin en "by-others")
-      whereClause.OR = [
-          { audience: 'ALL' },
-          { audience: session.role as UserRole },
-      ];
-    }
+  } else if (filter === 'by-me') {
+      whereClause = { ...whereClause, authorId: session.id };
+  } else if (filter === 'by-others') {
+      whereClause = {
+          ...whereClause,
+          authorId: { not: session.id },
+          OR: [
+              { audience: 'ALL' },
+              { audience: session.role as UserRole },
+          ],
+      };
+  } else if (session.role !== 'ADMINISTRATOR' || filter !== 'all') {
+      // Vista por defecto para no-admins, o para admins en cualquier pestaña que no sea "Todos"
+      whereClause = {
+          ...whereClause,
+          OR: [
+              { audience: 'ALL' },
+              { audience: session.role as UserRole },
+          ],
+      };
   }
+  // Si es admin y el filtro es 'all', no se añade ninguna restricción de audiencia.
   
   try {
     const commonFindOptions = {
@@ -100,7 +105,7 @@ export async function GET(req: NextRequest) {
     } else {
         const announcementsFromDb = await prisma.announcement.findMany({
             ...commonFindOptions,
-            take: 4, 
+            take: Number(searchParams.get('pageSize') || 4), // Permitir que el pageSize se pase sin paginación
         });
         const announcements = announcementsFromDb.map(ann => ({
             ...ann,
