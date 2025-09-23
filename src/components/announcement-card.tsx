@@ -148,8 +148,6 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
 
   const imageAttachments = announcement.attachments?.filter(att => att.type.startsWith('image/')) || [];
   const fileAttachments = announcement.attachments?.filter(att => !att.type.startsWith('image/')) || [];
-  
-  const readStatusIcon = userHasRead ? <CheckCheck className="h-4 w-4 text-blue-500" /> : <Check className="h-4 w-4 text-muted-foreground" />;
 
   return (
     <Card ref={cardRef} className="flex flex-col h-full group card-border-animated">
@@ -190,32 +188,30 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
             </div>
         )}
       </CardContent>
-      <CardFooter className="border-t pt-3 pb-3 flex items-center justify-between">
-            <div className="flex items-center gap-1">
-                 <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary"><SmilePlus className="h-4 w-4"/></Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-1">
-                        <div className="flex gap-1">
-                            {EMOJI_REACTIONS.map(emoji => (
-                                <button key={emoji} onClick={() => handleReaction(emoji)} className={cn("text-xl p-1 rounded-md transition-transform hover:scale-125", userReaction === emoji && "bg-primary/20")}>{emoji}</button>
-                            ))}
-                        </div>
-                    </PopoverContent>
-                 </Popover>
-                  <div className="flex items-center gap-1">
-                    {Object.entries(groupedReactions).map(([reaction, users]) => (
-                        <UserListPopover
-                            key={reaction}
-                            title={`Reaccionaron con ${reaction}`}
-                            users={users}
-                            trigger={<Badge variant="secondary" className="cursor-pointer">{reaction} {users.length}</Badge>}
-                        />
-                    ))}
-                  </div>
+      <CardFooter className="border-t pt-3 pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary"><SmilePlus className="h-4 w-4"/></Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-1">
+                    <div className="flex gap-1">
+                        {EMOJI_REACTIONS.map(emoji => (
+                            <button key={emoji} onClick={() => handleReaction(emoji)} className={cn("text-xl p-1 rounded-md transition-transform hover:scale-125", userReaction === emoji && "bg-primary/20")}>{emoji}</button>
+                        ))}
+                    </div>
+                </PopoverContent>
+            </Popover>
+            <div className="flex items-center gap-1 overflow-x-auto flex-grow">
+                {Object.entries(groupedReactions).map(([reaction, users]) => (
+                    <UserListPopover
+                        key={reaction}
+                        title={`Reaccionaron con ${reaction}`}
+                        users={users}
+                        trigger={<Badge variant="secondary" className="cursor-pointer">{reaction} {users.length}</Badge>}
+                    />
+                ))}
             </div>
-            
              <UserListPopover
                 title="Visto por"
                 users={announcement.reads || []}
@@ -235,14 +231,15 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                     </TooltipProvider>
                 }
              />
-            
-            {canModify && onEdit && onDelete && (
-                <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" onClick={() => onEdit(announcement)}><Edit className="mr-2 h-4 w-4" /> Editar</Button>
-                    <Button variant="outline" size="sm" onClick={() => onDelete(announcement.id)}><Trash2 className="mr-2 h-4 w-4" /> Eliminar</Button>
-                </div>
-            )}
-        </CardFooter>
+        </div>
+        
+        {canModify && onEdit && onDelete && (
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <Button variant="outline" size="sm" onClick={() => onEdit(announcement)} className="flex-grow sm:flex-grow-0"><Edit className="mr-2 h-4 w-4" /> Editar</Button>
+                <Button variant="destructive" size="sm" onClick={() => onDelete(announcement.id)} className="flex-grow sm:flex-grow-0"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</Button>
+            </div>
+        )}
+    </CardFooter>
     </Card>
   );
 }
