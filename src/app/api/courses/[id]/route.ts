@@ -150,36 +150,42 @@ export async function PUT(
                              update: { title: blockData.quiz.title, description: blockData.quiz.description || '', maxAttempts: blockData.quiz.maxAttempts },
                         });
                         
-                        const existingQuestions = await tx.question.findMany({where: { quizId: savedQuiz.id }, select: { id: true }});
-                        const incomingQuestionIds = new Set(blockData.quiz.questions.map(q => !q.id.startsWith('new-') ? q.id : undefined).filter(Boolean));
-                        const questionsToDelete = existingQuestions.filter(q => !incomingQuestionIds.has(q.id));
-                        if(questionsToDelete.length > 0) await tx.question.deleteMany({where: {id: {in: questionsToDelete.map(q=>q.id)}}});
+                        // --- SOLUCIÓN DEFINITIVA: Borrar y recrear preguntas y opciones ---
+                        await tx.question.deleteMany({ where: { quizId: savedQuiz.id } });
 
-                        for(const [qIndex, questionData] of blockData.quiz.questions.entries()){
-                            const isNewQuestion = questionData.id.startsWith('new-');
-                            const savedQuestion = await tx.question.upsert({
-                                where: { id: isNewQuestion ? `__NEVER_FIND__${questionData.id}` : questionData.id },
-                                create: { text: questionData.text, type: 'SINGLE_CHOICE', order: qIndex, quizId: savedQuiz.id },
-                                update: { text: questionData.text, order: qIndex },
+                        if (blockData.quiz.questions && blockData.quiz.questions.length > 0) {
+                             await tx.question.createMany({
+                                data: blockData.quiz.questions.map((q, qIndex) => ({
+                                    id: q.id.startsWith('new-') ? undefined : q.id,
+                                    text: q.text,
+                                    type: 'SINGLE_CHOICE', // Asumiendo tipo por defecto
+                                    order: qIndex,
+                                    quizId: savedQuiz.id,
+                                })),
+                             });
+
+                            // Re-fetch las preguntas recién creadas para obtener sus nuevos IDs
+                            const newQuestions = await tx.question.findMany({ where: { quizId: savedQuiz.id } });
+
+                            // Crear las opciones para cada pregunta
+                            const allOptionsData: any[] = [];
+                            newQuestions.forEach((newQ, qIndex) => {
+                                const originalQuestion = blockData.quiz.questions[qIndex];
+                                if (originalQuestion && originalQuestion.options) {
+                                    originalQuestion.options.forEach(opt => {
+                                        allOptionsData.push({
+                                            text: opt.text,
+                                            isCorrect: opt.isCorrect || false,
+                                            feedback: opt.feedback,
+                                            points: opt.points,
+                                            questionId: newQ.id
+                                        });
+                                    });
+                                }
                             });
-                            
-                            // Delete existing options before creating new ones to prevent conflicts
-                            if (!isNewQuestion) {
-                                await tx.answerOption.deleteMany({ where: { questionId: savedQuestion.id } });
-                            }
-
-                            // Create all options from scratch for this question
-                             if (questionData.options && questionData.options.length > 0) {
-                                await tx.answerOption.createMany({
-                                    data: questionData.options.map(optionData => ({
-                                        text: optionData.text,
-                                        isCorrect: optionData.isCorrect || false,
-                                        feedback: optionData.feedback,
-                                        points: optionData.points,
-                                        questionId: savedQuestion.id
-                                    }))
-                                });
-                            }
+                             if(allOptionsData.length > 0) {
+                                 await tx.answerOption.createMany({ data: allOptionsData });
+                             }
                         }
                     }
                 }
