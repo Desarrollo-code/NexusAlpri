@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { Announcement, Reaction, UserRole } from '@/types';
-import { Clock, Edit, Trash2, Paperclip, CheckCheck, SmilePlus, Eye, MoreVertical } from 'lucide-react';
+import { Clock, Edit, Trash2, Paperclip, CheckCheck, SmilePlus, Eye, MoreVertical, Pin, PinOff } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Identicon } from './ui/identicon';
 import Image from 'next/image';
@@ -16,7 +16,7 @@ import { useInView } from 'framer-motion';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
 import { ScrollArea } from './ui/scroll-area';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from './ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from './ui/dropdown-menu';
 
 const EMOJI_REACTIONS = ['👍', '❤️', '🎉', '💡', '🤔'];
 
@@ -25,6 +25,7 @@ interface AnnouncementCardProps {
   onDelete?: (announcementId: string) => void;
   onReactionChange?: (announcementId: string, updatedReactions: Reaction[]) => void;
   onRead?: (announcementId: string, userId: string) => void;
+  onTogglePin?: (announcement: Announcement) => void;
 }
 
 type UserDisplayInfo = {
@@ -70,7 +71,7 @@ const formatDate = (dateString: string) => {
     }
 };
 
-export function AnnouncementCard({ announcement, onDelete, onReactionChange, onRead }: AnnouncementCardProps) {
+export function AnnouncementCard({ announcement, onDelete, onReactionChange, onRead, onTogglePin }: AnnouncementCardProps) {
   const { user } = useAuth();
   const cardRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(cardRef, { once: true, margin: "-100px" });
@@ -137,6 +138,16 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
              <div className="flex items-center gap-2 text-sm">
                 <span className="font-bold">{announcement.author?.name || 'Sistema'}</span>
                 <span className="text-muted-foreground">{formatDate(announcement.date)}</span>
+                {announcement.isPinned && (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <Pin className="h-4 w-4 text-primary" />
+                            </TooltipTrigger>
+                            <TooltipContent><p>Anuncio Fijado</p></TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                )}
              </div>
              {canModify && onDelete && (
                 <DropdownMenu>
@@ -144,9 +155,14 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
                         <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                         <DropdownMenuItem onSelect={() => onTogglePin?.(announcement)}>
+                            {announcement.isPinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
+                            {announcement.isPinned ? 'Desfijar' : 'Fijar Anuncio'}
+                         </DropdownMenuItem>
                          <DropdownMenuItem disabled>
                             <Edit className="mr-2 h-4 w-4"/>Editar (próximamente)
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => onDelete(announcement.id)} className="text-destructive focus:bg-destructive/10">
                             <Trash2 className="mr-2 h-4 w-4"/>Eliminar
                         </DropdownMenuItem>

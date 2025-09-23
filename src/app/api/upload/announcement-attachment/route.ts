@@ -5,8 +5,8 @@ import { getCurrentUser } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   const session = await getCurrentUser();
-  if (!session) {
-    return NextResponse.json({ success: false, message: 'No autorizado.' }, { status: 401 });
+  if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
+    return NextResponse.json({ success: false, message: 'No autorizado.' }, { status: 403 });
   }
 
   if (!supabaseAdmin) {

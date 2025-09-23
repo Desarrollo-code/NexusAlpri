@@ -54,7 +54,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     const body = await req.json();
-    const { title, content, audience, priority, attachments } = body;
+    const { title, content, audience, priority, attachments, isPinned } = body;
     
     const audienceToStore = Array.isArray(audience) ? audience[0] : audience;
 
@@ -65,6 +65,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         content,
         audience: audienceToStore,
         priority,
+        isPinned,
         attachments: {
           deleteMany: {}, // Clear existing attachments
           create: attachments.map((att: { name: string; url: string; type: string; size: number }) => ({

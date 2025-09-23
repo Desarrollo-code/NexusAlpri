@@ -4,7 +4,7 @@
 import { AnnouncementCard } from '@/components/announcement-card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { Announcement as AnnouncementType, UserRole, Attachment, Reaction } from '@/types'; 
-import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud } from 'lucide-react';
+import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud, Pin, PinOff } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useState, useMemo, useEffect, useCallback, ChangeEvent } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
@@ -34,11 +34,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
+import Image from 'next/image';
 
 interface DisplayAnnouncement extends AnnouncementType {
   author: { id: string; name: string; email?: string, avatar?: string | null } | null;
   audience: UserRole[] | 'ALL' | string;
   attachments: Attachment[];
+  isPinned: boolean;
 }
 
 const PAGE_SIZE = 5;
@@ -49,11 +51,48 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
     const { toast } = useToast();
     const [formContent, setFormContent] = useState('');
     const [formAudience, setFormAudience] = useState<UserRole | 'ALL'>('ALL');
+    const [attachments, setAttachments] = useState<Attachment[]>([]);
+    const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+        if (!event.target.files) return;
+        const files = Array.from(event.target.files);
+
+        for (const file of files) {
+            if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                toast({ title: "Archivo demasiado grande", description: `"${file.name}" excede el límite de ${MAX_FILE_SIZE_MB}MB.`, variant: "destructive" });
+                continue;
+            }
+
+            const tempId = `${file.name}-${Date.now()}`;
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            setUploadProgress(prev => ({ ...prev, [tempId]: 0 }));
+
+            try {
+                const result = await uploadWithProgress('/api/upload/announcement-attachment', formData, (progress) => {
+                    setUploadProgress(prev => ({ ...prev, [tempId]: progress }));
+                });
+                setAttachments(prev => [...prev, { name: file.name, url: result.url, type: file.type, size: file.size }]);
+            } catch (err) {
+                toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
+            } finally {
+                setUploadProgress(prev => {
+                    const newProgress = { ...prev };
+                    delete newProgress[tempId];
+                    return newProgress;
+                });
+            }
+        }
+    };
+
 
     const handleSaveAnnouncement = async () => {
-        if (!formContent.trim()) {
-            toast({ title: "Contenido vacío", description: "Por favor, escribe un mensaje para tu anuncio.", variant: "destructive" });
+        if (!formContent.trim() && attachments.length === 0) {
+            toast({ title: "Contenido vacío", description: "Por favor, escribe un mensaje o adjunta un archivo.", variant: "destructive" });
             return;
         }
         setIsSubmitting(true);
@@ -62,16 +101,17 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    title: formContent.replace(/<[^>]*>?/gm, '').substring(0, 50), // Auto-generate title
+                    title: formContent.replace(/<[^>]*>?/gm, '').substring(0, 50),
                     content: formContent,
                     audience: formAudience,
-                    attachments: [], // Simplified for this component
+                    attachments: attachments,
                 }),
             });
             if (!response.ok) throw new Error('No se pudo crear el anuncio.');
             toast({ title: "Anuncio Publicado", description: "Tu anuncio ahora es visible para la audiencia seleccionada." });
             setFormContent('');
             setFormAudience('ALL');
+            setAttachments([]);
             onAnnouncementCreated();
         } catch (err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
@@ -96,11 +136,32 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                           disabled={isSubmitting}
                           className="!border-0 !bg-transparent p-0"
                         />
+                         {attachments.length > 0 && (
+                            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                {attachments.map((att, index) => (
+                                    <div key={index} className="relative aspect-square">
+                                        <Image src={att.url} alt={att.name} fill className="object-cover rounded-md border" />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        {Object.keys(uploadProgress).length > 0 && (
+                             <div className="mt-2 space-y-1">
+                                {Object.entries(uploadProgress).map(([id, progress]) => (
+                                     <Progress key={id} value={progress} className="h-1" />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </CardContent>
             <CardFooter className="flex justify-between items-center px-4 py-3 border-t">
                 <div className="flex items-center gap-2">
+                     <Button variant="ghost" size="icon" className="text-muted-foreground" onClick={() => fileInputRef.current?.click()}>
+                        <UploadCloud className="h-5 w-5" />
+                    </Button>
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} multiple accept="image/*" className="hidden" />
+
                     <Select value={formAudience} onValueChange={(v) => setFormAudience(v as any)} disabled={isSubmitting}>
                         <SelectTrigger className="h-8 w-auto text-xs gap-2">
                             <SelectValue/>
@@ -113,7 +174,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                         </SelectContent>
                     </Select>
                 </div>
-                 <Button size="sm" onClick={handleSaveAnnouncement} disabled={isSubmitting || !formContent.trim()}>
+                 <Button size="sm" onClick={handleSaveAnnouncement} disabled={isSubmitting || (formContent.trim() === '' && attachments.length === 0)}>
                     {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Megaphone className="mr-2 h-4 w-4"/>}
                     Publicar
                 </Button>
@@ -241,6 +302,24 @@ export default function AnnouncementsPage() {
     }
   };
 
+  const handleTogglePin = async (announcement: DisplayAnnouncement) => {
+    setIsProcessing(true);
+    try {
+        const res = await fetch(`/api/announcements/${announcement.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...announcement, isPinned: !announcement.isPinned })
+        });
+        if (!res.ok) throw new Error("No se pudo actualizar el estado.");
+        toast({ title: "Anuncio " + (!announcement.isPinned ? "fijado" : "desfijado") });
+        fetchAnnouncements();
+    } catch(err) {
+        toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
+    } finally {
+        setIsProcessing(false);
+    }
+  }
+
   const openDeleteConfirmation = (announcementId: string) => {
     const annToDelete = allAnnouncements.find(ann => ann.id === announcementId);
     if(annToDelete) {
@@ -288,6 +367,7 @@ export default function AnnouncementsPage() {
                     onDelete={openDeleteConfirmation}
                     onReactionChange={handleReactionChange}
                     onRead={handleRead}
+                    onTogglePin={handleTogglePin}
                 />
             ))}
             </>

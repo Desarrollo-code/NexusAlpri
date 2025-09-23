@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
   try {
     const commonFindOptions = {
         where: whereClause,
-        orderBy: { date: 'desc' },
+        orderBy: [{ isPinned: 'desc' }, { date: 'desc' }],
         include: { 
             author: { select: { id: true, name: true, avatar: true } },
             attachments: true,
@@ -119,8 +119,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { title, content, audience, attachments } = body;
 
-    if (!title || !content || !audience) {
-        return NextResponse.json({ message: 'Título, contenido y audiencia son requeridos' }, { status: 400 });
+    if (!title || (!content && attachments?.length === 0)) {
+        return NextResponse.json({ message: 'Se requiere contenido o al menos un adjunto.' }, { status: 400 });
     }
     
     const audienceToStore = Array.isArray(audience) ? audience[0] : audience;

@@ -191,6 +191,7 @@ export interface Announcement {
     author: { id: string; name: string | null; avatar?: string | null; } | null;
     audience: UserRole[] | 'ALL' | string;
     priority?: 'Normal' | 'Urgente';
+    isPinned: boolean;
     attachments: AnnouncementAttachment[];
     reads: { id: string; name: string | null; avatar?: string | null; }[];
     reactions: Reaction[];
