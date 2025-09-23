@@ -146,8 +146,8 @@ export async function PUT(
                         const isNewQuiz = blockData.quiz.id.startsWith('new-');
                         const savedQuiz = await tx.quiz.upsert({
                              where: { id: isNewQuiz ? `__NEVER_FIND__${blockData.quiz.id}` : blockData.quiz.id },
-                             create: { title: blockData.quiz.title, description: blockData.quiz.description || '', contentBlockId: savedBlock.id },
-                             update: { title: blockData.quiz.title, description: blockData.quiz.description || '' },
+                             create: { title: blockData.quiz.title, description: blockData.quiz.description || '', contentBlockId: savedBlock.id, maxAttempts: blockData.quiz.maxAttempts },
+                             update: { title: blockData.quiz.title, description: blockData.quiz.description || '', maxAttempts: blockData.quiz.maxAttempts },
                         });
                         
                         // Delete existing questions for this quiz before adding new ones
@@ -169,7 +169,8 @@ export async function PUT(
                                         text: opt.text,
                                         isCorrect: opt.isCorrect,
                                         feedback: opt.feedback,
-                                        questionId: newQuestion.id
+                                        questionId: newQuestion.id,
+                                        points: opt.points
                                     }))
                                 });
                             }
@@ -178,6 +179,9 @@ export async function PUT(
                 }
             }
         }
+    }, {
+      maxWait: 15000, // 15 seconds
+      timeout: 30000, // 30 seconds
     });
 
     const finalCourseState = await prisma.course.findUnique({
@@ -194,7 +198,7 @@ export async function PUT(
     if ((error as any).code === 'P2025') {
         return NextResponse.json({ message: "Error de guardado: Uno de los elementos a actualizar no fue encontrado." }, { status: 404 });
     }
-    return NextResponse.json({ message: "Error al actualizar el curso" }, { status: 500 });
+    return NextResponse.json({ message: `Error al actualizar el curso: ${(error as Error).message}` }, { status: 500 });
   }
 }
 
