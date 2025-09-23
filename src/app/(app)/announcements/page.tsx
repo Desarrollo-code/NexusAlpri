@@ -4,7 +4,7 @@
 import { AnnouncementCard } from '@/components/announcement-card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { Announcement as AnnouncementType, UserRole, Attachment, Reaction } from '@/types'; 
-import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud, Pin, PinOff } from 'lucide-react';
+import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud, Pin, PinOff, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useState, useMemo, useEffect, useCallback, ChangeEvent } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
@@ -31,10 +31,11 @@ import { Progress } from '@/components/ui/progress';
 import { getIconForFileType } from '@/lib/resource-utils';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface DisplayAnnouncement extends AnnouncementType {
   author: { id: string; name: string; email?: string, avatar?: string | null } | null;
@@ -46,10 +47,69 @@ interface DisplayAnnouncement extends AnnouncementType {
 const PAGE_SIZE = 5;
 const MAX_FILE_SIZE_MB = 4;
 
+const PinnedAnnouncementsWidget = () => {
+    const [pinned, setPinned] = useState<DisplayAnnouncement[]>([]);
+    useEffect(() => {
+        fetch('/api/announcements?filter=pinned&pageSize=5').then(res => res.json()).then(data => setPinned(data.announcements));
+    }, []);
+
+    if (pinned.length === 0) return null;
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base"><Pin className="h-4 w-4 text-primary"/>Anuncios Fijados</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <ul className="space-y-3">
+                    {pinned.map(ann => (
+                        <li key={ann.id} className="text-sm">
+                             <Link href={`/announcements#${ann.id}`} className="font-medium hover:underline text-foreground leading-tight">
+                                {ann.title}
+                            </Link>
+                            <p className="text-xs text-muted-foreground">Por {ann.author?.name}</p>
+                        </li>
+                    ))}
+                </ul>
+            </CardContent>
+        </Card>
+    );
+};
+
+const TrendingAnnouncementsWidget = () => {
+    const [trending, setTrending] = useState<DisplayAnnouncement[]>([]);
+    useEffect(() => {
+        fetch('/api/announcements?filter=trending&pageSize=5').then(res => res.json()).then(data => setTrending(data.announcements));
+    }, []);
+
+    if (trending.length === 0) return null;
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base"><TrendingUp className="h-4 w-4 text-primary"/>Populares</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <ul className="space-y-3">
+                    {trending.map(ann => (
+                        <li key={ann.id} className="text-sm">
+                             <Link href={`/announcements#${ann.id}`} className="font-medium hover:underline text-foreground leading-tight">
+                                {ann.title}
+                            </Link>
+                            <p className="text-xs text-muted-foreground">{ann.reactions.length} reaccion(es)</p>
+                        </li>
+                    ))}
+                </ul>
+            </CardContent>
+        </Card>
+    )
+}
+
 const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated: () => void }) => {
     const { user } = useAuth();
     const { toast } = useToast();
     const [formContent, setFormContent] = useState('');
+    const [formTitle, setFormTitle] = useState('');
     const [formAudience, setFormAudience] = useState<UserRole | 'ALL'>('ALL');
     const [attachments, setAttachments] = useState<Attachment[]>([]);
     const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
@@ -91,6 +151,10 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
 
 
     const handleSaveAnnouncement = async () => {
+        if (!formTitle.trim()) {
+            toast({ title: "Título Requerido", description: "Por favor, añade un título a tu anuncio.", variant: "destructive" });
+            return;
+        }
         if (!formContent.trim() && attachments.length === 0) {
             toast({ title: "Contenido vacío", description: "Por favor, escribe un mensaje o adjunta un archivo.", variant: "destructive" });
             return;
@@ -101,7 +165,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    title: formContent.replace(/<[^>]*>?/gm, '').substring(0, 50),
+                    title: formTitle,
                     content: formContent,
                     audience: formAudience,
                     attachments: attachments,
@@ -110,6 +174,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
             if (!response.ok) throw new Error('No se pudo crear el anuncio.');
             toast({ title: "Anuncio Publicado", description: "Tu anuncio ahora es visible para la audiencia seleccionada." });
             setFormContent('');
+            setFormTitle('');
             setFormAudience('ALL');
             setAttachments([]);
             onAnnouncementCreated();
@@ -128,7 +193,14 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                         <AvatarImage src={user?.avatar || undefined}/>
                         <AvatarFallback><Identicon userId={user?.id || ''}/></AvatarFallback>
                     </Avatar>
-                    <div className="w-full">
+                    <div className="w-full space-y-3">
+                         <Input 
+                            value={formTitle} 
+                            onChange={(e) => setFormTitle(e.target.value)} 
+                            placeholder="Título del anuncio..." 
+                            className="text-base font-semibold border-0 border-b-2 rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary" 
+                            disabled={isSubmitting}
+                        />
                          <RichTextEditor
                           value={formContent}
                           onChange={setFormContent}
@@ -174,7 +246,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                         </SelectContent>
                     </Select>
                 </div>
-                 <Button size="sm" onClick={handleSaveAnnouncement} disabled={isSubmitting || (formContent.trim() === '' && attachments.length === 0)}>
+                 <Button size="sm" onClick={handleSaveAnnouncement} disabled={isSubmitting || !formTitle.trim()}>
                     {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Megaphone className="mr-2 h-4 w-4"/>}
                     Publicar
                 </Button>
@@ -330,103 +402,115 @@ export default function AnnouncementsPage() {
   const canCreate = user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR';
 
   return (
-    <div className="max-w-2xl mx-auto">
-        <p className="text-muted-foreground text-center mb-8">Mantente informado sobre las últimas novedades de la plataforma.</p>
+    <div className="container mx-auto grid grid-cols-12 gap-8 items-start">
+        <aside className="hidden lg:block lg:col-span-3 sticky top-24 space-y-6">
+            <PinnedAnnouncementsWidget />
+        </aside>
+
+        <main className="col-span-12 lg:col-span-6">
+            <p className="text-muted-foreground text-center mb-8">Mantente informado sobre las últimas novedades de la plataforma.</p>
+            
+            {canCreate && <AnnouncementCreator onAnnouncementCreated={fetchAnnouncements} />}
+            
+            {user?.role !== 'STUDENT' && (
+               <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
+                    <TabsList className="w-full">
+                        <TabsTrigger value="all" className="flex-1">Todos</TabsTrigger>
+                        <TabsTrigger value="by-me" className="flex-1">Creados por mí</TabsTrigger>
+                        <TabsTrigger value="by-others" className="flex-1">Creados por otros</TabsTrigger>
+                    </TabsList>
+               </Tabs>
+            )}
+
+            <div className="space-y-6">
+            {isLoading ? (
+                <div className="flex justify-center items-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="ml-2">Cargando anuncios...</p>
+                </div>
+            ) : error ? (
+                <div className="flex flex-col items-center justify-center py-12 text-destructive">
+                <AlertTriangle className="h-8 w-8 mb-2" />
+                <p className="font-semibold">Error al cargar anuncios</p>
+                <p className="text-sm">{error}</p>
+                <Button onClick={() => fetchAnnouncements()} variant="outline" className="mt-4">Reintentar</Button>
+                </div>
+            ) : allAnnouncements.length > 0 ? (
+                <>
+                {allAnnouncements.map((announcement: DisplayAnnouncement) => (
+                    <div key={announcement.id} id={announcement.id}>
+                        <AnnouncementCard 
+                            announcement={announcement}
+                            onDelete={openDeleteConfirmation}
+                            onReactionChange={handleReactionChange}
+                            onRead={handleRead}
+                            onTogglePin={handleTogglePin}
+                        />
+                    </div>
+                ))}
+                </>
+            ) : (
+                <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                <Megaphone className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-xl font-semibold mb-2">No hay anuncios que mostrar</h3>
+                <p className="text-muted-foreground">No se encontraron anuncios que coincidan con el filtro seleccionado.</p>
+                </div>
+            )}
+
+          {totalPages > 1 && !isLoading && (
+            <Pagination>
+                <PaginationContent>
+                    <PaginationItem>
+                    <PaginationPrevious
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
+                    />
+                    </PaginationItem>
+                    <PaginationItem>
+                        <span className="text-sm p-2 text-muted-foreground">Página {currentPage} de {totalPages}</span>
+                    </PaginationItem>
+                    <PaginationItem>
+                    <PaginationNext
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}
+                    />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
+          )}
+          </div>
+        </main>
         
-        {canCreate && <AnnouncementCreator onAnnouncementCreated={fetchAnnouncements} />}
-        
-        {user?.role !== 'STUDENT' && (
-           <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
-                <TabsList className="w-full">
-                    <TabsTrigger value="all" className="flex-1">Todos</TabsTrigger>
-                    <TabsTrigger value="by-me" className="flex-1">Creados por mí</TabsTrigger>
-                    <TabsTrigger value="by-others" className="flex-1">Creados por otros</TabsTrigger>
-                </TabsList>
-           </Tabs>
-        )}
+        <aside className="hidden lg:block lg:col-span-3 sticky top-24 space-y-6">
+            <TrendingAnnouncementsWidget />
+        </aside>
 
-        <div className="space-y-6">
-        {isLoading ? (
-            <div className="flex justify-center items-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="ml-2">Cargando anuncios...</p>
-            </div>
-        ) : error ? (
-            <div className="flex flex-col items-center justify-center py-12 text-destructive">
-            <AlertTriangle className="h-8 w-8 mb-2" />
-            <p className="font-semibold">Error al cargar anuncios</p>
-            <p className="text-sm">{error}</p>
-            <Button onClick={() => fetchAnnouncements()} variant="outline" className="mt-4">Reintentar</Button>
-            </div>
-        ) : allAnnouncements.length > 0 ? (
-            <>
-            {allAnnouncements.map((announcement: DisplayAnnouncement) => (
-                <AnnouncementCard 
-                    key={announcement.id} 
-                    announcement={announcement}
-                    onDelete={openDeleteConfirmation}
-                    onReactionChange={handleReactionChange}
-                    onRead={handleRead}
-                    onTogglePin={handleTogglePin}
-                />
-            ))}
-            </>
-        ) : (
-            <div className="text-center py-12 border-2 border-dashed rounded-lg">
-            <Megaphone className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No hay anuncios que mostrar</h3>
-            <p className="text-muted-foreground">No se encontraron anuncios que coincidan con el filtro seleccionado.</p>
-            </div>
-        )}
-
-      {totalPages > 1 && !isLoading && (
-        <Pagination>
-            <PaginationContent>
-                <PaginationItem>
-                <PaginationPrevious
-                    href="#"
-                    onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
-                />
-                </PaginationItem>
-                <PaginationItem>
-                    <span className="text-sm p-2 text-muted-foreground">Página {currentPage} de {totalPages}</span>
-                </PaginationItem>
-                <PaginationItem>
-                <PaginationNext
-                    href="#"
-                    onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}
-                />
-                </PaginationItem>
-            </PaginationContent>
-        </Pagination>
-      )}
-      </div>
-
-      <AlertDialog open={!!announcementToDelete} onOpenChange={(open) => !open && setAnnouncementToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás realmente seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer. El anuncio será eliminado permanentemente.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isProcessing} onClick={() => setAnnouncementToDelete(null)}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteAnnouncement} 
-              disabled={isProcessing}
-              className={buttonVariants({ variant: "destructive" })}
-            >
-              {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
-              Sí, eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <AlertDialog open={!!announcementToDelete} onOpenChange={(open) => !open && setAnnouncementToDelete(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás realmente seguro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta acción no se puede deshacer. El anuncio será eliminado permanentemente.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isProcessing} onClick={() => setAnnouncementToDelete(null)}>
+                  Cancelar
+                </AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleDeleteAnnouncement} 
+                  disabled={isProcessing}
+                  className={buttonVariants({ variant: "destructive" })}
+                >
+                  {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                  Sí, eliminar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </div>
   );
 }
+

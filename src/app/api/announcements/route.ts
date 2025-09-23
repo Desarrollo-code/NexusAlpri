@@ -19,36 +19,43 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const pageParam = searchParams.get('page');
   const pageSizeParam = searchParams.get('pageSize');
-  const filter = searchParams.get('filter'); // all, by-me, by-others
+  const filter = searchParams.get('filter'); // all, by-me, by-others, pinned, trending
   
   const isPaginated = pageParam && pageSizeParam;
 
   let whereClause: any = {};
+  let orderBy: any[] = [{ isPinned: 'desc' }, { date: 'desc' }];
 
-  // Lógica de filtrado reconstruida para ser más clara y robusta
-  if (session.role === 'ADMINISTRATOR' && filter === 'all') {
-    // Admin en la pestaña "Todos" ve todo, sin filtro de audiencia.
-  } else if (filter === 'by-me') {
-    whereClause.authorId = session.id;
-  } else if (filter === 'by-others') {
-    whereClause.authorId = { not: session.id };
-    // Al ver "otros", un admin o instructor solo ve lo que es público o para su rol.
-    whereClause.OR = [
-        { audience: 'ALL' },
-        { audience: session.role as UserRole },
-    ];
+  if (filter === 'pinned') {
+      whereClause.isPinned = true;
+  } else if (filter === 'trending') {
+      orderBy = [{ reactions: { _count: 'desc' } }, { date: 'desc' }];
   } else {
-    // Vista por defecto para todos los usuarios (incluye admin en "by-others")
-    whereClause.OR = [
-        { audience: 'ALL' },
-        { audience: session.role as UserRole },
-    ];
+    // Lógica de filtrado reconstruida para ser más clara y robusta
+    if (session.role === 'ADMINISTRATOR' && filter === 'all') {
+      // Admin en la pestaña "Todos" ve todo, sin filtro de audiencia.
+    } else if (filter === 'by-me') {
+      whereClause.authorId = session.id;
+    } else if (filter === 'by-others') {
+      whereClause.authorId = { not: session.id };
+      // Al ver "otros", un admin o instructor solo ve lo que es público o para su rol.
+      whereClause.OR = [
+          { audience: 'ALL' },
+          { audience: session.role as UserRole },
+      ];
+    } else {
+      // Vista por defecto para todos los usuarios (incluye admin en "by-others")
+      whereClause.OR = [
+          { audience: 'ALL' },
+          { audience: session.role as UserRole },
+      ];
+    }
   }
   
   try {
     const commonFindOptions = {
         where: whereClause,
-        orderBy: [{ isPinned: 'desc' }, { date: 'desc' }],
+        orderBy: orderBy,
         include: { 
             author: { select: { id: true, name: true, avatar: true } },
             attachments: true,
@@ -66,7 +73,7 @@ export async function GET(req: NextRequest) {
                     user: { select: { id: true, name: true, avatar: true }} 
                 } 
             },
-            _count: { select: { reads: true } },
+            _count: { select: { reads: true, reactions: true } },
         },
     };
 
@@ -120,7 +127,7 @@ export async function POST(req: NextRequest) {
     const { title, content, audience, attachments } = body;
 
     if (!title || (!content && attachments?.length === 0)) {
-        return NextResponse.json({ message: 'Se requiere contenido o al menos un adjunto.' }, { status: 400 });
+        return NextResponse.json({ message: 'Se requiere título, y contenido o al menos un adjunto.' }, { status: 400 });
     }
     
     const audienceToStore = Array.isArray(audience) ? audience[0] : audience;
