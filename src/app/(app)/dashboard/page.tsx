@@ -86,7 +86,7 @@ interface DashboardData {
     adminStats: AdminDashboardStats | null;
     studentStats: { enrolled: number; completed: number } | null;
     instructorStats: { taught: number } | null;
-    recentAnnouncements: DisplayAnnouncement[];
+    recentAnnouncements: AnnouncementType[];
     securityLogs: SecurityLogWithUser[];
     taughtCourses: AppCourseType[];
     myDashboardCourses: EnrolledCourse[];
@@ -137,7 +137,7 @@ const formatDateTooltip = (dateString: string, payload?: any) => {
 };
 
 
-function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardStats, logs: SecurityLogWithUser[], announcements: DisplayAnnouncement[] }) {
+function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardStats, logs: SecurityLogWithUser[], announcements: AnnouncementType[] }) {
   const isMobile = useIsMobile();
   return (
     <div className="space-y-6">
@@ -270,7 +270,7 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
   );
 }
 
-function StudentDashboard({ stats, announcements, myCourses }: { stats: { enrolled: number, completed: number }, announcements: DisplayAnnouncement[], myCourses: EnrolledCourse[] }) {
+function StudentDashboard({ stats, announcements, myCourses }: { stats: { enrolled: number, completed: number }, announcements: AnnouncementType[], myCourses: EnrolledCourse[] }) {
   return (
     <div className="space-y-8">
       <section>
@@ -359,7 +359,7 @@ function StudentDashboard({ stats, announcements, myCourses }: { stats: { enroll
 }
 
 
-function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: { taught: number }, announcements: DisplayAnnouncement[], taughtCourses: AppCourseType[] }) {
+function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: { taught: number }, announcements: AnnouncementType[], taughtCourses: AppCourseType[] }) {
   return (
     <div className="space-y-8">
       <section>
@@ -486,8 +486,9 @@ export default function DashboardPage() {
             const res = await fetch(url, { cache: 'no-store' });
             if (!res.ok) {
                 const errorText = await res.text();
-                console.error(`Error al obtener datos de ${url}:`, res.status, errorText);
-                throw new Error(`Error al obtener datos de ${url}`);
+                const errorJson = JSON.parse(errorText);
+                console.error(`Error al obtener datos de ${url}:`, res.status, errorJson);
+                throw new Error(errorJson.message || `Error al obtener datos de ${url}`);
             }
             return await res.json();
         } catch (e) {
@@ -498,31 +499,40 @@ export default function DashboardPage() {
     };
     
     try {
-      const announcementsData = await fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] });
-      
       let dashboardPayload: DashboardData = {
           adminStats: null,
           studentStats: null,
           instructorStats: null,
-          recentAnnouncements: announcementsData.announcements,
+          recentAnnouncements: [],
           taughtCourses: [],
           myDashboardCourses: [],
           securityLogs: [],
       };
       
       if (user.role === 'ADMINISTRATOR') {
-          const [adminStats, securityLogs] = await Promise.all([
+          const [adminStats, securityLogs, announcementsData] = await Promise.all([
              fetchWithFallback('/api/dashboard/admin-stats', null),
-             fetchWithFallback('/api/security/logs?pageSize=5', { logs: [] })
+             fetchWithFallback('/api/security/logs?pageSize=5', { logs: [] }),
+             fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] })
           ]);
           dashboardPayload.adminStats = adminStats;
           dashboardPayload.securityLogs = securityLogs.logs;
+          dashboardPayload.recentAnnouncements = announcementsData.announcements;
+
       } else if (user.role === 'INSTRUCTOR') {
-          const taughtCoursesResponse = await fetchWithFallback(`/api/courses?manageView=true&userId=${user.id}&userRole=${user.role}&pageSize=4`, { courses: [], totalCourses: 0 });
+          const [taughtCoursesResponse, announcementsData] = await Promise.all([
+             fetchWithFallback(`/api/courses?manageView=true&userId=${user.id}&userRole=${user.role}&pageSize=4`, { courses: [], totalCourses: 0 }),
+             fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] })
+          ]);
           dashboardPayload.instructorStats = { taught: taughtCoursesResponse.totalCourses };
           dashboardPayload.taughtCourses = (taughtCoursesResponse.courses || []).map(mapApiCourseToAppCourse);
+          dashboardPayload.recentAnnouncements = announcementsData.announcements;
+
       } else if (user.role === 'STUDENT') {
-          const enrolledData: any[] = await fetchWithFallback(`/api/enrollment/${user.id}`, []);
+           const [enrolledData, announcementsData] = await Promise.all([
+              fetchWithFallback(`/api/enrollment/${user.id}`, []),
+              fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] })
+           ]);
           const mappedCourses: EnrolledCourse[] = enrolledData.map(item => ({
             id: item.id, title: item.title, description: item.description, instructor: item.instructorName || 'N/A',
             imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, duration: item.duration, modules: [], 
@@ -532,6 +542,7 @@ export default function DashboardPage() {
           const completedCount = mappedCourses.filter(c => c.progressPercentage === 100).length;
           dashboardPayload.studentStats = { enrolled: mappedCourses.length, completed: completedCount };
           dashboardPayload.myDashboardCourses = mappedCourses.slice(0, 4);
+          dashboardPayload.recentAnnouncements = announcementsData.announcements;
       }
       
       setData(dashboardPayload);
