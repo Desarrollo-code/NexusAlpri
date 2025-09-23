@@ -1,4 +1,3 @@
-
 // src/app/api/courses/[id]/route.ts
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
@@ -97,70 +96,56 @@ export async function PUT(
             },
         });
         
-        const existingModules = await tx.module.findMany({ where: { courseId }, select: { id: true } });
-        const incomingModuleIds = new Set(modules.map(m => !m.id.startsWith('new-') ? m.id : undefined).filter(Boolean));
+        // 2. Delete all existing modules for this course.
+        // Prisma's onDelete: Cascade will handle deleting lessons, contentBlocks, quizzes, questions, and options.
+        await tx.module.deleteMany({ where: { courseId: courseId }});
         
-        // 2. Delete modules that are no longer present
-        const modulesToDelete = existingModules.filter(m => !incomingModuleIds.has(m.id));
-        if (modulesToDelete.length > 0) {
-            await tx.module.deleteMany({ where: { id: { in: modulesToDelete.map(m => m.id) } }});
-        }
-        
-        // 3. Upsert modules and their nested content
+        // 3. Re-create the entire structure from the provided body.
         for (const [moduleIndex, moduleData] of modules.entries()) {
-            const isNewModule = moduleData.id.startsWith('new-');
-            const savedModule = await tx.module.upsert({
-                where: { id: isNewModule ? `__NEVER_FIND__${moduleData.id}` : moduleData.id },
-                create: { title: moduleData.title, order: moduleIndex, courseId },
-                update: { title: moduleData.title, order: moduleIndex },
+            const newModule = await tx.module.create({
+                data: {
+                    title: moduleData.title,
+                    order: moduleIndex,
+                    courseId: courseId,
+                }
             });
-            
-            const existingLessons = await tx.lesson.findMany({ where: { moduleId: savedModule.id }, select: { id: true } });
-            const incomingLessonIds = new Set(moduleData.lessons.map(l => !l.id.startsWith('new-') ? l.id : undefined).filter(Boolean));
-
-            const lessonsToDelete = existingLessons.filter(l => !incomingLessonIds.has(l.id));
-            if (lessonsToDelete.length > 0) await tx.lesson.deleteMany({ where: { id: { in: lessonsToDelete.map(l => l.id) } }});
 
             for (const [lessonIndex, lessonData] of moduleData.lessons.entries()) {
-                const isNewLesson = lessonData.id.startsWith('new-');
-                const savedLesson = await tx.lesson.upsert({
-                    where: { id: isNewLesson ? `__NEVER_FIND__${lessonData.id}` : lessonData.id },
-                    create: { title: lessonData.title, order: lessonIndex, moduleId: savedModule.id },
-                    update: { title: lessonData.title, order: lessonIndex },
+                const newLesson = await tx.lesson.create({
+                    data: {
+                        title: lessonData.title,
+                        order: lessonIndex,
+                        moduleId: newModule.id,
+                    }
                 });
-                
-                const existingBlocks = await tx.contentBlock.findMany({ where: { lessonId: savedLesson.id }, select: { id: true }});
-                const incomingBlockIds = new Set(lessonData.contentBlocks.map(b => !b.id.startsWith('new-') ? b.id : undefined).filter(Boolean));
-                
-                 const blocksToDelete = existingBlocks.filter(b => !incomingBlockIds.has(b.id));
-                 if (blocksToDelete.length > 0) await tx.contentBlock.deleteMany({ where: { id: { in: blocksToDelete.map(b => b.id) } }});
 
                 for (const [blockIndex, blockData] of lessonData.contentBlocks.entries()) {
-                    const isNewBlock = blockData.id.startsWith('new-');
-                    const savedBlock = await tx.contentBlock.upsert({
-                        where: { id: isNewBlock ? `__NEVER_FIND__${blockData.id}` : blockData.id },
-                        create: { type: blockData.type, content: blockData.content || '', order: blockIndex, lessonId: savedLesson.id },
-                        update: { type: blockData.type, content: blockData.content || '', order: blockIndex },
+                    const newBlock = await tx.contentBlock.create({
+                        data: {
+                            type: blockData.type,
+                            content: blockData.content || '',
+                            order: blockIndex,
+                            lessonId: newLesson.id,
+                        }
                     });
 
                     if (blockData.type === 'QUIZ' && blockData.quiz) {
-                        const isNewQuiz = blockData.quiz.id.startsWith('new-');
-                        const savedQuiz = await tx.quiz.upsert({
-                             where: { id: isNewQuiz ? `__NEVER_FIND__${blockData.quiz.id}` : blockData.quiz.id },
-                             create: { title: blockData.quiz.title, description: blockData.quiz.description || '', maxAttempts: blockData.quiz.maxAttempts, contentBlockId: savedBlock.id },
-                             update: { title: blockData.quiz.title, description: blockData.quiz.description || '', maxAttempts: blockData.quiz.maxAttempts },
+                        const newQuiz = await tx.quiz.create({
+                             data: {
+                                title: blockData.quiz.title,
+                                description: blockData.quiz.description || '',
+                                maxAttempts: blockData.quiz.maxAttempts,
+                                contentBlockId: newBlock.id,
+                             }
                         });
                         
-                        // --- SOLUCIÓN DEFINITIVA: Borrar y recrear preguntas y opciones ---
-                        await tx.question.deleteMany({ where: { quizId: savedQuiz.id } });
-
-                        for (const [qIndex, questionData] of blockData.quiz.questions.entries()) {
+                        for(const [qIndex, questionData] of blockData.quiz.questions.entries()){
                             const newQuestion = await tx.question.create({
                                 data: {
                                     text: questionData.text,
-                                    type: 'SINGLE_CHOICE', // Asumiendo tipo por defecto
                                     order: qIndex,
-                                    quizId: savedQuiz.id,
+                                    type: 'SINGLE_CHOICE', // Default type
+                                    quizId: newQuiz.id,
                                 }
                             });
 
