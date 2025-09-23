@@ -31,27 +31,24 @@ export async function GET(req: NextRequest) {
 
   // --- LÓGICA DE FILTRADO REFACTORIZADA ---
   if (filter === 'pinned') {
-      whereClause = { ...whereClause, isPinned: true };
+      whereClause.isPinned = true;
   } else if (filter === 'trending') {
       orderBy = [{ reactions: { _count: 'desc' } }, { date: 'desc' }];
-  } else {
-      // Aplica filtros de audiencia para todas las demás pestañas o vistas por defecto
-      const audienceFilter: Prisma.AnnouncementWhereInput = {
-        OR: [
-          { audience: 'ALL' },
-          { audience: session.role as UserRole },
-        ],
-      };
+  }
 
-      if (filter === 'by-me') {
-          whereClause = { authorId: session.id };
-      } else if (filter === 'by-others') {
-          whereClause = { authorId: { not: session.id }, ...audienceFilter };
-      } else if (session.role !== 'ADMINISTRATOR' || filter !== 'all') {
-          // Vista por defecto para no-admins, o admin en cualquier pestaña que no sea "Todos"
-          whereClause = audienceFilter;
-      }
-      // Si es admin y el filtro es 'all', no se añade ninguna restricción de audiencia (whereClause queda vacío)
+  // Lógica de Audiencia Base - Siempre se aplica a menos que el admin vea "Todos"
+  if (session.role !== 'ADMINISTRATOR' || (session.role === 'ADMINISTRATOR' && filter !== 'all')) {
+    whereClause.OR = [
+      { audience: 'ALL' },
+      { audience: session.role as UserRole },
+    ];
+  }
+  
+  // Lógica de Pestañas
+  if (filter === 'by-me') {
+      whereClause.authorId = session.id;
+  } else if (filter === 'by-others') {
+      whereClause.authorId = { not: session.id };
   }
   
   try {
