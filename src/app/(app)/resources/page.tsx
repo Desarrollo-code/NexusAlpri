@@ -4,8 +4,8 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button, buttonVariants } from '@/components/ui/button';
-import type { EnterpriseResource as AppResourceType, User as AppUser, UserRole } from '@/types';
-import { Search, ArchiveX, Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronRight, Users, Globe, Filter, HelpCircle } from 'lucide-react';
+import type { EnterpriseResource as AppResourceType, User as AppUser, UserRole, ResourceStatus } from '@/types';
+import { Search, ArchiveX, Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, ChevronRight, Users, Globe, Filter, HelpCircle, CalendarIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import {
   Dialog,
@@ -47,6 +47,10 @@ import { Identicon } from '@/components/ui/identicon';
 import { Card } from '@/components/ui/card';
 import { useTour } from '@/contexts/tour-context';
 import { resourcesTour } from '@/lib/tour-steps';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 
 // --- Main Page Component ---
@@ -89,6 +93,8 @@ export default function ResourcesPage() {
   const [userSearch, setUserSearch] = useState('');
   const [newResourcePin, setNewResourcePin] = useState('');
   const [removePin, setRemovePin] = useState(false);
+  const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined);
+  const [status, setStatus] = useState<ResourceStatus>('ACTIVE');
 
   const [resourceToDelete, setResourceToDelete] = useState<AppResourceType | null>(null);
   const [isDeletingResource, setIsDeletingResource] = useState(false);
@@ -176,6 +182,8 @@ export default function ResourcesPage() {
     setNewResourcePin('');
     setRemovePin(false);
     setEditingResource(null);
+    setExpiresAt(undefined);
+    setStatus('ACTIVE');
   };
 
   const handleOpenEditModal = (resource: AppResourceType) => {
@@ -187,6 +195,9 @@ export default function ResourcesPage() {
     setNewResourceDescription(resource.description || '');
     setIsPublic(resource.ispublic);
     setSharedWithUserIds(resource.sharedWith?.map(u => u.id) || []);
+    setExpiresAt(resource.expiresAt ? new Date(resource.expiresAt) : undefined);
+    setStatus(resource.status || 'ACTIVE');
+
     if (resource.type === 'FOLDER') {
         setShowCreateFolderModal(true);
     } else {
@@ -225,6 +236,8 @@ export default function ResourcesPage() {
             description: newResourceDescription,
             isPublic,
             sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
+            expiresAt: expiresAt?.toISOString(),
+            status
         };
         const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (!response.ok) throw new Error((await response.json()).message || 'Failed to save folder');
@@ -285,6 +298,8 @@ export default function ResourcesPage() {
           description: newResourceDescription,
           isPublic,
           sharedWithUserIds: isPublic ? [] : sharedWithUserIds,
+          expiresAt: expiresAt?.toISOString(),
+          status,
       };
       const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to save resource');
@@ -540,6 +555,38 @@ export default function ResourcesPage() {
                     ) : null}
                      
                      <Separator />
+                     <h3 className="text-base font-semibold">Configuración Adicional</h3>
+                     <div className="space-y-3 p-3 border rounded-lg">
+                        <div className="space-y-2">
+                           <Label htmlFor="status">Estado</Label>
+                           <Select value={status} onValueChange={(v) => setStatus(v as ResourceStatus)}>
+                               <SelectTrigger><SelectValue/></SelectTrigger>
+                               <SelectContent>
+                                   <SelectItem value="ACTIVE">Activo</SelectItem>
+                                   <SelectItem value="ARCHIVED">Archivado</SelectItem>
+                               </SelectContent>
+                           </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="expiresAt">Fecha de Expiración (Opcional)</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                      variant={"outline"}
+                                      className={cn("w-full justify-start text-left font-normal", !expiresAt && "text-muted-foreground")}
+                                    >
+                                      <CalendarIcon className="mr-2 h-4 w-4" />
+                                      {expiresAt ? format(expiresAt, "PPP", { locale: es }) : <span>Sin fecha de expiración</span>}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                    <Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus locale={es} />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                     </div>
+                     
+                     <Separator />
                      <h3 className="text-base font-semibold">Control de Acceso</h3>
                      <div className="space-y-3 p-3 border rounded-lg">
                         <div className="flex items-center justify-between">
@@ -616,6 +663,16 @@ export default function ResourcesPage() {
                           <Label htmlFor="folder-description">Descripción</Label>
                           <Textarea id="folder-description" name="folder-description" value={newResourceDescription} onChange={(e) => setNewResourceDescription(e.target.value)} disabled={isSubmittingResource} rows={3} />
                       </div>
+                       <div className="space-y-2">
+                           <Label htmlFor="status-folder">Estado</Label>
+                           <Select value={status} onValueChange={(v) => setStatus(v as ResourceStatus)}>
+                               <SelectTrigger id="status-folder"><SelectValue/></SelectTrigger>
+                               <SelectContent>
+                                   <SelectItem value="ACTIVE">Activo</SelectItem>
+                                   <SelectItem value="ARCHIVED">Archivado</SelectItem>
+                               </SelectContent>
+                           </Select>
+                        </div>
                       <Separator/>
                       <h3 className="text-base font-semibold">Control de Acceso</h3>
                        <div className="space-y-3 p-3 border rounded-lg">

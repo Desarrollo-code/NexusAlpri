@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
     
     try {
         const body = await req.json();
-        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt } = body;
+        const { title, type, url, category, tags, parentId, description, isPublic, sharedWithUserIds, expiresAt, status } = body;
 
         if (!title || !type) {
             return NextResponse.json({ message: 'Título y tipo son requeridos' }, { status: 400 });
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
             category: category || 'General',
             tags: Array.isArray(tags) ? tags.join(',') : '',
             ispublic: isPublic === true,
-            status: 'ACTIVE',
+            status: status || 'ACTIVE',
             expiresAt: expiresAt ? new Date(expiresAt) : null,
             uploader: { connect: { id: session.id } },
         };
