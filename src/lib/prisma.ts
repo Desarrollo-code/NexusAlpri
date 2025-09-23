@@ -1,4 +1,3 @@
-
 // src/lib/prisma.ts
 import { PrismaClient } from '@prisma/client';
 
@@ -26,5 +25,3 @@ export default prisma;
 if (process.env.NODE_ENV !== 'production') {
   global.prisma = prisma;
 }
-
-    

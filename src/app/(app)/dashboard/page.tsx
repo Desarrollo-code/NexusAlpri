@@ -1,4 +1,3 @@
-
 // src/app/(app)/dashboard/page.tsx
 'use client';
 
@@ -145,8 +144,8 @@ function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardS
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4" id="admin-stats-cards">
             <MetricCard title="Total Usuarios" value={stats.totalUsers} icon={UsersRound} gradient="bg-gradient-blue" />
             <MetricCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={BookOpenCheck} gradient="bg-gradient-green" />
-            <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="En los últimos 7 días" gradient="bg-gradient-orange" />
-            <MetricCard title="Nuevas Inscripciones" value={stats.newEnrollmentsLast7Days} icon={UserPlus} description="En los últimos 7 días" gradient="bg-gradient-purple" />
+            <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="Últimos 7 días" gradient="bg-gradient-orange" />
+            <MetricCard title="Nuevas Inscripciones" value={stats.newEnrollmentsLast7Days} icon={UserPlus} description="Últimos 7 días" gradient="bg-gradient-purple" />
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -620,5 +619,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
