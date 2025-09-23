@@ -171,8 +171,8 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
         {imageAttachments.length > 0 && (
             <div className={cn( "grid gap-2", imageAttachments.length === 1 ? "grid-cols-1" : "grid-cols-2" )}>
                 {imageAttachments.slice(0, 4).map((att, index) => (
-                    <div key={att.id || index} className={cn("relative aspect-video rounded-md overflow-hidden", imageAttachments.length > 2 && index === 0 && "col-span-2" )}>
-                        <Image src={att.url} alt={att.name} fill className="object-cover" />
+                    <div key={att.id || index} className={cn("relative aspect-video rounded-md overflow-hidden bg-muted/20 p-2", imageAttachments.length > 2 && index === 0 && "col-span-2" )}>
+                        <Image src={att.url} alt={att.name} fill className="object-contain" />
                          {imageAttachments.length > 4 && index === 3 && ( <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-lg">+{imageAttachments.length - 4}</div> )}
                     </div>
                 ))}
@@ -188,7 +188,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
             </div>
         )}
       </CardContent>
-      <CardFooter className="border-t pt-3 pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <CardFooter className="flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t px-3 pt-3 pb-3">
         <div className="flex items-center gap-2 w-full sm:w-auto">
             <Popover>
                 <PopoverTrigger asChild>
@@ -239,7 +239,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                 <Button variant="destructive" size="sm" onClick={() => onDelete(announcement.id)} className="flex-grow sm:flex-grow-0"><Trash2 className="mr-2 h-4 w-4" /> Eliminar</Button>
             </div>
         )}
-    </CardFooter>
+      </CardFooter>
     </Card>
   );
 }
