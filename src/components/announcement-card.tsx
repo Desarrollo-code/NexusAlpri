@@ -150,7 +150,13 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   const fileAttachments = announcement.attachments?.filter(att => !att.type.startsWith('image/')) || [];
 
   return (
-    <Card ref={cardRef} className="flex flex-col h-full group card-border-animated">
+    <Card ref={cardRef} className={cn(
+        "flex flex-col h-full group card-border-animated relative",
+        !userHasRead && "bg-primary/5 border-primary/20"
+    )}>
+     {!userHasRead && (
+        <div className="absolute top-3 right-3 h-2 w-2 rounded-full bg-primary animate-pulse" />
+     )}
       <CardHeader>
         <div className="flex justify-between items-start gap-2">
             <CardTitle className="text-xl font-headline">{announcement.title}</CardTitle>
@@ -188,8 +194,8 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
             </div>
         )}
       </CardContent>
-      <CardFooter className="flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t px-3 pt-3 pb-3">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+      <CardFooter className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t px-4 pt-3 pb-3">
+        <div className="flex items-center gap-1 w-full sm:w-auto">
             <Popover>
                 <PopoverTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary"><SmilePlus className="h-4 w-4"/></Button>
@@ -202,13 +208,13 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                     </div>
                 </PopoverContent>
             </Popover>
-            <div className="flex items-center gap-1 overflow-x-auto flex-grow">
+            <div className="flex items-center gap-1 overflow-x-auto flex-grow -mr-2">
                 {Object.entries(groupedReactions).map(([reaction, users]) => (
                     <UserListPopover
                         key={reaction}
                         title={`Reaccionaron con ${reaction}`}
                         users={users}
-                        trigger={<Badge variant="secondary" className="cursor-pointer">{reaction} {users.length}</Badge>}
+                        trigger={<Badge variant="secondary" className="cursor-pointer shrink-0">{reaction} {users.length}</Badge>}
                     />
                 ))}
             </div>
@@ -219,10 +225,10 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                 <div className="flex items-center gap-1.5 text-muted-foreground cursor-pointer">
+                                 <button className="flex items-center gap-1.5 text-muted-foreground cursor-pointer shrink-0 p-2 rounded-md hover:bg-muted">
                                     <span className="text-xs">{announcement._count?.reads ?? (announcement.reads || []).length}</span>
                                     <Eye className="h-4 w-4 text-muted-foreground" />
-                                </div>
+                                </button>
                             </TooltipTrigger>
                             <TooltipContent>
                                 <p>Clic para ver quién lo ha leído.</p>
