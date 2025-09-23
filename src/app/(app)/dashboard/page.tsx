@@ -481,12 +481,17 @@ export default function DashboardPage() {
     setIsLoading(true);
     setError(null);
     
-    const fetchWithFallback = async (url: string, fallback: any) => {
+    const fetchWithFallback = async (url: string, fallback: any): Promise<any> => {
         try {
             const res = await fetch(url, { cache: 'no-store' });
             if (!res.ok) {
                 const errorText = await res.text();
-                const errorJson = JSON.parse(errorText);
+                let errorJson;
+                try {
+                  errorJson = JSON.parse(errorText);
+                } catch(e) {
+                  errorJson = { message: `Error en la respuesta de ${url}` };
+                }
                 console.error(`Error al obtener datos de ${url}:`, res.status, errorJson);
                 throw new Error(errorJson.message || `Error al obtener datos de ${url}`);
             }
@@ -509,31 +514,29 @@ export default function DashboardPage() {
           securityLogs: [],
       };
       
+      const announcementsData = await fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] });
+      if (announcementsData.announcements) {
+          dashboardPayload.recentAnnouncements = announcementsData.announcements;
+      } else if (!announcementsData.announcements) { // Error occurred and fallback was used
+          // The error is already set by fetchWithFallback
+          setIsLoading(false);
+          return;
+      }
+
       if (user.role === 'ADMINISTRATOR') {
-          const [adminStats, securityLogs, announcementsData] = await Promise.all([
+          const [adminStats, securityLogs] = await Promise.all([
              fetchWithFallback('/api/dashboard/admin-stats', null),
              fetchWithFallback('/api/security/logs?pageSize=5', { logs: [] }),
-             fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] })
           ]);
           dashboardPayload.adminStats = adminStats;
           dashboardPayload.securityLogs = securityLogs.logs;
-          dashboardPayload.recentAnnouncements = announcementsData.announcements;
-
       } else if (user.role === 'INSTRUCTOR') {
-          const [taughtCoursesResponse, announcementsData] = await Promise.all([
-             fetchWithFallback(`/api/courses?manageView=true&userId=${user.id}&userRole=${user.role}&pageSize=4`, { courses: [], totalCourses: 0 }),
-             fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] })
-          ]);
+          const taughtCoursesResponse = await fetchWithFallback(`/api/courses?manageView=true&userId=${user.id}&userRole=${user.role}&pageSize=4`, { courses: [], totalCourses: 0 });
           dashboardPayload.instructorStats = { taught: taughtCoursesResponse.totalCourses };
           dashboardPayload.taughtCourses = (taughtCoursesResponse.courses || []).map(mapApiCourseToAppCourse);
-          dashboardPayload.recentAnnouncements = announcementsData.announcements;
-
       } else if (user.role === 'STUDENT') {
-           const [enrolledData, announcementsData] = await Promise.all([
-              fetchWithFallback(`/api/enrollment/${user.id}`, []),
-              fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] })
-           ]);
-          const mappedCourses: EnrolledCourse[] = enrolledData.map(item => ({
+           const enrolledData = await fetchWithFallback(`/api/enrollment/${user.id}`, []);
+          const mappedCourses: EnrolledCourse[] = enrolledData.map((item: any) => ({
             id: item.id, title: item.title, description: item.description, instructor: item.instructorName || 'N/A',
             imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, duration: item.duration, modules: [], 
             enrolledAt: item.enrolledAt, isEnrolled: true, instructorId: item.instructorId, status: 'PUBLISHED',
@@ -542,7 +545,6 @@ export default function DashboardPage() {
           const completedCount = mappedCourses.filter(c => c.progressPercentage === 100).length;
           dashboardPayload.studentStats = { enrolled: mappedCourses.length, completed: completedCount };
           dashboardPayload.myDashboardCourses = mappedCourses.slice(0, 4);
-          dashboardPayload.recentAnnouncements = announcementsData.announcements;
       }
       
       setData(dashboardPayload);
