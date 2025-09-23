@@ -1,3 +1,4 @@
+
 // src/app/(app)/dashboard/page.tsx
 'use client';
 
@@ -515,12 +516,8 @@ export default function DashboardPage() {
       };
       
       const announcementsData = await fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] });
-      if (announcementsData.announcements) {
+      if (announcementsData && announcementsData.announcements) {
           dashboardPayload.recentAnnouncements = announcementsData.announcements;
-      } else if (!announcementsData.announcements) { // Error occurred and fallback was used
-          // The error is already set by fetchWithFallback
-          setIsLoading(false);
-          return;
       }
 
       if (user.role === 'ADMINISTRATOR') {
@@ -623,3 +620,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

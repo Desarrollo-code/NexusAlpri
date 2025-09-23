@@ -1,3 +1,4 @@
+
 // src/contexts/auth-context.tsx
 'use client';
 
@@ -21,6 +22,7 @@ const DEFAULT_SETTINGS: PlatformSettings = {
     platformName: "NexusAlpri",
     allowPublicRegistration: true,
     enableEmailNotifications: true,
+    emailWhitelist: "",
     resourceCategories: ["General", "Recursos Humanos", "Ventas"],
     passwordMinLength: 8,
     passwordRequireUppercase: true,
@@ -45,8 +47,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.log('[AuthContext] Iniciando fetchSessionData...');
     try {
         const [settingsRes, userRes] = await Promise.all([
-            fetch('/api/settings'),
-            fetch('/api/auth/me'),
+            fetch('/api/settings', { cache: 'no-store' }),
+            fetch('/api/auth/me', { cache: 'no-store' }),
         ]);
 
         const settingsData = settingsRes.ok ? await settingsRes.json() : DEFAULT_SETTINGS;
@@ -140,3 +142,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+    
