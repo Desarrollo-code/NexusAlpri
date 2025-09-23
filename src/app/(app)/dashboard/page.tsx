@@ -481,57 +481,48 @@ export default function DashboardPage() {
     setIsLoading(true);
     setError(null);
     
-    const fetchWithFallback = async (url: string) => {
-        const res = await fetch(url);
-        if (!res.ok) {
-            const errorText = await res.text();
-            console.error(`Failed to fetch ${url}:`, res.status, errorText);
-            // Lanza un error para que Promise.all falle
-            throw new Error(`Error al obtener datos de ${url}`);
+    const fetchWithFallback = async (url: string, fallback: any) => {
+        try {
+            const res = await fetch(url, { cache: 'no-store' });
+            if (!res.ok) {
+                const errorText = await res.text();
+                console.error(`Error al obtener datos de ${url}:`, res.status, errorText);
+                throw new Error(`Error al obtener datos de ${url}`);
+            }
+            return await res.json();
+        } catch (e) {
+            console.error(`Fallo completo al hacer fetch a ${url}:`, e);
+            setError((e as Error).message);
+            return fallback;
         }
-        return res.json();
     };
     
     try {
-      const announcementsParams = new URLSearchParams({ pageSize: '2' });
-      const promises: Promise<any>[] = [
-        fetchWithFallback(`/api/announcements?${announcementsParams.toString()}`)
-      ];
+      const announcementsData = await fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] });
       
-      if (user.role === 'ADMINISTRATOR') {
-          promises.push(fetchWithFallback('/api/dashboard/admin-stats'));
-          promises.push(fetchWithFallback('/api/security/logs?pageSize=5'));
-      } else if (user.role === 'INSTRUCTOR') {
-          const queryParams = new URLSearchParams({ manageView: 'true', userId: user.id, userRole: user.role, pageSize: '4' });
-          promises.push(fetchWithFallback(`/api/courses?${queryParams.toString()}`));
-      } else if (user.role === 'STUDENT') {
-          promises.push(fetchWithFallback(`/api/enrollment/${user.id}`));
-      }
-
-      const responses = await Promise.all(promises);
-
-      const announcementsJson = responses[0];
-      const announcementsData = announcementsJson.announcements || [];
-      const dashboardPayload: DashboardData = {
+      let dashboardPayload: DashboardData = {
           adminStats: null,
           studentStats: null,
           instructorStats: null,
-          recentAnnouncements: announcementsData,
+          recentAnnouncements: announcementsData.announcements,
           taughtCourses: [],
           myDashboardCourses: [],
           securityLogs: [],
       };
       
-      let dataIndex = 1;
       if (user.role === 'ADMINISTRATOR') {
-          dashboardPayload.adminStats = responses[dataIndex++] || null;
-          dashboardPayload.securityLogs = (responses[dataIndex++] || { logs: [] }).logs;
+          const [adminStats, securityLogs] = await Promise.all([
+             fetchWithFallback('/api/dashboard/admin-stats', null),
+             fetchWithFallback('/api/security/logs?pageSize=5', { logs: [] })
+          ]);
+          dashboardPayload.adminStats = adminStats;
+          dashboardPayload.securityLogs = securityLogs.logs;
       } else if (user.role === 'INSTRUCTOR') {
-          const taughtCoursesResponse = responses[dataIndex++];
-          dashboardPayload.instructorStats = { taught: taughtCoursesResponse.totalCourses || 0 };
+          const taughtCoursesResponse = await fetchWithFallback(`/api/courses?manageView=true&userId=${user.id}&userRole=${user.role}&pageSize=4`, { courses: [], totalCourses: 0 });
+          dashboardPayload.instructorStats = { taught: taughtCoursesResponse.totalCourses };
           dashboardPayload.taughtCourses = (taughtCoursesResponse.courses || []).map(mapApiCourseToAppCourse);
       } else if (user.role === 'STUDENT') {
-          const enrolledData: any[] = responses[dataIndex++];
+          const enrolledData: any[] = await fetchWithFallback(`/api/enrollment/${user.id}`, []);
           const mappedCourses: EnrolledCourse[] = enrolledData.map(item => ({
             id: item.id, title: item.title, description: item.description, instructor: item.instructorName || 'N/A',
             imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, duration: item.duration, modules: [], 

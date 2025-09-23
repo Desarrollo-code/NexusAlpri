@@ -24,38 +24,35 @@ export async function GET(req: NextRequest) {
   const isPaginated = pageParam && pageSizeParam;
 
   let whereClause: Prisma.AnnouncementWhereInput = {};
-  let orderBy: Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput[] = [];
+  let orderBy: Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput | Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput[] = [
+    { isPinned: 'desc' },
+    { date: 'desc' }
+  ];
 
-  // Define la base de ordenamiento
-  orderBy.push({ isPinned: 'desc' }, { date: 'desc' });
-
-  // Construye la cláusula WHERE según el filtro
+  // --- LÓGICA DE FILTRADO REFACTORIZADA ---
   if (filter === 'pinned') {
       whereClause = { ...whereClause, isPinned: true };
   } else if (filter === 'trending') {
       orderBy = [{ reactions: { _count: 'desc' } }, { date: 'desc' }];
-  } else if (filter === 'by-me') {
-      whereClause = { ...whereClause, authorId: session.id };
-  } else if (filter === 'by-others') {
-      whereClause = {
-          ...whereClause,
-          authorId: { not: session.id },
-          OR: [
-              { audience: 'ALL' },
-              { audience: session.role as UserRole },
-          ],
+  } else {
+      // Aplica filtros de audiencia para todas las demás pestañas o vistas por defecto
+      const audienceFilter: Prisma.AnnouncementWhereInput = {
+        OR: [
+          { audience: 'ALL' },
+          { audience: session.role as UserRole },
+        ],
       };
-  } else if (session.role !== 'ADMINISTRATOR' || filter !== 'all') {
-      // Vista por defecto para no-admins, o para admins en cualquier pestaña que no sea "Todos"
-      whereClause = {
-          ...whereClause,
-          OR: [
-              { audience: 'ALL' },
-              { audience: session.role as UserRole },
-          ],
-      };
+
+      if (filter === 'by-me') {
+          whereClause = { authorId: session.id };
+      } else if (filter === 'by-others') {
+          whereClause = { authorId: { not: session.id }, ...audienceFilter };
+      } else if (session.role !== 'ADMINISTRATOR' || filter !== 'all') {
+          // Vista por defecto para no-admins, o admin en cualquier pestaña que no sea "Todos"
+          whereClause = audienceFilter;
+      }
+      // Si es admin y el filtro es 'all', no se añade ninguna restricción de audiencia (whereClause queda vacío)
   }
-  // Si es admin y el filtro es 'all', no se añade ninguna restricción de audiencia.
   
   try {
     const commonFindOptions = {
@@ -180,7 +177,7 @@ export async function POST(req: NextRequest) {
           title: `Nuevo Anuncio: ${title}`,
           description: description,
           link: '/announcements',
-          announcementId: newAnnouncement.id, // VINCULAR LA NOTIFICACIÓN AL ANUNCIO
+          announcementId: newAnnouncement.id,
         }))
       });
 
