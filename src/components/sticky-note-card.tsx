@@ -98,11 +98,12 @@ export const StickyNoteCard: React.FC<StickyNoteCardProps> = ({ note, onDelete, 
     <>
       <div
         className={cn(
-          'rounded-lg border shadow-lg flex flex-col h-72 transition-transform duration-300',
-          isEditing ? 'scale-105 shadow-2xl z-10' : 'hover:-translate-y-2 hover:rotate-[-2deg] hover:shadow-2xl',
+          'rounded-lg border shadow-lg flex flex-col h-72 transition-all duration-300',
+          isEditing ? 'scale-105 shadow-2xl z-10' : 'hover:-translate-y-2 hover:shadow-2xl',
           activeColor.bg,
           activeColor.border
         )}
+        style={{ transform: isEditing ? 'scale(1.05)' : `rotate(${note.id.charCodeAt(note.id.length - 1) % 4 - 2}deg)` }}
       >
         <div className={cn('p-3 rounded-t-lg space-y-1 border-b', activeColor.border)}>
           <h4 className={cn('font-bold text-base truncate', activeColor.text)}>

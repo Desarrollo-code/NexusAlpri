@@ -76,8 +76,8 @@ export default function MyNotesPage() {
     fetchNotes();
   }, [fetchNotes]);
 
-  const handleNoteUpdate = (noteId: string, content: string) => {
-    setNotes(prev => prev.map(n => n.id === noteId ? { ...n, content } : n));
+  const handleNoteUpdate = (noteId: string, updates: Partial<UserNote>) => {
+    setNotes(prev => prev.map(n => n.id === noteId ? { ...n, ...updates } : n));
   };
 
   const handleNoteDelete = async (noteId: string) => {
@@ -165,7 +165,7 @@ export default function MyNotesPage() {
                             <h3 className="text-base font-semibold text-muted-foreground flex items-center gap-2 mb-4">
                                 <Layers className="h-4 w-4"/> Módulo: {moduleGroup.moduleTitle}
                             </h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {moduleGroup.notes.map((note) => (
                                     <StickyNoteCard 
                                         key={note.id} 
