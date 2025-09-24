@@ -107,7 +107,7 @@ async function getAdminDashboardData(startDate?: Date, endDate?: Date) {
         recentLogins, newEnrollmentsLast7Days, userRegistrationTrend,
         averageCompletionRate,
         topCoursesByEnrollment, topCoursesByCompletion, lowestCoursesByCompletion,
-        topStudentsByEnrollment, topStudentsByCompletion, topInstructorsByCourses
+        topStudentsByEnrollment, topStudentsByCompletion, topInstructorsByCourses,
     };
 
     return { adminStats: stats, recentAnnouncements, securityLogs };
