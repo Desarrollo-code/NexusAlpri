@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DownloadButton } from '../ui/download-button';
 import { Identicon } from '../ui/identicon';
 import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { useDraggable } from '@dnd-kit/core';
 
 
 interface ResourceListItemProps {
@@ -28,8 +29,22 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
     const Icon = getIconForType(resource.type);
 
+    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+        id: resource.id,
+        data: { type: 'resource', resource: resource },
+        disabled: !canModify,
+    });
+
     return (
-        <div className="grid grid-cols-12 gap-4 p-3 transition-colors hover:bg-muted/50 items-center">
+        <div 
+            ref={setNodeRef}
+            {...listeners}
+            {...attributes}
+            className={cn(
+                "grid grid-cols-12 gap-4 p-3 transition-colors hover:bg-muted/50 items-center",
+                isDragging && 'opacity-50 bg-muted z-10'
+            )}
+        >
             <div 
                 className="col-span-6 flex items-center gap-4 cursor-pointer"
                 onClick={onSelect}

@@ -6,7 +6,7 @@ import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
 import { DecorativeFolder } from '@/components/resources/decorative-folder';
-import { Edit, MoreVertical, Trash2, Lock, Download, Globe, ExternalLink, Users } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, ExternalLink, Users, Move } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -18,12 +18,23 @@ import {
 import Image from 'next/image';
 import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
 import { DownloadButton } from '../ui/download-button';
+import { useDraggable, useDroppable } from '@dnd-kit/core';
 
 // --- Sub-components for Page ---
-const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onNavigate }: { resource: AppResourceType, onSelect: () => void, onEdit: (r: AppResourceType) => void, onDelete: (r: AppResourceType) => void, onNavigate: (r: AppResourceType) => void }) => {
+const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onDelete, onNavigate }: { resource: AppResourceType, isFolder: boolean, onSelect: () => void, onEdit: (r: AppResourceType) => void, onDelete: (r: AppResourceType) => void, onNavigate: (r: AppResourceType) => void }) => {
     const { user } = useAuth();
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
-    const isFolder = resource.type === 'FOLDER';
+
+    const { attributes, listeners, setNodeRef: setDraggableNodeRef, isDragging } = useDraggable({
+        id: resource.id,
+        data: { type: 'resource', resource: resource },
+        disabled: isFolder || !canModify,
+    });
+
+    const { isOver, setNodeRef: setDroppableNodeRef } = useDroppable({
+        id: resource.id,
+        disabled: !isFolder,
+    });
 
     const handleClick = (e: React.MouseEvent) => {
         if (isFolder) {
@@ -44,6 +55,11 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
                     <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1.5 rounded-full">
                        {resource.ispublic ? <Globe className="h-3.5 w-3.5 text-green-500"/> : <Users className="h-3.5 w-3.5 text-blue-500" />}
                     </div>
+                    {isOver && (
+                        <div className="absolute inset-0 bg-primary/20 border-2 border-dashed border-primary flex items-center justify-center">
+                            <Move className="h-8 w-8 text-primary/80 animate-pulse" />
+                        </div>
+                    )}
                 </div>
             );
         }
@@ -59,10 +75,21 @@ const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onN
 
     const Icon = !isFolder ? getIconForType(resource.type) : null;
 
+    const setNodeRef = (node: HTMLElement | null) => {
+        setDraggableNodeRef(node);
+        if (isFolder) {
+            setDroppableNodeRef(node);
+        }
+    };
+    
     return (
-        <div className="w-full">
+        <div ref={setNodeRef} {...listeners} {...attributes} className={cn("w-full touch-none", isDragging && 'opacity-50')}>
             <Card 
-                className={cn("group w-full h-full transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg", isFolder ? "hover:-translate-y-1" : "")}
+                className={cn(
+                    "group w-full h-full transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg",
+                    isFolder ? "hover:-translate-y-1" : "",
+                    isOver && "ring-2 ring-primary ring-offset-2"
+                )}
                 onClick={handleClick}
             >
                 <div className="aspect-video w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg bg-muted/20">
