@@ -195,7 +195,7 @@ export interface Announcement {
     attachments: AnnouncementAttachment[];
     reads: { id: string; name: string | null; avatar?: string | null; }[];
     reactions: Reaction[];
-    _count?: {
+    _count: {
       reads: number;
       reactions: number;
     };

@@ -41,15 +41,18 @@ const UserListPopover = ({ trigger, title, users }: { trigger: React.ReactNode, 
             <div className="p-3 font-semibold text-sm border-b">{title} ({users.length})</div>
             <ScrollArea className="max-h-60">
                 <div className="p-2 space-y-1">
-                    {users && users.length > 0 ? users.map(user => (
-                        <div key={user.id} className="flex items-center gap-2 p-1.5 rounded-md">
-                            <Avatar className="h-7 w-7">
-                                <AvatarImage src={user.avatar || undefined} />
-                                <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm font-medium">{user.name || 'Usuario Desconocido'}</span>
-                        </div>
-                    )) : <p className="text-xs text-center text-muted-foreground p-4">Nadie por aquí.</p>}
+                    {users && users.length > 0 ? users.map(user => {
+                        if (!user) return null; // Defensive check
+                        return (
+                            <div key={user.id} className="flex items-center gap-2 p-1.5 rounded-md">
+                                <Avatar className="h-7 w-7">
+                                    <AvatarImage src={user.avatar || undefined} />
+                                    <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm font-medium">{user.name || 'Usuario Desconocido'}</span>
+                            </div>
+                        )
+                    }) : <p className="text-xs text-center text-muted-foreground p-4">Nadie por aquí.</p>}
                 </div>
             </ScrollArea>
         </PopoverContent>
@@ -205,7 +208,18 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
                 </PopoverContent>
             </Popover>
             <div className="flex items-center gap-1 overflow-x-auto flex-grow">
-                {Object.entries(groupedReactions).map(([reaction, users]) => ( <UserListPopover key={reaction} title={`Reaccionaron con ${reaction}`} users={users} trigger={<Button variant="ghost" size="sm" className="h-8 text-xs gap-1">{reaction} <span className="font-bold">{users.length}</span></Button>} /> ))}
+                {Object.entries(groupedReactions).map(([reaction, users]) => (
+                    <UserListPopover
+                        key={reaction}
+                        title={`Reaccionaron con ${reaction}`}
+                        users={users.filter(Boolean)} // Ensure no null users
+                        trigger={
+                            <Button variant="ghost" size="sm" className="h-8 text-xs gap-1">
+                                {reaction} <span className="font-bold">{users.length}</span>
+                            </Button>
+                        }
+                    />
+                ))}
             </div>
              <div className="flex items-center gap-1 text-xs font-bold pl-2">
                  <Eye className="h-4 w-4"/>

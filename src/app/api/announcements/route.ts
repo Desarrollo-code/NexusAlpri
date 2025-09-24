@@ -55,6 +55,7 @@ export async function GET(req: NextRequest) {
             include: { 
               author: { select: { id: true, name: true, avatar: true } },
               attachments: true,
+              reads: { select: { user: { select: { id: true, name: true, avatar: true } } } },
               reactions: { 
                   select: { 
                       userId: true, 
@@ -68,10 +69,10 @@ export async function GET(req: NextRequest) {
         prisma.announcement.count({ where: whereClause })
     ]);
     
-    // El mapeo ya no es necesario si la consulta es correcta.
+    // Map reads to a simpler format
     const announcements = announcementsFromDb.map(ann => ({
         ...ann,
-        reads: ann.reads || [], // Asegurar que `reads` sea un array
+        reads: ann.reads.map(r => r.user),
     }));
     
     return NextResponse.json({ announcements, totalAnnouncements });
