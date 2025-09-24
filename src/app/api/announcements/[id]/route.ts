@@ -58,24 +58,27 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     
     const audienceToStore = Array.isArray(audience) ? audience[0] : audience;
 
+    const dataToUpdate: any = {};
+    if (title !== undefined) dataToUpdate.title = title;
+    if (content !== undefined) dataToUpdate.content = content;
+    if (audienceToStore !== undefined) dataToUpdate.audience = audienceToStore;
+    if (priority !== undefined) dataToUpdate.priority = priority;
+    if (isPinned !== undefined) dataToUpdate.isPinned = isPinned === true;
+    if (attachments !== undefined) {
+      dataToUpdate.attachments = {
+        deleteMany: {}, // Clear existing attachments
+        create: attachments.map((att: { name: string; url: string; type: string; size: number }) => ({
+          name: att.name,
+          url: att.url,
+          type: att.type,
+          size: att.size,
+        })),
+      };
+    }
+
     const updatedAnnouncement = await prisma.announcement.update({
       where: { id },
-      data: {
-        title,
-        content,
-        audience: audienceToStore,
-        priority,
-        isPinned: isPinned === true, // Asegurar que sea booleano
-        attachments: {
-          deleteMany: {}, // Clear existing attachments
-          create: attachments.map((att: { name: string; url: string; type: string; size: number }) => ({
-            name: att.name,
-            url: att.url,
-            type: att.type,
-            size: att.size,
-          })),
-        },
-      },
+      data: dataToUpdate,
       include: { author: { select: { id: true, name: true } }, attachments: true },
     });
 

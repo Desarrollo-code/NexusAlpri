@@ -328,7 +328,7 @@ export default function AnnouncementsPage() {
         const res = await fetch(`/api/announcements/${announcement.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...announcement, isPinned: !announcement.isPinned })
+            body: JSON.stringify({ isPinned: !announcement.isPinned })
         });
         if (!res.ok) throw new Error("No se pudo actualizar el estado.");
         toast({ title: "Anuncio " + (!announcement.isPinned ? "fijado" : "desfijado") });

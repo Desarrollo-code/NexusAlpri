@@ -166,7 +166,7 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
                             {announcement.isPinned ? 'Desfijar' : 'Fijar Anuncio'}
                          </DropdownMenuItem>
                          <DropdownMenuItem disabled>
-                            <Edit className="mr-2 h-4 w-4"/>Editar (próximamente)
+                            <Edit className="mr-2 h-4 w-4"/>Editar
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => onDelete(announcement.id)} className="text-destructive focus:bg-destructive/10">
