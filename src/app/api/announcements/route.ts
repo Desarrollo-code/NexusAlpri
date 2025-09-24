@@ -1,3 +1,4 @@
+// src/app/api/announcements/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const pageParam = searchParams.get('page');
   const pageSizeParam = searchParams.get('pageSize');
-  const filter = searchParams.get('filter'); // all, by-me, by-others, pinned
+  const filter = searchParams.get('filter');
 
   const page = pageParam ? parseInt(pageParam, 10) : 1;
   const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
@@ -36,59 +37,44 @@ export async function GET(req: NextRequest) {
     ];
   }
 
-  if (filter === 'by-me') {
-    whereClause.authorId = session.id;
-  } else if (filter === 'by-others') {
-    whereClause.authorId = { not: session.id };
-  } else if (filter === 'pinned') {
-    whereClause.isPinned = true;
+  if (filter) {
+      if (filter === 'by-me') {
+        whereClause.authorId = session.id;
+      } else if (filter === 'by-others') {
+        whereClause.authorId = { not: session.id };
+      } else if (filter === 'pinned') {
+        whereClause.isPinned = true;
+      }
   }
   
-  const orderBy: Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput[] = [
-    { isPinned: 'desc' },
-    { date: 'desc' }
-  ];
-  
   try {
-    const commonFindOptions: Prisma.AnnouncementFindManyArgs = {
-        where: whereClause,
-        orderBy: orderBy,
-        include: { 
-          author: { select: { id: true, name: true, avatar: true } },
-          attachments: true,
-          // Optimization: Fetch only what's needed for display, not the whole user object
-          reads: { 
-              select: { 
-                  user: { 
-                      select: { id: true, name: true, avatar: true }
-                  } 
-              } 
-          },
-          reactions: { 
-              select: { 
-                  userId: true, 
-                  reaction: true, 
-                  user: { select: { id: true, name: true, avatar: true }} 
-              } 
-          },
-          // Use _count for efficient counting
-          _count: { select: { reads: true, reactions: true } },
-        },
-    };
-
     const [announcementsFromDb, totalAnnouncements] = await prisma.$transaction([
         prisma.announcement.findMany({
-            ...commonFindOptions,
+            where: whereClause,
+            orderBy: [{ isPinned: 'desc' }, { date: 'desc' }],
             skip: (page - 1) * pageSize,
             take: pageSize,
+            include: { 
+              author: { select: { id: true, name: true, avatar: true } },
+              attachments: true,
+              reactions: { 
+                  select: { 
+                      userId: true, 
+                      reaction: true, 
+                      user: { select: { id: true, name: true, avatar: true }} 
+                  } 
+              },
+              _count: { select: { reads: true } }, // More efficient count
+            },
         }),
         prisma.announcement.count({ where: whereClause })
     ]);
     
-    // SAFE MAPPING: Ensure r.user exists before mapping
+    // The 'reads' relation is only used for its count now, so no complex mapping is needed.
     const announcements = announcementsFromDb.map(ann => ({
         ...ann,
-        reads: ann.reads.filter(r => r.user).map(r => r.user!),
+        // The full reads array is no longer needed on the frontend, reducing payload.
+        // We now rely on `_count.reads`
     }));
     
     return NextResponse.json({ announcements, totalAnnouncements });
@@ -113,7 +99,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: 'Se requiere título, contenido o al menos un adjunto.' }, { status: 400 });
     }
     
-    // SAFE HANDLING: Ensure audience is a string.
     const audienceToStore = Array.isArray(audience) ? audience[0] : audience;
     if (!audienceToStore) {
         return NextResponse.json({ message: 'La audiencia es un campo requerido.' }, { status: 400 });
@@ -126,8 +111,8 @@ export async function POST(req: NextRequest) {
         audience: audienceToStore,
         authorId: session.id,
         date: new Date(),
-        priority: 'Normal', // Default value
-        isPinned: false, // Default value
+        priority: 'Normal',
+        isPinned: false,
         attachments: {
           create: attachments?.map((att: { name: string; url: string; type: string; size: number }) => ({
             name: att.name,
@@ -154,7 +139,7 @@ export async function POST(req: NextRequest) {
     const usersToNotify = allTargetUsers.filter(user => user.id !== session.id);
 
     if (usersToNotify.length > 0) {
-      const stripHtml = (html: string) => html.replace(/<[^>]*>?/gm, '');
+      const stripHtml = (html: string) => html ? html.replace(/<[^>]*>?/gm, '') : '';
       const plainTextContent = stripHtml(content);
       const description = plainTextContent.substring(0, 100) + (plainTextContent.length > 100 ? '...' : '');
 

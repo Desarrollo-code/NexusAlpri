@@ -105,7 +105,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                 body: JSON.stringify({
                     title: formTitle,
                     content: formContent,
-                    audience: formAudience, // Enviado como string simple
+                    audience: formAudience,
                     attachments: attachments,
                 }),
             });
@@ -292,7 +292,6 @@ export default function AnnouncementsPage() {
         if (ann.id === announcementId && !ann.reads.some(r => r.id === userId)) {
           return {
             ...ann,
-            reads: [...(ann.reads || []), { id: userId, name: user?.name || null, avatar: user?.avatar || null }],
             _count: { ...ann._count, reads: (ann._count?.reads || 0) + 1 }
           };
         }

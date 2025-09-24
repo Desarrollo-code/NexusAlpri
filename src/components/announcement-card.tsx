@@ -77,14 +77,20 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
   const isInView = useInView(cardRef, { once: true, margin: "-100px" });
 
   const canModify = useMemo(() => user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === announcement.author?.id)), [user, announcement.author]);
-  const userHasRead = useMemo(() => user && announcement.reads?.some(readUser => readUser.id === user.id), [announcement.reads, user]);
+  
+  const hasUserRead = useMemo(() => {
+      // This is a proxy, as we don't fetch the full read list anymore.
+      // We rely on the `onRead` call to update the count visually.
+      return false; 
+  }, []);
+
   const userReaction = useMemo(() => user && announcement.reactions?.find(r => r.userId === user.id)?.reaction || null, [announcement.reactions, user]);
 
   useEffect(() => {
-    if (isInView && user && !userHasRead && onRead) {
+    if (isInView && user && onRead) {
       onRead(announcement.id, user.id);
     }
-  }, [isInView, user, userHasRead, onRead, announcement.id]);
+  }, [isInView, user, onRead, announcement.id]);
 
   const handleReaction = async (reaction: string) => {
     if (!user || !onReactionChange) return;
@@ -126,7 +132,8 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
   const imageAttachments = announcement.attachments?.filter(att => att.type.startsWith('image/')) || [];
   const fileAttachments = announcement.attachments?.filter(att => !att.type.startsWith('image/')) || [];
   
-  const readUsers = announcement.reads || [];
+  // Since we don't fetch the full read list anymore, we can't show who read it.
+  // The UserListPopover for reads is removed.
 
   return (
     <Card ref={cardRef} className="card-border-animated w-full">
@@ -200,7 +207,10 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
             <div className="flex items-center gap-1 overflow-x-auto flex-grow">
                 {Object.entries(groupedReactions).map(([reaction, users]) => ( <UserListPopover key={reaction} title={`Reaccionaron con ${reaction}`} users={users} trigger={<Button variant="ghost" size="sm" className="h-8 text-xs gap-1">{reaction} <span className="font-bold">{users.length}</span></Button>} /> ))}
             </div>
-             <UserListPopover title="Visto por" users={readUsers} trigger={ <Button variant="ghost" size="sm" className="h-8 text-xs gap-1"><span className="font-bold">{announcement._count?.reads ?? 0}</span><Eye className="h-4 w-4" /></Button> } />
+             <div className="flex items-center gap-1 text-xs font-bold pl-2">
+                 <Eye className="h-4 w-4"/>
+                 <span>{announcement._count?.reads ?? 0}</span>
+             </div>
           </div>
         </div>
       </CardContent>
