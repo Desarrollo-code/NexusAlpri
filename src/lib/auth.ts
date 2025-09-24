@@ -32,7 +32,7 @@ async function decrypt(input: string): Promise<any> {
     const { payload } = await jwtVerify(input, key, { algorithms: ['HS256'] });
     return payload;
   } catch (error) {
-    console.error("Error decrypting JWT:", error);
+    // console.error("Error decrypting JWT:", error);
     return null;
   }
 }

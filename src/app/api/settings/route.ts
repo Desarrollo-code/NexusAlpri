@@ -2,18 +2,18 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import type { PlatformSettings as AppPlatformSettings } from '@/types';
+import type { PlatformSettings } from '@/types';
 import type { NextRequest } from 'next/server';
-import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
+// Este objeto define los valores por defecto que se usarán
+// si no hay ninguna configuración guardada en la base de datos.
 const DEFAULT_DB_SETTINGS = {
-  id: 'cl-nexus-settings-default', // Un ID predecible y único
   platformName: "NexusAlpri",
   allowPublicRegistration: true,
   enableEmailNotifications: true,
-  emailWhitelist: "",
+  emailWhitelist: "alprigrama.com",
   resourceCategories: "Recursos Humanos,TI y Seguridad,Marketing,Ventas,Legal,Operaciones,Finanzas,Formación Interna,Documentación de Producto,General",
   passwordMinLength: 8,
   passwordRequireUppercase: true,
@@ -39,7 +39,7 @@ const DEFAULT_DB_SETTINGS = {
   fontBody: 'Inter'
 };
 
-const getFallbackSettings = (): AppPlatformSettings => {
+const getFallbackSettings = (): PlatformSettings => {
     return {
         ...DEFAULT_DB_SETTINGS,
         resourceCategories: DEFAULT_DB_SETTINGS.resourceCategories.split(','),
@@ -53,16 +53,13 @@ export async function GET(req: NextRequest) {
     let dbSettings = await prisma.platformSettings.findFirst();
 
     if (!dbSettings) {
-      console.log('[SETTINGS_GET] No se encontró configuración, creando una por defecto...');
-      dbSettings = await prisma.platformSettings.upsert({
-        where: { id: DEFAULT_DB_SETTINGS.id },
-        update: {},
-        create: DEFAULT_DB_SETTINGS,
+      dbSettings = await prisma.platformSettings.create({
+        data: DEFAULT_DB_SETTINGS,
       });
     }
     
     // Transforma los campos de string a array para el cliente
-    const settingsToReturn: AppPlatformSettings = {
+    const settingsToReturn: PlatformSettings = {
         ...dbSettings,
         resourceCategories: dbSettings.resourceCategories ? dbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: dbSettings.emailWhitelist || '',
@@ -86,7 +83,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const dataFromClient: AppPlatformSettings = await req.json();
+    const dataFromClient: PlatformSettings = await req.json();
     
     // Prepara los datos para guardar, convirtiendo arrays a strings
     const dataToSave = {
@@ -109,7 +106,7 @@ export async function POST(req: NextRequest) {
         if (deletedCategories.length > 0) {
             for (const category of deletedCategories) {
                 const courseCount = await prisma.course.count({ where: { category } });
-                const resourceCount = await prisma.enterpriseResource.count({ where: { category } });
+                const resourceCount = await prisma.resource.count({ where: { category } });
                 const totalUsage = courseCount + resourceCount;
                 if (totalUsage > 0) {
                     return NextResponse.json({
@@ -122,17 +119,13 @@ export async function POST(req: NextRequest) {
 
     // Upsert para crear la configuración si no existe, o actualizarla si existe.
     const updatedDbSettings = await prisma.platformSettings.upsert({
-      where: { id: currentSettings?.id || DEFAULT_DB_SETTINGS.id },
+      where: { id: currentSettings?.id || 'non-existent-id-for-upsert' },
       update: dataToSave,
       create: { ...DEFAULT_DB_SETTINGS, ...dataToSave },
     });
     
-    // Revalidar las rutas públicas para que los cambios de imagen se reflejen
-    revalidatePath('/');
-    revalidatePath('/about');
-
     // Devuelve la configuración actualizada en el formato correcto para el cliente
-    const settingsToReturn: AppPlatformSettings = {
+    const settingsToReturn: PlatformSettings = {
         ...updatedDbSettings,
         resourceCategories: updatedDbSettings.resourceCategories ? updatedDbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: updatedDbSettings.emailWhitelist || '',

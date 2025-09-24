@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { createSession } from '@/lib/auth';
-import prisma from '@/lib/prisma'; // Volver a usar la instancia central
+import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
