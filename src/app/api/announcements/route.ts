@@ -68,12 +68,8 @@ export async function GET(req: NextRequest) {
         prisma.announcement.count({ where: whereClause })
     ]);
     
-    // The 'reads' relation is only used for its count now, so no complex mapping is needed.
-    const announcements = announcementsFromDb.map(ann => ({
-        ...ann,
-        // The full reads array is no longer needed on the frontend, reducing payload.
-        // We now rely on `_count.reads`
-    }));
+    // El mapeo ya no es necesario si la consulta es correcta.
+    const announcements = announcementsFromDb;
     
     return NextResponse.json({ announcements, totalAnnouncements });
 
@@ -110,7 +106,7 @@ export async function POST(req: NextRequest) {
         authorId: session.id,
         date: new Date(),
         priority: 'Normal',
-        isPinned: false,
+        isPinned: false, // Asegurar un valor por defecto
         attachments: {
           create: attachments?.map((att: { name: string; url: string; type: string; size: number }) => ({
             name: att.name,
@@ -154,8 +150,7 @@ export async function POST(req: NextRequest) {
       if (settings?.enableEmailNotifications) {
         const recipientEmails = usersToNotify.map(u => u.email).filter(Boolean) as string[];
         if (recipientEmails.length > 0) {
-            // Placeholder for email sending logic. Assuming sendEmail is defined elsewhere.
-            // await sendEmail({ to: recipientEmails, subject: ..., react: ... });
+            // Placeholder for email sending logic
         }
       }
     }
