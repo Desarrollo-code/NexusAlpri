@@ -51,10 +51,14 @@ const MAX_FILE_SIZE_MB = 4;
 const PinnedAnnouncementsWidget = () => {
     const [pinned, setPinned] = useState<DisplayAnnouncement[]>([]);
     useEffect(() => {
-        fetch('/api/announcements?filter=pinned&pageSize=5').then(res => res.json()).then(data => setPinned(data.announcements));
+        fetch('/api/announcements?filter=pinned&pageSize=5').then(res => res.json()).then(data => {
+            if (data && data.announcements) {
+                setPinned(data.announcements);
+            }
+        });
     }, []);
 
-    if (pinned.length === 0) return null;
+    if (!pinned || pinned.length === 0) return null;
 
     return (
         <Card>
@@ -80,10 +84,14 @@ const PinnedAnnouncementsWidget = () => {
 const TrendingAnnouncementsWidget = () => {
     const [trending, setTrending] = useState<DisplayAnnouncement[]>([]);
     useEffect(() => {
-        fetch('/api/announcements?filter=trending&pageSize=5').then(res => res.json()).then(data => setTrending(data.announcements));
+        fetch('/api/announcements?filter=trending&pageSize=5').then(res => res.json()).then(data => {
+            if (data && data.announcements) {
+                setTrending(data.announcements);
+            }
+        });
     }, []);
 
-    if (trending.length === 0) return null;
+    if (!trending || trending.length === 0) return null;
 
     return (
         <Card>
@@ -298,13 +306,12 @@ export default function AnnouncementsPage() {
       console.log(`[AnnouncementsPage] Fetching con parámetros: ${params.toString()}`);
       const response = await fetch(`/api/announcements?${params.toString()}`, { cache: 'no-store' });
       
-      const responseBody = await response.text();
       console.log(`[AnnouncementsPage] Respuesta recibida, status: ${response.status}`);
       
       if (!response.ok) {
         let errorData;
         try {
-            errorData = JSON.parse(responseBody);
+            errorData = await response.json();
         } catch (e) {
             errorData = { message: `Respuesta no válida del servidor: ${response.statusText}` };
         }
@@ -312,7 +319,7 @@ export default function AnnouncementsPage() {
         throw new Error(errorData.message || `Failed to fetch announcements: ${response.statusText}`);
       }
 
-      const data: { announcements: DisplayAnnouncement[], totalAnnouncements: number } = JSON.parse(responseBody);
+      const data: { announcements: DisplayAnnouncement[], totalAnnouncements: number } = await response.json();
       console.log(`[AnnouncementsPage] Datos recibidos: ${data.announcements.length} anuncios, ${data.totalAnnouncements} total.`);
       
       setAllAnnouncements(data.announcements);
@@ -357,7 +364,7 @@ export default function AnnouncementsPage() {
           return {
             ...ann,
             reads: [...ann.reads, { id: userId, name: user?.name || null, avatar: user?.avatar || null }],
-            _count: { reads: (ann._count?.reads || 0) + 1 }
+            _count: { ...ann._count, reads: (ann._count?.reads || 0) + 1 }
           };
         }
         return ann;
