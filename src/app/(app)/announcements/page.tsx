@@ -287,9 +287,11 @@ export default function AnnouncementsPage() {
       );
   };
   
-   const handleRead = (announcementId: string, userId: string) => {
+   const handleRead = (announcementId: string) => {
+      // The call to the API is now managed inside the AnnouncementCard component.
+      // We just update the count visually.
       setAllAnnouncements(prev => prev.map(ann => {
-        if (ann.id === announcementId && !ann.reads.some(r => r.id === userId)) {
+        if (ann.id === announcementId) {
           return {
             ...ann,
             _count: { ...ann._count, reads: (ann._count?.reads || 0) + 1 }
@@ -297,7 +299,6 @@ export default function AnnouncementsPage() {
         }
         return ann;
       }));
-      fetch(`/api/announcements/${announcementId}/read`, { method: 'POST' });
   };
 
   const handleDeleteAnnouncement = async () => {

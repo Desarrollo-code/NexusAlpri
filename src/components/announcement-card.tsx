@@ -24,7 +24,7 @@ interface AnnouncementCardProps {
   announcement: Announcement;
   onDelete?: (announcementId: string) => void;
   onReactionChange?: (announcementId: string, updatedReactions: Reaction[]) => void;
-  onRead?: (announcementId: string, userId: string) => void;
+  onRead?: (announcementId: string) => void;
   onTogglePin?: (announcement: Announcement) => void;
 }
 
@@ -78,22 +78,19 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
   const { user } = useAuth();
   const cardRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(cardRef, { once: true, margin: "-100px" });
+  const [hasBeenRead, setHasBeenRead] = useState(false);
 
   const canModify = useMemo(() => user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === announcement.author?.id)), [user, announcement.author]);
   
-  const hasUserRead = useMemo(() => {
-      // This is a proxy, as we don't fetch the full read list anymore.
-      // We rely on the `onRead` call to update the count visually.
-      return false; 
-  }, []);
-
   const userReaction = useMemo(() => user && announcement.reactions?.find(r => r.userId === user.id)?.reaction || null, [announcement.reactions, user]);
 
   useEffect(() => {
-    if (isInView && user && onRead) {
-      onRead(announcement.id, user.id);
+    if (isInView && user && onRead && !hasBeenRead) {
+      onRead(announcement.id);
+      fetch(`/api/announcements/${announcement.id}/read`, { method: 'POST' });
+      setHasBeenRead(true);
     }
-  }, [isInView, user, onRead, announcement.id]);
+  }, [isInView, user, onRead, announcement.id, hasBeenRead]);
 
   const handleReaction = async (reaction: string) => {
     if (!user || !onReactionChange) return;
@@ -135,9 +132,6 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
   const imageAttachments = announcement.attachments?.filter(att => att.type.startsWith('image/')) || [];
   const fileAttachments = announcement.attachments?.filter(att => !att.type.startsWith('image/')) || [];
   
-  // Since we don't fetch the full read list anymore, we can't show who read it.
-  // The UserListPopover for reads is removed.
-
   return (
     <Card ref={cardRef} className="card-border-animated w-full">
       <CardContent className="p-4 flex gap-4">
