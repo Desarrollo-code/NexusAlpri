@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
         if (deletedCategories.length > 0) {
             for (const category of deletedCategories) {
                 const courseCount = await prisma.course.count({ where: { category } });
-                const resourceCount = await prisma.resource.count({ where: { category } });
+                const resourceCount = await prisma.enterpriseResource.count({ where: { category } });
                 const totalUsage = courseCount + resourceCount;
                 if (totalUsage > 0) {
                     return NextResponse.json({
