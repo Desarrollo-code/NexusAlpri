@@ -293,6 +293,9 @@ export interface AdminDashboardStats {
     topStudentsByEnrollment: UserInfo[];
     topStudentsByCompletion: UserInfo[];
     topInstructorsByCourses: UserInfo[];
+    // Added for dashboard consolidation
+    recentAnnouncements?: Announcement[];
+    securityLogs?: SecurityLog[];
 }
 
 // --- TEMPLATES ---

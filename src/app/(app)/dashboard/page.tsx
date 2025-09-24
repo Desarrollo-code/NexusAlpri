@@ -54,31 +54,6 @@ import { adminDashboardTour, studentDashboardTour, instructorDashboardTour } fro
 
 
 // --- TYPE DEFINITIONS & MAPPERS ---
-interface DisplayAnnouncement extends Omit<PrismaAnnouncement, 'author' | 'audience'> {
-  author: { id: string; name: string; email?: string } | null;
-  audience: UserRole[] | 'ALL' | string;
-}
-
-interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
-  instructor: { id: string; name: string } | null;
-  _count: { modules: number };
-  status: AppCourseType['status'];
-}
-
-function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
-  return {
-    id: apiCourse.id,
-    title: apiCourse.title,
-    description: apiCourse.description || '',
-    instructor: apiCourse.instructor?.name || 'N/A',
-    instructorId: apiCourse.instructorId || undefined,
-    imageUrl: apiCourse.imageUrl || undefined,
-    modulesCount: apiCourse._count?.modules ?? 0,
-    status: apiCourse.status,
-    modules: [],
-  };
-}
-
 interface SecurityLogWithUser extends AppSecurityLog {
     user: Pick<PrismaUser, 'id' | 'name' | 'avatar'> | null;
 }
@@ -113,84 +88,19 @@ const MetricCard = ({ title, value, icon: Icon, description, gradient, id }: { t
     );
 };
 
-const activityChartConfig = {
-  newCourses: { label: "Nuevos Cursos", color: "hsl(var(--primary))" },
-  newEnrollments: { label: "Nuevas Inscripciones", color: "hsl(var(--chart-3))" },
-} satisfies ChartConfig;
-
-
-const formatDateTick = (tick: string) => {
-    try {
-        const date = parseISO(tick);
-        return format(date, "d MMM", { locale: es });
-    } catch (e) {
-        return tick;
-    }
-};
-
-const formatDateTooltip = (dateString: string, payload?: any) => {
-    try {
-        const date = parseISO(dateString);
-        return format(date, "d/MM/yyyy", { locale: es });
-    } catch (e) {
-        return dateString;
-    }
-};
-
-
-function AdminDashboard({ stats, logs, announcements }: { stats: AdminDashboardStats, logs: SecurityLogWithUser[], announcements: AnnouncementType[] }) {
+function AdminDashboard({ stats, logs, announcements }: { stats: Partial<AdminDashboardStats>, logs: SecurityLogWithUser[], announcements: AnnouncementType[] }) {
   const isMobile = useIsMobile();
   return (
     <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4" id="admin-stats-cards">
-            <MetricCard title="Total Usuarios" value={stats.totalUsers} icon={UsersRound} gradient="bg-gradient-blue" />
-            <MetricCard title="Cursos Publicados" value={stats.totalPublishedCourses} icon={BookOpenCheck} gradient="bg-gradient-green" />
-            <MetricCard title="Usuarios Activos" value={stats.recentLogins} icon={Activity} description="Últimos 7 días" gradient="bg-gradient-orange" />
-            <MetricCard title="Nuevas Inscripciones" value={stats.newEnrollmentsLast7Days} icon={UserPlus} description="Últimos 7 días" gradient="bg-gradient-purple" />
+            <MetricCard title="Total Usuarios" value={stats.totalUsers || 0} icon={UsersRound} gradient="bg-gradient-blue" />
+            <MetricCard title="Cursos Publicados" value={stats.totalPublishedCourses || 0} icon={BookOpenCheck} gradient="bg-gradient-green" />
+            <MetricCard title="Usuarios Activos" value={stats.recentLogins || 0} icon={Activity} description="Últimos 7 días" gradient="bg-gradient-orange" />
+            <MetricCard title="Nuevas Inscripciones" value={stats.newEnrollmentsLast7Days || 0} icon={UserPlus} description="Últimos 7 días" gradient="bg-gradient-purple" />
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <main className="lg:col-span-2 space-y-6">
-            <Card className="card-border-animated" id="course-activity-chart">
-              <CardHeader>
-                  <CardTitle>Actividad Diaria (Últimos 30 días)</CardTitle>
-                  <CardDescription>Resumen de nuevos cursos e inscripciones por día.</CardDescription>
-              </CardHeader>
-                  <CardContent className="h-[350px] p-0 pr-4">
-                   <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
-                    <ResponsiveContainer>
-                        <AreaChart data={stats.userRegistrationTrend} margin={{ top: 20, right: 20, bottom: 50, left: 0 }}>
-                           <defs>
-                              <linearGradient id="colorNewCourses" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="var(--color-newCourses)" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="var(--color-newCourses)" stopOpacity={0.1}/>
-                              </linearGradient>
-                              <linearGradient id="colorNewEnrollments" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="var(--color-newEnrollments)" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="var(--color-newEnrollments)" stopOpacity={0.1}/>
-                              </linearGradient>
-                            </defs>
-                            <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                            <XAxis 
-                                dataKey="date" 
-                                tickLine={false} 
-                                axisLine={false} 
-                                tickMargin={10} 
-                                angle={-45} 
-                                textAnchor="end" 
-                                interval={isMobile ? 6 : 2} 
-                                tickFormatter={formatDateTick} 
-                            />
-                            <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={10}/>
-                            <ChartTooltip cursor={{stroke: 'hsl(var(--border))', strokeWidth: 1.5, radius: 4}} content={<ChartTooltipContent indicator="dot" labelFormatter={formatDateTooltip} />} />
-                            <Legend verticalAlign="top" height={36} />
-                            <Area type="monotone" dataKey="newCourses" name="Nuevos Cursos" stroke="var(--color-newCourses)" fill="url(#colorNewCourses)" strokeWidth={2} />
-                            <Area type="monotone" dataKey="newEnrollments" name="Nuevas Inscripciones" stroke="var(--color-newEnrollments)" fill="url(#colorNewEnrollments)" strokeWidth={2} />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                    </ChartContainer>
-              </CardContent>
-            </Card>
              <section id="recent-announcements">
               <h2 className="text-2xl font-semibold">Anuncios Recientes</h2>
               {announcements.length > 0 ? (
@@ -459,7 +369,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { setPageTitle } = useTitle();
   const { startTour, forceStartTour } = useTour();
-  const [data, setData] = useState<DashboardData | null>(null);
+  const [data, setData] = useState<Partial<DashboardData>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -482,72 +392,21 @@ export default function DashboardPage() {
     setIsLoading(true);
     setError(null);
     
-    const fetchWithFallback = async (url: string, fallback: any): Promise<any> => {
-        try {
-            const res = await fetch(url, { cache: 'no-store' });
-            if (!res.ok) {
-                const errorText = await res.text();
-                let errorJson;
-                try {
-                  errorJson = JSON.parse(errorText);
-                } catch(e) {
-                  errorJson = { message: `Error en la respuesta de ${url}` };
-                }
-                console.error(`Error al obtener datos de ${url}:`, res.status, errorJson);
-                throw new Error(errorJson.message || `Error al obtener datos de ${url}`);
-            }
-            return await res.json();
-        } catch (e) {
-            console.error(`Fallo completo al hacer fetch a ${url}:`, e);
-            setError((e as Error).message);
-            return fallback;
-        }
-    };
-    
     try {
-      let dashboardPayload: DashboardData = {
-          adminStats: null,
-          studentStats: null,
-          instructorStats: null,
-          recentAnnouncements: [],
-          taughtCourses: [],
-          myDashboardCourses: [],
-          securityLogs: [],
-      };
-
-      if (user.role === 'ADMINISTRATOR') {
-          const adminData = await fetchWithFallback('/api/dashboard/admin-stats', null);
-          if (adminData) {
-            dashboardPayload.adminStats = adminData.stats;
-            dashboardPayload.recentAnnouncements = adminData.announcements;
-            dashboardPayload.securityLogs = adminData.logs;
-          }
-      } else if (user.role === 'INSTRUCTOR') {
-          const [taughtCoursesResponse, announcementsData] = await Promise.all([
-             fetchWithFallback(`/api/courses?manageView=true&userId=${user.id}&userRole=${user.role}&pageSize=4`, { courses: [], totalCourses: 0 }),
-             fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] })
-          ]);
-          dashboardPayload.instructorStats = { taught: taughtCoursesResponse.totalCourses };
-          dashboardPayload.taughtCourses = (taughtCoursesResponse.courses || []).map(mapApiCourseToAppCourse);
-          dashboardPayload.recentAnnouncements = announcementsData.announcements || [];
-      } else if (user.role === 'STUDENT') {
-           const [enrolledData, announcementsData] = await Promise.all([
-             fetchWithFallback(`/api/enrollment/${user.id}`, []),
-             fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] })
-           ]);
-          const mappedCourses: EnrolledCourse[] = enrolledData.map((item: any) => ({
-            id: item.id, title: item.title, description: item.description, instructor: item.instructorName || 'N/A',
-            imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, duration: item.duration, modules: [], 
-            enrolledAt: item.enrolledAt, isEnrolled: true, instructorId: item.instructorId, status: 'PUBLISHED',
-            progressPercentage: item.progressPercentage || 0,
-          }));
-          const completedCount = mappedCourses.filter(c => c.progressPercentage === 100).length;
-          dashboardPayload.studentStats = { enrolled: mappedCourses.length, completed: completedCount };
-          dashboardPayload.myDashboardCourses = mappedCourses.slice(0, 4);
-          dashboardPayload.recentAnnouncements = announcementsData.announcements || [];
-      }
-      
-      setData(dashboardPayload);
+        const res = await fetch('/api/dashboard/data', { cache: 'no-store' });
+        if (!res.ok) {
+            const errorText = await res.text();
+            let errorJson;
+            try {
+              errorJson = JSON.parse(errorText);
+            } catch(e) {
+              errorJson = { message: 'Error en la respuesta de la API del dashboard' };
+            }
+            console.error(`Error al obtener datos del dashboard:`, res.status, errorJson);
+            throw new Error(errorJson.message || `Error al obtener datos del dashboard`);
+        }
+        const dashboardData = await res.json();
+        setData(dashboardData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al obtener los datos del dashboard');
     } finally {
@@ -592,11 +451,11 @@ export default function DashboardPage() {
   const renderContentForRole = () => {
     switch (user.role) {
       case 'ADMINISTRATOR':
-        return data?.adminStats ? <AdminDashboard stats={data.adminStats} logs={data.securityLogs} announcements={data.recentAnnouncements} /> : null;
+        return data?.adminStats ? <AdminDashboard stats={data.adminStats} logs={data.securityLogs || []} announcements={data.recentAnnouncements || []} /> : null;
       case 'INSTRUCTOR':
-        return data?.instructorStats ? <InstructorDashboard stats={data.instructorStats} announcements={data.recentAnnouncements} taughtCourses={data.taughtCourses} /> : null;
+        return data?.instructorStats ? <InstructorDashboard stats={data.instructorStats} announcements={data.recentAnnouncements || []} taughtCourses={data.taughtCourses || []} /> : null;
       case 'STUDENT':
-        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={data.recentAnnouncements} myCourses={data.myDashboardCourses} /> : null;
+        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={data.recentAnnouncements || []} myCourses={data.myDashboardCourses || []} /> : null;
       default:
         return <p>Rol de usuario no reconocido.</p>;
     }
@@ -623,3 +482,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
