@@ -29,10 +29,10 @@ const config: Config = {
     extend: {
       backgroundImage: {
         'gradient-blue': 'linear-gradient(to right bottom, #3b82f6, #60a5fa)',
-        'gradient-green': 'linear-gradient(to right bottom, #16a34a, #4ade80)',
-        'gradient-purple': 'linear-gradient(to right bottom, #7e22ce, #a855f7)',
+        'gradient-green': 'linear-gradient(to right bottom, #22c55e, #86efac)',
+        'gradient-purple': 'linear-gradient(to right bottom, #a855f7, #d8b4fe)',
         'gradient-orange': 'linear-gradient(to right bottom, #f97316, #fb923c)',
-        'gradient-pink': 'linear-gradient(to right bottom, #db2777, #f472b6)',
+        'gradient-pink': 'linear-gradient(to right bottom, #ec4899, #f9a8d4)',
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* Nueva paleta de colores vibrante y diversa */
+    /* Paleta de colores vibrante y moderna */
     --background: 220 20% 99%; /* Blanco ligeramente azulado */
     --foreground: 220 15% 15%; /* Casi negro */
     --card: 0 0% 100%;
@@ -26,18 +26,18 @@
     --ring: 210 90% 55%;
     --radius: 0.75rem;
     
-    /* Colores para gráficos y eventos */
-    --chart-1: 210 90% 55%; /* Azul */
-    --chart-2: 25 90% 60%;  /* Naranja */
-    --chart-3: 160 70% 45%; /* Verde azulado (Teal) */
-    --chart-4: 50 95% 55%;  /* Amarillo */
-    --chart-5: 340 85% 65%; /* Rosa/Magenta */
+    /* Colores para gráficos y eventos (NUEVA PALETA VIBRANTE) */
+    --chart-1: 210 90% 55%; /* Azul (se mantiene) */
+    --chart-2: 150 70% 40%; /* Verde Esmeralda */
+    --chart-3: 320 80% 55%; /* Rosa Intenso */
+    --chart-4: 45 95% 50%;  /* Amarillo Dorado */
+    --chart-5: 260 85% 60%; /* Violeta */
 
-    /* Colores para calendario */
-    --event-blue: 210 80% 50%;
-    --event-green: 145 65% 45%;
-    --event-red: 0 75% 55%;
-    --event-orange: 25 85% 55%;
+    /* Colores para calendario (NUEVA PALETA VIBRANTE) */
+    --event-blue: 210 90% 55%;
+    --event-green: 150 70% 40%;
+    --event-red: 0 80% 60%;
+    --event-orange: 30 90% 55%;
 
     /* Variables de la barra lateral (mantienen un estilo consistente) */
     --sidebar-background: 220 40% 5%; 
@@ -71,10 +71,10 @@
     --ring: 210 90% 65%;
 
     /* Colores de eventos para tema oscuro */
-    --event-blue: 210 70% 60%;
-    --event-green: 145 55% 55%;
-    --event-red: 0 65% 60%;
-    --event-orange: 25 75% 60%;
+    --event-blue: 210 80% 65%;
+    --event-green: 150 60% 50%;
+    --event-red: 0 75% 65%;
+    --event-orange: 30 80% 60%;
   }
 }
  

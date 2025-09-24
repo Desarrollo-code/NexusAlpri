@@ -41,8 +41,8 @@ import { Loader2, Save, MapPin, Video, Link as LinkIcon, X, Check, Users, Edit, 
 const eventColors = [
   { value: 'blue', label: 'Evento General', color: 'bg-event-blue' },
   { value: 'green', label: 'Taller/Formación', color: 'bg-event-green' },
+  { value: 'orange', label: 'Festivo/Importante', color: 'bg-event-orange' },
   { value: 'red', label: 'Fecha Límite/Urgente', color: 'bg-event-red' },
-  { value: 'orange', label: 'Festivo/Vacaciones', color: 'bg-event-orange' },
 ];
 
 interface EventEditorModalProps {
