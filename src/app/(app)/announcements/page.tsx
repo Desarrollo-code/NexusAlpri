@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback, ChangeEvent } from 'r
 import { AnnouncementCard } from '@/components/announcement-card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { Announcement as AnnouncementType, UserRole, Attachment, Reaction } from '@/types'; 
-import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud, Pin, PinOff, TrendingUp } from 'lucide-react';
+import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud, Pin, PinOff } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
@@ -259,7 +259,6 @@ export default function AnnouncementsPage() {
   }, [searchParams]);
 
   const fetchAnnouncements = useCallback(async () => {
-    console.log('[AnnouncementsPage] Iniciando fetchAnnouncements...');
     setIsLoading(true);
     setError(null);
     try {
@@ -269,10 +268,7 @@ export default function AnnouncementsPage() {
       if (activeTab && user?.role !== 'STUDENT') {
           params.append('filter', activeTab);
       }
-      console.log(`[AnnouncementsPage] Fetching con parámetros: ${params.toString()}`);
       const response = await fetch(`/api/announcements?${params.toString()}`, { cache: 'no-store' });
-      
-      console.log(`[AnnouncementsPage] Respuesta recibida, status: ${response.status}`);
       
       if (!response.ok) {
         let errorData;
@@ -281,24 +277,20 @@ export default function AnnouncementsPage() {
         } catch (e) {
             errorData = { message: `Respuesta no válida del servidor: ${response.statusText}` };
         }
-        console.error('[AnnouncementsPage] Error en la respuesta de la API:', errorData);
         throw new Error(errorData.message || `Error al obtener los anuncios`);
       }
 
       const data: { announcements: DisplayAnnouncement[], totalAnnouncements: number } = await response.json();
-      console.log(`[AnnouncementsPage] Datos recibidos: ${data.announcements.length} anuncios, ${data.totalAnnouncements} total.`);
       
       setAllAnnouncements(data.announcements);
       setTotalAnnouncements(data.totalAnnouncements);
     } catch (err) {
-      console.error('[AnnouncementsPage] Error capturado en fetchAnnouncements:', err);
       setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar los anuncios');
       setAllAnnouncements([]);
       setTotalAnnouncements(0);
       toast({ title: "Error al cargar anuncios", description: err instanceof Error ? err.message : 'No se pudieron cargar los anuncios.', variant: "destructive"});
     } finally {
       setIsLoading(false);
-      console.log('[AnnouncementsPage] Finalizó fetchAnnouncements.');
     }
   }, [toast, currentPage, activeTab, user?.role]);
 

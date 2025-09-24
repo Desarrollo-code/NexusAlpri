@@ -84,7 +84,8 @@ export async function GET(req: NextRequest) {
 
     const announcements = announcementsFromDb.map(ann => ({
         ...ann,
-        reads: ann.reads.map(r => r.user),
+        // CORRECCIÓN: Filtrar lecturas donde `r.user` podría ser nulo.
+        reads: ann.reads.filter(r => r.user).map(r => r.user),
     }));
     
     return NextResponse.json({ announcements, totalAnnouncements });
