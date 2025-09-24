@@ -357,8 +357,8 @@ export default function FormsPage() {
                 {formsList.map(form => (
                     <Card key={form.id} className="hover:border-primary/50 transition-colors">
                         <CardHeader>
-                            <CardTitle>{form.title}</CardTitle>
-                             <CardDescription>{form.description || 'Completa este formulario.'}</CardDescription>
+                            <CardTitle className="break-words line-clamp-none">{form.title}</CardTitle>
+                             <CardDescription className="break-words line-clamp-none">{form.description || 'Completa este formulario.'}</CardDescription>
                         </CardHeader>
                         <CardFooter>
                             <Button asChild>
