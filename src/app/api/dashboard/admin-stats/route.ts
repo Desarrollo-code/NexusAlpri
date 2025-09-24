@@ -120,7 +120,9 @@ export async function GET(req: NextRequest) {
             _count: { courseId: true },
             orderBy: { _count: { courseId: 'desc' } }, take: 5
         }).then(async (groups) => {
-            const users = await prisma.user.findMany({ where: { id: { in: groups.map(g => g.userId) } }, select: { id: true, name: true, avatar: true } });
+            const userIds = groups.map(g => g.userId);
+            if(userIds.length === 0) return [];
+            const users = await prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, name: true, avatar: true } });
             return groups.map(g => {
                 const user = users.find(u => u.id === g.userId);
                 return { id: user!.id, name: user!.name, avatar: user!.avatar, value: g._count.courseId };
@@ -137,12 +139,18 @@ export async function GET(req: NextRequest) {
     // --- Final Payload ---
     const stats: AdminDashboardStats = {
         totalUsers, totalCourses, totalPublishedCourses, totalEnrollments, totalResources, totalAnnouncements, totalForms,
-        usersByRole: usersByRole.map(group => ({ role: group.role, count: group._count.id })),
-        coursesByStatus: coursesByStatus.map(group => ({ status: group.status, count: group._count.id })),
+        usersByRole: usersByRole.map(group => ({ role: group.role as UserRole, count: group._count.id })),
+        coursesByStatus: coursesByStatus.map(group => ({ status: group.status as CourseStatus, count: group._count.id })),
         recentLogins, newEnrollmentsLast7Days, userRegistrationTrend,
         averageCompletionRate, topCoursesByEnrollment, topCoursesByCompletion, lowestCoursesByCompletion,
         topStudentsByEnrollment, topStudentsByCompletion, topInstructorsByCourses
     };
 
-    return NextResponse.json({ stats, announcements: recentAnnouncements, logs: securityLogs });
+    const dashboardData = {
+        stats: stats,
+        announcements: recentAnnouncements,
+        logs: securityLogs as SecurityLogWithUser[]
+    };
+
+    return NextResponse.json(dashboardData);
 }
