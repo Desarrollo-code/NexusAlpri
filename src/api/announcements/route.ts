@@ -1,4 +1,3 @@
-// src/app/api/announcements/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
@@ -19,51 +18,71 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const pageParam = searchParams.get('page');
   const pageSizeParam = searchParams.get('pageSize');
-  const filter = searchParams.get('filter'); // all, by-me, by-others
+  const filter = searchParams.get('filter'); // all, by-me, by-others, pinned, trending
   
   const isPaginated = pageParam && pageSizeParam;
 
-  let whereClause: any = {};
+  let whereClause: Prisma.AnnouncementWhereInput = {};
 
-  // Lógica de filtrado reconstruida para ser más clara y robusta
-  if (session.role === 'ADMINISTRATOR' && filter === 'all') {
-    // Admin en la pestaña "Todos" ve todo, sin filtro de audiencia.
-  } else if (filter === 'by-me') {
+  // 1. Filtro base de audiencia: El usuario solo debe ver lo que le corresponde.
+  if (session.role !== 'ADMINISTRATOR') {
+    whereClause.OR = [
+      { audience: 'ALL' },
+      { audience: session.role as UserRole },
+    ];
+  }
+
+  // 2. Filtro de pestañas (si aplica)
+  if (filter === 'by-me') {
     whereClause.authorId = session.id;
   } else if (filter === 'by-others') {
     whereClause.authorId = { not: session.id };
-    // Al ver "otros", un admin o instructor solo ve lo que es público o para su rol.
-    whereClause.OR = [
-        { audience: 'ALL' },
-        { audience: session.role as UserRole },
-    ];
-  } else {
-    // Vista por defecto para todos los usuarios (incluye admin en "by-others")
-    whereClause.OR = [
-        { audience: 'ALL' },
-        { audience: session.role as UserRole },
-    ];
+  } else if (filter === 'pinned') {
+    whereClause.isPinned = true;
   }
   
+  // 3. Ordenamiento
+  let orderBy: Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput[] = [
+    { isPinned: 'desc' },
+    { date: 'desc' }
+  ];
+  
   try {
-    const commonFindOptions = {
+    const commonFindOptions: Prisma.AnnouncementFindManyArgs = {
         where: whereClause,
-        orderBy: { date: 'desc' },
+        orderBy: orderBy,
         include: { 
-            author: { select: { id: true, name: true, avatar: true } },
-            attachments: true,
-            reads: { select: { user: { select: { id: true, name: true, avatar: true }} } },
-            reactions: { select: { userId: true, reaction: true, user: { select: { id: true, name: true, avatar: true }} } },
-            _count: { select: { reads: true } },
+          author: { select: { id: true, name: true, avatar: true } },
+          attachments: true,
+          // Optimization: Fetch only what's needed for display, not the whole user object
+          reads: { 
+              select: { 
+                  user: { 
+                      select: { id: true, name: true, avatar: true }
+                  } 
+              } 
+          },
+          reactions: { 
+              select: { 
+                  userId: true, 
+                  reaction: true, 
+                  user: { select: { id: true, name: true, avatar: true }} 
+              } 
+          },
+          // Use _count for efficient counting
+          _count: { select: { reads: true, reactions: true } },
         },
     };
 
+    let announcementsFromDb;
+    let totalAnnouncements;
+    
     if (isPaginated) {
         const page = parseInt(pageParam, 10);
         const pageSize = parseInt(pageSizeParam, 10);
         const skip = (page - 1) * pageSize;
 
-        const [announcementsFromDb, totalAnnouncements] = await prisma.$transaction([
+        const [announcementsData, totalCount] = await prisma.$transaction([
             prisma.announcement.findMany({
                 ...commonFindOptions,
                 skip: skip,
@@ -71,25 +90,28 @@ export async function GET(req: NextRequest) {
             }),
             prisma.announcement.count({ where: whereClause })
         ]);
-        
-        const announcements = announcementsFromDb.map(ann => ({
-            ...ann,
-            reads: ann.reads.map(r => r.user),
-        }));
-        
-        return NextResponse.json({ announcements, totalAnnouncements });
+        announcementsFromDb = announcementsData;
+        totalAnnouncements = totalCount;
     } else {
-        const announcementsFromDb = await prisma.announcement.findMany({
+        const take = Number(searchParams.get('pageSize') || 4);
+        announcementsFromDb = await prisma.announcement.findMany({
             ...commonFindOptions,
-            take: 4, 
+            take: take,
         });
-        const announcements = announcementsFromDb.map(ann => ({
-            ...ann,
-            reads: ann.reads.map(r => r.user),
-        }));
-        const totalAnnouncements = await prisma.announcement.count({ where: whereClause });
-        return NextResponse.json({ announcements, totalAnnouncements });
+        totalAnnouncements = await prisma.announcement.count({ where: whereClause });
     }
+
+    // Ordenar los anuncios si el filtro es "trending"
+    let announcements = announcementsFromDb.map(ann => ({
+        ...ann,
+        reads: ann.reads.map(r => r.user),
+    }));
+
+    if (filter === 'trending') {
+        announcements.sort((a, b) => b._count.reactions - a._count.reactions);
+    }
+    
+    return NextResponse.json({ announcements, totalAnnouncements });
 
   } catch (error) {
     console.error('[ANNOUNCEMENTS_GET_ERROR]', error);
@@ -107,8 +129,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { title, content, audience, attachments } = body;
 
-    if (!title || !content || !audience) {
-        return NextResponse.json({ message: 'Título, contenido y audiencia son requeridos' }, { status: 400 });
+    if (!title || (!content && attachments?.length === 0)) {
+        return NextResponse.json({ message: 'Se requiere título, y contenido o al menos un adjunto.' }, { status: 400 });
     }
     
     const audienceToStore = Array.isArray(audience) ? audience[0] : audience;
@@ -121,6 +143,7 @@ export async function POST(req: NextRequest) {
         authorId: session.id,
         date: new Date(),
         priority: 'Normal',
+        isPinned: false,
         attachments: {
           create: attachments?.map((att: { name: string; url: string; type: string; size: number }) => ({
             name: att.name,
@@ -132,7 +155,8 @@ export async function POST(req: NextRequest) {
       },
       include: {
         author: { select: { name: true, id: true, avatar: true } },
-        attachments: true
+        attachments: true,
+        _count: { select: { reads: true, reactions: true } },
       }
     });
 
@@ -156,7 +180,7 @@ export async function POST(req: NextRequest) {
           title: `Nuevo Anuncio: ${title}`,
           description: description,
           link: '/announcements',
-          announcementId: newAnnouncement.id, // VINCULAR LA NOTIFICACIÓN AL ANUNCIO
+          announcementId: newAnnouncement.id,
         }))
       });
 
