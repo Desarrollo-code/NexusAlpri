@@ -1,3 +1,4 @@
+
 // src/app/(app)/analytics/page.tsx
 'use client';
 
@@ -329,10 +330,10 @@ function AdminAnalyticsPage() {
             if (date?.from) params.append('startDate', date.from.toISOString());
             if (date?.to) params.append('endDate', date.to.toISOString());
 
-            const res = await fetch(`/api/dashboard/admin-stats?${params.toString()}`);
+            const res = await fetch(`/api/dashboard/data?${params.toString()}`);
             if (!res.ok) throw new Error((await res.json()).message || "Failed to fetch stats");
             const data = await res.json();
-            setStats(data);
+            setStats(data.adminStats);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Unknown error occurred");
         } finally {
