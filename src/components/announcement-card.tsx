@@ -77,7 +77,7 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
   const isInView = useInView(cardRef, { once: true, margin: "-100px" });
 
   const canModify = useMemo(() => user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === announcement.author?.id)), [user, announcement.author]);
-  const userHasRead = useMemo(() => user && announcement.reads?.some(readUser => readUser.id === user.id), [announcement.reads, user]);
+  const userHasRead = useMemo(() => user && announcement.reads?.some(readUser => readUser.userId === user.id), [announcement.reads, user]);
   const userReaction = useMemo(() => user && announcement.reactions?.find(r => r.userId === user.id)?.reaction || null, [announcement.reactions, user]);
 
   useEffect(() => {
@@ -125,6 +125,8 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
   
   const imageAttachments = announcement.attachments?.filter(att => att.type.startsWith('image/')) || [];
   const fileAttachments = announcement.attachments?.filter(att => !att.type.startsWith('image/')) || [];
+  
+  const readUsers = announcement.reads?.map(r => r.user) || [];
 
   return (
     <Card ref={cardRef} className="card-border-animated w-full">
@@ -198,7 +200,7 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
             <div className="flex items-center gap-1 overflow-x-auto flex-grow">
                 {Object.entries(groupedReactions).map(([reaction, users]) => ( <UserListPopover key={reaction} title={`Reaccionaron con ${reaction}`} users={users} trigger={<Button variant="ghost" size="sm" className="h-8 text-xs gap-1">{reaction} <span className="font-bold">{users.length}</span></Button>} /> ))}
             </div>
-             <UserListPopover title="Visto por" users={announcement.reads || []} trigger={ <Button variant="ghost" size="sm" className="h-8 text-xs gap-1"><span className="font-bold">{announcement._count?.reads ?? 0}</span><Eye className="h-4 w-4" /></Button> } />
+             <UserListPopover title="Visto por" users={readUsers} trigger={ <Button variant="ghost" size="sm" className="h-8 text-xs gap-1"><span className="font-bold">{announcement._count?.reads ?? 0}</span><Eye className="h-4 w-4" /></Button> } />
           </div>
         </div>
       </CardContent>
