@@ -19,7 +19,13 @@ export async function GET(req: NextRequest) {
   const pageSizeParam = searchParams.get('pageSize');
   const filter = searchParams.get('filter'); // all, by-me, by-others, pinned, trending
   
-  const isPaginated = pageParam && pageSizeParam;
+  const page = pageParam ? parseInt(pageParam, 10) : 1;
+  const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 4;
+  
+  // Validar parámetros de paginación
+  if (isNaN(page) || page < 1 || isNaN(pageSize) || pageSize < 1) {
+    return NextResponse.json({ message: 'Parámetros de paginación inválidos' }, { status: 400 });
+  }
 
   let whereClause: Prisma.AnnouncementWhereInput = {};
 
@@ -54,50 +60,48 @@ export async function GET(req: NextRequest) {
         where: whereClause,
         orderBy: orderBy,
         include: { 
-            author: { select: { id: true, name: true, avatar: true } },
-            attachments: true,
-            // Optimizacion: Solo necesitamos saber si el usuario actual ha leido y sus reacciones
-            reads: { 
-                where: { userId: session.id },
-                select: { userId: true }
-            },
-            reactions: { 
-                select: { 
-                    userId: true, 
-                    reaction: true, 
-                    user: { select: { id: true, name: true, avatar: true }} 
-                } 
-            },
-            // Usar _count para obtener el numero total de lecturas, es mas eficiente
-            _count: { select: { reads: true, reactions: true } },
+          author: { select: { id: true, name: true, avatar: true } },
+          attachments: true,
+          // Optimization: Fetch only what's needed for display, not the whole user object
+          reads: { 
+              select: { 
+                  user: { 
+                      select: { id: true, name: true, avatar: true }
+                  } 
+              } 
+          },
+          reactions: { 
+              select: { 
+                  userId: true, 
+                  reaction: true, 
+                  user: { select: { id: true, name: true, avatar: true }} 
+              } 
+          },
+          // Use _count for efficient counting
+          _count: { select: { reads: true, reactions: true } },
         },
     };
-    
 
-    if (isPaginated) {
-        const page = parseInt(pageParam, 10);
-        const pageSize = parseInt(pageSizeParam, 10);
-        const skip = (page - 1) * pageSize;
-
-        const [announcementsFromDb, totalAnnouncements] = await prisma.$transaction([
-            prisma.announcement.findMany({
-                ...commonFindOptions,
-                skip: skip,
-                take: pageSize,
-            }),
-            prisma.announcement.count({ where: whereClause })
-        ]);
-        
-        return NextResponse.json({ announcements: announcementsFromDb, totalAnnouncements });
-    } else {
-        // Fallback para widgets, no paginado
-        const take = Number(searchParams.get('pageSize') || 4);
-        const announcementsFromDb = await prisma.announcement.findMany({
+    const [announcementsFromDb, totalAnnouncements] = await prisma.$transaction([
+        prisma.announcement.findMany({
             ...commonFindOptions,
-            take: take,
-        });
-        return NextResponse.json({ announcements: announcementsFromDb });
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+        }),
+        prisma.announcement.count({ where: whereClause })
+    ]);
+
+    // Ordenar los anuncios si el filtro es "trending"
+    let announcements = announcementsFromDb.map(ann => ({
+        ...ann,
+        reads: ann.reads.map(r => r.user),
+    }));
+
+    if (filter === 'trending') {
+        announcements.sort((a, b) => (b._count?.reactions || 0) - (a._count?.reactions || 0));
     }
+    
+    return NextResponse.json({ announcements, totalAnnouncements });
 
   } catch (error) {
     console.error('[ANNOUNCEMENTS_GET_ERROR]', error);

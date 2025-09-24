@@ -1,12 +1,12 @@
 // src/app/(app)/announcements/page.tsx
 'use client';
 
+import React, { useState, useMemo, useEffect, useCallback, ChangeEvent } from 'react';
 import { AnnouncementCard } from '@/components/announcement-card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { Announcement as AnnouncementType, UserRole, Attachment, Reaction } from '@/types'; 
 import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud, Pin, PinOff, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { useState, useMemo, useEffect, useCallback, ChangeEvent } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   AlertDialog,
@@ -36,7 +36,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
 
 interface DisplayAnnouncement extends AnnouncementType {
   author: { id: string; name: string; email?: string, avatar?: string | null } | null;
@@ -105,7 +104,7 @@ const TrendingAnnouncementsWidget = () => {
                              <Link href={`/announcements#${ann.id}`} className="font-medium hover:underline text-foreground leading-tight">
                                 {ann.title}
                             </Link>
-                            <p className="text-xs text-muted-foreground">{ann.reactions.length} reaccion(es)</p>
+                            <p className="text-xs text-muted-foreground">{ann._count?.reactions || 0} reaccion(es)</p>
                         </li>
                     ))}
                 </ul>
@@ -363,7 +362,7 @@ export default function AnnouncementsPage() {
         if (ann.id === announcementId && !ann.reads.some(r => r.id === userId)) {
           return {
             ...ann,
-            reads: [...ann.reads, { id: userId, name: user?.name || null, avatar: user?.avatar || null }],
+            reads: [...(ann.reads || []), { id: userId, name: user?.name || null, avatar: user?.avatar || null }],
             _count: { ...ann._count, reads: (ann._count?.reads || 0) + 1 }
           };
         }
