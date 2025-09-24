@@ -221,6 +221,7 @@ CREATE TABLE "Announcement" (
     "authorId" TEXT NOT NULL,
     "audience" TEXT NOT NULL,
     "priority" TEXT NOT NULL DEFAULT 'Normal',
+    "isPinned" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Announcement_pkey" PRIMARY KEY ("id")
 );
