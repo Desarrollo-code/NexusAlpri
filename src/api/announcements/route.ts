@@ -20,7 +20,13 @@ export async function GET(req: NextRequest) {
   const pageSizeParam = searchParams.get('pageSize');
   const filter = searchParams.get('filter'); // all, by-me, by-others, pinned, trending
   
-  const isPaginated = pageParam && pageSizeParam;
+  const page = pageParam ? parseInt(pageParam, 10) : 1;
+  const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 4;
+  
+  // Validar parámetros de paginación
+  if (isNaN(page) || page < 1 || isNaN(pageSize) || pageSize < 1) {
+    return NextResponse.json({ message: 'Parámetros de paginación inválidos' }, { status: 400 });
+  }
 
   let whereClause: Prisma.AnnouncementWhereInput = {};
 
@@ -77,32 +83,14 @@ export async function GET(req: NextRequest) {
         },
     };
 
-    let announcementsFromDb;
-    let totalAnnouncements;
-    
-    if (isPaginated) {
-        const page = parseInt(pageParam, 10);
-        const pageSize = parseInt(pageSizeParam, 10);
-        const skip = (page - 1) * pageSize;
-
-        const [announcementsData, totalCount] = await prisma.$transaction([
-            prisma.announcement.findMany({
-                ...commonFindOptions,
-                skip: skip,
-                take: pageSize,
-            }),
-            prisma.announcement.count({ where: whereClause })
-        ]);
-        announcementsFromDb = announcementsData;
-        totalAnnouncements = totalCount;
-    } else {
-        const take = Number(searchParams.get('pageSize') || 4);
-        announcementsFromDb = await prisma.announcement.findMany({
+    const [announcementsFromDb, totalAnnouncements] = await prisma.$transaction([
+        prisma.announcement.findMany({
             ...commonFindOptions,
-            take: take,
-        });
-        totalAnnouncements = await prisma.announcement.count({ where: whereClause });
-    }
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+        }),
+        prisma.announcement.count({ where: whereClause })
+    ]);
 
     // Ordenar los anuncios si el filtro es "trending"
     let announcements = announcementsFromDb.map(ann => ({
