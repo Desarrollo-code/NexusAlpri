@@ -198,7 +198,7 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
             <div className="flex items-center gap-1 overflow-x-auto flex-grow">
                 {Object.entries(groupedReactions).map(([reaction, users]) => ( <UserListPopover key={reaction} title={`Reaccionaron con ${reaction}`} users={users} trigger={<Button variant="ghost" size="sm" className="h-8 text-xs gap-1">{reaction} <span className="font-bold">{users.length}</span></Button>} /> ))}
             </div>
-             <UserListPopover title="Visto por" users={announcement.reads || []} trigger={ <Button variant="ghost" size="sm" className="h-8 text-xs gap-1"><span className="font-bold">{announcement._count?.reads ?? (announcement.reads || []).length}</span><Eye className="h-4 w-4" /></Button> } />
+             <UserListPopover title="Visto por" users={announcement.reads || []} trigger={ <Button variant="ghost" size="sm" className="h-8 text-xs gap-1"><span className="font-bold">{announcement._count?.reads ?? 0}</span><Eye className="h-4 w-4" /></Button> } />
           </div>
         </div>
       </CardContent>

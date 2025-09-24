@@ -11,19 +11,15 @@ import { Prisma } from '@prisma/client';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  console.log('[ANNOUNCEMENTS_API] Recibida solicitud GET');
   const session = await getCurrentUser();
   if (!session) {
-    console.error('[ANNOUNCEMENTS_API] Error: No autorizado, no se encontró sesión.');
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
-  console.log(`[ANNOUNCEMENTS_API] Sesión válida para: ${session.email}, Rol: ${session.role}`);
 
   const { searchParams } = new URL(req.url);
   const pageParam = searchParams.get('page');
   const pageSizeParam = searchParams.get('pageSize');
   const filter = searchParams.get('filter'); // all, by-me, by-others, pinned, trending
-  console.log(`[ANNOUNCEMENTS_API] Parámetros: page=${pageParam}, pageSize=${pageSizeParam}, filter=${filter}`);
   
   const isPaginated = pageParam && pageSizeParam;
 
@@ -36,7 +32,6 @@ export async function GET(req: NextRequest) {
       { audience: session.role as UserRole },
     ];
   }
-  console.log('[ANNOUNCEMENTS_API] Cláusula "where" inicial (audiencia):', JSON.stringify(whereClause));
 
   // 2. Filtro de pestañas (si aplica)
   if (filter === 'by-me') {
@@ -46,7 +41,6 @@ export async function GET(req: NextRequest) {
   } else if (filter === 'pinned') {
     whereClause.isPinned = true;
   }
-  console.log('[ANNOUNCEMENTS_API] Cláusula "where" final (con filtros):', JSON.stringify(whereClause));
   
   // 3. Ordenamiento
   let orderBy: Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput[] = [
@@ -64,6 +58,7 @@ export async function GET(req: NextRequest) {
         include: { 
             author: { select: { id: true, name: true, avatar: true } },
             attachments: true,
+            // Optimization: Fetch only what's needed for display, not the whole user object
             reads: { 
                 select: { 
                     user: { 
@@ -78,6 +73,7 @@ export async function GET(req: NextRequest) {
                     user: { select: { id: true, name: true, avatar: true }} 
                 } 
             },
+            // Use _count for efficient counting
             _count: { select: { reads: true, reactions: true } },
         },
     };
@@ -101,7 +97,6 @@ export async function GET(req: NextRequest) {
             reads: ann.reads.map(r => r.user),
         }));
         
-        console.log(`[ANNOUNCEMENTS_API] Éxito. Encontrados ${announcements.length} anuncios (paginado).`);
         return NextResponse.json({ announcements, totalAnnouncements });
     } else {
         const take = Number(searchParams.get('pageSize') || 4);
@@ -114,7 +109,6 @@ export async function GET(req: NextRequest) {
             reads: ann.reads.map(r => r.user),
         }));
         const totalAnnouncements = await prisma.announcement.count({ where: whereClause });
-        console.log(`[ANNOUNCEMENTS_API] Éxito. Encontrados ${announcements.length} anuncios (no paginado, take=${take}).`);
         return NextResponse.json({ announcements, totalAnnouncements });
     }
 
@@ -160,7 +154,8 @@ export async function POST(req: NextRequest) {
       },
       include: {
         author: { select: { name: true, id: true, avatar: true } },
-        attachments: true
+        attachments: true,
+        _count: { select: { reads: true, reactions: true } },
       }
     });
 
