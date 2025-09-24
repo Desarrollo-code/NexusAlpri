@@ -29,6 +29,7 @@ import {
   KeyRound,
   UserCog,
   HelpCircle,
+  TrendingUp,
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
@@ -88,6 +89,31 @@ const MetricCard = ({ title, value, icon: Icon, description, gradient, id }: { t
     );
 };
 
+const formatDateTick = (tick: string) => {
+    try {
+        const date = parseISO(tick);
+        return format(date, "d MMM", { locale: es });
+    } catch(e) {
+        return tick;
+    }
+};
+
+const activityChartConfig = {
+  newUsers: {
+    label: "Usuarios",
+    color: "hsl(var(--chart-1))",
+  },
+  newCourses: {
+    label: "Cursos",
+    color: "hsl(var(--chart-2))",
+  },
+  newEnrollments: {
+    label: "Inscripciones",
+    color: "hsl(var(--chart-3))",
+  },
+} satisfies ChartConfig;
+
+
 function AdminDashboard({ stats, logs, announcements }: { stats: Partial<AdminDashboardStats>, logs: SecurityLogWithUser[], announcements: AnnouncementType[] }) {
   const isMobile = useIsMobile();
   return (
@@ -101,6 +127,26 @@ function AdminDashboard({ stats, logs, announcements }: { stats: Partial<AdminDa
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <main className="lg:col-span-2 space-y-6">
+            <Card className="card-border-animated" id="course-activity-chart">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><TrendingUp/>Tendencia de Actividad</CardTitle>
+                    <CardDescription>Actividad en los últimos 30 días.</CardDescription>
+                </CardHeader>
+                <CardContent className="h-80 p-0 pr-4">
+                     <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={stats.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                             <XAxis dataKey="date" tickFormatter={formatDateTick} tickLine={false} axisLine={false} tickMargin={10} interval={isMobile ? 6 : 3} />
+                             <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={10} />
+                             <ChartTooltip content={<ChartTooltipContent />} />
+                             <Legend />
+                             <Line type="monotone" dataKey="newCourses" name="Cursos" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
+                             <Line type="monotone" dataKey="newEnrollments" name="Inscripciones" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+
              <section id="recent-announcements">
               <h2 className="text-2xl font-semibold">Anuncios Recientes</h2>
               {announcements.length > 0 ? (
@@ -482,4 +528,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

@@ -25,11 +25,13 @@ async function safeQuery<T>(query: Promise<T>, fallback: T, queryName: string): 
 
 async function getAdminDashboardData(session: PrismaUser) {
     const sevenDaysAgo = subDays(new Date(), 7);
+    const thirtyDaysAgo = subDays(new Date(), 30);
 
     const [
         totalUsers, totalCourses, totalPublishedCourses, totalEnrollments,
         recentLogins, newEnrollmentsLast7Days,
-        recentAnnouncements, securityLogs
+        recentAnnouncements, securityLogs,
+        dailyActivity
     ] = await Promise.all([
         safeQuery(prisma.user.count(), 0, 'totalUsers'),
         safeQuery(prisma.course.count(), 0, 'totalCourses'),
@@ -46,13 +48,43 @@ async function getAdminDashboardData(session: PrismaUser) {
                 _count: { select: { reads: true, reactions: true } },
             },
         }), [], 'recentAnnouncements'),
-        safeQuery(prisma.securityLog.findMany({ take: 5, orderBy: { createdAt: 'desc' }, include: { user: { select: { id: true, name: true, avatar: true } } } }), [], 'securityLogs')
+        safeQuery(prisma.securityLog.findMany({ take: 5, orderBy: { createdAt: 'desc' }, include: { user: { select: { id: true, name: true, avatar: true } } } }), [], 'securityLogs'),
+        safeQuery(prisma.course.findMany({
+            where: { createdAt: { gte: thirtyDaysAgo } },
+            select: { createdAt: true }
+        }), [], 'dailyNewCourses'),
     ]);
     
-    // Placeholder for more complex stats
+    // Process daily activity
+    const activityMap = new Map<string, { newCourses: number; newEnrollments: number }>();
+    const newCoursesLast30Days = await safeQuery(prisma.course.findMany({ where: { createdAt: { gte: thirtyDaysAgo } }, select: { createdAt: true } }), [], 'newCoursesLast30Days');
+    const newEnrollmentsLast30Days = await safeQuery(prisma.enrollment.findMany({ where: { enrolledAt: { gte: thirtyDaysAgo } }, select: { enrolledAt: true } }), [], 'newEnrollmentsLast30Days');
+
+    for (let i = 29; i >= 0; i--) {
+        const date = subDays(new Date(), i);
+        const dateString = date.toISOString().split('T')[0];
+        activityMap.set(dateString, { newCourses: 0, newEnrollments: 0 });
+    }
+
+    newCoursesLast30Days.forEach(course => {
+        const dateString = course.createdAt.toISOString().split('T')[0];
+        if (activityMap.has(dateString)) {
+            activityMap.get(dateString)!.newCourses++;
+        }
+    });
+    newEnrollmentsLast30Days.forEach(enrollment => {
+        const dateString = enrollment.enrolledAt.toISOString().split('T')[0];
+        if (activityMap.has(dateString)) {
+            activityMap.get(dateString)!.newEnrollments++;
+        }
+    });
+    
+    const userRegistrationTrend = Array.from(activityMap.entries()).map(([date, counts]) => ({ date, ...counts }));
+
+
     const stats: Partial<AdminDashboardStats> = {
         totalUsers, totalCourses, totalPublishedCourses, totalEnrollments,
-        recentLogins, newEnrollmentsLast7Days,
+        recentLogins, newEnrollmentsLast7Days, userRegistrationTrend
     };
 
     return {
