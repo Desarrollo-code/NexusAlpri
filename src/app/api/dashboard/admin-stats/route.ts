@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
                 author: { select: { id: true, name: true, avatar: true } }, 
                 attachments: true, 
                 reactions: { select: { userId: true, reaction: true, user: { select: { id: true, name: true, avatar: true } } } }, 
-                _count: { select: { reads: true } },
+                _count: { select: { reads: true, reactions: true } },
             },
         }), [], 'recentAnnouncements'),
         safeQuery(prisma.securityLog.findMany({ take: 5, orderBy: { createdAt: 'desc' }, include: { user: { select: { id: true, name: true, avatar: true } } } }), [], 'securityLogs')
@@ -147,7 +147,7 @@ export async function GET(req: NextRequest) {
     };
 
     const dashboardData = {
-        stats: stats,
+        ...stats, // Flatten the stats object into the main response
         announcements: recentAnnouncements,
         logs: securityLogs as SecurityLogWithUser[]
     };
