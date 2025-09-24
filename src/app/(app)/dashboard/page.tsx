@@ -133,17 +133,19 @@ function AdminDashboard({ stats, logs, announcements }: { stats: Partial<AdminDa
                     <CardDescription>Actividad en los últimos 30 días.</CardDescription>
                 </CardHeader>
                 <CardContent className="h-80 p-0 pr-4">
-                     <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={stats.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                             <XAxis dataKey="date" tickFormatter={formatDateTick} tickLine={false} axisLine={false} tickMargin={10} interval={isMobile ? 6 : 3} />
-                             <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={10} />
-                             <ChartTooltip content={<ChartTooltipContent />} />
-                             <Legend />
-                             <Line type="monotone" dataKey="newCourses" name="Cursos" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
-                             <Line type="monotone" dataKey="newEnrollments" name="Inscripciones" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
-                        </ComposedChart>
-                    </ResponsiveContainer>
+                     <ChartContainer config={activityChartConfig} className="w-full h-full -ml-4 pl-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart data={stats.userRegistrationTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                <XAxis dataKey="date" tickFormatter={formatDateTick} tickLine={false} axisLine={false} tickMargin={10} interval={isMobile ? 6 : 3} />
+                                <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={10} />
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <Legend />
+                                <Line type="monotone" dataKey="newCourses" name="Cursos" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
+                                <Line type="monotone" dataKey="newEnrollments" name="Inscripciones" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
+                            </ComposedChart>
+                        </ResponsiveContainer>
+                     </ChartContainer>
                 </CardContent>
             </Card>
 
@@ -528,3 +530,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
