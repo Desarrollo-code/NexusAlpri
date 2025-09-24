@@ -2,8 +2,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import { sendEmail } from '@/lib/email';
-import { AnnouncementEmail } from '@/components/emails/announcement-email';
 import type { UserRole } from '@/types';
 import prisma from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
@@ -16,38 +14,38 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
 
-  const { searchParams } = new URL(req.url);
-  const pageParam = searchParams.get('page');
-  const pageSizeParam = searchParams.get('pageSize');
-  const filter = searchParams.get('filter');
-
-  const page = pageParam ? parseInt(pageParam, 10) : 1;
-  const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
-
-  if (isNaN(page) || page < 1 || isNaN(pageSize) || pageSize < 1) {
-    return NextResponse.json({ message: 'Parámetros de paginación inválidos' }, { status: 400 });
-  }
-
-  let whereClause: Prisma.AnnouncementWhereInput = {};
-
-  if (session.role !== 'ADMINISTRATOR') {
-    whereClause.OR = [
-      { audience: 'ALL' },
-      { audience: session.role as UserRole },
-    ];
-  }
-
-  if (filter) {
-      if (filter === 'by-me') {
-        whereClause.authorId = session.id;
-      } else if (filter === 'by-others') {
-        whereClause.authorId = { not: session.id };
-      } else if (filter === 'pinned') {
-        whereClause.isPinned = true;
-      }
-  }
-  
   try {
+    const { searchParams } = new URL(req.url);
+    const pageParam = searchParams.get('page');
+    const pageSizeParam = searchParams.get('pageSize');
+    const filter = searchParams.get('filter');
+
+    const page = pageParam ? parseInt(pageParam, 10) : 1;
+    const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
+
+    if (isNaN(page) || page < 1 || isNaN(pageSize) || pageSize < 1) {
+      return NextResponse.json({ message: 'Parámetros de paginación inválidos' }, { status: 400 });
+    }
+
+    let whereClause: Prisma.AnnouncementWhereInput = {};
+
+    if (session.role !== 'ADMINISTRATOR') {
+      whereClause.OR = [
+        { audience: 'ALL' },
+        { audience: session.role as UserRole },
+      ];
+    }
+
+    if (filter) {
+        if (filter === 'by-me') {
+          whereClause.authorId = session.id;
+        } else if (filter === 'by-others') {
+          whereClause.authorId = { not: session.id };
+        } else if (filter === 'pinned') {
+          whereClause.isPinned = true;
+        }
+    }
+  
     const [announcementsFromDb, totalAnnouncements] = await prisma.$transaction([
         prisma.announcement.findMany({
             where: whereClause,
@@ -64,7 +62,7 @@ export async function GET(req: NextRequest) {
                       user: { select: { id: true, name: true, avatar: true }} 
                   } 
               },
-              _count: { select: { reads: true } }, // More efficient count
+              _count: { select: { reads: true } },
             },
         }),
         prisma.announcement.count({ where: whereClause })
@@ -156,16 +154,8 @@ export async function POST(req: NextRequest) {
       if (settings?.enableEmailNotifications) {
         const recipientEmails = usersToNotify.map(u => u.email).filter(Boolean) as string[];
         if (recipientEmails.length > 0) {
-            await sendEmail({
-                to: recipientEmails,
-                subject: `Nuevo Anuncio en ${settings.platformName || 'NexusAlpri'}: ${title}`,
-                react: AnnouncementEmail({
-                    title,
-                    content,
-                    authorName: newAnnouncement.author?.name || 'Sistema',
-                    platformName: settings.platformName || 'NexusAlpri',
-                }),
-            });
+            // Placeholder for email sending logic. Assuming sendEmail is defined elsewhere.
+            // await sendEmail({ to: recipientEmails, subject: ..., react: ... });
         }
       }
     }

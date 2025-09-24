@@ -6,14 +6,15 @@ import prisma from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
-  }
-  
-  // Re-fetch user to get the latest data including `xp`
   try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
+    }
+    
+    // Re-fetch user to get the latest data including `xp`
+    // This is useful if XP or other details were updated in another request.
     const fullUser = await prisma.user.findUnique({
       where: { id: user.id }
     });
