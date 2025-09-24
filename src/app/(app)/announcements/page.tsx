@@ -54,7 +54,7 @@ const PinnedAnnouncementsWidget = () => {
             if (data && data.announcements) {
                 setPinned(data.announcements);
             }
-        });
+        }).catch(err => console.error("Failed to fetch pinned announcements", err));
     }, []);
 
     if (!pinned || pinned.length === 0) return null;
@@ -62,7 +62,7 @@ const PinnedAnnouncementsWidget = () => {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base"><Pin className="h-4 w-4 text-primary"/>Anuncios Fijados</CardTitle>
+                <CardTitle className="text-base flex items-center gap-2"><Pin className="h-4 w-4 text-primary"/>Anuncios Fijados</CardTitle>
             </CardHeader>
             <CardContent>
                 <ul className="space-y-3">
@@ -79,39 +79,6 @@ const PinnedAnnouncementsWidget = () => {
         </Card>
     );
 };
-
-const TrendingAnnouncementsWidget = () => {
-    const [trending, setTrending] = useState<DisplayAnnouncement[]>([]);
-    useEffect(() => {
-        fetch('/api/announcements?filter=trending&pageSize=5').then(res => res.json()).then(data => {
-            if (data && data.announcements) {
-                setTrending(data.announcements);
-            }
-        });
-    }, []);
-
-    if (!trending || trending.length === 0) return null;
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base"><TrendingUp className="h-4 w-4 text-primary"/>Populares</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <ul className="space-y-3">
-                    {trending.map(ann => (
-                        <li key={ann.id} className="text-sm">
-                             <Link href={`/announcements#${ann.id}`} className="font-medium hover:underline text-foreground leading-tight">
-                                {ann.title}
-                            </Link>
-                            <p className="text-xs text-muted-foreground">{ann._count?.reactions || 0} reaccion(es)</p>
-                        </li>
-                    ))}
-                </ul>
-            </CardContent>
-        </Card>
-    )
-}
 
 const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated: () => void }) => {
     const { user } = useAuth();
@@ -315,7 +282,7 @@ export default function AnnouncementsPage() {
             errorData = { message: `Respuesta no válida del servidor: ${response.statusText}` };
         }
         console.error('[AnnouncementsPage] Error en la respuesta de la API:', errorData);
-        throw new Error(errorData.message || `Failed to fetch announcements: ${response.statusText}`);
+        throw new Error(errorData.message || `Error al obtener los anuncios`);
       }
 
       const data: { announcements: DisplayAnnouncement[], totalAnnouncements: number } = await response.json();
@@ -352,7 +319,7 @@ export default function AnnouncementsPage() {
   const handleReactionChange = (announcementId: string, updatedReactions: Reaction[]) => {
       setAllAnnouncements(prev => 
           prev.map(ann => 
-              ann.id === announcementId ? { ...ann, reactions: updatedReactions } : ann
+              ann.id === announcementId ? { ...ann, reactions: updatedReactions, _count: { ...ann._count, reactions: updatedReactions.length } } : ann
           )
       );
   };
@@ -502,7 +469,7 @@ export default function AnnouncementsPage() {
         </main>
         
         <aside className="hidden lg:block lg:col-span-3 sticky top-24 space-y-6">
-            <TrendingAnnouncementsWidget />
+           {/* El TrendingAnnouncementsWidget fue eliminado para simplificar y asegurar estabilidad */}
         </aside>
 
         <AlertDialog open={!!announcementToDelete} onOpenChange={(open) => !open && setAnnouncementToDelete(null)}>

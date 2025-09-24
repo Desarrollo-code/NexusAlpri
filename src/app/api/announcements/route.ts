@@ -17,19 +17,17 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const pageParam = searchParams.get('page');
   const pageSizeParam = searchParams.get('pageSize');
-  const filter = searchParams.get('filter'); // all, by-me, by-others, pinned, trending
-  
+  const filter = searchParams.get('filter'); // all, by-me, by-others, pinned
+
   const page = pageParam ? parseInt(pageParam, 10) : 1;
-  const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 4;
-  
-  // Validar parámetros de paginación
+  const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
+
   if (isNaN(page) || page < 1 || isNaN(pageSize) || pageSize < 1) {
     return NextResponse.json({ message: 'Parámetros de paginación inválidos' }, { status: 400 });
   }
 
   let whereClause: Prisma.AnnouncementWhereInput = {};
 
-  // 1. Filtro base de audiencia: El usuario solo debe ver lo que le corresponde.
   if (session.role !== 'ADMINISTRATOR') {
     whereClause.OR = [
       { audience: 'ALL' },
@@ -37,7 +35,6 @@ export async function GET(req: NextRequest) {
     ];
   }
 
-  // 2. Filtro de pestañas (si aplica)
   if (filter === 'by-me') {
     whereClause.authorId = session.id;
   } else if (filter === 'by-others') {
@@ -46,17 +43,13 @@ export async function GET(req: NextRequest) {
     whereClause.isPinned = true;
   }
   
-  // 3. Ordenamiento
-  let orderBy: Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput[] = [
+  const orderBy: Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput[] = [
     { isPinned: 'desc' },
     { date: 'desc' }
   ];
-  if (filter === 'trending') {
-      orderBy = [{ reactions: { _count: 'desc' } }, { date: 'desc' }];
-  }
   
   try {
-    const commonFindOptions: Prisma.AnnouncementFindManyArgs = {
+    const findOptions: Prisma.AnnouncementFindManyArgs = {
         where: whereClause,
         orderBy: orderBy,
         include: { 
@@ -82,14 +75,14 @@ export async function GET(req: NextRequest) {
 
     const [announcementsFromDb, totalAnnouncements] = await prisma.$transaction([
         prisma.announcement.findMany({
-            ...commonFindOptions,
+            ...findOptions,
             skip: (page - 1) * pageSize,
             take: pageSize,
         }),
         prisma.announcement.count({ where: whereClause })
     ]);
 
-    let announcements = announcementsFromDb.map(ann => ({
+    const announcements = announcementsFromDb.map(ann => ({
         ...ann,
         reads: ann.reads.map(r => r.user),
     }));
