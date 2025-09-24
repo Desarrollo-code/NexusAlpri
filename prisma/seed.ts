@@ -232,7 +232,8 @@ async function main() {
         create: [
           { label: 'En una escala del 1 al 5, ¿qué tan satisfecho estás con tu carga de trabajo actual?', type: 'SINGLE_CHOICE', order: 0, required: true, options: [ {id: 's1', text: '1 - Muy insatisfecho', isCorrect: false, points: 0}, {id: 's2', text: '2', isCorrect: false, points: 0}, {id: 's3', text: '3', isCorrect: false, points: 0}, {id: 's4', text: '4', isCorrect: false, points: 0}, {id: 's5', text: '5 - Muy satisfecho', isCorrect: false, points: 0}, ] },
           { label: '¿Qué aspectos mejorarías de la comunicación interna? (Selecciona todos los que apliquen)', type: 'MULTIPLE_CHOICE', order: 1, required: false, options: [ {id: 'c1', text: 'Más reuniones generales', isCorrect: false, points: 0}, {id: 'c2', text: 'Comunicación más clara de los objetivos', isCorrect: false, points: 0}, {id: 'c3', text: 'Más feedback de mi manager', isCorrect: false, points: 0}, {id: 'c4', text: 'Mejor uso del email/chat', isCorrect: false, points: 0} ] },
-          { label: 'Si pudieras cambiar una cosa de la oficina, ¿qué sería?', type: 'PARAGRAPH', order: 2, required: false, placeholder: 'Ej: más plantas, mejor café, etc.' }
+                    { label: 'Si pudieras cambiar una cosa de la oficina, ¿qué sería?', type: 'TEXTAREA', order: 2, required: false, placeholder: 'Ej: más plantas, mejor café, etc.' }
+
         ]
       }
     }
