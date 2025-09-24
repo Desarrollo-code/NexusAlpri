@@ -9,7 +9,12 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 
 export function AuthenticatedPublicHeader() {
-  const { settings } = useAuth();
+  const { settings, user } = useAuth();
+
+  // Solo mostrar esta barra si el usuario está autenticado
+  if (!user) {
+    return null;
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-b from-blue-900 via-blue-700 to-blue-900 backdrop-blur-sm border-b border-blue-700/80">

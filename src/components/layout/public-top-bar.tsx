@@ -11,29 +11,16 @@ import { useAuth } from '@/contexts/auth-context';
 
 export function PublicTopBar() {
   const pathname = usePathname();
-  const { settings, isLoading, user } = useAuth(); // Usar el estado de carga y el usuario del contexto
+  const { settings, isLoading, user } = useAuth();
 
   const navItems = [
     { href: '/', label: 'Inicio', icon: Home },
     { href: '/about', label: 'Nosotros', icon: Info },
   ];
   
-  // No mostrar esta barra si el usuario está logueado
-  if (user) {
+  // No mostrar esta barra si el usuario está logueado o si aún está cargando la sesión.
+  if (isLoading || user) {
       return null;
-  }
-
-  // Muestra un esqueleto de carga mientras el AuthProvider inicializa
-  if (isLoading) {
-    return (
-      <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-b from-blue-900 via-blue-700 to-blue-900 text-white border-b border-blue-700/80">
-        <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-20">
-            <div className="flex items-center justify-start flex-1" />
-            <div className="flex items-center justify-center flex-1" />
-            <div className="flex items-center justify-end flex-1" />
-        </div>
-      </header>
-    );
   }
 
   return (
