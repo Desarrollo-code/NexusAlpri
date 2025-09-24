@@ -46,6 +46,9 @@ export async function GET(req: NextRequest) {
     { isPinned: 'desc' },
     { date: 'desc' }
   ];
+  if (filter === 'trending') {
+      orderBy = [{ reactions: { _count: 'desc' } }, { date: 'desc' }];
+  }
   
   try {
     const commonFindOptions: Prisma.AnnouncementFindManyArgs = {
