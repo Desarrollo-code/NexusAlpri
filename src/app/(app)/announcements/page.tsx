@@ -1,3 +1,4 @@
+
 // src/app/(app)/announcements/page.tsx
 'use client';
 
@@ -46,39 +47,6 @@ interface DisplayAnnouncement extends AnnouncementType {
 
 const PAGE_SIZE = 5;
 const MAX_FILE_SIZE_MB = 4;
-
-const PinnedAnnouncementsWidget = () => {
-    const [pinned, setPinned] = useState<DisplayAnnouncement[]>([]);
-    useEffect(() => {
-        fetch('/api/announcements?filter=pinned&pageSize=5').then(res => res.json()).then(data => {
-            if (data && data.announcements) {
-                setPinned(data.announcements);
-            }
-        }).catch(err => console.error("Failed to fetch pinned announcements", err));
-    }, []);
-
-    if (!pinned || pinned.length === 0) return null;
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2"><Pin className="h-4 w-4 text-primary"/>Anuncios Fijados</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <ul className="space-y-3">
-                    {pinned.map(ann => (
-                        <li key={ann.id} className="text-sm">
-                             <Link href={`/announcements#${ann.id}`} className="font-medium hover:underline text-foreground leading-tight">
-                                {ann.title}
-                            </Link>
-                            <p className="text-xs text-muted-foreground">Por {ann.author?.name}</p>
-                        </li>
-                    ))}
-                </ul>
-            </CardContent>
-        </Card>
-    );
-};
 
 const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated: () => void }) => {
     const { user } = useAuth();
@@ -379,12 +347,8 @@ export default function AnnouncementsPage() {
   const canCreate = user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR';
 
   return (
-    <div className="container mx-auto grid grid-cols-12 gap-8 items-start">
-        <aside className="hidden lg:block lg:col-span-3 sticky top-24 space-y-6">
-            <PinnedAnnouncementsWidget />
-        </aside>
-
-        <main className="col-span-12 lg:col-span-6">
+    <div className="container mx-auto">
+        <main className="max-w-2xl mx-auto">
             <p className="text-muted-foreground text-center mb-8">Mantente informado sobre las últimas novedades de la plataforma.</p>
             
             {canCreate && <AnnouncementCreator onAnnouncementCreated={fetchAnnouncements} />}
@@ -460,10 +424,6 @@ export default function AnnouncementsPage() {
           </div>
         </main>
         
-        <aside className="hidden lg:block lg:col-span-3 sticky top-24 space-y-6">
-           {/* El TrendingAnnouncementsWidget fue eliminado para simplificar y asegurar estabilidad */}
-        </aside>
-
         <AlertDialog open={!!announcementToDelete} onOpenChange={(open) => !open && setAnnouncementToDelete(null)}>
             <AlertDialogContent>
               <AlertDialogHeader>

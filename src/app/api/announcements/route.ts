@@ -1,3 +1,4 @@
+
 // src/app/api/announcements/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
@@ -26,28 +27,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'Parámetros de paginación inválidos' }, { status: 400 });
   }
 
-  let whereConditions: Prisma.AnnouncementWhereInput[] = [];
+  let whereClause: Prisma.AnnouncementWhereInput = {};
 
   if (session.role !== 'ADMINISTRATOR') {
-    whereConditions.push({
-      OR: [
-        { audience: 'ALL' },
-        { audience: session.role as UserRole },
-      ],
-    });
+    whereClause.OR = [
+      { audience: 'ALL' },
+      { audience: session.role as UserRole },
+    ];
   }
 
   if (filter === 'by-me') {
-    whereConditions.push({ authorId: session.id });
+    whereClause.authorId = session.id;
   } else if (filter === 'by-others') {
-    whereConditions.push({ authorId: { not: session.id } });
+    whereClause.authorId = { not: session.id };
   } else if (filter === 'pinned') {
-    whereConditions.push({ isPinned: true });
+    whereClause.isPinned = true;
   }
-  
-  const whereClause: Prisma.AnnouncementWhereInput = {
-    AND: whereConditions,
-  };
   
   const orderBy: Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput[] = [
     { isPinned: 'desc' },
@@ -90,7 +85,6 @@ export async function GET(req: NextRequest) {
 
     const announcements = announcementsFromDb.map(ann => ({
         ...ann,
-        // CORRECCIÓN: Filtrar lecturas donde `r.user` podría ser nulo.
         reads: ann.reads.filter(r => r.user).map(r => r.user!),
     }));
     
