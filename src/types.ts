@@ -1,3 +1,4 @@
+
 // src/types.ts
 import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource } from "@prisma/client";
 
@@ -293,9 +294,6 @@ export interface AdminDashboardStats {
     topStudentsByEnrollment: UserInfo[];
     topStudentsByCompletion: UserInfo[];
     topInstructorsByCourses: UserInfo[];
-    // Added for dashboard consolidation
-    recentAnnouncements?: Announcement[];
-    securityLogs?: SecurityLog[];
 }
 
 // --- TEMPLATES ---

@@ -1,3 +1,4 @@
+
 // This file is now obsolete as its logic has been moved to /api/dashboard/data/route.ts
 // It can be deleted. Keeping it empty to avoid build errors if something still references it.
 import { NextResponse } from 'next/server';
