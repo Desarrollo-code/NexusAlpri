@@ -36,6 +36,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import Image from 'next/image';
 import Link from 'next/link';
+import React from 'react';
 
 interface DisplayAnnouncement extends AnnouncementType {
   author: { id: string; name: string; email?: string, avatar?: string | null } | null;
@@ -151,12 +152,8 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
 
 
     const handleSaveAnnouncement = async () => {
-        if (!formTitle.trim()) {
-            toast({ title: "Título Requerido", description: "Por favor, añade un título a tu anuncio.", variant: "destructive" });
-            return;
-        }
-        if (!formContent.trim() && attachments.length === 0) {
-            toast({ title: "Contenido vacío", description: "Por favor, escribe un mensaje o adjunta un archivo.", variant: "destructive" });
+        if (!formTitle.trim() && !formContent.trim() && attachments.length === 0) {
+            toast({ title: "Contenido vacío", description: "Por favor, añade un título, escribe un mensaje o adjunta un archivo.", variant: "destructive" });
             return;
         }
         setIsSubmitting(true);
@@ -246,7 +243,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                         </SelectContent>
                     </Select>
                 </div>
-                 <Button size="sm" onClick={handleSaveAnnouncement} disabled={isSubmitting || !formTitle.trim()}>
+                 <Button size="sm" onClick={handleSaveAnnouncement} disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Megaphone className="mr-2 h-4 w-4"/>}
                     Publicar
                 </Button>
@@ -288,6 +285,7 @@ export default function AnnouncementsPage() {
   }, [searchParams]);
 
   const fetchAnnouncements = useCallback(async () => {
+    console.log('[AnnouncementsPage] Iniciando fetchAnnouncements...');
     setIsLoading(true);
     setError(null);
     try {
@@ -297,23 +295,37 @@ export default function AnnouncementsPage() {
       if (activeTab && user?.role !== 'STUDENT') {
           params.append('filter', activeTab);
       }
-
+      console.log(`[AnnouncementsPage] Fetching con parámetros: ${params.toString()}`);
       const response = await fetch(`/api/announcements?${params.toString()}`, { cache: 'no-store' });
+      
+      const responseBody = await response.text();
+      console.log(`[AnnouncementsPage] Respuesta recibida, status: ${response.status}`);
+      
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData;
+        try {
+            errorData = JSON.parse(responseBody);
+        } catch (e) {
+            errorData = { message: `Respuesta no válida del servidor: ${response.statusText}` };
+        }
+        console.error('[AnnouncementsPage] Error en la respuesta de la API:', errorData);
         throw new Error(errorData.message || `Failed to fetch announcements: ${response.statusText}`);
       }
-      const data: { announcements: DisplayAnnouncement[], totalAnnouncements: number } = await response.json();
+
+      const data: { announcements: DisplayAnnouncement[], totalAnnouncements: number } = JSON.parse(responseBody);
+      console.log(`[AnnouncementsPage] Datos recibidos: ${data.announcements.length} anuncios, ${data.totalAnnouncements} total.`);
       
       setAllAnnouncements(data.announcements);
       setTotalAnnouncements(data.totalAnnouncements);
     } catch (err) {
+      console.error('[AnnouncementsPage] Error capturado en fetchAnnouncements:', err);
       setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar los anuncios');
       setAllAnnouncements([]);
       setTotalAnnouncements(0);
       toast({ title: "Error al cargar anuncios", description: err instanceof Error ? err.message : 'No se pudieron cargar los anuncios.', variant: "destructive"});
     } finally {
       setIsLoading(false);
+      console.log('[AnnouncementsPage] Finalizó fetchAnnouncements.');
     }
   }, [toast, currentPage, activeTab, user?.role]);
 
@@ -513,4 +525,3 @@ export default function AnnouncementsPage() {
     </div>
   );
 }
-
