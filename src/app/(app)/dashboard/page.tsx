@@ -1,3 +1,4 @@
+
 // src/app/(app)/dashboard/page.tsx
 'use client';
 
@@ -513,25 +514,27 @@ export default function DashboardPage() {
           myDashboardCourses: [],
           securityLogs: [],
       };
-      
-      const announcementsData = await fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] });
-      if (announcementsData && announcementsData.announcements) {
-          dashboardPayload.recentAnnouncements = announcementsData.announcements;
-      }
 
       if (user.role === 'ADMINISTRATOR') {
-          const [adminStats, securityLogs] = await Promise.all([
-             fetchWithFallback('/api/dashboard/admin-stats', null),
-             fetchWithFallback('/api/security/logs?pageSize=5', { logs: [] }),
-          ]);
-          dashboardPayload.adminStats = adminStats;
-          dashboardPayload.securityLogs = securityLogs.logs;
+          const adminData = await fetchWithFallback('/api/dashboard/admin-stats', null);
+          if (adminData) {
+            dashboardPayload.adminStats = adminData.stats;
+            dashboardPayload.recentAnnouncements = adminData.announcements;
+            dashboardPayload.securityLogs = adminData.logs;
+          }
       } else if (user.role === 'INSTRUCTOR') {
-          const taughtCoursesResponse = await fetchWithFallback(`/api/courses?manageView=true&userId=${user.id}&userRole=${user.role}&pageSize=4`, { courses: [], totalCourses: 0 });
+          const [taughtCoursesResponse, announcementsData] = await Promise.all([
+             fetchWithFallback(`/api/courses?manageView=true&userId=${user.id}&userRole=${user.role}&pageSize=4`, { courses: [], totalCourses: 0 }),
+             fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] })
+          ]);
           dashboardPayload.instructorStats = { taught: taughtCoursesResponse.totalCourses };
           dashboardPayload.taughtCourses = (taughtCoursesResponse.courses || []).map(mapApiCourseToAppCourse);
+          dashboardPayload.recentAnnouncements = announcementsData.announcements || [];
       } else if (user.role === 'STUDENT') {
-           const enrolledData = await fetchWithFallback(`/api/enrollment/${user.id}`, []);
+           const [enrolledData, announcementsData] = await Promise.all([
+             fetchWithFallback(`/api/enrollment/${user.id}`, []),
+             fetchWithFallback(`/api/announcements?pageSize=2`, { announcements: [] })
+           ]);
           const mappedCourses: EnrolledCourse[] = enrolledData.map((item: any) => ({
             id: item.id, title: item.title, description: item.description, instructor: item.instructorName || 'N/A',
             imageUrl: item.imageUrl, modulesCount: item.modulesCount || 0, duration: item.duration, modules: [], 
@@ -541,6 +544,7 @@ export default function DashboardPage() {
           const completedCount = mappedCourses.filter(c => c.progressPercentage === 100).length;
           dashboardPayload.studentStats = { enrolled: mappedCourses.length, completed: completedCount };
           dashboardPayload.myDashboardCourses = mappedCourses.slice(0, 4);
+          dashboardPayload.recentAnnouncements = announcementsData.announcements || [];
       }
       
       setData(dashboardPayload);
