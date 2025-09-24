@@ -62,7 +62,6 @@ export async function GET(req: NextRequest) {
         include: { 
           author: { select: { id: true, name: true, avatar: true } },
           attachments: true,
-          // Optimization: Fetch only what's needed for display, not the whole user object
           reads: { 
               select: { 
                   user: { 
@@ -77,7 +76,6 @@ export async function GET(req: NextRequest) {
                   user: { select: { id: true, name: true, avatar: true }} 
               } 
           },
-          // Use _count for efficient counting
           _count: { select: { reads: true, reactions: true } },
         },
     };
@@ -91,15 +89,10 @@ export async function GET(req: NextRequest) {
         prisma.announcement.count({ where: whereClause })
     ]);
 
-    // Ordenar los anuncios si el filtro es "trending"
     let announcements = announcementsFromDb.map(ann => ({
         ...ann,
         reads: ann.reads.map(r => r.user),
     }));
-
-    if (filter === 'trending') {
-        announcements.sort((a, b) => (b._count?.reactions || 0) - (a._count?.reactions || 0));
-    }
     
     return NextResponse.json({ announcements, totalAnnouncements });
 
