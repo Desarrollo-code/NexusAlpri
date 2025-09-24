@@ -65,7 +65,7 @@ A continuación se describen las entidades principales del sistema, basadas en e
 
 *   `Lesson`: Una lección dentro de un módulo.
     *   **Campos clave:** `id`, `title`, `order`, `moduleId`.
-    *   **Relaciones:** Pertenece a un `Module`. Tiene muchos `ContentBlock`.
+    *   **Relaciones:** Pertenece a una `Module`. Tiene muchos `ContentBlock`.
 
 *   `ContentBlock`: Un bloque de contenido dentro de una lección (texto, video, quiz, etc.).
     *   **Campos clave:** `id`, `type` (TEXT, VIDEO, QUIZ), `content`, `order`.
@@ -133,7 +133,7 @@ Para que la subida de archivos funcione, **debes crear manualmente los "buckets"
     ```bash
     npm run prisma:migrate
     ```
-*   **Aplicar las migraciones en producción:**
+*   **Aplicar las migraciones en producción (y entornos de vista previa):**
     ```bash
     npm run prisma:deploy
     ```
