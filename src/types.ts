@@ -197,6 +197,7 @@ export interface Announcement {
     reactions: Reaction[];
     _count?: {
       reads: number;
+      reactions: number;
     };
 }
 

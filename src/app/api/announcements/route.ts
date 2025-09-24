@@ -62,14 +62,17 @@ export async function GET(req: NextRequest) {
                       user: { select: { id: true, name: true, avatar: true }} 
                   } 
               },
-              _count: { select: { reads: true } },
+              _count: { select: { reads: true, reactions: true } },
             },
         }),
         prisma.announcement.count({ where: whereClause })
     ]);
     
     // El mapeo ya no es necesario si la consulta es correcta.
-    const announcements = announcementsFromDb;
+    const announcements = announcementsFromDb.map(ann => ({
+        ...ann,
+        reads: ann.reads || [], // Asegurar que `reads` sea un array
+    }));
     
     return NextResponse.json({ announcements, totalAnnouncements });
 
