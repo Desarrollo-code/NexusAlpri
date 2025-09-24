@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
+import { sendEmail } from '@/lib/email';
+import { AnnouncementEmail } from '@/components/emails/announcement-email';
 import type { UserRole } from '@/types';
 import prisma from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
@@ -167,7 +169,19 @@ export async function POST(req: NextRequest) {
       });
 
       if (settings?.enableEmailNotifications) {
-        // Email sending logic can be added here
+        const recipientEmails = usersToNotify.map(u => u.email).filter(Boolean) as string[];
+        if (recipientEmails.length > 0) {
+            await sendEmail({
+                to: recipientEmails,
+                subject: `Nuevo Anuncio en ${settings.platformName || 'NexusAlpri'}: ${title}`,
+                react: AnnouncementEmail({
+                    title,
+                    content,
+                    authorName: newAnnouncement.author?.name || 'Sistema',
+                    platformName: settings.platformName || 'NexusAlpri',
+                }),
+            });
+        }
       }
     }
 
