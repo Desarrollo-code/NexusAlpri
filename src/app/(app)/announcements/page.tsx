@@ -1,4 +1,3 @@
-
 // src/app/(app)/announcements/page.tsx
 'use client';
 
@@ -106,11 +105,14 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                 body: JSON.stringify({
                     title: formTitle,
                     content: formContent,
-                    audience: formAudience,
+                    audience: formAudience, // Enviado como string simple
                     attachments: attachments,
                 }),
             });
-            if (!response.ok) throw new Error('No se pudo crear el anuncio.');
+            if (!response.ok) {
+                 const errorData = await response.json();
+                 throw new Error(errorData.message || 'No se pudo crear el anuncio.');
+            }
             toast({ title: "Anuncio Publicado", description: "Tu anuncio ahora es visible para la audiencia seleccionada." });
             setFormContent('');
             setFormTitle('');
@@ -236,12 +238,16 @@ export default function AnnouncementsPage() {
       if (activeTab && user?.role !== 'STUDENT') {
           params.append('filter', activeTab);
       }
+      
+      console.log(`[AnnouncementsPage] Fetching con parámetros: ${params.toString()}`);
       const response = await fetch(`/api/announcements?${params.toString()}`, { cache: 'no-store' });
       
+      console.log(`[AnnouncementsPage] Respuesta recibida, status: ${response.status}`);
       if (!response.ok) {
         let errorData;
         try {
             errorData = await response.json();
+            console.error('[AnnouncementsPage] Error en la respuesta de la API:', errorData);
         } catch (e) {
             errorData = { message: `Respuesta no válida del servidor: ${response.statusText}` };
         }
@@ -253,11 +259,13 @@ export default function AnnouncementsPage() {
       setAllAnnouncements(data.announcements);
       setTotalAnnouncements(data.totalAnnouncements);
     } catch (err) {
+      console.error('[AnnouncementsPage] Error capturado en fetchAnnouncements:', err);
       setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar los anuncios');
       setAllAnnouncements([]);
       setTotalAnnouncements(0);
       toast({ title: "Error al cargar anuncios", description: err instanceof Error ? err.message : 'No se pudieron cargar los anuncios.', variant: "destructive"});
     } finally {
+      console.log('[AnnouncementsPage] Finalizó fetchAnnouncements.');
       setIsLoading(false);
     }
   }, [toast, currentPage, activeTab, user?.role]);

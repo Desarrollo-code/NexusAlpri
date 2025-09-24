@@ -1,5 +1,3 @@
-
-// src/app/api/announcements/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
@@ -50,12 +48,13 @@ export async function GET(req: NextRequest) {
   ];
   
   try {
-    const findOptions: Prisma.AnnouncementFindManyArgs = {
+    const commonFindOptions: Prisma.AnnouncementFindManyArgs = {
         where: whereClause,
         orderBy: orderBy,
         include: { 
           author: { select: { id: true, name: true, avatar: true } },
           attachments: true,
+          // Optimization: Fetch only what's needed for display, not the whole user object
           reads: { 
               select: { 
                   user: { 
@@ -70,19 +69,21 @@ export async function GET(req: NextRequest) {
                   user: { select: { id: true, name: true, avatar: true }} 
               } 
           },
+          // Use _count for efficient counting
           _count: { select: { reads: true, reactions: true } },
         },
     };
 
     const [announcementsFromDb, totalAnnouncements] = await prisma.$transaction([
         prisma.announcement.findMany({
-            ...findOptions,
+            ...commonFindOptions,
             skip: (page - 1) * pageSize,
             take: pageSize,
         }),
         prisma.announcement.count({ where: whereClause })
     ]);
-
+    
+    // SAFE MAPPING: Ensure r.user exists before mapping
     const announcements = announcementsFromDb.map(ann => ({
         ...ann,
         reads: ann.reads.filter(r => r.user).map(r => r.user!),
@@ -106,11 +107,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { title, content, audience, attachments } = body;
 
-    if (!title || (!content && attachments?.length === 0)) {
-        return NextResponse.json({ message: 'Se requiere título, y contenido o al menos un adjunto.' }, { status: 400 });
+    if (!title && !content && (!attachments || attachments.length === 0)) {
+        return NextResponse.json({ message: 'Se requiere título, contenido o al menos un adjunto.' }, { status: 400 });
     }
     
+    // SAFE HANDLING: Ensure audience is a string.
     const audienceToStore = Array.isArray(audience) ? audience[0] : audience;
+    if (!audienceToStore) {
+        return NextResponse.json({ message: 'La audiencia es un campo requerido.' }, { status: 400 });
+    }
 
     const newAnnouncement = await prisma.announcement.create({
       data: {
@@ -119,8 +124,8 @@ export async function POST(req: NextRequest) {
         audience: audienceToStore,
         authorId: session.id,
         date: new Date(),
-        priority: 'Normal',
-        isPinned: false,
+        priority: 'Normal', // Default value
+        isPinned: false, // Default value
         attachments: {
           create: attachments?.map((att: { name: string; url: string; type: string; size: number }) => ({
             name: att.name,
@@ -162,7 +167,7 @@ export async function POST(req: NextRequest) {
       });
 
       if (settings?.enableEmailNotifications) {
-        // La lógica de envío de email se mantiene como estaba
+        // Email sending logic can be added here
       }
     }
 
