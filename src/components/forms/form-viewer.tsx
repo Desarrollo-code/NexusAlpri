@@ -27,7 +27,7 @@ const FormFieldRenderer = ({ field, value, onChange }: { field: FullForm['fields
         switch (field.type) {
             case 'SHORT_TEXT':
                 return <Input id={fieldId} value={value || ''} onChange={(e) => onChange(field.id, e.target.value)} placeholder={field.placeholder || ''} required={field.required}/>;
-            case 'PARAGRAPH':
+            case 'LONG_TEXT':
                 return <Textarea id={fieldId} value={value || ''} onChange={(e) => onChange(field.id, e.target.value)} placeholder={field.placeholder || ''} required={field.required}/>;
             case 'SINGLE_CHOICE':
                  return (
