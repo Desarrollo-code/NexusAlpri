@@ -29,3 +29,31 @@ export async function checkCourseOwnership(session: User, courseId: string): Pro
 
     return false;
 }
+
+
+/**
+ * Checks if a user has ownership or admin rights over a resource.
+ * @param session The current user's session object.
+ * @param resourceId The ID of the resource to check.
+ * @returns A boolean indicating if the user has permission.
+ */
+export async function checkResourceOwnership(session: User, resourceId: string): Promise<boolean> {
+    if (!session || !resourceId) return false;
+
+    if (session.role === 'ADMINISTRATOR') {
+        return true;
+    }
+
+    if (session.role === 'INSTRUCTOR') {
+        const resource = await prisma.enterpriseResource.findFirst({
+            where: {
+                id: resourceId,
+                uploaderId: session.id,
+            },
+            select: { id: true }
+        });
+        return !!resource;
+    }
+
+    return false;
+}
