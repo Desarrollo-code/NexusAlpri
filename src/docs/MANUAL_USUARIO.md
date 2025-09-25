@@ -59,7 +59,7 @@ Para asegurar un seguimiento real de tu aprendizaje, el sistema registra tu prog
 
 Aquí encontrarás documentos, guías y políticas de la empresa.
 
-*   **Navegar y Acceder:** Navega por las carpetas para encontrar los archivos que necesitas. Haz clic en un recurso para ver sus detalles, previsualizarlo o descargarlo.
+*   **Navegar y Acceder:** Navega por las carpetas para encontrar los archivos que necesitas. Haz clic en un recurso para **previsualizarlo** (si es una imagen, PDF, video de YouTube, etc.) o descargarlo.
 *   **Recursos Públicos:** Son visibles y accesibles para todos en la organización.
 *   **Recursos Compartidos Contigo:** Verás archivos y carpetas que un administrador o instructor ha compartido específicamente contigo.
 *   **Recursos Protegidos con PIN:** Para acceder a ciertos archivos sensibles, el sistema te pedirá un PIN de seguridad. Este código te lo debe proporcionar la persona que subió el recurso. Si ingresas el PIN correcto, podrás acceder al archivo.

@@ -1,30 +1,27 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
+import { checkResourceOwnership } from '@/lib/auth-utils';
 
-const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
-async function checkAuth(req: NextRequest, resourceId: string) {
-    const session = await getCurrentUser();
-    if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
-        return { authorized: false, error: NextResponse.json({ message: 'No autorizado' }, { status: 403 }) };
+async function checkAuth(session: any, resourceId: string) {
+    if (!session) {
+      return { authorized: false, error: NextResponse.json({ message: 'No autorizado' }, { status: 401 }) };
     }
-
-    if (session.role === 'INSTRUCTOR') {
-        const resource = await prisma.resource.findUnique({ where: { id: resourceId } });
-        if (resource?.uploaderId !== session.id) {
-             return { authorized: false, error: NextResponse.json({ message: 'No tienes permiso para modificar este recurso' }, { status: 403 }) };
-        }
+    const hasPermission = await checkResourceOwnership(session, resourceId);
+    if (!hasPermission) {
+        return { authorized: false, error: NextResponse.json({ message: 'No tienes permiso para modificar este recurso' }, { status: 403 }) };
     }
     return { authorized: true, error: null };
 }
 
 // Set a PIN
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params;
-    const authResult = await checkAuth(req, id);
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+    const { id } = params;
+    const session = await getCurrentUser();
+    const authResult = await checkAuth(session, id);
     if (!authResult.authorized) return authResult.error!;
     
     try {
@@ -35,7 +32,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         
         const hashedPin = await bcrypt.hash(pin, 10);
         
-        await prisma.resource.update({
+        await prisma.enterpriseResource.update({
             where: { id },
             data: { pin: hashedPin },
         });
@@ -49,13 +46,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 }
 
 // Remove a PIN
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params;
-    const authResult = await checkAuth(req, id);
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+    const { id } = params;
+    const session = await getCurrentUser();
+    const authResult = await checkAuth(session, id);
     if (!authResult.authorized) return authResult.error!;
 
     try {
-        await prisma.resource.update({
+        await prisma.enterpriseResource.update({
             where: { id },
             data: { pin: null },
         });

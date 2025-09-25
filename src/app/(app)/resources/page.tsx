@@ -428,6 +428,16 @@ export default function ResourcesPage() {
         }
     }
   };
+  
+    if (user && user.role !== 'ADMINISTRATOR' && user.role !== 'INSTRUCTOR' && user.role !== 'STUDENT') {
+      return (
+        <Card className="m-auto mt-10 max-w-lg text-center p-8">
+            <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4"/>
+            <h2 className="text-xl font-semibold">Acceso Denegado</h2>
+            <p className="text-muted-foreground">No tienes permisos para acceder a esta sección.</p>
+        </Card>
+      );
+    }
 
   return (
     <DndContext onDragEnd={handleDragEnd}>

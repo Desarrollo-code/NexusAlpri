@@ -1,8 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { PrismaClient, Prisma } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +17,6 @@ export async function GET(req: NextRequest) {
         const { searchParams } = new URL(req.url);
         let parentId = searchParams.get('parentId');
         
-        // Manejo explícito para parentId vacío
         if (parentId === '') {
             parentId = null;
         }
@@ -62,10 +60,8 @@ export async function GET(req: NextRequest) {
         const safeResources = resources.map(({ pin, tags, uploader, ...resource }) => ({
             ...resource,
             uploader: uploader,
-            // Asegura que tags sea un array aunque sea null
             tags: tags ? tags.split(',').filter(Boolean) : [], 
             hasPin: !!pin,
-            // Asegura que uploaderName tenga un valor por defecto
             uploaderName: uploader ? uploader.name || 'Sistema' : 'Sistema', 
         }));
 
@@ -126,17 +122,17 @@ export async function POST(req: NextRequest) {
             data,
              include: {
                 uploader: { select: { id: true, name: true, avatar: true } },
+                sharedWith: { select: { id: true, name: true, avatar: true } },
             }
         });
         
-        const { pin, tags: tagsString, uploader, ...safeResource } = newResource;
+        const { pin, tags: tagsString, ...safeResource } = newResource;
 
         return NextResponse.json({ 
             ...safeResource,
-            uploader: uploader,
             tags: tagsString ? tagsString.split(',').filter(Boolean) : [],
             hasPin: !!pin,
-            uploaderName: uploader ? uploader.name || 'Sistema' : 'Sistema',
+            uploaderName: newResource.uploader ? newResource.uploader.name || 'Sistema' : 'Sistema',
         }, { status: 201 });
 
     } catch (error) {
