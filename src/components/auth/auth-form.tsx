@@ -128,7 +128,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
             <form onSubmit={handleSignInSubmit} className="space-y-4">
                  <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-slate-900/50 border-slate-700 text-white"/>
+                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-slate-900/50 border-slate-700 text-white" autoComplete="email"/>
                 </div>
                  <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -140,6 +140,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                         onChange={e => setPassword(e.target.value)} 
                         disabled={isLoading}
                         className="pl-10 h-12 bg-slate-900/50 border-slate-700 text-white"
+                        autoComplete="current-password"
                     />
                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-slate-400 hover:text-white" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
@@ -157,11 +158,11 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
             <form onSubmit={handleSignUpSubmit} className="space-y-4">
                 <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <Input type="text" placeholder="Nombre" required value={name} onChange={e => setName(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-slate-900/50 border-slate-700 text-white" />
+                    <Input type="text" placeholder="Nombre" required value={name} onChange={e => setName(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-slate-900/50 border-slate-700 text-white" autoComplete="name" />
                 </div>
                 <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-slate-900/50 border-slate-700 text-white" />
+                    <Input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} className="pl-10 h-12 bg-slate-900/50 border-slate-700 text-white" autoComplete="email"/>
                 </div>
                  <div className="space-y-2">
                     <div className="relative">
@@ -176,6 +177,7 @@ export default function AuthForm({ defaultView }: { defaultView: 'signIn' | 'sig
                             onFocus={() => setIsPasswordFocused(true)}
                             onBlur={() => !password && setIsPasswordFocused(false)}
                             className="pl-10 h-12 bg-slate-900/50 border-slate-700 text-white"
+                            autoComplete="new-password"
                         />
                          <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-slate-400 hover:text-white" onClick={() => setShowPassword(!showPassword)}>
                             {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
