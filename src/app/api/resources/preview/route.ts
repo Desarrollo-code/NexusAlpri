@@ -1,3 +1,4 @@
+
 // src/app/api/resources/preview/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import mammoth from 'mammoth';
@@ -11,12 +12,13 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        // Construct the full URL for the fetch request on the server-side
-        const absoluteUrl = new URL(fileUrl, req.nextUrl.origin).href;
-
+        // CORRECCIÓN: Si la URL ya es absoluta, úsala. Si es relativa, combínala con el origen.
+        const absoluteUrl = fileUrl.startsWith('http') ? fileUrl : new URL(fileUrl, req.nextUrl.origin).href;
+        
         const response = await fetch(absoluteUrl);
         if (!response.ok) {
-            throw new Error(`No se pudo obtener el archivo desde ${absoluteUrl}`);
+            console.error(`Fetch failed for ${absoluteUrl} with status ${response.status}`);
+            throw new Error(`No se pudo obtener el archivo. Estado: ${response.status}`);
         }
         const arrayBuffer = await response.arrayBuffer();
 
@@ -31,6 +33,6 @@ export async function GET(req: NextRequest) {
 
     } catch (error) {
         console.error("Error en la previsualización del archivo:", error);
-        return NextResponse.json({ message: 'Error al procesar el archivo para previsualización' }, { status: 500 });
+        return NextResponse.json({ message: `Error al procesar el archivo: ${(error as Error).message}` }, { status: 500 });
     }
 }
