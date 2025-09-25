@@ -3,7 +3,6 @@ import { NextResponse, NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getCurrentUser } from '@/lib/auth';
 import type { FormField, FormFieldType, FormFieldOption } from '@/types';
-import { checkCourseOwnership } from '@/lib/auth-utils';
 
 const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
@@ -22,7 +21,7 @@ async function checkPermissions(formId: string, session: any) {
     return { authorized: false, error: NextResponse.json({ message: 'No tienes permiso para acceder a este formulario' }, { status: 403 }) };
   }
 
-  return { authorized: true, error: null }; // Devuelve null si todo está bien
+  return { authorized: true, error: null };
 }
 
 // GET a specific form by ID with its fields
@@ -55,13 +54,26 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ message: 'Formulario no encontrado' }, { status: 404 });
     }
     
-    // Parse options string to JSON object for each field
+    // Parse options string to JSON object for each field safely
     const formWithParsedOptions = {
         ...form,
-        fields: form.fields.map(field => ({
-            ...field,
-            options: typeof field.options === 'string' ? JSON.parse(field.options) : field.options,
-        }))
+        fields: form.fields.map(field => {
+            let parsedOptions = [];
+            try {
+                if (field.options && typeof field.options === 'string') {
+                    parsedOptions = JSON.parse(field.options);
+                } else if (Array.isArray(field.options)) {
+                    parsedOptions = field.options; // It's already an array
+                }
+            } catch (e) {
+                // Ignore parsing errors, leave options as empty array
+                console.error(`Could not parse options for field ${field.id}:`, e);
+            }
+            return {
+                ...field,
+                options: parsedOptions,
+            };
+        })
     };
 
     return NextResponse.json(formWithParsedOptions);
