@@ -68,7 +68,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
            return <Image src={resource.url!} alt={resource.title} fill className="object-contain p-2" data-ai-hint="resource document"/>
         }
         if (youtubeId) {
-            return <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail"/>
+            return <Image src={`https://i.ytimg.com/vi/${youtubeId}/mqdefault.jpg`} alt={resource.title} fill className="object-cover" data-ai-hint="video thumbnail" quality={100} priority/>
         }
         return <FallbackIcon resource={resource} />;
     };
