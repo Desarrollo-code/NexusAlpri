@@ -118,7 +118,7 @@ export const StickyNoteCard: React.FC<StickyNoteCardProps> = ({ note, onDelete, 
           {isEditing ? (
             <RichTextEditor value={editedContent} onChange={setEditedContent} disabled={isSaving} className="h-full bg-background/50" />
           ) : (
-            <div className="text-base leading-snug whitespace-pre-wrap text-foreground/90 font-body p-2" dangerouslySetInnerHTML={{ __html: note.content }} />
+            <div className="text-base leading-snug whitespace-pre-wrap text-foreground/90 font-body p-2 break-words" dangerouslySetInnerHTML={{ __html: note.content }} />
           )}
         </div>
         <div className="p-2 border-t mt-auto flex justify-between items-center bg-black/5 rounded-b-lg">
