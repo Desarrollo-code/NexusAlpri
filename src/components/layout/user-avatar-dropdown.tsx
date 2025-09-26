@@ -70,7 +70,6 @@ export function UserAvatarDropdown() {
 
  return (
  <DropdownMenu>
-// ... (El resto del código es el mismo que mi respuesta anterior)
  <DropdownMenuTrigger asChild>
  <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-primary/10 p-0">
  <Avatar className="h-9 w-9 bg-primary/20 text-primary-foreground">
