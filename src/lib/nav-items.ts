@@ -21,6 +21,7 @@ import {
   FileText,
   AlertTriangle, 
   ServerCrash, // Ícono para el error 500
+  Trophy, // Ícono para Leaderboard
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -29,6 +30,13 @@ const NAVIGATION_ITEMS: NavItem[] = [
     label: 'Panel Principal',
     icon: LayoutGrid,
     path: '/dashboard',
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+  },
+  {
+    id: 'leaderboard',
+    label: 'Ranking',
+    icon: Trophy,
+    path: '/leaderboard',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
   {
