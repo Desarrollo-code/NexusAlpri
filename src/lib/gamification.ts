@@ -1,3 +1,4 @@
+
 // src/lib/gamification.ts
 import prisma from '@/lib/prisma';
 
@@ -94,7 +95,7 @@ export async function awardAchievement({ userId, slug }: AwardAchievementParams)
             data: {
                 userId,
                 title: `¡Logro Desbloqueado: ${achievement.name}!`,
-                description: `Has ganado ${achievement.points} puntos de experiencia.`,
+                description: `¡Felicidades! Has obtenido el logro "${achievement.description}" y ganado ${achievement.points} puntos de experiencia.`,
                 link: '/profile'
             }
         });
@@ -131,7 +132,7 @@ export async function checkAndAwardCourseCompletionAchievements(userId: string) 
     if (completedCoursesCount === 1) {
         await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIRST_COURSE_COMPLETED });
     }
-    if (completedCoursesCount === 5) {
+    if (completedCoursesCount >= 5) {
         await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIVE_COURSES_COMPLETED });
     }
 }

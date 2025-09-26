@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -265,7 +266,11 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           
           const finalProgressData = await response.json();
           setCourseProgress(finalProgressData);
-          toast({ title: "¡Curso Finalizado!", description: "Tu puntuación final ha sido calculada y guardada." });
+          toast({ 
+            title: "¡Curso Finalizado!", 
+            description: `Has completado el curso y obtenido una puntuación de ${finalProgressData.progressPercentage}%. ¡Felicidades!`,
+            duration: 5000,
+          });
       } catch (error) {
           toast({ title: "Error", description: `No se pudo calcular tu progreso: ${(error as Error).message}`, variant: "destructive"});
       } finally {
