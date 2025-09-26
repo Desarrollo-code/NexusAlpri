@@ -1,7 +1,8 @@
+
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import { recordLessonInteraction, recalculateProgress } from '@/lib/progress';
+import { recordLessonInteraction } from '@/lib/progress';
 import { addXp, XP_CONFIG } from '@/lib/gamification';
 
 export const dynamic = 'force-dynamic';
@@ -28,16 +29,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
             type: type === 'video' ? 'video' : 'view',
         });
         
-        // Recalculate progress after the interaction
-        const updatedProgress = await recalculateProgress({ userId, courseId });
-
         // --- Gamification Logic ---
         if (interactionRecorded) {
             await addXp(userId, XP_CONFIG.COMPLETE_LESSON);
         }
         // --------------------------
         
-        return NextResponse.json({ message: "Interaction recorded", progress: updatedProgress });
+        return NextResponse.json({ message: "Interaction recorded" });
 
     } catch (error) {
         console.error('[PROGRESS_LESSON_ERROR]', error);

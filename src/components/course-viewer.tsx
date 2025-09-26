@@ -285,27 +285,37 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
     setProvisionalProgress(prev => ({ ...prev, [lessonId]: true }));
     
-    // Simplificado: se registra el progreso y se recalcula, la consolidación es un paso separado.
     try {
         let endpoint = `/api/progress/${user.id}/${courseId}/lesson`;
         let payload: any = { lessonId, type };
 
         if (type === 'quiz') {
             endpoint = `/api/progress/${user.id}/${courseId}/quiz`;
-            // El score ya no se pasa aquí, se calcula en el backend.
-            payload.quizId = course?.modules
-                .flatMap(m => m.lessons)
-                .find(l => l.id === lessonId)
-                ?.contentBlocks.find(b => b.type === 'QUIZ')
-                ?.quiz?.id;
-            payload.score = score; // Sigue siendo necesario para el registro de la lección
+            const quizBlock = course?.modules.flatMap(m => m.lessons).find(l => l.id === lessonId)?.contentBlocks.find(b => b.type === 'QUIZ');
+            if (!quizBlock?.quiz) return;
+            
+            payload.quizId = quizBlock.quiz.id;
+            // El score ya no se pasa, se calcula en el backend al enviar las respuestas.
+            // Para el `recordLessonInteraction` sí se necesita.
+            payload.score = score;
         }
         
-        await fetch(endpoint, {
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
+
+        // After a successful interaction, refresh the main progress object to get the new percentage
+        if (response.ok) {
+            const progressRes = await fetch(`/api/progress/${user.id}/${courseId}`);
+            if (progressRes.ok) {
+                const progressData = await progressRes.json();
+                setCourseProgress(progressData);
+            }
+        } else {
+             throw new Error('Failed to save interaction');
+        }
 
     } catch (e) {
       console.error("Failed to record interaction:", e);
@@ -402,7 +412,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
   }, [isLoading, course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, selectedLessonId, allLessons, setPageTitle, provisionalProgress]);
   
-  const handleQuizSubmitted = useCallback((lessonId: string, quizId: string, score: number) => {
+  const handleQuizSubmitted = useCallback((lessonId: string, score: number) => {
     // La puntuación ya viene calculada desde el QuizViewer
     recordInteraction(lessonId, 'quiz', score);
   }, [recordInteraction]);

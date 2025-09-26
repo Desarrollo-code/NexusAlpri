@@ -14,59 +14,7 @@ interface RecordInteractionParams {
 }
 
 /**
- * Recalculates and updates the progress percentage for a user in a course.
- */
-export async function recalculateProgress({ userId, courseId }: { userId: string, courseId: string }) {
-    const [progress, totalLessonsCount, courseTitle] = await Promise.all([
-        prisma.courseProgress.findFirst({
-            where: { userId, courseId },
-            include: { completedLessons: true }
-        }),
-        prisma.lesson.count({ where: { module: { courseId } } }),
-        prisma.course.findUnique({ where: { id: courseId }, select: { title: true }})
-    ]);
-    
-    if (!progress) {
-        throw new Error("No progress record found for this user and course.");
-    }
-    
-    if (totalLessonsCount === 0) {
-        await prisma.courseProgress.update({
-            where: { id: progress.id },
-            data: { progressPercentage: 100 }
-        });
-        return;
-    }
-
-    const completedLessonsCount = progress.completedLessons.length;
-    const newPercentage = Math.round((completedLessonsCount / totalLessonsCount) * 100);
-
-    // Lógica para notificación a mitad de curso
-    const oldPercentage = progress.progressPercentage || 0;
-    if (oldPercentage < 50 && newPercentage >= 50) {
-        await prisma.notification.create({
-            data: {
-                userId,
-                title: `¡A mitad de camino!`,
-                description: `¡Vas a mitad de camino en "${courseTitle?.title || 'este curso'}"! Sigue así.`,
-                link: `/courses/${courseId}`
-            }
-        });
-    }
-
-    const updatedProgress = await prisma.courseProgress.update({
-        where: { id: progress.id },
-        data: { 
-            progressPercentage: newPercentage,
-        }
-    });
-
-    return updatedProgress;
-}
-
-
-/**
- * Records a user's interaction with a lesson.
+ * Records a user's interaction with a lesson and immediately recalculates course progress.
  * This is used for incremental updates.
  * @returns {Promise<boolean>} - Returns true if a new interaction was created, false if it already existed.
  */
@@ -86,27 +34,69 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
         where: { progressId_lessonId: { progressId, lessonId } }
     });
     
-    if (existingRecord) {
+    let wasNewInteraction = false;
+    
+    if (!existingRecord) {
+        // Create the record if it doesn't exist
+        await prisma.lessonCompletionRecord.create({
+            data: { progressId, lessonId, type, score }
+        });
+        wasNewInteraction = true;
+    } else if (type === 'quiz' && score !== null && existingRecord.score !== score) {
         // If it's a quiz, update the score, but it's not a "new" interaction for progress calculation.
-        if (type === 'quiz' && score !== null && existingRecord.score !== score) {
-            await prisma.lessonCompletionRecord.update({
-                where: { id: existingRecord.id },
-                data: { score }
-            });
-        }
-        return false;
+        await prisma.lessonCompletionRecord.update({
+            where: { id: existingRecord.id },
+            data: { score }
+        });
     }
 
-    // Create the record if it doesn't exist
-    await prisma.lessonCompletionRecord.create({
-        data: {
-            progressId: progressId,
-            lessonId: lessonId,
-            type: type,
-            score: score, // Guardamos la nota del quiz aquí
+    // Always recalculate progress after an interaction is recorded or updated
+    await recalculateProgress({ userId, courseId, progressId });
+
+    return wasNewInteraction;
+}
+
+
+/**
+ * Recalculates and updates the progress percentage for a user in a course.
+ */
+export async function recalculateProgress({ userId, courseId, progressId }: { userId: string, courseId: string, progressId: string }) {
+    
+    const [completedLessonsCount, totalLessonsCount, courseTitle, currentProgress] = await Promise.all([
+        prisma.lessonCompletionRecord.count({ where: { progressId } }),
+        prisma.lesson.count({ where: { module: { courseId } } }),
+        prisma.course.findUnique({ where: { id: courseId }, select: { title: true }}),
+        prisma.courseProgress.findUnique({ where: { id: progressId }, select: { progressPercentage: true }})
+    ]);
+    
+    if (totalLessonsCount === 0) {
+        await prisma.courseProgress.update({
+            where: { id: progressId },
+            data: { progressPercentage: 100 }
+        });
+        return;
+    }
+
+    const newPercentage = Math.round((completedLessonsCount / totalLessonsCount) * 100);
+
+    // Lógica para notificación a mitad de curso
+    const oldPercentage = currentProgress?.progressPercentage || 0;
+    if (oldPercentage < 50 && newPercentage >= 50) {
+        await prisma.notification.create({
+            data: {
+                userId,
+                title: `¡A mitad de camino!`,
+                description: `¡Vas a mitad de camino en "${courseTitle?.title || 'este curso'}"! Sigue así.`,
+                link: `/courses/${courseId}`
+            }
+        });
+    }
+
+    await prisma.courseProgress.update({
+        where: { id: progressId },
+        data: { 
+            progressPercentage: newPercentage,
+            lastActivity: new Date(),
         }
     });
-    
-    // It's a new interaction
-    return true;
 }

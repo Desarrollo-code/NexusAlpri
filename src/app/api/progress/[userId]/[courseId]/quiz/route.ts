@@ -1,8 +1,9 @@
+
 // src/app/api/progress/[userId]/[courseId]/quiz/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import { recordLessonInteraction, recalculateProgress } from '@/lib/progress';
+import { recordLessonInteraction } from '@/lib/progress';
 import { PrismaClient } from '@prisma/client';
 import { addXp, awardAchievement, XP_CONFIG, ACHIEVEMENT_SLUGS } from '@/lib/gamification';
 
@@ -53,17 +54,14 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
         
         const score = quiz.questions.length > 0 ? (correctCount / quiz.questions.length) * 100 : 0;
         
-        // 1. Guardar la nota en el registro de la lección
-        const interactionRecorded = await recordLessonInteraction({
+        // 1. Guardar la nota en el registro de la lección y recalcular progreso
+        await recordLessonInteraction({
             userId,
             courseId,
             lessonId,
             type: 'quiz',
             score,
         });
-        
-        // 2. Recalcular el porcentaje de lecciones vistas
-        await recalculateProgress({ userId, courseId });
 
         // --- Gamification Logic ---
         await addXp(userId, XP_CONFIG.COMPLETE_QUIZ);
@@ -71,7 +69,7 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
         if (score === 100) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.PERFECT_SCORE });
         
         const currentAttempts = await prisma.quizAttempt.count({ where: { userId, quizId } });
-        // 3. Guardar el intento detallado (para analíticas futuras)
+        // 2. Guardar el intento detallado (para analíticas futuras)
         const newAttempt = await prisma.quizAttempt.create({
             data: {
                 userId,
