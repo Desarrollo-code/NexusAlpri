@@ -67,8 +67,18 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
         // Enhance enrollments with individual average quiz scores and last activity date
         const enrollmentsWithDetails = await Promise.all(course.enrollments.map(async (enrollment) => {
             const progress = enrollment.progress;
+            // CORRECCIÓN: Si no hay progreso, se devuelve un objeto con valores por defecto en lugar de null.
             if (!progress) {
-                return { ...enrollment, progress: null };
+                return { 
+                    ...enrollment, 
+                    progress: { 
+                        progressPercentage: 0,
+                        lastActivity: null,
+                        completedAt: null,
+                        completedLessons: [],
+                        avgQuizScore: null,
+                    }
+                };
             }
 
             const userQuizAttempts = await prisma.quizAttempt.findMany({
@@ -91,6 +101,7 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
                 ...enrollment,
                 progress: {
                     ...progress,
+                    progressPercentage: progress.progressPercentage, // Aseguramos que el valor se pasa correctamente.
                     avgQuizScore: userAvgQuizScore,
                     lastActivity
                 }
