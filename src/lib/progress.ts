@@ -67,20 +67,11 @@ export async function recalculateProgress({ userId, courseId, progressId }: { us
         prisma.lesson.count({ where: { module: { courseId } } }),
     ]);
     
-    if (totalLessonsCount === 0) {
-        await prisma.courseProgress.update({
-            where: { id: progressId },
-            data: { progressPercentage: 100 }
-        });
-        return;
+    let newPercentage = 0;
+    if (totalLessonsCount > 0) {
+        newPercentage = Math.round((completedLessonsCount / totalLessonsCount) * 100);
     }
-
-    const newPercentage = Math.round((completedLessonsCount / totalLessonsCount) * 100);
     
-    // NOTA: Se ha eliminado la lógica de notificación de "mitad de camino"
-    // que estaba causando un error 500. Se puede reintroducir en el futuro
-    // con una consulta más segura si es necesario.
-
     await prisma.courseProgress.update({
         where: { id: progressId },
         data: { 

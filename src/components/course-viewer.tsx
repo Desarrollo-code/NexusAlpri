@@ -252,13 +252,59 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   const totalLessonsCount = allLessons.length;
   
   const completedLessonIds = useMemo(() => {
-    return new Set(courseProgress?.completedLessons.map(l => l.lessonId) || []);
+    return new Set(courseProgress?.completedLessons?.map(l => l.lessonId) || []);
   }, [courseProgress]);
 
   const isCreatorViewingCourse = useMemo(() => {
     if (!user || !course) return false;
     return user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === course.instructorId);
   }, [user, course]);
+  
+  const fetchProgress = useCallback(async (userId: string, courseId: string) => {
+    try {
+        const progressRes = await fetch(`/api/progress/${userId}/${courseId}`);
+        if (progressRes.ok) {
+            const progressData: CourseProgress = await progressRes.json();
+            setCourseProgress(progressData);
+        } else {
+            console.error("Failed to fetch progress, setting to default.");
+            setCourseProgress({
+                userId,
+                courseId,
+                completedLessons: [],
+                progressPercentage: 0
+            });
+        }
+    } catch(e) {
+        console.error("Error fetching progress:", e);
+    }
+  }, []);
+
+  const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video') => {
+    if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || completedLessonIds.has(lessonId)) return;
+
+    try {
+        const response = await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lessonId, type }),
+        });
+
+        if (!response.ok) throw new Error('Failed to record interaction');
+        
+        // After successfully recording, refetch the source of truth for progress.
+        await fetchProgress(user.id, courseId);
+        
+        const lesson = allLessons.find(l => l.id === lessonId);
+        if (lesson) {
+            toast({ description: `Progreso guardado: "${lesson.title}"`, duration: 2000 });
+        }
+
+    } catch (e) {
+      console.error("Failed to record interaction:", e);
+      toast({ title: 'Error de Sincronización', description: 'No se pudo guardar tu progreso. Inténtalo de nuevo.', variant: 'destructive'});
+    }
+  }, [user, courseId, isEnrolled, isCreatorViewingCourse, toast, allLessons, completedLessonIds, fetchProgress]);
   
   const handleConsolidateProgress = useCallback(async () => {
       if (!user || !courseId || isConsolidating) return;
@@ -280,68 +326,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           setIsConsolidating(false);
       }
   }, [user, courseId, toast, isConsolidating]);
-  
 
- const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video') => {
-    if (isCreatorViewingCourse || !user || !courseId || !isEnrolled) return;
-    
-    // Optimistic update for UI responsiveness
-    const alreadyCompleted = completedLessonIds.has(lessonId);
-    if (!alreadyCompleted) {
-        setCourseProgress(prev => {
-            const newCompleted = [...(prev?.completedLessons || []), { lessonId, type: 'view' }]; // Assume 'view' for optimism
-            const newPercentage = Math.round((newCompleted.length / totalLessonsCount) * 100);
-            return {
-                ...prev,
-                completedLessons: newCompleted,
-                progressPercentage: newPercentage
-            };
-        });
-    }
-
-    try {
-        const response = await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lessonId, type }),
-        });
-
-        if (!response.ok) throw new Error('Failed to record interaction');
-        
-        // Refetch progress from the server to get the single source of truth
-        const progressRes = await fetch(`/api/progress/${user.id}/${courseId}`);
-        if (progressRes.ok) {
-            const progressData = await progressRes.json();
-            setCourseProgress(progressData);
-            if (!alreadyCompleted) {
-                 const lesson = allLessons.find(l => l.id === lessonId);
-                 if (lesson) {
-                   toast({ description: `Progreso guardado: "${lesson.title}"`, duration: 2000 });
-                 }
-            }
-        } else {
-            throw new Error('Failed to refetch progress after interaction.');
-        }
-
-    } catch (e) {
-      console.error("Failed to record interaction:", e);
-      toast({ title: 'Error de Sincronización', description: 'No se pudo guardar tu progreso. Inténtalo de nuevo.', variant: 'destructive'});
-      // Revert optimistic update on failure
-      if (!alreadyCompleted) {
-          fetchProgress(user.id, courseId); // Refetch to revert to server state
-      }
-    }
-  }, [user, courseId, isEnrolled, isCreatorViewingCourse, toast, completedLessonIds, allLessons, totalLessonsCount]);
-
-
-  const fetchProgress = async (userId, courseId) => {
-     const progressRes = await fetch(`/api/progress/${userId}/${courseId}`);
-      if (progressRes.ok) {
-          const progressData = await progressRes.json();
-          setCourseProgress(progressData);
-      }
-  };
-  
   useEffect(() => {
     const fetchData = async () => {
         setIsLoading(true);
@@ -358,7 +343,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                     setIsEnrolled(enrolledStatus);
 
                     if (enrolledStatus) {
-                        fetchProgress(user.id, courseId);
+                        await fetchProgress(user.id, courseId);
                     }
                 }
             }
@@ -370,7 +355,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         }
     };
     fetchData();
-  }, [courseId, user, toast]);
+  }, [courseId, user, toast, fetchProgress]);
   
   useEffect(() => {
     setShowBackButton(true);
@@ -397,9 +382,11 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
   }, [isLoading, course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, selectedLessonId, allLessons, setPageTitle, completedLessonIds]);
   
-  const handleQuizSubmitted = useCallback((lessonId: string, score: number) => {
-    recordInteraction(lessonId, 'quiz');
-  }, [recordInteraction]);
+  const handleQuizSubmitted = useCallback(async (lessonId: string) => {
+     if (user && courseId) {
+        await fetchProgress(user.id, courseId);
+     }
+  }, [user, courseId, fetchProgress]);
   
   const handleVideoEnd = useCallback(() => {
       if (selectedLessonId) {
@@ -597,7 +584,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                         <DialogHeader>
                             <DialogTitle>Tu Progreso en {course.title}</DialogTitle>
                             <DialogDescription>
-                                 {courseProgress && completedLessonIds.size === totalLessonsCount
+                                 {courseProgress?.progressPercentage === 100
                                     ? "¡Felicidades! Has completado el curso."
                                     : "Este es tu avance actual. ¡Sigue así!"
                                  }
