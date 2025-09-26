@@ -1,4 +1,3 @@
-
 import type { NavItem, UserRole } from '@/types';
 import {
   LayoutDashboard,
@@ -37,6 +36,13 @@ const NAVIGATION_ITEMS: NavItem[] = [
     label: 'Ranking',
     icon: Trophy,
     path: '/leaderboard',
+    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
+  },
+  {
+    id: 'achievements',
+    label: 'Mis Logros',
+    icon: Trophy,
+    path: '/achievements',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
   {
