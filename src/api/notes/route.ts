@@ -1,8 +1,10 @@
+
 // src/app/api/notes/route.ts
 
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { addXp, XP_CONFIG, checkFirstNoteTaken } from '@/lib/gamification';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,6 +67,12 @@ export async function POST(req: NextRequest) {
         if (!lessonId) {
             return NextResponse.json({ message: 'lessonId es requerido' }, { status: 400 });
         }
+        
+        const existingNote = await prisma.userNote.findUnique({
+             where: {
+                userId_lessonId: { userId: session.id, lessonId: lessonId },
+            },
+        });
 
         const note = await prisma.userNote.upsert({
             where: {
@@ -84,6 +92,12 @@ export async function POST(req: NextRequest) {
                 color: color || 'yellow',
             },
         });
+
+        // Gamification: Otorgar puntos/logro solo si es la primera vez que se crea la nota
+        if (!existingNote) {
+            await addXp(session.id, XP_CONFIG.TAKE_NOTE || 2);
+            await checkFirstNoteTaken(session.id);
+        }
 
         return NextResponse.json(note);
     } catch (error) {

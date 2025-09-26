@@ -1,6 +1,7 @@
 
 // src/lib/gamification.ts
 import prisma from '@/lib/prisma';
+import type { User } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,10 +16,22 @@ export const XP_CONFIG = {
 
 // Slugs de logros que deben existir en la tabla `Achievement`
 export const ACHIEVEMENT_SLUGS = {
+    // Iniciales
     FIRST_ENROLLMENT: 'first-enrollment',
     FIRST_COURSE_COMPLETED: 'first-course-completed',
     PERFECT_SCORE: 'perfect-quiz-score',
     FIVE_COURSES_COMPLETED: 'five-courses-completed',
+    // Nuevos
+    FIRST_NOTE: 'first-note-taken',
+    FIRST_REACTION: 'first-reaction',
+    FIRST_RESOURCE_DOWNLOAD: 'first-resource-download',
+    FIRST_COURSE_PUBLISHED: 'first-course-published',
+    TEN_COURSES_COMPLETED: 'ten-courses-completed',
+    TWENTY_COURSES_COMPLETED: 'twenty-courses-completed',
+    HIGH_PERFORMER: 'high-performer',
+    LEVEL_5_REACHED: 'level-5-reached',
+    LEVEL_10_REACHED: 'level-10-reached',
+    LEVEL_20_REACHED: 'level-20-reached',
 };
 
 type AwardAchievementParams = {
@@ -29,19 +42,26 @@ type AwardAchievementParams = {
 // --- FUNCIONES PRINCIPALES ---
 
 /**
- * Añade puntos de experiencia (XP) a un usuario.
+ * Añade puntos de experiencia (XP) a un usuario y verifica si sube de nivel.
  */
 export async function addXp(userId: string, points: number) {
     if (!userId || points <= 0) return;
     try {
-        await prisma.user.update({
+        const user = await prisma.user.update({
             where: { id: userId },
             data: {
                 xp: {
                     increment: points
                 }
-            }
+            },
+            select: { xp: true, id: true }
         });
+        
+        // Después de añadir XP, verificar si el usuario subió de nivel.
+        if (user.xp) {
+            await checkAndAwardLevelUp(user as User, user.xp - points);
+        }
+
     } catch (error) {
         console.error(`Error al añadir ${points} XP al usuario ${userId}:`, error);
     }
@@ -54,7 +74,6 @@ export async function awardAchievement({ userId, slug }: AwardAchievementParams)
     if (!userId || !slug) return;
     
     try {
-        // Verificar si el usuario ya tiene el logro
         const achievement = await prisma.achievement.findUnique({
             where: { slug: slug }
         });
@@ -90,12 +109,11 @@ export async function awardAchievement({ userId, slug }: AwardAchievementParams)
             })
         ]);
 
-        // (Opcional) Crear una notificación para el usuario
         await prisma.notification.create({
             data: {
                 userId,
                 title: `¡Logro Desbloqueado: ${achievement.name}!`,
-                description: `¡Felicidades! Has obtenido el logro "${achievement.description}" y ganado ${achievement.points} puntos de experiencia.`,
+                description: `Has ganado ${achievement.points} puntos de experiencia.`,
                 link: '/profile'
             }
         });
@@ -105,9 +123,8 @@ export async function awardAchievement({ userId, slug }: AwardAchievementParams)
     }
 }
 
-/**
- * Verifica si el usuario debería recibir un logro de "primer curso".
- */
+// --- FUNCIONES DE VERIFICACIÓN DE LOGROS ---
+
 export async function checkAndAwardFirstEnrollment(userId: string) {
     const enrollmentCount = await prisma.enrollment.count({
         where: { userId }
@@ -117,22 +134,88 @@ export async function checkAndAwardFirstEnrollment(userId: string) {
     }
 }
 
-
-/**
- * Verifica si el usuario debería recibir un logro por cursos completados.
- */
-export async function checkAndAwardCourseCompletionAchievements(userId: string) {
-    const completedCoursesCount = await prisma.courseProgress.count({
-        where: {
-            userId: userId,
-            progressPercentage: 100,
-        }
+export async function checkAndAwardCourseCompletionAchievements(userId: string, finalScore: number | null) {
+    const completedCount = await prisma.courseProgress.count({
+        where: { userId: userId, completedAt: { not: null } }
     });
 
-    if (completedCoursesCount === 1) {
-        await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIRST_COURSE_COMPLETED });
+    if (completedCount === 1) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIRST_COURSE_COMPLETED });
+    if (completedCount >= 5) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIVE_COURSES_COMPLETED });
+    if (completedCount >= 10) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.TEN_COURSES_COMPLETED });
+    if (completedCount >= 20) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.TWENTY_COURSES_COMPLETED });
+    
+    // Logro por alta calificación
+    if (finalScore !== null && finalScore >= 95) {
+        await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.HIGH_PERFORMER });
     }
-    if (completedCoursesCount >= 5) {
-        await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIVE_COURSES_COMPLETED });
+}
+
+export async function checkFirstNoteTaken(userId: string) {
+    const noteCount = await prisma.userNote.count({ where: { userId } });
+    if (noteCount === 1) {
+        await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIRST_NOTE });
+    }
+}
+
+export async function checkFirstReaction(userId: string) {
+    const reactionCount = await prisma.announcementReaction.count({ where: { userId }});
+    if (reactionCount === 1) {
+        await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIRST_REACTION });
+    }
+}
+
+export async function checkFirstDownload(userId: string) {
+    // Esta función se puede expandir para registrar descargas.
+    // Por ahora, asumimos que si se llama es la primera vez.
+    const hasAchievement = await prisma.userAchievement.findFirst({
+        where: { userId, achievement: { slug: ACHIEVEMENT_SLUGS.FIRST_RESOURCE_DOWNLOAD } }
+    });
+    if (!hasAchievement) {
+        await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIRST_RESOURCE_DOWNLOAD });
+    }
+}
+
+export async function checkFirstCoursePublished(instructorId: string) {
+    const publishedCount = await prisma.course.count({ where: { instructorId, status: 'PUBLISHED' }});
+    if (publishedCount === 1) {
+        await awardAchievement({ userId: instructorId, slug: ACHIEVEMENT_SLUGS.FIRST_COURSE_PUBLISHED });
+    }
+}
+
+// --- LÓGICA DE NIVELES ---
+const calculateLevel = (xp: number) => {
+    const baseXP = 250;
+    const exponent = 1.5;
+    let level = 1;
+    let requiredXP = baseXP;
+    while (xp >= requiredXP) {
+        level++;
+        xp -= requiredXP;
+        requiredXP = Math.floor(baseXP * Math.pow(level, exponent));
+    }
+    return level;
+};
+
+export async function checkAndAwardLevelUp(user: User, oldXp: number) {
+    if (user.xp === null) return;
+
+    const oldLevel = calculateLevel(oldXp);
+    const newLevel = calculateLevel(user.xp);
+
+    if (newLevel > oldLevel) {
+        // El usuario subió de nivel
+        await prisma.notification.create({
+            data: {
+                userId: user.id,
+                title: `¡Has subido al Nivel ${newLevel}!`,
+                description: `¡Felicidades por tu progreso! Sigue aprendiendo para alcanzar nuevas alturas.`,
+                link: '/leaderboard'
+            }
+        });
+
+        // Otorgar logros por alcanzar niveles específicos
+        if (newLevel >= 5) await awardAchievement({ userId: user.id, slug: ACHIEVEMENT_SLUGS.LEVEL_5_REACHED });
+        if (newLevel >= 10) await awardAchievement({ userId: user.id, slug: ACHIEVEMENT_SLUGS.LEVEL_10_REACHED });
+        if (newLevel >= 20) await awardAchievement({ userId: user.id, slug: ACHIEVEMENT_SLUGS.LEVEL_20_REACHED });
     }
 }

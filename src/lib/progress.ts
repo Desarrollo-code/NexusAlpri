@@ -1,3 +1,4 @@
+
 // src/lib/progress.ts
 import prisma from '@/lib/prisma';
 import type { LessonCompletionRecord as AppLessonCompletionRecord } from '@/types';
@@ -16,12 +17,13 @@ interface RecordInteractionParams {
  * Recalculates and updates the progress percentage for a user in a course.
  */
 export async function recalculateProgress({ userId, courseId }: { userId: string, courseId: string }) {
-    const [progress, totalLessonsCount] = await Promise.all([
+    const [progress, totalLessonsCount, courseTitle] = await Promise.all([
         prisma.courseProgress.findFirst({
             where: { userId, courseId },
             include: { completedLessons: true }
         }),
-        prisma.lesson.count({ where: { module: { courseId } } })
+        prisma.lesson.count({ where: { module: { courseId } } }),
+        prisma.course.findUnique({ where: { id: courseId }, select: { title: true }})
     ]);
     
     if (!progress) {
@@ -37,16 +39,25 @@ export async function recalculateProgress({ userId, courseId }: { userId: string
     }
 
     const completedLessonsCount = progress.completedLessons.length;
-    // El progreso porcentual es sobre lecciones vistas, no sobre la nota.
-    // La nota final se calcula al consolidar.
     const newPercentage = Math.round((completedLessonsCount / totalLessonsCount) * 100);
-    
+
+    // Lógica para notificación a mitad de curso
+    const oldPercentage = progress.progressPercentage || 0;
+    if (oldPercentage < 50 && newPercentage >= 50) {
+        await prisma.notification.create({
+            data: {
+                userId,
+                title: `¡A mitad de camino!`,
+                description: `¡Vas a mitad de camino en "${courseTitle?.title || 'este curso'}"! Sigue así.`,
+                link: `/courses/${courseId}`
+            }
+        });
+    }
+
     const updatedProgress = await prisma.courseProgress.update({
         where: { id: progress.id },
         data: { 
             progressPercentage: newPercentage,
-            // Solo marcar como completado si el porcentaje es 100 Y se ha solicitado consolidar.
-            // La consolidación se encarga de la fecha.
         }
     });
 

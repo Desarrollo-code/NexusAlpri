@@ -1,5 +1,6 @@
+
 // prisma/seed.ts
-import { PrismaClient, UserRole, AchievementSlug, Prisma } from '@prisma/client';
+import { PrismaClient, UserRole, AchievementSlug } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { addDays, subDays } from 'date-fns';
 
@@ -12,10 +13,23 @@ const prisma = new PrismaClient({
 });
 
 const achievementsToSeed = [
+  // Existing
   { slug: AchievementSlug.FIRST_ENROLLMENT, name: 'Primer Paso', description: 'Te has inscrito en tu primer curso.', points: 10, icon: 'Footprints' },
   { slug: AchievementSlug.FIRST_COURSE_COMPLETED, name: 'Finalista', description: 'Has completado tu primer curso.', points: 100, icon: 'GraduationCap' },
   { slug: AchievementSlug.PERFECT_QUIZ_SCORE, name: 'Perfeccionista', description: 'Obtuviste una puntuación perfecta en un quiz.', points: 50, icon: 'Target' },
   { slug: AchievementSlug.FIVE_COURSES_COMPLETED, name: 'Maratonista del Saber', description: 'Has completado cinco cursos.', points: 250, icon: 'Award' },
+  // New from last request
+  { slug: AchievementSlug.FIRST_NOTE, name: 'Curiosidad Intelectual', description: 'Has tomado tu primer apunte en una lección.', points: 15, icon: 'Notebook' },
+  { slug: AchievementSlug.FIRST_REACTION, name: 'Voz Activa', description: 'Has reaccionado por primera vez a un anuncio.', points: 5, icon: 'Megaphone' },
+  { slug: AchievementSlug.FIRST_RESOURCE_DOWNLOAD, name: 'Explorador de Conocimiento', description: 'Has descargado tu primer recurso de la biblioteca.', points: 15, icon: 'Compass' },
+  { slug: AchievementSlug.FIRST_COURSE_PUBLISHED, name: 'Creador de Contenido', description: 'Has publicado tu primer curso.', points: 150, icon: 'Send' },
+  // New from this request
+  { slug: AchievementSlug.TEN_COURSES_COMPLETED, name: 'Ratón de Biblioteca', description: 'Has completado diez cursos.', points: 500, icon: 'Library' },
+  { slug: AchievementSlug.TWENTY_COURSES_COMPLETED, name: 'Sabio de Nexus', description: 'Has completado veinte cursos.', points: 1000, icon: 'BrainCircuit' },
+  { slug: AchievementSlug.HIGH_PERFORMER, name: 'Estudiante Estrella', description: 'Completaste un curso con una calificación de 95% o más.', points: 75, icon: 'Star' },
+  { slug: AchievementSlug.LEVEL_5_REACHED, name: 'Aprendiz Dedicado', description: 'Alcanzaste el Nivel 5.', points: 100, icon: 'ChevronsUp' },
+  { slug: AchievementSlug.LEVEL_10_REACHED, name: 'Maestro del Conocimiento', description: 'Alcanzaste el Nivel 10.', points: 200, icon: 'Crown' },
+  { slug: AchievementSlug.LEVEL_20_REACHED, name: 'Leyenda de la Plataforma', description: 'Alcanzaste el Nivel 20.', points: 400, icon: 'Gem' },
 ];
 
 const usersToSeed = [

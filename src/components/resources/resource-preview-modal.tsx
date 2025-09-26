@@ -20,6 +20,8 @@ import JSZip from 'jszip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
 import { getInitials } from '@/lib/utils';
+import { useAuth } from '@/contexts/auth-context';
+import { addXp, XP_CONFIG, checkFirstDownload } from '@/lib/gamification';
 
 
 const DocxPreviewer = ({ url }: { url: string }) => {
@@ -105,6 +107,14 @@ const ZipPreviewer = ({ url }: { url: string }) => {
 
 const FallbackPreview = ({ resource }: { resource: AppResourceType }) => {
     const isExternalLink = resource.type === 'EXTERNAL_LINK';
+    const { user } = useAuth();
+    
+    const onDownload = () => {
+        if(user) {
+            addXp(user.id, XP_CONFIG.DOWNLOAD_RESOURCE || 1);
+            checkFirstDownload(user.id);
+        }
+    }
 
     return (
         <div className="flex flex-col items-center justify-center h-full text-muted-foreground bg-muted/50 p-8 text-center">
@@ -129,6 +139,7 @@ const FallbackPreview = ({ resource }: { resource: AppResourceType }) => {
                         url={resource.url!}
                         resourceId={resource.id}
                         hasPin={resource.hasPin}
+                        onDownloadSuccess={onDownload}
                     />
                 )}
             </div>
@@ -144,6 +155,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     const isMobile = useIsMobile();
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [zoomLevel, setZoomLevel] = useState(100);
+    const { user } = useAuth();
 
     const handlePinSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -159,6 +171,12 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
             if (!response.ok) throw new Error(data.message || 'Error al verificar');
             toast({ title: "Acceso Concedido" });
             onPinVerified(data.url);
+
+            if(user) {
+                addXp(user.id, XP_CONFIG.DOWNLOAD_RESOURCE || 1);
+                checkFirstDownload(user.id);
+            }
+
         } catch (err) {
             setError(err instanceof Error ? err.message : 'PIN incorrecto.');
         } finally {
@@ -294,6 +312,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     const [pinVerifiedUrl, setPinVerifiedUrl] = useState<string | null>(null);
     const [showDetails, setShowDetails] = useState(false);
     const isMobile = useIsMobile();
+    const { user } = useAuth();
 
     useEffect(() => {
         setPinVerifiedUrl(null);
@@ -304,6 +323,13 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     
     const displayUrl = pinVerifiedUrl || resource.url;
     const isPdfOnMobile = isMobile && displayUrl && displayUrl.toLowerCase().endsWith('.pdf');
+
+    const onDownload = () => {
+        if(user) {
+            addXp(user.id, XP_CONFIG.DOWNLOAD_RESOURCE || 1);
+            checkFirstDownload(user.id);
+        }
+    }
 
 
     const DetailsComponent = () => (
@@ -368,7 +394,7 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
               )}
             </div>
             <div className="flex items-center gap-2">
-                <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} variant="default" size="sm" />
+                <DownloadButton url={resource.url} resourceId={resource.id} hasPin={resource.hasPin} onDownloadSuccess={onDownload} variant="default" size="sm" />
             </div>
           </DialogFooter>
         </DialogContent>

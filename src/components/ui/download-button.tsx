@@ -1,3 +1,4 @@
+
 // src/components/ui/download-button.tsx
 'use client';
 
@@ -13,10 +14,11 @@ interface DownloadButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEleme
   resourceId: string;
   hasPin: boolean;
   text?: string;
+  onDownloadSuccess?: () => void; // Nuevo callback
 }
 
 export const DownloadButton = React.forwardRef<HTMLButtonElement, DownloadButtonProps>(
-  ({ className, text = "Descargar", url, resourceId, hasPin, ...props }, ref) => {
+  ({ className, text = "Descargar", url, resourceId, hasPin, onDownloadSuccess, ...props }, ref) => {
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -39,6 +41,7 @@ export const DownloadButton = React.forwardRef<HTMLButtonElement, DownloadButton
                 if (!response.ok) throw new Error(data.message || 'PIN inválido');
                 
                 triggerDownload(data.url);
+                onDownloadSuccess?.(); // Llamar al callback en caso de éxito
             } catch (err) {
                 toast({ title: 'Error de PIN', description: (err as Error).message, variant: 'destructive' });
             } finally {
@@ -46,6 +49,7 @@ export const DownloadButton = React.forwardRef<HTMLButtonElement, DownloadButton
             }
         } else {
             triggerDownload(url);
+            onDownloadSuccess?.(); // Llamar al callback en caso de éxito
         }
     };
     
