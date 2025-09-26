@@ -1,4 +1,3 @@
-
 // src/app/api/progress/[userId]/[courseId]/lesson/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
@@ -23,11 +22,14 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
             return NextResponse.json({ message: 'lessonId es requerido.' }, { status: 400 });
         }
         
+        // Si no se proporciona un tipo, se asume 'view' por defecto para robustez.
+        const interactionType = type === 'video' ? 'video' : 'view';
+
         const interactionRecorded = await recordLessonInteraction({
             userId,
             courseId,
             lessonId,
-            type: type === 'video' ? 'video' : 'view',
+            type: interactionType,
         });
         
         // --- Gamification Logic ---

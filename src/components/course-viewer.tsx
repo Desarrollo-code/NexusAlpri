@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -165,28 +164,7 @@ const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isO
 
 const VideoPlayer = ({ videoUrl, lessonTitle, onVideoEnd }: { videoUrl: string, lessonTitle?: string, onVideoEnd: () => void }) => {
     const videoId = getYouTubeVideoId(videoUrl);
-    const [showRotateHint, setShowRotateHint] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth < window.innerHeight && window.innerWidth < 768) { // Portrait mode on mobile
-                setShowRotateHint(true);
-                const timer = setTimeout(() => setShowRotateHint(false), 3000);
-                return () => clearTimeout(timer);
-            } else {
-                setShowRotateHint(false);
-            }
-        };
-
-        if (containerRef.current) {
-            handleResize(); // Initial check
-            window.addEventListener('resize', handleResize);
-        }
-        
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
+    
     if (!videoId) return null;
 
     const opts = {
@@ -200,20 +178,13 @@ const VideoPlayer = ({ videoUrl, lessonTitle, onVideoEnd }: { videoUrl: string, 
     };
 
     return (
-        <div ref={containerRef} className="aspect-video w-full max-w-4xl mx-auto my-4 rounded-lg overflow-hidden shadow-md relative group bg-black">
+        <div className="aspect-video w-full max-w-4xl mx-auto my-4 rounded-lg overflow-hidden shadow-md relative group bg-black">
             <YouTube
                 videoId={videoId}
                 className="w-full h-full"
                 onEnd={onVideoEnd}
                 opts={opts}
             />
-            {showRotateHint && (
-                <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white pointer-events-none transition-opacity duration-300 opacity-100 group-hover:opacity-0">
-                    <ScreenShare className="h-12 w-12 mb-2 animate-pulse" />
-                    <p className="font-semibold">Gira tu dispositivo</p>
-                    <p className="text-sm">para una mejor experiencia</p>
-                </div>
-            )}
         </div>
     );
 }
@@ -292,7 +263,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
         if (!response.ok) throw new Error('Failed to record interaction');
         
-        // After successfully recording, refetch the source of truth for progress.
         await fetchProgress(user.id, courseId);
         
         const lesson = allLessons.find(l => l.id === lessonId);
