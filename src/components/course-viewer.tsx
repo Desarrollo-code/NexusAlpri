@@ -281,18 +281,24 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   
   const completedLessonsRef = useRef<Set<string>>(new Set());
 
-  const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video') => {
+ const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video') => {
     if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || provisionalProgress[lessonId]) return;
 
+    // Optimistic update
     setProvisionalProgress(prev => ({ ...prev, [lessonId]: true }));
     
     try {
-        await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
+        const response = await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lessonId, type }),
         });
 
+        if (!response.ok) {
+            // Rollback optimistic update on failure
+            throw new Error('Failed to record interaction');
+        }
+        
         // After a successful interaction, refresh the main progress object to get the new percentage
         const progressRes = await fetch(`/api/progress/${user.id}/${courseId}`);
         if (progressRes.ok) {
@@ -308,8 +314,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           delete newState[lessonId];
           return newState;
       });
+      toast({ title: 'Error de Sincronización', description: 'No se pudo guardar tu progreso. Inténtalo de nuevo.', variant: 'destructive'});
     }
-  }, [user, courseId, isEnrolled, provisionalProgress, isCreatorViewingCourse]);
+  }, [user, courseId, isEnrolled, provisionalProgress, isCreatorViewingCourse, toast]);
 
 
   useEffect(() => {
