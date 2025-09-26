@@ -1,4 +1,3 @@
-
 // src/app/api/progress/[userId]/[courseId]/quiz/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
@@ -78,8 +77,8 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
                 score,
                 answers: {
                     create: Object.entries(answers).map(([questionId, selectedOptionId]) => ({
-                        questionId: questionId as string,
-                        selectedOptionId: selectedOptionId as string,
+                        question: { connect: { id: questionId as string } },
+                        selectedOption: { connect: { id: selectedOptionId as string } },
                     }))
                 }
             }
