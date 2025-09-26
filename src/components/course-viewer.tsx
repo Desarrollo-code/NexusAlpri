@@ -254,6 +254,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
   const isCreatorViewingCourse = useMemo(() => {
     if (!user || !course) return false;
+    // An admin is always a creator/viewer. An instructor is only if they are the course instructor.
     return user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === course.instructorId);
   }, [user, course]);
   
@@ -280,41 +281,23 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   
   const completedLessonsRef = useRef<Set<string>>(new Set());
 
-  const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video', score?: number) => {
+  const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video') => {
     if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || provisionalProgress[lessonId]) return;
 
     setProvisionalProgress(prev => ({ ...prev, [lessonId]: true }));
     
     try {
-        let endpoint = `/api/progress/${user.id}/${courseId}/lesson`;
-        let payload: any = { lessonId, type };
-
-        if (type === 'quiz') {
-            endpoint = `/api/progress/${user.id}/${courseId}/quiz`;
-            const quizBlock = course?.modules.flatMap(m => m.lessons).find(l => l.id === lessonId)?.contentBlocks.find(b => b.type === 'QUIZ');
-            if (!quizBlock?.quiz) return;
-            
-            payload.quizId = quizBlock.quiz.id;
-            // El score ya no se pasa, se calcula en el backend al enviar las respuestas.
-            // Para el `recordLessonInteraction` sí se necesita.
-            payload.score = score;
-        }
-        
-        const response = await fetch(endpoint, {
+        await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({ lessonId, type }),
         });
 
         // After a successful interaction, refresh the main progress object to get the new percentage
-        if (response.ok) {
-            const progressRes = await fetch(`/api/progress/${user.id}/${courseId}`);
-            if (progressRes.ok) {
-                const progressData = await progressRes.json();
-                setCourseProgress(progressData);
-            }
-        } else {
-             throw new Error('Failed to save interaction');
+        const progressRes = await fetch(`/api/progress/${user.id}/${courseId}`);
+        if (progressRes.ok) {
+            const progressData = await progressRes.json();
+            setCourseProgress(progressData);
         }
 
     } catch (e) {
@@ -326,7 +309,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           return newState;
       });
     }
-  }, [user, courseId, isEnrolled, provisionalProgress, isCreatorViewingCourse, course]);
+  }, [user, courseId, isEnrolled, provisionalProgress, isCreatorViewingCourse]);
 
 
   useEffect(() => {
@@ -413,8 +396,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }, [isLoading, course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, selectedLessonId, allLessons, setPageTitle, provisionalProgress]);
   
   const handleQuizSubmitted = useCallback((lessonId: string, score: number) => {
-    // La puntuación ya viene calculada desde el QuizViewer
-    recordInteraction(lessonId, 'quiz', score);
+    recordInteraction(lessonId, 'quiz');
   }, [recordInteraction]);
   
   const handleVideoEnd = useCallback(() => {
