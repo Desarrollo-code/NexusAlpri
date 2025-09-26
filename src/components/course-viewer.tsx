@@ -283,8 +283,22 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   
 
  const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video') => {
-    if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || completedLessonIds.has(lessonId)) return;
+    if (isCreatorViewingCourse || !user || !courseId || !isEnrolled) return;
     
+    // Optimistic update for UI responsiveness
+    const alreadyCompleted = completedLessonIds.has(lessonId);
+    if (!alreadyCompleted) {
+        setCourseProgress(prev => {
+            const newCompleted = [...(prev?.completedLessons || []), { lessonId, type: 'view' }]; // Assume 'view' for optimism
+            const newPercentage = Math.round((newCompleted.length / totalLessonsCount) * 100);
+            return {
+                ...prev,
+                completedLessons: newCompleted,
+                progressPercentage: newPercentage
+            };
+        });
+    }
+
     try {
         const response = await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
           method: 'POST',
@@ -299,9 +313,11 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         if (progressRes.ok) {
             const progressData = await progressRes.json();
             setCourseProgress(progressData);
-            const lesson = allLessons.find(l => l.id === lessonId);
-            if (lesson) {
-              toast({ description: `Progreso guardado: "${lesson.title}"`, duration: 2000 });
+            if (!alreadyCompleted) {
+                 const lesson = allLessons.find(l => l.id === lessonId);
+                 if (lesson) {
+                   toast({ description: `Progreso guardado: "${lesson.title}"`, duration: 2000 });
+                 }
             }
         } else {
             throw new Error('Failed to refetch progress after interaction.');
@@ -310,10 +326,22 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     } catch (e) {
       console.error("Failed to record interaction:", e);
       toast({ title: 'Error de Sincronización', description: 'No se pudo guardar tu progreso. Inténtalo de nuevo.', variant: 'destructive'});
+      // Revert optimistic update on failure
+      if (!alreadyCompleted) {
+          fetchProgress(user.id, courseId); // Refetch to revert to server state
+      }
     }
-  }, [user, courseId, isEnrolled, isCreatorViewingCourse, toast, completedLessonIds, allLessons]);
+  }, [user, courseId, isEnrolled, isCreatorViewingCourse, toast, completedLessonIds, allLessons, totalLessonsCount]);
 
 
+  const fetchProgress = async (userId, courseId) => {
+     const progressRes = await fetch(`/api/progress/${userId}/${courseId}`);
+      if (progressRes.ok) {
+          const progressData = await progressRes.json();
+          setCourseProgress(progressData);
+      }
+  };
+  
   useEffect(() => {
     const fetchData = async () => {
         setIsLoading(true);
@@ -330,11 +358,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                     setIsEnrolled(enrolledStatus);
 
                     if (enrolledStatus) {
-                        const progressRes = await fetch(`/api/progress/${user.id}/${courseId}`);
-                        if (progressRes.ok) {
-                            const progressData = await progressRes.json();
-                            setCourseProgress(progressData);
-                        }
+                        fetchProgress(user.id, courseId);
                     }
                 }
             }
@@ -573,13 +597,19 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                         <DialogHeader>
                             <DialogTitle>Tu Progreso en {course.title}</DialogTitle>
                             <DialogDescription>
-                                {courseProgress && courseProgress.progressPercentage > 0 ? "Este es tu resultado final para el curso." : "Completa todas las lecciones para ver tu puntuación."}
+                                 {courseProgress && completedLessonIds.size === totalLessonsCount
+                                    ? "¡Felicidades! Has completado el curso."
+                                    : "Este es tu avance actual. ¡Sigue así!"
+                                 }
                             </DialogDescription>
                         </DialogHeader>
                         <div className="flex flex-col items-center justify-center space-y-4 py-4">
                             <CircularProgress value={courseProgress?.progressPercentage || 0} size={150} strokeWidth={12} />
-                             {courseProgress?.progressPercentage === 0 && (
-                                <p className="text-sm text-muted-foreground">Aún no has completado ninguna lección.</p>
+                            {completedLessonIds.size === totalLessonsCount && !courseProgress?.completedAt && (
+                                <Button onClick={handleConsolidateProgress} disabled={isConsolidating}>
+                                    {isConsolidating ? <Loader2 className="mr-2 animate-spin"/> : <CheckCircle className="mr-2 h-4 w-4"/>}
+                                    Calcular Puntuación Final
+                                </Button>
                             )}
                         </div>
                     </DialogContent>
