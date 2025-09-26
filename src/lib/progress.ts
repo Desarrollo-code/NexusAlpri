@@ -62,11 +62,9 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
  */
 export async function recalculateProgress({ userId, courseId, progressId }: { userId: string, courseId: string, progressId: string }) {
     
-    const [completedLessonsCount, totalLessonsCount, courseTitle, currentProgress] = await Promise.all([
+    const [completedLessonsCount, totalLessonsCount] = await Promise.all([
         prisma.lessonCompletionRecord.count({ where: { progressId } }),
         prisma.lesson.count({ where: { module: { courseId } } }),
-        prisma.course.findUnique({ where: { id: courseId }, select: { title: true }}),
-        prisma.courseProgress.findUnique({ where: { id: progressId }, select: { progressPercentage: true }})
     ]);
     
     if (totalLessonsCount === 0) {
@@ -78,19 +76,10 @@ export async function recalculateProgress({ userId, courseId, progressId }: { us
     }
 
     const newPercentage = Math.round((completedLessonsCount / totalLessonsCount) * 100);
-
-    // Lógica para notificación a mitad de curso
-    const oldPercentage = currentProgress?.progressPercentage || 0;
-    if (oldPercentage < 50 && newPercentage >= 50) {
-        await prisma.notification.create({
-            data: {
-                userId,
-                title: `¡A mitad de camino!`,
-                description: `¡Vas a mitad de camino en "${courseTitle?.title || 'este curso'}"! Sigue así.`,
-                link: `/courses/${courseId}`
-            }
-        });
-    }
+    
+    // NOTA: Se ha eliminado la lógica de notificación de "mitad de camino"
+    // que estaba causando un error 500. Se puede reintroducir en el futuro
+    // con una consulta más segura si es necesario.
 
     await prisma.courseProgress.update({
         where: { id: progressId },
