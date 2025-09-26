@@ -1,4 +1,4 @@
-
+// src/app/api/progress/[userId]/[courseId]/lesson/route.ts
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
@@ -8,9 +8,9 @@ import { addXp, XP_CONFIG } from '@/lib/gamification';
 export const dynamic = 'force-dynamic';
 
 // Records a 'view' interaction for a lesson and recalculates progress
-export async function POST(req: NextRequest, { params }: { params: Promise<{ userId: string, courseId: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: { userId: string, courseId: string } }) {
     const session = await getCurrentUser();
-    const { userId, courseId } = await params;
+    const { userId, courseId } = params;
 
     if (!session || session.id !== userId) {
         return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
