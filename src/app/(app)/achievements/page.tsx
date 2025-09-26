@@ -5,8 +5,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useTitle } from '@/contexts/title-context';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, AlertTriangle, Trophy, Lock, Award } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import * as LucideIcons from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -32,7 +32,7 @@ const AchievementCard = ({ ach }: { ach: AchievementData }) => {
     const progressPercent = ach.progress ? (ach.progress.current / ach.progress.target) * 100 : 0;
     
     // Choose an appropriate icon, defaulting to Award
-    const Icon = Award;
+    const Icon = (LucideIcons as any)[ach.icon || 'Award'] || LucideIcons.Award;
 
     return (
         <Card className={cn(
@@ -45,11 +45,14 @@ const AchievementCard = ({ ach }: { ach: AchievementData }) => {
                     "h-16 w-16 rounded-full flex items-center justify-center mb-2 transition-colors",
                     isUnlocked ? "bg-amber-400 text-white" : "bg-muted-foreground/20 text-muted-foreground"
                 )}>
-                   {isUnlocked ? <Trophy className="h-8 w-8" /> : <Lock className="h-8 w-8" />}
+                   {isUnlocked ? <LucideIcons.Trophy className="h-8 w-8" /> : <LucideIcons.Lock className="h-8 w-8" />}
                 </div>
                 <CardTitle className="text-base">{ach.name}</CardTitle>
             </CardHeader>
-            <CardContent className="h-20">
+            <CardContent className="h-24 flex flex-col justify-center">
+                 <div className="flex justify-center items-center h-8 mb-2">
+                   <Icon className={cn("h-7 w-7", isUnlocked ? "text-primary" : "text-muted-foreground/50")} />
+                 </div>
                 <p className="text-xs text-muted-foreground">{ach.description}</p>
                  {ach.progress && !isUnlocked && (
                     <div className="mt-3 text-left">
@@ -61,7 +64,7 @@ const AchievementCard = ({ ach }: { ach: AchievementData }) => {
                     </div>
                 )}
             </CardContent>
-            <CardFooter className="flex justify-between items-center text-xs p-3 border-t bg-black/5">
+            <CardFooter className="flex justify-between items-center text-xs p-3 border-t bg-black/5 dark:bg-black/10">
                 <span className="font-bold text-primary">{ach.points} XP</span>
                 {isUnlocked && ach.unlockedAt && (
                     <span className="text-muted-foreground">
@@ -122,8 +125,8 @@ export default function AchievementsPage() {
       <div className="space-y-8">
         <Skeleton className="h-10 w-1/2" />
         <Skeleton className="h-8 w-3/4" />
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-56"/>)}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {[...Array(10)].map((_, i) => <Skeleton key={i} className="h-64"/>)}
         </div>
       </div>
     );
@@ -132,7 +135,7 @@ export default function AchievementsPage() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-6">
-        <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+        <LucideIcons.AlertTriangle className="h-12 w-12 text-destructive mb-4" />
         <h2 className="text-xl font-semibold">Error al Cargar Logros</h2>
         <p className="text-muted-foreground">{error}</p>
       </div>
@@ -143,7 +146,7 @@ export default function AchievementsPage() {
     <div className="space-y-8">
        <div>
             <h1 className="text-3xl font-bold font-headline flex items-center gap-2">
-            <Trophy className="h-8 w-8 text-amber-400" />
+            <LucideIcons.Trophy className="h-8 w-8 text-amber-400" />
             Mis Logros
             </h1>
             <p className="text-muted-foreground mt-1">Sigue tu progreso y descubre nuevos desafíos para ganar experiencia.</p>
@@ -153,7 +156,7 @@ export default function AchievementsPage() {
         <section>
             <h2 className="text-2xl font-semibold mb-4 pb-2 border-b-2 border-primary/20">Desbloqueados ({unlocked.length})</h2>
             {unlocked.length > 0 ? (
-                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                     {unlocked.map(ach => <AchievementCard key={ach.id} ach={ach} />)}
                  </div>
             ) : (
@@ -165,7 +168,7 @@ export default function AchievementsPage() {
         <section>
             <h2 className="text-2xl font-semibold mb-4 pb-2 border-b-2 border-border">Por Desbloquear ({locked.length})</h2>
              {locked.length > 0 ? (
-                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                     {locked.map(ach => <AchievementCard key={ach.id} ach={ach} />)}
                  </div>
             ) : (

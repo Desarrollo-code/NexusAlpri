@@ -8,23 +8,35 @@ import { AchievementSlug, type Achievement, type UserAchievement } from '@prisma
 export const dynamic = 'force-dynamic';
 
 // Helper to calculate progress for specific achievements
-async function getProgressForAchievement(userId: string, slug: AchievementSlug) {
-    switch (slug) {
-        case AchievementSlug.FIVE_COURSES_COMPLETED: {
-            const count = await prisma.courseProgress.count({ where: { userId, completedAt: { not: null } } });
-            return { current: count, target: 5 };
+async function getProgressForAchievement(userId: string, slug: AchievementSlug): Promise<{ current: number; target: number } | undefined> {
+    
+    // Ensure that slugs being checked are valid and expected to have progress.
+    const progressTrackedSlugs = [
+        AchievementSlug.FIVE_COURSES_COMPLETED,
+        AchievementSlug.TEN_COURSES_COMPLETED,
+        AchievementSlug.TWENTY_COURSES_COMPLETED,
+    ];
+
+    if (!progressTrackedSlugs.includes(slug)) {
+        return undefined; // No progress logic for this achievement
+    }
+    
+    try {
+        const count = await prisma.courseProgress.count({ where: { userId, completedAt: { not: null } } });
+        
+        switch (slug) {
+            case AchievementSlug.FIVE_COURSES_COMPLETED:
+                return { current: count, target: 5 };
+            case AchievementSlug.TEN_COURSES_COMPLETED:
+                return { current: count, target: 10 };
+            case AchievementSlug.TWENTY_COURSES_COMPLETED:
+                return { current: count, target: 20 };
+            default:
+                return undefined;
         }
-        case AchievementSlug.TEN_COURSES_COMPLETED: {
-            const count = await prisma.courseProgress.count({ where: { userId, completedAt: { not: null } } });
-            return { current: count, target: 10 };
-        }
-         case AchievementSlug.TWENTY_COURSES_COMPLETED: {
-            const count = await prisma.courseProgress.count({ where: { userId, completedAt: { not: null } } });
-            return { current: count, target: 20 };
-        }
-        // Add more cases as needed for other progress-based achievements
-        default:
-            return undefined;
+    } catch (error) {
+        console.error(`Error calculating progress for achievement ${slug}:`, error);
+        return undefined; // Return undefined on error to prevent crashes
     }
 }
 
