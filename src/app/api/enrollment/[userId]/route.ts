@@ -29,13 +29,14 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
                         },
                     },
                 },
-                progress: true,
+                progress: true, // Incluir el registro de progreso
             },
             orderBy: {
                 enrolledAt: 'desc',
             },
         });
         
+        // Mapear los datos para incluir explícitamente el progressPercentage
         const data = enrollments.map(enrollment => {
             return {
                 id: enrollment.course.id,
