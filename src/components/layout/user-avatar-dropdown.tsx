@@ -95,10 +95,6 @@ export function UserAvatarDropdown() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-         <DropdownMenuItem onClick={() => forceStartTour('profile', [])} className="cursor-pointer">
-            <Eye className="mr-2 h-4 w-4" />
-            <span>Ver Guía</span>
-        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/profile" className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />
