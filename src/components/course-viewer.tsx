@@ -233,7 +233,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
   const [course, setCourse] = useState<AppCourse | null>(null);
   const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(null);
-  const [provisionalProgress, setProvisionalProgress] = useState<Record<string, boolean>>({});
   
   const [isEnrolled, setIsEnrolled] = useState<boolean>(false);
   const [isConsolidating, setIsConsolidating] = useState(false);
@@ -251,6 +250,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
   const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
   const totalLessonsCount = allLessons.length;
+  
+  const completedLessonIds = useMemo(() => {
+    return new Set(courseProgress?.completedLessons.map(l => l.lessonId) || []);
+  }, [courseProgress]);
 
   const isCreatorViewingCourse = useMemo(() => {
     if (!user || !course) return false;
@@ -278,10 +281,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       }
   }, [user, courseId, toast, isConsolidating]);
   
-  const completedLessonsRef = useRef<Set<string>>(new Set());
 
  const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video') => {
-    if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || provisionalProgress[lessonId]) return;
+    if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || completedLessonIds.has(lessonId)) return;
     
     try {
         const response = await fetch(`/api/progress/${user.id}/${courseId}/lesson`, {
@@ -292,38 +294,25 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
         if (!response.ok) throw new Error('Failed to record interaction');
         
-        // Optimistic update
-        setProvisionalProgress(prev => ({ ...prev, [lessonId]: true }));
-        
-        // After a successful interaction, refresh the main progress object to get the new percentage
+        // Refetch progress from the server to get the single source of truth
         const progressRes = await fetch(`/api/progress/${user.id}/${courseId}`);
         if (progressRes.ok) {
             const progressData = await progressRes.json();
             setCourseProgress(progressData);
+            const lesson = allLessons.find(l => l.id === lessonId);
+            if (lesson) {
+              toast({ description: `Progreso guardado: "${lesson.title}"`, duration: 2000 });
+            }
+        } else {
+            throw new Error('Failed to refetch progress after interaction.');
         }
 
     } catch (e) {
       console.error("Failed to record interaction:", e);
       toast({ title: 'Error de Sincronización', description: 'No se pudo guardar tu progreso. Inténtalo de nuevo.', variant: 'destructive'});
     }
-  }, [user, courseId, isEnrolled, provisionalProgress, isCreatorViewingCourse, toast]);
+  }, [user, courseId, isEnrolled, isCreatorViewingCourse, toast, completedLessonIds, allLessons]);
 
-
-  useEffect(() => {
-    const previouslyCompleted = completedLessonsRef.current;
-    const newlyCompletedLessonId = Object.keys(provisionalProgress).find(id => provisionalProgress[id] && !previouslyCompleted.has(id));
-
-    if (newlyCompletedLessonId) {
-        const lesson = allLessons.find(l => l.id === newlyCompletedLessonId);
-        if (lesson) {
-            toast({
-                description: `Progreso guardado: "${lesson.title}"`,
-                duration: 2000,
-            });
-        }
-    }
-    completedLessonsRef.current = new Set(Object.keys(provisionalProgress).filter(id => provisionalProgress[id]));
-  }, [provisionalProgress, allLessons, toast]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -345,14 +334,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                         if (progressRes.ok) {
                             const progressData = await progressRes.json();
                             setCourseProgress(progressData);
-                            const initialProgress: Record<string, boolean> = {};
-                            if (progressData?.completedLessons) {
-                                progressData.completedLessons.forEach((record: LessonCompletionRecord) => {
-                                    initialProgress[record.lessonId] = true;
-                                });
-                            }
-                            setProvisionalProgress(initialProgress);
-                            completedLessonsRef.current = new Set(Object.keys(initialProgress));
                         }
                     }
                 }
@@ -387,10 +368,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       
     const isVideoLesson = lesson.contentBlocks.some(b => b.type === 'VIDEO');
       
-    if (user && isEnrolled && !isCreatorViewingCourse && !isVideoLesson && lessonToSelect && !provisionalProgress[lessonToSelect]) {
+    if (user && isEnrolled && !isCreatorViewingCourse && !isVideoLesson && lessonToSelect && !completedLessonIds.has(lessonToSelect)) {
       recordInteraction(lessonToSelect, 'view');
     }
-  }, [isLoading, course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, selectedLessonId, allLessons, setPageTitle, provisionalProgress]);
+  }, [isLoading, course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, selectedLessonId, allLessons, setPageTitle, completedLessonIds]);
   
   const handleQuizSubmitted = useCallback((lessonId: string, score: number) => {
     recordInteraction(lessonId, 'quiz');
@@ -549,7 +530,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                       {moduleItem.lessons.length > 0 ? (
                         <ul className="space-y-1 border-l-2 border-primary/20 ml-2 pl-4">
                           {moduleItem.lessons.map(lesson => {
-                            const isCompleted = provisionalProgress[lesson.id];
+                            const isCompleted = completedLessonIds.has(lesson.id);
                             return (
                             <li key={lesson.id} className="py-0.5">
                                 <button 
