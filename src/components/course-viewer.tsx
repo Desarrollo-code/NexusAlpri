@@ -283,15 +283,12 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video', score?: number) => {
     if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || provisionalProgress[lessonId]) return;
     
-    // Optimistic update
     const nextProvisionalProgress = { ...provisionalProgress, [lessonId]: true };
     setProvisionalProgress(nextProvisionalProgress);
     
-    // Check if this was the last lesson
     const allLessonsAreCompleted = allLessons.every(lesson => nextProvisionalProgress[lesson.id]);
 
     if (allLessonsAreCompleted) {
-        // Automatically trigger final calculation
         handleConsolidateProgress();
     }
     
@@ -311,8 +308,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }, [user, courseId, isEnrolled, provisionalProgress, isCreatorViewingCourse, allLessons, handleConsolidateProgress]);
 
   useEffect(() => {
-    // Cuando el progreso provisional cambia, comparamos con el estado anterior
-    // para encontrar la lección recién completada y mostrar el toast.
     const previouslyCompleted = completedLessonsRef.current;
     const newlyCompletedLessonId = Object.keys(provisionalProgress).find(id => provisionalProgress[id] && !previouslyCompleted.has(id));
 
@@ -325,7 +320,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             });
         }
     }
-    // Actualizamos el ref para el próximo renderizado
     completedLessonsRef.current = new Set(Object.keys(provisionalProgress).filter(id => provisionalProgress[id]));
   }, [provisionalProgress, allLessons, toast]);
 
@@ -356,7 +350,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                                 });
                             }
                             setProvisionalProgress(initialProgress);
-                             // Inicializar el ref con el progreso cargado
                             completedLessonsRef.current = new Set(Object.keys(initialProgress));
                         }
                     }
@@ -380,7 +373,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   useEffect(() => {
     if (isLoading || !course) return;
 
-    setPageTitle(course.title); // Siempre mostrar el título del curso
+    setPageTitle(course.title);
     
     const lessonToSelect = lessonIdFromQuery || firstLessonId;
     if (lessonToSelect && selectedLessonId !== lessonToSelect) {
@@ -388,21 +381,24 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
     
     const lesson = allLessons.find(l => l.id === lessonToSelect);
-    const isVideoLesson = lesson?.contentBlocks.some(b => b.type === 'VIDEO');
+    if (!lesson) return;
       
-    // Do not auto-complete video lessons on click
-    if (user && isEnrolled && !isCreatorViewingCourse && !isVideoLesson && lessonToSelect) {
+    const isVideoLesson = lesson.contentBlocks.some(b => b.type === 'VIDEO');
+      
+    if (user && isEnrolled && !isCreatorViewingCourse && !isVideoLesson && lessonToSelect && !provisionalProgress[lessonToSelect]) {
       recordInteraction(lessonToSelect, 'view');
     }
-  }, [isLoading, course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, selectedLessonId, allLessons, setPageTitle]);
+  }, [isLoading, course, lessonIdFromQuery, firstLessonId, user, isEnrolled, recordInteraction, isCreatorViewingCourse, selectedLessonId, allLessons, setPageTitle, provisionalProgress]);
   
   const handleQuizSubmitted = useCallback((lessonId: string, quizId: string, score: number) => {
     recordInteraction(lessonId, 'quiz', score);
   }, [recordInteraction]);
   
-  const handleVideoEnd = useCallback((lessonId: string) => {
-    recordInteraction(lessonId, 'video');
-  }, [recordInteraction]);
+  const handleVideoEnd = useCallback(() => {
+      if (selectedLessonId) {
+          recordInteraction(selectedLessonId, 'video');
+      }
+  }, [recordInteraction, selectedLessonId]);
 
   const selectedLesson = useMemo(() => {
     if (!selectedLessonId || !course) return null;
@@ -440,7 +436,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
       if (isMobile) {
         setIsMobileSheetOpen(false);
       }
-      // Non-video lessons are marked complete on click
       const isVideoLesson = lesson.contentBlocks.some(b => b.type === 'VIDEO');
       if (!isVideoLesson) {
         recordInteraction(lesson.id, 'view');
@@ -450,7 +445,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   
   const renderContentBlock = (block: ContentBlock) => {
     if (block.type === 'VIDEO') {
-        return <VideoPlayer key={block.id} videoUrl={block.content || ''} lessonTitle={selectedLesson?.title} onVideoEnd={() => handleVideoEnd(selectedLessonId!)} />
+        return <VideoPlayer key={block.id} videoUrl={block.content || ''} lessonTitle={selectedLesson?.title} onVideoEnd={handleVideoEnd} />
     }
     
     if (block.type === 'QUIZ') {
@@ -472,7 +467,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
 
     if (block.type === 'TEXT') {
-        // Strip HTML tags for URL check
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = block.content;
         const textContent = tempDiv.textContent || tempDiv.innerText || "";
