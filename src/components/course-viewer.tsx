@@ -277,6 +277,8 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           setIsConsolidating(false);
       }
   }, [user, courseId, toast, isConsolidating]);
+  
+  const completedLessonsRef = useRef<Set<string>>(new Set());
 
   const recordInteraction = useCallback(async (lessonId: string, type: 'view' | 'quiz' | 'video', score?: number) => {
     if (isCreatorViewingCourse || !user || !courseId || !isEnrolled || provisionalProgress[lessonId]) return;
@@ -309,6 +311,25 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }, [user, courseId, isEnrolled, provisionalProgress, isCreatorViewingCourse, allLessons, handleConsolidateProgress]);
 
   useEffect(() => {
+    // Cuando el progreso provisional cambia, comparamos con el estado anterior
+    // para encontrar la lección recién completada y mostrar el toast.
+    const previouslyCompleted = completedLessonsRef.current;
+    const newlyCompletedLessonId = Object.keys(provisionalProgress).find(id => provisionalProgress[id] && !previouslyCompleted.has(id));
+
+    if (newlyCompletedLessonId) {
+        const lesson = allLessons.find(l => l.id === newlyCompletedLessonId);
+        if (lesson) {
+            toast({
+                description: `Progreso guardado: "${lesson.title}"`,
+                duration: 2000,
+            });
+        }
+    }
+    // Actualizamos el ref para el próximo renderizado
+    completedLessonsRef.current = new Set(Object.keys(provisionalProgress).filter(id => provisionalProgress[id]));
+  }, [provisionalProgress, allLessons, toast]);
+
+  useEffect(() => {
     const fetchData = async () => {
         setIsLoading(true);
         try {
@@ -335,6 +356,8 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                                 });
                             }
                             setProvisionalProgress(initialProgress);
+                             // Inicializar el ref con el progreso cargado
+                            completedLessonsRef.current = new Set(Object.keys(initialProgress));
                         }
                     }
                 }
