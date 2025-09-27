@@ -1,5 +1,5 @@
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -163,10 +163,11 @@ export interface UserNote {
 export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER';
 export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
 
-export interface EnterpriseResource extends Omit<PrismaResource, 'tags'> {
+export interface EnterpriseResource extends Omit<PrismaResource, 'tags' | 'status'> {
     tags: string[];
     uploaderName: string;
     hasPin: boolean;
+    status: ResourceStatus;
     uploader?: { id: string, name: string | null, avatar: string | null } | null;
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
 }
@@ -238,6 +239,9 @@ export interface CalendarEvent {
     creator?: { id: string, name: string | null };
     videoConferenceLink?: string | null;
     attachments: Attachment[];
+    recurrence: RecurrenceType;
+    recurrenceEndDate?: string | null;
+    parentId?: string | null;
 }
 
 // --- SECURITY ---
@@ -330,4 +334,4 @@ export type AppForm = PrismaForm & {
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
 };
 
-export { type FormStatus, type FormFieldType, type AnnouncementAttachment };
+export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType };

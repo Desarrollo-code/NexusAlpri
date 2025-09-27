@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 import type { UserRole, EventAudienceType } from '@/types';
+import { RecurrenceType } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,11 +24,12 @@ export async function GET(req: NextRequest) {
     // Fetch events based on user's role and specific invitations
     const events = await prisma.calendarEvent.findMany({
       where: {
+        // We fetch all parent events, the client will expand them
+        // And non-recurring events
         OR: [
-          { audienceType: 'ALL' },
-          { audienceType: user.role as UserRole },
-          { attendees: { some: { id: user.id } } },
-        ],
+          { recurrence: RecurrenceType.NONE },
+          { parentId: null }
+        ]
       },
       include: {
         attendees: {
@@ -42,7 +44,16 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(events);
+    // Filter events based on audience on the server-side to avoid exposing private events
+    const filteredEvents = events.filter(event => {
+        if (event.audienceType === 'ALL') return true;
+        if (event.audienceType === user.role) return true;
+        if (event.audienceType === 'SPECIFIC' && event.attendees.some(attendee => attendee.id === user.id)) return true;
+        if (user.role === 'ADMINISTRATOR') return true;
+        return false;
+    });
+
+    return NextResponse.json(filteredEvents);
   } catch (error) {
     console.error('[EVENTS_GET_ERROR]', error);
     return NextResponse.json({ message: 'Error al obtener los eventos' }, { status: 500 });
@@ -59,7 +70,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color, videoConferenceLink, attachments } = body;
+    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color, videoConferenceLink, attachments, recurrence, recurrenceEndDate } = body;
     
     if (!title || !start || !end || !session.id) {
         return NextResponse.json({ message: 'Faltan campos requeridos (título, inicio, fin, creador).' }, { status: 400 });
@@ -76,6 +87,8 @@ export async function POST(req: NextRequest) {
       color,
       videoConferenceLink,
       attachments,
+      recurrence: recurrence as RecurrenceType || RecurrenceType.NONE,
+      recurrenceEndDate: recurrenceEndDate ? new Date(recurrenceEndDate) : null,
       creator: {
         connect: { id: session.id },
       },

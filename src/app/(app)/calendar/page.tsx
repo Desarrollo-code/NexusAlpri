@@ -7,7 +7,7 @@ import { PlusCircle, Loader2, AlertTriangle, Edit, HelpCircle } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import type { CalendarEvent, EventAudienceType, Attachment } from '@/types';
-import { startOfToday } from 'date-fns';
+import { startOfToday, startOfMonth, endOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTitle } from '@/contexts/title-context';
@@ -19,6 +19,7 @@ import { DatePickerSidebar } from '@/components/calendar/date-picker-sidebar';
 import { MonthView } from '@/components/calendar/month-view';
 import { WeekView } from '@/components/calendar/week-view';
 import { DayView } from '@/components/calendar/day-view';
+import { expandRecurringEvents } from '@/lib/calendar-utils';
 
 export type CalendarView = 'month' | 'week' | 'day';
 
@@ -29,7 +30,7 @@ export default function CalendarPage() {
   const { setPageTitle } = useTitle();
   const { startTour, forceStartTour } = useTour();
 
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [baseEvents, setBaseEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -54,7 +55,7 @@ export default function CalendarPage() {
       const response = await fetch('/api/events', { cache: 'no-store' });
       if (!response.ok) throw new Error((await response.json()).message || 'Failed to fetch events');
       const data: CalendarEvent[] = await response.json();
-      setEvents(data);
+      setBaseEvents(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
       toast({ title: 'Error', description: `No se pudieron cargar los eventos: ${err instanceof Error ? err.message : ''}`, variant: 'destructive' });
@@ -69,14 +70,20 @@ export default function CalendarPage() {
     }
   }, [fetchEvents, user]);
 
+  const displayedEvents = useMemo(() => {
+      const rangeStart = startOfMonth(currentDate);
+      const rangeEnd = endOfMonth(currentDate);
+      return expandRecurringEvents(baseEvents, rangeStart, rangeEnd);
+  }, [baseEvents, currentDate]);
+
   const handleEventUpdate = (updatedEvent: CalendarEvent) => {
-    setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
-    fetchEvents(); // Re-fetch to ensure consistency
+    // Re-fetch all events to correctly handle recurring event updates
+    fetchEvents();
   };
 
   const handleEventDelete = (eventId: string) => {
-    setEvents(prev => prev.filter(e => e.id !== eventId));
-    fetchEvents(); // Re-fetch
+    // Re-fetch all events to correctly handle recurring event deletions
+    fetchEvents();
   };
   
   const handleOpenModal = (eventOrDate?: CalendarEvent | Date) => {
@@ -85,7 +92,8 @@ export default function CalendarPage() {
         setSelectedEvent(null);
         setModalDate(eventOrDate);
       } else if (eventOrDate) { // Clicked on an existing event
-        setSelectedEvent(eventOrDate);
+        const originalEvent = baseEvents.find(e => e.id === (eventOrDate.parentId || eventOrDate.id));
+        setSelectedEvent(originalEvent || eventOrDate);
         setModalDate(new Date(eventOrDate.start));
       } else { // Clicked "Create Event" button
          if (!canCreateEvent) return;
@@ -96,7 +104,7 @@ export default function CalendarPage() {
   }
 
   const renderView = () => {
-    const viewProps = { currentDate, events, onEventClick: handleOpenModal, onSlotClick: handleOpenModal };
+    const viewProps = { currentDate, events: displayedEvents, onEventClick: handleOpenModal, onSlotClick: handleOpenModal };
     switch (view) {
         case 'month': return <MonthView {...viewProps} />;
         case 'week': return <WeekView {...viewProps} />;
@@ -133,7 +141,7 @@ export default function CalendarPage() {
                 <DatePickerSidebar
                     selectedDate={currentDate}
                     onDateSelect={setCurrentDate}
-                    events={events}
+                    events={displayedEvents}
                     onEventClick={handleOpenModal}
                  />
              </aside>

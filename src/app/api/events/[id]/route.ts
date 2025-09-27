@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
+import { RecurrenceType } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +34,7 @@ export async function PUT(
     }
     
     const body = await req.json();
-    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color, videoConferenceLink, attachments } = body;
+    const { title, description, location, start, end, allDay, audienceType, attendeeIds, color, videoConferenceLink, attachments, recurrence, recurrenceEndDate } = body;
 
     const dataToUpdate: any = {
       title,
@@ -46,6 +47,8 @@ export async function PUT(
       color,
       videoConferenceLink,
       attachments,
+      recurrence: recurrence as RecurrenceType || RecurrenceType.NONE,
+      recurrenceEndDate: recurrenceEndDate ? new Date(recurrenceEndDate) : null,
     };
 
     if (attendeeIds && Array.isArray(attendeeIds)) {
