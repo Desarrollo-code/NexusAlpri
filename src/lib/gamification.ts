@@ -12,26 +12,28 @@ export const XP_CONFIG = {
     COMPLETE_QUIZ: 15,
     PASS_QUIZ: 25, // Puntos extra por aprobar
     COMPLETE_COURSE: 100,
+    REACT_TO_ANNOUNCEMENT: 1,
+    TAKE_NOTE: 2,
+    DOWNLOAD_RESOURCE: 5,
 };
 
 // Slugs de logros que deben existir en la tabla `Achievement`
+// Sincronizado con el schema.prisma
 export const ACHIEVEMENT_SLUGS = {
-    // Iniciales
-    FIRST_ENROLLMENT: 'first-enrollment',
-    FIRST_COURSE_COMPLETED: 'first-course-completed',
-    PERFECT_SCORE: 'perfect-quiz-score',
-    FIVE_COURSES_COMPLETED: 'five-courses-completed',
-    // Nuevos
-    FIRST_NOTE: 'first-note-taken',
-    FIRST_REACTION: 'first-reaction',
-    FIRST_RESOURCE_DOWNLOAD: 'first-resource-download',
-    FIRST_COURSE_PUBLISHED: 'first-course-published',
-    TEN_COURSES_COMPLETED: 'ten-courses-completed',
-    TWENTY_COURSES_COMPLETED: 'twenty-courses-completed',
-    HIGH_PERFORMER: 'high-performer',
-    LEVEL_5_REACHED: 'level-5-reached',
-    LEVEL_10_REACHED: 'level-10-reached',
-    LEVEL_20_REACHED: 'level-20-reached',
+    FIRST_ENROLLMENT: 'FIRST_ENROLLMENT',
+    FIRST_COURSE_COMPLETED: 'FIRST_COURSE_COMPLETED',
+    PERFECT_QUIZ_SCORE: 'PERFECT_QUIZ_SCORE',
+    FIVE_COURSES_COMPLETED: 'FIVE_COURSES_COMPLETED',
+    FIRST_NOTE: 'FIRST_NOTE',
+    FIRST_REACTION: 'FIRST_REACTION',
+    FIRST_RESOURCE_DOWNLOAD: 'FIRST_RESOURCE_DOWNLOAD',
+    FIRST_COURSE_PUBLISHED: 'FIRST_COURSE_PUBLISHED',
+    TEN_COURSES_COMPLETED: 'TEN_COURSES_COMPLETED',
+    TWENTY_COURSES_COMPLETED: 'TWENTY_COURSES_COMPLETED',
+    HIGH_PERFORMER: 'HIGH_PERFORMER',
+    LEVEL_5_REACHED: 'LEVEL_5_REACHED',
+    LEVEL_10_REACHED: 'LEVEL_10_REACHED',
+    LEVEL_20_REACHED: 'LEVEL_20_REACHED',
 };
 
 type AwardAchievementParams = {
@@ -47,20 +49,20 @@ type AwardAchievementParams = {
 export async function addXp(userId: string, points: number) {
     if (!userId || points <= 0) return;
     try {
-        const user = await prisma.user.update({
+        const user = await prisma.user.findUnique({ where: { id: userId }, select: { xp: true }});
+        if (!user) return;
+        const oldXp = user.xp || 0;
+
+        const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: {
                 xp: {
                     increment: points
                 }
             },
-            select: { xp: true, id: true }
         });
         
-        // Después de añadir XP, verificar si el usuario subió de nivel.
-        if (user.xp) {
-            await checkAndAwardLevelUp(user as User, user.xp - points);
-        }
+        await checkAndAwardLevelUp(updatedUser as User, oldXp);
 
     } catch (error) {
         console.error(`Error al añadir ${points} XP al usuario ${userId}:`, error);
@@ -114,7 +116,7 @@ export async function awardAchievement({ userId, slug }: AwardAchievementParams)
                 userId,
                 title: `¡Logro Desbloqueado: ${achievement.name}!`,
                 description: `Has ganado ${achievement.points} puntos de experiencia.`,
-                link: '/profile'
+                link: '/leaderboard'
             }
         });
 
@@ -197,7 +199,7 @@ const calculateLevel = (xp: number) => {
 };
 
 export async function checkAndAwardLevelUp(user: User, oldXp: number) {
-    if (user.xp === null) return;
+    if (user.xp === null || user.xp === undefined) return;
 
     const oldLevel = calculateLevel(oldXp);
     const newLevel = calculateLevel(user.xp);

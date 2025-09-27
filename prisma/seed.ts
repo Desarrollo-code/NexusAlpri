@@ -1,3 +1,4 @@
+
 // prisma/seed.ts
 import { PrismaClient, UserRole, AchievementSlug, RecurrenceType } from '@prisma/client';
 import bcrypt from 'bcryptjs';
@@ -143,16 +144,14 @@ async function main() {
   console.log('Creando eventos del calendario...');
   await prisma.calendarEvent.deleteMany({}); // Limpiar eventos antiguos
   const now = new Date();
-  await prisma.calendarEvent.createMany({
-    data: [
-      { id: 'clseedevent01', title: 'Reunión Trimestral de Resultados', start: new Date(now.getFullYear(), now.getMonth(), 15, 10, 0), end: new Date(now.getFullYear(), now.getMonth(), 15, 11, 30), audienceType: 'ALL', creatorId: adminUser.id, color: 'blue' },
-      { id: 'clseedevent02', title: 'Pausa Activa Diaria', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 30), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 45), audienceType: 'ALL', creatorId: adminUser.id, color: 'green', recurrence: RecurrenceType.DAILY, recurrenceEndDate: addDays(now, 30) },
-      { id: 'clseedevent03', title: 'Fecha Límite: Reporte de Ventas Q2', start: new Date(now.getFullYear(), now.getMonth(), 10), end: new Date(now.getFullYear(), now.getMonth(), 10), allDay: true, audienceType: 'INSTRUCTOR', creatorId: adminUser.id, color: 'red' },
-      { id: 'clseedevent04', title: 'Reunión de Planificación (Instructores)', start: subDays(now, 5), end: subDays(now, 5), audienceType: 'INSTRUCTOR', creatorId: adminUser.id, color: 'orange', videoConferenceLink: 'https://meet.google.com/xyz-abc' },
-      { id: 'clseedevent05', title: 'Reunión Semanal de Sincronización', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 30), audienceType: 'ALL', creatorId: instructorUser.id, color: 'blue', recurrence: RecurrenceType.WEEKLY },
-    ],
-    skipDuplicates: true
-  });
+  
+  // createMany no funciona con campos Json, por lo que creamos uno por uno
+  await prisma.calendarEvent.create({ data: { id: 'clseedevent01', title: 'Reunión Trimestral de Resultados', start: new Date(now.getFullYear(), now.getMonth(), 15, 10, 0), end: new Date(now.getFullYear(), now.getMonth(), 15, 11, 30), audienceType: 'ALL', creatorId: adminUser.id, color: 'blue' }});
+  await prisma.calendarEvent.create({ data: { id: 'clseedevent02', title: 'Pausa Activa Diaria', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 30), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 45), audienceType: 'ALL', creatorId: adminUser.id, color: 'green', recurrence: RecurrenceType.DAILY, recurrenceEndDate: addDays(now, 30) }});
+  await prisma.calendarEvent.create({ data: { id: 'clseedevent03', title: 'Fecha Límite: Reporte de Ventas Q2', start: new Date(now.getFullYear(), now.getMonth(), 10), end: new Date(now.getFullYear(), now.getMonth(), 10), allDay: true, audienceType: 'INSTRUCTOR', creatorId: adminUser.id, color: 'red' }});
+  await prisma.calendarEvent.create({ data: { id: 'clseedevent04', title: 'Reunión de Planificación (Instructores)', start: subDays(now, 5), end: subDays(now, 5), audienceType: 'INSTRUCTOR', creatorId: adminUser.id, color: 'orange', videoConferenceLink: 'https://meet.google.com/xyz-abc' }});
+  await prisma.calendarEvent.create({ data: { id: 'clseedevent05', title: 'Reunión Semanal de Sincronización', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 30), audienceType: 'ALL', creatorId: instructorUser.id, color: 'blue', recurrence: RecurrenceType.WEEKLY }});
+  
   console.log('Eventos del calendario creados.');
 
   // --- 5. BIBLIOTECA DE RECURSOS (ampliado) ---
