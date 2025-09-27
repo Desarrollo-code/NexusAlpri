@@ -1,4 +1,3 @@
-
 // src/app/(app)/leaderboard/page.tsx
 'use client';
 
@@ -13,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 
 interface RankedUser {
   rank: number;
