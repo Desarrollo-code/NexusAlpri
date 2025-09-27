@@ -1,12 +1,11 @@
-// src/app/(app)/achievements/page.tsx
+// src/components/gamification/achievements-view.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { useTitle } from '@/contexts/title-context';
 import { useToast } from '@/hooks/use-toast';
 import * as LucideIcons from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -64,30 +63,25 @@ const AchievementCard = ({ ach }: { ach: AchievementData }) => {
                     </div>
                 )}
             </CardContent>
-            <CardFooter className="flex justify-between items-center text-xs p-3 border-t bg-black/5 dark:bg-black/10">
+            <CardContent className="flex justify-between items-center text-xs p-3 border-t bg-black/5 dark:bg-black/10">
                 <span className="font-bold text-primary">{ach.points} XP</span>
                 {isUnlocked && ach.unlockedAt && (
                     <span className="text-muted-foreground">
                         {new Date(ach.unlockedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric'})}
                     </span>
                 )}
-            </CardFooter>
+            </CardContent>
         </Card>
     )
 }
 
-export default function AchievementsPage() {
+export function AchievementsView() {
   const { user } = useAuth();
-  const { setPageTitle } = useTitle();
   const { toast } = useToast();
 
   const [achievements, setAchievements] = useState<AchievementData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setPageTitle('Mis Logros');
-  }, [setPageTitle]);
 
   const fetchAchievements = useCallback(async () => {
     if (!user) return;
@@ -123,8 +117,11 @@ export default function AchievementsPage() {
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <Skeleton className="h-10 w-1/2" />
-        <Skeleton className="h-8 w-3/4" />
+        <Skeleton className="h-8 w-1/3" />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-64"/>)}
+        </div>
+        <Skeleton className="h-8 w-1/3" />
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {[...Array(10)].map((_, i) => <Skeleton key={i} className="h-64"/>)}
         </div>
@@ -144,14 +141,6 @@ export default function AchievementsPage() {
 
   return (
     <div className="space-y-8">
-       <div>
-            <h1 className="text-3xl font-bold font-headline flex items-center gap-2">
-            <LucideIcons.Trophy className="h-8 w-8 text-amber-400" />
-            Mis Logros
-            </h1>
-            <p className="text-muted-foreground mt-1">Sigue tu progreso y descubre nuevos desafíos para ganar experiencia.</p>
-        </div>
-        
         {/* Unlocked Achievements */}
         <section>
             <h2 className="text-2xl font-semibold mb-4 pb-2 border-b-2 border-primary/20">Desbloqueados ({unlocked.length})</h2>

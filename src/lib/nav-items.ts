@@ -33,16 +33,9 @@ const NAVIGATION_ITEMS: NavItem[] = [
   },
   {
     id: 'leaderboard',
-    label: 'Ranking',
+    label: 'Progreso y Ranking',
     icon: Trophy,
     path: '/leaderboard',
-    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
-  },
-  {
-    id: 'achievements',
-    label: 'Mis Logros',
-    icon: Trophy,
-    path: '/achievements',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
   {
