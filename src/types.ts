@@ -289,7 +289,7 @@ export interface AdminDashboardStats {
     coursesByStatus: { status: CourseStatus; count: number }[];
     recentLogins: number;
     newEnrollmentsLast7Days: number;
-    userRegistrationTrend: { date: string, newCourses: number, newEnrollments: number }[];
+    userRegistrationTrend: { date: string, newCourses: number, newEnrollments: number, count: number }[];
     averageCompletionRate: number;
     topCoursesByEnrollment: CourseInfo[];
     topCoursesByCompletion: CourseInfo[];

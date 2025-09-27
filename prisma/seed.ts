@@ -1,6 +1,5 @@
-
 // prisma/seed.ts
-import { PrismaClient, UserRole, AchievementSlug } from '@prisma/client';
+import { PrismaClient, UserRole, AchievementSlug, RecurrenceType } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { addDays, subDays } from 'date-fns';
 
@@ -147,46 +146,32 @@ async function main() {
   await prisma.calendarEvent.createMany({
     data: [
       { id: 'clseedevent01', title: 'Reunión Trimestral de Resultados', start: new Date(now.getFullYear(), now.getMonth(), 15, 10, 0), end: new Date(now.getFullYear(), now.getMonth(), 15, 11, 30), audienceType: 'ALL', creatorId: adminUser.id, color: 'blue' },
-      { id: 'clseedevent02', title: 'Taller: Técnicas de Venta Avanzadas', start: new Date(now.getFullYear(), now.getMonth(), 5, 9, 0), end: new Date(now.getFullYear(), now.getMonth(), 5, 12, 0), audienceType: 'STUDENT', creatorId: instructorUser.id, color: 'green', location: 'Sala de Conferencias 3' },
+      { id: 'clseedevent02', title: 'Pausa Activa Diaria', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 30), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 45), audienceType: 'ALL', creatorId: adminUser.id, color: 'green', recurrence: RecurrenceType.DAILY, recurrenceEndDate: addDays(now, 30) },
       { id: 'clseedevent03', title: 'Fecha Límite: Reporte de Ventas Q2', start: new Date(now.getFullYear(), now.getMonth(), 10), end: new Date(now.getFullYear(), now.getMonth(), 10), allDay: true, audienceType: 'INSTRUCTOR', creatorId: adminUser.id, color: 'red' },
       { id: 'clseedevent04', title: 'Reunión de Planificación (Instructores)', start: subDays(now, 5), end: subDays(now, 5), audienceType: 'INSTRUCTOR', creatorId: adminUser.id, color: 'orange', videoConferenceLink: 'https://meet.google.com/xyz-abc' },
-      { id: 'clseedevent05', title: 'Coffee & Code: Sesión informal', start: addDays(now, 2), end: addDays(now, 2), audienceType: 'ALL', creatorId: studentUser2.id, color: 'orange' },
-      { id: 'clseedevent06', title: 'Revisión de Contenido de Cursos', start: new Date(now.getFullYear(), now.getMonth(), 20, 14, 0), end: new Date(now.getFullYear(), now.getMonth(), 20, 16, 0), audienceType: 'ADMINISTRATOR', creatorId: adminUser.id, color: 'purple' },
-      { id: 'clseedevent07', title: 'Presentación Nuevo Producto "Orion"', start: addDays(now, 7), end: addDays(now, 7), allDay: true, audienceType: 'ALL', creatorId: adminUser.id, color: 'blue' },
-      { id: 'clseedevent08', title: 'Q&A con el CEO', start: new Date(now.getFullYear(), now.getMonth(), 25, 11, 0), end: new Date(now.getFullYear(), now.getMonth(), 25, 12, 0), audienceType: 'ALL', creatorId: adminUser.id, color: 'green' },
-      { id: 'clseedevent09', title: 'Día de Formación en Ciberseguridad', start: addDays(now, 10), end: addDays(now, 10), audienceType: 'ALL', creatorId: adminUser.id, color: 'red', allDay: true },
-      { id: 'clseedevent10', title: 'Reunión 1-a-1: Estudiante y Instructor', start: new Date(now.getFullYear(), now.getMonth(), 3, 15, 0), end: new Date(now.getFullYear(), now.getMonth(), 3, 15, 30), audienceType: 'SPECIFIC', creatorId: instructorUser.id, color: 'blue' },
-      { id: 'clseedevent11', title: 'Workshop: Storytelling para Ventas', start: addDays(now, 12), end: addDays(now, 12), audienceType: 'STUDENT', creatorId: instructorUser.id, color: 'green' },
-      { id: 'clseedevent12', title: 'Feriado Nacional', start: new Date(2024, 6, 20), end: new Date(2024, 6, 20), allDay: true, audienceType: 'ALL', creatorId: adminUser.id, color: 'orange' },
-      { id: 'clseedevent13', title: 'Cierre Fiscal Mensual', start: new Date(now.getFullYear(), now.getMonth(), 28), end: new Date(now.getFullYear(), now.getMonth(), 28), allDay: true, audienceType: 'ADMINISTRATOR', creatorId: adminUser.id, color: 'red' },
-      { id: 'clseedevent14', title: 'Demostración Cliente "Acmé"', start: addDays(now, 4), end: addDays(now, 4), audienceType: 'SPECIFIC', creatorId: instructorUser.id, color: 'blue' },
-      { id: 'clseedevent15', title: 'Evento Social: Fin de Mes', start: new Date(now.getFullYear(), now.getMonth(), 30, 17, 0), end: new Date(now.getFullYear(), now.getMonth(), 30, 19, 0), audienceType: 'ALL', creatorId: studentUser1.id, color: 'green' },
+      { id: 'clseedevent05', title: 'Reunión Semanal de Sincronización', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 30), audienceType: 'ALL', creatorId: instructorUser.id, color: 'blue', recurrence: RecurrenceType.WEEKLY },
     ],
     skipDuplicates: true
   });
-  // Asignar asistentes específicos a eventos
-  await prisma.calendarEvent.update({ where: { id: 'clseedevent10' }, data: { attendees: { connect: [{ id: studentUser1.id }] } } });
-  await prisma.calendarEvent.update({ where: { id: 'clseedevent14' }, data: { attendees: { connect: [{ id: studentUser2.id }, { id: instructorUser.id }] } } });
-
   console.log('Eventos del calendario creados.');
 
   // --- 5. BIBLIOTECA DE RECURSOS (ampliado) ---
   console.log('Creando recursos de la biblioteca...');
   await prisma.enterpriseResource.deleteMany({}); // Limpiar recursos
   const pinHash = await bcrypt.hash('1234', 10);
-  const folderRRHH = await prisma.enterpriseResource.create({ data: { id: 'clseedfolder01', title: 'Documentos de RRHH', type: 'FOLDER', uploaderId: adminUser.id, ispublic: true }});
+  const folderRRHH = await prisma.enterpriseResource.create({ data: { id: 'clseedfolder01', title: 'Documentos de RRHH', type: 'FOLDER', uploaderId: adminUser.id, ispublic: true, status: 'ACTIVE' }});
   await prisma.enterpriseResource.createMany({
       data: [
-        { id: 'clseedresource01', title: 'Guía de Beneficios 2024', type: 'DOCUMENT', uploaderId: adminUser.id, parentId: folderRRHH.id, url: '/uploads/placeholder.pdf', pin: pinHash, ispublic: true, category: 'Recursos Humanos' },
-        { id: 'clseedresource02', title: 'Política de Teletrabajo', type: 'DOCUMENT', uploaderId: adminUser.id, parentId: folderRRHH.id, url: '/uploads/placeholder.pdf', ispublic: true, category: 'Recursos Humanos' },
+        { id: 'clseedresource01', title: 'Guía de Beneficios 2024', type: 'DOCUMENT', uploaderId: adminUser.id, parentId: folderRRHH.id, url: '/uploads/placeholder.pdf', pin: pinHash, ispublic: true, category: 'Recursos Humanos', status: 'ACTIVE', expiresAt: addDays(new Date(), 45) },
+        { id: 'clseedresource02', title: 'Política de Teletrabajo', type: 'DOCUMENT', uploaderId: adminUser.id, parentId: folderRRHH.id, url: '/uploads/placeholder.pdf', ispublic: true, category: 'Recursos Humanos', status: 'ACTIVE' },
       ],
       skipDuplicates: true
   });
-  const folderMarketing = await prisma.enterpriseResource.create({ data: { id: 'clseedfolder02', title: 'Marketing y Ventas', type: 'FOLDER', uploaderId: instructorUser.id, ispublic: true }});
+  const folderMarketing = await prisma.enterpriseResource.create({ data: { id: 'clseedfolder02', title: 'Marketing y Ventas', type: 'FOLDER', uploaderId: instructorUser.id, ispublic: true, status: 'ACTIVE' }});
   await prisma.enterpriseResource.createMany({
       data: [
-        { id: 'clseedresource03', title: 'Video Institucional 2024', type: 'VIDEO', uploaderId: instructorUser.id, parentId: folderMarketing.id, url: 'https://www.youtube.com/watch?v=6c5y4_DBw_g', ispublic: true, category: 'Marketing' },
-        { id: 'clseedresource04', title: 'Manual de Marca', type: 'DOCUMENT', uploaderId: instructorUser.id, parentId: folderMarketing.id, url: '/uploads/placeholder.pdf', ispublic: false, category: 'Marketing' }, // Privado
+        { id: 'clseedresource03', title: 'Video Institucional 2024', type: 'VIDEO', uploaderId: instructorUser.id, parentId: folderMarketing.id, url: 'https://www.youtube.com/watch?v=6c5y4_DBw_g', ispublic: true, category: 'Marketing', status: 'ACTIVE' },
+        { id: 'clseedresource04', title: 'Manual de Marca (Archivado)', type: 'DOCUMENT', uploaderId: instructorUser.id, parentId: folderMarketing.id, url: '/uploads/placeholder.pdf', ispublic: false, category: 'Marketing', status: 'ARCHIVED' }, // Privado y archivado
       ],
       skipDuplicates: true
   });

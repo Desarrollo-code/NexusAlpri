@@ -49,7 +49,7 @@ export function expandRecurringEvents(
     // Iteramos desde el inicio del evento hasta el final de la recurrencia o el final del rango,
     // lo que ocurra primero.
     while (cursor <= finalEndDate) {
-      if (cursor >= rangeStart) {
+      if (cursor >= rangeStart && cursor <= rangeEnd) { // Asegurarnos de que la ocurrencia está dentro del rango visible
         const duration = eventEnd.getTime() - eventStart.getTime();
         
         const occurrenceStart = new Date(cursor.getTime());
@@ -64,6 +64,9 @@ export function expandRecurringEvents(
           end: occurrenceEnd.toISOString(),
         });
       }
+      
+      // Salimos del bucle si el cursor ya pasó el rango visible para optimizar
+      if (cursor > rangeEnd) break;
       
       // Avanzamos el cursor según el tipo de recurrencia.
       switch (event.recurrence) {

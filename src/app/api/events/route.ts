@@ -26,10 +26,7 @@ export async function GET(req: NextRequest) {
       where: {
         // We fetch all parent events, the client will expand them
         // And non-recurring events
-        OR: [
-          { recurrence: RecurrenceType.NONE },
-          { parentId: null }
-        ]
+        parentId: null
       },
       include: {
         attendees: {
@@ -49,7 +46,7 @@ export async function GET(req: NextRequest) {
         if (event.audienceType === 'ALL') return true;
         if (event.audienceType === user.role) return true;
         if (event.audienceType === 'SPECIFIC' && event.attendees.some(attendee => attendee.id === user.id)) return true;
-        if (user.role === 'ADMINISTRATOR') return true;
+        if (user.role === 'ADMINISTRATOR') return true; // Admins see everything
         return false;
     });
 
