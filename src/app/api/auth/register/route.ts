@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
         const allowedDomains = settings.emailWhitelist.split(',').map(d => d.trim().toLowerCase());
         const emailDomain = email.substring(email.lastIndexOf('@') + 1).toLowerCase();
         if (!allowedDomains.includes(emailDomain)) {
-            return NextResponse.json({ message: `Solo se permiten correos con los dominios autorizados.` }, { status: 403 });
+            return NextResponse.json({ message: `Solo se permiten correos con los dominios autorizados: ${settings.emailWhitelist}.` }, { status: 403 });
         }
     }
 
