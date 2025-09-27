@@ -158,7 +158,7 @@ export async function PUT(
                                 data: { 
                                     text: questionData.text,
                                     order: qIndex,
-                                    type: questionData.type,
+                                    type: 'SINGLE_CHOICE', // For now, only single choice is fully supported
                                     quizId: savedQuiz.id
                                 }
                             });

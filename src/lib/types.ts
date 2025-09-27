@@ -63,14 +63,14 @@ export interface NavItem {
 // --- COURSE CONTENT ---
 export type LessonType = 'TEXT' | 'VIDEO' | 'QUIZ' | 'FILE';
 export type CourseStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE' | 'TRUE_FALSE';
+export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE';
 
 export interface AnswerOption {
     id: string;
     text: string;
     isCorrect: boolean;
     feedback?: string | null;
-    points?: number;
+    points: number;
 }
 
 export interface Question {
@@ -163,25 +163,43 @@ export interface UserNote {
 export type ResourceType = 'FOLDER' | 'DOCUMENT' | 'GUIDE' | 'MANUAL' | 'POLICY' | 'VIDEO' | 'EXTERNAL_LINK' | 'OTHER';
 export type ResourceStatus = 'ACTIVE' | 'ARCHIVED';
 
-export interface EnterpriseResource extends Omit<PrismaResource, 'tags'> {
+export interface EnterpriseResource extends Omit<PrismaResource, 'tags' | 'status'> {
     tags: string[];
     uploaderName: string;
     hasPin: boolean;
+    status: ResourceStatus;
     uploader?: { id: string, name: string | null, avatar: string | null } | null;
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
 }
 
 
 // --- ANNOUNCEMENTS ---
+export interface Reaction {
+    userId: string;
+    reaction: string;
+    user: {
+      id: string;
+      name: string | null;
+      avatar?: string | null;
+    };
+}
+
 export interface Announcement {
     id: string;
     title: string;
     content: string;
     date: string;
-    author: { id: string, name: string | null, avatar?: string | null } | null;
+    author: { id: string; name: string | null; avatar?: string | null; } | null;
     audience: UserRole[] | 'ALL' | string;
     priority?: 'Normal' | 'Urgente';
+    isPinned: boolean;
     attachments: AnnouncementAttachment[];
+    reads: { id: string; name: string | null; avatar?: string | null; }[];
+    reactions: Reaction[];
+    _count: {
+      reads: number;
+      reactions: number;
+    };
 }
 
 // --- NOTIFICATIONS ---
@@ -298,9 +316,9 @@ export interface FormFieldOption {
   points: number;
 }
 
-export interface FormField extends Omit<PrismaFormField, 'options'> {
+export type FormField = Omit<PrismaFormField, 'options'> & {
   options: FormFieldOption[];
-}
+};
 
 export type AppForm = PrismaForm & {
     fields: FormField[];
