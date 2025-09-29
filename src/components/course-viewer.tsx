@@ -587,7 +587,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] w-full">
+    <div className="flex h-full w-full">
         {/* --- Sidebar (desktop) --- */}
         {!isMobile && isSidebarVisible && (
             <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col h-full">
@@ -606,41 +606,43 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         </Sheet>
         
         {/* --- Main Content Area --- */}
-        <div className="flex-1 flex flex-col min-w-0 h-full">
-            <main className="flex-1 flex overflow-hidden">
-                <div className="flex-1 overflow-y-auto thin-scrollbar">
-                    <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-8">
-                        {selectedLesson ? (
-                            <div>
-                                <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-                                    <GraduationCap className="h-5 w-5 text-primary" />
-                                    <h2>{selectedLesson.title}</h2>
-                                </div>
-                                {(selectedLesson.contentBlocks || []).map(block => renderContentBlock(block))}
+        <div className={cn(
+          "flex-1 flex flex-col min-w-0 h-full transition-[margin-right] duration-300 ease-in-out",
+          isNotesPanelOpen && !isMobile && "mr-[28rem]"
+        )}>
+            <main className="flex-1 overflow-y-auto thin-scrollbar">
+                <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-8">
+                    {selectedLesson ? (
+                        <div>
+                            <div className="flex items-center gap-2 text-lg font-semibold mb-4">
+                                <GraduationCap className="h-5 w-5 text-primary" />
+                                <h2>{selectedLesson.title}</h2>
                             </div>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                                <BookOpenText className="h-12 w-12 text-muted-foreground mb-4" />
-                                <h3 className="text-xl font-semibold">Selecciona una lección</h3>
-                                <p className="text-muted-foreground">Elige una lección del menú para comenzar a aprender.</p>
-                            </div>
-                        )}
-                    </div>
+                            {(selectedLesson.contentBlocks || []).map(block => renderContentBlock(block))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                            <BookOpenText className="h-12 w-12 text-muted-foreground mb-4" />
+                            <h3 className="text-xl font-semibold">Selecciona una lección</h3>
+                            <p className="text-muted-foreground">Elige una lección del menú para comenzar a aprender.</p>
+                        </div>
+                    )}
                 </div>
-
-                {isNotesPanelOpen && !isMobile && (
-                    <aside className="w-full max-w-md md:w-[28rem] flex-shrink-0 h-full">
-                        {selectedLessonId && isEnrolled && !isCreatorViewingCourse && (
-                            <LessonNotesPanel 
-                                lessonId={selectedLessonId}
-                                isOpen={isNotesPanelOpen}
-                                onClose={() => setIsNotesPanelOpen(false)}
-                            />
-                        )}
-                    </aside>
-                )}
             </main>
         </div>
+
+        {/* --- Notes Panel (desktop) --- */}
+        {isNotesPanelOpen && !isMobile && (
+            <aside className="w-full max-w-md md:w-[28rem] flex-shrink-0 h-full fixed top-0 right-0 z-20 mt-20">
+                {selectedLessonId && isEnrolled && (
+                    <LessonNotesPanel 
+                        lessonId={selectedLessonId}
+                        isOpen={isNotesPanelOpen}
+                        onClose={() => setIsNotesPanelOpen(false)}
+                    />
+                )}
+            </aside>
+        )}
 
         {/* Floating Action Buttons */}
         <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
@@ -654,10 +656,16 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                     <PanelLeft className="h-5 w-5" />
                 </Button>
              )}
-            {isEnrolled && !isCreatorViewingCourse && (
+            {isEnrolled && (
                 <Sheet open={isMobile && isNotesPanelOpen} onOpenChange={setIsNotesPanelOpen}>
                     <SheetTrigger asChild>
-                         <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsNotesPanelOpen(!isNotesPanelOpen)}>
+                         <Button 
+                            size="icon" 
+                            className={cn(
+                              "rounded-full h-12 w-12 shadow-lg transition-colors",
+                              isNotesPanelOpen && "bg-primary text-primary-foreground"
+                            )}
+                            onClick={() => setIsNotesPanelOpen(!isNotesPanelOpen)}>
                             <Notebook className="h-5 w-5" />
                         </Button>
                     </SheetTrigger>
