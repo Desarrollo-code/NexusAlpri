@@ -29,7 +29,6 @@ import {
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { UploadArea } from '@/components/ui/upload-area';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
@@ -52,7 +51,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { DndContext, useDraggable, useDroppable, type DragEndEvent } from '@dnd-kit/core';
+import { DndContext, useDraggable, useDroppable, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 
 
 // --- Main Page Component ---
@@ -102,6 +101,11 @@ export default function ResourcesPage() {
   const [isDeletingResource, setIsDeletingResource] = useState(false);
   
   const [selectedResource, setSelectedResource] = useState<AppResourceType | null>(null);
+  
+  const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 10 } });
+  const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } });
+  const sensors = useSensors(mouseSensor, touchSensor);
+
 
   useEffect(() => {
     setPageTitle('Biblioteca de Recursos');
@@ -443,7 +447,7 @@ export default function ResourcesPage() {
     }
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="space-y-6">
           <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex-grow space-y-1">
@@ -605,9 +609,8 @@ export default function ResourcesPage() {
                             </div>
                         ) : newResourceType !== 'FOLDER' && !editingResource ? (
                           <div className="space-y-1">
-                              <UploadArea onFileSelect={(file) => setNewResourceFile(file)} disabled={isSubmittingResource} />
-                              {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
-                              {newResourceFile && <p className="text-xs text-center text-muted-foreground mt-1">Archivo seleccionado: {newResourceFile.name}</p>}
+                              <Progress value={uploadProgress} />
+                              <p className="text-xs text-center text-muted-foreground mt-1">Archivo seleccionado: {newResourceFile?.name || 'Ninguno'}</p>
                           </div>
                         ) : null}
                          
@@ -636,9 +639,7 @@ export default function ResourcesPage() {
                                           {expiresAt ? format(expiresAt, "PPP", { locale: es }) : <span>Sin fecha de expiración</span>}
                                         </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0">
-                                        <Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus locale={es} />
-                                    </PopoverContent>
+                                    <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={expiresAt} onSelect={setExpiresAt} initialFocus locale={es} /></PopoverContent>
                                 </Popover>
                             </div>
                          </div>

@@ -1,6 +1,6 @@
+
 // src/components/resources/resource-list-item.tsx
 'use client';
-
 import React from 'react';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
@@ -38,8 +38,6 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
     return (
         <div 
             ref={setNodeRef}
-            {...listeners}
-            {...attributes}
             className={cn(
                 "grid grid-cols-12 gap-4 p-3 transition-colors hover:bg-muted/50 items-center",
                 isDragging && 'opacity-50 bg-muted z-10'
@@ -48,6 +46,8 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
             <div 
                 className="col-span-6 flex items-center gap-4 cursor-pointer"
                 onClick={onSelect}
+                 {...listeners}
+                 {...attributes}
             >
                 <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-muted rounded-lg">
                     <Icon className="h-5 w-5" />
@@ -94,11 +94,11 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
             <div className="col-span-full md:col-span-1 text-right">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Opciones para ${resource.title}`}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Opciones para ${resource.title}`} onClick={(e) => e.stopPropagation()}>
                             <MoreVertical className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                         {resource.url && (
                             resource.type === 'EXTERNAL_LINK' ? (
                                 <DropdownMenuItem asChild>

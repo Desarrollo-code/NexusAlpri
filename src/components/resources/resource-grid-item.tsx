@@ -38,6 +38,8 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
     });
 
     const handleClick = (e: React.MouseEvent) => {
+        // Previene que el evento de clic se propague al listener de dnd-kit
+        e.stopPropagation();
         if (isFolder) {
             onNavigate(resource);
         } else {
@@ -84,16 +86,15 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
     };
     
     return (
-        <div ref={setNodeRef} {...listeners} {...attributes} className={cn("w-full touch-none", isDragging && 'opacity-50')}>
+        <div ref={setNodeRef} className={cn("w-full touch-none", isDragging && 'opacity-50')}>
             <Card 
                 className={cn(
-                    "group w-full h-full transition-all duration-200 cursor-pointer bg-card hover:border-primary/50 hover:shadow-lg",
+                    "group w-full h-full transition-all duration-200 bg-card hover:border-primary/50 hover:shadow-lg",
                     isFolder ? "hover:-translate-y-1" : "",
                     isOver && "ring-2 ring-primary ring-offset-2"
                 )}
-                onClick={handleClick}
             >
-                <div className="aspect-video w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg bg-muted/20">
+                <div className="aspect-video w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg bg-muted/20 cursor-pointer" onClick={handleClick} {...listeners} {...attributes}>
                     <Thumbnail />
                      {resource.hasPin && !isFolder && (
                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
@@ -109,7 +110,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                         </div>
                         {canModify && (
                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 -mr-2 text-muted-foreground" aria-label={`Opciones para ${resource.title}`}><MoreVertical className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>

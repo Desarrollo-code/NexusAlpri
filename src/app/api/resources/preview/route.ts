@@ -12,7 +12,6 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        // CORRECCIÓN: Si la URL ya es absoluta, úsala. Si es relativa, combínala con el origen.
         const absoluteUrl = fileUrl.startsWith('http') ? fileUrl : new URL(fileUrl, req.nextUrl.origin).href;
         
         const response = await fetch(absoluteUrl);
@@ -27,8 +26,6 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ html: value });
         }
         
-        // Aquí se podrían añadir más manejadores para .xlsx, etc.
-
         return NextResponse.json({ message: 'Tipo de archivo no soportado para previsualización' }, { status: 415 });
 
     } catch (error) {
