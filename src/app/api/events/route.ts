@@ -21,13 +21,22 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
     }
     
-    // Fetch events based on user's role and specific invitations
+    // Base query to fetch only parent recurring events or non-recurring events
+    let whereClause: any = {
+      parentId: null,
+    };
+    
+    // Filter by audience unless the user is an admin
+    if (user.role !== 'ADMINISTRATOR') {
+        whereClause.OR = [
+            { audienceType: 'ALL' },
+            { audienceType: user.role as UserRole },
+            { attendees: { some: { id: user.id } } },
+        ];
+    }
+    
     const events = await prisma.calendarEvent.findMany({
-      where: {
-        // We fetch all parent events, the client will expand them
-        // And non-recurring events
-        parentId: null
-      },
+      where: whereClause,
       include: {
         attendees: {
           select: { id: true, name: true, email: true },
@@ -41,16 +50,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Filter events based on audience on the server-side to avoid exposing private events
-    const filteredEvents = events.filter(event => {
-        if (event.audienceType === 'ALL') return true;
-        if (event.audienceType === user.role) return true;
-        if (event.audienceType === 'SPECIFIC' && event.attendees.some(attendee => attendee.id === user.id)) return true;
-        if (user.role === 'ADMINISTRATOR') return true; // Admins see everything
-        return false;
-    });
-
-    return NextResponse.json(filteredEvents);
+    return NextResponse.json(events);
   } catch (error) {
     console.error('[EVENTS_GET_ERROR]', error);
     return NextResponse.json({ message: 'Error al obtener los eventos' }, { status: 500 });

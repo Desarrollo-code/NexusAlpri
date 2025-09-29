@@ -36,7 +36,17 @@ export function expandRecurringEvents(
     
     // Si el evento no es recurrente, simplemente lo añadimos si está en el rango.
     if (event.recurrence === 'NONE') {
-      if (isWithinInterval(eventStart, { start: rangeStart, end: rangeEnd }) || isWithinInterval(eventEnd, { start: rangeStart, end: rangeEnd })) {
+      // Un evento se considera en el rango si su inicio o su fin están dentro,
+      // o si el evento abarca completamente el rango.
+      const eventInterval = { start: eventStart, end: eventEnd };
+      const rangeInterval = { start: rangeStart, end: rangeEnd };
+      
+      const overlaps = 
+        isWithinInterval(eventStart, rangeInterval) ||
+        isWithinInterval(eventEnd, rangeInterval) ||
+        (isWithinInterval(rangeStart, eventInterval) && isWithinInterval(rangeEnd, eventInterval));
+
+      if (overlaps) {
         allOccurrences.push(event);
       }
       return;
