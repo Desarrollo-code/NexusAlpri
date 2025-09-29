@@ -234,10 +234,10 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
             if (block.type === 'TEXT') return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." disabled={isSaving} />;
             if (block.type === 'VIDEO') return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
             if (block.type === 'FILE') {
-                const displayUrl = block.content || localPreview;
+                const displayUrl = localPreview || block.content;
                 const isImage = displayUrl?.match(/\.(jpeg|jpg|gif|png|webp)$/) != null || localPreview?.startsWith('blob:');
 
-                if (displayUrl) {
+                if (displayUrl && !isFileUploading) {
                     const fileName = block.content?.split('/').pop()?.split('-').slice(2).join('-') || 'Archivo';
                     return (
                         <div className="flex items-center gap-2 p-2 rounded-md border bg-background min-w-0">
@@ -249,18 +249,25 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
                                <FileGenericIcon className="h-5 w-5 text-primary shrink-0" />
                             )}
                             <span className="text-sm font-medium text-foreground truncate flex-grow min-w-0" title={fileName}>
-                                {isFileUploading ? 'Subiendo...' : fileName}
+                                {fileName}
                             </span>
-                             {isFileUploading && (
-                                <Progress value={fileUploadProgress} className="w-1/4 h-1.5" />
-                            )}
                             <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive rounded-full" onClick={() => { onUpdate('content', ''); setLocalPreview(null); }}>
                                 <XCircle className="h-4 w-4"/>
                             </Button>
                         </div>
                     );
                 }
-                return <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} />;
+                return (
+                    <div className="space-y-2">
+                        <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} />
+                         {isFileUploading && (
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Progress value={fileUploadProgress} className="w-full h-1.5" />
+                                <span>{fileUploadProgress}%</span>
+                            </div>
+                        )}
+                    </div>
+                );
             }
             if (block.type === 'QUIZ') return (
                  <div className="flex items-center gap-2 w-full">
@@ -307,6 +314,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
     const [isUploadingImage, setIsUploadingImage] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [localCoverImagePreview, setLocalCoverImagePreview] = useState<string | null>(null);
+
 
     const [templates, setTemplates] = useState<ApiTemplate[]>([]);
     const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -620,7 +629,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            
+            const previewUrl = URL.createObjectURL(file);
+            setLocalCoverImagePreview(previewUrl);
+
             setIsUploadingImage(true);
             setUploadProgress(0);
 
@@ -630,11 +641,21 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 toast({ title: 'Imagen Subida', description: 'La imagen de portada se ha actualizado.'});
             } catch (err) {
                  toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
+                 setLocalCoverImagePreview(null);
             } finally {
                 setIsUploadingImage(false);
             }
         }
     };
+    
+    useEffect(() => {
+        // Cleanup local URL on unmount
+        return () => {
+            if (localCoverImagePreview) {
+                URL.revokeObjectURL(localCoverImagePreview);
+            }
+        };
+    }, [localCoverImagePreview]);
     
     const handleSaveTemplate = async (templateName: string, templateDescription: string) => {
         if (!lessonToSaveAsTemplate) return;
@@ -745,19 +766,20 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                            
                             <div className="space-y-2">
                                 <Label>Imagen de Portada</Label>
-                                {isUploadingImage ? (
+                                {isUploadingImage && (
                                     <div className="w-full space-y-2">
                                         <Progress value={uploadProgress} />
                                         <p className="text-xs text-center text-muted-foreground">Subiendo imagen...</p>
                                     </div>
-                                ) : course.imageUrl ? (
-                                    <div className="relative h-32 w-full rounded-md border overflow-hidden p-2 bg-muted/20">
-                                        <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-contain p-2" />
-                                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 rounded-full h-7 w-7" onClick={() => updateCourseField('imageUrl', null)} disabled={isSaving}>
+                                )}
+                                {(localCoverImagePreview || course.imageUrl) && !isUploadingImage ? (
+                                    <div className="relative aspect-video w-full rounded-md border overflow-hidden p-2 bg-muted/20">
+                                        <Image src={localCoverImagePreview || course.imageUrl!} alt="Imagen del Curso" fill className="object-contain p-2" />
+                                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 rounded-full h-7 w-7" onClick={() => { updateCourseField('imageUrl', null); setLocalCoverImagePreview(null); }} disabled={isSaving}>
                                             <XCircle className="h-4 w-4" />
                                         </Button>
                                     </div>
-                                ) : (
+                                ) : !isUploadingImage && (
                                     <UploadArea onFileSelect={(file) => { if(file) handleFileChange({ target: { files: [file] } } as any) }} disabled={isSaving || isUploadingImage} />
                                 )}
                             </div>
@@ -1043,5 +1065,7 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
     
 
 
+
+    
 
     
