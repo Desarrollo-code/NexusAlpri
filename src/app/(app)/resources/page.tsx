@@ -1,3 +1,4 @@
+
 // src/app/(app)/resources/page.tsx
 'use client';
 
@@ -148,6 +149,7 @@ export default function ResourcesPage() {
   }, [fetchResources, fetchAllUsers, user?.role]);
 
     const folders = useMemo(() => {
+        if (!allApiResources) return [];
         return allApiResources
             .filter(r => r.type === 'FOLDER')
             .filter(r => {
@@ -157,6 +159,7 @@ export default function ResourcesPage() {
     }, [allApiResources, searchTerm]);
 
     const files = useMemo(() => {
+        if (!allApiResources) return [];
         return allApiResources
             .filter(r => r.type !== 'FOLDER')
             .filter(r => {
@@ -267,10 +270,8 @@ export default function ResourcesPage() {
         setIsUploadingFile(true);
         setUploadProgress(0);
         setIsSubmittingResource(true);
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', newResourceFile);
         try {
-            const result: { url: string } = await uploadWithProgress('/api/upload/resource-file', uploadFormData, setUploadProgress);
+            const result: { url: string } = await uploadWithProgress('/api/upload/resource-file', newResourceFile, setUploadProgress);
             finalResourceUrl = result.url;
         } catch (err) {
             toast({ title: "Error de Subida", description: (err as Error).message, variant: "destructive" });
@@ -373,12 +374,14 @@ export default function ResourcesPage() {
   }
 
   const filteredUsers = useMemo(() => {
+    if (!allUsers) return [];
     return allUsers.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()));
   }, [allUsers, userSearch]);
 
   const allCategories = useMemo(() => ['all', ...(settings?.resourceCategories || [])], [settings]);
   
   const handleNavigateItem = (direction: 'next' | 'prev') => {
+      if (!files) return;
       const currentIndex = files.findIndex(f => f.id === selectedResource?.id);
       if (currentIndex === -1) return;
 
@@ -512,7 +515,7 @@ export default function ResourcesPage() {
                   <div className="flex justify-center items-center h-full py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
               ) : error ? (
                   <div className="flex flex-col items-center justify-center h-full py-12 text-destructive"><AlertTriangle className="h-8 w-8 mb-2" /><p className="font-semibold">{error}</p></div>
-              ) : folders.length === 0 && files.length === 0 ? (
+              ) : (folders && files && folders.length === 0 && files.length === 0) ? (
                   <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-16">
                       <ArchiveX className="h-16 w-16 mb-4 text-primary"/>
                       <h3 className="text-xl font-semibold text-foreground">{searchTerm ? 'No hay coincidencias' : 'Carpeta Vacía'}</h3>
@@ -520,7 +523,7 @@ export default function ResourcesPage() {
                   </div>
               ) : (
                   <div className="space-y-8">
-                      {folders.length > 0 && (
+                      {folders && folders.length > 0 && (
                           <section id="resources-folder-list">
                               <h2 className="text-xl font-semibold mb-4 text-muted-foreground">Carpetas</h2>
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
@@ -531,7 +534,7 @@ export default function ResourcesPage() {
                           </section>
                       )}
                       
-                      {files.length > 0 && (
+                      {files && files.length > 0 && (
                         <section id="resources-file-list">
                             <h2 className="text-xl font-semibold mb-4 text-muted-foreground">Archivos</h2>
                             {viewMode === 'grid' ? (
@@ -739,7 +742,7 @@ export default function ResourcesPage() {
                                       <Input placeholder="Buscar usuarios para compartir..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
                                       <ScrollArea className="h-32">
                                           <div className="space-y-2">
-                                          {filteredUsers.map(u => (
+                                          {filteredUsers && filteredUsers.map(u => (
                                               <div key={u.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
                                                   <Checkbox id={`share-folder-${u.id}`} checked={sharedWithUserIds.includes(u.id)} onCheckedChange={c => handleUserShareToggle(u.id, !!c)} />
                                                   <Label htmlFor={`share-folder-${u.id}`} className="flex items-center gap-2 font-normal cursor-pointer">
