@@ -213,56 +213,52 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
         };
 
         const renderBlockContent = () => {
-            const isImageFile = block.content && /\.(jpg|jpeg|png|gif|webp)$/i.test(block.content);
-            
-            switch(block.type) {
-                case 'TEXT': return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." disabled={isSaving} />;
-                case 'VIDEO': return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
-                case 'FILE': 
-                    if (block.content && isImageFile) {
-                        return (
-                            <div className="relative w-full h-48 rounded-md border bg-muted/20 overflow-hidden">
-                                <Image src={block.content} alt="Previsualización" fill className="object-contain p-2" />
-                                <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 rounded-full z-10" onClick={() => onUpdate('content', '')}>
-                                    <XCircle className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        )
-                    }
+            if (block.type === 'TEXT') return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." disabled={isSaving} />;
+            if (block.type === 'VIDEO') return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
+            if (block.type === 'FILE') {
+                if (isFileUploading) {
                     return (
                         <div className="w-full space-y-2">
-                            <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} />
-                            {isFileUploading && <Progress value={fileUploadProgress} />}
-                            {block.content && (
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
-                                    <FileGenericIcon className="h-3 w-3 shrink-0" />
-                                    <span className="truncate break-all">URL actual: {block.content}</span>
-                                </div>
-                            )}
+                             <Progress value={fileUploadProgress} />
+                             <p className="text-xs text-center text-muted-foreground">Subiendo archivo...</p>
+                        </div>
+                    )
+                }
+                if (block.content) {
+                    const fileName = block.content.split('/').pop()?.split('-').slice(2).join('-') || 'Archivo';
+                    return (
+                        <div className="flex items-center gap-2 p-2 rounded-md border bg-background min-w-0">
+                            <FileGenericIcon className="h-5 w-5 text-primary shrink-0" />
+                            <span className="text-sm font-medium text-foreground truncate flex-grow min-w-0" title={fileName}>{fileName}</span>
+                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive rounded-full" onClick={() => onUpdate('content', '')}>
+                                <XCircle className="h-4 w-4"/>
+                            </Button>
                         </div>
                     );
-                case 'QUIZ': return (
-                     <div className="flex items-center gap-2 w-full">
-                        <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />
-                        <Button variant="outline" size="sm" className="shrink-0" onClick={() => setShowQuizEditor(true)}>
-                            <Pencil className="mr-2 h-4 w-4" /> Editar Quiz
-                        </Button>
-                        <QuizEditorModal 
-                            isOpen={showQuizEditor} 
-                            onClose={() => setShowQuizEditor(false)} 
-                            quiz={block.quiz}
-                            onSave={onQuizUpdate}
-                        />
-                    </div>
-                );
-                default: return null;
+                }
+                return <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} />;
             }
+            if (block.type === 'QUIZ') return (
+                 <div className="flex items-center gap-2 w-full">
+                    <Input value={block.quiz?.title || ''} onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} placeholder="Título del Quiz" disabled={isSaving} />
+                    <Button variant="outline" size="sm" className="shrink-0" onClick={() => setShowQuizEditor(true)}>
+                        <Pencil className="mr-2 h-4 w-4" /> Editar Quiz
+                    </Button>
+                    <QuizEditorModal 
+                        isOpen={showQuizEditor} 
+                        onClose={() => setShowQuizEditor(false)} 
+                        quiz={block.quiz}
+                        onSave={onQuizUpdate}
+                    />
+                </div>
+            );
+            return null;
         };
 
         return (
             <div ref={ref} {...rest} className="flex items-start gap-2 bg-muted/50 p-2 rounded">
                  <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab mt-2" />
-                 <div className="flex-grow">{renderBlockContent()}</div>
+                 <div className="flex-grow min-w-0">{renderBlockContent()}</div>
                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0" onClick={onDelete} disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
             </div>
         );
@@ -725,16 +721,20 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                            
                             <div className="space-y-2">
                                 <Label>Imagen de Portada</Label>
-                                {course.imageUrl && !isUploadingImage ? (
-                                    <div className="relative h-32 w-full rounded-md border overflow-hidden p-2 bg-muted/20 mt-2">
+                                {isUploadingImage ? (
+                                    <div className="w-full space-y-2">
+                                        <Progress value={uploadProgress} />
+                                        <p className="text-xs text-center text-muted-foreground">Subiendo imagen...</p>
+                                    </div>
+                                ) : course.imageUrl ? (
+                                    <div className="relative h-32 w-full rounded-md border overflow-hidden p-2 bg-muted/20">
                                         <Image src={course.imageUrl} alt="Imagen del Curso" fill className="object-contain p-2" />
-                                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 rounded-full h-7 w-7" onClick={() => updateCourseField('imageUrl', null)} disabled={isSaving || isUploadingImage}><XCircle className="h-4 w-4" /></Button>
+                                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 rounded-full h-7 w-7" onClick={() => updateCourseField('imageUrl', null)} disabled={isSaving}>
+                                            <XCircle className="h-4 w-4" />
+                                        </Button>
                                     </div>
                                 ) : (
-                                    <>
-                                        <UploadArea onFileSelect={(file) => { if(file) handleFileChange({ target: { files: [file] } } as any) }} disabled={isSaving || isUploadingImage} />
-                                        {isUploadingImage && <Progress value={uploadProgress} className="mt-2" />}
-                                    </>
+                                    <UploadArea onFileSelect={(file) => { if(file) handleFileChange({ target: { files: [file] } } as any) }} disabled={isSaving || isUploadingImage} />
                                 )}
                             </div>
                         </CardContent>
@@ -1018,3 +1018,6 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
 
     
 
+
+
+    
