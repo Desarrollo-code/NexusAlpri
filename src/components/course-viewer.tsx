@@ -586,13 +586,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full w-full">
         {/* --- Sidebar (desktop) --- */}
-        {!isMobile && (
-            <aside className={cn(
-                "bg-card border-r flex-shrink-0 flex flex-col transition-all duration-300 ease-in-out",
-                isSidebarVisible ? "w-80" : "w-0"
-            )}>
+        {!isMobile && isSidebarVisible && (
+            <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col">
                 <SidebarContent />
             </aside>
         )}
@@ -609,13 +606,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         
         {/* --- Main Content --- */}
         <div className="flex-1 flex flex-col min-w-0">
-            <main className="flex-1 overflow-hidden flex">
-                 <div className={cn(
-                    "flex-1 transition-all duration-300 ease-in-out",
-                    isNotesPanelOpen && "mr-[28rem]"
-                 )}>
-                    <ScrollArea className="h-full">
-                        <div className="p-4 md:p-6 lg:p-8">
+            <main className="flex-1 flex overflow-hidden">
+                <div className="flex-1 overflow-y-auto">
+                    <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-8">
                         {selectedLesson ? (
                             <div>
                                 <div className="flex items-center gap-2 text-lg font-semibold mb-4">
@@ -631,38 +624,56 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                                 <p className="text-muted-foreground">Elige una lección del menú para comenzar a aprender.</p>
                             </div>
                         )}
-                        </div>
-                    </ScrollArea>
+                    </div>
                 </div>
 
-                <aside className={cn(
-                    "h-full flex-shrink-0 transition-all duration-300 ease-in-out bg-card",
-                    isNotesPanelOpen ? "w-full max-w-md md:w-[28rem] border-l" : "w-0"
-                )}>
-                   {selectedLessonId && isEnrolled && !isCreatorViewingCourse && (
-                        <LessonNotesPanel 
-                            lessonId={selectedLessonId}
-                            isOpen={isNotesPanelOpen}
-                            onClose={() => setIsNotesPanelOpen(false)}
-                        />
-                   )}
-                </aside>
+                {isNotesPanelOpen && !isMobile && (
+                    <aside className="w-full max-w-md md:w-[28rem] flex-shrink-0">
+                        {selectedLessonId && isEnrolled && !isCreatorViewingCourse && (
+                            <LessonNotesPanel 
+                                lessonId={selectedLessonId}
+                                isOpen={isNotesPanelOpen}
+                                onClose={() => setIsNotesPanelOpen(false)}
+                            />
+                        )}
+                    </aside>
+                )}
             </main>
         </div>
 
         {/* Floating Action Buttons */}
-        {isMobile && (
-            <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
+        <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
+             {isMobile && (
                 <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsMobileSheetOpen(true)}>
                     <PanelLeft className="h-5 w-5" />
                 </Button>
-                {isEnrolled && !isCreatorViewingCourse && (
-                  <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsNotesPanelOpen(!isNotesPanelOpen)}>
-                      <Notebook className="h-5 w-5" />
-                  </Button>
-                )}
-            </div>
-        )}
+            )}
+             {!isMobile && (
+                 <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsSidebarVisible(!isSidebarVisible)}>
+                    <PanelLeft className="h-5 w-5" />
+                </Button>
+             )}
+            {isEnrolled && !isCreatorViewingCourse && (
+                <Sheet open={isMobile && isNotesPanelOpen} onOpenChange={setIsNotesPanelOpen}>
+                    <SheetTrigger asChild>
+                         <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setIsNotesPanelOpen(!isNotesPanelOpen)}>
+                            <Notebook className="h-5 w-5" />
+                        </Button>
+                    </SheetTrigger>
+                    {isMobile && (
+                        <SheetContent side="right" className="p-0 w-full max-w-sm">
+                             {selectedLessonId && (
+                                <LessonNotesPanel 
+                                    lessonId={selectedLessonId}
+                                    isOpen={isNotesPanelOpen}
+                                    onClose={() => setIsNotesPanelOpen(false)}
+                                />
+                             )}
+                        </SheetContent>
+                    )}
+                </Sheet>
+            )}
+        </div>
 
         {/* Image Viewer Modal */}
         <Dialog open={!!imageToView} onOpenChange={(isOpen) => !isOpen && setImageToView(null)}>
