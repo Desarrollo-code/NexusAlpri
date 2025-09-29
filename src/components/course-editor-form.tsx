@@ -234,7 +234,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
                             <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} />
                             {isFileUploading && <Progress value={fileUploadProgress} />}
                             {block.content && (
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0 break-all">
                                     <FileGenericIcon className="h-3 w-3 shrink-0" />
                                     <span className="truncate">URL actual: {block.content}</span>
                                 </div>
