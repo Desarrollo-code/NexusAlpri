@@ -269,13 +269,11 @@ export default function SettingsPageComponent() {
   const handleFileSelected = async (field: ImageField, e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const formData = new FormData();
-      formData.append('file', file);
-
+      
       setUploadStates(prev => ({ ...prev, [field]: { isUploading: true, progress: 0 }}));
 
       try {
-        const result = await uploadWithProgress('/api/upload/settings-image', formData, (progress) => {
+        const result = await uploadWithProgress('/api/upload/settings-image', file, (progress) => {
            setUploadStates(prev => ({ ...prev, [field]: { ...prev[field], progress }}));
         });
         handleInputChange(field, result.url);
