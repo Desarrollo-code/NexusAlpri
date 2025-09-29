@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -586,10 +587,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   }
 
   return (
-    <div className="flex h-full w-full">
+    <div className="flex h-[calc(100vh-5rem)] w-full">
         {/* --- Sidebar (desktop) --- */}
         {!isMobile && isSidebarVisible && (
-            <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col">
+            <aside className="w-80 flex-shrink-0 border-r bg-card flex flex-col h-full">
                 <SidebarContent />
             </aside>
         )}
@@ -604,10 +605,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           </SheetContent>
         </Sheet>
         
-        {/* --- Main Content --- */}
-        <div className="flex-1 flex flex-col min-w-0">
+        {/* --- Main Content Area --- */}
+        <div className="flex-1 flex flex-col min-w-0 h-full">
             <main className="flex-1 flex overflow-hidden">
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto thin-scrollbar">
                     <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-8">
                         {selectedLesson ? (
                             <div>
@@ -628,7 +629,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                 </div>
 
                 {isNotesPanelOpen && !isMobile && (
-                    <aside className="w-full max-w-md md:w-[28rem] flex-shrink-0">
+                    <aside className="w-full max-w-md md:w-[28rem] flex-shrink-0 h-full">
                         {selectedLessonId && isEnrolled && !isCreatorViewingCourse && (
                             <LessonNotesPanel 
                                 lessonId={selectedLessonId}
