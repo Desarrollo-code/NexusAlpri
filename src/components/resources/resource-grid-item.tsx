@@ -104,8 +104,12 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                 <div className="p-3">
                     <div className="flex justify-between items-start gap-2">
                         <div className="flex items-start gap-2 flex-grow overflow-hidden">
-                          {canModify && !isFolder && <div {...listeners} {...attributes} className="p-1 cursor-grab"><GripVertical className="h-4 w-4 text-muted-foreground"/></div>}
-                          {Icon && !canModify && React.createElement(Icon, { className: "h-4 w-4 shrink-0 mt-0.5" })}
+                          {canModify && !isFolder && (
+                            <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none">
+                                <GripVertical className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          )}
+                          {!canModify && Icon && <Icon className="h-4 w-4 shrink-0 mt-0.5" />}
                           <p className="font-medium text-sm leading-tight break-words">{resource.title}</p>
                         </div>
                         {canModify && (
