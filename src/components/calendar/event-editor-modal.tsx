@@ -28,7 +28,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { CalendarEvent, User as AppUser, EventAudienceType, Attachment } from '@/types';
+import type { CalendarEvent, User as AppUser, EventAudienceType, Attachment, RecurrenceType } from '@/types';
 import { format } from 'date-fns';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
@@ -36,7 +36,10 @@ import { EventDetailsView } from '@/components/calendar/event-details-view';
 import { Separator } from '@/components/ui/separator';
 import { Identicon } from '@/components/ui/identicon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, Save, MapPin, Video, Link as LinkIcon, X, Check, Users, Edit, Trash2 } from 'lucide-react';
+import { Loader2, Save, MapPin, Video, Link as LinkIcon, X, Check, Users, Edit, Trash2, Repeat, CalendarIcon } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Calendar } from '../ui/calendar';
+import { es } from 'date-fns/locale';
 
 const eventColors = [
   { value: 'blue', label: 'Evento General', color: 'bg-event-blue' },
@@ -73,6 +76,8 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
     const [formAttachments, setFormAttachments] = useState<Attachment[]>([]);
     const [newAttachmentUrl, setNewAttachmentUrl] = useState('');
     const [userSearch, setUserSearch] = useState('');
+    const [formRecurrence, setFormRecurrence] = useState<RecurrenceType>('NONE');
+    const [formRecurrenceEndDate, setFormRecurrenceEndDate] = useState<Date | undefined>(undefined);
 
     const [allUsers, setAllUsers] = useState<AppUser[]>([]);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -109,6 +114,8 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             setFormAttendees(event.attendees?.map(a => a.id) || []);
             setFormColor(event.color || 'blue');
             setFormAttachments(event.attachments || []);
+            setFormRecurrence(event.recurrence || 'NONE');
+            setFormRecurrenceEndDate(event.recurrenceEndDate ? new Date(event.recurrenceEndDate) : undefined);
             setIsEditMode(false); // Start in view mode
         } else { // Creating new event
             const targetDate = selectedDate || new Date();
@@ -124,6 +131,8 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             setFormAttendees([]);
             setFormColor('blue');
             setFormAttachments([]);
+            setFormRecurrence('NONE');
+            setFormRecurrenceEndDate(undefined);
             setIsEditMode(true); // Start in edit mode for new events
         }
 
@@ -149,6 +158,8 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             allDay: formAllDay, audienceType: formAudienceMode,
             attendeeIds: formAudienceMode === 'SPECIFIC' ? formAttendees : [],
             color: formColor, attachments: formAttachments,
+            recurrence: formRecurrence,
+            recurrenceEndDate: formRecurrence !== 'NONE' ? formRecurrenceEndDate?.toISOString() : null,
         };
 
         const endpoint = event ? `/api/events/${event.id}` : '/api/events';
@@ -233,9 +244,9 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
     const renderContent = () => {
         if (isEditMode) {
            return (
-              <form id="event-form" onSubmit={handleSaveEvent} className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                  <div className="sm:col-span-2"><Label htmlFor="event-title">Título del Evento</Label><Input id="event-title" value={formTitle} onChange={e => setFormTitle(e.target.value)} required disabled={isSaving} /></div>
-                  <div className="sm:col-span-2 space-y-2">
+              <form id="event-form" onSubmit={handleSaveEvent} className="space-y-4">
+                  <div><Label htmlFor="event-title">Título del Evento</Label><Input id="event-title" value={formTitle} onChange={e => setFormTitle(e.target.value)} required disabled={isSaving} /></div>
+                  <div className="space-y-2">
                       <Label>Ubicación</Label>
                        <RadioGroup value={formLocationType} onValueChange={(v) => setFormLocationType(v as 'physical' | 'virtual')} className="flex gap-4" disabled={isSaving}>
                           <div className="flex items-center space-x-2"><RadioGroupItem value="physical" id="loc-physical"/><Label htmlFor="loc-physical">Física</Label></div>
@@ -243,9 +254,9 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
                       </RadioGroup>
                       <LocationInput />
                   </div>
-                  <div className="sm:col-span-2"><Label htmlFor="event-description">Descripción</Label><Textarea id="event-description" value={formDescription} onChange={e => setFormDescription(e.target.value)} disabled={isSaving} rows={3} /></div>
-                  <div className="sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4"><div className="flex items-center space-x-2 flex-shrink-0"><Switch id="all-day" checked={formAllDay} onCheckedChange={setFormAllDay} disabled={isSaving} /><Label htmlFor="all-day">Todo el día</Label></div>{!formAllDay && (<div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow w-full"><div><Label htmlFor="start-date">Inicio</Label><Input id="start-date" type="datetime-local" value={formStartDate} onChange={e => setFormStartDate(e.target.value)} required disabled={isSaving} /></div><div><Label htmlFor="end-date">Fin</Label><Input id="end-date" type="datetime-local" value={formEndDate} onChange={e => setFormEndDate(e.target.value)} required disabled={isSaving} /></div></div>)}</div>
-                  <div className="sm:col-span-2 space-y-2">
+                  <div><Label htmlFor="event-description">Descripción</Label><Textarea id="event-description" value={formDescription} onChange={e => setFormDescription(e.target.value)} disabled={isSaving} rows={3} /></div>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4"><div className="flex items-center space-x-2 flex-shrink-0"><Switch id="all-day" checked={formAllDay} onCheckedChange={setFormAllDay} disabled={isSaving} /><Label htmlFor="all-day">Todo el día</Label></div>{!formAllDay && (<div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow w-full"><div><Label htmlFor="start-date">Inicio</Label><Input id="start-date" type="datetime-local" value={formStartDate} onChange={e => setFormStartDate(e.target.value)} required disabled={isSaving} /></div><div><Label htmlFor="end-date">Fin</Label><Input id="end-date" type="datetime-local" value={formEndDate} onChange={e => setFormEndDate(e.target.value)} required disabled={isSaving} /></div></div>)}</div>
+                  <div className="space-y-2">
                       <Label>Color del Evento</Label>
                       <RadioGroup value={formColor} onValueChange={setFormColor} className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-2 mt-2 justify-start">
                         {eventColors.map(({ value, color, label }) => (
@@ -265,8 +276,35 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
                         ))}
                       </RadioGroup>
                   </div>
-                  <div className="sm:col-span-2"><Separator /></div>
-                  <div className="sm:col-span-2 space-y-2">
+                  <Separator />
+                   <div className="space-y-2">
+                      <Label className="flex items-center gap-2"><Repeat className="h-4 w-4"/> Recurrencia</Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Select value={formRecurrence} onValueChange={(v) => setFormRecurrence(v as RecurrenceType)}>
+                          <SelectTrigger><SelectValue/></SelectTrigger>
+                          <SelectContent>
+                              <SelectItem value="NONE">No se repite</SelectItem>
+                              <SelectItem value="DAILY">Diariamente</SelectItem>
+                              <SelectItem value="WEEKLY">Semanalmente</SelectItem>
+                              <SelectItem value="MONTHLY">Mensualmente</SelectItem>
+                              <SelectItem value="YEARLY">Anualmente</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {formRecurrence !== 'NONE' && (
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant={"outline"} className={cn("justify-start text-left font-normal", !formRecurrenceEndDate && "text-muted-foreground")}>
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {formRecurrenceEndDate ? format(formRecurrenceEndDate, "PPP", {locale: es}) : <span>Fin de la repetición</span>}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={formRecurrenceEndDate} onSelect={setFormRecurrenceEndDate} initialFocus locale={es}/></PopoverContent>
+                            </Popover>
+                        )}
+                      </div>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
                         <Label>Adjuntos</Label>
                         <div className="flex gap-2">
                             <Input placeholder="Pega una URL aquí" value={newAttachmentUrl} onChange={(e) => setNewAttachmentUrl(e.target.value)} disabled={isSaving}/>
@@ -286,10 +324,10 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
                             </div>
                         )}
                     </div>
-                    <div className="sm:col-span-2 space-y-2">
+                    <div className="space-y-2">
                       <Label>Dirigido a</Label><RadioGroup value={formAudienceMode} onValueChange={(value) => setFormAudienceMode(value as EventAudienceType)} className="grid grid-cols-2 md:grid-cols-3 gap-2" disabled={isSaving}><div className="flex items-center space-x-2"><RadioGroupItem value="ALL" id="audience-all" /><Label htmlFor="audience-all">Todos</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="ADMINISTRATOR" id="audience-admin" /><Label htmlFor="audience-admin">Administradores</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="INSTRUCTOR" id="audience-instructor" /><Label htmlFor="audience-instructor">Instructores</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="STUDENT" id="audience-student" /><Label htmlFor="audience-student">Estudiantes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="SPECIFIC" id="audience-specific" /><Label htmlFor="audience-specific">Específicos</Label></div></RadioGroup>
                     </div>
-                    {formAudienceMode === 'SPECIFIC' && (<div className="sm:col-span-2"><Label>Asistentes Específicos</Label><div className="p-3 border rounded-lg"><Input placeholder="Buscar usuarios para compartir..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
+                    {formAudienceMode === 'SPECIFIC' && (<div><Label>Asistentes Específicos</Label><div className="p-3 border rounded-lg"><Input placeholder="Buscar usuarios para compartir..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="mb-2"/>
                             <ScrollArea className="h-32">
                                 <div className="space-y-2">
                                 {filteredUsers.map(u => (
