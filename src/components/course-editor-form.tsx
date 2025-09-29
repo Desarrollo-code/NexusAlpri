@@ -201,11 +201,8 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
             setIsFileUploading(true);
             setFileUploadProgress(0);
             
-            const formData = new FormData();
-            formData.append('file', file);
-            
             try {
-                const result = await uploadWithProgress('/api/upload/lesson-file', formData, setFileUploadProgress);
+                const result = await uploadWithProgress('/api/upload/lesson-file', file, setFileUploadProgress);
                 onUpdate('content', result.url);
                 toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
             } catch (err) {
@@ -606,11 +603,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             setIsUploadingImage(true);
             setUploadProgress(0);
 
-            const formData = new FormData();
-            formData.append('file', file);
-
             try {
-                const result = await uploadWithProgress('/api/upload/course-image', formData, setUploadProgress);
+                const result = await uploadWithProgress('/api/upload/course-image', file, setUploadProgress);
                 updateCourseField('imageUrl', result.url);
                 toast({ title: 'Imagen Subida', description: 'La imagen de portada se ha actualizado.'});
             } catch (err) {
@@ -806,9 +800,13 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
         setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
     };
 
-    const handleOptionChange = (qIndex: number, oIndex: number, field: 'text' | 'feedback', value: string) => {
+    const handleOptionChange = (qIndex: number, oIndex: number, field: 'text' | 'feedback' | 'points', value: string | number) => {
         const newQuestions = [...localQuiz.questions];
-        newQuestions[qIndex].options[oIndex][field] = value;
+        if (field === 'points') {
+             newQuestions[qIndex].options[oIndex][field] = Number(value);
+        } else {
+            newQuestions[qIndex].options[oIndex][field] = value as string;
+        }
         setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
     };
     
@@ -839,7 +837,8 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
              id: generateUniqueId('option'),
              text: `Opción ${localQuiz.questions[qIndex].options.length + 1}`,
              isCorrect: false,
-             feedback: ''
+             feedback: '',
+             points: 0,
         };
         const newQuestions = [...localQuiz.questions];
         newQuestions[qIndex].options.push(newOption);
@@ -914,18 +913,10 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                                                         <Label htmlFor={`q${qIndex}-o${oIndex}`} className="flex-grow font-normal">
                                                             <Input value={opt.text} placeholder="Texto de la opción" onChange={(e) => handleOptionChange(qIndex, oIndex, 'text', e.target.value)} />
                                                         </Label>
-                                                        <TooltipProvider>
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <div className={cn("h-6 w-6 flex items-center justify-center rounded-full cursor-pointer", opt.isCorrect ? "text-green-400" : "text-muted-foreground")}>
-                                                                        <Star className={cn("h-4 w-4 transition-all", opt.isCorrect && "fill-current")}/>
-                                                                    </div>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p>Marcar como correcta</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        </TooltipProvider>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                           <Input type="number" value={opt.points || 0} onChange={(e) => handleOptionChange(qIndex, oIndex, 'points', e.target.value)} className="w-16 h-8 text-center"/>
+                                                           <span className="text-xs text-muted-foreground">pts</span>
+                                                        </div>
                                                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70" onClick={() => deleteOption(qIndex, oIndex)}><XCircle className="h-4 w-4"/></Button>
                                                     </div>
                                                     <Input value={opt.feedback || ''} placeholder="Retroalimentación para esta opción (opcional)" onChange={(e) => handleOptionChange(qIndex, oIndex, 'feedback', e.target.value)} className="text-xs h-8"/>

@@ -1,20 +1,51 @@
 // src/lib/upload-with-progress.ts
 /**
- * Sube un archivo a través de una API route de Next.js con reporte de progreso.
- * @param apiPath La ruta de la API que maneja la subida (ej. '/api/upload/avatar').
- * @param formData El objeto FormData que contiene el archivo.
+ * Sube un archivo directamente a una URL firmada de Supabase con reporte de progreso.
+ * @param apiPath La ruta de la API para obtener la URL firmada.
+ * @param file El archivo a subir.
  * @param onProgress Una función callback que se llama con el porcentaje de progreso.
- * @returns Una promesa que se resuelve con el objeto de respuesta de la API (debe incluir la URL).
+ * @returns Una promesa que se resuelve con el objeto de respuesta de la API (debe incluir la URL pública).
  */
-export function uploadWithProgress(
+export async function uploadWithProgress(
   apiPath: string,
-  formData: FormData,
+  file: File,
   onProgress: (percentage: number) => void
 ): Promise<{ url: string }> {
+  // --- Paso 1: Obtener la URL firmada desde nuestra API ---
+  let signedUrlResponse;
+  try {
+    const response = await fetch(apiPath, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        filename: file.name,
+        contentType: file.type,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Error al obtener la URL de subida: ${response.statusText}`);
+    }
+    signedUrlResponse = await response.json();
+
+    if (!signedUrlResponse.success || !signedUrlResponse.uploadUrl) {
+      throw new Error('La API no devolvió una URL de subida válida.');
+    }
+  } catch (error) {
+    console.error("Error en el Paso 1 (Obtener URL firmada):", error);
+    throw error; // Propaga el error para que sea manejado por el llamador
+  }
+  
+  // --- Paso 2: Subir el archivo directamente a la URL firmada de Supabase ---
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-
-    xhr.open('POST', apiPath, true);
+    
+    // Usamos PUT para la URL firmada de Supabase
+    xhr.open('PUT', signedUrlResponse.uploadUrl, true);
+    xhr.setRequestHeader('Content-Type', file.type);
 
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) {
@@ -25,30 +56,18 @@ export function uploadWithProgress(
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          if (response.success) {
-            resolve(response);
-          } else {
-            reject(new Error(response.message || 'La API de subida retornó un error.'));
-          }
-        } catch (e) {
-          reject(new Error('Respuesta inválida desde la API de subida.'));
-        }
+        // La subida fue exitosa, resolvemos con la URL pública que obtuvimos en el paso 1
+        resolve({ url: signedUrlResponse.publicUrl });
       } else {
-        try {
-            const errorResponse = JSON.parse(xhr.responseText);
-            reject(new Error(errorResponse.message || `Error del servidor: ${xhr.statusText}`));
-        } catch (e) {
-            reject(new Error(`Error del servidor: ${xhr.status} ${xhr.statusText}`));
-        }
+        // El servidor de Supabase devolvió un error
+        reject(new Error(`Error en la subida directa: ${xhr.status} ${xhr.statusText}`));
       }
     };
 
     xhr.onerror = () => {
-      reject(new Error('Error de red al intentar subir el archivo.'));
+      reject(new Error('Error de red al intentar subir directamente el archivo.'));
     };
 
-    xhr.send(formData);
+    xhr.send(file);
   });
 }
