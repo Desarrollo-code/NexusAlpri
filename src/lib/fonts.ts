@@ -33,26 +33,3 @@ export function getFontVariables(): string {
     const bodyFont = fontMap['Inter'];
     return `${headlineFont.variable} ${bodyFont.variable}`;
 }
-
-
-// Nueva función para obtener solo la configuración de fuentes
-export async function getFontSettings(): Promise<Pick<PlatformSettings, 'fontHeadline' | 'fontBody'>> {
-    try {
-        const settings = await prisma.platformSettings.findFirst({
-            select: {
-                fontHeadline: true,
-                fontBody: true
-            }
-        });
-        return {
-            fontHeadline: settings?.fontHeadline || 'Space Grotesk',
-            fontBody: settings?.fontBody || 'Inter'
-        };
-    } catch (error) {
-        console.error("Failed to fetch font settings, using defaults:", error);
-        return {
-            fontHeadline: 'Space Grotesk',
-            fontBody: 'Inter'
-        };
-    }
-}

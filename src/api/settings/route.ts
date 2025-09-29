@@ -1,4 +1,5 @@
 
+// src/app/api/settings/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
@@ -50,9 +51,6 @@ const getFallbackSettings = (): PlatformSettings => {
 // GET /api/settings - Fetches platform settings
 export async function GET(req: NextRequest) {
   try {
-    // Intenta conectar a la base de datos de forma explícita
-    await prisma.$connect();
-
     let dbSettings = await prisma.platformSettings.findFirst();
 
     if (!dbSettings) {
@@ -63,6 +61,7 @@ export async function GET(req: NextRequest) {
     
     // Transforma los campos de string a array para el cliente
     const settingsToReturn: PlatformSettings = {
+        ...DEFAULT_DB_SETTINGS, // Start with defaults to ensure all fields are present
         ...dbSettings,
         resourceCategories: dbSettings.resourceCategories ? dbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: dbSettings.emailWhitelist || '',
@@ -75,9 +74,6 @@ export async function GET(req: NextRequest) {
     // En caso de error de conexión, devuelve la configuración por defecto
     const fallbackSettings = getFallbackSettings();
     return NextResponse.json(fallbackSettings);
-  } finally {
-      // Asegúrate de desconectar para evitar conexiones abiertas innecesarias
-      await prisma.$disconnect().catch(() => {});
   }
 }
 
@@ -112,7 +108,7 @@ export async function POST(req: NextRequest) {
         if (deletedCategories.length > 0) {
             for (const category of deletedCategories) {
                 const courseCount = await prisma.course.count({ where: { category } });
-                const resourceCount = await prisma.resource.count({ where: { category } });
+                const resourceCount = await prisma.enterpriseResource.count({ where: { category } });
                 const totalUsage = courseCount + resourceCount;
                 if (totalUsage > 0) {
                     return NextResponse.json({
@@ -132,6 +128,7 @@ export async function POST(req: NextRequest) {
     
     // Devuelve la configuración actualizada en el formato correcto para el cliente
     const settingsToReturn: PlatformSettings = {
+        ...DEFAULT_DB_SETTINGS,
         ...updatedDbSettings,
         resourceCategories: updatedDbSettings.resourceCategories ? updatedDbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: updatedDbSettings.emailWhitelist || '',
