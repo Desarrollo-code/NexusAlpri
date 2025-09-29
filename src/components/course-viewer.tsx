@@ -54,6 +54,34 @@ const noteColors = [
   { value: 'purple', bg: 'bg-purple-100 dark:bg-purple-900/40', border: 'border-purple-200 dark:border-purple-800/50' },
 ];
 
+const DocxPreviewer = ({ url }: { url: string }) => {
+    const [html, setHtml] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const loadDocx = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const response = await fetch(`/api/resources/preview?url=${encodeURIComponent(url)}`);
+                if (!response.ok) throw new Error('No se pudo cargar la previsualización del documento.');
+                const data = await response.json();
+                setHtml(data.html);
+            } catch (e) {
+                setError(e instanceof Error ? e.message : "Error desconocido.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadDocx();
+    }, [url]);
+
+    if (isLoading) return <div className="p-4 text-center"><Loader2 className="animate-spin" /></div>;
+    if (error) return <div className="p-4 text-center text-destructive">{error}</div>;
+    return <div className="prose prose-sm dark:prose-invert max-w-none my-4 p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: html || '' }} />;
+};
+
 // --- Note Taking Component ---
 const LessonNotesPanel = ({ lessonId, isOpen, onClose }: { lessonId: string, isOpen: boolean, onClose: () => void }) => {
     const { user } = useAuth();
@@ -453,11 +481,19 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     if (block.type === 'FILE') {
         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(block.content);
         const isPdf = block.content.toLowerCase().endsWith('.pdf');
+        const isOfficeDoc = block.content.toLowerCase().endsWith('.docx');
         
         if (isPdf) {
             return (
                 <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ height: '70vh', minHeight: '500px' }}>
                     <iframe src={block.content} className="w-full h-full border rounded-md" title={`PDF Preview: ${selectedLesson?.title}`}/>
+                </div>
+            );
+        }
+        if (isOfficeDoc) {
+             return (
+                <div key={block.id} className="my-4">
+                    <DocxPreviewer url={block.content}/>
                 </div>
             );
         }
