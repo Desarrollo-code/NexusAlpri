@@ -600,6 +600,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
             setIsUploadingImage(true);
             setUploadProgress(0);
 
@@ -884,7 +887,7 @@ function QuizEditorModal({ isOpen, onClose, quiz, onSave }: { isOpen: boolean, o
                      <div className="space-y-1">
                         <Label>Nº Máximo de Intentos</Label>
                         <Input 
-                            type="number"
+                            type="number" 
                             value={localQuiz.maxAttempts === null ? '' : localQuiz.maxAttempts} 
                             onChange={(e) => handleQuizMetaChange('maxAttempts', e.target.value === '' ? null : parseInt(e.target.value, 10))} 
                             placeholder="Ilimitados"
