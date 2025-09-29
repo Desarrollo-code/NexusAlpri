@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -451,7 +452,15 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     
     if (block.type === 'FILE') {
         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(block.content);
-        const isPdf = /\.pdf$/i.test(block.content);
+        const isPdf = block.content.toLowerCase().endsWith('.pdf');
+        
+        if (isPdf) {
+            return (
+                <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ height: '70vh', minHeight: '500px' }}>
+                    <iframe src={block.content} className="w-full h-full border rounded-md" title={`PDF Preview: ${selectedLesson?.title}`}/>
+                </div>
+            );
+        }
         
         if (isImage) {
             return (
@@ -465,13 +474,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                 </div>
             );
         }
-        if (isPdf) {
-            return (
-                <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ height: '70vh', minHeight: '500px' }}>
-                    <iframe src={block.content} className="w-full h-full border rounded-md" title={`PDF Preview: ${selectedLesson?.title}`}/>
-                </div>
-            );
-        }
+
         return (
             <div key={block.id} className="my-4 p-4 bg-muted/50 rounded-md text-center">
                 <p className="text-sm text-muted-foreground mb-2">Este recurso es un archivo descargable:</p>
