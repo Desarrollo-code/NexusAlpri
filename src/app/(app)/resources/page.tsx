@@ -52,6 +52,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { DndContext, useDraggable, useDroppable, type DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { UploadArea } from '@/components/ui/upload-area';
 
 
 // --- Main Page Component ---
@@ -602,15 +603,17 @@ export default function ResourcesPage() {
                             <div className="space-y-1"><Label htmlFor="category">Categoría <span className="text-destructive">*</span></Label><Select name="category" required value={newResourceCategory} onValueChange={setNewResourceCategory} disabled={isSubmittingResource}><SelectTrigger id="new-resource-category"><SelectValue placeholder="Seleccionar categoría" /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).sort().map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
                         </div>
                         
-                        {newResourceType === 'EXTERNAL_LINK' ? (
-                           <div className="space-y-1">
-                              <Label htmlFor="url">URL del Enlace Externo<span className="text-destructive">*</span></Label>
-                              <Input id="url" name="url" type="url" placeholder="https://ejemplo.com" value={newResourceUrl} onChange={(e) => setNewResourceUrl(e.target.value)} required disabled={isSubmittingResource} />
-                            </div>
-                        ) : newResourceType !== 'FOLDER' && !editingResource ? (
+                        {newResourceType !== 'EXTERNAL_LINK' && newResourceType !== 'FOLDER' && !editingResource ? (
                           <div className="space-y-1">
-                              <Progress value={uploadProgress} />
-                              <p className="text-xs text-center text-muted-foreground mt-1">Archivo seleccionado: {newResourceFile?.name || 'Ninguno'}</p>
+                              <Label>Archivo</Label>
+                              <UploadArea onFileSelect={setNewResourceFile} disabled={isSubmittingResource || isUploadingFile} />
+                              {isUploadingFile && <Progress value={uploadProgress} className="mt-2" />}
+                              {newResourceFile && !isUploadingFile && <p className="text-xs text-center text-muted-foreground mt-1">Archivo seleccionado: {newResourceFile.name}</p>}
+                          </div>
+                        ) : newResourceType === 'EXTERNAL_LINK' ? (
+                          <div className="space-y-1">
+                            <Label htmlFor="url">URL del Enlace Externo<span className="text-destructive">*</span></Label>
+                            <Input id="url" name="url" type="url" placeholder="https://ejemplo.com" value={newResourceUrl} onChange={(e) => setNewResourceUrl(e.target.value)} required disabled={isSubmittingResource} />
                           </div>
                         ) : null}
                          
