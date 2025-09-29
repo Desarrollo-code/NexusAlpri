@@ -85,7 +85,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
     };
     
     return (
-        <div ref={setNodeRef} className={cn("w-full touch-none", isDragging && 'opacity-50')}>
+        <div ref={setNodeRef} className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}>
             <Card 
                 className={cn(
                     "group w-full h-full transition-all duration-200 bg-card hover:border-primary/50 hover:shadow-lg",
@@ -103,14 +103,15 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                 </div>
                 <div className="p-3">
                     <div className="flex justify-between items-start gap-2">
-                        <div className="flex items-start gap-2 flex-grow overflow-hidden">
-                          {canModify && !isFolder && (
-                            <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none">
-                                <GripVertical className="h-4 w-4 text-muted-foreground" />
-                            </div>
-                          )}
-                          {!canModify && Icon && <Icon className="h-4 w-4 shrink-0 mt-0.5" />}
-                          <p className="font-medium text-sm leading-tight break-words">{resource.title}</p>
+                         <div className="flex items-start gap-2 flex-grow overflow-hidden">
+                            {canModify && !isFolder ? (
+                                <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none">
+                                    <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                            ) : (
+                                Icon && <Icon className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
+                            )}
+                            <p className="font-medium text-sm leading-tight break-words">{resource.title}</p>
                         </div>
                         {canModify && (
                             <DropdownMenu>
