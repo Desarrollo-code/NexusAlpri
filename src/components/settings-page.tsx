@@ -231,6 +231,8 @@ export default function SettingsPageComponent() {
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [isCheckingCategory, setIsCheckingCategory] = useState(false);
   
+  type ImageField = 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl';
+
   const [uploadStates, setUploadStates] = useState<Record<ImageField, { isUploading: boolean, progress: number }>>({
     logoUrl: { isUploading: false, progress: 0 },
     watermarkUrl: { isUploading: false, progress: 0 },
@@ -240,7 +242,6 @@ export default function SettingsPageComponent() {
     benefitsImageUrl: { isUploading: false, progress: 0 },
   });
 
-  type ImageField = 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl';
 
   useEffect(() => {
     setPageTitle('Configuración');
