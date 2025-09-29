@@ -193,10 +193,26 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
         const [showQuizEditor, setShowQuizEditor] = useState(false);
         const [isFileUploading, setIsFileUploading] = useState(false);
         const [fileUploadProgress, setFileUploadProgress] = useState(0);
+        const [localPreview, setLocalPreview] = useState<string | null>(null);
         const { toast } = useToast();
+
+        useEffect(() => {
+            // Cleanup object URL
+            return () => {
+                if (localPreview) {
+                    URL.revokeObjectURL(localPreview);
+                }
+            };
+        }, [localPreview]);
+
 
         const handleFileSelect = async (file: File | null) => {
             if (!file) return;
+
+            if (file.type.startsWith('image/')) {
+                const previewUrl = URL.createObjectURL(file);
+                setLocalPreview(previewUrl);
+            }
 
             setIsFileUploading(true);
             setFileUploadProgress(0);
@@ -207,8 +223,10 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
                 toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
             } catch (err) {
                  toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
+                 setLocalPreview(null); // Clear preview on error
             } finally {
                 setIsFileUploading(false);
+                // La preview local se mantendrá hasta que el `block.content` se actualice y cause un re-render
             }
         };
 
@@ -216,21 +234,27 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
             if (block.type === 'TEXT') return <RichTextEditor value={block.content || ''} onChange={value => onUpdate('content', value)} placeholder="Escribe aquí el contenido o pega un enlace externo..." disabled={isSaving} />;
             if (block.type === 'VIDEO') return <Input value={block.content} onChange={e => onUpdate('content', e.target.value)} placeholder="URL del video de YouTube" disabled={isSaving} />;
             if (block.type === 'FILE') {
-                if (isFileUploading) {
-                    return (
-                        <div className="w-full space-y-2">
-                             <Progress value={fileUploadProgress} />
-                             <p className="text-xs text-center text-muted-foreground">Subiendo archivo...</p>
-                        </div>
-                    )
-                }
-                if (block.content) {
-                    const fileName = block.content.split('/').pop()?.split('-').slice(2).join('-') || 'Archivo';
+                const displayUrl = block.content || localPreview;
+                const isImage = displayUrl?.match(/\.(jpeg|jpg|gif|png|webp)$/) != null || localPreview?.startsWith('blob:');
+
+                if (displayUrl) {
+                    const fileName = block.content?.split('/').pop()?.split('-').slice(2).join('-') || 'Archivo';
                     return (
                         <div className="flex items-center gap-2 p-2 rounded-md border bg-background min-w-0">
-                            <FileGenericIcon className="h-5 w-5 text-primary shrink-0" />
-                            <span className="text-sm font-medium text-foreground truncate flex-grow min-w-0" title={fileName}>{fileName}</span>
-                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive rounded-full" onClick={() => onUpdate('content', '')}>
+                            {isImage ? (
+                                <div className="w-10 h-10 relative rounded flex-shrink-0">
+                                  <Image src={displayUrl} alt="Preview" fill className="object-cover" />
+                                </div>
+                            ) : (
+                               <FileGenericIcon className="h-5 w-5 text-primary shrink-0" />
+                            )}
+                            <span className="text-sm font-medium text-foreground truncate flex-grow min-w-0" title={fileName}>
+                                {isFileUploading ? 'Subiendo...' : fileName}
+                            </span>
+                             {isFileUploading && (
+                                <Progress value={fileUploadProgress} className="w-1/4 h-1.5" />
+                            )}
+                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive rounded-full" onClick={() => { onUpdate('content', ''); setLocalPreview(null); }}>
                                 <XCircle className="h-4 w-4"/>
                             </Button>
                         </div>
