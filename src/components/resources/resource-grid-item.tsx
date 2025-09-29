@@ -1,4 +1,3 @@
-
 // src/components/resources/resource-grid-item.tsx
 'use client';
 import React from 'react';
@@ -7,7 +6,7 @@ import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
 import { Card } from '@/components/ui/card';
 import { DecorativeFolder } from '@/components/resources/decorative-folder';
-import { Edit, MoreVertical, Trash2, Lock, Download, Globe, ExternalLink, Users, Move } from 'lucide-react';
+import { Edit, MoreVertical, Trash2, Lock, Download, Globe, ExternalLink, Users, Move, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -53,7 +52,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
         
         if (isFolder) {
             return (
-                <div className="w-full h-full relative">
+                <div className="w-full h-full relative" onClick={handleClick}>
                     <DecorativeFolder patternId={resource.id} className="absolute inset-0" />
                     <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1.5 rounded-full">
                        {resource.ispublic ? <Globe className="h-3.5 w-3.5 text-green-500"/> : <Users className="h-3.5 w-3.5 text-blue-500" />}
@@ -94,7 +93,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                     isOver && "ring-2 ring-primary ring-offset-2"
                 )}
             >
-                <div className="aspect-video w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg bg-muted/20 cursor-pointer" onClick={handleClick} {...listeners} {...attributes}>
+                <div className="aspect-video w-full flex items-center justify-center relative border-b overflow-hidden rounded-t-lg bg-muted/20 cursor-pointer" onClick={handleClick}>
                     <Thumbnail />
                      {resource.hasPin && !isFolder && (
                         <div className="absolute top-2 right-2 bg-background/70 backdrop-blur-sm p-1 rounded-full">
@@ -105,13 +104,14 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                 <div className="p-3">
                     <div className="flex justify-between items-start gap-2">
                         <div className="flex items-start gap-2 flex-grow overflow-hidden">
-                          {Icon && React.createElement(Icon, { className: "h-4 w-4 shrink-0 mt-0.5" })}
+                          {canModify && !isFolder && <div {...listeners} {...attributes} className="p-1 cursor-grab"><GripVertical className="h-4 w-4 text-muted-foreground"/></div>}
+                          {Icon && !canModify && React.createElement(Icon, { className: "h-4 w-4 shrink-0 mt-0.5" })}
                           <p className="font-medium text-sm leading-tight break-words">{resource.title}</p>
                         </div>
                         {canModify && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 -mr-2 text-muted-foreground" aria-label={`Opciones para ${resource.title}`}><MoreVertical className="h-4 w-4" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 -mr-2 text-muted-foreground" aria-label={`Opciones para ${resource.title}`} onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                     {!isFolder && resource.url && (
@@ -144,7 +144,7 @@ const ResourceGridItem = React.memo(({ resource, isFolder, onSelect, onEdit, onD
                             </DropdownMenu>
                         )}
                     </div>
-                    <p className={cn("text-xs text-muted-foreground mt-1", !isFolder && "pl-6")}>
+                    <p className={cn("text-xs text-muted-foreground mt-1", canModify && !isFolder && "pl-8")}>
                         {new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                 </div>

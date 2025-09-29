@@ -1,4 +1,3 @@
-
 // src/components/resources/resource-list-item.tsx
 'use client';
 import React from 'react';
@@ -8,7 +7,7 @@ import { getIconForType } from '@/lib/resource-utils';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, ExternalLink, User } from 'lucide-react';
+import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, ExternalLink, User, GripVertical } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DownloadButton } from '../ui/download-button';
 import { Identicon } from '../ui/identicon';
@@ -39,16 +38,15 @@ export const ResourceListItem = React.memo(({ resource, onSelect, onEdit, onDele
         <div 
             ref={setNodeRef}
             className={cn(
-                "grid grid-cols-12 gap-4 p-3 transition-colors hover:bg-muted/50 items-center",
+                "grid grid-cols-12 gap-4 p-3 transition-colors hover:bg-muted/50 items-center touch-none",
                 isDragging && 'opacity-50 bg-muted z-10'
             )}
         >
             <div 
                 className="col-span-6 flex items-center gap-4 cursor-pointer"
                 onClick={onSelect}
-                 {...listeners}
-                 {...attributes}
             >
+                {canModify && <div {...listeners} {...attributes} className="p-1 cursor-grab"><GripVertical className="h-4 w-4 text-muted-foreground"/></div>}
                 <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-muted rounded-lg">
                     <Icon className="h-5 w-5" />
                 </div>
