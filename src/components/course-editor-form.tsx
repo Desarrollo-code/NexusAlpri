@@ -203,7 +203,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
             
             try {
                 const result = await uploadWithProgress('/api/upload/lesson-file', file, setFileUploadProgress);
-                onUpdate('content', result.url);
+                onUpdate('content', result.publicUrl);
                 toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
             } catch (err) {
                  toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
@@ -233,7 +233,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
                         <div className="w-full space-y-2">
                             <UploadArea onFileSelect={handleFileSelect} disabled={isSaving || isFileUploading} />
                             {isFileUploading && <Progress value={fileUploadProgress} />}
-                            {block.content && !isImageFile && (
+                            {block.content && (
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
                                     <FileGenericIcon className="h-3 w-3 shrink-0" />
                                     <span className="truncate">URL actual: {block.content}</span>
@@ -600,15 +600,13 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
             
             setIsUploadingImage(true);
             setUploadProgress(0);
 
             try {
                 const result = await uploadWithProgress('/api/upload/course-image', file, setUploadProgress);
-                updateCourseField('imageUrl', result.url);
+                updateCourseField('imageUrl', result.publicUrl);
                 toast({ title: 'Imagen Subida', description: 'La imagen de portada se ha actualizado.'});
             } catch (err) {
                  toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
@@ -1017,3 +1015,5 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
         </Dialog>
     )
 };
+
+    
