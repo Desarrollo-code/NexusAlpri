@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
     }
     
-    // Base query to fetch events. We get non-recurring events and parent recurring events.
+    // Base query to fetch events.
     let whereClause: any = {};
     
     // Filter by audience unless the user is an admin
@@ -70,6 +70,11 @@ export async function POST(req: NextRequest) {
     if (!title || !start || !end || !session.id) {
         return NextResponse.json({ message: 'Faltan campos requeridos (título, inicio, fin, creador).' }, { status: 400 });
     }
+    
+    // --- CORRECCIÓN: Validar que el valor de recurrencia sea uno de los valores del enum ---
+    const validRecurrence = Object.values(RecurrenceType).includes(recurrence) 
+        ? recurrence as RecurrenceType 
+        : RecurrenceType.NONE;
 
     const dataToCreate: any = {
       title,
@@ -82,7 +87,7 @@ export async function POST(req: NextRequest) {
       color,
       videoConferenceLink,
       attachments,
-      recurrence: recurrence as RecurrenceType || RecurrenceType.NONE,
+      recurrence: validRecurrence,
       recurrenceEndDate: recurrenceEndDate ? new Date(recurrenceEndDate) : null,
       creator: {
         connect: { id: session.id },
