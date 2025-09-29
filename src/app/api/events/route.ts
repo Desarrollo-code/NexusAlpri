@@ -21,10 +21,8 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
     }
     
-    // Base query to fetch only parent recurring events or non-recurring events
-    let whereClause: any = {
-      parentId: null,
-    };
+    // Base query to fetch events. We get non-recurring events and parent recurring events.
+    let whereClause: any = {};
     
     // Filter by audience unless the user is an admin
     if (user.role !== 'ADMINISTRATOR') {
