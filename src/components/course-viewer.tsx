@@ -656,7 +656,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                     <PanelLeft className="h-5 w-5" />
                 </Button>
              )}
-            {isEnrolled && (
+            {isEnrolled && !isCreatorViewingCourse && (
                 <Sheet open={isMobile && isNotesPanelOpen} onOpenChange={setIsNotesPanelOpen}>
                     <SheetTrigger asChild>
                          <Button 
@@ -665,7 +665,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                               "rounded-full h-12 w-12 shadow-lg transition-colors",
                               isNotesPanelOpen && "bg-primary text-primary-foreground"
                             )}
-                            onClick={() => setIsNotesPanelOpen(!isNotesPanelOpen)}>
+                            onClick={() => !isMobile && setIsNotesPanelOpen(!isNotesPanelOpen)}>
                             <Notebook className="h-5 w-5" />
                         </Button>
                     </SheetTrigger>
