@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X, GraduationCap, Expand } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText as FileTextIcon, Layers, Clock, UserCircle2 as UserIcon, Download, ExternalLink, Loader2, AlertTriangle, Tv2, BookOpenText, Lightbulb, CheckCircle, Image as ImageIcon, File as FileGenericIcon, Award, PencilRuler, XCircle, Circle, Eye, Check, Search, PanelLeft, LineChart, Notebook, ScreenShare, ChevronRight, Palette, X, GraduationCap, Expand, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -455,7 +455,8 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
       
     if (!block.content) {
-      return <p key={block.id} className="text-sm text-muted-foreground my-4">Contenido no disponible.</p>;
+        // Devuelve null si no hay contenido, el mensaje se manejará fuera.
+        return null;
     }
 
     if (block.type === 'TEXT') {
@@ -522,8 +523,59 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         );
     }
 
-    return <p key={block.id} className="text-sm text-muted-foreground my-4">Contenido no disponible.</p>;
+    return null;
   };
+
+  const renderLessonContent = () => {
+    if (!selectedLesson) {
+        return (
+             <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                <BookOpenText className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-xl font-semibold">Selecciona una lección</h3>
+                <p className="text-muted-foreground">Elige una lección del menú para comenzar a aprender.</p>
+            </div>
+        )
+    }
+
+    const hasContent = selectedLesson.contentBlocks && selectedLesson.contentBlocks.length > 0 && selectedLesson.contentBlocks.some(b => b.content || b.quiz);
+
+    if (hasContent) {
+        return (
+            <div>
+                <div className="flex items-center gap-2 text-lg font-semibold mb-4">
+                    <GraduationCap className="h-5 w-5 text-primary" />
+                    <h2>{selectedLesson.title}</h2>
+                </div>
+                {(selectedLesson.contentBlocks || []).map(block => renderContentBlock(block))}
+            </div>
+        )
+    }
+    
+    // Contenido para cuando la lección está vacía
+    if (isCreatorViewingCourse) {
+      return (
+        <Card className="text-center p-8 border-dashed">
+            <CardHeader>
+                <CardTitle>Esta lección está vacía</CardTitle>
+                <CardDescription>Como instructor, puedes añadir contenido para tus estudiantes.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Button asChild>
+                    <Link href={`/manage-courses/${courseId}/edit`}>
+                        <Edit className="mr-2 h-4 w-4" /> Ir al Editor de Curso
+                    </Link>
+                </Button>
+            </CardContent>
+        </Card>
+      );
+    } else {
+      return (
+        <div className="text-center p-8 rounded-lg bg-muted/50">
+            <p className="text-muted-foreground">El contenido de esta lección estará disponible próximamente.</p>
+        </div>
+      );
+    }
+  }
   
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-card">
@@ -649,21 +701,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         )}>
             <main className="flex-1 overflow-y-auto thin-scrollbar">
                 <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-8">
-                    {selectedLesson ? (
-                        <div>
-                            <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-                                <GraduationCap className="h-5 w-5 text-primary" />
-                                <h2>{selectedLesson.title}</h2>
-                            </div>
-                            {(selectedLesson.contentBlocks || []).map(block => renderContentBlock(block))}
-                        </div>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                            <BookOpenText className="h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-xl font-semibold">Selecciona una lección</h3>
-                            <p className="text-muted-foreground">Elige una lección del menú para comenzar a aprender.</p>
-                        </div>
-                    )}
+                   {renderLessonContent()}
                 </div>
             </main>
         </div>
