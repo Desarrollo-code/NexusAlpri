@@ -70,18 +70,26 @@ async function getPageSettings(): Promise<Partial<PlatformSettings>> {
                 benefitsImageUrl: true
             }
         });
-        return settings || {};
+        return {
+            platformName: settings?.platformName || "NexusAlpri",
+            landingImageUrl: settings?.landingImageUrl || "https://placehold.co/600x600.png",
+            benefitsImageUrl: settings?.benefitsImageUrl || "https://placehold.co/600x400.png"
+        };
     } catch (error) {
         console.error("Failed to fetch settings for Landing page, using defaults:", error);
-        return {};
+        return {
+            platformName: "NexusAlpri",
+            landingImageUrl: "https://placehold.co/600x600.png",
+            benefitsImageUrl: "https://placehold.co/600x400.png"
+        };
     }
 }
 
 
 export default async function LandingPage() {
   const settings = await getPageSettings();
-  const landingImageUrl = settings?.landingImageUrl || "https://placehold.co/600x600.png";
-  const benefitsImageUrl = settings?.benefitsImageUrl || "https://placehold.co/600x400.png";
+  const landingImageUrl = settings?.landingImageUrl;
+  const benefitsImageUrl = settings?.benefitsImageUrl;
 
   const testimonials = [
     {
@@ -133,7 +141,7 @@ export default async function LandingPage() {
               </div>
                <div className="mx-auto aspect-square overflow-hidden rounded-xl w-full relative bg-slate-100">
                 <Image
-                  src={landingImageUrl}
+                  src={landingImageUrl!}
                   alt="Hero"
                   fill
                   className="object-cover"
@@ -183,7 +191,7 @@ export default async function LandingPage() {
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                      <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-2xl">
                         <Image
-                            src={benefitsImageUrl}
+                            src={benefitsImageUrl!}
                             alt="Benefits"
                             fill
                             className="object-cover"
