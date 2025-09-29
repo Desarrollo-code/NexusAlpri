@@ -278,7 +278,6 @@ export default function SettingsPageComponent() {
         const result = await uploadWithProgress('/api/upload/settings-image', formData, (progress) => {
            setUploadStates(prev => ({ ...prev, [field]: { isUploading: true, progress }}));
         });
-        // SOLUCIÓN: Actualizar el estado principal del formulario aquí
         handleInputChange(field, result.url);
         toast({ title: "Imagen Subida", description: "La imagen se ha subido correctamente."});
       } catch (err) {

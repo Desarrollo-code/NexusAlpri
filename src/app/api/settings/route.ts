@@ -1,3 +1,4 @@
+
 // src/app/api/settings/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -60,6 +61,7 @@ export async function GET(req: NextRequest) {
     
     // Transforma los campos de string a array para el cliente
     const settingsToReturn: PlatformSettings = {
+        ...DEFAULT_DB_SETTINGS, // Start with defaults to ensure all fields are present
         ...dbSettings,
         resourceCategories: dbSettings.resourceCategories ? dbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: dbSettings.emailWhitelist || '',
@@ -126,6 +128,7 @@ export async function POST(req: NextRequest) {
     
     // Devuelve la configuración actualizada en el formato correcto para el cliente
     const settingsToReturn: PlatformSettings = {
+        ...DEFAULT_DB_SETTINGS,
         ...updatedDbSettings,
         resourceCategories: updatedDbSettings.resourceCategories ? updatedDbSettings.resourceCategories.split(',').filter(Boolean) : [],
         emailWhitelist: updatedDbSettings.emailWhitelist || '',
