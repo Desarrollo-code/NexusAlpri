@@ -15,6 +15,9 @@ export async function GET(req: NextRequest) {
 
     try {
         const users = await prisma.user.findMany({
+            where: {
+                isActive: true, // Only return active users for selection
+            },
             select: {
                 id: true,
                 name: true,

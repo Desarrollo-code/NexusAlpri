@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { PlusCircle, Loader2, AlertTriangle, Edit, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import type { CalendarEvent, EventAudienceType, Attachment } from '@/types';
+import type { CalendarEvent } from '@/types';
 import { startOfToday, startOfMonth, endOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
