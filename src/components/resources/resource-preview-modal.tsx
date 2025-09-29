@@ -1,3 +1,4 @@
+
 // src/components/resources/resource-preview-modal.tsx
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
@@ -227,20 +228,17 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     const displayUrl = pinVerifiedUrl || resource.url;
     
     if (displayUrl) {
-        const youtubeId = getYoutubeVideoId(displayUrl);
-        const isImage = /\.(jpe?g|png|gif|webp)$/i.test(displayUrl);
         const isPdf = displayUrl.toLowerCase().endsWith('.pdf');
-        const isVideoFile = /\.(mp4|webm|ogv)$/i.test(displayUrl);
-        const isOfficeDoc = displayUrl.toLowerCase().endsWith('.docx');
-        const isZipFile = displayUrl.toLowerCase().endsWith('.zip');
-
-        if (youtubeId) return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>;
-        if (isVideoFile) return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />;
-        if (isImage) return <div className="relative w-full h-full p-2"><Image src={displayUrl} alt={resource.title} fill className="object-contain" data-ai-hint="document image" /></div>;
         if (isPdf) {
             return (
                 <div className="w-full h-full relative">
-                    <iframe ref={iframeRef} src={`${displayUrl}#view=FitH`} className="w-full h-full" title={`PDF Preview: ${resource.title}`} style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'center center' }}/>
+                    <iframe 
+                        ref={iframeRef} 
+                        src={`${displayUrl}#view=FitH`} 
+                        className="w-full h-full" 
+                        title={`PDF Preview: ${resource.title}`} 
+                        style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'center center' }}
+                    />
                     {isMobile && (
                         <div className="absolute bottom-4 right-4 flex flex-col gap-2">
                              <Button variant="secondary" size="icon" className="h-10 w-10 rounded-full shadow-lg" onClick={toggleFullScreen}><Expand /></Button>
@@ -251,6 +249,16 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
                 </div>
             );
         }
+        
+        const youtubeId = getYoutubeVideoId(displayUrl);
+        const isImage = /\.(jpe?g|png|gif|webp)$/i.test(displayUrl);
+        const isVideoFile = /\.(mp4|webm|ogv)$/i.test(displayUrl);
+        const isOfficeDoc = displayUrl.toLowerCase().endsWith('.docx');
+        const isZipFile = displayUrl.toLowerCase().endsWith('.zip');
+
+        if (youtubeId) return <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${youtubeId}`} title={`YouTube video: ${resource.title}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>;
+        if (isVideoFile) return <video src={displayUrl} controls className="w-full h-full object-contain bg-black" />;
+        if (isImage) return <div className="relative w-full h-full p-2"><Image src={displayUrl} alt={resource.title} fill className="object-contain" data-ai-hint="document image" /></div>;
         if (isOfficeDoc) return <DocxPreviewer url={displayUrl} />;
         if (isZipFile) return <ZipPreviewer url={displayUrl} />;
     }
