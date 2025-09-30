@@ -83,105 +83,90 @@ export async function PUT(
     const { modules, ...courseData } = body;
     
     await prisma.$transaction(async (tx) => {
-        // 1. Update course-level data
-        await tx.course.update({
-            where: { id: courseId },
-            data: {
-                title: courseData.title,
-                description: courseData.description,
-                imageUrl: courseData.imageUrl,
-                category: courseData.category,
-                status: courseData.status,
-                publicationDate: courseData.publicationDate ? new Date(courseData.publicationDate) : null,
-            },
+      // 1. Update course-level data
+      await tx.course.update({
+        where: { id: courseId },
+        data: {
+          title: courseData.title,
+          description: courseData.description,
+          imageUrl: courseData.imageUrl,
+          category: courseData.category,
+          status: courseData.status,
+          publicationDate: courseData.publicationDate ? new Date(courseData.publicationDate) : null,
+        },
+      });
+      
+      // 2. Clean slate: Delete all existing modules for this course
+      await tx.module.deleteMany({ where: { courseId } });
+
+      // 3. Re-create all modules, lessons, and content blocks from scratch based on the editor's state
+      for (const [moduleIndex, moduleData] of modules.entries()) {
+        const newModule = await tx.module.create({
+          data: {
+            title: moduleData.title,
+            order: moduleIndex,
+            courseId: courseId,
+          },
         });
-        
-        const existingModules = await tx.module.findMany({ where: { courseId }, select: { id: true } });
-        const incomingModuleIds = new Set(modules.map(m => !m.id.startsWith('new-') ? m.id : undefined).filter(Boolean));
-        
-        // 2. Delete modules that are no longer present
-        const modulesToDelete = existingModules.filter(m => !incomingModuleIds.has(m.id));
-        if (modulesToDelete.length > 0) {
-            await tx.module.deleteMany({ where: { id: { in: modulesToDelete.map(m => m.id) } }});
-        }
-        
-        // 3. Upsert modules and their nested content
-        for (const [moduleIndex, moduleData] of modules.entries()) {
-            const isNewModule = moduleData.id.startsWith('new-');
-            const savedModule = await tx.module.upsert({
-                where: { id: isNewModule ? `__NEVER_FIND__${moduleData.id}` : moduleData.id },
-                create: { title: moduleData.title, order: moduleIndex, courseId },
-                update: { title: moduleData.title, order: moduleIndex },
+
+        for (const [lessonIndex, lessonData] of moduleData.lessons.entries()) {
+          const newLesson = await tx.lesson.create({
+            data: {
+              title: lessonData.title,
+              order: lessonIndex,
+              moduleId: newModule.id,
+            },
+          });
+
+          for (const [blockIndex, blockData] of lessonData.contentBlocks.entries()) {
+            const newBlock = await tx.contentBlock.create({
+              data: {
+                type: blockData.type,
+                content: blockData.content || '',
+                order: blockIndex,
+                lessonId: newLesson.id,
+              },
             });
-            
-            const existingLessons = await tx.lesson.findMany({ where: { moduleId: savedModule.id }, select: { id: true } });
-            const incomingLessonIds = new Set(moduleData.lessons.map(l => !l.id.startsWith('new-') ? l.id : undefined).filter(Boolean));
 
-            const lessonsToDelete = existingLessons.filter(l => !incomingLessonIds.has(l.id));
-            if (lessonsToDelete.length > 0) await tx.lesson.deleteMany({ where: { id: { in: lessonsToDelete.map(l => l.id) } }});
+            if (blockData.type === 'QUIZ' && blockData.quiz) {
+              const newQuiz = await tx.quiz.create({
+                data: {
+                  title: blockData.quiz.title,
+                  description: blockData.quiz.description || '',
+                  maxAttempts: blockData.quiz.maxAttempts,
+                  contentBlockId: newBlock.id,
+                },
+              });
 
-            for (const [lessonIndex, lessonData] of moduleData.lessons.entries()) {
-                const isNewLesson = lessonData.id.startsWith('new-');
-                const savedLesson = await tx.lesson.upsert({
-                    where: { id: isNewLesson ? `__NEVER_FIND__${lessonData.id}` : lessonData.id },
-                    create: { title: lessonData.title, order: lessonIndex, moduleId: savedModule.id },
-                    update: { title: lessonData.title, order: lessonIndex },
+              for (const [qIndex, questionData] of blockData.quiz.questions.entries()) {
+                const newQuestion = await tx.question.create({
+                  data: {
+                    text: questionData.text,
+                    order: qIndex,
+                    type: 'SINGLE_CHOICE', // Asumiendo single choice
+                    quizId: newQuiz.id,
+                  },
                 });
-                
-                const existingBlocks = await tx.contentBlock.findMany({ where: { lessonId: savedLesson.id }, select: { id: true }});
-                const incomingBlockIds = new Set(lessonData.contentBlocks.map(b => !b.id.startsWith('new-') ? b.id : undefined).filter(Boolean));
-                
-                 const blocksToDelete = existingBlocks.filter(b => !incomingBlockIds.has(b.id));
-                 if (blocksToDelete.length > 0) await tx.contentBlock.deleteMany({ where: { id: { in: blocksToDelete.map(b => b.id) } }});
 
-                for (const [blockIndex, blockData] of lessonData.contentBlocks.entries()) {
-                    const isNewBlock = blockData.id.startsWith('new-');
-                    const savedBlock = await tx.contentBlock.upsert({
-                        where: { id: isNewBlock ? `__NEVER_FIND__${blockData.id}` : blockData.id },
-                        create: { type: blockData.type, content: blockData.content || '', order: blockIndex, lessonId: savedLesson.id },
-                        update: { type: blockData.type, content: blockData.content || '', order: blockIndex },
-                    });
-
-                    if (blockData.type === 'QUIZ' && blockData.quiz) {
-                        const isNewQuiz = blockData.quiz.id.startsWith('new-');
-                        const savedQuiz = await tx.quiz.upsert({
-                             where: { id: isNewQuiz ? `__NEVER_FIND__${blockData.quiz.id}` : blockData.quiz.id },
-                             create: { title: blockData.quiz.title, description: blockData.quiz.description || '', contentBlockId: savedBlock.id, maxAttempts: blockData.quiz.maxAttempts },
-                             update: { title: blockData.quiz.title, description: blockData.quiz.description || '', maxAttempts: blockData.quiz.maxAttempts },
-                        });
-                        
-                        // Delete existing questions for this quiz before adding new ones
-                        await tx.question.deleteMany({ where: { quizId: savedQuiz.id } });
-
-                        for(const [qIndex, questionData] of blockData.quiz.questions.entries()){
-                            const newQuestion = await tx.question.create({
-                                data: { 
-                                    text: questionData.text,
-                                    order: qIndex,
-                                    type: 'SINGLE_CHOICE', // For now, only single choice is fully supported
-                                    quizId: savedQuiz.id
-                                }
-                            });
-
-                            if(questionData.options?.length > 0){
-                                await tx.answerOption.createMany({
-                                    data: questionData.options.map(opt => ({
-                                        text: opt.text,
-                                        isCorrect: opt.isCorrect,
-                                        feedback: opt.feedback,
-                                        questionId: newQuestion.id,
-                                        points: opt.points
-                                    }))
-                                });
-                            }
-                        }
-                    }
+                if (questionData.options?.length > 0) {
+                  await tx.answerOption.createMany({
+                    data: questionData.options.map(opt => ({
+                      text: opt.text,
+                      isCorrect: opt.isCorrect,
+                      feedback: opt.feedback,
+                      questionId: newQuestion.id,
+                      points: opt.points
+                    })),
+                  });
                 }
+              }
             }
+          }
         }
+      }
     }, {
-      maxWait: 15000, // 15 seconds
-      timeout: 30000, // 30 seconds
+      maxWait: 20000, // 20 segundos
+      timeout: 40000, // 40 segundos
     });
 
     const finalCourseState = await prisma.course.findUnique({
@@ -195,9 +180,6 @@ export async function PUT(
     return NextResponse.json(finalCourseState);
   } catch (error) {
     console.error(`[UPDATE_COURSE_ID: ${courseId}]`, error);
-    if ((error as any).code === 'P2025') {
-        return NextResponse.json({ message: "Error de guardado: Uno de los elementos a actualizar no fue encontrado." }, { status: 404 });
-    }
     return NextResponse.json({ message: `Error al actualizar el curso: ${(error as Error).message}` }, { status: 500 });
   }
 }
