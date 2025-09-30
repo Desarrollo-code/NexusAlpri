@@ -63,14 +63,14 @@ export interface NavItem {
 // --- COURSE CONTENT ---
 export type LessonType = 'TEXT' | 'VIDEO' | 'QUIZ' | 'FILE';
 export type CourseStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE' | 'TRUE_FALSE';
+export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE';
 
 export interface AnswerOption {
     id: string;
     text: string;
     isCorrect: boolean;
     feedback?: string | null;
-    points?: number;
+    points: number;
 }
 
 export interface Question {

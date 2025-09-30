@@ -1,5 +1,5 @@
 // prisma/seed.ts
-import { PrismaClient, UserRole, AchievementSlug, RecurrenceType } from '@prisma/client';
+import { PrismaClient, UserRole, AchievementSlug, RecurrenceType, FormStatus, FormFieldType } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { addDays, subDays } from 'date-fns';
 
@@ -12,17 +12,14 @@ const prisma = new PrismaClient({
 });
 
 const achievementsToSeed = [
-  // Existing
   { slug: AchievementSlug.FIRST_ENROLLMENT, name: 'Primer Paso', description: 'Te has inscrito en tu primer curso.', points: 10, icon: 'Footprints' },
   { slug: AchievementSlug.FIRST_COURSE_COMPLETED, name: 'Finalista', description: 'Has completado tu primer curso.', points: 100, icon: 'GraduationCap' },
   { slug: AchievementSlug.PERFECT_QUIZ_SCORE, name: 'Perfeccionista', description: 'Obtuviste una puntuación perfecta en un quiz.', points: 50, icon: 'Target' },
   { slug: AchievementSlug.FIVE_COURSES_COMPLETED, name: 'Maratonista del Saber', description: 'Has completado cinco cursos.', points: 250, icon: 'Award' },
-  // New from last request
   { slug: AchievementSlug.FIRST_NOTE, name: 'Curiosidad Intelectual', description: 'Has tomado tu primer apunte en una lección.', points: 15, icon: 'Notebook' },
   { slug: AchievementSlug.FIRST_REACTION, name: 'Voz Activa', description: 'Has reaccionado por primera vez a un anuncio.', points: 5, icon: 'Megaphone' },
   { slug: AchievementSlug.FIRST_RESOURCE_DOWNLOAD, name: 'Explorador de Conocimiento', description: 'Has descargado tu primer recurso de la biblioteca.', points: 15, icon: 'Compass' },
   { slug: AchievementSlug.FIRST_COURSE_PUBLISHED, name: 'Creador de Contenido', description: 'Has publicado tu primer curso.', points: 150, icon: 'Send' },
-  // New from this request
   { slug: AchievementSlug.TEN_COURSES_COMPLETED, name: 'Ratón de Biblioteca', description: 'Has completado diez cursos.', points: 500, icon: 'Library' },
   { slug: AchievementSlug.TWENTY_COURSES_COMPLETED, name: 'Sabio de Nexus', description: 'Has completado veinte cursos.', points: 1000, icon: 'BrainCircuit' },
   { slug: AchievementSlug.HIGH_PERFORMER, name: 'Estudiante Estrella', description: 'Completaste un curso con una calificación de 95% o más.', points: 75, icon: 'Star' },
@@ -66,7 +63,10 @@ async function main() {
       update: {},
       create: {
             id: 'cl-nexus-settings-default',
-            platformName: "NexusAlpri", allowPublicRegistration: true, enableEmailNotifications: true, emailWhitelist: "",
+            platformName: "NexusAlpri", 
+            allowPublicRegistration: true, 
+            enableEmailNotifications: true, 
+            emailWhitelist: "alprigrama.com",
             resourceCategories: "Recursos Humanos,TI y Seguridad,Marketing,Ventas,Legal,Operaciones,Finanzas,Formación Interna,Documentación de Producto,General",
             passwordMinLength: 8, passwordRequireUppercase: true, passwordRequireLowercase: true, passwordRequireNumber: true, passwordRequireSpecialChar: false,
             enableIdleTimeout: true, idleTimeoutMinutes: 20, require2faForAdmins: false,
@@ -106,7 +106,6 @@ async function main() {
   const createdUsers = await Promise.all(userUpsertPromises);
   console.log(`${createdUsers.length} usuarios procesados.`);
   
-  // Obtener IDs de usuarios clave para asignaciones posteriores
   const getUserId = (email: string) => createdUsers.find(u => u.email === email)?.id;
   
   const adminUserId = getUserId('admin@alprigrama.com');
@@ -126,7 +125,7 @@ async function main() {
 
   // --- 3. ANUNCIOS (5 en total) ---
   console.log('Creando anuncios...');
-  await prisma.announcement.deleteMany({}); // Limpiar anuncios antiguos
+  await prisma.announcement.deleteMany({});
   await prisma.announcement.createMany({
     data: [
         { id: 'clseedannouncement01', title: '¡Bienvenid@ a la nueva plataforma de aprendizaje!', content: '<p>Estamos muy emocionados de lanzar esta nueva herramienta para potenciar tu desarrollo profesional.</p>', authorId: adminUser.id, audience: 'ALL', priority: 'Normal' },
@@ -139,25 +138,22 @@ async function main() {
   });
   console.log('Anuncios creados.');
 
-  // --- 4. EVENTOS DEL CALENDARIO (15 en total) ---
+  // --- 4. EVENTOS DEL CALENDARIO ---
   console.log('Creando eventos del calendario...');
-  await prisma.calendarEvent.deleteMany({}); // Limpiar eventos antiguos
+  await prisma.calendarEvent.deleteMany({});
   const now = new Date();
-  await prisma.calendarEvent.createMany({
-    data: [
-      { id: 'clseedevent01', title: 'Reunión Trimestral de Resultados', start: new Date(now.getFullYear(), now.getMonth(), 15, 10, 0), end: new Date(now.getFullYear(), now.getMonth(), 15, 11, 30), audienceType: 'ALL', creatorId: adminUser.id, color: 'blue' },
-      { id: 'clseedevent02', title: 'Pausa Activa Diaria', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 30), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 45), audienceType: 'ALL', creatorId: adminUser.id, color: 'green', recurrence: RecurrenceType.DAILY, recurrenceEndDate: addDays(now, 30) },
-      { id: 'clseedevent03', title: 'Fecha Límite: Reporte de Ventas Q2', start: new Date(now.getFullYear(), now.getMonth(), 10), end: new Date(now.getFullYear(), now.getMonth(), 10), allDay: true, audienceType: 'INSTRUCTOR', creatorId: adminUser.id, color: 'red' },
-      { id: 'clseedevent04', title: 'Reunión de Planificación (Instructores)', start: subDays(now, 5), end: subDays(now, 5), audienceType: 'INSTRUCTOR', creatorId: adminUser.id, color: 'orange', videoConferenceLink: 'https://meet.google.com/xyz-abc' },
-      { id: 'clseedevent05', title: 'Reunión Semanal de Sincronización', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 30), audienceType: 'ALL', creatorId: instructorUser.id, color: 'blue', recurrence: RecurrenceType.WEEKLY },
-    ],
-    skipDuplicates: true
-  });
+  
+  await prisma.calendarEvent.create({ data: { id: 'clseedevent01', title: 'Reunión Trimestral de Resultados', start: new Date(now.getFullYear(), now.getMonth(), 15, 10, 0), end: new Date(now.getFullYear(), now.getMonth(), 15, 11, 30), audienceType: 'ALL', creatorId: adminUser.id, color: 'blue' }});
+  await prisma.calendarEvent.create({ data: { id: 'clseedevent02', title: 'Pausa Activa Diaria', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 30), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 45), audienceType: 'ALL', creatorId: adminUser.id, color: 'green', recurrence: RecurrenceType.DAILY, recurrenceEndDate: addDays(now, 30) }});
+  await prisma.calendarEvent.create({ data: { id: 'clseedevent03', title: 'Fecha Límite: Reporte de Ventas Q2', start: new Date(now.getFullYear(), now.getMonth(), 10), end: new Date(now.getFullYear(), now.getMonth(), 10), allDay: true, audienceType: 'INSTRUCTOR', creatorId: adminUser.id, color: 'red' }});
+  await prisma.calendarEvent.create({ data: { id: 'clseedevent04', title: 'Reunión de Planificación (Instructores)', start: subDays(now, 5), end: subDays(now, 5), audienceType: 'INSTRUCTOR', creatorId: adminUser.id, color: 'orange', videoConferenceLink: 'https://meet.google.com/xyz-abc' }});
+  await prisma.calendarEvent.create({ data: { id: 'clseedevent05', title: 'Reunión Semanal de Sincronización', start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0), end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 30), audienceType: 'ALL', creatorId: instructorUser.id, color: 'blue', recurrence: RecurrenceType.WEEKLY }});
+  
   console.log('Eventos del calendario creados.');
 
-  // --- 5. BIBLIOTECA DE RECURSOS (ampliado) ---
+  // --- 5. BIBLIOTECA DE RECURSOS ---
   console.log('Creando recursos de la biblioteca...');
-  await prisma.enterpriseResource.deleteMany({}); // Limpiar recursos
+  await prisma.enterpriseResource.deleteMany({});
   const pinHash = await bcrypt.hash('1234', 10);
   const folderRRHH = await prisma.enterpriseResource.create({ data: { id: 'clseedfolder01', title: 'Documentos de RRHH', type: 'FOLDER', uploaderId: adminUser.id, ispublic: true, status: 'ACTIVE' }});
   await prisma.enterpriseResource.createMany({
@@ -171,18 +167,16 @@ async function main() {
   await prisma.enterpriseResource.createMany({
       data: [
         { id: 'clseedresource03', title: 'Video Institucional 2024', type: 'VIDEO', uploaderId: instructorUser.id, parentId: folderMarketing.id, url: 'https://www.youtube.com/watch?v=6c5y4_DBw_g', ispublic: true, category: 'Marketing', status: 'ACTIVE' },
-        { id: 'clseedresource04', title: 'Manual de Marca (Archivado)', type: 'DOCUMENT', uploaderId: instructorUser.id, parentId: folderMarketing.id, url: '/uploads/placeholder.pdf', ispublic: false, category: 'Marketing', status: 'ARCHIVED' }, // Privado y archivado
+        { id: 'clseedresource04', title: 'Manual de Marca (Archivado)', type: 'DOCUMENT', uploaderId: instructorUser.id, parentId: folderMarketing.id, url: '/uploads/placeholder.pdf', ispublic: false, category: 'Marketing', status: 'ARCHIVED' },
       ],
       skipDuplicates: true
   });
   await prisma.enterpriseResource.update({ where: { id: 'clseedresource04' }, data: { sharedWith: { connect: [{ id: studentUser1.id }] } } });
   console.log('Recursos creados.');
 
-  // --- 6. CURSOS Y CONTENIDO (Limpiando y creando) ---
-  console.log('Limpiando datos de cursos antiguos...');
+  // --- 6. CURSOS Y CONTENIDO ---
+  console.log('Limpiando y creando cursos...');
   await prisma.course.deleteMany({});
-  console.log('Creando cursos de prueba...');
-
   const courseAdmin = await prisma.course.create({ data: { id: 'clseedcourse01', title: 'Curso de Bienvenida a NexusAlpri', description: 'Un curso rápido para conocer la plataforma.', category: 'Formación Interna', instructorId: adminUser.id, status: 'PUBLISHED' }});
   const courseInstructor = await prisma.course.create({ data: { id: 'clseedcourse02', title: 'Marketing Digital para Principiantes', description: 'Aprende los fundamentos del marketing digital desde cero.', category: 'Marketing', instructorId: instructorUser.id, status: 'PUBLISHED', imageUrl: '/uploads/courses/marketing_cover.jpg' }});
   await prisma.course.create({ data: { id: 'clseedcourse03', title: 'Gestión de Proyectos con Metodologías Ágiles', description: 'Domina Scrum y Kanban para llevar tus proyectos al siguiente nivel.', category: 'Operaciones', instructorId: adminUser.id, status: 'DRAFT' }});
@@ -219,19 +213,19 @@ async function main() {
   
   // --- 8. FORMULARIOS ---
   console.log('Creando formularios de prueba...');
-  await prisma.form.deleteMany({}); // Limpiar formularios
+  await prisma.form.deleteMany({});
   await prisma.form.create({
     data: {
       title: 'Encuesta de Clima Laboral Q3',
       description: 'Tu opinión es muy importante para nosotros. Por favor, responde con sinceridad.',
       creatorId: adminUser.id,
-      status: 'PUBLISHED',
+      status: FormStatus.PUBLISHED,
       isQuiz: false,
       fields: {
         create: [
-          { label: 'En una escala del 1 al 5, ¿qué tan satisfecho estás con tu carga de trabajo actual?', type: 'SINGLE_CHOICE', order: 0, required: true, options: [ {id: 's1', text: '1 - Muy insatisfecho', isCorrect: false, points: 0}, {id: 's2', text: '2', isCorrect: false, points: 0}, {id: 's3', text: '3', isCorrect: false, points: 0}, {id: 's4', text: '4', isCorrect: false, points: 0}, {id: 's5', text: '5 - Muy satisfecho', isCorrect: false, points: 0}, ] },
-          { label: '¿Qué aspectos mejorarías de la comunicación interna? (Selecciona todos los que apliquen)', type: 'MULTIPLE_CHOICE', order: 1, required: false, options: [ {id: 'c1', text: 'Más reuniones generales', isCorrect: false, points: 0}, {id: 'c2', text: 'Comunicación más clara de los objetivos', isCorrect: false, points: 0}, {id: 'c3', text: 'Más feedback de mi manager', isCorrect: false, points: 0}, {id: 'c4', text: 'Mejor uso del email/chat', isCorrect: false, points: 0} ] },
-          { label: 'Si pudieras cambiar una cosa de la oficina, ¿qué sería?', type: 'TEXTAREA', order: 2, required: false, placeholder: 'Ej: más plantas, mejor café, etc.' }
+          { label: 'En una escala del 1 al 5, ¿qué tan satisfecho estás con tu carga de trabajo actual?', type: FormFieldType.SINGLE_CHOICE, order: 0, required: true, options: [ {id: 's1', text: '1 - Muy insatisfecho', isCorrect: false, points: 0}, {id: 's2', text: '2', isCorrect: false, points: 0}, {id: 's3', text: '3', isCorrect: false, points: 0}, {id: 's4', text: '4', isCorrect: false, points: 0}, {id: 's5', text: '5 - Muy satisfecho', isCorrect: false, points: 0}, ] },
+          { label: '¿Qué aspectos mejorarías de la comunicación interna? (Selecciona todos los que apliquen)', type: FormFieldType.MULTIPLE_CHOICE, order: 1, required: false, options: [ {id: 'c1', text: 'Más reuniones generales', isCorrect: false, points: 0}, {id: 'c2', text: 'Comunicación más clara de los objetivos', isCorrect: false, points: 0}, {id: 'c3', text: 'Más feedback de mi manager', isCorrect: false, points: 0}, {id: 'c4', text: 'Mejor uso del email/chat', isCorrect: false, points: 0} ] },
+          { label: 'Si pudieras cambiar una cosa de la oficina, ¿qué sería?', type: FormFieldType.LONG_TEXT, order: 2, required: false, placeholder: 'Ej: más plantas, mejor café, etc.' }
 
         ]
       }

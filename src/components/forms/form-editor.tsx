@@ -137,13 +137,15 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
                       placeholder="Escribe tu pregunta aquí..." 
                       className="text-base font-semibold border-0 border-b-2 rounded-none px-1 focus-visible:ring-0"
                   />
-                  <Input 
-                      name="placeholder" 
-                      value={field.placeholder || ''} 
-                      onChange={handleInputChange}
-                      placeholder="Texto de ejemplo o ayuda (opcional)" 
-                      className="text-xs h-8"
-                  />
+                  {(field.type === 'SHORT_TEXT' || field.type === 'LONG_TEXT') && (
+                    <Input 
+                        name="placeholder" 
+                        value={field.placeholder || ''} 
+                        onChange={handleInputChange}
+                        placeholder="Texto de ejemplo o ayuda (opcional)" 
+                        className="text-xs h-8"
+                    />
+                  )}
               </div>
                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => onDelete(field.id)}><Trash2 className="h-4 w-4"/></Button>
           </div>
@@ -156,13 +158,13 @@ const FieldEditor = ({ field, isScoringEnabled, onUpdate, onDelete, onOptionChan
               </div>
               <div className="flex items-center gap-2">
                   <div className="w-40">
-                      <Select value={field.type} onValueChange={(v) => onUpdate(field.id, { type: v as FormFieldType, options: v === 'SHORT_TEXT' || v === 'PARAGRAPH' ? [] : field.options || [{id: generateUniqueId('opt'), text: 'Opción 1', isCorrect: true, points: 10}] })}>
+                      <Select value={field.type} onValueChange={(v) => onUpdate(field.id, { type: v as FormFieldType, options: v === 'SHORT_TEXT' || v === 'LONG_TEXT' ? [] : field.options || [{id: generateUniqueId('opt'), text: 'Opción 1', isCorrect: true, points: 10}] })}>
                           <SelectTrigger>
                               <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                               <SelectItem value="SHORT_TEXT"><Type className="inline-block mr-2 h-4 w-4"/>Texto Corto</SelectItem>
-                              <SelectItem value="PARAGRAPH"><MessageSquare className="inline-block mr-2 h-4 w-4"/>Párrafo</SelectItem>
+                              <SelectItem value="LONG_TEXT"><MessageSquare className="inline-block mr-2 h-4 w-4"/>Párrafo</SelectItem>
                               <SelectItem value="SINGLE_CHOICE"><ListChecks className="inline-block mr-2 h-4 w-4"/>Opción Única</SelectItem>
                               <SelectItem value="MULTIPLE_CHOICE"><CheckSquare className="inline-block mr-2 h-4 w-4"/>Casillas</SelectItem>
                           </SelectContent>
@@ -398,7 +400,7 @@ export function FormEditor({ formId }: { formId: string }) {
                          <CardHeader><CardTitle className="text-base">Añadir Campo</CardTitle></CardHeader>
                          <CardContent className="grid grid-cols-2 gap-2">
                             <Button variant="outline" onClick={() => addField('SHORT_TEXT')}><Type className="mr-2 h-4 w-4"/>Texto Corto</Button>
-                            <Button variant="outline" onClick={() => addField('PARAGRAPH')}><MessageSquare className="mr-2 h-4 w-4"/>Párrafo</Button>
+                            <Button variant="outline" onClick={() => addField('LONG_TEXT')}><MessageSquare className="mr-2 h-4 w-4"/>Párrafo</Button>
                             <Button variant="outline" onClick={() => addField('SINGLE_CHOICE')}><ListChecks className="mr-2 h-4 w-4"/>Opción Única</Button>
                             <Button variant="outline" onClick={() => addField('MULTIPLE_CHOICE')}><CheckSquare className="mr-2 h-4 w-4"/>Casillas</Button>
                          </CardContent>
