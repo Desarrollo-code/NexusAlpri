@@ -218,7 +218,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
             
             try {
                 const result = await uploadWithProgress('/api/upload/lesson-file', file, setFileUploadProgress);
-                onUpdate('content', result.publicUrl);
+                onUpdate('content', result.url);
                 toast({ title: 'Archivo Subido', description: `El archivo ${file.name} se ha subido correctamente.`});
             } catch (err) {
                  toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
@@ -489,13 +489,13 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     };
 
     const handleAddModule = () => {
-        const newModule: AppModule = {
-            id: generateUniqueId('module'),
-            title: 'Nuevo Módulo',
-            order: course?.modules.length || 0,
-            lessons: [],
-        };
         handleStateUpdate(prev => {
+            const newModule: AppModule = {
+                id: generateUniqueId('module'),
+                title: 'Nuevo Módulo',
+                order: prev.modules.length,
+                lessons: [],
+            };
             prev.modules.push(newModule);
             return prev;
         });
@@ -630,7 +630,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
             try {
                 const result = await uploadWithProgress('/api/upload/course-image', file, setUploadProgress);
-                updateCourseField('imageUrl', result.publicUrl);
+                updateCourseField('imageUrl', result.url);
                 toast({ title: 'Imagen Subida', description: 'La imagen de portada se ha actualizado.'});
             } catch (err) {
                  toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
@@ -1064,4 +1064,3 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
     
 
     
-
