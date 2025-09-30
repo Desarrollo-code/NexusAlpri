@@ -8,6 +8,10 @@ datasource db {
   relationMode = "foreignKeys"
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 
 // --- ENUMS ---
 
