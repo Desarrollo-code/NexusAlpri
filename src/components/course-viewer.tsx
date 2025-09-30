@@ -478,7 +478,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     
     if (block.type === 'FILE') {
         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-        const isPdf = url.toLowerCase().endsWith('.pdf');
+        const isPdf = /\.pdf($|\?)/i.test(url);
         const isOfficeDoc = url.toLowerCase().endsWith('.docx');
         
         if (isPdf) {

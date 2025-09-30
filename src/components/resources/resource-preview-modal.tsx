@@ -227,7 +227,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     const displayUrl = pinVerifiedUrl || resource.url;
     
     if (displayUrl) {
-        const isPdf = displayUrl.toLowerCase().endsWith('.pdf');
+        const isPdf = /\.pdf($|\?)/i.test(displayUrl);
         if (isPdf) {
             return (
                 <div className="w-full h-full relative">
