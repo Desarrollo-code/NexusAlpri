@@ -40,6 +40,7 @@ import { Loader2, Save, MapPin, Video, Link as LinkIcon, X, Check, Users, Edit, 
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Calendar } from '../ui/calendar';
 import { es } from 'date-fns/locale';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 const eventColors = [
   { value: 'blue', label: 'Evento General', color: 'bg-event-blue' },
