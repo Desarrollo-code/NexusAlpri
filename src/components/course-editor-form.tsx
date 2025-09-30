@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -226,7 +225,6 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, { block: ContentBlock;
                  setLocalPreview(null); // Clear preview on error
             } finally {
                 setIsFileUploading(false);
-                // La preview local se mantendrá hasta que el `block.content` se actualice y cause un re-render
             }
         };
 
@@ -448,6 +446,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const handleStateUpdate = useCallback((updater: (prev: AppCourse) => AppCourse) => {
         setCourse(prev => {
             if (!prev) return null;
+            // Create a deep copy to ensure React detects nested changes
             const newCourse = JSON.parse(JSON.stringify(prev));
             return updater(newCourse);
         });
@@ -512,63 +511,57 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     };
     
     const handleAddLesson = useCallback((moduleIndex: number, template?: ApiTemplate) => {
-        if (!course) return;
-
-        let newBlocks: ContentBlock[] = [];
-        if (template) {
-            newBlocks = template.templateBlocks.map(tb => ({
-                id: generateUniqueId('block'),
-                type: tb.type as LessonType,
-                content: '',
-                order: tb.order,
-                quiz: tb.type === 'QUIZ' ? {
-                    id: generateUniqueId('quiz'),
-                    title: 'Nuevo Quiz desde Plantilla',
-                    description: '',
-                    questions: [],
-                    maxAttempts: null,
-                } : undefined
-            }));
-        }
-
-        const newLesson: AppLesson = {
-            id: generateUniqueId('lesson'),
-            title: template ? `Lección de "${template.name}"` : 'Nueva Lección',
-            order: course.modules[moduleIndex].lessons.length,
-            contentBlocks: newBlocks,
-        };
-
         handleStateUpdate(prev => {
+            let newBlocks: ContentBlock[] = [];
+            if (template) {
+                newBlocks = template.templateBlocks.map(tb => ({
+                    id: generateUniqueId('block'),
+                    type: tb.type as LessonType,
+                    content: '',
+                    order: tb.order,
+                    quiz: tb.type === 'QUIZ' ? {
+                        id: generateUniqueId('quiz'),
+                        title: 'Nuevo Quiz desde Plantilla',
+                        description: '',
+                        questions: [],
+                        maxAttempts: null,
+                    } : undefined
+                }));
+            }
+
+            const newLesson: AppLesson = {
+                id: generateUniqueId('lesson'),
+                title: template ? `Lección de "${template.name}"` : 'Nueva Lección',
+                order: prev.modules[moduleIndex].lessons.length,
+                contentBlocks: newBlocks,
+            };
+            
             prev.modules[moduleIndex].lessons.push(newLesson);
             return prev;
         });
-        
         setShowTemplateModal(false);
         setActiveModuleIndexForTemplate(null);
-    }, [course, handleStateUpdate]);
+    }, [handleStateUpdate]);
     
      const handleAddBlock = useCallback((moduleIndex: number, lessonIndex: number, type: LessonType) => {
-        if (!course) return;
-
-        const newBlock: ContentBlock = {
-            id: generateUniqueId('block'),
-            type: type,
-            content: '',
-            order: course.modules[moduleIndex].lessons[lessonIndex].contentBlocks.length,
-            quiz: type === 'QUIZ' ? { 
-                id: generateUniqueId('quiz'), 
-                title: 'Nuevo Quiz', 
-                description: '', 
-                questions: [],
-                maxAttempts: null,
-            } : undefined
-        };
-        
         handleStateUpdate(prev => {
+            const newBlock: ContentBlock = {
+                id: generateUniqueId('block'),
+                type: type,
+                content: '',
+                order: prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks.length,
+                quiz: type === 'QUIZ' ? { 
+                    id: generateUniqueId('quiz'), 
+                    title: 'Nuevo Quiz', 
+                    description: '', 
+                    questions: [],
+                    maxAttempts: null,
+                } : undefined
+            };
             prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks.push(newBlock);
             return prev;
         });
-    }, [course, handleStateUpdate]);
+    }, [handleStateUpdate]);
 
     const handleRemoveModule = (moduleIndex: number) => {
          setItemToDeleteDetails({
@@ -1071,3 +1064,4 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
     
 
     
+

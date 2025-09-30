@@ -141,9 +141,9 @@ export async function checkAndAwardCourseCompletionAchievements(userId: string, 
     });
 
     if (completedCount === 1) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIRST_COURSE_COMPLETED });
-    if (completedCount >= 5) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIVE_COURSES_COMPLETED });
-    if (completedCount >= 10) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.TEN_COURSES_COMPLETED });
-    if (completedCount >= 20) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.TWENTY_COURSES_COMPLETED });
+    if (completedCount === 5) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIVE_COURSES_COMPLETED });
+    if (completedCount === 10) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.TEN_COURSES_COMPLETED });
+    if (completedCount === 20) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.TWENTY_COURSES_COMPLETED });
     
     // Logro por alta calificación
     if (finalScore !== null && finalScore !== undefined && finalScore >= 95) {
