@@ -446,7 +446,12 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
 
     const handleStateUpdate = useCallback((updater: (prev: AppCourse) => AppCourse) => {
-        setCourse(prev => prev ? updater(prev) : null);
+        setCourse(prev => {
+            if (!prev) return null;
+            // Create a deep copy to ensure React detects nested changes
+            const newCourse = JSON.parse(JSON.stringify(prev));
+            return updater(newCourse);
+        });
         setIsDirty(true);
     }, []);
 
@@ -456,33 +461,29 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
     const updateModuleField = (moduleIndex: number, field: keyof AppModule, value: any) => {
         handleStateUpdate(prev => {
-            const newModules = [...prev.modules];
-            newModules[moduleIndex] = { ...newModules[moduleIndex], [field]: value };
-            return { ...prev, modules: newModules };
+            prev.modules[moduleIndex][field] = value;
+            return prev;
         });
     };
     
     const updateLessonField = (moduleIndex: number, lessonIndex: number, field: keyof AppLesson, value: any) => {
         handleStateUpdate(prev => {
-            const newCourse = JSON.parse(JSON.stringify(prev));
-            newCourse.modules[moduleIndex].lessons[lessonIndex][field] = value;
-            return newCourse;
+            prev.modules[moduleIndex].lessons[lessonIndex][field] = value;
+            return prev;
         });
     };
     
     const updateBlockField = (moduleIndex: number, lessonIndex: number, blockIndex: number, field: string, value: any) => {
         handleStateUpdate(prev => {
-            const newCourse = JSON.parse(JSON.stringify(prev));
-            newCourse.modules[moduleIndex].lessons[lessonIndex].contentBlocks[blockIndex][field] = value;
-            return newCourse;
+            prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks[blockIndex][field] = value;
+            return prev;
         });
     };
 
     const updateQuizForBlock = (moduleIndex: number, lessonIndex: number, blockIndex: number, updatedQuiz: AppQuiz) => {
         handleStateUpdate(prev => {
-            const newCourse = JSON.parse(JSON.stringify(prev));
-            newCourse.modules[moduleIndex].lessons[lessonIndex].contentBlocks[blockIndex].quiz = updatedQuiz;
-            return newCourse;
+            prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks[blockIndex].quiz = updatedQuiz;
+            return prev;
         });
     };
 
@@ -493,7 +494,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             order: course?.modules.length || 0,
             lessons: [],
         };
-        handleStateUpdate(prev => ({ ...prev, modules: [...prev.modules, newModule] }));
+        handleStateUpdate(prev => {
+            prev.modules.push(newModule);
+            return prev;
+        });
     };
     
     const handleAddLessonAction = (moduleIndex: number, type: 'blank' | 'template') => {
@@ -533,9 +537,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         };
 
         handleStateUpdate(prev => {
-            const newCourse = JSON.parse(JSON.stringify(prev));
-            newCourse.modules[moduleIndex].lessons.push(newLesson);
-            return newCourse;
+            prev.modules[moduleIndex].lessons.push(newLesson);
+            return prev;
         });
         
         setShowTemplateModal(false);
@@ -560,16 +563,18 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         };
         
         handleStateUpdate(prev => {
-            const newCourse = JSON.parse(JSON.stringify(prev));
-            newCourse.modules[moduleIndex].lessons[lessonIndex].contentBlocks.push(newBlock);
-            return newCourse;
+            prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks.push(newBlock);
+            return prev;
         });
     }, [course, handleStateUpdate]);
 
     const handleRemoveModule = (moduleIndex: number) => {
          setItemToDeleteDetails({
             name: course?.modules[moduleIndex].title,
-            onDelete: () => handleStateUpdate(prev => ({ ...prev, modules: prev.modules.filter((_, index) => index !== moduleIndex) }))
+            onDelete: () => handleStateUpdate(prev => {
+                prev.modules.splice(moduleIndex, 1);
+                return prev;
+            })
         })
     };
 
@@ -578,10 +583,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             name: course?.modules[moduleIndex].lessons[lessonIndex].title,
             onDelete: () => {
                 handleStateUpdate(prev => {
-                    const newModules = [...prev.modules];
-                    const newLessons = newModules[moduleIndex].lessons.filter((_, index) => index !== lessonIndex);
-                    newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
-                    return { ...prev, modules: newModules };
+                    prev.modules[moduleIndex].lessons.splice(lessonIndex, 1);
+                    return prev;
                 });
             }
         })
@@ -589,12 +592,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     
     const handleRemoveBlock = (moduleIndex: number, lessonIndex: number, blockIndex: number) => {
         handleStateUpdate(prev => {
-            const newModules = [...prev.modules];
-            const newLessons = [...newModules[moduleIndex].lessons];
-            const newBlocks = newLessons[lessonIndex].contentBlocks.filter((_, index) => index !== blockIndex);
-            newLessons[lessonIndex] = { ...newLessons[lessonIndex], contentBlocks: newBlocks };
-            newModules[moduleIndex] = { ...newModules[moduleIndex], lessons: newLessons };
-            return { ...prev, modules: newModules };
+            prev.modules[moduleIndex].lessons[lessonIndex].contentBlocks.splice(blockIndex, 1);
+            return prev;
         });
     };
 
@@ -602,28 +601,27 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         const { source, destination, type } = result;
         if (!destination || !course) return;
 
-        const newCourse = JSON.parse(JSON.stringify(course));
+        handleStateUpdate(prev => {
+            if (type === 'MODULES') {
+                const [reorderedItem] = prev.modules.splice(source.index, 1);
+                prev.modules.splice(destination.index, 0, reorderedItem);
+            } else if (type === 'LESSONS') {
+                 const sourceModule = prev.modules.find(m => m.id === source.droppableId);
+                 const destModule = prev.modules.find(m => m.id === destination.droppableId);
+                 if (!sourceModule || !destModule) return prev;
 
-        if (type === 'MODULES') {
-            const [reorderedItem] = newCourse.modules.splice(source.index, 1);
-            newCourse.modules.splice(destination.index, 0, reorderedItem);
-        } else if (type === 'LESSONS') {
-             const sourceModule = newCourse.modules.find(m => m.id === source.droppableId);
-             const destModule = newCourse.modules.find(m => m.id === destination.droppableId);
-             if (!sourceModule || !destModule) return;
+                 const [movedItem] = sourceModule.lessons.splice(source.index, 1);
+                 destModule.lessons.splice(destination.index, 0, movedItem);
+            } else if (type === 'BLOCKS') {
+                 const sourceLesson = prev.modules.flatMap(m => m.lessons).find(l => l.id === source.droppableId);
+                 const destLesson = prev.modules.flatMap(m => m.lessons).find(l => l.id === destination.droppableId);
+                 if (!sourceLesson || !destLesson) return prev;
 
-             const [movedItem] = sourceModule.lessons.splice(source.index, 1);
-             destModule.lessons.splice(destination.index, 0, movedItem);
-        } else if (type === 'BLOCKS') {
-             const sourceLesson = newCourse.modules.flatMap(m => m.lessons).find(l => l.id === source.droppableId);
-             const destLesson = newCourse.modules.flatMap(m => m.lessons).find(l => l.id === destination.droppableId);
-             if (!sourceLesson || !destLesson) return;
-
-             const [movedItem] = sourceLesson.contentBlocks.splice(source.index, 1);
-             destLesson.contentBlocks.splice(destination.index, 0, movedItem);
-        }
-        
-        handleStateUpdate(() => newCourse);
+                 const [movedItem] = sourceLesson.contentBlocks.splice(source.index, 1);
+                 destLesson.contentBlocks.splice(destination.index, 0, movedItem);
+            }
+            return prev;
+        });
     };
 
     const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -1065,6 +1063,8 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
     
 
 
+
+    
 
     
 
