@@ -97,6 +97,7 @@ export async function PUT(
       });
       
       // 2. Clean slate: Delete all existing modules for this course
+      // Prisma's cascading delete will handle lessons, contentblocks, etc.
       await tx.module.deleteMany({ where: { courseId } });
 
       // 3. Re-create all modules, lessons, and content blocks from scratch based on the editor's state
@@ -128,6 +129,8 @@ export async function PUT(
               },
             });
 
+            // --- ¡LÓGICA FALTANTE CORREGIDA! ---
+            // Si el bloque es un QUIZ, crear el quiz y sus preguntas/opciones.
             if (blockData.type === 'QUIZ' && blockData.quiz) {
               const newQuiz = await tx.quiz.create({
                 data: {
@@ -143,7 +146,7 @@ export async function PUT(
                   data: {
                     text: questionData.text,
                     order: qIndex,
-                    type: 'SINGLE_CHOICE', // Asumiendo single choice
+                    type: 'SINGLE_CHOICE', // Asumiendo single choice por ahora
                     quizId: newQuiz.id,
                   },
                 });
@@ -153,9 +156,9 @@ export async function PUT(
                     data: questionData.options.map(opt => ({
                       text: opt.text,
                       isCorrect: opt.isCorrect,
-                      feedback: opt.feedback,
+                      feedback: opt.feedback || null,
+                      points: opt.points || 0,
                       questionId: newQuestion.id,
-                      points: opt.points
                     })),
                   });
                 }
