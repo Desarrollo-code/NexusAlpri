@@ -227,7 +227,8 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     const displayUrl = pinVerifiedUrl || resource.url;
     
     if (displayUrl) {
-        const isPdf = /\.pdf($|\?)/i.test(displayUrl);
+        // CORRECCIÓN: La detección de PDF ahora usa la URL del recurso original para ser fiable.
+        const isPdf = /\.pdf($|\?)/i.test(resource.url || '');
         if (isPdf) {
             return (
                 <div className="w-full h-full relative">
