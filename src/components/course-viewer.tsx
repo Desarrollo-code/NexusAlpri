@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -437,8 +436,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   };
   
   const renderContentBlock = (block: ContentBlock) => {
+    const url = block.content || '';
+
     if (block.type === 'VIDEO') {
-        return <VideoPlayer key={block.id} videoUrl={block.content || ''} lessonTitle={selectedLesson?.title} onVideoEnd={handleVideoEnd} />
+        return <VideoPlayer key={block.id} videoUrl={url} lessonTitle={selectedLesson?.title} onVideoEnd={handleVideoEnd} />
     }
     
     if (block.type === 'QUIZ') {
@@ -455,31 +456,27 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         );
     }
       
-    if (!block.content) {
+    if (!url) {
         return null;
     }
 
     if (block.type === 'TEXT') {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = block.content;
-        const textContent = tempDiv.textContent || tempDiv.innerText || "";
-        const isUrl = /^(https?:\/\/)/.test(textContent.trim());
+        const isExternalUrl = /^(https?:\/\/)/.test(url.trim());
 
-        if (isUrl) {
+        if (isExternalUrl) {
             return (
                 <div key={block.id} className="my-4 p-4 border rounded-md bg-card hover:bg-muted/50 transition-colors">
-                    <a href={textContent.trim()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-primary font-semibold group">
+                    <a href={url.trim()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-primary font-semibold group">
                         <ExternalLink className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors"/>
-                        <span className="group-hover:underline underline-offset-4">{textContent.trim()}</span>
+                        <span className="group-hover:underline underline-offset-4">{url.trim()}</span>
                     </a>
                 </div>
             );
         }
-        return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" style={{ maxHeight: '500px', overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: block.content }} />;
+        return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" style={{ maxHeight: '500px', overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: url }} />;
     }
     
     if (block.type === 'FILE') {
-        const url = block.content || '';
         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
         const isPdf = url.toLowerCase().endsWith('.pdf');
         const isOfficeDoc = url.toLowerCase().endsWith('.docx');
