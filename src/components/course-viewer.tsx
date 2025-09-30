@@ -455,7 +455,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
       
     if (!block.content) {
-        // Devuelve null si no hay contenido, el mensaje se manejará fuera.
         return null;
     }
 
@@ -537,7 +536,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         )
     }
 
-    const hasContent = selectedLesson.contentBlocks && selectedLesson.contentBlocks.length > 0 && selectedLesson.contentBlocks.some(b => b.content || b.quiz);
+    const hasContent = selectedLesson.contentBlocks && selectedLesson.contentBlocks.length > 0 && selectedLesson.contentBlocks.some(b => b.content || b.type === 'QUIZ');
 
     if (hasContent) {
         return (
@@ -551,7 +550,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         )
     }
     
-    // Contenido para cuando la lección está vacía
     if (isCreatorViewingCourse) {
       return (
         <Card className="text-center p-8 border-dashed">
@@ -775,4 +773,3 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     </div>
   );
 }
-
