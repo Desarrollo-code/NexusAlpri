@@ -93,6 +93,7 @@ enum FormFieldType {
   PARAGRAPH
   SINGLE_CHOICE
   MULTIPLE_CHOICE
+  LONG_TEXT 
 }
 
 enum QuestionType {
