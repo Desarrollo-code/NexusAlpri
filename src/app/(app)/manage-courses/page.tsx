@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
-import { PlusCircle, List, Edit, Users, Grid, ListPlus, Loader2, AlertTriangle, ShieldAlert, MoreVertical, Archive, ArchiveRestore, Trash2, Eye, HelpCircle, LineChart, BookOpen, Layers } from 'lucide-react';
+import { PlusCircle, List, Edit, Users, Grid, ListPlus, Loader2, AlertTriangle, ShieldAlert, MoreVertical, Archive, ArchiveRestore, Trash2, Eye, HelpCircle, LineChart, BookOpen, Layers, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import type { Course as AppCourseType, CourseStatus, UserRole } from '@/types';
@@ -452,4 +452,3 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: 
         </DropdownMenu>
     );
 }
-

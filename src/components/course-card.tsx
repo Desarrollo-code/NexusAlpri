@@ -27,8 +27,6 @@ interface CourseCardProps {
   viewMode?: 'catalog' | 'management';
 }
 
-const TRUNCATE_LENGTH = 120;
-
 const getStatusInSpanish = (status: CourseStatus) => {
     switch (status) {
         case 'DRAFT': return 'Borrador';
@@ -73,7 +71,7 @@ export function CourseCard({
       const response = await fetch('/api/enrollments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courseId: course.id, enroll }),
+        body: JSON.stringify({ courseId: course.id, userId: user.id, enroll }),
       });
 
       if (!response.ok) {
@@ -187,8 +185,9 @@ export function CourseCard({
               )}
               {viewMode === 'management' && (
                 <>
-                  <div className="text-xs text-muted-foreground">
-                    {course.modulesCount} módulos. Estado: <span className="font-semibold">{getStatusInSpanish(course.status)}</span>
+                  <div className="text-xs text-muted-foreground flex items-center gap-4">
+                     <span className="flex items-center gap-1.5"><Users className="h-3 w-3"/>{course.enrollmentsCount}</span>
+                     <span className="flex items-center gap-1.5"><Check className="h-3 w-3"/>{Math.round(course.averageCompletion || 0)}%</span>
                   </div>
                   <ManagementDropdown course={course} onStatusChange={onStatusChange} onDelete={onDelete} isProcessing={isProcessingStatus} />
                 </>
@@ -276,3 +275,5 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: 
         </DropdownMenu>
     );
 }
+
+const TRUNCATE_LENGTH = 120;
