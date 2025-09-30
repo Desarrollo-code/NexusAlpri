@@ -448,7 +448,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const handleStateUpdate = useCallback((updater: (prev: AppCourse) => AppCourse) => {
         setCourse(prev => {
             if (!prev) return null;
-            // Create a deep copy to ensure React detects nested changes
             const newCourse = JSON.parse(JSON.stringify(prev));
             return updater(newCourse);
         });
@@ -456,7 +455,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     }, []);
 
     const updateCourseField = (field: keyof AppCourse, value: any) => {
-        handleStateUpdate(prev => ({ ...prev, [field]: value }));
+        handleStateUpdate(prev => {
+            prev[field] = value;
+            return prev;
+        });
     };
     
     const updateModuleField = (moduleIndex: number, field: keyof AppModule, value: any) => {
