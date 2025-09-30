@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -478,30 +479,31 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
     
     if (block.type === 'FILE') {
-        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(block.content);
-        const isPdf = block.content.toLowerCase().endsWith('.pdf');
-        const isOfficeDoc = block.content.toLowerCase().endsWith('.docx');
+        const url = block.content || '';
+        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+        const isPdf = url.toLowerCase().endsWith('.pdf');
+        const isOfficeDoc = url.toLowerCase().endsWith('.docx');
         
         if (isPdf) {
             return (
                 <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ height: '70vh', minHeight: '500px' }}>
-                    <iframe src={block.content} className="w-full h-full border rounded-md" title={`PDF Preview: ${selectedLesson?.title}`}/>
+                    <iframe src={url} className="w-full h-full border rounded-md" title={`PDF Preview: ${selectedLesson?.title}`}/>
                 </div>
             );
         }
         if (isOfficeDoc) {
              return (
                 <div key={block.id} className="my-4">
-                    <DocxPreviewer url={block.content}/>
+                    <DocxPreviewer url={url}/>
                 </div>
             );
         }
         
         if (isImage) {
             return (
-                 <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center group relative cursor-pointer" onClick={() => setImageToView(block.content)}>
+                 <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md flex justify-center group relative cursor-pointer" onClick={() => setImageToView(url)}>
                     <div className="relative aspect-video w-full max-w-4xl p-2">
-                        <Image src={block.content} alt={`Preview: ${selectedLesson?.title}`} fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson file" />
+                        <Image src={url} alt={`Preview: ${selectedLesson?.title}`} fill className="object-contain p-2" priority quality={100} data-ai-hint="lesson file" />
                     </div>
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <Expand className="h-12 w-12 text-white"/>
@@ -514,7 +516,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             <div key={block.id} className="my-4 p-4 bg-muted/50 rounded-md text-center">
                 <p className="text-sm text-muted-foreground mb-2">Este recurso es un archivo descargable:</p>
                 <Button asChild size="sm">
-                    <Link href={block.content} target="_blank" rel="noopener noreferrer" download>
+                    <Link href={url} target="_blank" rel="noopener noreferrer" download>
                         <Download className="mr-2 h-4 w-4" /> Descargar Archivo
                     </Link>
                 </Button>
