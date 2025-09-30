@@ -1,4 +1,3 @@
-
 // src/lib/gamification.ts
 import prisma from '@/lib/prisma';
 import type { User } from '@/types';
@@ -136,7 +135,7 @@ export async function checkAndAwardFirstEnrollment(userId: string) {
     }
 }
 
-export async function checkAndAwardCourseCompletionAchievements(userId: string, finalScore: number | null) {
+export async function checkAndAwardCourseCompletionAchievements(userId: string, finalScore?: number | null) {
     const completedCount = await prisma.courseProgress.count({
         where: { userId: userId, completedAt: { not: null } }
     });
@@ -147,7 +146,7 @@ export async function checkAndAwardCourseCompletionAchievements(userId: string, 
     if (completedCount >= 20) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.TWENTY_COURSES_COMPLETED });
     
     // Logro por alta calificación
-    if (finalScore !== null && finalScore >= 95) {
+    if (finalScore !== null && finalScore !== undefined && finalScore >= 95) {
         await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.HIGH_PERFORMER });
     }
 }

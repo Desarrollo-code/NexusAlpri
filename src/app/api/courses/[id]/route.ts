@@ -129,8 +129,7 @@ export async function PUT(
               },
             });
 
-            // --- ¡LÓGICA FALTANTE CORREGIDA! ---
-            // Si el bloque es un QUIZ, crear el quiz y sus preguntas/opciones.
+            // If the block is a QUIZ, create the quiz and its questions/options.
             if (blockData.type === 'QUIZ' && blockData.quiz) {
               const newQuiz = await tx.quiz.create({
                 data: {
@@ -146,7 +145,7 @@ export async function PUT(
                   data: {
                     text: questionData.text,
                     order: qIndex,
-                    type: 'SINGLE_CHOICE', // Asumiendo single choice por ahora
+                    type: 'SINGLE_CHOICE', // Assuming single choice for now
                     quizId: newQuiz.id,
                   },
                 });
@@ -168,8 +167,8 @@ export async function PUT(
         }
       }
     }, {
-      maxWait: 20000, // 20 segundos
-      timeout: 40000, // 40 segundos
+      maxWait: 20000, // 20 seconds
+      timeout: 40000, // 40 seconds
     });
 
     const finalCourseState = await prisma.course.findUnique({

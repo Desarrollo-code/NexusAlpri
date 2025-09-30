@@ -3,6 +3,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { UserRole, CourseStatus } from '@/types';
 import prisma from '@/lib/prisma';
+import { mapApiCourseToAppCourse } from '@/lib/course-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +35,6 @@ export async function GET(req: NextRequest) {
       }
     } else {
       whereClause.status = 'PUBLISHED';
-      // CORRECCIÓN: Un usuario no puede inscribirse en un curso que él mismo ha creado.
       if (userId) {
           whereClause.instructorId = { not: userId };
       }
@@ -82,17 +82,14 @@ export async function GET(req: NextRequest) {
             averageCompletion = validProgress.reduce((acc: number, curr: number) => acc + curr, 0) / validProgress.length;
         }
       }
-
-      // Limpia la información sensible de las inscripciones si no es necesaria
+      
       const { enrollments, ...restOfCourse } = course;
 
       return {
         ...restOfCourse,
-        modulesCount: course._count?.modules ?? (course.modules?.length || 0),
-        enrollmentsCount: course._count?.enrollments ?? 0,
         averageCompletion: averageCompletion,
       };
-    });
+    }).map(c => mapApiCourseToAppCourse(c));
 
     return NextResponse.json({ courses: enrichedCourses, totalCourses });
     
