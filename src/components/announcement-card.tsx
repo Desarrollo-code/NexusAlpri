@@ -22,6 +22,7 @@ const EMOJI_REACTIONS = ['👍', '❤️', '🎉', '💡', '🤔'];
 
 interface AnnouncementCardProps {
   announcement: Announcement;
+  onEdit?: (announcement: Announcement) => void;
   onDelete?: (announcementId: string) => void;
   onReactionChange?: (announcementId: string, updatedReactions: Reaction[]) => void;
   onRead?: (announcementId: string) => void;
@@ -74,7 +75,7 @@ const formatDate = (dateString: string) => {
     }
 };
 
-export function AnnouncementCard({ announcement, onDelete, onReactionChange, onRead, onTogglePin }: AnnouncementCardProps) {
+export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionChange, onRead, onTogglePin }: AnnouncementCardProps) {
   const { user } = useAuth();
   const cardRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(cardRef, { once: true, margin: "-100px" });
@@ -155,7 +156,7 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
                     </TooltipProvider>
                 )}
              </div>
-             {canModify && onDelete && (
+             {canModify && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
@@ -165,11 +166,11 @@ export function AnnouncementCard({ announcement, onDelete, onReactionChange, onR
                             {announcement.isPinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
                             {announcement.isPinned ? 'Desfijar' : 'Fijar Anuncio'}
                          </DropdownMenuItem>
-                         <DropdownMenuItem disabled>
+                         <DropdownMenuItem onSelect={() => onEdit?.(announcement)}>
                             <Edit className="mr-2 h-4 w-4"/>Editar
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => onDelete(announcement.id)} className="text-destructive focus:bg-destructive/10">
+                        <DropdownMenuItem onClick={() => onDelete?.(announcement.id)} className="text-destructive focus:bg-destructive/10">
                             <Trash2 className="mr-2 h-4 w-4"/>Eliminar
                         </DropdownMenuItem>
                     </DropdownMenuContent>

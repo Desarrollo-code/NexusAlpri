@@ -18,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -26,7 +27,6 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { useTitle } from '@/contexts/title-context';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import { getIconForFileType } from '@/lib/resource-utils';
 import { cn } from '@/lib/utils';
@@ -36,6 +36,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import Image from 'next/image';
 import Link from 'next/link';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
 
 interface DisplayAnnouncement extends AnnouncementType {
   author: { id: string; name: string; email?: string, avatar?: string | null } | null;
@@ -67,24 +68,18 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                 toast({ title: "Archivo demasiado grande", description: `"${file.name}" excede el límite de ${MAX_FILE_SIZE_MB}MB.`, variant: "destructive" });
                 continue;
             }
-
-            const tempId = `${file.name}-${Date.now()}`;
-            const formData = new FormData();
-            formData.append('file', file);
             
-            setUploadProgress(prev => ({ ...prev, [tempId]: 0 }));
-
             try {
-                const result = await uploadWithProgress('/api/upload/announcement-attachment', formData, (progress) => {
-                    setUploadProgress(prev => ({ ...prev, [tempId]: progress }));
+                const result = await uploadWithProgress('/api/upload/announcement-attachment', file, (progress) => {
+                    setUploadProgress(prev => ({ ...prev, [file.name]: progress }));
                 });
-                setAttachments(prev => [...prev, { name: file.name, url: result.url, type: file.type, size: file.size }]);
+                setAttachments(prev => [...prev, { id: result.path, name: file.name, url: result.publicUrl, type: file.type, size: file.size }]);
             } catch (err) {
                 toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
             } finally {
                 setUploadProgress(prev => {
                     const newProgress = { ...prev };
-                    delete newProgress[tempId];
+                    delete newProgress[file.name];
                     return newProgress;
                 });
             }
@@ -213,7 +208,7 @@ export default function AnnouncementsPage() {
   const activeTab = user?.role === 'STUDENT' ? 'all' : (searchParams.get('tab') || 'all');
   const totalPages = Math.ceil(totalAnnouncements / PAGE_SIZE);
 
-  const [announcementToDelete, setAnnouncementToDelete] = useState<DisplayAnnouncement | null>(null);
+  const [announcementToProcess, setAnnouncementToProcess] = useState<{ action: 'delete' | 'edit', data: DisplayAnnouncement } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
@@ -288,8 +283,6 @@ export default function AnnouncementsPage() {
   };
   
    const handleRead = (announcementId: string) => {
-      // The call to the API is now managed inside the AnnouncementCard component.
-      // We just update the count visually.
       setAllAnnouncements(prev => prev.map(ann => {
         if (ann.id === announcementId) {
           return {
@@ -302,10 +295,10 @@ export default function AnnouncementsPage() {
   };
 
   const handleDeleteAnnouncement = async () => {
-    if (!announcementToDelete) return;
+    if (!announcementToProcess || announcementToProcess.action !== 'delete') return;
     setIsProcessing(true);
     try {
-      const response = await fetch(`/api/announcements/${announcementToDelete.id}`, {
+      const response = await fetch(`/api/announcements/${announcementToProcess.data.id}`, {
         method: 'DELETE',
       });
       if (!response.ok && response.status !== 204) {
@@ -318,7 +311,7 @@ export default function AnnouncementsPage() {
       toast({ title: 'Error al eliminar', description: err instanceof Error ? err.message : 'No se pudo eliminar el anuncio.', variant: 'destructive' });
     } finally {
       setIsProcessing(false);
-      setAnnouncementToDelete(null);
+      setAnnouncementToProcess(null);
     }
   };
 
@@ -340,13 +333,10 @@ export default function AnnouncementsPage() {
     }
   }
 
-  const openDeleteConfirmation = (announcementId: string) => {
-    const annToDelete = allAnnouncements.find(ann => ann.id === announcementId);
-    if(annToDelete) {
-        setAnnouncementToDelete(annToDelete);
-    }
+  const handleEditRequest = (announcement: DisplayAnnouncement) => {
+      setAnnouncementToProcess({ action: 'edit', data: announcement });
   };
-
+  
   const canCreate = user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR';
 
   return (
@@ -385,7 +375,8 @@ export default function AnnouncementsPage() {
                     <div key={announcement.id} id={announcement.id}>
                         <AnnouncementCard 
                             announcement={announcement}
-                            onDelete={openDeleteConfirmation}
+                            onEdit={() => handleEditRequest(announcement)}
+                            onDelete={() => setAnnouncementToProcess({ action: 'delete', data: announcement })}
                             onReactionChange={handleReactionChange}
                             onRead={handleRead}
                             onTogglePin={handleTogglePin}
@@ -427,7 +418,7 @@ export default function AnnouncementsPage() {
           </div>
         </main>
         
-        <AlertDialog open={!!announcementToDelete} onOpenChange={(open) => !open && setAnnouncementToDelete(null)}>
+        <AlertDialog open={announcementToProcess?.action === 'delete'} onOpenChange={(open) => !open && setAnnouncementToProcess(null)}>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>¿Estás realmente seguro?</AlertDialogTitle>
@@ -436,7 +427,7 @@ export default function AnnouncementsPage() {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel disabled={isProcessing} onClick={() => setAnnouncementToDelete(null)}>
+                <AlertDialogCancel disabled={isProcessing} onClick={() => setAnnouncementToProcess(null)}>
                   Cancelar
                 </AlertDialogCancel>
                 <AlertDialogAction 
@@ -450,6 +441,87 @@ export default function AnnouncementsPage() {
               </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
+        
+        {announcementToProcess?.action === 'edit' && (
+            <AnnouncementEditorModal
+                announcement={announcementToProcess.data}
+                isOpen={true}
+                onClose={() => setAnnouncementToProcess(null)}
+                onUpdateSuccess={fetchAnnouncements}
+            />
+        )}
     </div>
   );
 }
+
+// --- MODAL DE EDICIÓN ---
+function AnnouncementEditorModal({ announcement, isOpen, onClose, onUpdateSuccess }: { announcement: DisplayAnnouncement, isOpen: boolean, onClose: () => void, onUpdateSuccess: () => void }) {
+    const { toast } = useToast();
+    const [title, setTitle] = useState(announcement.title);
+    const [content, setContent] = useState(announcement.content);
+    const [audience, setAudience] = useState(announcement.audience as UserRole | 'ALL');
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSaveChanges = async () => {
+        setIsSaving(true);
+        try {
+            const response = await fetch(`/api/announcements/${announcement.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, content, audience }),
+            });
+            if (!response.ok) throw new Error((await response.json()).message || "No se pudo actualizar el anuncio.");
+            
+            toast({ title: "Anuncio Actualizado", description: "Los cambios han sido guardados." });
+            onUpdateSuccess();
+            onClose();
+        } catch (err) {
+            toast({ title: 'Error al Guardar', description: (err as Error).message, variant: 'destructive' });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="sm:max-w-xl">
+                <DialogHeader>
+                    <DialogTitle>Editar Anuncio</DialogTitle>
+                    <DialogDescription>Realiza cambios en el título, contenido o audiencia del anuncio.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="title" className="text-right">Título</Label>
+                        <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-start gap-4">
+                        <Label className="text-right pt-2">Contenido</Label>
+                        <div className="col-span-3">
+                           <RichTextEditor value={content} onChange={setContent} />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                         <Label htmlFor="audience" className="text-right">Audiencia</Label>
+                         <Select value={audience} onValueChange={(v) => setAudience(v as any)}>
+                            <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ALL">Todos</SelectItem>
+                                <SelectItem value="STUDENT">Estudiantes</SelectItem>
+                                <SelectItem value="INSTRUCTOR">Instructores</SelectItem>
+                                <SelectItem value="ADMINISTRATOR">Administradores</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+                    <Button onClick={handleSaveChanges} disabled={isSaving}>
+                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>} Guardar Cambios
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+```

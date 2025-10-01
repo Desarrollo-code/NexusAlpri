@@ -79,7 +79,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const updatedAnnouncement = await prisma.announcement.update({
       where: { id },
       data: dataToUpdate,
-      include: { author: { select: { id: true, name: true } }, attachments: true },
+      include: { author: { select: { id: true, name: true, avatar: true } }, attachments: true, _count: { select: { reads: true, reactions: true } } },
     });
 
     return NextResponse.json(updatedAnnouncement);
