@@ -14,10 +14,8 @@ import { cn } from '@/lib/utils';
 import { getIconForFileType } from '@/lib/resource-utils';
 import { useInView } from 'framer-motion';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
 import { ScrollArea } from './ui/scroll-area';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from './ui/dropdown-menu';
-import { Separator } from './ui/separator';
 
 const EMOJI_REACTIONS = ['👍', '❤️', '🎉', '💡', '🤔'];
 
@@ -135,7 +133,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   const fileAttachments = useMemo(() => announcement.attachments?.filter(att => !att.type.startsWith('image/')) || [], [announcement.attachments]);
   
   return (
-    <Card ref={cardRef} className="card-border-animated w-full bg-card">
+    <Card ref={cardRef} className="card-border-animated w-full bg-card overflow-hidden">
       <CardHeader className="p-4 flex flex-row items-start gap-4 space-y-0">
          <Avatar className="h-10 w-10">
           <AvatarImage src={announcement.author?.avatar || undefined} />
@@ -168,11 +166,15 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                 </DropdownMenu>
              )}
           </div>
-          {announcement.title && <CardTitle className="text-lg font-semibold mt-1">{announcement.title}</CardTitle>}
         </div>
       </CardHeader>
-      <CardContent className="px-4 pt-0 pb-3">
-        <div className="pl-14">
+      {announcement.title && (
+          <div className="bg-primary/90 text-primary-foreground px-4 py-2 mx-4 rounded-t-lg">
+             <CardTitle className="text-lg font-semibold">{announcement.title}</CardTitle>
+          </div>
+      )}
+      <CardContent className={cn("px-4 pb-3", announcement.title ? 'pt-3' : 'pt-0 pl-16')}>
+        <div className={cn(!announcement.title && "pl-2")}>
             <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: announcement.content }} />
               {imageAttachments.length > 0 && (
                  <div className={cn("grid gap-1 mt-3 rounded-lg overflow-hidden border", imageAttachments.length > 1 ? "grid-cols-2" : "grid-cols-1")}>
@@ -191,7 +193,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
               )}
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0 pl-16 flex items-center justify-between">
+      <CardFooter className={cn("p-4 pt-0 flex items-center justify-between", announcement.title ? "pl-4" : "pl-16")}>
            <div className="flex items-center text-muted-foreground -ml-2">
             <Popover>
                 <PopoverTrigger asChild>

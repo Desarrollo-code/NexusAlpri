@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback, ChangeEvent } from 'r
 import { AnnouncementCard } from '@/components/announcement-card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { Announcement as AnnouncementType, UserRole, Attachment, Reaction } from '@/types'; 
-import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud, Pin, PinOff, Check } from 'lucide-react';
+import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud, Pin, PinOff, Check, XCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
@@ -28,15 +28,14 @@ import { useTitle } from '@/contexts/title-context';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from '@/components/ui/progress';
-import { getIconForFileType } from '@/lib/resource-utils';
 import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import Image from 'next/image';
 import Link from 'next/link';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { UploadArea } from '@/components/ui/upload-area';
 
 interface LocalAttachmentPreview {
     id: string; // Temporary client-side ID
@@ -56,25 +55,6 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
     const [formAudience, setFormAudience] = useState<UserRole | 'ALL'>('ALL');
     const [localPreviews, setLocalPreviews] = useState<LocalAttachmentPreview[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        if (!event.target.files) return;
-        const files = Array.from(event.target.files);
-
-        const newPreviews: LocalAttachmentPreview[] = files.map(file => ({
-            id: `${file.name}-${Date.now()}`,
-            file,
-            previewUrl: URL.createObjectURL(file),
-            uploadProgress: 0,
-        }));
-
-        setLocalPreviews(prev => [...prev, ...newPreviews]);
-        
-        newPreviews.forEach(preview => {
-            uploadFile(preview);
-        });
-    };
 
     const uploadFile = async (preview: LocalAttachmentPreview) => {
         try {
@@ -86,6 +66,21 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
             setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, error: (err as Error).message } : p));
         }
     };
+    
+    const handleFileSelected = (file: File | null) => {
+        if (!file) return;
+
+        const newPreview: LocalAttachmentPreview = {
+            id: `${file.name}-${Date.now()}`,
+            file,
+            previewUrl: URL.createObjectURL(file),
+            uploadProgress: 0,
+        };
+
+        setLocalPreviews(prev => [...prev, newPreview]);
+        uploadFile(newPreview);
+    };
+
 
     const handleSaveAnnouncement = async () => {
         if (!formTitle.trim() && !formContent.trim() && localPreviews.length === 0) {
@@ -177,9 +172,9 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                          {localPreviews.length > 0 && (
                             <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                                 {localPreviews.map((p) => (
-                                    <div key={p.id} className="relative aspect-square border rounded-md overflow-hidden">
-                                        <Image src={p.previewUrl} alt={p.file.name} fill className="object-cover" />
-                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 transition-opacity duration-300">
+                                    <div key={p.id} className="relative aspect-square border rounded-md overflow-hidden bg-muted/50">
+                                        <Image src={p.previewUrl} alt={p.file.name} fill className="object-contain p-1" />
+                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 transition-opacity duration-300 opacity-0 hover:opacity-100">
                                             {p.uploadProgress > 0 && p.uploadProgress < 100 && !p.error && (
                                                 <div className="w-full px-2">
                                                     <Progress value={p.uploadProgress} className="h-1 bg-white/30"/>
@@ -194,22 +189,20 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                                             )}
                                         </div>
                                          <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removePreview(p.id)}>
-                                            <Trash2 className="h-3 w-3"/>
+                                            <XCircle className="h-4 w-4"/>
                                         </Button>
                                     </div>
                                 ))}
                             </div>
                         )}
+                        <div className="pt-2">
+                           <UploadArea onFileSelect={handleFileSelected} disabled={isSubmitting} />
+                        </div>
                     </div>
                 </div>
             </CardContent>
             <CardFooter className="flex justify-between items-center px-4 py-3 border-t">
                 <div className="flex items-center gap-2">
-                     <Button variant="ghost" size="icon" className="text-muted-foreground" onClick={() => fileInputRef.current?.click()}>
-                        <UploadCloud className="h-5 w-5" />
-                    </Button>
-                    <input type="file" ref={fileInputRef} onChange={handleFileChange} multiple accept="image/*" className="hidden" />
-
                     <Select value={formAudience} onValueChange={(v) => setFormAudience(v as any)} disabled={isSubmitting}>
                         <SelectTrigger className="h-8 w-auto text-xs gap-2">
                             <SelectValue/>
@@ -382,7 +375,7 @@ export default function AnnouncementsPage() {
   return (
     <div className="container mx-auto relative">
         <div 
-            className="absolute inset-0 z-0 announcement-pattern-bg" 
+            className="absolute inset-0 z-0 bg-cover bg-center" 
             style={{ backgroundImage: settings?.announcementsImageUrl ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${settings.announcementsImageUrl}')` : 'none' }}
         />
         <div className="relative z-10">
@@ -404,7 +397,7 @@ export default function AnnouncementsPage() {
                 {isLoading ? (
                     <div className="flex justify-center items-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    <p className="ml-2">Cargando anuncios...</p>
+                    <p className="ml-2 text-white">Cargando anuncios...</p>
                     </div>
                 ) : error ? (
                     <div className="flex flex-col items-center justify-center py-12 text-destructive">
@@ -443,17 +436,17 @@ export default function AnnouncementsPage() {
                         <PaginationPrevious
                             href="#"
                             onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
-                            className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
+                            className={cn(buttonVariants({variant: 'outline'}), currentPage === 1 ? "pointer-events-none opacity-50" : "")}
                         />
                         </PaginationItem>
                         <PaginationItem>
-                        <span className="text-sm p-2 text-white text-center mb-8">Página {currentPage} de {totalPages}</span>
+                        <span className="text-sm p-2 text-white font-semibold text-center mb-8">Página {currentPage} de {totalPages}</span>
                         </PaginationItem>
                         <PaginationItem>
                         <PaginationNext
                             href="#"
                             onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
-                            className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}
+                             className={cn(buttonVariants({variant: 'outline'}), currentPage === totalPages ? "pointer-events-none opacity-50" : "")}
                         />
                         </PaginationItem>
                     </PaginationContent>
