@@ -73,7 +73,8 @@ export const FallbackIcon = ({ resource, className }: { resource: AppResourceTyp
 };
 
 /**
- * Checks if a given URL points to a PDF file, handling URL encoding.
+ * Checks if a given URL points to a PDF file.
+ * This version is more robust for URLs with query parameters.
  * @param url The URL string to check.
  * @returns True if the URL is for a PDF, false otherwise.
  */
@@ -82,15 +83,10 @@ export function isPdfUrl(url: string | null | undefined): boolean {
     return false;
   }
   try {
-    // Decodifica la URL para manejar casos como '%20' para espacios.
-    const decodedUrl = decodeURIComponent(url);
-    // Usa una expresión regular para verificar si termina en .pdf, insensible a mayúsculas/minúsculas,
-    // y que puede estar seguido de un '?' (query params) o ser el final de la cadena.
-    return /\.pdf($|\?)/i.test(decodedUrl);
+    const parsedUrl = new URL(url);
+    return parsedUrl.pathname.toLowerCase().endsWith('.pdf');
   } catch (error) {
-    // Si la decodificación falla, es una URL malformada.
-    console.error("Error decoding URL for PDF check:", url, error);
-    // Asume que no es un PDF si la URL es inválida
-    return false;
+    // Fallback for relative URLs or invalid URLs
+    return url.toLowerCase().includes('.pdf');
   }
 }

@@ -463,13 +463,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         );
     }
       
-    if (!url) {
-        if (block.type === 'TEXT') {
-           return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: '' }} />;
-        }
-        return null;
-    }
-
     if (block.type === 'TEXT') {
         const isExternalUrl = /^(https?:\/\/)/.test(url.trim());
 
@@ -491,7 +484,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             const previewUrl = `/api/resources/preview?url=${encodeURIComponent(url)}`;
              return (
                 <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ height: '80vh', minHeight: '600px' }}>
-                    <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+                    <Worker workerUrl="/pdf.worker.min.js">
                         <Viewer fileUrl={previewUrl} plugins={[defaultLayoutPluginInstance]} />
                     </Worker>
                 </div>
