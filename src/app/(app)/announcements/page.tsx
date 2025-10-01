@@ -83,7 +83,6 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
             });
             setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, finalUrl: result.publicUrl, uploadProgress: 100 } : p));
         } catch (err) {
-            toast({ title: 'Error de Subida', description: `Falló la subida de ${preview.file.name}.`, variant: 'destructive' });
             setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, error: (err as Error).message } : p));
         }
     };
@@ -96,7 +95,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
 
         const isStillUploading = localPreviews.some(p => p.uploadProgress > 0 && p.uploadProgress < 100);
         if (isStillUploading) {
-            toast({ title: "Archivos subiendo", description: "Por favor, espera a que todos los archivos terminen de subirse.", variant: "default" });
+            // Este toast fue eliminado por solicitud del usuario
             return;
         }
 
