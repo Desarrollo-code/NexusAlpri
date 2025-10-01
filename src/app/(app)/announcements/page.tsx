@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback, ChangeEvent } from 'r
 import { AnnouncementCard } from '@/components/announcement-card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { Announcement as AnnouncementType, UserRole, Attachment, Reaction } from '@/types'; 
-import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud, Pin, PinOff, Check, XCircle } from 'lucide-react';
+import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud, Pin, PinOff, Check, XCircle, Paperclip } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
@@ -158,7 +158,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                          <Input 
                             value={formTitle} 
                             onChange={(e) => setFormTitle(e.target.value)} 
-                            placeholder="Título del anuncio..." 
+                            placeholder="Asunto o Título del Mensaje..." 
                             className="text-base font-semibold border-0 border-b-2 rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary" 
                             disabled={isSubmitting}
                         />
@@ -195,16 +195,18 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                                 ))}
                             </div>
                         )}
-                        <div className="pt-2">
-                           <UploadArea onFileSelect={handleFileSelected} disabled={isSubmitting} />
-                        </div>
                     </div>
                 </div>
             </CardContent>
             <CardFooter className="flex justify-between items-center px-4 py-3 border-t">
                 <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => document.getElementById('announcement-file-upload')?.click()} disabled={isSubmitting}>
+                       <Paperclip className="mr-2 h-4 w-4"/> Adjuntar archivo
+                    </Button>
+                    <UploadArea onFileSelect={handleFileSelected} disabled={isSubmitting} className="hidden" inputId="announcement-file-upload"/>
+                    
                     <Select value={formAudience} onValueChange={(v) => setFormAudience(v as any)} disabled={isSubmitting}>
-                        <SelectTrigger className="h-8 w-auto text-xs gap-2">
+                        <SelectTrigger className="h-9 w-auto text-xs gap-2">
                             <SelectValue/>
                         </SelectTrigger>
                         <SelectContent>
@@ -380,7 +382,7 @@ export default function AnnouncementsPage() {
         />
         <div className="relative z-10">
             <main className="max-w-2xl mx-auto">
-            <p className="text-white text-center mb-8">Mantente informado sobre las últimas novedades de la plataforma.</p>
+            <p className={cn("text-center mb-8", settings?.announcementsImageUrl ? 'text-white' : 'text-muted-foreground')}>Mantente informado sobre las últimas novedades de la plataforma.</p>
                 {canCreate && <AnnouncementCreator onAnnouncementCreated={fetchAnnouncements} />}
                 
                 {user?.role !== 'STUDENT' && (
@@ -440,7 +442,7 @@ export default function AnnouncementsPage() {
                         />
                         </PaginationItem>
                         <PaginationItem>
-                        <span className="text-sm p-2 text-white font-semibold text-center mb-8">Página {currentPage} de {totalPages}</span>
+                        <span className={cn("text-sm p-2 font-semibold text-center mb-8", settings?.announcementsImageUrl ? 'text-white' : 'text-muted-foreground')}>Página {currentPage} de {totalPages}</span>
                         </PaginationItem>
                         <PaginationItem>
                         <PaginationNext

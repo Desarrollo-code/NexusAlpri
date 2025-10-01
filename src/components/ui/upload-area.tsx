@@ -8,9 +8,11 @@ import { UploadCloud } from 'lucide-react';
 interface UploadAreaProps {
   onFileSelect: (file: File | null) => void;
   disabled?: boolean;
+  className?: string;
+  inputId?: string;
 }
 
-export function UploadArea({ onFileSelect, disabled }: UploadAreaProps) {
+export function UploadArea({ onFileSelect, disabled, className, inputId = "file-upload" }: UploadAreaProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -62,7 +64,8 @@ export function UploadArea({ onFileSelect, disabled }: UploadAreaProps) {
         "group relative w-full h-32 flex flex-col items-center justify-center bg-card border-2 border-dashed border-border rounded-lg cursor-pointer transition-colors",
         isDragging && "border-primary bg-primary/10",
         !disabled && "hover:border-primary hover:bg-muted/30",
-        disabled && "cursor-not-allowed opacity-50"
+        disabled && "cursor-not-allowed opacity-50",
+        className
       )}
       onClick={!disabled ? handleClick : undefined}
       onDragEnter={handleDragEnter}
@@ -72,6 +75,7 @@ export function UploadArea({ onFileSelect, disabled }: UploadAreaProps) {
     >
       <input
         type="file"
+        id={inputId}
         ref={inputRef}
         onChange={handleFileChange}
         className="hidden"
