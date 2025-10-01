@@ -94,18 +94,18 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
             return;
         }
 
+        const isStillUploading = localPreviews.some(p => p.uploadProgress > 0 && p.uploadProgress < 100);
+        if (isStillUploading) {
+            toast({ title: "Archivos subiendo", description: "Por favor, espera a que todos los archivos terminen de subirse.", variant: "default" });
+            return;
+        }
+
         const attachmentsToSave = localPreviews.filter(p => p.finalUrl).map(p => ({
             name: p.file.name,
             url: p.finalUrl!,
             type: p.file.type,
             size: p.file.size
         }));
-
-        const isStillUploading = localPreviews.some(p => !p.finalUrl && !p.error);
-        if (isStillUploading) {
-            toast({ title: "Archivos subiendo", description: "Por favor, espera a que todos los archivos terminen de subirse.", variant: "default" });
-            return;
-        }
         
         setIsSubmitting(true);
         try {
