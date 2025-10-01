@@ -95,6 +95,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
 
         const isStillUploading = localPreviews.some(p => p.uploadProgress > 0 && p.uploadProgress < 100);
         if (isStillUploading) {
+            toast({ title: "Subida en progreso", description: "Por favor, espera a que todos los archivos terminen de subirse.", variant: "default" });
             return;
         }
 
@@ -379,9 +380,9 @@ export default function AnnouncementsPage() {
   const canCreate = user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR';
 
   return (
-    <div className="container mx-auto announcement-pattern-bg">
-      <div className="relative z-10 bg-transparent">
-        <main className="max-w-2xl mx-auto">
+    <div className="container mx-auto relative">
+      <div className="announcement-pattern-bg" />
+      <main className="max-w-2xl mx-auto relative z-10">
             <p className="text-muted-foreground text-center mb-8">Mantente informado sobre las últimas novedades de la plataforma.</p>
             
             {canCreate && <AnnouncementCreator onAnnouncementCreated={fetchAnnouncements} />}
@@ -457,7 +458,6 @@ export default function AnnouncementsPage() {
         )}
         </div>
         </main>
-      </div>
         
         <AlertDialog open={announcementToProcess?.action === 'delete'} onOpenChange={(open) => !open && setAnnouncementToProcess(null)}>
             <AlertDialogContent>
