@@ -1,9 +1,9 @@
+
 import { NextResponse, type NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
 
-const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             return NextResponse.json({ message: 'PIN es requerido' }, { status: 400 });
         }
 
-        const resource = await prisma.resource.findUnique({
+        const resource = await prisma.enterpriseResource.findUnique({
             where: { id: id },
             select: { pin: true, url: true }
         });
