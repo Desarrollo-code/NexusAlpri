@@ -16,7 +16,7 @@ import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { ScrollArea } from '../ui/scroll-area';
 import JSZip from 'jszip';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '../hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
 import { getInitials } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
@@ -218,11 +218,11 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     const displayUrl = pinVerifiedUrl || resource.url;
     
     if (displayUrl) {
-         if (isPdfUrl(resource.url)) {
+        if (isPdfUrl(displayUrl)) {
             const previewUrl = `/api/resources/preview?url=${encodeURIComponent(displayUrl)}`;
             return (
                 <div className="w-full h-full">
-                    <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+                    <Worker workerUrl="/pdf.worker.min.js">
                         <Viewer fileUrl={previewUrl} plugins={[defaultLayoutPluginInstance]} />
                     </Worker>
                 </div>
