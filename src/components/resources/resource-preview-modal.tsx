@@ -1,3 +1,4 @@
+
 // src/components/resources/resource-preview-modal.tsx
 'use client';
 import React, { useState, useEffect, useRef } from 'react';

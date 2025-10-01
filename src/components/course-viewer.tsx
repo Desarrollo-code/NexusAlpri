@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -437,6 +438,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   
   const renderContentBlock = (block: ContentBlock) => {
     const url = block.content || '';
+    const isPdf = /\.pdf($|\?)/i.test(url);
 
     if (block.type === 'VIDEO') {
         return <VideoPlayer key={block.id} videoUrl={url} lessonTitle={selectedLesson?.title} onVideoEnd={handleVideoEnd} />
@@ -477,7 +479,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
     
     if (block.type === 'FILE') {
-        const isPdf = /\.pdf($|\?)/i.test(url.toLowerCase());
         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
         const isOfficeDoc = url.toLowerCase().endsWith('.docx');
         
