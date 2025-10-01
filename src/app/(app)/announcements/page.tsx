@@ -387,7 +387,7 @@ export default function AnnouncementsPage() {
         />
         <div className="relative z-10">
             <main className="max-w-2xl mx-auto">
-                <p className="text-muted-foreground text-center mb-8">Mantente informado sobre las últimas novedades de la plataforma.</p>
+                <p className="text-foreground dark:text-white text-center mb-8">Mantente informado sobre las últimas novedades de la plataforma.</p>
                 
                 {canCreate && <AnnouncementCreator onAnnouncementCreated={fetchAnnouncements} />}
                 
