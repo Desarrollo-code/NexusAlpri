@@ -130,8 +130,8 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
     }, {} as Record<string, UserDisplayInfo[]>);
   }, [announcement.reactions]);
   
-  const imageAttachments = announcement.attachments?.filter(att => att.type.startsWith('image/')) || [];
-  const fileAttachments = announcement.attachments?.filter(att => !att.type.startsWith('image/')) || [];
+  const imageAttachments = useMemo(() => announcement.attachments?.filter(att => att.type.startsWith('image/')) || [], [announcement.attachments]);
+  const fileAttachments = useMemo(() => announcement.attachments?.filter(att => !att.type.startsWith('image/')) || [], [announcement.attachments]);
   
   return (
     <Card ref={cardRef} className="card-border-animated w-full">
