@@ -232,7 +232,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
 }
 
 export default function AnnouncementsPage() {
-  const { user } = useAuth();
+  const { user, settings } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
@@ -381,7 +381,10 @@ export default function AnnouncementsPage() {
 
   return (
     <div className="container mx-auto relative">
-        <div className="absolute inset-0 z-0 announcement-pattern-bg" />
+        <div 
+            className="absolute inset-0 z-0 announcement-pattern-bg" 
+            style={{ backgroundImage: settings?.announcementsImageUrl ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${settings.announcementsImageUrl}')` : 'none' }}
+        />
         <div className="relative z-10">
             <main className="max-w-2xl mx-auto">
                 <p className="text-muted-foreground text-center mb-8">Mantente informado sobre las últimas novedades de la plataforma.</p>
