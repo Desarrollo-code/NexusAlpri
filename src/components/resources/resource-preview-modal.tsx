@@ -37,7 +37,7 @@ const DocxPreviewer = ({ url }: { url: string }) => {
                 const response = await fetch(`/api/resources/preview?url=${encodeURIComponent(url)}`);
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.message || 'No se pudo cargar el archivo para la previsualización.');
+                    throw new Error(errorData.message || 'No se pudo cargar la previsualización del documento.');
                 }
                 const data = await response.json();
                 setHtml(data.html);
@@ -228,11 +228,12 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     
     if (displayUrl) {
         if (isPdfUrl(displayUrl)) {
+            const previewUrl = `/api/resources/preview?url=${encodeURIComponent(displayUrl)}`;
             return (
                 <div className="w-full h-full relative">
                     <iframe 
                         ref={iframeRef} 
-                        src={`${displayUrl}#view=FitH`} 
+                        src={previewUrl}
                         className="w-full h-full" 
                         title={`PDF Preview: ${resource.title}`} 
                         style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'center center' }}

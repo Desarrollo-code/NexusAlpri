@@ -1,4 +1,3 @@
-
 // src/app/api/resources/preview/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import mammoth from 'mammoth';
@@ -17,16 +16,20 @@ export async function GET(req: NextRequest) {
         const response = await fetch(absoluteUrl);
         if (!response.ok) {
             console.error(`Fetch failed for ${absoluteUrl} with status ${response.status}`);
-            throw new Error(`No se pudo obtener el archivo. Estado: ${response.status}`);
-        }
-        const arrayBuffer = await response.arrayBuffer();
-
-        if (fileUrl.endsWith('.docx')) {
-            const { value } = await mammoth.convertToHtml({ arrayBuffer });
-            return NextResponse.json({ html: value });
+            return new NextResponse(`Error al obtener el archivo: ${response.statusText}`, { status: response.status });
         }
         
-        return NextResponse.json({ message: 'Tipo de archivo no soportado para previsualización' }, { status: 415 });
+        const fileType = response.headers.get('content-type');
+        const blob = await response.blob();
+        
+        // Creamos una nueva respuesta para transmitir el archivo al cliente
+        // Esto maneja correctamente los PDFs y otros tipos de archivo que el navegador puede mostrar
+        return new NextResponse(blob, {
+            status: 200,
+            headers: {
+                'Content-Type': fileType || 'application/octet-stream',
+            },
+        });
 
     } catch (error) {
         console.error("Error en la previsualización del archivo:", error);

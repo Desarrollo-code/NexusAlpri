@@ -90,6 +90,7 @@ export function isPdfUrl(url: string | null | undefined): boolean {
   } catch (error) {
     // Si la decodificación falla, es una URL malformada.
     console.error("Error decoding URL for PDF check:", url, error);
+    // Asume que no es un PDF si la URL es inválida
     return false;
   }
 }
