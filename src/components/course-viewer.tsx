@@ -481,9 +481,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
     
     if (block.type === 'FILE') {
-        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
-        const isOfficeDoc = url.toLowerCase().endsWith('.docx');
-        
         if (isPdfUrl(url)) {
             const previewUrl = `/api/resources/preview?url=${encodeURIComponent(url)}`;
             return (
@@ -492,6 +489,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                 </div>
             );
         }
+        
+        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
+        const isOfficeDoc = url.toLowerCase().endsWith('.docx');
         
         if (isOfficeDoc) {
              return (

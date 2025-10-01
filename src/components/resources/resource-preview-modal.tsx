@@ -227,7 +227,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     const displayUrl = pinVerifiedUrl || resource.url;
     
     if (displayUrl) {
-        if (isPdfUrl(displayUrl)) {
+        if (isPdfUrl(resource.url)) {
             const previewUrl = `/api/resources/preview?url=${encodeURIComponent(displayUrl)}`;
             return (
                 <div className="w-full h-full relative">
