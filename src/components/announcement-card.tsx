@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
 import { ScrollArea } from './ui/scroll-area';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from './ui/dropdown-menu';
+import { Separator } from './ui/separator';
 
 const EMOJI_REACTIONS = ['👍', '❤️', '🎉', '💡', '🤔'];
 
@@ -134,29 +135,19 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   const fileAttachments = useMemo(() => announcement.attachments?.filter(att => !att.type.startsWith('image/')) || [], [announcement.attachments]);
   
   return (
-    <Card ref={cardRef} className="card-border-animated w-full">
-      <CardContent className="p-4 flex gap-4">
-        <Avatar className="h-10 w-10">
+    <Card ref={cardRef} className="card-border-animated w-full bg-card">
+      <CardHeader className="p-4 flex flex-row items-start gap-4 space-y-0">
+         <Avatar className="h-10 w-10">
           <AvatarImage src={announcement.author?.avatar || undefined} />
           <AvatarFallback><Identicon userId={announcement.author?.id || ''} /></AvatarFallback>
         </Avatar>
         <div className="w-full">
-          <div className="flex items-center justify-between">
-             <div className="flex items-center gap-2 text-sm">
-                <span className="font-bold">{announcement.author?.name || 'Sistema'}</span>
-                <span className="text-muted-foreground">{formatDate(announcement.date)}</span>
-                {announcement.isPinned && (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <Pin className="h-4 w-4 text-primary" />
-                            </TooltipTrigger>
-                            <TooltipContent><p>Anuncio Fijado</p></TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                )}
+           <div className="flex items-center justify-between">
+             <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm">
+                <span className="font-bold text-foreground">{announcement.author?.name || 'Sistema'}</span>
+                <span className="text-muted-foreground text-xs sm:text-sm">{formatDate(announcement.date)}</span>
              </div>
-             {canModify && (
+              {canModify && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
@@ -177,23 +168,31 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                 </DropdownMenu>
              )}
           </div>
-          <div className="prose prose-sm dark:prose-invert max-w-none mt-1" dangerouslySetInnerHTML={{ __html: announcement.content }} />
-          {imageAttachments.length > 0 && (
-             <div className={cn("grid gap-1 mt-3 rounded-lg overflow-hidden border", imageAttachments.length > 1 ? "grid-cols-2" : "grid-cols-1")}>
-                 {imageAttachments.slice(0,4).map((att, index) => (
-                    <div key={index} className={cn("relative aspect-video", imageAttachments.length === 3 && index === 0 && "row-span-2")}>
-                       <Image src={att.url} alt={att.name} fill className="object-cover" />
-                       {imageAttachments.length > 4 && index === 3 && ( <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-lg">+{imageAttachments.length - 4}</div> )}
-                    </div>
-                 ))}
-             </div>
-          )}
-          {fileAttachments.length > 0 && (
-            <div className="mt-3 space-y-2">
-                {fileAttachments.map(att => { const FileTypeIcon = getIconForFileType(att.type); return ( <a key={att.id} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors border"><FileTypeIcon className="h-5 w-5 text-primary shrink-0"/> <span className="text-sm font-medium truncate flex-grow">{att.name}</span></a> )})}
-            </div>
-          )}
-          <div className="flex items-center text-muted-foreground mt-3 -ml-2">
+          {announcement.title && <CardTitle className="text-lg font-semibold mt-1">{announcement.title}</CardTitle>}
+        </div>
+      </CardHeader>
+      <CardContent className="px-4 pt-0 pb-3">
+        <div className="pl-14">
+            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: announcement.content }} />
+              {imageAttachments.length > 0 && (
+                 <div className={cn("grid gap-1 mt-3 rounded-lg overflow-hidden border", imageAttachments.length > 1 ? "grid-cols-2" : "grid-cols-1")}>
+                     {imageAttachments.slice(0,4).map((att, index) => (
+                        <div key={index} className={cn("relative aspect-video", imageAttachments.length === 3 && index === 0 && "row-span-2")}>
+                           <Image src={att.url} alt={att.name} fill className="object-cover" />
+                           {imageAttachments.length > 4 && index === 3 && ( <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-lg">+{imageAttachments.length - 4}</div> )}
+                        </div>
+                     ))}
+                 </div>
+              )}
+              {fileAttachments.length > 0 && (
+                <div className="mt-3 space-y-2">
+                    {fileAttachments.map(att => { const FileTypeIcon = getIconForFileType(att.type); return ( <a key={att.id} href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors border"><FileTypeIcon className="h-5 w-5 text-primary shrink-0"/> <span className="text-sm font-medium truncate flex-grow">{att.name}</span></a> )})}
+                </div>
+              )}
+        </div>
+      </CardContent>
+      <CardFooter className="p-4 pt-0 pl-16 flex items-center justify-between">
+           <div className="flex items-center text-muted-foreground -ml-2">
             <Popover>
                 <PopoverTrigger asChild>
                     <Button variant="ghost" size="icon"><SmilePlus className="h-4 w-4"/></Button>
@@ -216,13 +215,12 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                     />
                 ))}
             </div>
-             <div className="flex items-center gap-1 text-xs font-bold pl-2">
-                 <Eye className="h-4 w-4"/>
-                 <span>{announcement._count?.reads ?? 0}</span>
-             </div>
           </div>
-        </div>
-      </CardContent>
+          <div className="flex items-center gap-1 text-xs font-bold text-muted-foreground">
+              <Eye className="h-4 w-4"/>
+              <span>{announcement._count?.reads ?? 0}</span>
+          </div>
+      </CardFooter>
     </Card>
   );
 }
