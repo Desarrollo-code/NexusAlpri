@@ -3,7 +3,7 @@
 
 import { cn } from "@/lib/utils";
 import React, { useRef, useState, useCallback } from 'react';
-import { UploadCloud, FileUp } from 'lucide-react';
+import { UploadCloud } from 'lucide-react';
 
 interface UploadAreaProps {
   onFileSelect: (file: File | null) => void;
@@ -20,7 +20,6 @@ export function UploadArea({ onFileSelect, disabled }: UploadAreaProps) {
     } else {
       onFileSelect(null);
     }
-    // Reset a el valor del input para permitir subir el mismo archivo de nuevo
     if(event.target) {
         event.target.value = '';
     }
@@ -71,19 +70,20 @@ export function UploadArea({ onFileSelect, disabled }: UploadAreaProps) {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <div className="flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
-         <UploadCloud className="h-10 w-10 text-muted-foreground group-hover:text-primary" />
-      </div>
-      <p className="mt-2 text-sm text-muted-foreground group-hover:text-primary transition-colors text-center">
-        {isDragging ? 'Suelta el archivo aquí' : 'Arrastra un archivo o haz clic para seleccionar'}
-      </p>
       <input
         type="file"
         ref={inputRef}
         onChange={handleFileChange}
         className="hidden"
         disabled={disabled}
+        accept="image/png, image/jpeg, image/svg+xml, image/webp"
       />
+      <div className="flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+         <UploadCloud className="h-10 w-10 text-muted-foreground group-hover:text-primary" />
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground group-hover:text-primary transition-colors text-center">
+        {isDragging ? 'Suelta el archivo aquí' : 'Arrastra un archivo o haz clic para seleccionar'}
+      </p>
     </div>
   );
 }

@@ -36,6 +36,7 @@ import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import { useTour } from '@/contexts/tour-context';
 import { settingsTour } from '@/lib/tour-steps';
+import { UploadArea } from '@/components/ui/upload-area';
 
 const availableFonts = [
     { value: 'Inter', label: 'Inter (Sans-serif)' },
@@ -59,83 +60,42 @@ const UploadWidget = ({
   label: string;
   id: string;
   currentImageUrl?: string | null;
-  onFileSelect: (e: ChangeEvent<HTMLInputElement>) => void;
+  onFileSelect: (file: File | null) => void;
   onRemove: () => void;
   disabled: boolean;
   isUploading: boolean;
   uploadProgress: number;
 }) => {
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
-      <div className="relative w-full border-2 border-dashed border-muted-foreground/30 rounded-lg flex items-center justify-center bg-muted/20 p-2 min-h-[10rem] flex-col gap-2">
-        {currentImageUrl && !isUploading && (
-          <>
-            <div className="relative w-full h-full min-h-[10rem]">
-                <Image
-                    src={currentImageUrl}
-                    alt={`Previsualización de ${label}`}
-                    fill
-                    className="object-contain rounded-md"
-                />
-            </div>
-          </>
-        )}
-        {isUploading && (
-            <>
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="text-sm text-muted-foreground">Subiendo...</p>
-                <Progress value={uploadProgress} className="w-3/4 h-1.5" />
-            </>
-        )}
-        {!isUploading && (
-            <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
-              <Button
-                type="button"
-                variant="secondary"
-                size="icon"
-                className="h-7 w-7 rounded-full shadow-md"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={disabled}
-              >
+      {currentImageUrl && !isUploading ? (
+        <div className="relative w-full aspect-video rounded-lg border overflow-hidden bg-muted/20 p-2">
+          <Image src={currentImageUrl} alt={`Previsualización de ${label}`} fill className="object-contain" />
+           <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
+              <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={() => document.getElementById(id)?.click()} disabled={disabled}>
                 <Replace className="h-4 w-4" />
                 <span className="sr-only">Reemplazar imagen</span>
               </Button>
-              {currentImageUrl && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  className="h-7 w-7 rounded-full shadow-md"
-                  onClick={onRemove}
-                  disabled={disabled}
-                >
+              <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={onRemove} disabled={disabled}>
                   <XCircle className="h-4 w-4" />
                   <span className="sr-only">Eliminar imagen</span>
-                </Button>
-              )}
-            </div>
-        )}
-         {!currentImageUrl && !isUploading && (
-          <Button
-            type="button"
-            variant="ghost"
-            className="flex flex-col h-full w-full items-center justify-center text-muted-foreground"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={disabled}
-          >
-            <UploadCloud className="h-8 w-8 mb-1" />
-            <span className="text-xs font-semibold">Subir imagen</span>
-          </Button>
-        )}
-      </div>
+              </Button>
+           </div>
+        </div>
+      ) : isUploading ? (
+         <div className="w-full h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg">
+             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+             <p className="text-sm text-muted-foreground">Subiendo...</p>
+             <Progress value={uploadProgress} className="w-3/4 h-1.5" />
+         </div>
+      ) : (
+        <UploadArea onFileSelect={onFileSelect} disabled={disabled} />
+      )}
       <input
         type="file"
         id={id}
-        ref={fileInputRef}
-        onChange={onFileSelect}
+        onChange={(e) => onFileSelect(e.target.files ? e.target.files[0] : null)}
         disabled={disabled || isUploading}
         accept="image/png, image/jpeg, image/svg+xml, image/webp"
         className="hidden"
@@ -267,24 +227,19 @@ export default function SettingsPageComponent() {
     setFormState(prev => prev ? { ...prev, [field]: checked } : null);
   };
   
-  const handleFileSelected = async (field: ImageField, e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      
+  const handleImageUpload = async (field: ImageField, file: File, apiPath: string) => {
       setUploadStates(prev => ({ ...prev, [field]: { isUploading: true, progress: 0 }}));
-
       try {
-        const result = await uploadWithProgress('/api/upload/settings-image', file, (progress) => {
-           setUploadStates(prev => ({ ...prev, [field]: { ...prev[field], progress }}));
-        });
-        handleInputChange(field, result.publicUrl);
-        toast({ title: "Imagen Subida", description: "La imagen se ha subido correctamente."});
+          const result = await uploadWithProgress(apiPath, file, (progress) => {
+             setUploadStates(prev => ({ ...prev, [field]: { ...prev[field], progress }}));
+          });
+          handleInputChange(field, result.publicUrl);
+          toast({ title: "Imagen Subida", description: "La imagen se ha subido correctamente."});
       } catch (err) {
-        toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
+          toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
       } finally {
-        setUploadStates(prev => ({ ...prev, [field]: { isUploading: false, progress: 0 }}));
+          setUploadStates(prev => ({ ...prev, [field]: { isUploading: false, progress: 0 }}));
       }
-    }
   };
 
   const handleRemoveImage = (field: ImageField) => {
@@ -417,13 +372,13 @@ export default function SettingsPageComponent() {
                                    placeholder="Nombre de tu plataforma"
                                />
                            </div>
-                           <UploadWidget id="logo-upload" label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(e) => handleFileSelected('logoUrl', e)} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} isUploading={uploadStates.logoUrl.isUploading} uploadProgress={uploadStates.logoUrl.progress} />
-                           <UploadWidget id="watermark-upload" label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(e) => handleFileSelected('watermarkUrl', e)} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} isUploading={uploadStates.watermarkUrl.isUploading} uploadProgress={uploadStates.watermarkUrl.progress} />
-                           <UploadWidget id="landing-upload" label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(e) => handleFileSelected('landingImageUrl', e)} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving} isUploading={uploadStates.landingImageUrl.isUploading} uploadProgress={uploadStates.landingImageUrl.progress} />
-                           <UploadWidget id="auth-upload" label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(e) => handleFileSelected('authImageUrl', e)} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving} isUploading={uploadStates.authImageUrl.isUploading} uploadProgress={uploadStates.authImageUrl.progress} />
-                           <UploadWidget id="about-upload" label="Imagen Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(e) => handleFileSelected('aboutImageUrl', e)} onRemove={() => handleRemoveImage('aboutImageUrl')} disabled={isSaving} isUploading={uploadStates.aboutImageUrl.isUploading} uploadProgress={uploadStates.aboutImageUrl.progress} />
-                           <UploadWidget id="benefits-upload" label="Imagen Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(e) => handleFileSelected('benefitsImageUrl', e)} onRemove={() => handleRemoveImage('benefitsImageUrl')} disabled={isSaving} isUploading={uploadStates.benefitsImageUrl.isUploading} uploadProgress={uploadStates.benefitsImageUrl.progress} />
-                           <UploadWidget id="announcements-upload" label="Imagen Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(e) => handleFileSelected('announcementsImageUrl', e)} onRemove={() => handleRemoveImage('announcementsImageUrl')} disabled={isSaving} isUploading={uploadStates.announcementsImageUrl.isUploading} uploadProgress={uploadStates.announcementsImageUrl.progress} />
+                           <UploadWidget id="logo-upload" label="Logo (PNG/SVG)" currentImageUrl={formState.logoUrl} onFileSelect={(file) => file && handleImageUpload('logoUrl', file, '/api/upload/settings-image')} onRemove={() => handleRemoveImage('logoUrl')} disabled={isSaving} isUploading={uploadStates.logoUrl.isUploading} uploadProgress={uploadStates.logoUrl.progress} />
+                           <UploadWidget id="watermark-upload" label="Marca de Agua (PNG)" currentImageUrl={formState.watermarkUrl} onFileSelect={(file) => file && handleImageUpload('watermarkUrl', file, '/api/upload/settings-image')} onRemove={() => handleRemoveImage('watermarkUrl')} disabled={isSaving} isUploading={uploadStates.watermarkUrl.isUploading} uploadProgress={uploadStates.watermarkUrl.progress} />
+                           <UploadWidget id="landing-upload" label="Imagen Página de Inicio" currentImageUrl={formState.landingImageUrl} onFileSelect={(file) => file && handleImageUpload('landingImageUrl', file, '/api/upload/settings-image')} onRemove={() => handleRemoveImage('landingImageUrl')} disabled={isSaving} isUploading={uploadStates.landingImageUrl.isUploading} uploadProgress={uploadStates.landingImageUrl.progress} />
+                           <UploadWidget id="auth-upload" label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(file) => file && handleImageUpload('authImageUrl', file, '/api/upload/settings-image')} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving} isUploading={uploadStates.authImageUrl.isUploading} uploadProgress={uploadStates.authImageUrl.progress} />
+                           <UploadWidget id="about-upload" label="Imagen Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(file) => file && handleImageUpload('aboutImageUrl', file, '/api/upload/settings-image')} onRemove={() => handleRemoveImage('aboutImageUrl')} disabled={isSaving} isUploading={uploadStates.aboutImageUrl.isUploading} uploadProgress={uploadStates.aboutImageUrl.progress} />
+                           <UploadWidget id="benefits-upload" label="Imagen Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(file) => file && handleImageUpload('benefitsImageUrl', file, '/api/upload/settings-image')} onRemove={() => handleRemoveImage('benefitsImageUrl')} disabled={isSaving} isUploading={uploadStates.benefitsImageUrl.isUploading} uploadProgress={uploadStates.benefitsImageUrl.progress} />
+                           <UploadWidget id="announcements-upload" label="Imagen Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(file) => file && handleImageUpload('announcementsImageUrl', file, '/api/upload/announcement-attachment')} onRemove={() => handleRemoveImage('announcementsImageUrl')} disabled={isSaving} isUploading={uploadStates.announcementsImageUrl.isUploading} uploadProgress={uploadStates.announcementsImageUrl.progress} />
                         </CardContent>
                     </Card>
                     <Card className="card-border-animated">
