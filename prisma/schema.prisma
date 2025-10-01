@@ -325,6 +325,7 @@ model PlatformSettings {
   authImageUrl               String?
   aboutImageUrl              String?
   benefitsImageUrl           String?
+  announcementsImageUrl      String?
   updatedAt                  DateTime @updatedAt
 
   @@map("platform_settings")
