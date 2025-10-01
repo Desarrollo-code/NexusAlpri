@@ -381,8 +381,9 @@ export default function AnnouncementsPage() {
 
   return (
     <div className="container mx-auto relative">
-      <div className="announcement-pattern-bg" />
-      <main className="max-w-2xl mx-auto relative z-10">
+      <div className="absolute inset-0 z-0 announcement-pattern-bg" />
+      <div className="relative z-10">
+        <main className="max-w-2xl mx-auto">
             <p className="text-muted-foreground text-center mb-8">Mantente informado sobre las últimas novedades de la plataforma.</p>
             
             {canCreate && <AnnouncementCreator onAnnouncementCreated={fetchAnnouncements} />}
@@ -458,6 +459,7 @@ export default function AnnouncementsPage() {
         )}
         </div>
         </main>
+      </div>
         
         <AlertDialog open={announcementToProcess?.action === 'delete'} onOpenChange={(open) => !open && setAnnouncementToProcess(null)}>
             <AlertDialogContent>
