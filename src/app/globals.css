@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* Paleta de colores vibrante y moderna */
+    /* Nueva paleta de colores vibrante y diversa */
     --background: 220 20% 99%; /* Blanco ligeramente azulado */
     --foreground: 220 15% 15%; /* Casi negro */
     --card: 0 0% 100%;
@@ -26,18 +26,12 @@
     --ring: 210 90% 55%;
     --radius: 0.75rem;
     
-    /* Colores para gráficos y eventos (NUEVA PALETA VIBRANTE) */
-    --chart-1: 210 90% 55%; /* Azul (se mantiene) */
-    --chart-2: 150 70% 40%; /* Verde Esmeralda */
-    --chart-3: 320 80% 55%; /* Rosa Intenso */
-    --chart-4: 45 95% 50%;  /* Amarillo Dorado */
-    --chart-5: 260 85% 60%; /* Violeta */
-
-    /* Colores para calendario (NUEVA PALETA VIBRANTE) */
-    --event-blue: 210 90% 55%;
-    --event-green: 150 70% 40%;
-    --event-red: 0 80% 60%;
-    --event-orange: 30 90% 55%;
+    /* Colores para gráficos y eventos */
+    --chart-1: hsl(var(--primary)); /* Azul */
+    --chart-2: hsl(var(--accent));  /* Naranja */
+    --chart-3: 160 70% 45%; /* Verde azulado (Teal) */
+    --chart-4: 50 95% 55%;  /* Amarillo */
+    --chart-5: 340 85% 65%; /* Rosa/Magenta */
 
     /* Variables de la barra lateral (mantienen un estilo consistente) */
     --sidebar-background: 220 40% 5%; 
@@ -46,9 +40,6 @@
     --sidebar-accent: hsl(var(--primary));
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
     --sidebar-border: 220 40% 10%;
-    
-    --rpv-core__viewer-background-color: hsl(var(--muted) / 0.5);
-    --rpv-core__popover-body-background-color: hsl(var(--card));
   }
  
   .dark {
@@ -72,14 +63,6 @@
     --border: 220 10% 20%;
     --input: 220 10% 18%;
     --ring: 210 90% 65%;
-
-    /* Colores de eventos para tema oscuro */
-    --event-blue: 210 80% 65%;
-    --event-green: 150 60% 50%;
-    --event-red: 0 75% 65%;
-    --event-orange: 30 80% 60%;
-
-    --rpv-core__viewer-background-color: hsl(var(--background));
   }
 }
  
@@ -94,7 +77,7 @@
 
 @layer components {
   .announcement-pattern-bg {
-    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://picsum.photos/seed/announcements/1920/1080');
+    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://lh3.googleusercontent.com/gg-dl/AJfQ9KRRh_NcDnC5blj0DoEW3qz9_sNhhYUEb28354QhshAw64DN1m7LkXAnEcriGktgwmNJpt2Z8Cde5FSvn4gPZzlrcakKTBxKKQAsUiA2jcLDBebWQzKBEOc2qvsUJUDibCkNA06N4TnYIiU25Wn5Mjg_NpFFNK3atu8eeesgH7ZK5K03XQ=s1024');
     background-size: cover;
     background-position: center;
   }
