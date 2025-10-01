@@ -227,20 +227,20 @@ export default function SettingsPageComponent() {
     setFormState(prev => prev ? { ...prev, [field]: checked } : null);
   };
   
-  const handleImageUpload = async (field: ImageField, file: File, apiPath: string) => {
+  const handleImageUpload = useCallback(async (field: ImageField, file: File, apiPath: string) => {
       setUploadStates(prev => ({ ...prev, [field]: { isUploading: true, progress: 0 }}));
       try {
           const result = await uploadWithProgress(apiPath, file, (progress) => {
              setUploadStates(prev => ({ ...prev, [field]: { ...prev[field], progress }}));
           });
-          handleInputChange(field, result.publicUrl);
+          handleInputChange(field, result.url);
           toast({ title: "Imagen Subida", description: "La imagen se ha subido correctamente."});
       } catch (err) {
           toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
       } finally {
           setUploadStates(prev => ({ ...prev, [field]: { isUploading: false, progress: 0 }}));
       }
-  };
+  }, [toast]);
 
   const handleRemoveImage = (field: ImageField) => {
       handleInputChange(field, null);
