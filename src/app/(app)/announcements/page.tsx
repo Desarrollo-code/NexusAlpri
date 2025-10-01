@@ -38,15 +38,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 
-interface DisplayAnnouncement extends AnnouncementType {
-  author: { id: string; name: string; email?: string, avatar?: string | null } | null;
-  audience: UserRole[] | 'ALL' | string;
-  attachments: Attachment[];
-  isPinned: boolean;
+interface LocalAttachmentPreview {
+    id: string; // Temporary client-side ID
+    file: File;
+    previewUrl: string; // Object URL for local preview
+    finalUrl?: string; // Supabase URL after upload
+    uploadProgress: number;
+    error?: string;
 }
 
-const PAGE_SIZE = 5;
-const MAX_FILE_SIZE_MB = 4;
 
 const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated: () => void }) => {
     const { user } = useAuth();
@@ -54,44 +54,59 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
     const [formContent, setFormContent] = useState('');
     const [formTitle, setFormTitle] = useState('');
     const [formAudience, setFormAudience] = useState<UserRole | 'ALL'>('ALL');
-    const [attachments, setAttachments] = useState<Attachment[]>([]);
-    const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+    const [localPreviews, setLocalPreviews] = useState<LocalAttachmentPreview[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         if (!event.target.files) return;
         const files = Array.from(event.target.files);
 
-        for (const file of files) {
-            if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-                toast({ title: "Archivo demasiado grande", description: `"${file.name}" excede el límite de ${MAX_FILE_SIZE_MB}MB.`, variant: "destructive" });
-                continue;
-            }
-            
-            try {
-                const result = await uploadWithProgress('/api/upload/announcement-attachment', file, (progress) => {
-                    setUploadProgress(prev => ({ ...prev, [file.name]: progress }));
-                });
-                setAttachments(prev => [...prev, { id: result.path, name: file.name, url: result.publicUrl, type: file.type, size: file.size }]);
-            } catch (err) {
-                toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
-            } finally {
-                setUploadProgress(prev => {
-                    const newProgress = { ...prev };
-                    delete newProgress[file.name];
-                    return newProgress;
-                });
-            }
+        const newPreviews: LocalAttachmentPreview[] = files.map(file => ({
+            id: `${file.name}-${Date.now()}`,
+            file,
+            previewUrl: URL.createObjectURL(file),
+            uploadProgress: 0,
+        }));
+
+        setLocalPreviews(prev => [...prev, ...newPreviews]);
+        
+        newPreviews.forEach(preview => {
+            uploadFile(preview);
+        });
+    };
+
+    const uploadFile = async (preview: LocalAttachmentPreview) => {
+        try {
+            const result = await uploadWithProgress('/api/upload/announcement-attachment', preview.file, (progress) => {
+                setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, uploadProgress: progress } : p));
+            });
+            setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, finalUrl: result.publicUrl, uploadProgress: 100 } : p));
+        } catch (err) {
+            toast({ title: 'Error de Subida', description: `Falló la subida de ${preview.file.name}.`, variant: 'destructive' });
+            setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, error: (err as Error).message } : p));
         }
     };
 
-
     const handleSaveAnnouncement = async () => {
-        if (!formTitle.trim() && !formContent.trim() && attachments.length === 0) {
+        if (!formTitle.trim() && !formContent.trim() && localPreviews.length === 0) {
             toast({ title: "Contenido vacío", description: "Por favor, añade un título, escribe un mensaje o adjunta un archivo.", variant: "destructive" });
             return;
         }
+
+        const attachmentsToSave = localPreviews.filter(p => p.finalUrl).map(p => ({
+            name: p.file.name,
+            url: p.finalUrl!,
+            type: p.file.type,
+            size: p.file.size
+        }));
+
+        const isStillUploading = localPreviews.some(p => !p.finalUrl && !p.error);
+        if (isStillUploading) {
+            toast({ title: "Archivos subiendo", description: "Por favor, espera a que todos los archivos terminen de subirse.", variant: "default" });
+            return;
+        }
+        
         setIsSubmitting(true);
         try {
             const response = await fetch('/api/announcements', {
@@ -101,7 +116,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                     title: formTitle,
                     content: formContent,
                     audience: formAudience,
-                    attachments: attachments,
+                    attachments: attachmentsToSave,
                 }),
             });
             if (!response.ok) {
@@ -112,7 +127,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
             setFormContent('');
             setFormTitle('');
             setFormAudience('ALL');
-            setAttachments([]);
+            setLocalPreviews([]);
             onAnnouncementCreated();
         } catch (err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
@@ -120,6 +135,22 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
             setIsSubmitting(false);
         }
     };
+    
+    // Cleanup object URLs on unmount
+    useEffect(() => {
+        return () => {
+            localPreviews.forEach(p => URL.revokeObjectURL(p.previewUrl));
+        };
+    }, [localPreviews]);
+
+    const removePreview = (id: string) => {
+        const previewToRemove = localPreviews.find(p => p.id === id);
+        if (previewToRemove) {
+            URL.revokeObjectURL(previewToRemove.previewUrl);
+        }
+        setLocalPreviews(prev => prev.filter(p => p.id !== id));
+    };
+
     
     return (
         <Card className="shadow-sm card-border-animated mb-8">
@@ -144,19 +175,26 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                           disabled={isSubmitting}
                           className="!border-0 !bg-transparent p-0"
                         />
-                         {attachments.length > 0 && (
+                         {localPreviews.length > 0 && (
                             <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                {attachments.map((att, index) => (
-                                    <div key={index} className="relative aspect-square">
-                                        <Image src={att.url} alt={att.name} fill className="object-cover rounded-md border" />
+                                {localPreviews.map((p) => (
+                                    <div key={p.id} className="relative aspect-square border rounded-md overflow-hidden">
+                                        <Image src={p.previewUrl} alt={p.file.name} fill className="object-cover" />
+                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1">
+                                            {p.uploadProgress < 100 && !p.error && (
+                                                <div className="w-full px-2">
+                                                    <Progress value={p.uploadProgress} className="h-1 bg-white/30"/>
+                                                    <p className="text-xs text-white text-center mt-1">{p.uploadProgress}%</p>
+                                                </div>
+                                            )}
+                                            {p.error && (
+                                                <AlertTriangle className="h-6 w-6 text-destructive"/>
+                                            )}
+                                        </div>
+                                         <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removePreview(p.id)}>
+                                            <Trash2 className="h-3 w-3"/>
+                                        </Button>
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                        {Object.keys(uploadProgress).length > 0 && (
-                             <div className="mt-2 space-y-1">
-                                {Object.entries(uploadProgress).map(([id, progress]) => (
-                                     <Progress key={id} value={progress} className="h-1" />
                                 ))}
                             </div>
                         )}
@@ -199,16 +237,16 @@ export default function AnnouncementsPage() {
   const searchParams = useSearchParams();
   const { setPageTitle } = useTitle();
 
-  const [allAnnouncements, setAllAnnouncements] = useState<DisplayAnnouncement[]>([]);
+  const [allAnnouncements, setAllAnnouncements] = useState<AnnouncementType[]>([]);
   const [totalAnnouncements, setTotalAnnouncements] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   const currentPage = Number(searchParams.get('page')) || 1;
   const activeTab = user?.role === 'STUDENT' ? 'all' : (searchParams.get('tab') || 'all');
-  const totalPages = Math.ceil(totalAnnouncements / PAGE_SIZE);
+  const totalPages = Math.ceil(totalAnnouncements / 5); // Assuming PAGE_SIZE is 5
 
-  const [announcementToProcess, setAnnouncementToProcess] = useState<{ action: 'delete' | 'edit', data: DisplayAnnouncement } | null>(null);
+  const [announcementToProcess, setAnnouncementToProcess] = useState<{ action: 'delete' | 'edit', data: AnnouncementType } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
@@ -229,7 +267,7 @@ export default function AnnouncementsPage() {
     try {
       const params = new URLSearchParams();
       params.append('page', String(currentPage));
-      params.append('pageSize', String(PAGE_SIZE));
+      params.append('pageSize', String(5));
       if (activeTab && user?.role !== 'STUDENT') {
           params.append('filter', activeTab);
       }
@@ -246,7 +284,7 @@ export default function AnnouncementsPage() {
         throw new Error(errorData.message || `Error al obtener los anuncios`);
       }
 
-      const data: { announcements: DisplayAnnouncement[], totalAnnouncements: number } = await response.json();
+      const data: { announcements: AnnouncementType[], totalAnnouncements: number } = await response.json();
       
       setAllAnnouncements(data.announcements);
       setTotalAnnouncements(data.totalAnnouncements);
@@ -315,7 +353,7 @@ export default function AnnouncementsPage() {
     }
   };
 
-  const handleTogglePin = async (announcement: DisplayAnnouncement) => {
+  const handleTogglePin = async (announcement: AnnouncementType) => {
     setIsProcessing(true);
     try {
         const res = await fetch(`/api/announcements/${announcement.id}`, {
@@ -333,7 +371,7 @@ export default function AnnouncementsPage() {
     }
   }
 
-  const handleEditRequest = (announcement: DisplayAnnouncement) => {
+  const handleEditRequest = (announcement: AnnouncementType) => {
       setAnnouncementToProcess({ action: 'edit', data: announcement });
   };
   
@@ -371,7 +409,7 @@ export default function AnnouncementsPage() {
                 </div>
             ) : allAnnouncements.length > 0 ? (
                 <>
-                {allAnnouncements.map((announcement: DisplayAnnouncement) => (
+                {allAnnouncements.map((announcement: AnnouncementType) => (
                     <div key={announcement.id} id={announcement.id}>
                         <AnnouncementCard 
                             announcement={announcement}
@@ -455,7 +493,7 @@ export default function AnnouncementsPage() {
 }
 
 // --- MODAL DE EDICIÓN ---
-function AnnouncementEditorModal({ announcement, isOpen, onClose, onUpdateSuccess }: { announcement: DisplayAnnouncement, isOpen: boolean, onClose: () => void, onUpdateSuccess: () => void }) {
+function AnnouncementEditorModal({ announcement, isOpen, onClose, onUpdateSuccess }: { announcement: AnnouncementType, isOpen: boolean, onClose: () => void, onUpdateSuccess: () => void }) {
     const { toast } = useToast();
     const [title, setTitle] = useState(announcement.title);
     const [content, setContent] = useState(announcement.content);
