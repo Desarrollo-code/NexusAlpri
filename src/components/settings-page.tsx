@@ -231,7 +231,7 @@ export default function SettingsPageComponent() {
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [isCheckingCategory, setIsCheckingCategory] = useState(false);
   
-  type ImageField = 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl';
+  type ImageField = 'logoUrl' | 'watermarkUrl' | 'landingImageUrl' | 'authImageUrl' | 'aboutImageUrl' | 'benefitsImageUrl' | 'announcementsImageUrl';
 
   const [uploadStates, setUploadStates] = useState<Record<ImageField, { isUploading: boolean, progress: number }>>({
     logoUrl: { isUploading: false, progress: 0 },
@@ -240,6 +240,7 @@ export default function SettingsPageComponent() {
     authImageUrl: { isUploading: false, progress: 0 },
     aboutImageUrl: { isUploading: false, progress: 0 },
     benefitsImageUrl: { isUploading: false, progress: 0 },
+    announcementsImageUrl: { isUploading: false, progress: 0 },
   });
 
 
@@ -276,7 +277,7 @@ export default function SettingsPageComponent() {
         const result = await uploadWithProgress('/api/upload/settings-image', file, (progress) => {
            setUploadStates(prev => ({ ...prev, [field]: { ...prev[field], progress }}));
         });
-        handleInputChange(field, result.url);
+        handleInputChange(field, result.publicUrl);
         toast({ title: "Imagen Subida", description: "La imagen se ha subido correctamente."});
       } catch (err) {
         toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
@@ -422,6 +423,7 @@ export default function SettingsPageComponent() {
                            <UploadWidget id="auth-upload" label="Imagen Página de Acceso" currentImageUrl={formState.authImageUrl} onFileSelect={(e) => handleFileSelected('authImageUrl', e)} onRemove={() => handleRemoveImage('authImageUrl')} disabled={isSaving} isUploading={uploadStates.authImageUrl.isUploading} uploadProgress={uploadStates.authImageUrl.progress} />
                            <UploadWidget id="about-upload" label="Imagen Página 'Nosotros'" currentImageUrl={formState.aboutImageUrl} onFileSelect={(e) => handleFileSelected('aboutImageUrl', e)} onRemove={() => handleRemoveImage('aboutImageUrl')} disabled={isSaving} isUploading={uploadStates.aboutImageUrl.isUploading} uploadProgress={uploadStates.aboutImageUrl.progress} />
                            <UploadWidget id="benefits-upload" label="Imagen Beneficios (Inicio)" currentImageUrl={formState.benefitsImageUrl} onFileSelect={(e) => handleFileSelected('benefitsImageUrl', e)} onRemove={() => handleRemoveImage('benefitsImageUrl')} disabled={isSaving} isUploading={uploadStates.benefitsImageUrl.isUploading} uploadProgress={uploadStates.benefitsImageUrl.progress} />
+                           <UploadWidget id="announcements-upload" label="Imagen Fondo Anuncios" currentImageUrl={formState.announcementsImageUrl} onFileSelect={(e) => handleFileSelected('announcementsImageUrl', e)} onRemove={() => handleRemoveImage('announcementsImageUrl')} disabled={isSaving} isUploading={uploadStates.announcementsImageUrl.isUploading} uploadProgress={uploadStates.announcementsImageUrl.progress} />
                         </CardContent>
                     </Card>
                     <Card className="card-border-animated">

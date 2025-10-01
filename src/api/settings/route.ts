@@ -36,6 +36,7 @@ const DEFAULT_DB_SETTINGS = {
   authImageUrl: null,
   aboutImageUrl: null,
   benefitsImageUrl: null,
+  announcementsImageUrl: null,
   fontHeadline: 'Space Grotesk',
   fontBody: 'Inter'
 };
@@ -85,7 +86,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
     }
 
-    const dataFromClient: PlatformSettings = await req.json();
+    const dataFromClient: AppPlatformSettings = await req.json();
     
     // Prepara los datos para guardar, convirtiendo arrays a strings
     const dataToSave = {

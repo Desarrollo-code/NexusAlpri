@@ -72,7 +72,8 @@ async function main() {
             enableIdleTimeout: true, idleTimeoutMinutes: 20, require2faForAdmins: false,
             primaryColor: '#6366f1', secondaryColor: '#a5b4fc', accentColor: '#ec4899', backgroundColorLight: '#f8fafc',
             primaryColorDark: '#a5b4fc', backgroundColorDark: '#020617',
-            fontHeadline: 'Space Grotesk', fontBody: 'Inter'
+            fontHeadline: 'Space Grotesk', fontBody: 'Inter',
+            announcementsImageUrl: 'https://izefimwyuayfvektsstg.supabase.co/storage/v1/object/public/settings_images/announcement-bg.jpg',
       }
   });
 
@@ -178,7 +179,7 @@ async function main() {
   console.log('Limpiando y creando cursos...');
   await prisma.course.deleteMany({});
   const courseAdmin = await prisma.course.create({ data: { id: 'clseedcourse01', title: 'Curso de Bienvenida a NexusAlpri', description: 'Un curso rápido para conocer la plataforma.', category: 'Formación Interna', instructorId: adminUser.id, status: 'PUBLISHED' }});
-  const courseInstructor = await prisma.course.create({ data: { id: 'clseedcourse02', title: 'Marketing Digital para Principiantes', description: 'Aprende los fundamentos del marketing digital desde cero.', category: 'Marketing', instructorId: instructorUser.id, status: 'PUBLISHED', imageUrl: '/uploads/courses/marketing_cover.jpg' }});
+  const courseInstructor = await prisma.course.create({ data: { id: 'clseedcourse02', title: 'Marketing Digital para Principiantes', description: 'Aprende los fundamentos del marketing digital desde cero.', category: 'Marketing', instructorId: instructorUser.id, status: 'PUBLISHED', imageUrl: null }});
   await prisma.course.create({ data: { id: 'clseedcourse03', title: 'Gestión de Proyectos con Metodologías Ágiles', description: 'Domina Scrum y Kanban para llevar tus proyectos al siguiente nivel.', category: 'Operaciones', instructorId: adminUser.id, status: 'DRAFT' }});
 
   // Contenido curso Marketing

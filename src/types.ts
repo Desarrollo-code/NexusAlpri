@@ -45,6 +45,7 @@ export interface PlatformSettings {
     authImageUrl?: string | null;
     aboutImageUrl?: string | null;
     benefitsImageUrl?: string | null;
+    announcementsImageUrl?: string | null;
 }
 
 // --- NAVIGATION ---
