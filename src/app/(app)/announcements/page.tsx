@@ -381,84 +381,84 @@ export default function AnnouncementsPage() {
 
   return (
     <div className="container mx-auto relative">
-      <div className="absolute inset-0 z-0 announcement-pattern-bg" />
-      <div className="relative z-10">
-        <main className="max-w-2xl mx-auto">
-            <p className="text-muted-foreground text-center mb-8">Mantente informado sobre las últimas novedades de la plataforma.</p>
-            
-            {canCreate && <AnnouncementCreator onAnnouncementCreated={fetchAnnouncements} />}
-            
-            {user?.role !== 'STUDENT' && (
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
-                    <TabsList className="w-full">
-                        <TabsTrigger value="all">Todos</TabsTrigger>
-                        <TabsTrigger value="by-me">Creados por mí</TabsTrigger>
-                        <TabsTrigger value="by-others">Creados por otros</TabsTrigger>
-                    </TabsList>
-            </Tabs>
-            )}
+        <div className="absolute inset-0 z-0 announcement-pattern-bg" />
+        <div className="relative z-10">
+            <main className="max-w-2xl mx-auto">
+                <p className="text-muted-foreground text-center mb-8">Mantente informado sobre las últimas novedades de la plataforma.</p>
+                
+                {canCreate && <AnnouncementCreator onAnnouncementCreated={fetchAnnouncements} />}
+                
+                {user?.role !== 'STUDENT' && (
+                <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
+                        <TabsList className="w-full">
+                            <TabsTrigger value="all">Todos</TabsTrigger>
+                            <TabsTrigger value="by-me">Creados por mí</TabsTrigger>
+                            <TabsTrigger value="by-others">Creados por otros</TabsTrigger>
+                        </TabsList>
+                </Tabs>
+                )}
 
-            <div className="space-y-6">
-            {isLoading ? (
-                <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="ml-2">Cargando anuncios...</p>
-                </div>
-            ) : error ? (
-                <div className="flex flex-col items-center justify-center py-12 text-destructive">
-                <AlertTriangle className="h-8 w-8 mb-2" />
-                <p className="font-semibold">Error al cargar anuncios</p>
-                <p className="text-sm">{error}</p>
-                <Button onClick={() => fetchAnnouncements()} variant="outline" className="mt-4">Reintentar</Button>
-                </div>
-            ) : allAnnouncements.length > 0 ? (
-                <>
-                {allAnnouncements.map((announcement: AnnouncementType) => (
-                    <div key={announcement.id} id={announcement.id}>
-                        <AnnouncementCard 
-                            announcement={announcement}
-                            onEdit={() => handleEditRequest(announcement)}
-                            onDelete={() => setAnnouncementToProcess({ action: 'delete', data: announcement })}
-                            onReactionChange={handleReactionChange}
-                            onRead={handleRead}
-                            onTogglePin={handleTogglePin}
-                        />
+                <div className="space-y-6">
+                {isLoading ? (
+                    <div className="flex justify-center items-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="ml-2">Cargando anuncios...</p>
                     </div>
-                ))}
-                </>
-            ) : (
-                <div className="text-center py-12 border-2 border-dashed rounded-lg bg-background/50">
-                <Megaphone className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-xl font-semibold mb-2">No hay anuncios que mostrar</h3>
-                <p className="text-muted-foreground">No se encontraron anuncios que coincidan con el filtro seleccionado.</p>
-                </div>
-            )}
+                ) : error ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-destructive">
+                    <AlertTriangle className="h-8 w-8 mb-2" />
+                    <p className="font-semibold">Error al cargar anuncios</p>
+                    <p className="text-sm">{error}</p>
+                    <Button onClick={() => fetchAnnouncements()} variant="outline" className="mt-4">Reintentar</Button>
+                    </div>
+                ) : allAnnouncements.length > 0 ? (
+                    <>
+                    {allAnnouncements.map((announcement: AnnouncementType) => (
+                        <div key={announcement.id} id={announcement.id}>
+                            <AnnouncementCard 
+                                announcement={announcement}
+                                onEdit={() => handleEditRequest(announcement)}
+                                onDelete={() => setAnnouncementToProcess({ action: 'delete', data: announcement })}
+                                onReactionChange={handleReactionChange}
+                                onRead={handleRead}
+                                onTogglePin={handleTogglePin}
+                            />
+                        </div>
+                    ))}
+                    </>
+                ) : (
+                    <div className="text-center py-12 border-2 border-dashed rounded-lg bg-background/50">
+                    <Megaphone className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">No hay anuncios que mostrar</h3>
+                    <p className="text-muted-foreground">No se encontraron anuncios que coincidan con el filtro seleccionado.</p>
+                    </div>
+                )}
 
-        {totalPages > 1 && !isLoading && (
-            <Pagination>
-                <PaginationContent>
-                    <PaginationItem>
-                    <PaginationPrevious
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
-                        className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
-                    />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <span className="text-sm p-2 text-muted-foreground">Página {currentPage} de {totalPages}</span>
-                    </PaginationItem>
-                    <PaginationItem>
-                    <PaginationNext
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
-                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}
-                    />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
-        )}
-        </div>
-        </main>
+            {totalPages > 1 && !isLoading && (
+                <Pagination>
+                    <PaginationContent>
+                        <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
+                            className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
+                        />
+                        </PaginationItem>
+                        <PaginationItem>
+                            <span className="text-sm p-2 text-muted-foreground">Página {currentPage} de {totalPages}</span>
+                        </PaginationItem>
+                        <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
+                            className={currentPage === totalPages ? "pointer-events-none opacity-50" : undefined}
+                        />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
+            )}
+            </div>
+            </main>
       </div>
         
         <AlertDialog open={announcementToProcess?.action === 'delete'} onOpenChange={(open) => !open && setAnnouncementToProcess(null)}>
