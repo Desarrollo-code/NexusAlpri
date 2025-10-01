@@ -51,6 +51,7 @@ Esta sección es el centro de control para todo el contenido formativo.
 **Ruta:** `/announcements`
 *   Crea anuncios para toda la plataforma o para roles específicos (Estudiantes, Instructores, etc.).
 *   Edita o elimina anuncios existentes.
+*   **Supervisa la Interacción:** Haz clic en los contadores de vistas (icono de ojo) y en las insignias de emojis para ver qué usuarios han leído el anuncio y cómo han reaccionado.
 
 ### 4.2. Calendario
 
@@ -78,6 +79,22 @@ Aquí puedes gestionar todos los archivos y materiales compartidos de la organiz
     *   **Protección con PIN:** Puedes añadir un PIN de 4 a 8 dígitos a cualquier recurso (sea público o privado) como una capa extra de seguridad. Deberás comunicar este PIN a los usuarios que necesiten acceder.
 *   **Gestionar Recursos Existentes:** Puedes editar los detalles, cambiar los permisos de acceso o eliminar cualquier recurso de la biblioteca.
 
+### 4.4. Formularios y Evaluaciones
+
+**Ruta:** `/forms`
+
+Crea encuestas o evaluaciones personalizadas.
+
+*   **Crear un Formulario:**
+    1.  Haz clic en "Crear Nuevo Formulario".
+    2.  Asigna un título y descripción inicial.
+    3.  Serás redirigido al editor para añadir preguntas.
+*   **Añadir Preguntas:** Configura preguntas de texto, párrafo, opción única o múltiple.
+*   **Habilitar Puntuación (Modo Quiz):** En la configuración del formulario, puedes habilitar el modo "Evaluación" para asignar puntos a las respuestas y calificar automáticamente los envíos.
+*   **Compartir y Publicar:**
+    *   Usa el botón **"Compartir"** en el menú de acciones para asignar el formulario directamente a usuarios específicos.
+    *   Una vez **Publicado**, puedes obtener un enlace directo para compartirlo masivamente.
+
 ## 5. Configuración del Sistema
 
 **Ruta:** `/settings`
@@ -93,5 +110,5 @@ Esta sección te permite personalizar el comportamiento de toda la plataforma.
 
 ## 6. Mantenimiento y Monitoreo
 
-*   **Copias de Seguridad:** La responsabilidad de las copias de seguridad de la base de datos recae en la configuración de la infraestructura del servidor de la base de datos (MySQL). Asegúrate de tener una política de copias de seguridad regular.
+*   **Copias de Seguridad:** La responsabilidad de las copias de seguridad de la base de datos recae en la configuración de la infraestructura del servidor de la base de datos (PostgreSQL en Supabase). Asegúrate de tener una política de copias de seguridad regular.
 *   **Logs del Sistema:** Los logs de la aplicación (errores, accesos) son gestionados por el entorno de despliegue (ej. Vercel, Docker, un servidor PM2). Consulta la documentación de tu proveedor de hosting para acceder a ellos.
