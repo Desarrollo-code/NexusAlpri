@@ -46,6 +46,9 @@
     --sidebar-accent: hsl(var(--primary));
     --sidebar-accent-foreground: hsl(var(--primary-foreground));
     --sidebar-border: 220 40% 10%;
+    
+    --rpv-core__viewer-background-color: hsl(var(--muted) / 0.5);
+    --rpv-core__popover-body-background-color: hsl(var(--card));
   }
  
   .dark {
@@ -75,6 +78,8 @@
     --event-green: 150 60% 50%;
     --event-red: 0 75% 65%;
     --event-orange: 30 80% 60%;
+
+    --rpv-core__viewer-background-color: hsl(var(--background));
   }
 }
  

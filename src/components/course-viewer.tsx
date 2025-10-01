@@ -26,6 +26,10 @@ import { RichTextEditor } from './ui/rich-text-editor';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import YouTube from 'react-youtube';
 import { isPdfUrl } from '@/lib/resource-utils';
+import { Viewer, Worker } from '@react-pdf-viewer/core';
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
 
 // --- Helper types and functions ---
@@ -247,6 +251,8 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [isNotesPanelOpen, setIsNotesPanelOpen] = useState(false);
   const [imageToView, setImageToView] = useState<string | null>(null);
+
+  const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
   const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
   const totalLessonsCount = allLessons.length;
@@ -483,9 +489,11 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     if (block.type === 'FILE') {
         if (isPdfUrl(url)) {
             const previewUrl = `/api/resources/preview?url=${encodeURIComponent(url)}`;
-            return (
-                <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ height: '70vh', minHeight: '500px' }}>
-                    <iframe src={previewUrl} className="w-full h-full border rounded-md" title={`PDF Preview: ${selectedLesson?.title}`}/>
+             return (
+                <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ height: '80vh', minHeight: '600px' }}>
+                    <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+                        <Viewer fileUrl={previewUrl} plugins={[defaultLayoutPluginInstance]} />
+                    </Worker>
                 </div>
             );
         }

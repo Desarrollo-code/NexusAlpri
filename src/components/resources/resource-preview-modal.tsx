@@ -21,6 +21,10 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescri
 import { getInitials } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import { addXp, XP_CONFIG, checkFirstDownload } from '@/lib/gamification';
+import { Viewer, Worker } from '@react-pdf-viewer/core';
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
 
 const DocxPreviewer = ({ url }: { url: string }) => {
@@ -151,10 +155,8 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     const [pin, setPin] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const isMobile = useIsMobile();
-    const iframeRef = useRef<HTMLIFrameElement>(null);
-    const [zoomLevel, setZoomLevel] = useState(100);
     const { user } = useAuth();
+    const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
     const handlePinSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -186,19 +188,8 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     useEffect(() => {
         setPin('');
         setError(null);
-        setZoomLevel(100);
     }, [resource]);
     
-    const toggleFullScreen = () => {
-        if (iframeRef.current) {
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            } else {
-                iframeRef.current.requestFullscreen();
-            }
-        }
-    };
-
     if (resource.hasPin && !pinVerifiedUrl) {
        return (
          <div className="flex flex-col items-center justify-center h-full p-4 bg-muted/30">
@@ -227,24 +218,13 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     const displayUrl = pinVerifiedUrl || resource.url;
     
     if (displayUrl) {
-        if (isPdfUrl(resource.url)) {
+         if (isPdfUrl(resource.url)) {
             const previewUrl = `/api/resources/preview?url=${encodeURIComponent(displayUrl)}`;
             return (
-                <div className="w-full h-full relative">
-                    <iframe 
-                        ref={iframeRef} 
-                        src={previewUrl}
-                        className="w-full h-full" 
-                        title={`PDF Preview: ${resource.title}`} 
-                        style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'center center' }}
-                    />
-                    {isMobile && (
-                        <div className="absolute bottom-4 right-4 flex flex-col gap-2">
-                             <Button variant="secondary" size="icon" className="h-10 w-10 rounded-full shadow-lg" onClick={toggleFullScreen}><Expand /></Button>
-                             <Button variant="secondary" size="icon" className="h-10 w-10 rounded-full shadow-lg" onClick={() => setZoomLevel(z => Math.min(z + 10, 200))}><ZoomIn /></Button>
-                             <Button variant="secondary" size="icon" className="h-10 w-10 rounded-full shadow-lg" onClick={() => setZoomLevel(z => Math.max(z - 10, 50))}><ZoomOut /></Button>
-                        </div>
-                    )}
+                <div className="w-full h-full">
+                    <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+                        <Viewer fileUrl={previewUrl} plugins={[defaultLayoutPluginInstance]} />
+                    </Worker>
                 </div>
             );
         }
@@ -327,9 +307,6 @@ export const ResourcePreviewModal: React.FC<ResourcePreviewModalProps> = ({ reso
     
     if (!resource) return null;
     
-    const displayUrl = pinVerifiedUrl || resource.url;
-    const isPdfOnMobile = isMobile && displayUrl && displayUrl.toLowerCase().endsWith('.pdf');
-
     const onDownload = () => {
         if(user) {
             addXp(user.id, XP_CONFIG.DOWNLOAD_RESOURCE || 1);
