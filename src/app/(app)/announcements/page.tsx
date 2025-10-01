@@ -447,7 +447,7 @@ export default function AnnouncementsPage() {
                         />
                         </PaginationItem>
                         <PaginationItem>
-                            <span className="text-sm p-2 text-muted-foreground">Página {currentPage} de {totalPages}</span>
+                        <span className="text-sm p-2 text-white text-center mb-8">Página {currentPage} de {totalPages}</span>
                         </PaginationItem>
                         <PaginationItem>
                         <PaginationNext
