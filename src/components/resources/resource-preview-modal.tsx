@@ -1,3 +1,4 @@
+
 // src/components/resources/resource-preview-modal.tsx
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
@@ -16,7 +17,7 @@ import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { ScrollArea } from '../ui/scroll-area';
 import JSZip from 'jszip';
-import { useIsMobile } from '../hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
 import { getInitials } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
