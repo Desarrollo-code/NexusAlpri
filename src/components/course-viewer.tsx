@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -26,6 +25,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { RichTextEditor } from './ui/rich-text-editor';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import YouTube from 'react-youtube';
+import { isPdfUrl } from '@/lib/resource-utils';
 
 
 // --- Helper types and functions ---
@@ -438,8 +438,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   
   const renderContentBlock = (block: ContentBlock) => {
     const url = block.content || '';
-    const isPdf = /\.pdf($|\?)/i.test(url);
-
+    
     if (block.type === 'VIDEO') {
         return <VideoPlayer key={block.id} videoUrl={url} lessonTitle={selectedLesson?.title} onVideoEnd={handleVideoEnd} />
     }
@@ -459,6 +458,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     }
       
     if (!url) {
+        if (block.type === 'TEXT') {
+           return <div key={block.id} className="prose dark:prose-invert prose-sm max-w-none my-4 p-3 border rounded-md bg-card" dangerouslySetInnerHTML={{ __html: '' }} />;
+        }
         return null;
     }
 
@@ -482,7 +484,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url.toLowerCase());
         const isOfficeDoc = url.toLowerCase().endsWith('.docx');
         
-        if (isPdf) {
+        if (isPdfUrl(url)) {
             return (
                 <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ height: '70vh', minHeight: '500px' }}>
                     <iframe src={url} className="w-full h-full border rounded-md" title={`PDF Preview: ${selectedLesson?.title}`}/>

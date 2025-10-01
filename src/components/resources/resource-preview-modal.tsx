@@ -1,4 +1,3 @@
-
 // src/components/resources/resource-preview-modal.tsx
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
@@ -6,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFo
 import type { EnterpriseResource as AppResourceType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Download, Share2, ChevronLeft, ChevronRight, Lock, Loader2, AlertTriangle, Info, User, Calendar, Tag, Globe, Users, ExternalLink, FileText, Archive, FileCode, List, X, ArrowUpRightSquare, ZoomIn, ZoomOut, Expand } from 'lucide-react';
-import { getIconForType, getYoutubeVideoId, FallbackIcon } from '@/lib/resource-utils';
+import { getIconForType, getYoutubeVideoId, FallbackIcon, isPdfUrl } from '@/lib/resource-utils';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '../ui/input';
@@ -228,8 +227,7 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     const displayUrl = pinVerifiedUrl || resource.url;
     
     if (displayUrl) {
-        const isPdf = /\.pdf($|\?)/i.test(resource.url || '');
-        if (isPdf) {
+        if (isPdfUrl(displayUrl)) {
             return (
                 <div className="w-full h-full relative">
                     <iframe 
