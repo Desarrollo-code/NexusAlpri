@@ -492,6 +492,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                 </div>
             );
         }
+        
         if (isOfficeDoc) {
              return (
                 <div key={block.id} className="my-4">
