@@ -379,9 +379,8 @@ export default function AnnouncementsPage() {
   const canCreate = user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR';
 
   return (
-    <div className="container mx-auto relative">
-      <div className="announcement-pattern-bg"></div>
-      <div className="relative z-10">
+    <div className="container mx-auto announcement-pattern-bg">
+      <div className="relative z-10 bg-transparent">
         <main className="max-w-2xl mx-auto">
             <p className="text-muted-foreground text-center mb-8">Mantente informado sobre las últimas novedades de la plataforma.</p>
             
