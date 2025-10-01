@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback, ChangeEvent } from 'r
 import { AnnouncementCard } from '@/components/announcement-card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { Announcement as AnnouncementType, UserRole, Attachment, Reaction } from '@/types'; 
-import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud, Pin, PinOff } from 'lucide-react';
+import { PlusCircle, Megaphone, Loader2, AlertTriangle, Trash2, Edit, UploadCloud, Pin, PinOff, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
@@ -180,15 +180,18 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                                 {localPreviews.map((p) => (
                                     <div key={p.id} className="relative aspect-square border rounded-md overflow-hidden">
                                         <Image src={p.previewUrl} alt={p.file.name} fill className="object-cover" />
-                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1">
-                                            {p.uploadProgress < 100 && !p.error && (
+                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 transition-opacity duration-300">
+                                            {p.uploadProgress > 0 && p.uploadProgress < 100 && !p.error && (
                                                 <div className="w-full px-2">
                                                     <Progress value={p.uploadProgress} className="h-1 bg-white/30"/>
-                                                    <p className="text-xs text-white text-center mt-1">{p.uploadProgress}%</p>
+                                                    <p className="text-xs text-white text-center mt-1">{Math.round(p.uploadProgress)}%</p>
                                                 </div>
                                             )}
+                                            {p.uploadProgress === 100 && !p.error && (
+                                                <Check className="h-8 w-8 text-white bg-green-500/80 rounded-full p-1" />
+                                            )}
                                             {p.error && (
-                                                <AlertTriangle className="h-6 w-6 text-destructive"/>
+                                                <AlertTriangle className="h-8 w-8 text-destructive"/>
                                             )}
                                         </div>
                                          <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removePreview(p.id)}>
