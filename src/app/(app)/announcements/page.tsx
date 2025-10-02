@@ -153,65 +153,66 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
     
     return (
         <Card className="shadow-sm card-border-animated mb-8">
-            <CardHeader className="p-4 pb-0">
-                <CardTitle className="text-lg">Crear un Anuncio</CardTitle>
+             <CardHeader className="p-4 flex flex-row items-center gap-4">
+                <Avatar className="h-10 w-10">
+                    <AvatarImage src={user?.avatar || undefined}/>
+                    <AvatarFallback><Identicon userId={user?.id || ''}/></AvatarFallback>
+                </Avatar>
+                <div className="w-full space-y-1">
+                     <p className="font-semibold">{user?.name}</p>
+                     <p className="text-xs text-muted-foreground">Comparte algo con el equipo...</p>
+                </div>
             </CardHeader>
-            <CardContent className="p-4">
-                <div className="flex gap-4">
-                    <Avatar className="h-10 w-10 hidden sm:block">
-                        <AvatarImage src={user?.avatar || undefined}/>
-                        <AvatarFallback><Identicon userId={user?.id || ''}/></AvatarFallback>
-                    </Avatar>
-                    <div className="w-full space-y-1">
-                         <Input 
-                            value={formTitle} 
-                            onChange={(e) => setFormTitle(e.target.value)} 
-                            placeholder="Asunto o Título del Mensaje" 
-                            className="text-base font-semibold border-0 border-b-2 rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary h-auto pb-1" 
-                            disabled={isSubmitting}
-                        />
-                         <RichTextEditor
-                          value={formContent}
-                          onChange={setFormContent}
-                          placeholder="¿Qué quieres comunicar hoy?"
-                          disabled={isSubmitting}
-                          className="!bg-transparent p-0"
-                        />
-                         {localPreviews.length > 0 && (
-                            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                {localPreviews.map((p) => (
-                                    <div key={p.id} className="relative aspect-square border rounded-md overflow-hidden bg-muted/50">
-                                        <Image src={p.previewUrl} alt={p.file.name} fill className="object-contain p-1" />
-                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 transition-opacity duration-300 opacity-0 hover:opacity-100">
-                                            {p.uploadProgress > 0 && p.uploadProgress < 100 && !p.error && (
-                                                <div className="w-full px-2">
-                                                    <Progress value={p.uploadProgress} className="h-1 bg-white/30"/>
-                                                    <p className="text-xs text-white text-center mt-1">{Math.round(p.uploadProgress)}%</p>
-                                                </div>
-                                            )}
-                                            {p.uploadProgress === 100 && !p.error && (
-                                                <Check className="h-8 w-8 text-white bg-green-500/80 rounded-full p-1" />
-                                            )}
-                                            {p.error && (
-                                                <AlertTriangle className="h-8 w-8 text-destructive"/>
-                                            )}
-                                        </div>
-                                         <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removePreview(p.id)}>
-                                            <XCircle className="h-4 w-4"/>
-                                        </Button>
+            <CardContent className="p-4 pt-0">
+                <div className="w-full space-y-1">
+                    <Input 
+                        value={formTitle} 
+                        onChange={(e) => setFormTitle(e.target.value)} 
+                        placeholder="Asunto o Título del Mensaje" 
+                        className="text-base font-semibold border-0 border-b-2 rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary h-auto pb-1" 
+                        disabled={isSubmitting}
+                    />
+                    <RichTextEditor
+                      value={formContent}
+                      onChange={setFormContent}
+                      placeholder="¿Qué quieres comunicar hoy?"
+                      disabled={isSubmitting}
+                      className="!bg-transparent p-0"
+                    />
+                    {localPreviews.length > 0 && (
+                        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                            {localPreviews.map((p) => (
+                                <div key={p.id} className="relative aspect-square border rounded-md overflow-hidden bg-muted/50">
+                                    <Image src={p.previewUrl} alt={p.file.name} fill className="object-contain p-1" />
+                                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 transition-opacity duration-300 opacity-0 hover:opacity-100">
+                                        {p.uploadProgress > 0 && p.uploadProgress < 100 && !p.error && (
+                                            <div className="w-full px-2">
+                                                <Progress value={p.uploadProgress} className="h-1 bg-white/30"/>
+                                                <p className="text-xs text-white text-center mt-1">{Math.round(p.uploadProgress)}%</p>
+                                            </div>
+                                        )}
+                                        {p.uploadProgress === 100 && !p.error && (
+                                            <Check className="h-8 w-8 text-white bg-green-500/80 rounded-full p-1" />
+                                        )}
+                                        {p.error && (
+                                            <AlertTriangle className="h-8 w-8 text-destructive"/>
+                                        )}
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                                     <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removePreview(p.id)}>
+                                        <XCircle className="h-4 w-4"/>
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </CardContent>
             <CardFooter className="flex justify-between items-center px-4 py-3 border-t">
                 <div className="flex items-center gap-2">
-                    <UploadArea onFileSelect={handleFileSelected} disabled={isSubmitting} inputId="announcement-file-upload">
+                     <UploadArea onFileSelect={handleFileSelected} disabled={isSubmitting} inputId="announcement-file-upload">
                         <Button variant="outline" size="sm" asChild>
                            <div>
-                              <Paperclip className="mr-2 h-4 w-4"/> Adjuntar archivo
+                              <Paperclip className="mr-2 h-4 w-4"/> Adjuntar
                            </div>
                         </Button>
                     </UploadArea>
@@ -390,7 +391,7 @@ export default function AnnouncementsPage() {
         <div className="relative rounded-lg overflow-hidden">
              <div 
                 className="absolute inset-0 z-0 bg-cover bg-center" 
-                style={{ backgroundImage: `linear-gradient(to top, hsl(var(--background)) 5%, transparent 40%), linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${settings?.announcementsImageUrl || ''}')` }}
+                style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${settings?.announcementsImageUrl || ''}')` }}
             />
             <div className="relative z-10 p-4 md:p-8">
                 <main className="max-w-2xl mx-auto">
@@ -402,9 +403,9 @@ export default function AnnouncementsPage() {
                     {user?.role !== 'STUDENT' && (
                     <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
                             <TabsList className="w-full bg-background/20 backdrop-blur-sm">
-                                <TabsTrigger value="all">Todos</TabsTrigger>
-                                <TabsTrigger value="by-me">Creados por mí</TabsTrigger>
-                                <TabsTrigger value="by-others">Creados por otros</TabsTrigger>
+                                <TabsTrigger value="all" className={cn(activeTab === 'all' && 'bg-card text-card-foreground')}>Todos</TabsTrigger>
+                                <TabsTrigger value="by-me" className={cn(activeTab === 'by-me' && 'bg-card text-card-foreground')}>Creados por mí</TabsTrigger>
+                                <TabsTrigger value="by-others" className={cn(activeTab === 'by-others' && 'bg-card text-card-foreground')}>Creados por otros</TabsTrigger>
                             </TabsList>
                     </Tabs>
                     )}
