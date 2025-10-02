@@ -36,6 +36,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { UploadArea } from '@/components/ui/upload-area';
+import { Separator } from '@/components/ui/separator';
 
 interface LocalAttachmentPreview {
     id: string; // Temporary client-side ID
@@ -150,35 +151,39 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
         setLocalPreviews(prev => prev.filter(p => p.id !== id));
     };
 
+    const hasContent = formTitle.trim() || formContent.trim() || localPreviews.length > 0;
     
     return (
         <Card className="shadow-sm card-border-animated mb-8">
-             <CardHeader className="p-4">
-                <CardTitle>Crear un Anuncio</CardTitle>
-             </CardHeader>
-            <CardContent className="p-4 pt-0 space-y-4">
-                <div className="flex items-start gap-3">
-                    <Avatar className="h-10 w-10 mt-1">
-                        <AvatarImage src={user?.avatar || undefined}/>
-                        <AvatarFallback><Identicon userId={user?.id || ''}/></AvatarFallback>
-                    </Avatar>
-                    <div className="w-full space-y-2">
-                        <Input 
-                            value={formTitle} 
-                            onChange={(e) => setFormTitle(e.target.value)} 
-                            placeholder="Escribe el título del anuncio..." 
-                            className="text-base font-semibold border-0 border-b-2 rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary h-auto pb-1" 
-                            disabled={isSubmitting}
-                        />
-                        <RichTextEditor
-                          value={formContent}
-                          onChange={setFormContent}
-                          placeholder="Escribe el mensaje o contenido del anuncio..."
-                          disabled={isSubmitting}
-                          className="!bg-transparent p-0"
-                        />
-                    </div>
+            <CardHeader className="p-4 flex flex-row items-center gap-3">
+                 <Avatar className="h-10 w-10">
+                    <AvatarImage src={user?.avatar || undefined}/>
+                    <AvatarFallback><Identicon userId={user?.id || ''}/></AvatarFallback>
+                </Avatar>
+                <div className="flex-grow">
+                    <p className="font-semibold">{user?.name}</p>
+                    <p className="text-xs text-muted-foreground">Publicando un nuevo anuncio</p>
                 </div>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 space-y-4">
+                <div className="space-y-1">
+                   <Input 
+                        value={formTitle} 
+                        onChange={(e) => setFormTitle(e.target.value)} 
+                        placeholder="Asunto o Título del Mensaje..." 
+                        className="text-lg font-semibold border-0 border-b-2 rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary h-auto pb-1" 
+                        disabled={isSubmitting}
+                    />
+                    <Separator className="mt-2"/>
+                </div>
+
+                <RichTextEditor
+                  value={formContent}
+                  onChange={setFormContent}
+                  placeholder="Escribe los detalles de tu anuncio aquí..."
+                  disabled={isSubmitting}
+                  className="!bg-transparent p-0"
+                />
 
                 {localPreviews.length > 0 && (
                     <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
@@ -229,7 +234,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                              <SelectItem value="ADMINISTRATOR">Administradores</SelectItem>
                         </SelectContent>
                     </Select>
-                    <Button size="sm" onClick={handleSaveAnnouncement} disabled={isSubmitting || (!formTitle.trim() && localPreviews.length === 0 && !formContent.trim())}>
+                    <Button size="sm" onClick={handleSaveAnnouncement} disabled={isSubmitting || !hasContent}>
                         {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Megaphone className="mr-2 h-4 w-4"/>}
                         Publicar
                     </Button>
@@ -392,7 +397,12 @@ export default function AnnouncementsPage() {
         <div className="relative rounded-lg overflow-hidden">
              <div 
                 className="absolute inset-0 z-0 bg-cover bg-center" 
-                style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${settings?.announcementsImageUrl || ''}')` }}
+                style={{
+                  backgroundImage: `
+                    linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+                    url('${settings?.announcementsImageUrl || ''}')
+                  `,
+                }}
             />
             <div className="relative z-10 p-4 md:p-8">
                 <main className="max-w-2xl mx-auto">
