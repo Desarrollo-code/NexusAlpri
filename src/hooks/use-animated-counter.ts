@@ -1,4 +1,4 @@
-
+// src/hooks/use-animated-counter.ts
 'use client';
 
 import { useState, useEffect } from 'react';

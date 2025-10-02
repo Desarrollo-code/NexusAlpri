@@ -1,4 +1,3 @@
-
 // src/app/(app)/dashboard/page.tsx
 'use client';
 
@@ -42,7 +41,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from '@/components/course-card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ComposedChart, Legend, Line, Cell } from "recharts";
-import { useAnimatedCounter } from '@/hooks/use-animated-counter';
 import { getEventDetails } from '@/lib/security-log-utils';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -52,6 +50,7 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTour } from '@/contexts/tour-context';
 import { adminDashboardTour, studentDashboardTour, instructorDashboardTour } from '@/lib/tour-steps';
+import { MetricCard } from '@/components/analytics/metric-card';
 
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -72,23 +71,6 @@ interface DashboardData {
 
 // --- DASHBOARD COMPONENTS PER ROLE ---
 
-const MetricCard = ({ title, value, icon: Icon, description, gradient, id }: { title: string; value: number; icon: React.ElementType; description?: string, gradient: string, id?: string }) => {
-    const animatedValue = useAnimatedCounter(value);
-    return (
-        <Card id={id} className={cn("relative overflow-hidden text-white card-border-animated", gradient)}>
-            <div className="absolute inset-0 bg-black/10"></div>
-            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white/80">{title}</CardTitle>
-                <Icon className="h-4 w-4 text-white/80" />
-            </CardHeader>
-            <CardContent className="relative">
-                <div className="text-3xl font-bold text-white">{animatedValue}</div>
-                {description && <p className="text-xs text-white/70">{description}</p>}
-            </CardContent>
-        </Card>
-    );
-};
-
 const formatDateTick = (tick: string) => {
     try {
         const date = parseISO(tick);
@@ -99,12 +81,8 @@ const formatDateTick = (tick: string) => {
 };
 
 const activityChartConfig = {
-  newUsers: {
-    label: "Usuarios",
-    color: "hsl(var(--chart-1))",
-  },
   newCourses: {
-    label: "Cursos",
+    label: "Nuevos Cursos",
     color: "hsl(var(--chart-2))",
   },
   newEnrollments: {
@@ -503,7 +481,7 @@ export default function DashboardPage() {
       case 'INSTRUCTOR':
         return data?.instructorStats ? <InstructorDashboard stats={data.instructorStats} announcements={data.recentAnnouncements || []} taughtCourses={data.taughtCourses || []} /> : null;
       case 'STUDENT':
-        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={data.recentAnnouncements || []} myCourses={data.myDashboardCourses || []} /> : null;
+        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={data.recentAnnouncements || []} myDashboardCourses={data.myDashboardCourses || []} /> : null;
       default:
         return <p>Rol de usuario no reconocido.</p>;
     }
@@ -530,4 +508,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

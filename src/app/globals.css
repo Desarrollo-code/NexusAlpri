@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    /* Nueva paleta de colores vibrante y diversa */
+    /* Paleta de colores base */
     --background: 220 20% 99%; /* Blanco ligeramente azulado */
     --foreground: 220 15% 15%; /* Casi negro */
     --card: 0 0% 100%;
@@ -26,15 +26,21 @@
     --input: 220 10% 92%;
     --ring: 210 90% 55%;
     --radius: 0.75rem;
-    
-    /* Colores para gráficos y eventos */
-    --chart-1: hsl(var(--primary)); /* Azul */
-    --chart-2: hsl(var(--accent));  /* Naranja */
-    --chart-3: 160 70% 45%; /* Verde azulado (Teal) */
-    --chart-4: 50 95% 55%;  /* Amarillo */
-    --chart-5: 340 85% 65%; /* Rosa/Magenta */
 
-    /* Variables de la barra lateral (mantienen un estilo consistente) */
+    /* Nueva paleta de colores para gráficos */
+    --chart-1: 221 83% 53%; /* blue */
+    --chart-2: 160 60% 45%; /* emerald */
+    --chart-3: 340 82% 52%; /* fuchsia */
+    --chart-4: 35 91% 55%;  /* amber */
+    --chart-5: 262 74% 50%; /* violet */
+    
+    /* Colores para eventos del calendario */
+    --event-blue: 210 90% 55%;
+    --event-green: 145 63% 42%;
+    --event-red: 0 80% 60%;
+    --event-orange: 25 90% 60%;
+
+    /* Sidebar */
     --sidebar-background: 220 40% 5%; 
     --sidebar-foreground: 45 80% 70%;
     --sidebar-muted-foreground: 45 50% 55%;
@@ -64,6 +70,13 @@
     --border: 220 10% 20%;
     --input: 220 10% 18%;
     --ring: 210 90% 65%;
+    
+    /* Gráficos en tema oscuro */
+    --chart-1: 216 80% 65%; /* blue */
+    --chart-2: 158 55% 55%; /* emerald */
+    --chart-3: 336 75% 65%; /* fuchsia */
+    --chart-4: 36 85% 60%;  /* amber */
+    --chart-5: 262 80% 70%; /* violet */
   }
 }
  
@@ -249,5 +262,3 @@
      @apply !p-1 !h-6 !w-6;
   }
 }
-
-    

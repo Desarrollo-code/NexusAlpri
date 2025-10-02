@@ -1,5 +1,3 @@
-
-
 // src/app/(app)/analytics/page.tsx
 'use client';
 
@@ -498,15 +496,15 @@ function AdminAnalyticsPage() {
                        <AreaChart accessibilityLayer data={stats?.userRegistrationTrend || []} margin={{ top: 10, right: 10, left: 0, bottom: 40 }}>
                          <defs>
                             <linearGradient id="colorRegistrations" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="var(--color-registrations)" stopOpacity={0.4}/>
-                                <stop offset="95%" stopColor="var(--color-registrations)" stopOpacity={0.05}/>
+                                <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.4}/>
+                                <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0.05}/>
                             </linearGradient>
                          </defs>
                          <CartesianGrid vertical={false} strokeDasharray="3 3" />
                          <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} interval={isMobile ? 6 : 'preserveStartEnd'} angle={-45} textAnchor="end" tickFormatter={formatDateTick}/>
                          <YAxis tickLine={false} axisLine={false} tickMargin={10} allowDecimals={false} />
                          <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" hideIndicator labelFormatter={formatDateTooltip} />} />
-                         <Area type="monotone" dataKey="count" name="Registros" stroke="var(--color-registrations)" strokeWidth={2} fillOpacity={1} fill="url(#colorRegistrations)" />
+                         <Area type="monotone" dataKey="count" name="Registros" stroke="hsl(var(--chart-2))" strokeWidth={2} fillOpacity={1} fill="url(#colorRegistrations)" />
                        </AreaChart>
                     </ResponsiveContainer>
                 </ChartContainer>
@@ -547,5 +545,3 @@ export default function AnalyticsPageWrapper() {
   );
   
 }
-
-    
