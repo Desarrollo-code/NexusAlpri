@@ -142,7 +142,10 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
         <div className="w-full">
            <div className="flex items-center justify-between">
              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm">
-                <span className="font-bold text-foreground">{announcement.author?.name || 'Sistema'}</span>
+                <span className="font-bold text-foreground flex items-center gap-1.5">
+                    {announcement.author?.name || 'Sistema'}
+                    {announcement.isPinned && <Pin className="h-3.5 w-3.5 text-blue-500 fill-current" />}
+                </span>
                 <span className="text-muted-foreground text-xs sm:text-sm">{formatDate(announcement.date)}</span>
              </div>
               {canModify && (
@@ -168,16 +171,19 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
           </div>
         </div>
       </CardHeader>
-      {announcement.title && (
-          <div className="bg-primary/90 text-primary-foreground px-4 py-2 mx-4 rounded-t-lg">
-             <CardTitle className="text-lg font-semibold">{announcement.title}</CardTitle>
-          </div>
-      )}
-      <CardContent className={cn("px-4 pb-3", announcement.title ? 'pt-3' : 'pt-0 pl-16')}>
-        <div className={cn(!announcement.title && "pl-2")}>
-            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: announcement.content }} />
+      
+      <CardContent className="px-4 pb-3 pt-0 pl-16">
+        <div className="pl-2 space-y-3">
+            {announcement.title && (
+              <div className="bg-primary/90 text-primary-foreground px-4 py-2 -ml-2 rounded-lg">
+                <CardTitle className="text-lg font-semibold">{announcement.title}</CardTitle>
+              </div>
+            )}
+            {announcement.content && (
+                <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: announcement.content }} />
+            )}
               {imageAttachments.length > 0 && (
-                 <div className={cn("grid gap-1 mt-3 rounded-lg overflow-hidden border", imageAttachments.length > 1 ? "grid-cols-2" : "grid-cols-1")}>
+                 <div className={cn("grid gap-1 rounded-lg overflow-hidden border", imageAttachments.length > 1 ? "grid-cols-2" : "grid-cols-1")}>
                      {imageAttachments.slice(0,4).map((att, index) => (
                         <div key={index} className={cn("relative aspect-video", imageAttachments.length === 3 && index === 0 && "row-span-2")}>
                            <Image src={att.url} alt={att.name} fill className="object-cover" />
@@ -193,7 +199,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
               )}
         </div>
       </CardContent>
-      <CardFooter className={cn("p-4 pt-0 flex items-center justify-between", announcement.title ? "pl-4" : "pl-16")}>
+      <CardFooter className={cn("p-4 pt-0 flex items-center justify-between pl-16")}>
            <div className="flex items-center text-muted-foreground -ml-2">
             <Popover>
                 <PopoverTrigger asChild>
