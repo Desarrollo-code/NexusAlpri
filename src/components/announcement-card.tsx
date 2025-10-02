@@ -59,20 +59,23 @@ const UserListPopover = ({ trigger, title, users }: { trigger: React.ReactNode, 
     </Popover>
 );
 
-const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffSeconds = Math.round((now.getTime() - date.getTime()) / 1000);
-      const diffMinutes = Math.round(diffSeconds / 60);
-      const diffHours = Math.round(diffMinutes / 60);
+const timeSince = (date: string): string => {
+  const dateObj = new Date(date);
+  const now = new Date();
+  const diffSeconds = Math.round((now.getTime() - dateObj.getTime()) / 1000);
 
-      if (diffHours < 24) return `${diffHours}h ago`;
-      return new Date(dateString).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-    } catch (error) {
-      return 'Fecha inválida';
-    }
+  if (diffSeconds < 5) return 'Ahora mismo';
+  if (diffSeconds < 60) return `Hace ${diffSeconds} seg.`;
+  
+  const diffMinutes = Math.round(diffSeconds / 60);
+  if (diffMinutes < 60) return `Hace ${diffMinutes} min.`;
+  
+  const diffHours = Math.round(diffMinutes / 60);
+  if (diffHours < 24) return `Hace ${diffHours} hr.`;
+  
+  return new Date(date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
 };
+
 
 export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionChange, onRead, onTogglePin }: AnnouncementCardProps) {
   const { user } = useAuth();
@@ -146,7 +149,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                     {announcement.author?.name || 'Sistema'}
                     {announcement.isPinned && <Pin className="h-3.5 w-3.5 text-blue-500 fill-current" />}
                 </span>
-                <span className="text-muted-foreground text-xs sm:text-sm">{formatDate(announcement.date)}</span>
+                <span className="text-muted-foreground text-xs sm:text-sm">{timeSince(announcement.date)}</span>
              </div>
               {canModify && (
                 <DropdownMenu>

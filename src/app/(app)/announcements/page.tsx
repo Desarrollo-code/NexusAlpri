@@ -153,6 +153,9 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
     
     return (
         <Card className="shadow-sm card-border-animated mb-8">
+            <CardHeader className="p-4 pb-0">
+                <CardTitle className="text-lg">Crear un Anuncio</CardTitle>
+            </CardHeader>
             <CardContent className="p-4">
                 <div className="flex gap-4">
                     <Avatar className="h-10 w-10 hidden sm:block">
@@ -164,7 +167,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                             value={formTitle} 
                             onChange={(e) => setFormTitle(e.target.value)} 
                             placeholder="Asunto o Título del Mensaje" 
-                            className="text-base font-semibold border-0 border-b-2 rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary" 
+                            className="text-base font-semibold border-b-2 rounded-none px-1 focus-visible:ring-0" 
                             disabled={isSubmitting}
                         />
                          <RichTextEditor
@@ -172,7 +175,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                           onChange={setFormContent}
                           placeholder="¿Qué quieres comunicar hoy?"
                           disabled={isSubmitting}
-                          className="!border-0 !bg-transparent p-0"
+                          className="!bg-transparent p-0"
                         />
                          {localPreviews.length > 0 && (
                             <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
@@ -225,7 +228,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                         </SelectContent>
                     </Select>
                 </div>
-                 <Button size="sm" onClick={handleSaveAnnouncement} disabled={isSubmitting}>
+                 <Button size="sm" onClick={handleSaveAnnouncement} disabled={isSubmitting || (!formTitle.trim() && localPreviews.length === 0 && !formContent.trim())}>
                     {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Megaphone className="mr-2 h-4 w-4"/>}
                     Publicar
                 </Button>
@@ -391,12 +394,14 @@ export default function AnnouncementsPage() {
             />
             <div className="relative z-10 p-4 md:p-8">
                 <main className="max-w-2xl mx-auto">
-                <p className="text-center mb-8 text-white">Mantente informado sobre las últimas novedades de la plataforma.</p>
+                <p className={cn("text-center mb-8", settings?.announcementsImageUrl ? "text-white" : "text-foreground")}>
+                    Mantente informado sobre las últimas novedades de la plataforma.
+                </p>
                     {canCreate && <AnnouncementCreator onAnnouncementCreated={fetchAnnouncements} />}
                     
                     {user?.role !== 'STUDENT' && (
                     <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
-                            <TabsList className="w-full">
+                            <TabsList className="w-full bg-background/20 backdrop-blur-sm">
                                 <TabsTrigger value="all">Todos</TabsTrigger>
                                 <TabsTrigger value="by-me">Creados por mí</TabsTrigger>
                                 <TabsTrigger value="by-others">Creados por otros</TabsTrigger>
@@ -407,8 +412,8 @@ export default function AnnouncementsPage() {
                     <div className="space-y-6">
                     {isLoading ? (
                         <div className="flex justify-center items-center py-12">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        <p className="ml-2 text-white">Cargando anuncios...</p>
+                        <Loader2 className={cn("h-8 w-8 animate-spin", settings?.announcementsImageUrl ? "text-white" : "text-primary")} />
+                        <p className={cn("ml-2", settings?.announcementsImageUrl ? "text-white" : "text-foreground")}>Cargando anuncios...</p>
                         </div>
                     ) : error ? (
                         <div className="flex flex-col items-center justify-center py-12 text-destructive">
