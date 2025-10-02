@@ -161,8 +161,8 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                     <AvatarFallback><Identicon userId={user?.id || ''}/></AvatarFallback>
                 </Avatar>
                 <div className="flex-grow">
-                    <p className="font-semibold">{user?.name}</p>
-                    <p className="text-xs text-muted-foreground">Publicando un nuevo anuncio</p>
+                    <p className="font-semibold">Crear un Anuncio</p>
+                    <p className="text-xs text-muted-foreground">Publicando como {user?.name}</p>
                 </div>
             </CardHeader>
             <CardContent className="p-4 pt-0 space-y-4">
@@ -213,14 +213,21 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                 )}
             </CardContent>
             <CardFooter className="flex justify-between items-center px-4 py-3 border-t">
-                <div className="flex items-center gap-2">
-                    <UploadArea onFileSelect={handleFileSelected} disabled={isSubmitting} inputId="announcement-file-upload">
-                        <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-primary">
+                 <div className="flex items-center gap-2">
+                     <UploadArea 
+                        onFileSelect={handleFileSelected} 
+                        disabled={isSubmitting} 
+                        inputId="announcement-file-upload"
+                        className="w-auto h-auto p-0 border-0 bg-transparent"
+                        title=""
+                        description=""
+                    >
+                         <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-primary">
                            <div>
                               <Paperclip className="h-5 w-5"/>
                            </div>
                         </Button>
-                    </UploadArea>
+                     </UploadArea>
                 </div>
                  <div className="flex items-center gap-2">
                      <Select value={formAudience} onValueChange={(v) => setFormAudience(v as any)} disabled={isSubmitting}>

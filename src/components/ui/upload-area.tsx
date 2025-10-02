@@ -10,9 +10,18 @@ interface UploadAreaProps {
   disabled?: boolean;
   className?: string;
   inputId?: string;
+  title?: string;
+  description?: string;
 }
 
-export function UploadArea({ onFileSelect, disabled, className, inputId = "file-upload" }: UploadAreaProps) {
+export function UploadArea({ 
+    onFileSelect, 
+    disabled, 
+    className, 
+    inputId = "file-upload",
+    title = "Arrastra y suelta o haz clic",
+    description = "Sube un archivo para adjuntar"
+}: UploadAreaProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -89,12 +98,12 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
          <div className="flex items-center justify-center w-14 h-14 rounded-lg bg-background/50 dark:bg-black/30 border flex-shrink-0">
             <UploadCloud className="h-8 w-8 text-muted-foreground transition-colors group-hover:text-primary" />
          </div>
-         <div className="text-left">
+         <div className="text-left hidden md:block">
             <p className="text-sm font-semibold text-foreground">
-                {isDragging ? 'Suelta el archivo aquí' : 'Arrastra y suelta o haz clic'}
+                {isDragging ? 'Suelta el archivo aquí' : title}
             </p>
              <p className="text-xs text-muted-foreground">
-                Sube una imagen para la portada.
+                {description}
             </p>
          </div>
       </div>
