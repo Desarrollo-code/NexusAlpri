@@ -1,0 +1,23 @@
+diff --git a/node_modules/pdfjs-dist/package.json b/node_modules/pdfjs-dist/package.json
+index 51586a1..25f187a 100644
+--- a/node_modules/pdfjs-dist/package.json
++++ b/node_modules/pdfjs-dist/package.json
+@@ -1,5 +1,6 @@
+ {
+-  "name": "pdfjs-dist",
++  "name": "pdfjs-dist-patched",
+   "version": "3.11.174",
+   "description": "Generic build of Mozilla's PDF.js library.",
+   "keywords": [
+@@ -9,5 +10,8 @@
+   "bugs": "https://github.com/mozilla/pdf.js/issues",
+   "license": "Apache-2.0",
+   "dependencies": {
+     "zod": "^3.22.4"
+-  }
++  },
++  "scripts": {
++    "postinstall": "node -e \"require('fs').copyFileSync('build/pdf.worker.min.js', '../../public/pdf.worker.min.js')\""
++  },
++  "private": true
+ }
