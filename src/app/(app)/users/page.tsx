@@ -61,6 +61,9 @@ import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils'
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
 import { VerifiedBadge } from '@/components/ui/verified-badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { UserProfileCard } from '@/components/profile/user-profile-card';
+
 
 const PAGE_SIZE = 10;
 
@@ -297,7 +300,7 @@ export default function UsersPage() {
         });
         fetchUsers();
     } catch (err) {
-        toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
+        toast({ title: "Error", description: (err instanceof Error).message, variant: "destructive" });
     } finally {
         setIsProcessing(false);
         setShowToggleStatusDialog(false);
@@ -331,7 +334,7 @@ export default function UsersPage() {
       setShowChangeRoleDialog(false);
       setUserToChangeRole(null);
     } catch (err) {
-      toast({ title: "Error al cambiar rol", description: err instanceof Error ? err.message : 'No se pudo cambiar el rol.', variant: "destructive" });
+      toast({ title: "Error al cambiar rol", description: (err instanceof Error).message, variant: "destructive" });
     } finally {
       setIsProcessing(false);
     }
@@ -390,13 +393,20 @@ export default function UsersPage() {
           ) : usersList.map((u) => (
             <TableRow key={u.id} className={cn(!u.isActive && "opacity-60")}>
               <TableCell>
-                <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9">
-                        {u.avatar ? <AvatarImage src={u.avatar} alt={u.name} /> : null}
-                        <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
-                    </Avatar>
-                    <div className="font-medium flex items-center gap-1.5">{u.name}<VerifiedBadge role={u.role}/></div>
-                </div>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <div className="flex items-center gap-3 cursor-pointer group">
+                            <Avatar className="h-9 w-9">
+                                {u.avatar ? <AvatarImage src={u.avatar} alt={u.name} /> : null}
+                                <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
+                            </Avatar>
+                            <div className="font-medium flex items-center gap-1.5 group-hover:underline">{u.name}<VerifiedBadge role={u.role}/></div>
+                        </div>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80">
+                       <UserProfileCard user={u} />
+                    </PopoverContent>
+                </Popover>
               </TableCell>
               <TableCell>{u.email}</TableCell>
               <TableCell>
