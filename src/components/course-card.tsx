@@ -163,10 +163,10 @@ export function CourseCard({
             <div className="text-xs text-muted-foreground pt-1 flex flex-col gap-1.5">
               <div className="flex items-center gap-2">
                 <Avatar className="h-5 w-5">
-                    <AvatarImage src={course.instructor.avatar || undefined} />
-                    <AvatarFallback className="text-xs"><Identicon userId={course.instructor.id}/></AvatarFallback>
+                    <AvatarImage src={course.instructor?.avatar || undefined} />
+                    <AvatarFallback className="text-xs"><Identicon userId={course.instructor?.id || ''}/></AvatarFallback>
                 </Avatar>
-                <span>Por {course.instructor.name}</span>
+                <span>Por {course.instructor?.name || 'N/A'}</span>
               </div>
               <div className="flex items-center"><Layers className="mr-1.5 h-3 w-3" /> {course.modulesCount} Módulos</div>
             </div>
