@@ -1,4 +1,3 @@
-
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -420,17 +419,15 @@ function ProfilePageContent() {
     }, [fetchAchievements]);
 
 
-    const handleAvatarChange = async (e: ChangeEvent) => {
+    const handleAvatarChange = async (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0] && user) {
             const file = e.target.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
             
             setIsUploading(true);
             setUploadProgress(0);
 
             try {
-                const result = await uploadWithProgress('/api/upload/avatar', formData, setUploadProgress);
+                const result = await uploadWithProgress('/api/upload/avatar', file, setUploadProgress);
                 
                 const updateUserResponse = await fetch(`/api/users/${user.id}`, {
                     method: 'PUT',

@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     const safeFileName = filename.replace(/[^a-zA-Z0-9-_\.]/g, '_');
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-    const finalPath = `${uniqueSuffix}-${safeFileName}`;
+    const finalPath = `${session.id}/${uniqueSuffix}-${safeFileName}`;
 
     const { data, error } = await supabaseAdmin.storage
       .from('avatars')
