@@ -1,3 +1,4 @@
+
 // src/lib/course-utils.ts
 import type { Course as AppCourseType, CourseStatus } from '@/types';
 import type { Course as PrismaCourse } from '@prisma/client';
@@ -21,11 +22,7 @@ export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCours
     title: apiCourse.title,
     description: apiCourse.description || '',
     category: apiCourse.category || undefined,
-    instructor: {
-      id: apiCourse.instructor?.id || 'unknown',
-      name: apiCourse.instructor?.name || 'N/A',
-      avatar: apiCourse.instructor?.avatar || null,
-    },
+    instructor: apiCourse.instructor?.name || 'N/A',
     instructorId: apiCourse.instructorId || undefined,
     imageUrl: apiCourse.imageUrl || undefined,
     modulesCount: apiCourse._count?.modules ?? 0,
