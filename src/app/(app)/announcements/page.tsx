@@ -93,7 +93,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
     };
     
     const handleSaveAnnouncement = async () => {
-        if (!formTitle.trim() && !formContent.trim() && localPreviews.length === 0) {
+        if (!formTitle.trim() && formContent.trim().replace(/<(.|\n)*?>/g, '').length === 0 && localPreviews.length === 0) {
             toast({ title: "Contenido vacío", description: "Por favor, añade un título, escribe un mensaje o adjunta un archivo.", variant: "destructive" });
             return;
         }
@@ -154,7 +154,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
         setLocalPreviews(prev => prev.filter(p => p.id !== id));
     };
 
-    const hasContent = formTitle.trim() || formContent.trim() || localPreviews.length > 0;
+    const hasContent = formTitle.trim() || formContent.trim().replace(/<(.|\n)*?>/g, '').length > 0 || localPreviews.length > 0;
     
     // --- Funciones para Drag & Drop ---
     const handleDragEvents = (e: React.DragEvent<HTMLDivElement>, isEntering: boolean) => {
@@ -183,13 +183,15 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
             onDragLeave={(e) => handleDragEvents(e, false)}
             onDrop={handleDrop}
         >
-            <CardHeader className="p-4 flex flex-row items-start gap-4">
+            <CardHeader className="p-4">
+                 <h3 className="font-semibold text-lg">Crear un Anuncio</h3>
+            </CardHeader>
+            <CardContent className="px-4 pt-0 flex flex-row items-start gap-4">
                  <Avatar className="h-10 w-10">
                     <AvatarImage src={user?.avatar || undefined}/>
                     <AvatarFallback><Identicon userId={user?.id || ''}/></AvatarFallback>
                 </Avatar>
                 <div className="flex-grow space-y-2">
-                     <h3 className="font-semibold text-lg sr-only">Crear un Anuncio</h3>
                      <Input 
                         value={formTitle} 
                         onChange={(e) => setFormTitle(e.target.value)} 
@@ -202,17 +204,20 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                         onChange={setFormContent}
                         placeholder="Escribe los detalles de tu anuncio aquí..."
                         disabled={isSubmitting}
-                        className="!bg-transparent p-0"
+                        className="!bg-transparent p-0 !border-0"
                     />
                 </div>
-            </CardHeader>
+            </CardContent>
             <CardContent className="px-4 pt-0">
                 {localPreviews.length > 0 && (
-                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pl-14">
                         {localPreviews.map((p) => (
                             <div key={p.id} className="relative aspect-square border rounded-md overflow-hidden bg-muted/50">
                                 <Image src={p.previewUrl} alt={p.file.name} fill className="object-contain p-1" />
-                                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 transition-opacity duration-300 opacity-0 hover:opacity-100">
+                                <div className={cn(
+                                    "absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 transition-opacity duration-300",
+                                    p.uploadProgress === 100 && !p.error ? "opacity-100" : "opacity-0 hover:opacity-100"
+                                )}>
                                     {p.uploadProgress > 0 && p.uploadProgress < 100 && !p.error && (
                                         <div className="w-full px-2">
                                             <Progress value={p.uploadProgress} className="h-1 bg-white/30"/>
@@ -614,3 +619,4 @@ function AnnouncementEditorModal({ announcement, isOpen, onClose, onUpdateSucces
         </Dialog>
     );
 }
+
