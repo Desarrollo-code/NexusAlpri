@@ -162,12 +162,12 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                         <AvatarImage src={user?.avatar || undefined}/>
                         <AvatarFallback><Identicon userId={user?.id || ''}/></AvatarFallback>
                     </Avatar>
-                    <div className="w-full space-y-3">
+                    <div className="w-full space-y-1">
                          <Input 
                             value={formTitle} 
                             onChange={(e) => setFormTitle(e.target.value)} 
                             placeholder="Asunto o Título del Mensaje" 
-                            className="text-base font-semibold border-b-2 rounded-none px-1 focus-visible:ring-0" 
+                            className="text-base font-semibold border-0 border-b-2 rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary h-auto pb-1" 
                             disabled={isSubmitting}
                         />
                          <RichTextEditor
