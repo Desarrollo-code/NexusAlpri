@@ -64,7 +64,7 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
   return (
     <div 
       className={cn(
-        "group relative w-full h-24 flex flex-col items-center justify-center bg-muted/50 dark:bg-black/20 border-2 border-dashed border-border/50 rounded-lg cursor-pointer transition-all duration-300",
+        "group relative w-full h-24 flex flex-row items-center justify-center p-4 bg-card border-2 border-dashed border-border/50 rounded-lg cursor-pointer transition-all duration-300",
         "hover:border-primary/70 hover:bg-primary/5",
         isDragging && "border-primary bg-primary/10",
         disabled && "cursor-not-allowed opacity-60",
@@ -85,13 +85,18 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
         disabled={disabled}
         accept="image/png, image/jpeg, image/svg+xml, image/webp"
       />
-      <div className="flex flex-col items-center justify-center gap-2 transition-transform duration-300 group-hover:scale-105">
-         <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-background/50 dark:bg-black/30 border">
-            <UploadCloud className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
+      <div className="flex items-center justify-center gap-4 transition-transform duration-300 group-hover:scale-105">
+         <div className="flex items-center justify-center w-14 h-14 rounded-lg bg-background/50 dark:bg-black/30 border flex-shrink-0">
+            <UploadCloud className="h-8 w-8 text-muted-foreground transition-colors group-hover:text-primary" />
          </div>
-         <p className="text-xs text-muted-foreground transition-colors group-hover:text-primary text-center">
-            {isDragging ? 'Suelta el archivo para subirlo' : 'Suelta un archivo o haz clic para subir'}
-         </p>
+         <div className="text-left">
+            <p className="text-sm font-semibold text-foreground">
+                {isDragging ? 'Suelta el archivo aquí' : 'Arrastra y suelta o haz clic'}
+            </p>
+             <p className="text-xs text-muted-foreground">
+                Sube una imagen para la portada.
+            </p>
+         </div>
       </div>
     </div>
   );
