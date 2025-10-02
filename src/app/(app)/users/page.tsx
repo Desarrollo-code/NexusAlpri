@@ -1,3 +1,4 @@
+
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -5,7 +6,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal, Eye, EyeOff, UserCheck, UserX } from 'lucide-react';
+import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal, Eye, EyeOff, UserCheck, UserX, Camera } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
@@ -58,6 +59,8 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { useTitle } from '@/contexts/title-context';
 import { getInitials } from '@/lib/utils';
 import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Progress } from '@/components/ui/progress';
 
 const PAGE_SIZE = 10;
 
@@ -96,6 +99,9 @@ export default function UsersPage() {
   const [editPassword, setEditPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [selectedNewRole, setSelectedNewRole] = useState<UserRole>('STUDENT');
+  const [editAvatarUrl, setEditAvatarUrl] = useState<string | null | undefined>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     setPageTitle('Gestión de Usuarios');
@@ -174,6 +180,9 @@ export default function UsersPage() {
     setEditRole('STUDENT');
     setEditPassword('');
     setShowPassword(false);
+    setEditAvatarUrl(null);
+    setIsUploading(false);
+    setUploadProgress(0);
   }
 
   const handleOpenAddModal = () => {
@@ -187,6 +196,7 @@ export default function UsersPage() {
     setEditName(selectedUser.name);
     setEditEmail(selectedUser.email);
     setEditRole(selectedUser.role);
+    setEditAvatarUrl(selectedUser.avatar);
     setEditPassword('');
     setShowPassword(false);
     setShowAddEditModal(true);
@@ -225,6 +235,7 @@ export default function UsersPage() {
       name: editName, 
       email: editEmail, 
       role: editRole,
+      avatar: editAvatarUrl,
     };
     if (!userToEdit && editPassword) {
         userData.password = editPassword;
@@ -322,6 +333,24 @@ export default function UsersPage() {
   
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+  };
+  
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      try {
+        const result = await uploadWithProgress('/api/upload/avatar', file, setUploadProgress);
+        setEditAvatarUrl(result.url);
+        toast({ title: 'Avatar Subido', description: 'La imagen está lista para ser guardada con el usuario.' });
+      } catch (error) {
+        toast({ title: 'Error de Subida', description: (error as Error).message, variant: 'destructive' });
+      } finally {
+        setIsUploading(false);
+      }
+    }
   };
 
 
@@ -562,49 +591,63 @@ export default function UsersPage() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="overflow-y-auto px-6 py-4 thin-scrollbar">
-                <div className="grid gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="name">Nombre</Label>
-                        <Input id="name" name="name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nombre completo" required disabled={isProcessing} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input id="email" name="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="usuario@ejemplo.com" required disabled={isProcessing}/>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="role">Rol</Label>
-                        <Select name="role" value={editRole} onValueChange={(value) => setEditRole(value as UserRole)} required disabled={isProcessing}>
-                            <SelectTrigger id="role">
-                                <SelectValue placeholder="Seleccionar rol" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="STUDENT">Estudiante</SelectItem>
-                                <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                                <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    {!userToEdit && (
-                      <div className="space-y-2">
-                          <Label htmlFor="password">Contraseña</Label>
-                          <div className="relative">
-                            <Input 
-                              id="password" 
-                              name="password"
-                              type={showPassword ? "text" : "password"}
-                              value={editPassword} 
-                              onChange={(e) => setEditPassword(e.target.value)} 
-                              placeholder="Mínimo 8 caracteres" 
-                              required 
-                              disabled={isProcessing}
-                            />
-                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPassword(!showPassword)}>
-                                {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                  <div className="grid gap-4">
+                      <div className="space-y-2 text-center">
+                        <Avatar className="h-24 w-24 mx-auto border-4 border-muted">
+                           <AvatarImage src={editAvatarUrl || undefined}/>
+                           <AvatarFallback className="text-3xl">{getInitials(editName)}</AvatarFallback>
+                        </Avatar>
+                         <div className="relative">
+                            <Button type="button" size="sm" variant="outline" onClick={() => document.getElementById('avatar-upload-input')?.click()} disabled={isUploading}>
+                                <Camera className="mr-2 h-4 w-4"/>
+                                {isUploading ? `Subiendo... ${uploadProgress.toFixed(0)}%` : 'Cambiar Avatar'}
                             </Button>
+                            <input type="file" id="avatar-upload-input" className="hidden" accept="image/*" onChange={handleAvatarFileChange} disabled={isUploading}/>
+                         </div>
+                         {isUploading && <Progress value={uploadProgress} className="w-32 mx-auto h-1 mt-1"/>}
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="name">Nombre</Label>
+                          <Input id="name" name="name" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nombre completo" required disabled={isProcessing} />
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="email">Email</Label>
+                          <Input id="email" name="email" type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="usuario@ejemplo.com" required disabled={isProcessing}/>
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="role">Rol</Label>
+                          <Select name="role" value={editRole} onValueChange={(value) => setEditRole(value as UserRole)} required disabled={isProcessing}>
+                              <SelectTrigger id="role">
+                                  <SelectValue placeholder="Seleccionar rol" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  <SelectItem value="STUDENT">Estudiante</SelectItem>
+                                  <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
+                                  <SelectItem value="ADMINISTRATOR">Administrador</SelectItem>
+                              </SelectContent>
+                          </Select>
+                      </div>
+                      {!userToEdit && (
+                        <div className="space-y-2">
+                            <Label htmlFor="password">Contraseña</Label>
+                            <div className="relative">
+                              <Input 
+                                id="password" 
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                value={editPassword} 
+                                onChange={(e) => setEditPassword(e.target.value)} 
+                                placeholder="Mínimo 8 caracteres" 
+                                required 
+                                disabled={isProcessing}
+                              />
+                              <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowPassword(!showPassword)}>
+                                  {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                    )}
-                    </div>
+                      )}
+                  </div>
                 </div>
                 <DialogFooter className="p-6 pt-4 flex-col-reverse sm:flex-row sm:justify-end gap-2">
                         <Button type="button" variant="outline" onClick={() => { setShowAddEditModal(false); setUserToEdit(null); resetFormFields(); }} disabled={isProcessing}>Cancelar</Button>
