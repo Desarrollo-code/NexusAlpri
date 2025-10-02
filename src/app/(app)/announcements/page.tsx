@@ -155,13 +155,13 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
     
     return (
         <Card className="shadow-sm card-border-animated mb-8">
-            <CardHeader className="p-4 flex flex-row items-center gap-3">
+            <CardHeader className="p-4 flex flex-row items-start gap-4">
                  <Avatar className="h-10 w-10">
                     <AvatarImage src={user?.avatar || undefined}/>
                     <AvatarFallback><Identicon userId={user?.id || ''}/></AvatarFallback>
                 </Avatar>
                 <div className="flex-grow">
-                    <p className="font-semibold">Crear un Anuncio</p>
+                    <h3 className="font-semibold text-lg">Crear un Anuncio</h3>
                     <p className="text-xs text-muted-foreground">Publicando como {user?.name}</p>
                 </div>
             </CardHeader>
@@ -170,7 +170,7 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                    <Input 
                         value={formTitle} 
                         onChange={(e) => setFormTitle(e.target.value)} 
-                        placeholder="Asunto o Título del Mensaje..." 
+                        placeholder="Escribe el título del anuncio..." 
                         className="text-lg font-semibold border-0 border-b-2 rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary h-auto pb-1" 
                         disabled={isSubmitting}
                     />
@@ -214,20 +214,19 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
             </CardContent>
             <CardFooter className="flex justify-between items-center px-4 py-3 border-t">
                  <div className="flex items-center gap-2">
-                     <UploadArea 
-                        onFileSelect={handleFileSelected} 
-                        disabled={isSubmitting} 
-                        inputId="announcement-file-upload"
-                        className="w-auto h-auto p-0 border-0 bg-transparent"
-                        title=""
-                        description=""
-                    >
-                         <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-primary">
-                           <div>
-                              <Paperclip className="h-5 w-5"/>
-                           </div>
-                        </Button>
-                     </UploadArea>
+                     <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-primary">
+                       <div>
+                          <Paperclip className="h-5 w-5"/>
+                          <UploadArea 
+                            onFileSelect={handleFileSelected} 
+                            disabled={isSubmitting} 
+                            inputId="announcement-file-upload"
+                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                            title=""
+                            description=""
+                         />
+                       </div>
+                    </Button>
                 </div>
                  <div className="flex items-center gap-2">
                      <Select value={formAudience} onValueChange={(v) => setFormAudience(v as any)} disabled={isSubmitting}>
@@ -400,93 +399,91 @@ export default function AnnouncementsPage() {
   const canCreate = user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR';
 
   return (
-    <div className="container mx-auto p-0 md:p-4">
-        <div className="relative rounded-lg overflow-hidden">
-             <div 
-                className="absolute inset-0 z-0 bg-cover bg-center" 
-                style={{
-                  backgroundImage: `
-                    linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
-                    url('${settings?.announcementsImageUrl || ''}')
-                  `,
-                }}
-            />
-            <div className="relative z-10 p-4 md:p-8">
-                <main className="max-w-2xl mx-auto">
-                    {canCreate && <AnnouncementCreator onAnnouncementCreated={fetchAnnouncements} />}
-                    
-                    {user?.role !== 'STUDENT' && (
-                    <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
-                            <TabsList className="w-full bg-background/20 backdrop-blur-sm">
-                                <TabsTrigger value="all" className={cn(activeTab === 'all' && 'bg-card text-card-foreground')}>Todos</TabsTrigger>
-                                <TabsTrigger value="by-me" className={cn(activeTab === 'by-me' && 'bg-card text-card-foreground')}>Creados por mí</TabsTrigger>
-                                <TabsTrigger value="by-others" className={cn(activeTab === 'by-others' && 'bg-card text-card-foreground')}>Creados por otros</TabsTrigger>
-                            </TabsList>
-                    </Tabs>
-                    )}
-
-                    <div className="space-y-6">
-                    {isLoading ? (
-                        <div className="flex justify-center items-center py-12">
-                        <Loader2 className={cn("h-8 w-8 animate-spin", settings?.announcementsImageUrl ? "text-white" : "text-primary")} />
-                        <p className={cn("ml-2", settings?.announcementsImageUrl ? "text-white" : "text-foreground")}>Cargando anuncios...</p>
-                        </div>
-                    ) : error ? (
-                        <div className="flex flex-col items-center justify-center py-12 text-destructive">
-                        <AlertTriangle className="h-8 w-8 mb-2" />
-                        <p className="font-semibold">Error al cargar anuncios</p>
-                        <p className="text-sm">{error}</p>
-                        <Button onClick={() => fetchAnnouncements()} variant="outline" className="mt-4">Reintentar</Button>
-                        </div>
-                    ) : allAnnouncements.length > 0 ? (
-                        <>
-                        {allAnnouncements.map((announcement: AnnouncementType) => (
-                            <div key={announcement.id} id={announcement.id}>
-                                <AnnouncementCard 
-                                    announcement={announcement}
-                                    onEdit={() => handleEditRequest(announcement)}
-                                    onDelete={() => setAnnouncementToProcess({ action: 'delete', data: announcement })}
-                                    onReactionChange={handleReactionChange}
-                                    onRead={handleRead}
-                                    onTogglePin={handleTogglePin}
-                                />
-                            </div>
-                        ))}
-                        </>
-                    ) : (
-                        <div className="text-center py-12 border-2 border-dashed rounded-lg bg-background/50">
-                        <Megaphone className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                        <h3 className="text-xl font-semibold mb-2">No hay anuncios que mostrar</h3>
-                        <p className="text-muted-foreground">No se encontraron anuncios que coincidan con el filtro seleccionado.</p>
-                        </div>
-                    )}
-
-                {totalPages > 1 && !isLoading && (
-                    <Pagination>
-                        <PaginationContent>
-                            <PaginationItem>
-                            <PaginationPrevious
-                                href="#"
-                                onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
-                                className={cn(buttonVariants({variant: 'outline'}), currentPage === 1 ? "pointer-events-none opacity-50" : "")}
-                            />
-                            </PaginationItem>
-                            <PaginationItem>
-                            <span className="text-sm p-2 font-semibold text-center text-white">Página {currentPage} de {totalPages}</span>
-                            </PaginationItem>
-                            <PaginationItem>
-                            <PaginationNext
-                                href="#"
-                                onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
-                                className={cn(buttonVariants({variant: 'outline'}), currentPage === totalPages ? "pointer-events-none opacity-50" : "")}
-                            />
-                            </PaginationItem>
-                        </PaginationContent>
-                    </Pagination>
+    <div className="relative flex-1">
+        <div 
+            className="absolute inset-0 z-0 bg-cover bg-center" 
+            style={{
+              backgroundImage: `
+                linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+                url('${settings?.announcementsImageUrl || ''}')
+              `,
+            }}
+        />
+        <div className="relative z-10 p-4 md:p-8">
+            <main className="max-w-2xl mx-auto">
+                {canCreate && <AnnouncementCreator onAnnouncementCreated={fetchAnnouncements} />}
+                
+                {user?.role !== 'STUDENT' && (
+                <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
+                        <TabsList className="w-full bg-background/20 backdrop-blur-sm">
+                            <TabsTrigger value="all" className={cn(activeTab === 'all' && 'bg-card text-card-foreground')}>Todos</TabsTrigger>
+                            <TabsTrigger value="by-me" className={cn(activeTab === 'by-me' && 'bg-card text-card-foreground')}>Creados por mí</TabsTrigger>
+                            <TabsTrigger value="by-others" className={cn(activeTab === 'by-others' && 'bg-card text-card-foreground')}>Creados por otros</TabsTrigger>
+                        </TabsList>
+                </Tabs>
                 )}
-                </div>
-                </main>
-          </div>
+
+                <div className="space-y-6">
+                {isLoading ? (
+                    <div className="flex justify-center items-center py-12">
+                    <Loader2 className={cn("h-8 w-8 animate-spin", settings?.announcementsImageUrl ? "text-white" : "text-primary")} />
+                    <p className={cn("ml-2", settings?.announcementsImageUrl ? "text-white" : "text-foreground")}>Cargando anuncios...</p>
+                    </div>
+                ) : error ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-destructive">
+                    <AlertTriangle className="h-8 w-8 mb-2" />
+                    <p className="font-semibold">Error al cargar anuncios</p>
+                    <p className="text-sm">{error}</p>
+                    <Button onClick={() => fetchAnnouncements()} variant="outline" className="mt-4">Reintentar</Button>
+                    </div>
+                ) : allAnnouncements.length > 0 ? (
+                    <>
+                    {allAnnouncements.map((announcement: AnnouncementType) => (
+                        <div key={announcement.id} id={announcement.id}>
+                            <AnnouncementCard 
+                                announcement={announcement}
+                                onEdit={() => handleEditRequest(announcement)}
+                                onDelete={() => setAnnouncementToProcess({ action: 'delete', data: announcement })}
+                                onReactionChange={handleReactionChange}
+                                onRead={handleRead}
+                                onTogglePin={handleTogglePin}
+                            />
+                        </div>
+                    ))}
+                    </>
+                ) : (
+                    <div className="text-center py-12 border-2 border-dashed rounded-lg bg-background/50">
+                    <Megaphone className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">No hay anuncios que mostrar</h3>
+                    <p className="text-muted-foreground">No se encontraron anuncios que coincidan con el filtro seleccionado.</p>
+                    </div>
+                )}
+
+            {totalPages > 1 && !isLoading && (
+                <Pagination>
+                    <PaginationContent>
+                        <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
+                            className={cn(buttonVariants({variant: 'outline'}), currentPage === 1 ? "pointer-events-none opacity-50" : "")}
+                        />
+                        </PaginationItem>
+                        <PaginationItem>
+                        <span className="text-sm p-2 font-semibold text-center text-white">Página {currentPage} de {totalPages}</span>
+                        </PaginationItem>
+                        <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
+                            className={cn(buttonVariants({variant: 'outline'}), currentPage === totalPages ? "pointer-events-none opacity-50" : "")}
+                        />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
+            )}
+            </div>
+            </main>
       </div>
         
         <AlertDialog open={announcementToProcess?.action === 'delete'} onOpenChange={(open) => !open && setAnnouncementToProcess(null)}>
