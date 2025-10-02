@@ -12,7 +12,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma db push",
-    "prisma:seed": "prisma db seed",
+    "prisma:seed": "ts-node prisma/seed.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {
@@ -58,7 +58,7 @@
     "framer-motion": "^11.2.12",
     "input-otp": "^1.2.5",
     "jose": "^5.6.3",
-    "jsonwebtoken": "^9.0.10",
+    "jsonwebtoken": "^9.0.2",
     "jszip": "^3.10.1",
     "lucide-react": "^0.417.0",
     "mammoth": "^1.8.0",
