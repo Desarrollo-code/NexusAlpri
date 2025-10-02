@@ -1,12 +1,12 @@
 // src/components/announcement-card.tsx
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Announcement, Reaction, UserRole } from '@/types';
-import { Clock, Edit, Trash2, Paperclip, CheckCheck, SmilePlus, Eye, MoreVertical, Pin, PinOff } from 'lucide-react';
+import type { Announcement, Reaction, UserRole, Attachment } from '@/types';
+import { Clock, Edit, Trash2, Paperclip, CheckCheck, SmilePlus, Eye, MoreVertical, Pin, PinOff, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Identicon } from './ui/identicon';
 import Image from 'next/image';
@@ -16,8 +16,69 @@ import { useInView } from 'framer-motion';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { ScrollArea } from './ui/scroll-area';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from './ui/dropdown-menu';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import useEmblaCarousel from 'embla-carousel-react';
 
 const EMOJI_REACTIONS = ['👍', '❤️', '🎉', '💡', '🤔'];
+
+// --- Visor de Imágenes ---
+const ImageViewer = ({ isOpen, onClose, images, startIndex }: { isOpen: boolean, onClose: () => void, images: Attachment[], startIndex: number }) => {
+    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, startIndex });
+    const [currentIndex, setCurrentIndex] = useState(startIndex);
+
+    const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
+    const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
+
+    useEffect(() => {
+        if (!emblaApi) return;
+        const onSelect = () => {
+            setCurrentIndex(emblaApi.selectedScrollSnap());
+        };
+        emblaApi.on('select', onSelect);
+        return () => {
+            emblaApi.off('select', onSelect);
+        };
+    }, [emblaApi]);
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="w-screen h-screen max-w-full max-h-full p-0 flex flex-col bg-black/80 backdrop-blur-sm border-0 rounded-none">
+                <div className="absolute top-4 right-4 z-50">
+                    <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:text-white hover:bg-white/20">
+                        <X className="h-6 w-6"/>
+                    </Button>
+                </div>
+                 <div className="relative w-full h-full flex-1" ref={emblaRef}>
+                    <div className="flex h-full">
+                        {images.map((img, index) => (
+                            <div key={index} className="relative flex-[0_0_100%] h-full flex items-center justify-center p-8">
+                                <Image src={img.url} alt={img.name} fill className="object-contain" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                {images.length > 1 && (
+                    <>
+                        <div className="absolute top-1/2 left-4 -translate-y-1/2 z-50">
+                            <Button variant="ghost" size="icon" onClick={scrollPrev} className="rounded-full h-12 w-12 text-white hover:text-white hover:bg-white/20">
+                                <ChevronLeft className="h-8 w-8"/>
+                            </Button>
+                        </div>
+                        <div className="absolute top-1/2 right-4 -translate-y-1/2 z-50">
+                            <Button variant="ghost" size="icon" onClick={scrollNext} className="rounded-full h-12 w-12 text-white hover:text-white hover:bg-white/20">
+                                <ChevronRight className="h-8 w-8"/>
+                            </Button>
+                        </div>
+                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 bg-black/50 text-white text-sm px-3 py-1 rounded-full">
+                            {currentIndex + 1} / {images.length}
+                        </div>
+                    </>
+                )}
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 
 interface AnnouncementCardProps {
   announcement: Announcement;
@@ -82,6 +143,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   const cardRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(cardRef, { once: true, margin: "-100px" });
   const [hasBeenRead, setHasBeenRead] = useState(false);
+  const [viewerState, setViewerState] = useState<{ open: boolean; startIndex: number }>({ open: false, startIndex: 0 });
 
   const canModify = useMemo(() => user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === announcement.author?.id)), [user, announcement.author]);
   
@@ -135,7 +197,12 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
   const imageAttachments = useMemo(() => announcement.attachments?.filter(att => att.type.startsWith('image/')) || [], [announcement.attachments]);
   const fileAttachments = useMemo(() => announcement.attachments?.filter(att => !att.type.startsWith('image/')) || [], [announcement.attachments]);
   
+  const handleImageClick = (index: number) => {
+      setViewerState({ open: true, startIndex: index });
+  };
+  
   return (
+    <>
     <Card ref={cardRef} className="card-border-animated w-full bg-card overflow-hidden">
       <CardHeader className="p-4 flex flex-row items-start gap-4 space-y-0">
          <Avatar className="h-10 w-10">
@@ -188,9 +255,10 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
               {imageAttachments.length > 0 && (
                  <div className={cn("grid gap-1 rounded-lg overflow-hidden border", imageAttachments.length > 1 ? "grid-cols-2" : "grid-cols-1")}>
                      {imageAttachments.slice(0,4).map((att, index) => (
-                        <div key={index} className={cn("relative aspect-video", imageAttachments.length === 3 && index === 0 && "row-span-2")}>
-                           <Image src={att.url} alt={att.name} fill className="object-cover" />
+                        <div key={index} onClick={() => handleImageClick(index)} className={cn("relative aspect-video cursor-pointer group", imageAttachments.length === 3 && index === 0 && "row-span-2")}>
+                           <Image src={att.url} alt={att.name} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
                            {imageAttachments.length > 4 && index === 3 && ( <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-lg">+{imageAttachments.length - 4}</div> )}
+                           <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
                         </div>
                      ))}
                  </div>
@@ -233,5 +301,13 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
           </div>
       </CardFooter>
     </Card>
+    
+    <ImageViewer
+        isOpen={viewerState.open}
+        onClose={() => setViewerState({ open: false, startIndex: 0 })}
+        images={imageAttachments}
+        startIndex={viewerState.startIndex}
+      />
+    </>
   );
 }
