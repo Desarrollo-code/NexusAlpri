@@ -1,11 +1,11 @@
-
+// src/app/(app)/notifications/page.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BellRing, Check, CheckCheck, Loader2, MailWarning, Trash2, X, XCircle } from 'lucide-react';
+import { BellRing, Check, CheckCheck, Loader2, MailWarning, Trash2, X, XCircle, MoreVertical, BookOpen } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,37 +21,39 @@ import type { Notification as AppNotification } from '@/types';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { isToday, isYesterday, isThisWeek, formatDistanceToNow, format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 const timeSince = (dateString: string): string => {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Fecha inválida";
-
-    const now = new Date();
-    const seconds = Math.round((now.getTime() - date.getTime()) / 1000);
-    
-    if (seconds < 0) return "En el futuro";
-    if (seconds < 5) return "Ahora mismo";
-    if (seconds < 60) return `Hace ${seconds} seg.`;
-
-    const minutes = Math.round(seconds / 60);
-    if (minutes < 60) return `Hace ${minutes} min.`;
-
-    const hours = Math.round(minutes / 60);
-    if (hours < 24) return `Hace ${hours} hr${hours > 1 ? 's' : ''}.`;
-    
-    const days = Math.round(hours / 24);
-    if (days < 7) return `Hace ${days} día${days > 1 ? 's' : ''}`;
-
-    const weeks = Math.round(days / 7);
-    if (weeks < 5) return `Hace ${weeks} sem.`;
-
-    const months = Math.round(days / 30.44); // Average days in month
-    if (months < 12) return `Hace ${months} mes${months > 1 ? 'es' : ''}`;
-
-    const years = Math.round(days / 365.25);
-    return `Hace ${years} año${years > 1 ? 's' : ''}`;
+    return formatDistanceToNow(date, { addSuffix: true, locale: es });
 };
 
+const groupNotificationsByDate = (notifications: AppNotification[]) => {
+    const groups: { [key: string]: AppNotification[] } = {
+        Hoy: [],
+        Ayer: [],
+        'Esta Semana': [],
+        Anteriores: [],
+    };
+
+    notifications.forEach(notification => {
+        const date = new Date(notification.date);
+        if (isToday(date)) {
+            groups.Hoy.push(notification);
+        } else if (isYesterday(date)) {
+            groups.Ayer.push(notification);
+        } else if (isThisWeek(date, { weekStartsOn: 1 })) {
+            groups['Esta Semana'].push(notification);
+        } else {
+            groups.Anteriores.push(notification);
+        }
+    });
+
+    return Object.entries(groups).filter(([, notifs]) => notifs.length > 0);
+};
 
 export default function NotificationsPage() {
     const { user } = useAuth();
@@ -61,9 +63,7 @@ export default function NotificationsPage() {
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
     const [isProcessing, setIsProcessing] = useState(false);
-    const [notificationToDelete, setNotificationToDelete] = useState<AppNotification | null>(null);
     const [showClearAllDialog, setShowClearAllDialog] = useState(false);
 
     const fetchNotifications = useCallback(async () => {
@@ -89,10 +89,7 @@ export default function NotificationsPage() {
         }
     }, [user, fetchNotifications]);
 
-    const handleToggleRead = async (notification: AppNotification, event: React.MouseEvent) => {
-        event.stopPropagation();
-        event.preventDefault();
-
+    const handleToggleRead = async (notification: AppNotification) => {
         const newReadStatus = !notification.read;
         setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, read: newReadStatus } : n));
         
@@ -164,44 +161,52 @@ export default function NotificationsPage() {
             setNotifications(originalNotifications);
         } finally {
             setIsProcessing(false);
-            setNotificationToDelete(null);
             setShowClearAllDialog(false);
         }
     }
 
+    const groupedNotifications = useMemo(() => groupNotificationsByDate(notifications), [notifications]);
+
     const NotificationItem = ({ notif }: { notif: AppNotification }) => {
         const ContentWrapper = notif.link ? Link : 'div';
-        const contentWrapperProps = notif.link ? { href: notif.link, className: "flex-grow" } : { className: "flex-grow" };
+        const contentWrapperProps = notif.link ? { href: notif.link } : {};
 
         return (
-            <li className={cn(
-                "flex items-start gap-4 p-4 pl-6 transition-colors",
-                notif.read ? 'hover:bg-muted/30' : 'bg-primary/5 hover:bg-primary/10'
+            <div className={cn(
+                "flex items-start gap-3 p-4 transition-colors rounded-lg",
+                !notif.read && "bg-primary/5"
             )}>
-                <div className="flex-grow">
-                    <ContentWrapper {...contentWrapperProps}>
-                        <div className="flex items-center gap-3">
-                            {!notif.read && <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />}
-                            <p className={cn("font-semibold", !notif.read && "text-primary")}>{notif.title}</p>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">{notif.description}</p>
-                        <p className="text-xs text-muted-foreground mt-2">{timeSince(notif.date)}</p>
-                    </ContentWrapper>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-1 items-end sm:items-center">
-                    <Button variant="ghost" size="sm" onClick={(e) => handleToggleRead(notif, e)} className="h-8 justify-start sm:justify-center">
-                        {notif.read ? <MailWarning className="mr-2 h-4 w-4"/> : <Check className="mr-2 h-4 w-4" />}
-                        <span className="hidden sm:inline">{notif.read ? 'Marcar no leída' : 'Marcar leída'}</span>
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive shrink-0" onClick={(e) => {
-                        e.stopPropagation(); e.preventDefault();
-                        setNotificationToDelete(notif);
-                    }}>
-                        <XCircle className="h-4 w-4" />
-                        <span className="sr-only">Eliminar</span>
-                    </Button>
-                </div>
-            </li>
+                 <div className="pt-1 flex flex-col items-center gap-1.5">
+                    {!notif.read && <div className="h-2 w-2 rounded-full bg-primary" />}
+                 </div>
+                 <div className="flex-grow">
+                     <ContentWrapper {...contentWrapperProps}>
+                         <div className="flex justify-between items-start">
+                             <div>
+                                 <p className={cn("font-semibold", !notif.read && "text-primary")}>{notif.title}</p>
+                                 <p className="text-sm text-muted-foreground mt-0.5">{notif.description}</p>
+                             </div>
+                         </div>
+                     </ContentWrapper>
+                      <div className="flex justify-between items-end mt-2">
+                        <p className="text-xs text-muted-foreground">{timeSince(notif.date)}</p>
+                         <DropdownMenu>
+                             <DropdownMenuTrigger asChild>
+                                 <Button variant="ghost" size="icon" className="h-7 w-7"><MoreVertical className="h-4 w-4"/></Button>
+                             </DropdownMenuTrigger>
+                             <DropdownMenuContent align="end">
+                                 <DropdownMenuItem onSelect={() => handleToggleRead(notif)}>
+                                     {notif.read ? <MailWarning className="mr-2 h-4 w-4"/> : <Check className="mr-2 h-4 w-4" />}
+                                     {notif.read ? 'Marcar no leída' : 'Marcar como leída'}
+                                 </DropdownMenuItem>
+                                 <DropdownMenuItem onSelect={() => handleDelete(notif.id)} className="text-destructive focus:bg-destructive/10">
+                                     <Trash2 className="mr-2 h-4 w-4"/> Eliminar
+                                 </DropdownMenuItem>
+                             </DropdownMenuContent>
+                         </DropdownMenu>
+                     </div>
+                 </div>
+            </div>
         );
     };
 
@@ -225,48 +230,31 @@ export default function NotificationsPage() {
                 <CardHeader>
                     <CardTitle>Bandeja de Entrada</CardTitle>
                 </CardHeader>
-                <CardContent className="p-0">
+                <CardContent className="p-2 sm:p-4">
                     {isLoading ? (
                         <div className="text-center py-8"><Loader2 className="h-8 w-8 animate-spin mx-auto" /></div>
                     ) : error ? (
                         <div className="text-center py-8 text-destructive">{error}</div>
-                    ) : notifications.length === 0 ? (
+                    ) : groupedNotifications.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
                             <BellRing className="mx-auto h-12 w-12 mb-4 text-primary"/>
                             <p className="font-semibold text-lg">Todo está al día</p>
                             <p>No tienes notificaciones nuevas.</p>
                         </div>
                     ) : (
-                        <ul className="divide-y divide-border">
-                            {notifications.map(notif => (
-                                <NotificationItem key={notif.id} notif={notif} />
+                        <div className="space-y-6">
+                            {groupedNotifications.map(([groupTitle, notifs]) => (
+                                <div key={groupTitle}>
+                                    <h3 className="font-semibold text-sm text-muted-foreground mb-2 px-2">{groupTitle}</h3>
+                                    <div className="space-y-2">
+                                        {notifs.map(notif => <NotificationItem key={notif.id} notif={notif} />)}
+                                    </div>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     )}
                 </CardContent>
             </Card>
-
-            <AlertDialog open={!!notificationToDelete} onOpenChange={(open) => !open && setNotificationToDelete(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>¿Eliminar Notificación?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                           Se eliminará la notificación "<strong>{notificationToDelete?.title}</strong>". Esta acción no se puede deshacer.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isProcessing}>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => handleDelete(notificationToDelete!.id)}
-                            disabled={isProcessing}
-                            className={cn(buttonVariants({ variant: "destructive" }))}
-                        >
-                            {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                            Eliminar
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
             
              <AlertDialog open={showClearAllDialog} onOpenChange={setShowClearAllDialog}>
                 <AlertDialogContent>
