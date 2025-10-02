@@ -160,31 +160,26 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                     <AvatarImage src={user?.avatar || undefined}/>
                     <AvatarFallback><Identicon userId={user?.id || ''}/></AvatarFallback>
                 </Avatar>
-                <div className="flex-grow">
+                <div className="flex-grow space-y-3">
                     <h3 className="font-semibold text-lg">Crear un Anuncio</h3>
-                    <p className="text-xs text-muted-foreground">Publicando como {user?.name}</p>
-                </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 space-y-4">
-                <div className="space-y-1">
-                   <Input 
+                    <Input 
                         value={formTitle} 
                         onChange={(e) => setFormTitle(e.target.value)} 
-                        placeholder="Escribe el título del anuncio..." 
-                        className="text-lg font-semibold border-0 border-b-2 rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary h-auto pb-1" 
+                        placeholder="Asunto o Título del Mensaje..." 
+                        className="text-base font-semibold border-0 border-b rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary h-auto pb-1" 
                         disabled={isSubmitting}
                     />
-                    <Separator className="mt-2"/>
+                     <Separator />
+                     <RichTextEditor
+                        value={formContent}
+                        onChange={setFormContent}
+                        placeholder="Escribe los detalles de tu anuncio aquí..."
+                        disabled={isSubmitting}
+                        className="!bg-transparent p-0"
+                    />
                 </div>
-
-                <RichTextEditor
-                  value={formContent}
-                  onChange={setFormContent}
-                  placeholder="Escribe los detalles de tu anuncio aquí..."
-                  disabled={isSubmitting}
-                  className="!bg-transparent p-0"
-                />
-
+            </CardHeader>
+            <CardContent className="px-4 pt-0">
                 {localPreviews.length > 0 && (
                     <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                         {localPreviews.map((p) => (
@@ -214,17 +209,19 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
             </CardContent>
             <CardFooter className="flex justify-between items-center px-4 py-3 border-t">
                  <div className="flex items-center gap-2">
-                     <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-primary">
+                     <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-primary" disabled={localPreviews.length > 0}>
                        <div>
                           <Paperclip className="h-5 w-5"/>
-                          <UploadArea 
-                            onFileSelect={handleFileSelected} 
-                            disabled={isSubmitting} 
-                            inputId="announcement-file-upload"
-                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                            title=""
-                            description=""
-                         />
+                           {localPreviews.length === 0 && (
+                            <UploadArea 
+                                onFileSelect={handleFileSelected} 
+                                disabled={isSubmitting} 
+                                inputId="announcement-file-upload"
+                                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                                title=""
+                                description=""
+                            />
+                           )}
                        </div>
                     </Button>
                 </div>
@@ -401,12 +398,9 @@ export default function AnnouncementsPage() {
   return (
     <div className="relative flex-1">
         <div 
-            className="absolute inset-0 z-0 bg-cover bg-center" 
+            className="absolute inset-0 -z-10 bg-cover bg-center" 
             style={{
-              backgroundImage: `
-                linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
-                url('${settings?.announcementsImageUrl || ''}')
-              `,
+              backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${settings?.announcementsImageUrl || ''}')`,
             }}
         />
         <div className="relative z-10 p-4 md:p-8">
