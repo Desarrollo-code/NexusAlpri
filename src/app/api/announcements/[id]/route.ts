@@ -18,7 +18,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const announcement = await prisma.announcement.findUnique({
       where: { id },
       include: { 
-          author: { select: { id: true, name: true } },
+          author: { select: { id: true, name: true, role: true } },
           attachments: true 
       },
     });
@@ -79,7 +79,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const updatedAnnouncement = await prisma.announcement.update({
       where: { id },
       data: dataToUpdate,
-      include: { author: { select: { id: true, name: true, avatar: true } }, attachments: true, _count: { select: { reads: true, reactions: true } } },
+      include: { author: { select: { id: true, name: true, avatar: true, role: true } }, attachments: true, _count: { select: { reads: true, reactions: true } } },
     });
 
     return NextResponse.json(updatedAnnouncement);
@@ -108,7 +108,15 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       return NextResponse.json({ message: 'No tienes permiso para eliminar este anuncio' }, { status: 403 });
     }
     
-    await prisma.announcement.delete({ where: { id } });
+    // Use a transaction to delete the announcement and its related notifications
+    await prisma.$transaction([
+        prisma.notification.deleteMany({
+            where: { announcementId: id }
+        }),
+        prisma.announcement.delete({ 
+            where: { id } 
+        })
+    ]);
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {

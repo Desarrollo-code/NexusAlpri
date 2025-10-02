@@ -215,7 +215,7 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm">
                 <span className="font-bold text-foreground flex items-center gap-1.5">
                     {announcement.author?.name || 'Sistema'}
-                    <VerifiedBadge role={announcement.author?.role as any} />
+                    {announcement.author?.role === 'ADMINISTRATOR' && <VerifiedBadge role="ADMINISTRATOR" />}
                     {announcement.isPinned && <Pin className="h-3.5 w-3.5 text-blue-500 fill-current" />}
                 </span>
                 <span className="text-muted-foreground text-xs sm:text-sm">{timeSince(announcement.date)}</span>

@@ -2,6 +2,8 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
+import { sendEmail } from '@/lib/email';
+import { AnnouncementEmail } from '@/components/emails/announcement-email';
 import type { UserRole } from '@/types';
 import prisma from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
@@ -14,66 +16,92 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
   }
 
-  try {
-    const { searchParams } = new URL(req.url);
-    const pageParam = searchParams.get('page');
-    const pageSizeParam = searchParams.get('pageSize');
-    const filter = searchParams.get('filter');
-
-    const page = pageParam ? parseInt(pageParam, 10) : 1;
-    const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
-
-    if (isNaN(page) || page < 1 || isNaN(pageSize) || pageSize < 1) {
-      return NextResponse.json({ message: 'Parámetros de paginación inválidos' }, { status: 400 });
-    }
-
-    let whereClause: Prisma.AnnouncementWhereInput = {};
-
-    if (session.role !== 'ADMINISTRATOR') {
-      whereClause.OR = [
-        { audience: 'ALL' },
-        { audience: session.role as UserRole },
-      ];
-    }
-
-    if (filter) {
-        if (filter === 'by-me') {
-          whereClause.authorId = session.id;
-        } else if (filter === 'by-others') {
-          whereClause.authorId = { not: session.id };
-        } else if (filter === 'pinned') {
-          whereClause.isPinned = true;
-        }
-    }
+  const { searchParams } = new URL(req.url);
+  const pageParam = searchParams.get('page');
+  const pageSizeParam = searchParams.get('pageSize');
+  const filter = searchParams.get('filter'); // all, by-me, by-others, pinned, trending
   
+  const page = pageParam ? parseInt(pageParam, 10) : 1;
+  const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
+  
+  // Validar parámetros de paginación
+  if (isNaN(page) || page < 1 || isNaN(pageSize) || pageSize < 1) {
+    return NextResponse.json({ message: 'Parámetros de paginación inválidos' }, { status: 400 });
+  }
+
+  let whereClause: Prisma.AnnouncementWhereInput = {};
+
+  // 1. Filtro base de audiencia: El usuario solo debe ver lo que le corresponde.
+  if (session.role !== 'ADMINISTRATOR') {
+    whereClause.OR = [
+      { audience: 'ALL' },
+      { audience: session.role as UserRole },
+    ];
+  }
+
+  // 2. Filtro de pestañas (si aplica)
+  if (filter === 'by-me') {
+    whereClause.authorId = session.id;
+  } else if (filter === 'by-others') {
+    whereClause.authorId = { not: session.id };
+  } else if (filter === 'pinned') {
+    whereClause.isPinned = true;
+  }
+  
+  // 3. Ordenamiento
+  let orderBy: Prisma.AnnouncementOrderByWithRelationAndSearchRelevanceInput[] = [
+    { isPinned: 'desc' },
+    { date: 'desc' }
+  ];
+  if (filter === 'trending') {
+      orderBy = [{ reactions: { _count: 'desc' } }, { date: 'desc' }];
+  }
+  
+  try {
+    const commonFindOptions: Prisma.AnnouncementFindManyArgs = {
+        where: whereClause,
+        orderBy: orderBy,
+        include: { 
+          author: { select: { id: true, name: true, avatar: true, role: true } },
+          attachments: true,
+          // Optimization: Fetch only what's needed for display, not the whole user object
+          reads: { 
+              select: { 
+                  user: { 
+                      select: { id: true, name: true, avatar: true }
+                  } 
+              } 
+          },
+          reactions: { 
+              select: { 
+                  userId: true, 
+                  reaction: true, 
+                  user: { select: { id: true, name: true, avatar: true }} 
+              } 
+          },
+          // Use _count for efficient counting
+          _count: { select: { reads: true, reactions: true } },
+        },
+    };
+
     const [announcementsFromDb, totalAnnouncements] = await prisma.$transaction([
         prisma.announcement.findMany({
-            where: whereClause,
-            orderBy: [{ isPinned: 'desc' }, { date: 'desc' }],
+            ...commonFindOptions,
             skip: (page - 1) * pageSize,
             take: pageSize,
-            include: { 
-              author: { select: { id: true, name: true, avatar: true } },
-              attachments: true,
-              reads: { select: { user: { select: { id: true, name: true, avatar: true } } } },
-              reactions: { 
-                  select: { 
-                      userId: true, 
-                      reaction: true, 
-                      user: { select: { id: true, name: true, avatar: true }} 
-                  } 
-              },
-              _count: { select: { reads: true, reactions: true } },
-            },
         }),
         prisma.announcement.count({ where: whereClause })
     ]);
-    
-    // Map reads to a simpler format
-    const announcements = announcementsFromDb.map(ann => ({
+
+    // Ordenar los anuncios si el filtro es "trending"
+    let announcements = announcementsFromDb.map(ann => ({
         ...ann,
         reads: ann.reads.map(r => r.user),
     }));
+
+    if (filter === 'trending') {
+        announcements.sort((a, b) => b._count.reactions - a._count.reactions);
+    }
     
     return NextResponse.json({ announcements, totalAnnouncements });
 
@@ -93,14 +121,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { title, content, audience, attachments } = body;
 
-    if (!title && !content && (!attachments || attachments.length === 0)) {
-        return NextResponse.json({ message: 'Se requiere título, contenido o al menos un adjunto.' }, { status: 400 });
+    if (!title || (!content && attachments?.length === 0)) {
+        return NextResponse.json({ message: 'Se requiere título, y contenido o al menos un adjunto.' }, { status: 400 });
     }
     
     const audienceToStore = Array.isArray(audience) ? audience[0] : audience;
-    if (!audienceToStore) {
-        return NextResponse.json({ message: 'La audiencia es un campo requerido.' }, { status: 400 });
-    }
 
     const newAnnouncement = await prisma.announcement.create({
       data: {
@@ -110,7 +135,7 @@ export async function POST(req: NextRequest) {
         authorId: session.id,
         date: new Date(),
         priority: 'Normal',
-        isPinned: false, // Asegurar un valor por defecto
+        isPinned: false,
         attachments: {
           create: attachments?.map((att: { name: string; url: string; type: string; size: number }) => ({
             name: att.name,
@@ -121,7 +146,7 @@ export async function POST(req: NextRequest) {
         },
       },
       include: {
-        author: { select: { name: true, id: true, avatar: true } },
+        author: { select: { name: true, id: true, avatar: true, role: true } },
         attachments: true,
         _count: { select: { reads: true, reactions: true } },
       }
@@ -137,7 +162,7 @@ export async function POST(req: NextRequest) {
     const usersToNotify = allTargetUsers.filter(user => user.id !== session.id);
 
     if (usersToNotify.length > 0) {
-      const stripHtml = (html: string) => html ? html.replace(/<[^>]*>?/gm, '') : '';
+      const stripHtml = (html: string) => html.replace(/<[^>]*>?/gm, '');
       const plainTextContent = stripHtml(content);
       const description = plainTextContent.substring(0, 100) + (plainTextContent.length > 100 ? '...' : '');
 
@@ -154,7 +179,16 @@ export async function POST(req: NextRequest) {
       if (settings?.enableEmailNotifications) {
         const recipientEmails = usersToNotify.map(u => u.email).filter(Boolean) as string[];
         if (recipientEmails.length > 0) {
-            // Placeholder for email sending logic
+            await sendEmail({
+                to: recipientEmails,
+                subject: `Nuevo Anuncio en ${settings.platformName || 'NexusAlpri'}: ${title}`,
+                react: AnnouncementEmail({
+                    title,
+                    content,
+                    authorName: newAnnouncement.author?.name || 'Sistema',
+                    platformName: settings.platformName || 'NexusAlpri',
+                }),
+            });
         }
       }
     }

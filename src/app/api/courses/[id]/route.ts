@@ -17,7 +17,7 @@ export async function GET(
     const course = await prisma.course.findUnique({
       where: { id: courseId },
       include: {
-        instructor: { select: { id: true, name: true } },
+        instructor: { select: { id: true, name: true, avatar: true } },
         modules: {
           orderBy: { order: "asc" },
           include: {
@@ -174,7 +174,7 @@ export async function PUT(
     const finalCourseState = await prisma.course.findUnique({
         where: { id: courseId },
         include: {
-            instructor: { select: { id: true, name: true } },
+            instructor: { select: { id: true, name: true, avatar: true } },
             modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, include: { contentBlocks: { orderBy: { order: "asc" }, include: { quiz: { include: { questions: { orderBy: { order: "asc" }, include: { options: { orderBy: { id: "asc" } } } } } } } } } } } }
         },
     });
@@ -203,7 +203,18 @@ export async function DELETE(
   }
 
   try {
-    await prisma.course.delete({ where: { id: courseId } });
+    // Use a transaction to delete the course and all related notifications
+    await prisma.$transaction([
+        prisma.notification.deleteMany({
+            where: {
+                OR: [
+                    { link: `/courses/${courseId}` },
+                    { link: `/manage-courses/${courseId}/edit` }
+                ]
+            }
+        }),
+        prisma.course.delete({ where: { id: courseId } })
+    ]);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`[DELETE_COURSE_ID: ${courseId}]`, error);
