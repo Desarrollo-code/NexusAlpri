@@ -208,8 +208,8 @@ export async function checkAndAwardLevelUp(user: User, oldXp: number) {
         await prisma.notification.create({
             data: {
                 userId: user.id,
-                title: `¡Has subido al Nivel ${newLevel}!`,
-                description: `¡Felicidades por tu progreso! Sigue aprendiendo para alcanzar nuevas alturas.`,
+                title: `¡Felicidades! Has subido al Nivel ${newLevel}`,
+                description: `Tu esfuerzo te ha llevado a un nuevo nivel. ¡Sigue así!`,
                 link: '/leaderboard'
             }
         });

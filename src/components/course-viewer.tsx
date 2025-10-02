@@ -322,7 +322,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
           setCourseProgress(finalProgressData);
           toast({ 
             title: "¡Curso Finalizado!", 
-            description: `Has completado el curso y obtenido una puntuación de ${finalProgressData.progressPercentage}%. ¡Felicidades!`,
+            description: finalProgressData.message, // Usar el mensaje de la API
             duration: 5000,
           });
       } catch (error) {
