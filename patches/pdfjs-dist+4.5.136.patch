@@ -1,0 +1,14 @@
+diff --git a/node_modules/pdfjs-dist/package.json b/node_modules/pdfjs-dist/package.json
+index 54d6837..89f8d95 100644
+--- a/node_modules/pdfjs-dist/package.json
++++ b/node_modules/pdfjs-dist/package.json
+@@ -6,6 +6,7 @@
+   "browser": "build/pdf.js",
+   "main": "build/pdf.js",
+   "types": "types/pdf.d.ts",
+-  "scripts": {},
++  "scripts": {
++ "postinstall": "sh -c 'if [ -d \"../../public\" ]; then cp build/pdf.worker.min.js ../../public/; fi'"
++  },
+   "repository": "mozilla/pdf.js"
+ }

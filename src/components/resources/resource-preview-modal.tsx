@@ -219,11 +219,10 @@ const ContentPreview = ({ resource, pinVerifiedUrl, onPinVerified }: { resource:
     
     if (displayUrl) {
         if (isPdfUrl(displayUrl)) {
-            const previewUrl = `/api/resources/preview?url=${encodeURIComponent(displayUrl)}`;
             return (
                 <div className="w-full h-full">
                     <Worker workerUrl="/pdf.worker.min.js">
-                        <Viewer fileUrl={previewUrl} plugins={[defaultLayoutPluginInstance]} />
+                        <Viewer fileUrl={`/api/resources/preview?url=${encodeURIComponent(displayUrl)}`} plugins={[defaultLayoutPluginInstance]} />
                     </Worker>
                 </div>
             );

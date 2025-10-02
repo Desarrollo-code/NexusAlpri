@@ -481,11 +481,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     
     if (block.type === 'FILE') {
         if (isPdfUrl(url)) {
-            const previewUrl = `/api/resources/preview?url=${encodeURIComponent(url)}`;
              return (
                 <div key={block.id} className="my-4 p-2 bg-muted/30 rounded-md" style={{ height: '80vh', minHeight: '600px' }}>
                     <Worker workerUrl="/pdf.worker.min.js">
-                        <Viewer fileUrl={previewUrl} plugins={[defaultLayoutPluginInstance]} />
+                        <Viewer fileUrl={`/api/resources/preview?url=${encodeURIComponent(url)}`} plugins={[defaultLayoutPluginInstance]} />
                     </Worker>
                 </div>
             );
