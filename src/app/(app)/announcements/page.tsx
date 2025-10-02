@@ -1,7 +1,7 @@
 // src/app/(app)/announcements/page.tsx
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback, ChangeEvent } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, ChangeEvent, useRef } from 'react';
 import { AnnouncementCard } from '@/components/announcement-card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import type { Announcement as AnnouncementType, UserRole, Attachment, Reaction } from '@/types'; 
@@ -56,19 +56,13 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
     const [formAudience, setFormAudience] = useState<UserRole | 'ALL'>('ALL');
     const [localPreviews, setLocalPreviews] = useState<LocalAttachmentPreview[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const uploadFile = async (preview: LocalAttachmentPreview) => {
-        try {
-            const result = await uploadWithProgress('/api/upload/announcement-attachment', preview.file, (progress) => {
-                setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, uploadProgress: progress } : p));
-            });
-            setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, finalUrl: result.url, uploadProgress: 100 } : p));
-        } catch (err) {
-            setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, error: (err as Error).message } : p));
-        }
-    };
     
-    const handleFileSelected = (file: File | null) => {
+    // --- Nuevo estado para Drag & Drop y referencia de input ---
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isDragging, setIsDragging] = useState(false);
+
+
+    const handleFileSelect = (file: File | null) => {
         if (!file) return;
         
         if (!file.type.startsWith('image/')) {
@@ -87,7 +81,17 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
         uploadFile(newPreview);
     };
 
-
+    const uploadFile = async (preview: LocalAttachmentPreview) => {
+        try {
+            const result = await uploadWithProgress('/api/upload/announcement-attachment', preview.file, (progress) => {
+                setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, uploadProgress: progress } : p));
+            });
+            setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, finalUrl: result.url, uploadProgress: 100 } : p));
+        } catch (err) {
+            setLocalPreviews(prev => prev.map(p => p.id === preview.id ? { ...p, error: (err as Error).message } : p));
+        }
+    };
+    
     const handleSaveAnnouncement = async () => {
         if (!formTitle.trim() && !formContent.trim() && localPreviews.length === 0) {
             toast({ title: "Contenido vacío", description: "Por favor, añade un título, escribe un mensaje o adjunta un archivo.", variant: "destructive" });
@@ -136,7 +140,6 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
         }
     };
     
-    // Cleanup object URLs on unmount
     useEffect(() => {
         return () => {
             localPreviews.forEach(p => URL.revokeObjectURL(p.previewUrl));
@@ -153,23 +156,47 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
 
     const hasContent = formTitle.trim() || formContent.trim() || localPreviews.length > 0;
     
+    // --- Funciones para Drag & Drop ---
+    const handleDragEvents = (e: React.DragEvent<HTMLDivElement>, isEntering: boolean) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(isEntering);
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleFileSelect(e.dataTransfer.files[0]);
+        }
+    };
+
     return (
-        <Card className="shadow-sm card-border-animated mb-8">
+        <Card 
+            className={cn(
+                "shadow-sm card-border-animated mb-8 transition-all duration-300",
+                isDragging && "border-primary ring-2 ring-primary ring-offset-2"
+            )}
+            onDragEnter={(e) => handleDragEvents(e, true)}
+            onDragOver={(e) => handleDragEvents(e, true)}
+            onDragLeave={(e) => handleDragEvents(e, false)}
+            onDrop={handleDrop}
+        >
             <CardHeader className="p-4 flex flex-row items-start gap-4">
                  <Avatar className="h-10 w-10">
                     <AvatarImage src={user?.avatar || undefined}/>
                     <AvatarFallback><Identicon userId={user?.id || ''}/></AvatarFallback>
                 </Avatar>
-                <div className="flex-grow space-y-3">
-                    <h3 className="font-semibold text-lg">Crear un Anuncio</h3>
-                    <Input 
+                <div className="flex-grow space-y-2">
+                     <h3 className="font-semibold text-lg sr-only">Crear un Anuncio</h3>
+                     <Input 
                         value={formTitle} 
                         onChange={(e) => setFormTitle(e.target.value)} 
-                        placeholder="Asunto o Título del Mensaje..." 
+                        placeholder="Escribe el título del anuncio..." 
                         className="text-base font-semibold border-0 border-b rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary h-auto pb-1" 
                         disabled={isSubmitting}
                     />
-                     <Separator />
                      <RichTextEditor
                         value={formContent}
                         onChange={setFormContent}
@@ -209,20 +236,22 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
             </CardContent>
             <CardFooter className="flex justify-between items-center px-4 py-3 border-t">
                  <div className="flex items-center gap-2">
-                     <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-primary" disabled={localPreviews.length > 0}>
-                       <div>
-                          <Paperclip className="h-5 w-5"/>
-                           {localPreviews.length === 0 && (
-                            <UploadArea 
-                                onFileSelect={handleFileSelected} 
-                                disabled={isSubmitting} 
-                                inputId="announcement-file-upload"
-                                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                                title=""
-                                description=""
-                            />
-                           )}
-                       </div>
+                     <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={(e) => handleFileSelect(e.target.files ? e.target.files[0] : null)}
+                        className="hidden"
+                        id="announcement-file-upload-hidden"
+                     />
+                     <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-muted-foreground hover:text-primary" 
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isSubmitting}
+                      >
+                       <Paperclip className="h-5 w-5"/>
+                       <span className="sr-only">Adjuntar archivo</span>
                     </Button>
                 </div>
                  <div className="flex items-center gap-2">
