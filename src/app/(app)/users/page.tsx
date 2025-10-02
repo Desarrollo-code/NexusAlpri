@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal, Eye, EyeOff, UserCheck, UserX, Camera } from 'lucide-react';
+import { PlusCircle, Search, Edit3, Trash2, UserCog, Loader2, AlertTriangle, MoreHorizontal, Eye, EyeOff, UserCheck, UserX, Camera, Filter } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
@@ -77,7 +77,12 @@ export default function UsersPage() {
   const [totalUsers, setTotalUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // States for filters
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [roleFilter, setRoleFilter] = useState(searchParams.get('role') || 'all');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all');
+
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   
   const currentPage = Number(searchParams.get('page')) || 1;
@@ -111,12 +116,9 @@ export default function UsersPage() {
     if (!currentUser) return;
     setIsLoading(true);
     setError(null);
-    const params = new URLSearchParams();
-    params.append('page', String(currentPage));
-    params.append('pageSize', String(PAGE_SIZE));
-    if (debouncedSearchTerm) {
-      params.append('search', debouncedSearchTerm);
-    }
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', String(currentPage));
+    params.set('pageSize', String(PAGE_SIZE));
     
     fetch(`/api/users?${params.toString()}`, { cache: 'no-store' })
       .then(res => {
@@ -138,17 +140,16 @@ export default function UsersPage() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [currentUser, currentPage, debouncedSearchTerm, toast]);
+  }, [currentUser, currentPage, searchParams, toast]);
 
   
-  const createQueryString = useCallback(
-    (paramsToUpdate: Record<string, string | number>) => {
-      const params = new URLSearchParams(searchParams.toString())
+  const createQueryString = useCallback((paramsToUpdate: Record<string, string | number | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
       Object.entries(paramsToUpdate).forEach(([name, value]) => {
-          if (value) {
-            params.set(name, String(value));
+          if (value === null || value === '' || value === 'all') {
+              params.delete(name);
           } else {
-            params.delete(name);
+              params.set(name, String(value));
           }
       });
       return params.toString()
@@ -162,16 +163,21 @@ export default function UsersPage() {
       return;
     }
     fetchUsers();
-  }, [currentUser, currentPage, debouncedSearchTerm, router, fetchUsers]);
+  }, [currentUser, currentPage, searchParams, router, fetchUsers]);
 
+  // Effect for handling filter changes and updating URL
   useEffect(() => {
-     // If search term changes, push to history
-     const newQueryString = createQueryString({ page: 1, search: debouncedSearchTerm });
-     // Avoid pushing the same query string
-     if (debouncedSearchTerm !== (searchParams.get('search') || '') || !searchParams.get('page')) {
+     const newQueryString = createQueryString({ 
+         page: 1, // Reset to page 1 on filter change
+         search: debouncedSearchTerm,
+         role: roleFilter,
+         status: statusFilter
+     });
+     // Push to history only if the query string has actually changed
+     if (newQueryString !== searchParams.toString()) {
          router.push(`${pathname}?${newQueryString}`);
      }
-  }, [debouncedSearchTerm, pathname, router, createQueryString, searchParams]);
+  }, [debouncedSearchTerm, roleFilter, statusFilter, pathname, router, createQueryString, searchParams]);
   
 
   const resetFormFields = () => {
@@ -517,17 +523,40 @@ export default function UsersPage() {
                 <CardTitle>Lista de Usuarios</CardTitle>
                 <CardDescription>Visualiza y gestiona todos los usuarios registrados.</CardDescription>
             </div>
-            <div className="relative w-full sm:w-auto">
+            <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Filtrar por rol" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los Roles</SelectItem>
+                  <SelectItem value="ADMINISTRATOR">Administradores</SelectItem>
+                  <SelectItem value="INSTRUCTOR">Instructores</SelectItem>
+                  <SelectItem value="STUDENT">Estudiantes</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Filtrar por estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los Estados</SelectItem>
+                  <SelectItem value="active">Activos</SelectItem>
+                  <SelectItem value="inactive">Inactivos</SelectItem>
+                </SelectContent>
+              </Select>
+               <div className="relative w-full sm:w-auto">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input 
                     type="search" 
                     id="user-search"
                     name="user-search"
-                    placeholder="Buscar usuarios..." 
+                    placeholder="Buscar por nombre o email..." 
                     className="pl-8 w-full sm:w-[300px]" 
                     value={searchTerm}
                     onChange={handleSearchInputChange}
                 />
+            </div>
             </div>
         </CardHeader>
         <CardContent>

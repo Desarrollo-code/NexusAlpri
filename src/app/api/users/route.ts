@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
+import type { UserRole } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,17 +19,33 @@ export async function GET(req: NextRequest) {
         const page = parseInt(searchParams.get('page') || '1', 10);
         const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
         const search = searchParams.get('search');
+        const role = searchParams.get('role') as UserRole | null;
+        const status = searchParams.get('status'); // 'active' or 'inactive'
 
         const skip = (page - 1) * pageSize;
 
         let whereClause: any = {};
+        const filters = [];
+
         if (search) {
-            whereClause = {
+            filters.push({
                 OR: [
                     { name: { contains: search, mode: 'insensitive' } },
                     { email: { contains: search, mode: 'insensitive' } },
                 ],
-            };
+            });
+        }
+        
+        if (role) {
+            filters.push({ role: role });
+        }
+
+        if (status) {
+            filters.push({ isActive: status === 'active' });
+        }
+
+        if (filters.length > 0) {
+            whereClause.AND = filters;
         }
 
         const [users, totalUsers] = await prisma.$transaction([
