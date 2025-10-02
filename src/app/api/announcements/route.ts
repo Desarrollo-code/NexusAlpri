@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   const filter = searchParams.get('filter'); // all, by-me, by-others, pinned, trending
   
   const page = pageParam ? parseInt(pageParam, 10) : 1;
-  const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 10;
+  const pageSize = pageSizeParam ? parseInt(pageSizeParam, 10) : 4;
   
   // Validar parámetros de paginación
   if (isNaN(page) || page < 1 || isNaN(pageSize) || pageSize < 1) {
