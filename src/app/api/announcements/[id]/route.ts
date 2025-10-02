@@ -89,7 +89,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-// DELETE an announcement
+// DELETE an announcement and its related notifications
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getCurrentUser();
   if (!session || (session.role !== 'ADMINISTRATOR' && session.role !== 'INSTRUCTOR')) {
@@ -101,14 +101,14 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const announcement = await prisma.announcement.findUnique({ where: { id } });
 
     if (!announcement) {
-      return new NextResponse(null, { status: 204 });
+      return new NextResponse(null, { status: 204 }); // Already deleted, success
     }
     
     if (session.role !== 'ADMINISTRATOR' && announcement.authorId !== session.id) {
       return NextResponse.json({ message: 'No tienes permiso para eliminar este anuncio' }, { status: 403 });
     }
     
-    // Use a transaction to delete the announcement and its related notifications
+    // Use a transaction to delete the announcement and its related notifications atomically
     await prisma.$transaction([
         prisma.notification.deleteMany({
             where: { announcementId: id }
@@ -121,6 +121,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error('[ANNOUNCEMENT_DELETE_ERROR]', error);
+    // If the record to delete is not found, it's not a server error.
     if ((error as any).code === 'P2025') {
         return new NextResponse(null, { status: 204 });
     }
