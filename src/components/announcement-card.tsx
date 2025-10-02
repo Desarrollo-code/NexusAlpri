@@ -71,7 +71,7 @@ const timeSince = (date: string): string => {
   if (diffMinutes < 60) return `Hace ${diffMinutes} min.`;
   
   const diffHours = Math.round(diffMinutes / 60);
-  if (diffHours < 24) return `Hace ${diffHours} hr.`;
+  if (diffHours < 24) return `Hace ${diffHours} h.`;
   
   return new Date(date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
 };
@@ -172,16 +172,16 @@ export function AnnouncementCard({ announcement, onEdit, onDelete, onReactionCha
                 </DropdownMenu>
              )}
           </div>
+          {announcement.title && (
+              <div className="bg-primary/90 text-primary-foreground px-4 py-2 -ml-2 rounded-lg mt-2">
+                <CardTitle className="text-lg font-semibold">{announcement.title}</CardTitle>
+              </div>
+          )}
         </div>
       </CardHeader>
       
       <CardContent className="px-4 pb-3 pt-0 pl-16">
         <div className="pl-2 space-y-3">
-            {announcement.title && (
-              <div className="bg-primary/90 text-primary-foreground px-4 py-2 -ml-2 rounded-lg">
-                <CardTitle className="text-lg font-semibold">{announcement.title}</CardTitle>
-              </div>
-            )}
             {announcement.content && (
                 <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: announcement.content }} />
             )}

@@ -29,7 +29,7 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import Image from 'next/image';
@@ -153,71 +153,72 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
     
     return (
         <Card className="shadow-sm card-border-animated mb-8">
-             <CardHeader className="p-4 flex flex-row items-center gap-4">
-                <Avatar className="h-10 w-10">
-                    <AvatarImage src={user?.avatar || undefined}/>
-                    <AvatarFallback><Identicon userId={user?.id || ''}/></AvatarFallback>
-                </Avatar>
-                <div className="w-full space-y-1">
-                     <p className="font-semibold">{user?.name}</p>
-                     <p className="text-xs text-muted-foreground">Comparte algo con el equipo...</p>
+             <CardHeader className="p-4">
+                <CardTitle>Crear un Anuncio</CardTitle>
+             </CardHeader>
+            <CardContent className="p-4 pt-0 space-y-4">
+                <div className="flex items-start gap-3">
+                    <Avatar className="h-10 w-10 mt-1">
+                        <AvatarImage src={user?.avatar || undefined}/>
+                        <AvatarFallback><Identicon userId={user?.id || ''}/></AvatarFallback>
+                    </Avatar>
+                    <div className="w-full space-y-2">
+                        <Input 
+                            value={formTitle} 
+                            onChange={(e) => setFormTitle(e.target.value)} 
+                            placeholder="Escribe el título del anuncio..." 
+                            className="text-base font-semibold border-0 border-b-2 rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary h-auto pb-1" 
+                            disabled={isSubmitting}
+                        />
+                        <RichTextEditor
+                          value={formContent}
+                          onChange={setFormContent}
+                          placeholder="Escribe el mensaje o contenido del anuncio..."
+                          disabled={isSubmitting}
+                          className="!bg-transparent p-0"
+                        />
+                    </div>
                 </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-                <div className="w-full space-y-1">
-                    <Input 
-                        value={formTitle} 
-                        onChange={(e) => setFormTitle(e.target.value)} 
-                        placeholder="Asunto o Título del Mensaje" 
-                        className="text-base font-semibold border-0 border-b-2 rounded-none px-1 focus-visible:ring-0 focus-visible:border-primary h-auto pb-1" 
-                        disabled={isSubmitting}
-                    />
-                    <RichTextEditor
-                      value={formContent}
-                      onChange={setFormContent}
-                      placeholder="¿Qué quieres comunicar hoy?"
-                      disabled={isSubmitting}
-                      className="!bg-transparent p-0"
-                    />
-                    {localPreviews.length > 0 && (
-                        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                            {localPreviews.map((p) => (
-                                <div key={p.id} className="relative aspect-square border rounded-md overflow-hidden bg-muted/50">
-                                    <Image src={p.previewUrl} alt={p.file.name} fill className="object-contain p-1" />
-                                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 transition-opacity duration-300 opacity-0 hover:opacity-100">
-                                        {p.uploadProgress > 0 && p.uploadProgress < 100 && !p.error && (
-                                            <div className="w-full px-2">
-                                                <Progress value={p.uploadProgress} className="h-1 bg-white/30"/>
-                                                <p className="text-xs text-white text-center mt-1">{Math.round(p.uploadProgress)}%</p>
-                                            </div>
-                                        )}
-                                        {p.uploadProgress === 100 && !p.error && (
-                                            <Check className="h-8 w-8 text-white bg-green-500/80 rounded-full p-1" />
-                                        )}
-                                        {p.error && (
-                                            <AlertTriangle className="h-8 w-8 text-destructive"/>
-                                        )}
-                                    </div>
-                                     <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removePreview(p.id)}>
-                                        <XCircle className="h-4 w-4"/>
-                                    </Button>
+
+                {localPreviews.length > 0 && (
+                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                        {localPreviews.map((p) => (
+                            <div key={p.id} className="relative aspect-square border rounded-md overflow-hidden bg-muted/50">
+                                <Image src={p.previewUrl} alt={p.file.name} fill className="object-contain p-1" />
+                                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 transition-opacity duration-300 opacity-0 hover:opacity-100">
+                                    {p.uploadProgress > 0 && p.uploadProgress < 100 && !p.error && (
+                                        <div className="w-full px-2">
+                                            <Progress value={p.uploadProgress} className="h-1 bg-white/30"/>
+                                            <p className="text-xs text-white text-center mt-1">{Math.round(p.uploadProgress)}%</p>
+                                        </div>
+                                    )}
+                                    {p.uploadProgress === 100 && !p.error && (
+                                        <Check className="h-8 w-8 text-white bg-green-500/80 rounded-full p-1" />
+                                    )}
+                                    {p.error && (
+                                        <AlertTriangle className="h-8 w-8 text-destructive"/>
+                                    )}
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                                 <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removePreview(p.id)}>
+                                    <XCircle className="h-4 w-4"/>
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </CardContent>
             <CardFooter className="flex justify-between items-center px-4 py-3 border-t">
                 <div className="flex items-center gap-2">
-                     <UploadArea onFileSelect={handleFileSelected} disabled={isSubmitting} inputId="announcement-file-upload">
-                        <Button variant="outline" size="sm" asChild>
+                    <UploadArea onFileSelect={handleFileSelected} disabled={isSubmitting} inputId="announcement-file-upload">
+                        <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-primary">
                            <div>
-                              <Paperclip className="mr-2 h-4 w-4"/> Adjuntar
+                              <Paperclip className="h-5 w-5"/>
                            </div>
                         </Button>
                     </UploadArea>
-                    
-                    <Select value={formAudience} onValueChange={(v) => setFormAudience(v as any)} disabled={isSubmitting}>
+                </div>
+                 <div className="flex items-center gap-2">
+                     <Select value={formAudience} onValueChange={(v) => setFormAudience(v as any)} disabled={isSubmitting}>
                         <SelectTrigger className="h-9 w-auto text-xs gap-2">
                             <SelectValue/>
                         </SelectTrigger>
@@ -228,11 +229,11 @@ const AnnouncementCreator = ({ onAnnouncementCreated }: { onAnnouncementCreated:
                              <SelectItem value="ADMINISTRATOR">Administradores</SelectItem>
                         </SelectContent>
                     </Select>
-                </div>
-                 <Button size="sm" onClick={handleSaveAnnouncement} disabled={isSubmitting || (!formTitle.trim() && localPreviews.length === 0 && !formContent.trim())}>
-                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Megaphone className="mr-2 h-4 w-4"/>}
-                    Publicar
-                </Button>
+                    <Button size="sm" onClick={handleSaveAnnouncement} disabled={isSubmitting || (!formTitle.trim() && localPreviews.length === 0 && !formContent.trim())}>
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Megaphone className="mr-2 h-4 w-4"/>}
+                        Publicar
+                    </Button>
+                 </div>
             </CardFooter>
         </Card>
     )
@@ -395,9 +396,6 @@ export default function AnnouncementsPage() {
             />
             <div className="relative z-10 p-4 md:p-8">
                 <main className="max-w-2xl mx-auto">
-                <p className={cn("text-center mb-8", settings?.announcementsImageUrl ? "text-white" : "text-foreground")}>
-                    Mantente informado sobre las últimas novedades de la plataforma.
-                </p>
                     {canCreate && <AnnouncementCreator onAnnouncementCreated={fetchAnnouncements} />}
                     
                     {user?.role !== 'STUDENT' && (
