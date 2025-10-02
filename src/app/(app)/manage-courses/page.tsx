@@ -44,10 +44,13 @@ import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import Image from 'next/image';
+import { mapApiCourseToAppCourse } from '@/lib/course-utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Identicon } from '@/components/ui/identicon';
 
 
 interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | 'status'> {
-  instructor: { id: string; name: string } | null;
+  instructor: { id: string; name: string, avatar: string | null } | null;
   status: CourseStatus;
   _count: {
     modules: number;
@@ -66,23 +69,6 @@ const getStatusInSpanish = (status: CourseStatus) => {
         default: return status;
     }
 };
-
-function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCourseType {
-  return {
-    id: apiCourse.id,
-    title: apiCourse.title,
-    description: apiCourse.description || '',
-    category: apiCourse.category || undefined,
-    instructor: apiCourse.instructor?.name || 'N/A',
-    instructorId: apiCourse.instructorId || undefined,
-    imageUrl: apiCourse.imageUrl || undefined,
-    modulesCount: apiCourse._count?.modules ?? 0,
-    enrollmentsCount: apiCourse._count?.enrollments ?? 0,
-    averageCompletion: apiCourse.averageCompletion ?? 0,
-    status: apiCourse.status,
-    modules: [],
-  };
-}
 
 
 export default function ManageCoursesPage() {
@@ -278,7 +264,8 @@ export default function ManageCoursesPage() {
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead className="w-[40%]">Curso</TableHead>
+                    <TableHead className="w-[30%]">Curso</TableHead>
+                    <TableHead className="w-[20%]">Instructor/a</TableHead>
                     <TableHead className="text-center">Estadísticas</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
@@ -289,7 +276,8 @@ export default function ManageCoursesPage() {
                     [...Array(5)].map((_, i) => (
                         <TableRow key={i}>
                             <TableCell><div className="flex items-center gap-3"><Skeleton className="h-10 w-16 rounded-md" /><div className="space-y-1"><Skeleton className="h-4 w-48" /><Skeleton className="h-3 w-32" /></div></div></TableCell>
-                            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                            <TableCell><div className="flex items-center gap-2"><Skeleton className="h-8 w-8 rounded-full" /><Skeleton className="h-4 w-24" /></div></TableCell>
+                            <TableCell><Skeleton className="h-5 w-24 mx-auto" /></TableCell>
                             <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
                             <TableCell className="text-right"><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
                         </TableRow>
@@ -303,6 +291,15 @@ export default function ManageCoursesPage() {
                                     <Link href={`/manage-courses/${course.id}/edit`} className="font-semibold text-foreground hover:underline">{course.title}</Link>
                                     <p className="text-xs text-muted-foreground">{course.category}</p>
                                 </div>
+                           </div>
+                        </TableCell>
+                        <TableCell>
+                           <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                                <AvatarImage src={course.instructor?.avatar || undefined} />
+                                <AvatarFallback className="text-xs"><Identicon userId={course.instructor?.id || ''}/></AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm font-medium">{course.instructor.name}</span>
                            </div>
                         </TableCell>
                          <TableCell>
@@ -409,7 +406,7 @@ export default function ManageCoursesPage() {
         <AlertDialogContent className="w-[95vw] max-w-md">
             <AlertDialogHeader><AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle><AlertDialogDescription>Esta acción es irreversible. Se eliminará permanentemente el curso "<strong>{courseToDelete?.title}</strong>" y todos sus datos asociados, incluyendo módulos, lecciones, inscripciones y progreso de los estudiantes.</AlertDialogDescription></AlertDialogHeader>
             <AlertDialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:space-x-0">
-                <AlertDialogCancel onClick={() => setCourseToDelete(null)} disabled={isDeleting}>Cancelar</AlertDialogCancel>
+                <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
                 <AlertDialogAction onClick={handleDeleteCourse} disabled={isDeleting} className={buttonVariants({ variant: "destructive" })}>{isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}Sí, eliminar curso</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>

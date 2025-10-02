@@ -99,7 +99,8 @@ export function CourseCard({
       setShowUnenrollConfirm(false);
     }
   };
-
+  
+  const TRUNCATE_LENGTH = 120;
   const isTruncated = course.description && course.description.length > TRUNCATE_LENGTH;
   const descriptionToShow = isExpanded
     ? course.description
@@ -283,5 +284,3 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: 
         </DropdownMenu>
     );
 }
-
-const TRUNCATE_LENGTH = 120;
