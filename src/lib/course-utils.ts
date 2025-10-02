@@ -22,7 +22,15 @@ export function mapApiCourseToAppCourse(apiCourse: ApiCourseForManage): AppCours
     title: apiCourse.title,
     description: apiCourse.description || '',
     category: apiCourse.category || undefined,
-    instructor: apiCourse.instructor?.name || 'N/A',
+    instructor: apiCourse.instructor ? {
+        id: apiCourse.instructor.id,
+        name: apiCourse.instructor.name || 'N/A',
+        avatar: apiCourse.instructor.avatar || null,
+    } : {
+        id: 'unknown',
+        name: 'N/A',
+        avatar: null,
+    },
     instructorId: apiCourse.instructorId || undefined,
     imageUrl: apiCourse.imageUrl || undefined,
     modulesCount: apiCourse._count?.modules ?? 0,

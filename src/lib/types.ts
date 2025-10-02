@@ -1,5 +1,6 @@
+
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -45,6 +46,7 @@ export interface PlatformSettings {
     authImageUrl?: string | null;
     aboutImageUrl?: string | null;
     benefitsImageUrl?: string | null;
+    announcementsImageUrl?: string | null;
 }
 
 // --- NAVIGATION ---
@@ -115,7 +117,11 @@ export interface Course {
   id: string;
   title: string;
   description: string;
-  instructor: string;
+  instructor: {
+      id: string;
+      name: string;
+      avatar: string | null;
+  };
   instructorId?: string;
   imageUrl?: string;
   category?: string;
@@ -189,7 +195,7 @@ export interface Announcement {
     title: string;
     content: string;
     date: string;
-    author: { id: string; name: string | null; avatar?: string | null; } | null;
+    author: { id: string; name: string | null; avatar?: string | null; role?: string } | null;
     audience: UserRole[] | 'ALL' | string;
     priority?: 'Normal' | 'Urgente';
     isPinned: boolean;
@@ -239,6 +245,9 @@ export interface CalendarEvent {
     creator?: { id: string, name: string | null };
     videoConferenceLink?: string | null;
     attachments: Attachment[];
+    recurrence: RecurrenceType;
+    recurrenceEndDate?: string | null;
+    parentId?: string | null;
 }
 
 // --- SECURITY ---
@@ -286,7 +295,7 @@ export interface AdminDashboardStats {
     coursesByStatus: { status: CourseStatus; count: number }[];
     recentLogins: number;
     newEnrollmentsLast7Days: number;
-    userRegistrationTrend: { date: string, count: number }[];
+    userRegistrationTrend: { date: string, newCourses: number, newEnrollments: number, count: number }[];
     averageCompletionRate: number;
     topCoursesByEnrollment: CourseInfo[];
     topCoursesByCompletion: CourseInfo[];
@@ -331,4 +340,4 @@ export type AppForm = PrismaForm & {
     sharedWith?: Pick<User, 'id' | 'name' | 'avatar'>[];
 };
 
-export { type FormStatus, type FormFieldType, type AnnouncementAttachment };
+export { type FormStatus, type FormFieldType, type AnnouncementAttachment, type RecurrenceType };
