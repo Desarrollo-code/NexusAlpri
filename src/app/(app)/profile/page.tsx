@@ -24,6 +24,7 @@ import type { UserAchievement } from '@/types';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
 import Image from 'next/image';
+import { VerifiedBadge } from '@/components/ui/verified-badge';
 
 // --- Components defined outside of the main component to prevent re-creation on render ---
 
@@ -314,7 +315,10 @@ const ProfileCard = ({ user, onAvatarChange, isUploading, uploadProgress }: { us
             </label>
         </div>
          <CardContent className="px-6 pb-6 pt-4">
-            <CardTitle className="text-2xl font-bold font-headline">{user.name}</CardTitle>
+            <CardTitle className="text-2xl font-bold font-headline flex items-center justify-center gap-2">
+                {user.name}
+                <VerifiedBadge role={user.role} />
+            </CardTitle>
             <CardDescription className="card__subtitle">
                 {user.email}
             </CardDescription>

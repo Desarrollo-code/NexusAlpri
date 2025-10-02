@@ -26,7 +26,7 @@ import { UserRole } from '@/types';
 import { AVAILABLE_THEMES } from '../theme-provider';
 import { Identicon } from '../ui/identicon';
 import { getRoleInSpanish } from '@/lib/security-log-utils';
-// ¡Importación de useTour ELIMINADA!
+import { VerifiedBadge } from '../ui/verified-badge';
 
 
 function ThemeToggle() {
@@ -56,18 +56,13 @@ function ThemeToggle() {
 
 export function UserAvatarDropdown() {
  const { user, logout, settings } = useAuth();
- // const { forceStartTour } = useTour(); <--- ESTO FUE ELIMINADO CORRECTAMENTE
-
 
  if (!user) return null;
  
- // RE-INSERTAR ESTAS LÍNEAS ⬇️
  const userDisplayName = user.name || "Usuario";
  const userDisplayEmail = user.email || "No email";
  const userAppRole = user.role;
  const avatarSrc = user.avatar;
- // RE-INSERTAR ESTAS LÍNEAS ⬆️
-
 
  return (
   <DropdownMenu>
@@ -84,7 +79,7 @@ export function UserAvatarDropdown() {
  <DropdownMenuContent className="w-56" align="end" forceMount>
     <DropdownMenuLabel className="font-normal">
      <div className="flex flex-col space-y-1">
-      <p className="text-sm font-medium leading-none">{userDisplayName}</p>
+      <p className="text-sm font-medium leading-none flex items-center gap-1.5">{userDisplayName} <VerifiedBadge role={user.role} /></p>
       <p className="text-xs leading-none text-muted-foreground">
        {userDisplayEmail}
       </p>
@@ -96,7 +91,6 @@ export function UserAvatarDropdown() {
     </div>
     </DropdownMenuLabel>
     <DropdownMenuSeparator />
-    {/* DropdownMenuItem "Ver Guía" fue eliminado correctamente. */}
     <DropdownMenuItem asChild>
      <Link href="/profile" className="cursor-pointer">
       <User className="mr-2 h-4 w-4" />

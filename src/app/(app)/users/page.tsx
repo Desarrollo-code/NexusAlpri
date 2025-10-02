@@ -1,4 +1,3 @@
-
 // src/app/(app)/users/page.tsx
 'use client';
 
@@ -61,6 +60,7 @@ import { getInitials } from '@/lib/utils';
 import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '@/components/ui/progress';
+import { VerifiedBadge } from '@/components/ui/verified-badge';
 
 const PAGE_SIZE = 10;
 
@@ -389,7 +389,7 @@ export default function UsersPage() {
                         {u.avatar ? <AvatarImage src={u.avatar} alt={u.name} /> : null}
                         <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
                     </Avatar>
-                    <div className="font-medium">{u.name}</div>
+                    <div className="font-medium flex items-center gap-1.5">{u.name}<VerifiedBadge role={u.role}/></div>
                 </div>
               </TableCell>
               <TableCell>{u.email}</TableCell>
@@ -467,7 +467,7 @@ export default function UsersPage() {
                 <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold">{u.name}</p>
+                <p className="font-semibold flex items-center gap-1.5">{u.name}<VerifiedBadge role={u.role}/></p>
                 <p className="text-sm text-muted-foreground">{u.email}</p>
               </div>
             </div>
