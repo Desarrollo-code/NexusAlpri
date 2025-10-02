@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     }
 
     const courseInclude = {
-      instructor: { select: { id: true, name: true } },
+      instructor: { select: { id: true, name: true, avatar: true } },
       _count: {
         select: {
           modules: true,

@@ -116,7 +116,11 @@ export interface Course {
   id: string;
   title: string;
   description: string;
-  instructor: string;
+  instructor: {
+      id: string;
+      name: string;
+      avatar: string | null;
+  };
   instructorId?: string;
   imageUrl?: string;
   category?: string;
@@ -190,7 +194,7 @@ export interface Announcement {
     title: string;
     content: string;
     date: string;
-    author: { id: string; name: string | null; avatar?: string | null; } | null;
+    author: { id: string; name: string | null; avatar?: string | null; role?: string } | null;
     audience: UserRole[] | 'ALL' | string;
     priority?: 'Normal' | 'Urgente';
     isPinned: boolean;
