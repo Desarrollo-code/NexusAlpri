@@ -64,10 +64,10 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
   return (
     <div 
       className={cn(
-        "group relative w-full h-24 flex flex-col items-center justify-center bg-card border-2 border-dashed border-border rounded-lg cursor-pointer transition-colors py-4",
+        "group relative w-full h-24 flex flex-col items-center justify-center bg-muted/50 dark:bg-black/20 border-2 border-dashed border-border/50 rounded-lg cursor-pointer transition-all duration-300",
+        "hover:border-primary/70 hover:bg-primary/5",
         isDragging && "border-primary bg-primary/10",
-        !disabled && "hover:border-primary hover:bg-muted/30",
-        disabled && "cursor-not-allowed opacity-50",
+        disabled && "cursor-not-allowed opacity-60",
         className
       )}
       onClick={!disabled ? handleClick : undefined}
@@ -85,12 +85,14 @@ export function UploadArea({ onFileSelect, disabled, className, inputId = "file-
         disabled={disabled}
         accept="image/png, image/jpeg, image/svg+xml, image/webp"
       />
-      <div className="flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
-         <UploadCloud className="h-8 w-8 text-muted-foreground group-hover:text-primary" />
+      <div className="flex flex-col items-center justify-center gap-2 transition-transform duration-300 group-hover:scale-105">
+         <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-background/50 dark:bg-black/30 border">
+            <UploadCloud className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
+         </div>
+         <p className="text-xs text-muted-foreground transition-colors group-hover:text-primary text-center">
+            {isDragging ? 'Suelta el archivo para subirlo' : 'Suelta un archivo o haz clic para subir'}
+         </p>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground group-hover:text-primary transition-colors text-center">
-        {isDragging ? 'Suelta el archivo aquí' : 'Arrastra o haz clic para seleccionar'}
-      </p>
     </div>
   );
 }
