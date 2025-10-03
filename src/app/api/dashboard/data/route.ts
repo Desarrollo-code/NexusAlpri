@@ -1,4 +1,3 @@
-
 // src/app/api/dashboard/data/route.ts
 import prisma from '@/lib/prisma';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -7,6 +6,7 @@ import type { UserRole, CourseStatus, AdminDashboardStats, EnrolledCourse, Cours
 import type { User as PrismaUser, Course as PrismaCourse } from '@prisma/client';
 import { subDays, startOfDay, endOfDay } from 'date-fns';
 import { mapApiCourseToAppCourse } from '@/lib/course-utils';
+import { expandRecurringEvents } from '@/lib/calendar-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +20,7 @@ async function safeQuery<T>(query: Promise<T>, fallback: T, queryName: string): 
     }
 }
 
-async function getAdminDashboardData(startDate?: Date, endDate?: Date) {
+async function getAdminDashboardData(startDate?: Date, endDate?: Date, userId?: string) {
     const dateFilter = {
         createdAt: {
             gte: startDate,
@@ -34,7 +34,6 @@ async function getAdminDashboardData(startDate?: Date, endDate?: Date) {
         }
     };
     
-    // --- Grouped Queries for Efficiency ---
     const [
         totalUsers, totalCourses, totalPublishedCourses, totalEnrollments,
         totalResources, totalAnnouncements, totalForms, usersByRole, coursesByStatus,
@@ -56,7 +55,6 @@ async function getAdminDashboardData(startDate?: Date, endDate?: Date) {
     const activityEndDate = endDate || new Date();
     const activityStartDate = startDate || subDays(activityEndDate, 29);
 
-    // --- Trend Queries ---
     const [newCoursesTrend, newEnrollmentsTrend, newUsersTrend] = await Promise.all([
         safeQuery(prisma.course.groupBy({ by: ['createdAt'], _count: { _all: true }, where: { createdAt: { gte: activityStartDate, lte: activityEndDate } }, orderBy: { createdAt: 'asc' } }), [], 'newCoursesTrend'),
         safeQuery(prisma.enrollment.groupBy({ by: ['enrolledAt'], _count: { _all: true }, where: { enrolledAt: { gte: activityStartDate, lte: activityEndDate } }, orderBy: { enrolledAt: 'asc' } }), [], 'newEnrollmentsTrend'),
@@ -77,18 +75,31 @@ async function getAdminDashboardData(startDate?: Date, endDate?: Date) {
     });
     const userRegistrationTrend = Array.from(activityMap.entries()).map(([date, counts]) => ({ date, ...counts }));
     
-    // --- Dashboard Specific Queries ---
     const [recentAnnouncements, securityLogs] = await Promise.all([
-        safeQuery(prisma.announcement.findMany({ take: 2, orderBy: { date: 'desc' }, include: { author: { select: { id: true, name: true, avatar: true } }, attachments: true, reactions: { select: { userId: true, reaction: true, user: { select: { id: true, name: true, avatar: true } } } }, _count: { select: { reads: true, reactions: true } } } }), [], 'recentAnnouncements'),
+        safeQuery(prisma.announcement.findMany({ take: 2, orderBy: { date: 'desc' }, include: { author: { select: { id: true, name: true, avatar: true, role: true } }, attachments: true, reactions: { select: { userId: true, reaction: true, user: { select: { id: true, name: true, avatar: true } } } }, _count: { select: { reads: true, reactions: true } } } }), [], 'recentAnnouncements'),
         safeQuery(prisma.securityLog.findMany({ take: 5, orderBy: { createdAt: 'desc' }, include: { user: { select: { id: true, name: true, avatar: true } } } }), [], 'securityLogs'),
     ]);
     
-    // --- Complex Calculation Queries ---
+    // --- Interactive Events ---
+    const todayStart = startOfDay(new Date());
+    const todayEnd = endOfDay(new Date());
+    const baseInteractiveEvents = await safeQuery(prisma.calendarEvent.findMany({ where: { isInteractive: true } }), [], 'interactiveEvents');
+    const expandedInteractiveEventsToday = expandRecurringEvents(baseInteractiveEvents, todayStart, todayEnd);
+    const userParticipationsToday = await safeQuery(prisma.eventParticipation.findMany({
+        where: { userId, occurrenceDate: { gte: todayStart, lte: todayEnd } }
+    }), [], 'userParticipations');
+    
+    const participationsSet = new Set(userParticipationsToday.map(p => `${p.eventId}-${p.occurrenceDate.toISOString().split('T')[0]}`));
+
+    const interactiveEventsToday = expandedInteractiveEventsToday.map(event => ({
+        ...event,
+        hasParticipated: participationsSet.has(`${event.parentId || event.id}-${new Date(event.start).toISOString().split('T')[0]}`)
+    }));
+    
     const coursesWithProgress = await safeQuery(prisma.course.findMany({ where: { status: 'PUBLISHED' }, include: { _count: { select: { enrollments: true } }, enrollments: { select: { progress: { select: { progressPercentage: true } } } } } }), [], 'coursesWithProgress');
     const instructorsWithCourseCounts = await safeQuery(prisma.user.findMany({ where: { role: 'INSTRUCTOR' }, include: { _count: { select: { courses: true } } } }), [], 'instructorsWithCourseCounts');
     const studentsWithData = await safeQuery(prisma.user.findMany({ where: { role: 'STUDENT' }, include: { _count: { select: { enrollments: true, courseProgress: { where: { progressPercentage: 100 } } } } } }), [], 'studentsWithData');
     
-    // --- Final Calculations ---
     const completionRates = coursesWithProgress.map(c => { const validProgresses = c.enrollments.map(e => e.progress?.progressPercentage).filter(p => p !== null) as number[]; return validProgresses.length > 0 ? validProgresses.reduce((a, b) => a + b, 0) / validProgresses.length : 0; }).filter(rate => rate > 0);
     const averageCompletionRate = completionRates.length > 0 ? completionRates.reduce((a, b) => a + b, 0) / completionRates.length : 0;
     const topCoursesByEnrollment = [...coursesWithProgress].sort((a, b) => b._count.enrollments - a._count.enrollments).slice(0, 5).map(c => ({ id: c.id, title: c.title, imageUrl: c.imageUrl, value: c._count.enrollments }));
@@ -108,6 +119,7 @@ async function getAdminDashboardData(startDate?: Date, endDate?: Date) {
         averageCompletionRate,
         topCoursesByEnrollment, topCoursesByCompletion, lowestCoursesByCompletion,
         topStudentsByEnrollment, topStudentsByCompletion, topInstructorsByCourses,
+        interactiveEventsToday,
     };
 
     return { adminStats: stats, recentAnnouncements, securityLogs };
@@ -125,7 +137,7 @@ async function getInstructorDashboardData(session: PrismaUser) {
         safeQuery(prisma.announcement.findMany({
             take: 2, orderBy: { date: 'desc' },
             include: { 
-                author: { select: { id: true, name: true, avatar: true } },
+                author: { select: { id: true, name: true, avatar: true, role: true } },
                 attachments: true, 
                 reactions: { select: { userId: true, reaction: true, user: { select: { id: true, name: true, avatar: true } } } }, 
                 _count: { select: { reads: true, reactions: true } },
@@ -145,14 +157,14 @@ async function getStudentDashboardData(session: PrismaUser) {
     const [enrolledData, announcementsData] = await Promise.all([
         safeQuery(prisma.enrollment.findMany({
             where: { userId: session.id },
-            include: { course: { include: { instructor: { select: { name: true } }, _count: { select: { modules: true } } } }, progress: true },
+            include: { course: { include: { instructor: { select: { name: true, id: true, avatar: true } }, _count: { select: { modules: true } } } }, progress: true },
             orderBy: { enrolledAt: 'desc' },
             take: 4,
         }), [], 'enrolledData'),
         safeQuery(prisma.announcement.findMany({
             take: 2, orderBy: { date: 'desc' },
             include: { 
-                author: { select: { id: true, name: true, avatar: true } },
+                author: { select: { id: true, name: true, avatar: true, role: true } },
                 attachments: true, 
                 reactions: { select: { userId: true, reaction: true, user: { select: { id: true, name: true, avatar: true } } } }, 
                 _count: { select: { reads: true, reactions: true } },
@@ -164,7 +176,8 @@ async function getStudentDashboardData(session: PrismaUser) {
     const completedCount = await safeQuery(prisma.courseProgress.count({ where: { userId: session.id, progressPercentage: 100 } }), 0, 'completedCount');
 
     const mappedCourses: EnrolledCourse[] = enrolledData.map(item => ({
-        id: item.course.id, title: item.course.title, description: item.course.description, instructor: item.course.instructor?.name || 'N/A',
+        id: item.course.id, title: item.course.title, description: item.course.description, 
+        instructor: { id: item.course.instructor?.id || '', name: item.course.instructor?.name || 'N/A', avatar: item.course.instructor?.avatar || null },
         imageUrl: item.course.imageUrl, modulesCount: item.course._count.modules || 0,
         enrolledAt: item.enrolledAt.toISOString(), isEnrolled: true, instructorId: item.course.instructorId, status: 'PUBLISHED',
         progressPercentage: item.progress?.progressPercentage || 0,
@@ -197,7 +210,7 @@ export async function GET(req: NextRequest) {
         let data: any = {};
         switch(session.role) {
             case 'ADMINISTRATOR':
-                data = await getAdminDashboardData(startDate, endDate);
+                data = await getAdminDashboardData(startDate, endDate, session.id);
                 break;
             case 'INSTRUCTOR':
                 data = await getInstructorDashboardData(session);

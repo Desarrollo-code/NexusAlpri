@@ -36,7 +36,7 @@ import { EventDetailsView } from '@/components/calendar/event-details-view';
 import { Separator } from '@/components/ui/separator';
 import { Identicon } from '@/components/ui/identicon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, Save, MapPin, Video, Link as LinkIcon, X, Check, Users, Edit, Trash2, Repeat, CalendarIcon } from 'lucide-react';
+import { Loader2, Save, MapPin, Video, Link as LinkIcon, X, Check, Users, Edit, Trash2, Repeat, CalendarIcon, Hand } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Calendar } from '../ui/calendar';
 import { es } from 'date-fns/locale';
@@ -79,6 +79,7 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
     const [userSearch, setUserSearch] = useState('');
     const [formRecurrence, setFormRecurrence] = useState<RecurrenceType>('NONE');
     const [formRecurrenceEndDate, setFormRecurrenceEndDate] = useState<Date | undefined>(undefined);
+    const [formIsInteractive, setFormIsInteractive] = useState(false); // <-- NUEVO
 
     const [allUsers, setAllUsers] = useState<AppUser[]>([]);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -94,7 +95,6 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
 
     useEffect(() => {
         if (!isOpen) {
-            // Reset state when modal closes
             setTimeout(() => {
                  setIsEditMode(false);
                  setEventToDelete(null);
@@ -117,7 +117,8 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             setFormAttachments(event.attachments || []);
             setFormRecurrence(event.recurrence || 'NONE');
             setFormRecurrenceEndDate(event.recurrenceEndDate ? new Date(event.recurrenceEndDate) : undefined);
-            setIsEditMode(false); // Start in view mode
+            setFormIsInteractive(event.isInteractive || false); // <-- NUEVO
+            setIsEditMode(false);
         } else { // Creating new event
             const targetDate = selectedDate || new Date();
             const dateString = format(targetDate, 'yyyy-MM-dd');
@@ -134,7 +135,8 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             setFormAttachments([]);
             setFormRecurrence('NONE');
             setFormRecurrenceEndDate(undefined);
-            setIsEditMode(true); // Start in edit mode for new events
+            setFormIsInteractive(false); // <-- NUEVO
+            setIsEditMode(true);
         }
 
     }, [event, selectedDate, isOpen]);
@@ -161,6 +163,7 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
             color: formColor, attachments: formAttachments,
             recurrence: formRecurrence,
             recurrenceEndDate: formRecurrence !== 'NONE' ? formRecurrenceEndDate?.toISOString() : null,
+            isInteractive: formIsInteractive, // <-- NUEVO
         };
 
         const endpoint = event ? `/api/events/${event.id}` : '/api/events';
@@ -303,6 +306,16 @@ export function EventEditorModal({ isOpen, onClose, event, selectedDate, onEvent
                             </Popover>
                         )}
                       </div>
+                  </div>
+                  <Separator />
+                   <div className="space-y-3 p-3 border rounded-lg bg-muted/20">
+                     <div className="flex items-center justify-between space-x-2">
+                        <Label htmlFor="is-interactive" className="flex items-center gap-2 font-semibold">
+                            <Hand className="h-4 w-4 text-primary"/> Evento Interactivo
+                        </Label>
+                        <Switch id="is-interactive" checked={formIsInteractive} onCheckedChange={setFormIsInteractive} disabled={isSaving}/>
+                     </div>
+                     <p className="text-xs text-muted-foreground">Si se activa, los usuarios verán una alerta el día del evento para confirmar su participación.</p>
                   </div>
                   <Separator />
                   <div className="space-y-2">

@@ -1,5 +1,5 @@
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType, MotivationalMessageTriggerType, MotivationalMessage as PrismaMotivationalMessage } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -216,6 +216,10 @@ export interface Notification {
     date: string; // ISO string from DB
     link?: string;
     read: boolean;
+    isMotivational?: boolean;
+    motivationalMessageId?: string | null;
+    interactiveEventId?: string | null; // <-- NUEVO
+    interactiveEventOccurrence?: string | null; // <-- NUEVO
 }
 
 // --- CALENDAR ---
@@ -247,6 +251,7 @@ export interface CalendarEvent {
     recurrence: RecurrenceType;
     recurrenceEndDate?: string | null;
     parentId?: string | null;
+    isInteractive: boolean; // <-- NUEVO
 }
 
 // --- SECURITY ---
@@ -302,6 +307,7 @@ export interface AdminDashboardStats {
     topStudentsByEnrollment: UserInfo[];
     topStudentsByCompletion: UserInfo[];
     topInstructorsByCourses: UserInfo[];
+    interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[]; // <-- NUEVO
 }
 
 // --- TEMPLATES ---
@@ -315,6 +321,11 @@ export type UserAchievement = Prisma.UserAchievementGetPayload<{
     }
 }>;
 export { type AchievementSlug };
+
+// --- MOTIVATIONAL MESSAGES ---
+export type MotivationalMessage = PrismaMotivationalMessage;
+export { type MotivationalMessageTriggerType };
+
 
 // --- FORMS ---
 export interface FormFieldOption {
