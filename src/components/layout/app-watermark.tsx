@@ -17,15 +17,14 @@ export default function AppWatermark() {
       return (
         <div className={cn(
             "fixed z-[9999] pointer-events-none",
-             // En móvil, se posiciona más abajo para no chocar con los FAB
-            "bottom-28 md:bottom-4 right-4"
+             // En móvil, se posiciona más abajo y con menor opacidad.
+            "bottom-4 md:bottom-4 right-4 opacity-30 md:opacity-50"
         )}>
           <Image 
             src={settings.watermarkUrl} 
             alt="Marca de agua" 
             width={75} 
             height={75} 
-            className="opacity-50" 
             data-ai-hint="logo company" 
             priority 
             quality={100}
