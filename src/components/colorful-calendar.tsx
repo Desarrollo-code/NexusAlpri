@@ -1,5 +1,5 @@
-// This file is obsolete and will be removed in a future refactor.
-// The calendar logic has been moved to individual view components like `month-view.tsx`.
+// This file is obsolete and has been replaced by individual view components.
+// It can be deleted in a future refactor.
 export default function ColorfulCalendar() {
   return null;
 }

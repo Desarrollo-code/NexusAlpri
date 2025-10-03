@@ -7,7 +7,7 @@ import { PlusCircle, Loader2, AlertTriangle, Edit, HelpCircle } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import type { CalendarEvent } from '@/types';
-import { startOfToday, startOfMonth, endOfMonth } from 'date-fns';
+import { startOfToday, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTitle } from '@/contexts/title-context';
@@ -71,10 +71,23 @@ export default function CalendarPage() {
   }, [fetchEvents, user]);
 
   const displayedEvents = useMemo(() => {
-      const rangeStart = startOfMonth(currentDate);
-      const rangeEnd = endOfMonth(currentDate);
+      let rangeStart, rangeEnd;
+      switch(view) {
+          case 'month':
+              rangeStart = startOfWeek(startOfMonth(currentDate));
+              rangeEnd = endOfWeek(endOfMonth(currentDate));
+              break;
+          case 'week':
+              rangeStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+              rangeEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
+              break;
+          case 'day':
+              rangeStart = startOfDay(currentDate);
+              rangeEnd = endOfDay(currentDate);
+              break;
+      }
       return expandRecurringEvents(baseEvents, rangeStart, rangeEnd);
-  }, [baseEvents, currentDate]);
+  }, [baseEvents, currentDate, view]);
 
   const handleEventUpdate = (updatedEvent: CalendarEvent) => {
     // Re-fetch all events to correctly handle recurring event updates

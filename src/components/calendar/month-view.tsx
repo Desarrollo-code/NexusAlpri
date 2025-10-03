@@ -132,49 +132,11 @@ const WeekRow = ({ week, month, events, onEventClick, onSlotClick }: WeekRowProp
                         day={day}
                         month={month}
                         onDateSelect={onSlotClick}
-                        events={dayEvents.slice(multiDayEventsWithLanes.length)}
+                        events={dayEvents}
                         onEventClick={onEventClick}
                     />
                  )
             })}
-            <div className="absolute top-8 left-0 right-0 h-full pointer-events-none">
-                {multiDayEventsWithLanes.map((lane, laneIndex) => (
-                    <div key={laneIndex} className="absolute w-full" style={{ top: `${laneIndex * 24}px`, height: '22px' }}>
-                        {lane.map(event => {
-                            const eventStart = new Date(event.start);
-                            const eventEnd = new Date(event.end);
-
-                            const startDayIndex = isBefore(eventStart, weekStart) ? 0 : getDay(eventStart);
-                            const endDayIndex = isAfter(eventEnd, weekEnd) ? 6 : getDay(eventEnd);
-
-                            const span = endDayIndex - startDayIndex + 1;
-                            if (span <= 0) return null;
-                            
-                            const isStartOfEvent = isSameDay(eventStart, week[startDayIndex]);
-                            const isEndOfEvent = isSameDay(eventEnd, week[endDayIndex]);
-
-                            return (
-                                <div
-                                    key={event.id}
-                                    onClick={(e) => {e.stopPropagation(); onEventClick(event);}}
-                                    className={cn(
-                                        "absolute h-full px-2 text-xs font-semibold text-primary-foreground flex items-center truncate cursor-pointer pointer-events-auto",
-                                        getEventColorClass(event.color),
-                                        isStartOfEvent && "rounded-l-md",
-                                        isEndOfEvent && "rounded-r-md"
-                                    )}
-                                    style={{
-                                        left: `calc(${(100 / 7) * startDayIndex}% + 1px)`,
-                                        width: `calc(${(100 / 7) * span}% - 2px)`,
-                                    }}
-                                >
-                                    {event.title}
-                                </div>
-                            )
-                        })}
-                    </div>
-                ))}
-            </div>
         </div>
     )
 }
@@ -206,16 +168,24 @@ export function MonthView({ currentDate, events, onEventClick, onSlotClick }: Mo
             ))}
         </div>
         <div className="flex-grow grid grid-cols-1" style={{ gridTemplateRows: `repeat(${weeks.length}, minmax(0, 1fr))` }}>
-             {weeks.map((week, weekIndex) => (
-                 <WeekRow
-                    key={weekIndex}
-                    week={week}
-                    month={currentDate}
-                    events={events}
-                    onEventClick={onEventClick}
-                    onSlotClick={onSlotClick}
-                 />
-            ))}
+             {weeks.map((week, weekIndex) => {
+                 const weekEvents = events.filter(e => {
+                     const eventStart = new Date(e.start);
+                     const eventEnd = new Date(e.end);
+                     return isBefore(eventStart, week[6]) && isAfter(eventEnd, week[0]);
+                 });
+
+                 return (
+                     <WeekRow
+                        key={weekIndex}
+                        week={week}
+                        month={currentDate}
+                        events={weekEvents}
+                        onEventClick={onEventClick}
+                        onSlotClick={onSlotClick}
+                     />
+                )
+            })}
         </div>
     </div>
   );
