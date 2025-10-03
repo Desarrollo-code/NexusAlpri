@@ -165,6 +165,10 @@ model Course {
   publicationDate DateTime?
   enrollments     Enrollment[]
   progress        CourseProgress[]
+    // Relación para cursos con prerrequisitos
+  prerequisite   Course?  @relation("CoursePrerequisites", fields: [prerequisiteId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  prerequisiteId String?   @map("prerequisite_id")
+  dependents     Course[] @relation("CoursePrerequisites")
 
   @@map("courses")
 }
