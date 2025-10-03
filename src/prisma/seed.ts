@@ -132,7 +132,7 @@ async function main() {
         { id: 'clseedannouncement02', title: 'Alerta de Mantenimiento Programado', content: '<p>La plataforma estará en mantenimiento este viernes por la noche de 10 PM a 11 PM. Agradecemos su comprensión.</p>', authorId: adminUser.id, audience: 'ALL', priority: 'Urgente', isPinned: true },
         { id: 'clseedannouncement03', title: '¡Nuevo curso de Liderazgo disponible!', content: '<p>Inscríbete ahora en el nuevo curso "Liderazgo Efectivo para Equipos Remotos" impartido por un instructor.</p>', authorId: instructorUser.id, audience: 'ALL', priority: 'Normal' },
         { id: 'clseedannouncement04', title: 'Recordatorio: Actualización de Políticas de Seguridad', content: '<p>Todos los instructores deben revisar la nueva guía de seguridad de la información en la Biblioteca de Recursos antes de fin de mes.</p>', authorId: adminUser.id, audience: 'INSTRUCTOR', priority: 'Normal' },
-        { id: 'clseedannouncement05', title: 'Evento Social: After Office Virtual', content: '<p>¡Únete a nuestro After Office virtual este jueves! Revisa el calendario para más detalles y confirmar tu asistencia.</p>', authorId: studentUser1.id, audience: 'STUDENT', priority: 'Normal' }
+        { id: 'clseedannouncement05', title: 'Evento Social: After Office Virtual', content: '<p>¡Únete a nuestro After Office virtual este jueves! Revisa el calendario para más detalles y confirmar tu asistencia.</p>', authorId: instructorUser.id, audience: 'STUDENT', priority: 'Normal' }
     ],
     skipDuplicates: true
   });
@@ -223,8 +223,31 @@ async function main() {
       isQuiz: false,
       fields: {
         create: [
-          { label: 'En una escala del 1 al 5, ¿qué tan satisfecho estás con tu carga de trabajo actual?', type: FormFieldType.SINGLE_CHOICE, order: 0, required: true, options: [ {id: 's1', text: '1 - Muy insatisfecho', isCorrect: false, points: 0}, {id: 's2', text: '2', isCorrect: false, points: 0}, {id: 's3', text: '3', isCorrect: false, points: 0}, {id: 's4', text: '4', isCorrect: false, points: 0}, {id: 's5', text: '5 - Muy satisfecho', isCorrect: false, points: 0}, ] },
-          { label: '¿Qué aspectos mejorarías de la comunicación interna? (Selecciona todos los que apliquen)', type: FormFieldType.MULTIPLE_CHOICE, order: 1, required: false, options: [ {id: 'c1', text: 'Más reuniones generales', isCorrect: false, points: 0}, {id: 'c2', text: 'Comunicación más clara de los objetivos', isCorrect: false, points: 0}, {id: 'c3', text: 'Más feedback de mi manager', isCorrect: false, points: 0}, {id: 'c4', text: 'Mejor uso del email/chat', isCorrect: false, points: 0} ] },
+          { 
+              label: 'En una escala del 1 al 5, ¿qué tan satisfecho estás con tu carga de trabajo actual?', 
+              type: FormFieldType.SINGLE_CHOICE, 
+              order: 0, 
+              required: true, 
+              options: JSON.stringify([ 
+                  {id: 's1', text: '1 - Muy insatisfecho', isCorrect: false, points: 0}, 
+                  {id: 's2', text: '2', isCorrect: false, points: 0}, 
+                  {id: 's3', text: '3', isCorrect: false, points: 0}, 
+                  {id: 's4', text: '4', isCorrect: false, points: 0}, 
+                  {id: 's5', text: '5 - Muy satisfecho', isCorrect: false, points: 0}, 
+              ]) 
+          },
+          { 
+              label: '¿Qué aspectos mejorarías de la comunicación interna? (Selecciona todos los que apliquen)', 
+              type: FormFieldType.MULTIPLE_CHOICE, 
+              order: 1, 
+              required: false, 
+              options: JSON.stringify([ 
+                  {id: 'c1', text: 'Más reuniones generales', isCorrect: false, points: 0}, 
+                  {id: 'c2', text: 'Comunicación más clara de los objetivos', isCorrect: false, points: 0}, 
+                  {id: 'c3', text: 'Más feedback de mi manager', isCorrect: false, points: 0}, 
+                  {id: 'c4', text: 'Mejor uso del email/chat', isCorrect: false, points: 0} 
+              ]) 
+          },
           { label: 'Si pudieras cambiar una cosa de la oficina, ¿qué sería?', type: FormFieldType.LONG_TEXT, order: 2, required: false, placeholder: 'Ej: más plantas, mejor café, etc.' }
 
         ]
