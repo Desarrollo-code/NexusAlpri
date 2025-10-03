@@ -146,6 +146,8 @@ model User {
   sharedForms           Form[]              @relation("SharedForms") // <--- FIX 2: Added opposite relation
   motivationalMessages MotivationalMessage[]
   eventParticipations EventParticipation[]
+  assignedCourses CourseAssignment[] @relation("UserAssignments")
+  assignedByMe    CourseAssignment[] @relation("AssignedBy")
 
   @@map("users")
 }
@@ -164,6 +166,7 @@ model Course {
   updatedAt       DateTime        @updatedAt
   publicationDate DateTime?
   enrollments     Enrollment[]
+  assignments CourseAssignment[]
   isMandatory     Boolean         @default(false)
   progress        CourseProgress[]
     // Relación para cursos con prerrequisitos
@@ -249,7 +252,20 @@ model AnswerOption {
 
   @@map("answer_options")
 }
+model CourseAssignment {
+  id           String   @id @default(cuid())
+  courseId     String   @map("course_id")
+  userId       String   @map("user_id")
+  assignedById String   @map("assigned_by_id")
+  assignedAt   DateTime @default(now()) @map("assigned_at")
 
+  course     Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user       User   @relation("UserAssignments", fields: [userId], references: [id], onDelete: Cascade)
+  assignedBy User   @relation("AssignedBy", fields: [assignedById], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, userId])
+  @@map("course_assignments")
+}
 model Enrollment {
   id           String          @id @default(cuid())
   user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
