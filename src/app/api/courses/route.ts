@@ -1,4 +1,3 @@
-
 // src/app/api/courses/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
@@ -13,6 +12,7 @@ export async function GET(req: NextRequest) {
     const session = await getCurrentUser();
     const { searchParams } = new URL(req.url);
     const manageView = searchParams.get('manageView') === 'true';
+    const simpleView = searchParams.get('simple') === 'true';
     const userId = searchParams.get('userId');
     const userRole = searchParams.get('userRole') as UserRole;
     
@@ -25,6 +25,24 @@ export async function GET(req: NextRequest) {
     const tab = searchParams.get('tab');
     const skip = (page - 1) * pageSize;
 
+    // --- Vista Simplificada para Selectores ---
+    if (simpleView) {
+        const courses = await prisma.course.findMany({
+            where: {
+                status: 'PUBLISHED', // Solo se pueden asignar mensajes a cursos publicados
+            },
+            select: {
+                id: true,
+                title: true,
+            },
+            orderBy: {
+                title: 'asc',
+            },
+        });
+        return NextResponse.json({ courses });
+    }
+
+    // --- Vistas de Gestión y Catálogo ---
     let whereClause: any = {};
     
     if (manageView) {

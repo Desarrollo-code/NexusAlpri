@@ -1,4 +1,3 @@
-
 // src/components/motivations/motivation-editor-modal.tsx
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -52,7 +51,7 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
             const res = await fetch('/api/courses?simple=true');
             if (!res.ok) throw new Error('No se pudo cargar la lista de cursos.');
             const data = await res.json();
-            setCourses(data);
+            setCourses(data.courses || []);
         } catch (err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
         }
