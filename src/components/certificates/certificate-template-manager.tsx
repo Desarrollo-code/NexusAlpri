@@ -1,4 +1,3 @@
-
 // src/components/certificates/certificate-template-manager.tsx
 'use client';
 
