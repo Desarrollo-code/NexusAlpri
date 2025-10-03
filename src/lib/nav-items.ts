@@ -21,6 +21,7 @@ import {
   AlertTriangle, 
   ServerCrash, // Ícono para el error 500
   Trophy, // Ícono para Leaderboard
+  Sparkles, // Ícono para Motivaciones
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -114,6 +115,13 @@ const NAVIGATION_ITEMS: NavItem[] = [
         icon: TrendingUp,
         path: '/enrollments',
         roles: ['ADMINISTRATOR', 'INSTRUCTOR']
+      },
+       {
+        id: 'motivations',
+        label: 'Motivaciones',
+        icon: Sparkles,
+        path: '/admin/motivations',
+        roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
       },
       {
         id: 'analytics',
