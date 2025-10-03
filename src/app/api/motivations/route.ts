@@ -3,8 +3,17 @@ import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { MotivationalMessageTriggerType } from '@prisma/client';
+import type { MotivationalMessage as PrismaMotivationalMessage, Course } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
+
+// Interfaz para el objeto de mensaje enriquecido que se enviará al cliente
+type EnrichedMotivationalMessage = PrismaMotivationalMessage & {
+    triggerCourse?: {
+        id: string;
+        title: string;
+    } | null;
+};
 
 // GET all motivational messages
 export async function GET(req: NextRequest) {
@@ -14,27 +23,53 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        const messages = await prisma.motivationalMessage.findMany({
+        // 1. Obtener todos los mensajes base.
+        const baseMessages = await prisma.motivationalMessage.findMany({
             orderBy: {
                 createdAt: 'desc',
             },
-            include: {
-                triggerCourse: {
-                    select: {
-                        id: true,
-                        title: true,
-                    }
+        });
+
+        // 2. Extraer los IDs de los cursos de los mensajes que son de tipo COURSE_COMPLETION.
+        const courseIds = baseMessages
+            .filter(msg => msg.triggerType === 'COURSE_COMPLETION' && msg.triggerId)
+            .map(msg => msg.triggerId);
+
+        let coursesMap = new Map<string, { id: string; title: string }>();
+
+        // 3. Si hay IDs de cursos, hacer una única consulta para obtener sus detalles.
+        if (courseIds.length > 0) {
+            const courses = await prisma.course.findMany({
+                where: {
+                    id: { in: courseIds }
+                },
+                select: {
+                    id: true,
+                    title: true,
                 }
+            });
+            courses.forEach(course => coursesMap.set(course.id, course));
+        }
+
+        // 4. Combinar los datos de forma segura.
+        const enrichedMessages: EnrichedMotivationalMessage[] = baseMessages.map(message => {
+            let triggerCourse = null;
+            if (message.triggerType === 'COURSE_COMPLETION' && message.triggerId && coursesMap.has(message.triggerId)) {
+                triggerCourse = coursesMap.get(message.triggerId);
             }
+            return {
+                ...message,
+                triggerCourse,
+            };
         });
         
-        // La API ahora devuelve directamente el resultado de la base de datos,
-        // que está garantizado que es un array.
-        return NextResponse.json(messages || []);
+        // 5. Devolver siempre un array.
+        return NextResponse.json(enrichedMessages);
 
     } catch (error) {
         console.error("[MOTIVATIONS_GET_ERROR]", error);
-        return NextResponse.json({ message: 'Error al obtener los mensajes de motivación' }, { status: 500 });
+        // En caso de un error inesperado, devuelve un array vacío para no romper el cliente.
+        return NextResponse.json([], { status: 500 });
     }
 }
 

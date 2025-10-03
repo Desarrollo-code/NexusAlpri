@@ -59,7 +59,14 @@ export function MotivationalMessagesManager() {
                 throw new Error(errorData.message);
             }
             const data = await response.json();
-            setMessages(Array.isArray(data) ? data : []);
+            
+            // Garantiza que `messages` siempre sea un array.
+            if (Array.isArray(data)) {
+                setMessages(data);
+            } else {
+                console.warn("API response for motivations was not an array:", data);
+                setMessages([]); // Fallback a un array vacío si la respuesta no es un array
+            }
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Ocurrió un error desconocido';
             setError(errorMessage);
