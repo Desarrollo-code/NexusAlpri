@@ -15,7 +15,12 @@ export async function GET(req: NextRequest) {
     try {
         const messages = await prisma.motivationalMessage.findMany({
             include: {
-                triggerCourse: { select: { id: true, title: true } }
+                triggerCourse: { 
+                    select: { 
+                        id: true, 
+                        title: true 
+                    } 
+                }
             },
             orderBy: {
                 createdAt: 'desc'
