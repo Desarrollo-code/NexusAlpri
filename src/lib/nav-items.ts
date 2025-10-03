@@ -22,6 +22,7 @@ import {
   ServerCrash, // Ícono para el error 500
   Trophy, // Ícono para Leaderboard
   Sparkles, // Ícono para Motivaciones
+  Award, // Ícono para Certificados
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -122,6 +123,13 @@ const NAVIGATION_ITEMS: NavItem[] = [
         icon: Sparkles,
         path: '/admin/motivations',
         roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
+      },
+      {
+        id: 'certificates',
+        label: 'Certificados',
+        icon: Award,
+        path: '/admin/certificates',
+        roles: ['ADMINISTRATOR'],
       },
       {
         id: 'analytics',
