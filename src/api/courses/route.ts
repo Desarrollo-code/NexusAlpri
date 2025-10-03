@@ -1,4 +1,3 @@
-
 // src/app/api/courses/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
@@ -43,7 +42,7 @@ export async function GET(req: NextRequest) {
                 title: 'asc',
             },
         });
-        return NextResponse.json(courses);
+        return NextResponse.json({ courses });
     }
 
     // --- Vistas de Gestión y Catálogo ---

@@ -132,6 +132,11 @@ export interface Course {
   publicationDate?: Date | string | null;
   enrollmentsCount?: number;
   averageCompletion?: number;
+  prerequisiteId?: string | null;
+  prerequisite?: {
+    id: string;
+    title: string;
+  } | null;
 }
 
 export interface EnrolledCourse extends Course {
@@ -216,6 +221,10 @@ export interface Notification {
     date: string; // ISO string from DB
     link?: string;
     read: boolean;
+    isMotivational?: boolean;
+    motivationalMessageId?: string | null;
+    interactiveEventId?: string | null;
+    interactiveEventOccurrence?: Date | string | null;
 }
 
 // --- CALENDAR ---
@@ -247,6 +256,7 @@ export interface CalendarEvent {
     recurrence: RecurrenceType;
     recurrenceEndDate?: string | null;
     parentId?: string | null;
+    isInteractive: boolean;
 }
 
 // --- SECURITY ---
@@ -302,6 +312,7 @@ export interface AdminDashboardStats {
     topStudentsByEnrollment: UserInfo[];
     topStudentsByCompletion: UserInfo[];
     topInstructorsByCourses: UserInfo[];
+    interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
 }
 
 // --- TEMPLATES ---

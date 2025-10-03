@@ -307,6 +307,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
+    const [allCoursesForPrereq, setAllCoursesForPrereq] = useState<Pick<AppCourse, 'id' | 'title'>[]>([]);
+
     
     const [itemToDeleteDetails, setItemToDeleteDetails] = useState<any>(null);
     
@@ -335,6 +337,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     category: '',
                     modules: [],
                     modulesCount: 0,
+                    prerequisiteId: null,
                 });
                 setIsLoading(false);
                 setPageTitle('Crear Nuevo Curso');
@@ -364,9 +367,22 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             }
         };
 
+        const fetchAllCourses = async () => {
+            try {
+                const res = await fetch('/api/courses?simple=true');
+                if (res.ok) {
+                    const data = await res.json();
+                    setAllCoursesForPrereq(data.courses.filter((c: AppCourse) => c.id !== courseId));
+                }
+            } catch(e) {
+                 console.error("Failed to fetch courses for prerequisite selector", e);
+            }
+        }
+
         if (user) {
             fetchCourseData();
             fetchTemplates();
+            fetchAllCourses();
         }
     }, [courseId, user, router, toast, setPageTitle]);
     
@@ -733,7 +749,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
                 <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
                      <Card>
-                        <CardHeader><CardTitle>Publicación</CardTitle><CardDescription>Controla la visibilidad y el estado del curso.</CardDescription></CardHeader>
+                        <CardHeader><CardTitle>Publicación</CardTitle><CardDescription>Controla la visibilidad y dependencias del curso.</CardDescription></CardHeader>
                         <CardContent className="space-y-4">
                              <div><Label htmlFor="status">Estado</Label>
                                 <Select value={course.status} onValueChange={v => updateCourseField('status', v as CourseStatus)} disabled={isSaving}>
@@ -744,6 +760,20 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                         <SelectItem value="ARCHIVED">Archivado</SelectItem>
                                     </SelectContent>
                                 </Select>
+                            </div>
+                             <div>
+                                <Label htmlFor="prerequisite">Prerrequisito del Curso</Label>
+                                <Select value={course.prerequisiteId || 'none'} onValueChange={v => updateCourseField('prerequisiteId', v === 'none' ? null : v)} disabled={isSaving}>
+                                    <SelectTrigger id="prerequisite"><SelectValue placeholder="Ninguno"/></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">Ninguno</SelectItem>
+                                        <Separator/>
+                                        {allCoursesForPrereq.map(c => (
+                                            <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                 <p className="text-xs text-muted-foreground mt-1">Elige un curso que deba ser completado antes de poder inscribirse a este.</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -1064,3 +1094,4 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
     
 
     
+
