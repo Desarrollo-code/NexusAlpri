@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Save, Image as ImageIcon, Replace, XCircle } from 'lucide-react';
+import { Loader2, Save, Image as ImageIcon, Replace, XCircle, Award } from 'lucide-react';
 import type { CertificateTemplate } from '@prisma/client';
 import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
