@@ -68,11 +68,14 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const session = await getCurrentUser();
     const { id: templateId } = params;
 
-    const permission = await checkPermissions(session, templateId);
-    if (!permission.authorized) return permission.error;
+    const permissionCheck = await checkPermissions(session, templateId);
+    if (!permissionCheck.authorized) {
+        // checkPermissions ya devuelve un NextResponse, así que lo retornamos directamente.
+        return permissionCheck.error;
+    }
     
     try {
-        // Opcional: Verificar si la plantilla está en uso antes de eliminar.
+        // Verificar si la plantilla está en uso antes de eliminar.
         const coursesUsingTemplate = await prisma.course.count({
             where: { certificateTemplateId: templateId },
         });
@@ -87,11 +90,13 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
             where: { id: templateId },
         });
 
-        return new NextResponse(null, { status: 204 });
+        // Devolver una respuesta JSON válida en lugar de una vacía.
+        return NextResponse.json({ message: 'Plantilla eliminada correctamente.' });
 
     } catch (error) {
         if ((error as any).code === 'P2025') {
-            return new NextResponse(null, { status: 204 }); // Not found is okay on delete
+             // Aunque el registro no se encontró, para el cliente es un éxito porque ya no existe.
+            return NextResponse.json({ message: 'La plantilla ya había sido eliminada.' });
         }
         console.error(`[CERTIFICATE_TEMPLATE_DELETE_ERROR: ${templateId}]`, error);
         return NextResponse.json({ message: 'Error al eliminar la plantilla' }, { status: 500 });
