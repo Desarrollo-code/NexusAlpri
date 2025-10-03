@@ -60,17 +60,13 @@ export function MotivationalMessagesManager() {
                 throw new Error(data.message || 'No se pudieron cargar los mensajes');
             }
             
-            // Asegurarse de que data es un array antes de establecerlo
-            if (Array.isArray(data)) {
-                setMessages(data);
-            } else {
-                console.warn("API did not return an array for messages, setting to empty array.", data);
-                setMessages([]);
-                // Opcional: mostrar un error si la respuesta no es la esperada pero la petición fue "ok"
-                // setError("La respuesta del servidor no tuvo el formato esperado.");
-            }
+            // Solución Definitiva: Asegurar que siempre se trabaje con un array.
+            setMessages(Array.isArray(data) ? data : []);
+
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido');
+            const errorMessage = err instanceof Error ? err.message : 'Ocurrió un error desconocido';
+            setError(errorMessage);
+            setMessages([]); // Asegurar que el estado sea un array vacío en caso de error.
         } finally {
             setIsLoading(false);
         }
