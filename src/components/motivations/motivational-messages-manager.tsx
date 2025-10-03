@@ -12,7 +12,7 @@ import Image from 'next/image';
 // Placeholder para el formulario de edición, que se creará a continuación
 // import { MotivationEditorModal } from './motivation-editor-modal';
 
-const MotivationCard = ({ message, onEdit, onDelete }: { message: MotivationalMessage & { triggerCourse: { title: string } | null }, onEdit: (m: MotivationalMessage) => void, onDelete: (m: MotivationalMessage) => void }) => {
+const MotivationCard = ({ message, onEdit, onDelete }: { message: MotivationalMessage & { triggerCourse?: { title: string } | null }, onEdit: (m: MotivationalMessage) => void, onDelete: (m: MotivationalMessage) => void }) => {
     return (
         <Card className="flex flex-col">
             <CardHeader>
