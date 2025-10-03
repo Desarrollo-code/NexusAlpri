@@ -56,7 +56,12 @@ export function MotivationalMessagesManager() {
             const response = await fetch('/api/motivations');
             if (!response.ok) throw new Error('No se pudieron cargar los mensajes');
             const data = await response.json();
-            setMessages(data);
+            if (Array.isArray(data)) {
+              setMessages(data);
+            } else {
+              console.warn("API did not return an array for messages, setting to empty array.");
+              setMessages([]);
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido');
         } finally {
