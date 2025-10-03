@@ -1,3 +1,4 @@
+
 // src/lib/gamification.ts
 import prisma from '@/lib/prisma';
 import type { User } from '@/types';
@@ -193,7 +194,11 @@ export async function checkAndAwardCourseCompletionAchievements(userId: string, 
         where: { userId: userId, completedAt: { not: null } }
     });
 
-    if (completedCount === 1) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIRST_COURSE_COMPLETED });
+    if (completedCount === 1) {
+        await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIRST_COURSE_COMPLETED });
+        const course = await prisma.courseProgress.findFirst({ where: { userId, completedAt: {not: null}}, select: { courseId: true }});
+        if(course) await triggerMotivationalMessage(userId, 'COURSE_COMPLETION', course.courseId);
+    }
     if (completedCount === 5) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.FIVE_COURSES_COMPLETED });
     if (completedCount === 10) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.TEN_COURSES_COMPLETED });
     if (completedCount === 20) await awardAchievement({ userId, slug: ACHIEVEMENT_SLUGS.TWENTY_COURSES_COMPLETED });

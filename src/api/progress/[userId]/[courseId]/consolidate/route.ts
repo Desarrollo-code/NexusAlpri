@@ -1,10 +1,11 @@
 
+
 // src/app/api/progress/[userId]/[courseId]/consolidate/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import { checkAndAwardCourseCompletionAchievements } from '@/lib/gamification';
+import { checkAndAwardCourseCompletionAchievements, triggerMotivationalMessage } from '@/lib/gamification';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +30,16 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
         const totalLessonsInCourse = await prisma.lesson.count({ where: { module: { courseId } } });
 
         if (totalLessonsInCourse === 0) {
-            return NextResponse.json({ progressPercentage: 100 });
+            // Si el curso no tiene lecciones, se considera completado al 100%
+             const updatedProgress = await prisma.courseProgress.update({
+                where: { id: progress.id },
+                data: { progressPercentage: 100, completedAt: new Date() }
+            });
+            await checkAndAwardCourseCompletionAchievements(userId, 100);
+            return NextResponse.json({ 
+                ...updatedProgress,
+                message: `¡Felicidades! Has completado un curso sin lecciones.`,
+            });
         }
         
         if (progress.completedLessons.length < totalLessonsInCourse) {
@@ -63,7 +73,10 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
         // Otorgar logros por completar cursos
         await checkAndAwardCourseCompletionAchievements(userId, finalPercentage);
         
-        return NextResponse.json(updatedProgress);
+        return NextResponse.json({
+            ...updatedProgress,
+            message: `¡Curso Finalizado! Has obtenido una puntuación de ${finalPercentage}%.`,
+        });
 
     } catch (error) {
         console.error('[CONSOLIDATE_PROGRESS_ERROR]', error);

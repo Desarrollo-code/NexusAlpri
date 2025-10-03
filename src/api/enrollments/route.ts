@@ -1,3 +1,4 @@
+
 // src/app/api/enrollments/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
