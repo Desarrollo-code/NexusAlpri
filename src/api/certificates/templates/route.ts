@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
 
     try {
         const body = await req.json();
+        // Expandimos para aceptar todas las propiedades de personalización.
         const { name, backgroundImageUrl, textColor, studentNamePosition, courseNamePosition, datePosition, scorePosition } = body;
 
         if (!name || !backgroundImageUrl) {
@@ -44,10 +45,10 @@ export async function POST(req: NextRequest) {
             data: {
                 name,
                 backgroundImageUrl,
-                textColor: textColor || '#000000',
-                studentNamePosition: studentNamePosition || { x: 100, y: 250, fontSize: 32, fontWeight: 'bold', textAlign: 'center' },
-                courseNamePosition: courseNamePosition || { x: 100, y: 320, fontSize: 24, fontWeight: 'normal', textAlign: 'center' },
-                datePosition: datePosition || { x: 100, y: 400, fontSize: 18, fontWeight: 'normal', textAlign: 'center' },
+                textColor: textColor || '#000000', // Valor por defecto si no se proporciona
+                studentNamePosition: studentNamePosition || { x: 50, y: 45, fontSize: 48, fontWeight: 'bold', textAlign: 'center' },
+                courseNamePosition: courseNamePosition || { x: 50, y: 60, fontSize: 24, fontWeight: 'normal', textAlign: 'center' },
+                datePosition: datePosition || { x: 50, y: 75, fontSize: 18, fontWeight: 'normal', textAlign: 'center' },
                 scorePosition: scorePosition || null,
             },
         });
