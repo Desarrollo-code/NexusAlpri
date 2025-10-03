@@ -18,41 +18,19 @@ export async function GET(req: NextRequest) {
             orderBy: {
                 createdAt: 'desc',
             },
-        });
-
-        // Si no hay mensajes, devolver un array vacío para evitar errores en el cliente.
-        if (!messages || messages.length === 0) {
-            return NextResponse.json([]);
-        }
-
-        const courseIds = messages
-            .filter(m => m.triggerType === MotivationalMessageTriggerType.COURSE_COMPLETION && m.triggerId)
-            .map(m => m.triggerId) as string[];
-
-        let coursesMap = new Map<string, { id: string; title: string }>();
-        if (courseIds.length > 0) {
-            const courses = await prisma.course.findMany({
-                where: {
-                    id: { in: courseIds }
-                },
-                select: {
-                    id: true,
-                    title: true
+            include: {
+                triggerCourse: {
+                    select: {
+                        id: true,
+                        title: true,
+                    }
                 }
-            });
-            courses.forEach(course => coursesMap.set(course.id, course));
-        }
-
-        const results = messages.map(message => {
-            const triggerCourse = message.triggerId ? coursesMap.get(message.triggerId) : null;
-            return {
-                ...message,
-                triggerCourse: triggerCourse || null 
-            };
+            }
         });
         
-        // Devolver directamente el array de resultados
-        return NextResponse.json(results);
+        // La API ahora devuelve directamente el resultado de la base de datos,
+        // que está garantizado que es un array.
+        return NextResponse.json(messages || []);
 
     } catch (error) {
         console.error("[MOTIVATIONS_GET_ERROR]", error);
