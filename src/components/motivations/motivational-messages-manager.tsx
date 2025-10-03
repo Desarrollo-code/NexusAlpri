@@ -1,3 +1,4 @@
+
 // src/components/motivations/motivational-messages-manager.tsx
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -8,9 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, AlertTriangle, PlusCircle, Sparkles, Edit, Trash2 } from 'lucide-react';
 import Image from 'next/image';
-
-// Placeholder para el formulario de edición, que se creará a continuación
-// import { MotivationEditorModal } from './motivation-editor-modal';
+import { MotivationEditorModal } from './motivation-editor-modal';
 
 const MotivationCard = ({ message, onEdit, onDelete }: { message: MotivationalMessage & { triggerCourse?: { title: string } | null }, onEdit: (m: MotivationalMessage) => void, onDelete: (m: MotivationalMessage) => void }) => {
     return (
@@ -48,7 +47,6 @@ export function MotivationalMessagesManager() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Estados para el modal (se implementará en el siguiente paso)
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editingMessage, setEditingMessage] = useState<MotivationalMessage | null>(null);
 
@@ -132,15 +130,14 @@ export function MotivationalMessagesManager() {
                 </Card>
             )}
 
-            {/* El modal se añadirá en el siguiente paso */}
-            {/* {isEditorOpen && (
+            {isEditorOpen && (
                 <MotivationEditorModal
                     isOpen={isEditorOpen}
                     onClose={() => setIsEditorOpen(false)}
                     message={editingMessage}
                     onSave={handleSaveChanges}
                 />
-            )} */}
+            )}
         </div>
     );
 }
