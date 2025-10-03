@@ -117,7 +117,7 @@ export type CoursePrerequisiteInfo = {
   title: string;
 } | null;
 
-export interface Course extends Omit<PrismaCourse, 'instructor' | 'prerequisite'> {
+export interface Course extends Omit<PrismaCourse, 'instructor' | 'prerequisite' | 'isMandatory'> {
   instructor: {
       id: string;
       name: string;
@@ -133,6 +133,8 @@ export interface Course extends Omit<PrismaCourse, 'instructor' | 'prerequisite'
   userProgress?: {
       completedAt: Date | null;
   }[] | null;
+  prerequisiteCompleted?: boolean;
+  isMandatory: boolean;
 }
 
 

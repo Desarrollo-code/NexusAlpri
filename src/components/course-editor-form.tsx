@@ -47,6 +47,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { Switch } from '../ui/switch';
 
 
 // === TIPOS E INTERFACES ===
@@ -338,6 +339,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     modules: [],
                     modulesCount: 0,
                     prerequisiteId: null,
+                    isMandatory: false,
                 });
                 setIsLoading(false);
                 setPageTitle('Crear Nuevo Curso');
@@ -761,6 +763,12 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                     </SelectContent>
                                 </Select>
                             </div>
+                            <Separator />
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="isMandatory" className="text-base font-medium">Curso Obligatorio</Label>
+                                <Switch id="isMandatory" checked={course.isMandatory} onCheckedChange={(v) => updateCourseField('isMandatory', v)} disabled={isSaving}/>
+                            </div>
+                            <Separator />
                              <div>
                                 <Label htmlFor="prerequisite">Prerrequisito del Curso</Label>
                                 <Select value={course.prerequisiteId || 'none'} onValueChange={v => updateCourseField('prerequisiteId', v === 'none' ? null : v)} disabled={isSaving}>
@@ -1084,14 +1092,3 @@ const SaveTemplateModal = ({ isOpen, onClose, onSave }) => {
         </Dialog>
     )
 };
-
-    
-
-
-
-    
-
-    
-
-    
-
