@@ -104,6 +104,8 @@ enum QuestionType {
 
 enum MotivationalMessageTriggerType {
   COURSE_COMPLETION
+  COURSE_MID_PROGRESS
+  COURSE_NEAR_COMPLETION
   LEVEL_UP
 }
 
