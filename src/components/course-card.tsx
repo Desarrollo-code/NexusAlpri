@@ -21,11 +21,12 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/t
 
 
 interface CourseCardProps {
-  course: AppCourse | EnrolledCourse;
+  course: AppCourseType | EnrolledCourse;
   userRole: UserRole | null;
   onEnrollmentChange?: (courseId: string, newStatus: boolean) => void;
   onStatusChange?: (courseId: string, newStatus: CourseStatus) => void;
-  onDelete?: (course: AppCourse) => void;
+  onDelete?: (course: AppCourseType) => void;
+  onAssign?: () => void;
   priority?: boolean;
   viewMode?: 'catalog' | 'management';
 }
@@ -45,6 +46,7 @@ export function CourseCard({
   onEnrollmentChange, 
   onStatusChange,
   onDelete,
+  onAssign,
   priority = false, 
   viewMode = 'catalog' 
 }: CourseCardProps) {
@@ -231,7 +233,7 @@ export function CourseCard({
                          <span className="flex items-center gap-1.5"><Users className="h-3 w-3"/>{course.enrollmentsCount}</span>
                          <span className="flex items-center gap-1.5"><Check className="h-3 w-3"/>{Math.round(course.averageCompletion || 0)}%</span>
                       </div>
-                      <ManagementDropdown course={course} onStatusChange={onStatusChange} onDelete={onDelete} isProcessing={isProcessingStatus} />
+                      <ManagementDropdown course={course} onStatusChange={onStatusChange} onDelete={onDelete} onAssign={onAssign} isProcessing={isProcessingStatus} />
                     </>
                   )}
               </CardFooter>
@@ -294,16 +296,17 @@ const EnrollmentButton = ({ isEnrolled, isLocked, handleEnrollment, isProcessing
   );
 };
 
-const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: {
+const ManagementDropdown = ({ course, onStatusChange, onDelete, onAssign, isProcessing }: {
     course: AppCourseType,
     onStatusChange?: (courseId: string, newStatus: CourseStatus) => void,
     onDelete?: (course: AppCourseType) => void,
+    onAssign?: () => void,
     isProcessing: boolean,
 }) => {
-    const handleAction = (e: React.MouseEvent, action: () => void) => {
+    const handleAction = (e: React.MouseEvent, action?: () => void) => {
         e.stopPropagation();
         e.preventDefault();
-        action();
+        action?.();
     };
 
     return (
@@ -318,6 +321,7 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: 
                 <DropdownMenuItem asChild><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2 h-4 w-4"/> Editar</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link href={`/courses/${course.id}`} target="_blank"><Eye className="mr-2 h-4 w-4"/> Vista Previa</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link href={`/enrollments?courseId=${course.id}`}><Users className="mr-2 h-4 w-4"/> Ver Inscritos</Link></DropdownMenuItem>
+                {course.isMandatory && <DropdownMenuItem onSelect={(e) => handleAction(e, onAssign)}><Users className="mr-2 h-4 w-4"/>Asignar Curso</DropdownMenuItem>}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'PUBLISHED'))} disabled={isProcessing || course.status === 'PUBLISHED'}>Publicar</DropdownMenuItem>
                 <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'ARCHIVED'))} disabled={isProcessing || course.status === 'ARCHIVED'}>Archivar</DropdownMenuItem>
@@ -328,3 +332,4 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: 
         </DropdownMenu>
     );
 }
+

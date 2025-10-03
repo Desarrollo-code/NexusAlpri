@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { PlusCircle, List, Edit, Users, Grid, ListPlus, Loader2, AlertTriangle, ShieldAlert, MoreVertical, Archive, ArchiveRestore, Trash2, Eye, HelpCircle, LineChart, BookOpen, Layers, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
-import type { Course as AppCourseType, CourseStatus, UserRole } from '@/types';
+import type { Course as AppCourseType, CourseStatus, UserRole, User } from '@/types';
 import {
   Dialog,
   DialogContent,
@@ -47,6 +47,7 @@ import Image from 'next/image';
 import { mapApiCourseToAppCourse } from '@/lib/course-utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
+import { CourseAssignmentModal } from '@/components/course-assignment-modal';
 
 
 interface ApiCourseForManage extends Omit<PrismaCourse, 'instructor' | 'status'> {
@@ -92,6 +93,8 @@ export default function ManageCoursesPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  const [courseToAssign, setCourseToAssign] = useState<AppCourseType | null>(null);
 
   const activeTab = searchParams.get('tab') || 'all';
   const currentPage = Number(searchParams.get('page')) || 1;
@@ -313,7 +316,7 @@ export default function ManageCoursesPage() {
                             <Badge variant={course.status === 'PUBLISHED' ? 'default' : 'secondary'}>{getStatusInSpanish(course.status)}</Badge>
                          </TableCell>
                          <TableCell className="text-right">
-                             <ManagementDropdown course={course} onStatusChange={handleChangeStatus} onDelete={setCourseToDelete} isProcessing={false} />
+                             <ManagementDropdown course={course} onStatusChange={handleChangeStatus} onDelete={setCourseToDelete} onAssign={() => setCourseToAssign(course)} isProcessing={false} />
                          </TableCell>
                      </TableRow>
                  ))}
@@ -333,6 +336,7 @@ export default function ManageCoursesPage() {
               viewMode="management"
               onStatusChange={handleChangeStatus}
               onDelete={setCourseToDelete}
+              onAssign={() => setCourseToAssign(course)}
           />
       ))}
     </div>
@@ -411,14 +415,24 @@ export default function ManageCoursesPage() {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {courseToAssign && (
+        <CourseAssignmentModal
+            isOpen={!!courseToAssign}
+            onClose={() => setCourseToAssign(null)}
+            courseId={courseToAssign.id}
+            courseTitle={courseToAssign.title}
+        />
+      )}
     </div>
   );
 }
 
-const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: {
+const ManagementDropdown = ({ course, onStatusChange, onDelete, onAssign, isProcessing }: {
     course: AppCourseType,
     onStatusChange?: (courseId: string, newStatus: CourseStatus) => void,
     onDelete?: (course: AppCourseType) => void,
+    onAssign?: () => void,
     isProcessing: boolean,
 }) => {
     const handleAction = (e: React.MouseEvent, action: () => void) => {
@@ -439,6 +453,7 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: 
                 <DropdownMenuItem asChild><Link href={`/manage-courses/${course.id}/edit`}><Edit className="mr-2 h-4 w-4"/> Editar</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link href={`/courses/${course.id}`} target="_blank"><Eye className="mr-2 h-4 w-4"/> Vista Previa</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link href={`/enrollments?courseId=${course.id}`}><Users className="mr-2 h-4 w-4"/> Ver Inscritos</Link></DropdownMenuItem>
+                {course.isMandatory && <DropdownMenuItem onSelect={(e) => handleAction(e, onAssign)}><Users className="mr-2 h-4 w-4"/>Asignar Curso</DropdownMenuItem>}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'PUBLISHED'))} disabled={isProcessing || course.status === 'PUBLISHED'}>Publicar</DropdownMenuItem>
                 <DropdownMenuItem onSelect={(e) => handleAction(e, () => onStatusChange?.(course.id, 'ARCHIVED'))} disabled={isProcessing || course.status === 'ARCHIVED'}>Archivar</DropdownMenuItem>
@@ -449,3 +464,4 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, isProcessing }: 
         </DropdownMenu>
     );
 }
+
