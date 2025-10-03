@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, AlertTriangle, PlusCircle, Award, Edit, Trash2, Eye } from 'lucide-react';
 import Image from 'next/image';
@@ -13,6 +13,17 @@ import type { CertificateTemplate } from '@prisma/client';
 import { CertificateEditorModal } from './certificate-editor-modal';
 import { CertificatePreview } from './certificate-preview';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { cn } from '@/lib/utils';
 
 const TemplateCard = ({ template, onEdit, onDelete, onPreview }: { template: CertificateTemplate, onEdit: (t: CertificateTemplate) => void, onDelete: (t: CertificateTemplate) => void, onPreview: (t: CertificateTemplate) => void }) => {
     return (
@@ -44,6 +55,8 @@ export function CertificateTemplateManager() {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editingTemplate, setEditingTemplate] = useState<CertificateTemplate | null>(null);
     const [previewingTemplate, setPreviewingTemplate] = useState<CertificateTemplate | null>(null);
+    const [deletingTemplate, setDeletingTemplate] = useState<CertificateTemplate | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
 
     const fetchTemplates = useCallback(async () => {
@@ -81,8 +94,25 @@ export function CertificateTemplateManager() {
         setIsEditorOpen(false); // Cerrar el modal
     };
     
-    const handleDeleteTemplate = (template: CertificateTemplate) => {
-        toast({ title: 'Función en desarrollo', description: 'La eliminación se implementará pronto.'});
+    const handleDeleteConfirm = async () => {
+        if (!deletingTemplate) return;
+        setIsDeleting(true);
+        try {
+            const response = await fetch(`/api/certificates/templates/${deletingTemplate.id}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'No se pudo eliminar la plantilla.');
+            }
+            toast({ title: "Plantilla Eliminada", description: `La plantilla "${deletingTemplate.name}" ha sido eliminada.` });
+            fetchTemplates(); // Refresh the list
+        } catch (err) {
+            toast({ title: 'Error al Eliminar', description: (err as Error).message, variant: 'destructive' });
+        } finally {
+            setIsDeleting(false);
+            setDeletingTemplate(null);
+        }
     };
 
     if (isLoading) {
@@ -109,7 +139,7 @@ export function CertificateTemplateManager() {
             {templates.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {templates.map(template => (
-                        <TemplateCard key={template.id} template={template} onEdit={handleOpenEditor} onDelete={handleDeleteTemplate} onPreview={setPreviewingTemplate}/>
+                        <TemplateCard key={template.id} template={template} onEdit={handleOpenEditor} onDelete={setDeletingTemplate} onPreview={setPreviewingTemplate}/>
                     ))}
                 </div>
             ) : (
@@ -140,6 +170,25 @@ export function CertificateTemplateManager() {
                     {previewingTemplate && <CertificatePreview template={previewingTemplate} />}
                 </DialogContent>
             </Dialog>
+
+            <AlertDialog open={!!deletingTemplate} onOpenChange={(open) => !open && setDeletingTemplate(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Se eliminará permanentemente la plantilla "<strong>{deletingTemplate?.name}</strong>". 
+                            No podrás eliminarla si está siendo usada por algún curso.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteConfirm} disabled={isDeleting} className={cn(buttonVariants({ variant: "destructive" }))}>
+                            {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Trash2 className="mr-2 h-4 w-4"/>}
+                            Sí, eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
