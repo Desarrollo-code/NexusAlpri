@@ -1,3 +1,4 @@
+
 // src/components/motivations/motivation-editor-modal.tsx
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -16,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Save, Image as ImageIcon, Video, BookOpen, Sparkles, XCircle, Replace } from 'lucide-react';
+import { Loader2, Save, Image as ImageIcon, Video, BookOpen, Sparkles, XCircle, Replace, Users } from 'lucide-react';
 import type { MotivationalMessage, MotivationalMessageTriggerType, Course } from '@/types';
 import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -30,6 +31,11 @@ interface MotivationEditorModalProps {
     message: MotivationalMessage | null;
     onSave: () => void;
 }
+
+const levelTriggers = Array.from({ length: 20 }, (_, i) => ({
+  id: `level-${i + 2}`,
+  title: `Alcanzar Nivel ${i + 2}`,
+}));
 
 export function MotivationEditorModal({ isOpen, onClose, message, onSave }: MotivationEditorModalProps) {
     const { user } = useAuth();
@@ -69,7 +75,7 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
                 URL.revokeObjectURL(localImagePreview);
             }
         };
-    }, [isOpen, message]);
+    }, [isOpen, message, localImagePreview]);
 
     useEffect(() => {
         if (isOpen) {
@@ -99,7 +105,6 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
     const handleImageUpload = async (file: File | null) => {
         if (!file) return;
         
-        // Create a local URL for instant preview
         const previewUrl = URL.createObjectURL(file);
         setLocalImagePreview(previewUrl);
 
@@ -111,7 +116,6 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
             toast({ title: 'Imagen Subida'});
         } catch (err) {
             toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
-            // Clear preview on error
             URL.revokeObjectURL(previewUrl);
             setLocalImagePreview(null);
         } finally {
@@ -157,6 +161,22 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
     };
     
     const finalImageUrl = localImagePreview || imageUrl;
+    
+    const triggerOptions = {
+        'COURSE_ENROLLMENT': courses,
+        'COURSE_MID_PROGRESS': courses,
+        'COURSE_NEAR_COMPLETION': courses,
+        'COURSE_COMPLETION': courses,
+        'LEVEL_UP': levelTriggers,
+    };
+
+    const triggerLabels = {
+        'COURSE_ENROLLMENT': 'Al inscribirse a un curso',
+        'COURSE_MID_PROGRESS': 'Al 50% de un curso',
+        'COURSE_NEAR_COMPLETION': 'Al 90% de un curso',
+        'COURSE_COMPLETION': 'Al completar un curso',
+        'LEVEL_UP': 'Al subir de nivel',
+    };
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -214,27 +234,26 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
                     <div className="space-y-2 p-4 border rounded-lg bg-muted/30">
                         <Label>Disparador del Mensaje</Label>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <Select value={triggerType} onValueChange={v => setTriggerType(v as MotivationalMessageTriggerType)} disabled>
+                             <Select value={triggerType} onValueChange={(v: MotivationalMessageTriggerType) => { setTriggerType(v); setTriggerId(null); }}>
                                 <SelectTrigger>
                                     <SelectValue/>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="COURSE_COMPLETION">Al completar un curso</SelectItem>
-                                    {/* Otros triggers se pueden añadir aquí en el futuro */}
+                                    {Object.entries(triggerLabels).map(([key, label]) => (
+                                        <SelectItem key={key} value={key}>{label}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
-                            {triggerType === 'COURSE_COMPLETION' && (
-                                <Select value={triggerId || ''} onValueChange={setTriggerId} required>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecciona un curso..."/>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {courses.map(course => (
-                                            <SelectItem key={course.id} value={course.id}>{course.title}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            )}
+                            <Select value={triggerId || ''} onValueChange={setTriggerId} required>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona..."/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {(triggerOptions[triggerType] || []).map(opt => (
+                                        <SelectItem key={opt.id} value={opt.id}>{opt.title}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
                 </form>

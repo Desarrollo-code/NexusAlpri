@@ -1,6 +1,8 @@
+
 // src/lib/gamification.ts
 import prisma from '@/lib/prisma';
 import type { User } from '@/types';
+import type { MotivationalMessageTriggerType } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,6 +43,40 @@ type AwardAchievementParams = {
 }
 
 // --- FUNCIONES PRINCIPALES ---
+
+/**
+ * Dispara un mensaje motivacional si existe uno para el trigger especificado.
+ */
+export async function triggerMotivationalMessage(
+    userId: string, 
+    triggerType: MotivationalMessageTriggerType, 
+    triggerId: string
+) {
+    try {
+        const message = await prisma.motivationalMessage.findFirst({
+            where: {
+                triggerType,
+                triggerId,
+            }
+        });
+
+        if (message) {
+            await prisma.notification.create({
+                data: {
+                    userId,
+                    title: message.title,
+                    description: '¡Felicidades! Tienes un nuevo mensaje de motivación.',
+                    link: `/`, // El link puede ser genérico, la notificación será especial.
+                    isMotivational: true,
+                    motivationalMessageId: message.id,
+                }
+            });
+        }
+    } catch (error) {
+        console.error(`Error al disparar el mensaje motivacional ${triggerType} para ${triggerId}:`, error);
+    }
+}
+
 
 /**
  * Añade puntos de experiencia (XP) a un usuario y verifica si sube de nivel.
@@ -204,7 +240,8 @@ export async function checkAndAwardLevelUp(user: User, oldXp: number) {
     const newLevel = calculateLevel(user.xp);
 
     if (newLevel > oldLevel) {
-        // El usuario subió de nivel
+        await triggerMotivationalMessage(user.id, 'LEVEL_UP', `level-${newLevel}`);
+
         await prisma.notification.create({
             data: {
                 userId: user.id,

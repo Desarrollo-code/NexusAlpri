@@ -2,6 +2,7 @@
 // src/lib/progress.ts
 import prisma from '@/lib/prisma';
 import type { LessonCompletionRecord as AppLessonCompletionRecord } from '@/types';
+import { triggerMotivationalMessage } from './gamification';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,7 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
     }
 
     const progressId = enrollment.progress.id;
+    const oldPercentage = enrollment.progress.progressPercentage || 0;
     
     const existingRecord = await prisma.lessonCompletionRecord.findUnique({
         where: { progressId_lessonId: { progressId, lessonId } }
@@ -51,7 +53,7 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
     }
 
     // Always recalculate progress after an interaction is recorded or updated
-    await recalculateProgress({ userId, courseId, progressId });
+    await recalculateProgress({ userId, courseId, progressId, oldPercentage });
 
     return wasNewInteraction;
 }
@@ -60,7 +62,7 @@ export async function recordLessonInteraction({ userId, courseId, lessonId, type
 /**
  * Recalculates and updates the progress percentage for a user in a course.
  */
-export async function recalculateProgress({ userId, courseId, progressId }: { userId: string, courseId: string, progressId: string }) {
+export async function recalculateProgress({ userId, courseId, progressId, oldPercentage }: { userId: string, courseId: string, progressId: string, oldPercentage: number }) {
     
     const [completedLessonsCount, totalLessonsCount] = await Promise.all([
         prisma.lessonCompletionRecord.count({ where: { progressId } }),
@@ -79,4 +81,12 @@ export async function recalculateProgress({ userId, courseId, progressId }: { us
             lastActivity: new Date(),
         }
     });
+
+    // Check for progress-based motivational messages
+    if (oldPercentage < 50 && newPercentage >= 50) {
+        await triggerMotivationalMessage(userId, 'COURSE_MID_PROGRESS', courseId);
+    }
+    if (oldPercentage < 90 && newPercentage >= 90) {
+        await triggerMotivationalMessage(userId, 'COURSE_NEAR_COMPLETION', courseId);
+    }
 }
