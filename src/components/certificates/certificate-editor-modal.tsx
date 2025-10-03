@@ -1,3 +1,4 @@
+
 // src/components/certificates/certificate-editor-modal.tsx
 'use client';
 
@@ -14,12 +15,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Save, Image as ImageIcon, Replace, XCircle, Award } from 'lucide-react';
+import { Loader2, Save, Image as ImageIcon, Replace, XCircle, Award, Eye } from 'lucide-react';
 import type { CertificateTemplate } from '@prisma/client';
 import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '../ui/progress';
 import Image from 'next/image';
+import { CertificatePreview } from './certificate-preview';
 
 interface CertificateEditorModalProps {
     isOpen: boolean;
@@ -41,6 +43,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
     const [uploadProgress, setUploadProgress] = useState(0);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -54,6 +57,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
             setLocalImagePreview(null);
             setIsUploading(false);
             setUploadProgress(0);
+            setShowPreview(false);
         } else {
              if (localImagePreview) {
                 URL.revokeObjectURL(localImagePreview);
@@ -107,7 +111,6 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
             backgroundImageUrl: finalImageUrl,
         };
         
-        // Lógica de PUT (editar) aún no implementada
         const endpoint = template ? `/api/certificates/templates/${template.id}` : '/api/certificates/templates';
         const method = template ? 'PUT' : 'POST';
         
@@ -127,6 +130,32 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
             setIsSubmitting(false);
         }
     };
+    
+    const fakeTemplateForPreview = {
+        id: 'preview',
+        name,
+        backgroundImageUrl: finalImageUrl || '',
+        textColor: '#000000',
+        studentNamePosition: { x: 50, y: 45, fontSize: 48, fontWeight: 'bold', textAlign: 'center' },
+        courseNamePosition: { x: 50, y: 60, fontSize: 24, fontWeight: 'normal', textAlign: 'center' },
+        datePosition: { x: 50, y: 75, fontSize: 18, fontWeight: 'normal', textAlign: 'center' },
+        scorePosition: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    };
+
+    if (showPreview) {
+        return (
+            <Dialog open={isOpen} onOpenChange={onClose}>
+                <DialogContent className="max-w-4xl p-0 border-0">
+                    <CertificatePreview template={fakeTemplateForPreview} />
+                     <DialogFooter className="absolute bottom-4 right-4">
+                        <Button variant="outline" onClick={() => setShowPreview(false)}>Volver al Editor</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        )
+    }
     
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -175,6 +204,10 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                     </div>
                 </form>
                 <DialogFooter>
+                    <Button variant="ghost" onClick={() => setShowPreview(true)} disabled={!finalImageUrl}>
+                        <Eye className="mr-2 h-4 w-4"/>
+                        Previsualizar
+                    </Button>
                     <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
                     <Button type="submit" form="template-form" disabled={isSubmitting || !name || !finalImageUrl}>
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}

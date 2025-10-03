@@ -1,3 +1,4 @@
+
 // src/components/certificates/certificate-template-manager.tsx
 'use client';
 
@@ -6,12 +7,14 @@ import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertTriangle, PlusCircle, Award, Edit, Trash2 } from 'lucide-react';
+import { Loader2, AlertTriangle, PlusCircle, Award, Edit, Trash2, Eye } from 'lucide-react';
 import Image from 'next/image';
 import type { CertificateTemplate } from '@prisma/client';
 import { CertificateEditorModal } from './certificate-editor-modal';
+import { CertificatePreview } from './certificate-preview';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
-const TemplateCard = ({ template, onEdit, onDelete }: { template: CertificateTemplate, onEdit: (t: CertificateTemplate) => void, onDelete: (t: CertificateTemplate) => void }) => {
+const TemplateCard = ({ template, onEdit, onDelete, onPreview }: { template: CertificateTemplate, onEdit: (t: CertificateTemplate) => void, onDelete: (t: CertificateTemplate) => void, onPreview: (t: CertificateTemplate) => void }) => {
     return (
         <Card className="flex flex-col">
             <CardHeader>
@@ -23,6 +26,7 @@ const TemplateCard = ({ template, onEdit, onDelete }: { template: CertificateTem
                 </div>
             </CardContent>
              <CardContent className="flex justify-end gap-2">
+                <Button variant="outline" size="sm" onClick={() => onPreview(template)}><Eye className="mr-2 h-4 w-4"/>Previsualizar</Button>
                 <Button variant="outline" size="sm" onClick={() => onEdit(template)}><Edit className="mr-2 h-4 w-4"/>Editar</Button>
                 <Button variant="destructive" size="sm" onClick={() => onDelete(template)}><Trash2 className="mr-2 h-4 w-4"/>Eliminar</Button>
              </CardContent>
@@ -39,6 +43,8 @@ export function CertificateTemplateManager() {
 
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editingTemplate, setEditingTemplate] = useState<CertificateTemplate | null>(null);
+    const [previewingTemplate, setPreviewingTemplate] = useState<CertificateTemplate | null>(null);
+
 
     const fetchTemplates = useCallback(async () => {
         setIsLoading(true);
@@ -103,7 +109,7 @@ export function CertificateTemplateManager() {
             {templates.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {templates.map(template => (
-                        <TemplateCard key={template.id} template={template} onEdit={handleOpenEditor} onDelete={handleDeleteTemplate}/>
+                        <TemplateCard key={template.id} template={template} onEdit={handleOpenEditor} onDelete={handleDeleteTemplate} onPreview={setPreviewingTemplate}/>
                     ))}
                 </div>
             ) : (
@@ -128,6 +134,12 @@ export function CertificateTemplateManager() {
                 template={editingTemplate}
                 onSave={handleSaveSuccess}
             />
+            
+            <Dialog open={!!previewingTemplate} onOpenChange={(isOpen) => !isOpen && setPreviewingTemplate(null)}>
+                <DialogContent className="max-w-4xl p-0 border-0">
+                    {previewingTemplate && <CertificatePreview template={previewingTemplate} />}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
