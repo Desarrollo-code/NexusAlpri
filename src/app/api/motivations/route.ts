@@ -2,7 +2,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import { MotivationalMessageTriggerType } from '@prisma/client';
 import type { MotivationalMessage as PrismaMotivationalMessage, Course } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
@@ -33,7 +32,7 @@ export async function GET(req: NextRequest) {
         // 2. Extraer los IDs de los cursos de los mensajes que son de tipo COURSE_COMPLETION.
         const courseIds = baseMessages
             .filter(msg => msg.triggerType === 'COURSE_COMPLETION' && msg.triggerId)
-            .map(msg => msg.triggerId);
+            .map(msg => msg.triggerId!);
 
         let coursesMap = new Map<string, { id: string; title: string }>();
 
@@ -69,7 +68,7 @@ export async function GET(req: NextRequest) {
     } catch (error) {
         console.error("[MOTIVATIONS_GET_ERROR]", error);
         // En caso de un error inesperado, devuelve un array vacío para no romper el cliente.
-        return NextResponse.json([], { status: 500 });
+        return NextResponse.json({ message: 'Error al cargar los mensajes', error: (error as Error).message }, { status: 500 });
     }
 }
 
