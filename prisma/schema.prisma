@@ -145,6 +145,7 @@ model User {
   achievements          UserAchievement[]
   sharedForms           Form[]              @relation("SharedForms") // <--- FIX 2: Added opposite relation
   motivationalMessages MotivationalMessage[]
+  eventParticipations EventParticipation[]
 
   @@map("users")
 }
@@ -445,6 +446,8 @@ model Notification {
   createdAt        DateTime     @default(now())
   announcement     Announcement? @relation(fields: [announcementId], references: [id], onDelete: SetNull)
   announcementId   String?
+  interactiveEventId String?
+  interactiveEventOccurrence DateTime?
 
   @@map("notifications")
 }
@@ -497,9 +500,26 @@ model CalendarEvent {
   parentId            String?
   parent              CalendarEvent?  @relation("RecurringEvents", fields: [parentId], references: [id], onDelete: Cascade)
   occurrences         CalendarEvent[] @relation("RecurringEvents")
-
+  isInteractive Boolean @default(false)
+  participations EventParticipation[]
+  
   @@map("calendar_events")
 }
+
+model EventParticipation {
+    id               String    @id @default(cuid())
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String
+  event            CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId          String
+  occurrenceDate   DateTime 
+  
+  confirmedAt      DateTime  @default(now())
+
+  @@unique([userId, eventId, occurrenceDate])
+  @@map("event_participations")
+}
+
 
 // --- FORMS MODELS ---
 model Form {
