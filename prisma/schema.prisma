@@ -164,6 +164,7 @@ model Course {
   updatedAt       DateTime        @updatedAt
   publicationDate DateTime?
   enrollments     Enrollment[]
+  isMandatory     Boolean         @default(false)
   progress        CourseProgress[]
     // Relación para cursos con prerrequisitos
   prerequisite   Course?  @relation("CoursePrerequisites", fields: [prerequisiteId], references: [id], onDelete: SetNull, onUpdate: Cascade)
