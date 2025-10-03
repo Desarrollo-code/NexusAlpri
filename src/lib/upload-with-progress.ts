@@ -30,9 +30,11 @@ export async function uploadWithProgress(
       throw new Error(errorData.message || `Error al obtener la URL de subida: ${response.statusText}`);
     }
     signedUrlResponse = await response.json();
-
-    if (!signedUrlResponse.success || !signedUrlResponse.uploadUrl) {
-      throw new Error('La API no devolvió una URL de subida válida.');
+    
+    // CORRECCIÓN: La respuesta de la API debería ser { url: '...' } pero recibimos { publicUrl: '...' }
+    // Este cambio lo hace compatible.
+    if (!signedUrlResponse.uploadUrl || !(signedUrlResponse.publicUrl || signedUrlResponse.url)) {
+      throw new Error('La API no devolvió una URL de subida o pública válida.');
     }
   } catch (error) {
     console.error("Error en el Paso 1 (Obtener URL firmada):", error);
@@ -43,7 +45,6 @@ export async function uploadWithProgress(
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     
-    // Usamos PUT para la URL firmada de Supabase
     xhr.open('PUT', signedUrlResponse.uploadUrl, true);
     xhr.setRequestHeader('Content-Type', file.type);
 
@@ -57,7 +58,7 @@ export async function uploadWithProgress(
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         // La subida fue exitosa, resolvemos con la URL pública que obtuvimos en el paso 1
-        resolve({ url: signedUrlResponse.publicUrl });
+        resolve({ url: signedUrlResponse.publicUrl || signedUrlResponse.url });
       } else {
         // El servidor de Supabase devolvió un error
         reject(new Error(`Error en la subida directa: ${xhr.status} ${xhr.statusText}`));

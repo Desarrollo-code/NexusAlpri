@@ -3,10 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { getCurrentUser } from '@/lib/auth';
 
-// Aumentar el tiempo de ejecución si es necesario para la generación de la URL
 export const maxDuration = 60; 
-
-// ELIMINADO: El objeto de configuración `config` que causaba el error de Content-Type.
 
 export async function POST(request: NextRequest) {
   const session = await getCurrentUser();
@@ -38,12 +35,12 @@ export async function POST(request: NextRequest) {
       throw new Error(`Error generando URL firmada: ${error.message}`);
     }
 
+    const publicUrl = supabaseAdmin.storage.from('lesson_files').getPublicUrl(finalPath).data.publicUrl;
+
     // Devolvemos la URL firmada (PUT) y la URL pública final (GET)
     return NextResponse.json({
-      success: true,
       uploadUrl: data.signedUrl,
-      publicUrl: supabaseAdmin.storage.from('lesson_files').getPublicUrl(finalPath).data.publicUrl,
-      path: finalPath,
+      url: publicUrl, // Aseguramos que la clave sea 'url'
     });
 
   } catch (e) {
