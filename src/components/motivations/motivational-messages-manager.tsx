@@ -54,13 +54,20 @@ export function MotivationalMessagesManager() {
         setError(null);
         try {
             const response = await fetch('/api/motivations');
-            if (!response.ok) throw new Error('No se pudieron cargar los mensajes');
             const data = await response.json();
+            console.log('API response for messages:', data); // Log para depuración
+            if (!response.ok) {
+                throw new Error(data.message || 'No se pudieron cargar los mensajes');
+            }
+            
+            // Asegurarse de que data es un array antes de establecerlo
             if (Array.isArray(data)) {
-              setMessages(data);
+                setMessages(data);
             } else {
-              console.warn("API did not return an array for messages, setting to empty array.");
-              setMessages([]);
+                console.warn("API did not return an array for messages, setting to empty array.", data);
+                setMessages([]);
+                // Opcional: mostrar un error si la respuesta no es la esperada pero la petición fue "ok"
+                // setError("La respuesta del servidor no tuvo el formato esperado.");
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido');
@@ -68,6 +75,7 @@ export function MotivationalMessagesManager() {
             setIsLoading(false);
         }
     }, []);
+
 
     useEffect(() => {
         if (user) {
