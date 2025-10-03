@@ -1,5 +1,5 @@
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType, MotivationalMessageTriggerType, MotivationalMessage as PrismaMotivationalMessage, Course as PrismaCourse } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType, MotivationalMessageTriggerType, MotivationalMessage as PrismaMotivationalMessage, Course as PrismaCourse, CourseAssignment as PrismaCourseAssignment } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -166,6 +166,8 @@ export interface UserNote {
     createdAt: string;
     updatedAt: string;
 }
+
+export type CourseAssignment = PrismaCourseAssignment;
 
 
 // --- RESOURCES ---

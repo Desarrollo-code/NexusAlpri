@@ -1,4 +1,3 @@
-
 // src/lib/gamification.ts
 import prisma from '@/lib/prisma';
 import type { User } from '@/types';
@@ -158,6 +157,24 @@ export async function awardAchievement({ userId, slug }: AwardAchievementParams)
     } catch (error) {
         console.error(`Error al otorgar el logro "${slug}" al usuario ${userId}:`, error);
     }
+}
+
+/**
+ * Crea una notificación para un usuario cuando se le asigna un curso.
+ */
+export async function sendCourseAssignmentNotification(userId: string, courseId: string, courseTitle: string, assignerName: string | null) {
+  try {
+    await prisma.notification.create({
+      data: {
+        userId: userId,
+        title: 'Curso Obligatorio Asignado',
+        description: `${assignerName || 'Un administrador'} te ha asignado el curso "${courseTitle}".`,
+        link: `/courses/${courseId}`,
+      },
+    });
+  } catch (error) {
+    console.error(`Error enviando notificación de asignación al usuario ${userId} para el curso ${courseId}:`, error);
+  }
 }
 
 // --- FUNCIONES DE VERIFICACIÓN DE LOGROS ---
