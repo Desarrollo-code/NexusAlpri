@@ -16,11 +16,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Save, Image as ImageIcon, Video, BookOpen, Sparkles } from 'lucide-react';
+import { Loader2, Save, Image as ImageIcon, Video, BookOpen, Sparkles, XCircle, Replace } from 'lucide-react';
 import type { MotivationalMessage, MotivationalMessageTriggerType, Course } from '@/types';
 import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
 import { Progress } from '../ui/progress';
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 interface MotivationEditorModalProps {
     isOpen: boolean;
@@ -43,6 +45,9 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
 
     const [courses, setCourses] = useState<Pick<Course, 'id' | 'title'>[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // State for local image preview and upload progress
+    const [localImagePreview, setLocalImagePreview] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -56,6 +61,15 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
         }
     }, [toast]);
+
+    useEffect(() => {
+        // Reset and cleanup local preview URL when modal closes or changes
+        return () => {
+            if (localImagePreview) {
+                URL.revokeObjectURL(localImagePreview);
+            }
+        };
+    }, [isOpen, message]);
 
     useEffect(() => {
         if (isOpen) {
@@ -75,12 +89,20 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
                 setTriggerType('COURSE_COMPLETION');
                 setTriggerId(null);
             }
+            setLocalImagePreview(null);
+            setIsUploading(false);
+            setUploadProgress(0);
             fetchCourses();
         }
     }, [message, isOpen, fetchCourses]);
     
     const handleImageUpload = async (file: File | null) => {
         if (!file) return;
+        
+        // Create a local URL for instant preview
+        const previewUrl = URL.createObjectURL(file);
+        setLocalImagePreview(previewUrl);
+
         setIsUploading(true);
         setUploadProgress(0);
         try {
@@ -89,10 +111,21 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
             toast({ title: 'Imagen Subida'});
         } catch (err) {
             toast({ title: 'Error de subida', description: (err as Error).message, variant: 'destructive' });
+            // Clear preview on error
+            URL.revokeObjectURL(previewUrl);
+            setLocalImagePreview(null);
         } finally {
             setIsUploading(false);
         }
     };
+    
+    const handleRemoveImage = () => {
+        if (localImagePreview) {
+            URL.revokeObjectURL(localImagePreview);
+        }
+        setLocalImagePreview(null);
+        setImageUrl(null);
+    }
 
 
     const handleFormSubmit = async (e: React.FormEvent) => {
@@ -122,6 +155,8 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
             setIsSubmitting(false);
         }
     };
+    
+    const finalImageUrl = localImagePreview || imageUrl;
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -145,11 +180,32 @@ export function MotivationEditorModal({ isOpen, onClose, message, onSave }: Moti
                         <Textarea id="msg-content" value={content} onChange={e => setContent(e.target.value)} />
                     </div>
                      <div className="space-y-1">
-                        <Label htmlFor="msg-image-url">URL de Imagen (Opcional)</Label>
-                        <Input id="msg-image-url" value={imageUrl || ''} onChange={e => setImageUrl(e.target.value)} placeholder="https://ejemplo.com/imagen.png"/>
-                        <p className="text-xs text-muted-foreground text-center my-2">o</p>
-                        <UploadArea onFileSelect={handleImageUpload} disabled={isUploading} />
-                        {isUploading && <Progress value={uploadProgress} className="mt-2" />}
+                        <Label htmlFor="msg-image-url">Imagen (Opcional)</Label>
+                        {finalImageUrl && !isUploading ? (
+                            <div className="relative w-full aspect-video rounded-lg border overflow-hidden bg-muted/20 p-2">
+                                <Image src={finalImageUrl} alt="Previsualización" fill className="object-contain p-2" />
+                                <div className="absolute top-1 right-1 flex flex-col gap-1 z-10">
+                                    <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={() => document.getElementById('image-upload-input')?.click()} disabled={isSubmitting}>
+                                        <Replace className="h-4 w-4"/>
+                                    </Button>
+                                    <Button type="button" variant="destructive" size="icon" className="h-7 w-7 rounded-full shadow-md" onClick={handleRemoveImage} disabled={isSubmitting}>
+                                        <XCircle className="h-4 w-4"/>
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : isUploading ? (
+                             <div className="w-full aspect-video flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
+                                {localImagePreview && <Image src={localImagePreview} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
+                                <div className="z-10 text-center space-y-2">
+                                    <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+                                    <p className="text-sm text-muted-foreground">Subiendo...</p>
+                                    <Progress value={uploadProgress} className="w-32 h-1.5" />
+                                </div>
+                            </div>
+                        ) : (
+                            <UploadArea inputId="image-upload-input" onFileSelect={handleImageUpload} disabled={isSubmitting} />
+                        )}
+                         <input type="file" id="image-upload-input" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e.target.files ? e.target.files[0] : null)} />
                     </div>
                      <div className="space-y-1">
                         <Label htmlFor="msg-video-url">URL de Video (YouTube, opcional)</Label>
