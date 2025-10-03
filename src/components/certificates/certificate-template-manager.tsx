@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2, AlertTriangle, PlusCircle, Award, Edit, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import type { CertificateTemplate } from '@prisma/client';
+import { CertificateEditorModal } from './certificate-editor-modal';
 
 const TemplateCard = ({ template, onEdit, onDelete }: { template: CertificateTemplate, onEdit: (t: CertificateTemplate) => void, onDelete: (t: CertificateTemplate) => void }) => {
     return (
@@ -36,6 +37,9 @@ export function CertificateTemplateManager() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const [editingTemplate, setEditingTemplate] = useState<CertificateTemplate | null>(null);
+
     const fetchTemplates = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -61,16 +65,18 @@ export function CertificateTemplateManager() {
         }
     }, [user, fetchTemplates]);
     
-    const handleAddTemplate = () => {
-        toast({ title: 'Función en desarrollo', description: 'La creación de plantillas estará disponible próximamente.'});
-    }
-    
-    const handleEditTemplate = (template: CertificateTemplate) => {
-        toast({ title: 'Función en desarrollo', description: 'La edición de plantillas estará disponible próximamente.'});
-    }
+    const handleOpenEditor = (template: CertificateTemplate | null = null) => {
+        setEditingTemplate(template);
+        setIsEditorOpen(true);
+    };
 
+    const handleSaveSuccess = () => {
+        fetchTemplates(); // Recargar la lista de plantillas
+        setIsEditorOpen(false); // Cerrar el modal
+    };
+    
     const handleDeleteTemplate = (template: CertificateTemplate) => {
-        toast({ title: 'Función en desarrollo', description: 'La eliminación de plantillas estará disponible próximamente.'});
+        toast({ title: 'Función en desarrollo', description: 'La eliminación se implementará pronto.'});
     };
 
     if (isLoading) {
@@ -88,7 +94,7 @@ export function CertificateTemplateManager() {
                     <h1 className="text-2xl font-semibold">Gestionar Plantillas de Certificados</h1>
                     <p className="text-muted-foreground">Crea y personaliza las plantillas que se usarán para generar los certificados de finalización.</p>
                 </div>
-                <Button onClick={handleAddTemplate}>
+                <Button onClick={() => handleOpenEditor()}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Crear Nueva Plantilla
                 </Button>
@@ -97,7 +103,7 @@ export function CertificateTemplateManager() {
             {templates.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {templates.map(template => (
-                        <TemplateCard key={template.id} template={template} onEdit={handleEditTemplate} onDelete={handleDeleteTemplate}/>
+                        <TemplateCard key={template.id} template={template} onEdit={handleOpenEditor} onDelete={handleDeleteTemplate}/>
                     ))}
                 </div>
             ) : (
@@ -108,13 +114,20 @@ export function CertificateTemplateManager() {
                         <CardDescription>Aún no has creado ninguna plantilla. ¡Crea la primera para empezar a reconocer los logros de tus estudiantes!</CardDescription>
                     </CardHeader>
                     <CardContent>
-                         <Button onClick={handleAddTemplate}>
+                         <Button onClick={() => handleOpenEditor()}>
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Crear Mi Primera Plantilla
                         </Button>
                     </CardContent>
                 </Card>
             )}
+
+            <CertificateEditorModal 
+                isOpen={isEditorOpen}
+                onClose={() => setIsEditorOpen(false)}
+                template={editingTemplate}
+                onSave={handleSaveSuccess}
+            />
         </div>
     );
 }
