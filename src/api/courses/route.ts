@@ -64,6 +64,7 @@ export async function GET(req: NextRequest) {
 
     const courseInclude = {
       instructor: { select: { id: true, name: true, avatar: true } },
+      prerequisite: { select: { id: true, title: true } }, // Incluir prerrequisito
       _count: {
         select: {
           modules: true,
@@ -81,19 +82,41 @@ export async function GET(req: NextRequest) {
           },
         },
       }),
+      // Si estamos en la vista de catálogo, obtener el progreso del usuario actual en los prerrequisitos
+      ...(!manageView && userId && {
+          userProgress: {
+              where: { userId },
+              select: { completedAt: true }
+          }
+      })
     };
 
-    const [courses, totalCourses] = await prisma.$transaction([
-      prisma.course.findMany({
+    const coursesFromDb = await prisma.course.findMany({
         where: whereClause,
         include: courseInclude,
         orderBy: { createdAt: 'desc' },
         ...(isPaginated && { skip, take: pageSize }),
-      }),
-      prisma.course.count({ where: whereClause }),
-    ]);
+    });
+
+    const coursesWithPrereqCompletion = userId ? await Promise.all(coursesFromDb.map(async (course) => {
+        if (course.prerequisiteId) {
+            const prereqProgress = await prisma.courseProgress.findFirst({
+                where: {
+                    userId: userId,
+                    courseId: course.prerequisiteId,
+                    completedAt: { not: null },
+                },
+                select: { completedAt: true }
+            });
+            return { ...course, prerequisiteCompleted: !!prereqProgress };
+        }
+        return { ...course, prerequisiteCompleted: true }; // No prerequisite means it's "completed"
+    })) : coursesFromDb.map(c => ({...c, prerequisiteCompleted: true}));
+
+
+    const totalCourses = await prisma.course.count({ where: whereClause });
     
-    const enrichedCourses = courses.map((course: any) => {
+    const enrichedCourses = coursesWithPrereqCompletion.map((course: any) => {
       let averageCompletion = 0;
       if (manageView && course.enrollments && course.enrollments.length > 0) {
         const validProgress = course.enrollments
@@ -129,7 +152,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, description, category } = body;
+    const { title, description, category, prerequisiteId } = body;
     
     if (!title || !description) {
       return NextResponse.json({ message: 'Título y descripción son requeridos' }, { status: 400 });
@@ -142,6 +165,7 @@ export async function POST(req: NextRequest) {
         category: category || 'General',
         status: 'DRAFT',
         instructor: { connect: { id: session.id } },
+        prerequisiteId: prerequisiteId || null,
       },
       include: { instructor: true },
     });

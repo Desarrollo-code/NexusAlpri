@@ -1,5 +1,5 @@
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType, MotivationalMessageTriggerType, MotivationalMessage as PrismaMotivationalMessage } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType, MotivationalMessageTriggerType, MotivationalMessage as PrismaMotivationalMessage, Course as PrismaCourse } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -112,32 +112,29 @@ export interface Module {
   lessons: Lesson[];
 }
 
-export interface Course {
+export type CoursePrerequisiteInfo = {
   id: string;
   title: string;
-  description: string;
+} | null;
+
+export interface Course extends Omit<PrismaCourse, 'instructor' | 'prerequisite'> {
   instructor: {
       id: string;
       name: string;
       avatar: string | null;
   };
-  instructorId?: string;
-  imageUrl?: string;
-  category?: string;
   modulesCount: number;
   lessonsCount?: number;
-  status: CourseStatus;
   modules: Module[];
   isEnrolled?: boolean;
-  publicationDate?: Date | string | null;
   enrollmentsCount?: number;
   averageCompletion?: number;
-  prerequisiteId?: string | null;
-  prerequisite?: {
-    id: string;
-    title: string;
-  } | null;
+  prerequisite: CoursePrerequisiteInfo;
+  userProgress?: {
+      completedAt: Date | null;
+  }[] | null;
 }
+
 
 export interface EnrolledCourse extends Course {
     enrolledAt: string;

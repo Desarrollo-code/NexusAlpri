@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -17,30 +15,15 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { CourseCarousel } from '@/components/course-carousel';
 import { useTitle } from '@/contexts/title-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { mapApiCourseToAppCourse } from '@/lib/course-utils';
 
 interface ApiCourse extends Omit<PrismaCourse, 'instructor' | '_count' | 'status'> {
   instructor: { id: string; name: string } | null;
   _count: { modules: number };
   modulesCount?: number; 
   status: CourseStatus;
+  prerequisiteCompleted?: boolean;
 }
-
-function mapApiCourseToAppCourse(apiCourse: ApiCourse): AppCourseType {
-  return {
-    id: apiCourse.id,
-    title: apiCourse.title,
-    description: apiCourse.description || '',
-    category: apiCourse.category || undefined,
-    instructor: apiCourse.instructor?.name || 'N/A',
-    instructorId: apiCourse.instructorId || undefined,
-    imageUrl: apiCourse.imageUrl || undefined,
-    modulesCount: apiCourse._count?.modules ?? apiCourse.modulesCount ?? 0,
-    status: apiCourse.status,
-    modules: [], 
-    isEnrolled: undefined, 
-  };
-}
-
 
 export default function CoursesPage() {
   const { user, settings } = useAuth();
@@ -56,8 +39,6 @@ export default function CoursesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   
-  const [enrollmentUpdatedSignal, setEnrollmentUpdatedSignal] = useState(0);
-
   useEffect(() => {
     setPageTitle('Catálogo de Cursos');
   }, [setPageTitle]);
@@ -103,7 +84,7 @@ export default function CoursesPage() {
 
   useEffect(() => {
     fetchCoursesAndEnrollments();
-  }, [fetchCoursesAndEnrollments, enrollmentUpdatedSignal]); 
+  }, [fetchCoursesAndEnrollments]); 
 
   const allCoursesForDisplay = useMemo(() => allApiCourses.map(mapApiCourseToAppCourse), [allApiCourses]);
   
@@ -227,7 +208,7 @@ export default function CoursesPage() {
                             {courses.map((course: AppCourseType, index: number) => (
                                 <CourseCard 
                                     key={course.id} 
-                                    course={{...course, isEnrolled: enrolledCourseIds.includes(course.id)}}
+                                    course={course}
                                     userRole={user?.role || null}
                                     onEnrollmentChange={handleEnrollmentChange}
                                     priority={index < 4}
