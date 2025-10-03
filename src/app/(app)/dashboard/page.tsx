@@ -29,6 +29,7 @@ import {
   UserCog,
   HelpCircle,
   TrendingUp,
+  AlertCircleIcon,
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
@@ -66,6 +67,7 @@ interface DashboardData {
     securityLogs: SecurityLogWithUser[];
     taughtCourses: AppCourseType[];
     myDashboardCourses: EnrolledCourse[];
+    assignedCourses: AppCourseType[] | null; // <-- Añadido
 }
 
 
@@ -207,9 +209,26 @@ function AdminDashboard({ stats, logs, announcements }: { stats: Partial<AdminDa
   );
 }
 
-function StudentDashboard({ stats, announcements, myCourses }: { stats: { enrolled: number, completed: number }, announcements: AnnouncementType[], myCourses: EnrolledCourse[] }) {
+function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: { stats: { enrolled: number, completed: number }, announcements: AnnouncementType[], myCourses: EnrolledCourse[], assignedCourses: AppCourseType[] | null }) {
   return (
     <div className="space-y-8">
+       {assignedCourses && assignedCourses.length > 0 && (
+        <section id="mandatory-courses-section">
+            <Alert variant="default" className="bg-amber-100/60 dark:bg-amber-900/30 border-amber-300 dark:border-amber-800">
+                <AlertCircleIcon className="h-4 w-4 !text-amber-600 dark:!text-amber-400" />
+                <AlertTitle className="text-amber-800 dark:text-amber-200">Tienes Cursos Obligatorios Pendientes</AlertTitle>
+                <AlertDescription className="text-amber-700 dark:text-amber-300">
+                    Se te han asignado los siguientes cursos. Inscríbete para comenzar tu aprendizaje.
+                </AlertDescription>
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {assignedCourses.map((course) => (
+                        <CourseCard key={course.id} course={course} userRole="STUDENT" />
+                    ))}
+                </div>
+            </Alert>
+        </section>
+      )}
+
       <section>
         <h2 className="text-2xl font-semibold mb-4">Tu Progreso</h2>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2" id="student-stats-cards">
@@ -481,7 +500,7 @@ export default function DashboardPage() {
       case 'INSTRUCTOR':
         return data?.instructorStats ? <InstructorDashboard stats={data.instructorStats} announcements={data.recentAnnouncements || []} taughtCourses={data.taughtCourses || []} /> : null;
       case 'STUDENT':
-        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={data.recentAnnouncements || []} myDashboardCourses={data.myDashboardCourses || []} /> : null;
+        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={data.recentAnnouncements || []} myDashboardCourses={data.myDashboardCourses || []} assignedCourses={data.assignedCourses || null} /> : null;
       default:
         return <p>Rol de usuario no reconocido.</p>;
     }

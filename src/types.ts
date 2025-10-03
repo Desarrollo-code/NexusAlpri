@@ -314,6 +314,7 @@ export interface AdminDashboardStats {
     topStudentsByCompletion: UserInfo[];
     topInstructorsByCourses: UserInfo[];
     interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
+    assignedCourses?: Course[]; // <-- Añadido
 }
 
 // --- TEMPLATES ---
