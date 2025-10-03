@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -47,7 +48,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
-import { Switch } from '../ui/switch';
+import { Switch } from '@/components/ui/switch';
 
 
 // === TIPOS E INTERFACES ===
