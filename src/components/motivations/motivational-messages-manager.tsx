@@ -56,12 +56,7 @@ export function MotivationalMessagesManager() {
             const response = await fetch('/api/motivations');
             if (!response.ok) throw new Error('No se pudieron cargar los mensajes');
             const data = await response.json();
-            if (Array.isArray(data)) {
-                setMessages(data);
-            } else {
-                console.warn("La API de motivaciones no devolvió un array:", data);
-                setMessages([]); // Fallback a array vacío si la respuesta no es un array
-            }
+            setMessages(data);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido');
         } finally {
@@ -112,7 +107,7 @@ export function MotivationalMessagesManager() {
                 </Button>
             </div>
 
-            {messages.length > 0 ? (
+            {Array.isArray(messages) && messages.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {messages.map(msg => (
                         <MotivationCard key={msg.id} message={msg} onEdit={handleOpenEditor} onDelete={handleDeleteMessage}/>
