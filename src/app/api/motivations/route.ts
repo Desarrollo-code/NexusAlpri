@@ -20,8 +20,9 @@ export async function GET(req: NextRequest) {
             },
         });
 
+        // Si no hay mensajes, devolver un array vacío para evitar errores en el cliente.
         if (!messages || messages.length === 0) {
-            return NextResponse.json([]); // Devolver un array vacío explícitamente
+            return NextResponse.json([]);
         }
 
         const courseIds = messages
@@ -49,7 +50,8 @@ export async function GET(req: NextRequest) {
                 triggerCourse: triggerCourse || null 
             };
         });
-
+        
+        // Devolver directamente el array de resultados
         return NextResponse.json(results);
 
     } catch (error) {

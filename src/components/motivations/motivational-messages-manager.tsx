@@ -54,19 +54,16 @@ export function MotivationalMessagesManager() {
         setError(null);
         try {
             const response = await fetch('/api/motivations');
-            const data = await response.json();
-            console.log('API response for messages:', data); // Log para depuración
             if (!response.ok) {
-                throw new Error(data.message || 'No se pudieron cargar los mensajes');
+                const errorData = await response.json().catch(() => ({ message: 'No se pudieron cargar los mensajes' }));
+                throw new Error(errorData.message);
             }
-            
-            // Solución Definitiva: Asegurar que siempre se trabaje con un array.
+            const data = await response.json();
             setMessages(Array.isArray(data) ? data : []);
-
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Ocurrió un error desconocido';
             setError(errorMessage);
-            setMessages([]); // Asegurar que el estado sea un array vacío en caso de error.
+            setMessages([]);
         } finally {
             setIsLoading(false);
         }
