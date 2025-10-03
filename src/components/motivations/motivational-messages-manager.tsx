@@ -1,4 +1,3 @@
-
 // src/components/motivations/motivational-messages-manager.tsx
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -57,7 +56,12 @@ export function MotivationalMessagesManager() {
             const response = await fetch('/api/motivations');
             if (!response.ok) throw new Error('No se pudieron cargar los mensajes');
             const data = await response.json();
-            setMessages(data);
+            if (Array.isArray(data)) {
+                setMessages(data);
+            } else {
+                console.warn("La API de motivaciones no devolvió un array:", data);
+                setMessages([]); // Fallback a array vacío si la respuesta no es un array
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido');
         } finally {
