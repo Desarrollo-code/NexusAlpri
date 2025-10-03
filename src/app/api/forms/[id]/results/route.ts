@@ -1,10 +1,9 @@
 // src/app/api/forms/[id]/results/route.ts
 import { NextResponse, NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import type { FormFieldOption } from '@/types';
 
-const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -75,16 +74,23 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
                     fieldAnswers.forEach(ans => {
                         let selectedOptionIds: string[] = [];
+                        
+                        // --- FIX START ---
+                        // Handle single choice and multiple choice answers correctly
                         if (field.type === 'SINGLE_CHOICE') {
                              selectedOptionIds.push(ans.value);
-                        } else { // MULTIPLE_CHOICE
+                        } else { // MULTIPLE_CHOICE - value is a JSON string of an array
                             try {
                                 const parsed = JSON.parse(ans.value);
                                 if (Array.isArray(parsed)) {
                                     selectedOptionIds.push(...parsed);
                                 }
-                            } catch (e) { /* ignore malformed data */ }
+                            } catch (e) {
+                                // Handles cases where the value is not a valid JSON array string
+                                console.warn(`Could not parse MULTIPLE_CHOICE answer value: ${ans.value}`);
+                            }
                         }
+                        // --- FIX END ---
                         
                          selectedOptionIds.forEach(optId => {
                             const value = (field.options as any as FormFieldOption[]).find(opt => opt.id === optId)?.text;
@@ -114,7 +120,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             isQuiz: form.isQuiz,
             totalResponses: totalResponses,
             averageScore: averageScore,
-            responses: form.isQuiz ? form.responses.map(r => ({ id: r.id, user: r.user, score: r.score })) : undefined,
+            responses: form.isQuiz ? form.responses.map(r => ({ id: r.id, user: r.user, score: r.score, submittedAt: r.submittedAt })) : undefined,
             fields: fieldResults,
         });
 
