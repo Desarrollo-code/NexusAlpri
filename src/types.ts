@@ -1,5 +1,5 @@
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType, MotivationalMessageTriggerType, MotivationalMessage as PrismaMotivationalMessage } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -315,6 +315,11 @@ export type UserAchievement = Prisma.UserAchievementGetPayload<{
     }
 }>;
 export { type AchievementSlug };
+
+// --- MOTIVATIONAL MESSAGES ---
+export type MotivationalMessage = PrismaMotivationalMessage;
+export { type MotivationalMessageTriggerType };
+
 
 // --- FORMS ---
 export interface FormFieldOption {
