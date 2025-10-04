@@ -1,5 +1,5 @@
 // src/types.ts
-import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType, MotivationalMessageTriggerType, MotivationalMessage as PrismaMotivationalMessage, Course as PrismaCourse, CourseAssignment as PrismaCourseAssignment } from "@prisma/client";
+import type { LessonTemplate, TemplateBlock, Prisma, Achievement, Form as PrismaForm, FormField as PrismaFormField, FormFieldType, FormStatus, AchievementSlug, AnnouncementAttachment, EnterpriseResource as PrismaResource, RecurrenceType, MotivationalMessageTriggerType, MotivationalMessage as PrismaMotivationalMessage, Course as PrismaCourse, CourseAssignment as PrismaCourseAssignment, CertificateTemplate } from "@prisma/client";
 
 // --- USER & AUTH ---
 export type UserRole = 'ADMINISTRATOR' | 'INSTRUCTOR' | 'STUDENT';
@@ -155,6 +155,7 @@ export interface CourseProgress {
     completedLessons: LessonCompletionRecord[];
     progressPercentage: number;
     completedAt?: Date | null;
+    id: string;
 }
 
 export interface UserNote {
@@ -314,12 +315,12 @@ export interface AdminDashboardStats {
     topStudentsByCompletion: UserInfo[];
     topInstructorsByCourses: UserInfo[];
     interactiveEventsToday?: (CalendarEvent & { hasParticipated?: boolean })[];
-    assignedCourses?: Course[]; // <-- Añadido
+    assignedCourses?: Course[];
 }
 
 // --- TEMPLATES ---
 export type TemplateType = 'SYSTEM' | 'USER';
-export { type LessonTemplate, type TemplateBlock };
+export { type LessonTemplate, type TemplateBlock, type CertificateTemplate };
 
 // --- GAMIFICATION ---
 export type UserAchievement = Prisma.UserAchievementGetPayload<{

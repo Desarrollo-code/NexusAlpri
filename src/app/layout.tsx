@@ -25,6 +25,9 @@ export default async function RootLayout({
   
   return (
     <html lang="es" suppressHydrationWarning className={fontVariables}>
+      <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js" async></script>
+      </head>
       <body className={cn("min-h-screen bg-background font-body antialiased")}>
         <AuthProvider>
           <ThemeProvider>

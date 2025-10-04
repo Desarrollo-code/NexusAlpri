@@ -22,9 +22,12 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
                     courseId: courseId,
                 },
             },
+            select: {
+                id: true
+            }
         });
 
-        return NextResponse.json({ isEnrolled: !!enrollment });
+        return NextResponse.json({ isEnrolled: !!enrollment, enrollmentId: enrollment?.id || null });
     } catch (error) {
         console.error('[ENROLLMENT_STATUS_ERROR]', error);
         return NextResponse.json({ message: 'Error al verificar la inscripción' }, { status: 500 });

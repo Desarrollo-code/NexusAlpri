@@ -239,6 +239,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
   const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(null);
   
   const [isEnrolled, setIsEnrolled] = useState<boolean>(false);
+  const [enrollmentId, setEnrollmentId] = useState<string | null>(null);
   const [isConsolidating, setIsConsolidating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -344,8 +345,9 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
             if (user) {
                 const enrollmentRes = await fetch(`/api/enrollment/status/${user.id}/${courseId}`);
                 if (enrollmentRes.ok) {
-                    const { isEnrolled: enrolledStatus } = await enrollmentRes.json();
+                    const { isEnrolled: enrolledStatus, enrollmentId: id } = await enrollmentRes.json();
                     setIsEnrolled(enrolledStatus);
+                    setEnrollmentId(id);
 
                     if (enrolledStatus) {
                         await fetchProgress(user.id, courseId);
@@ -635,7 +637,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
              )}
         </ScrollArea>
         { !isCreatorViewingCourse && isEnrolled && (
-            <div className="p-4 border-t">
+            <div className="p-4 border-t space-y-3">
                  <Dialog>
                     <DialogTrigger asChild>
                         <Button variant="outline" size="sm" className="w-full">
@@ -663,6 +665,13 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                         </div>
                     </DialogContent>
                 </Dialog>
+                {courseProgress?.completedAt && course.certificateTemplateId && enrollmentId && (
+                     <Button asChild size="sm" className="w-full bg-amber-500 hover:bg-amber-600">
+                        <Link href={`/certificates/${enrollmentId}/view`} target="_blank">
+                            <Award className="mr-2 h-4 w-4"/> Ver Certificado
+                        </Link>
+                    </Button>
+                )}
             </div>
         )}
     </div>
