@@ -1,3 +1,4 @@
+
 // src/app/(app)/profile/page.tsx
 'use client';
 
@@ -26,6 +27,24 @@ import Image from 'next/image';
 import { VerifiedBadge } from '@/components/ui/verified-badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { AchievementsView } from '@/components/gamification/achievements-view';
+
+// Gamification Level Calculation
+const calculateLevel = (xp: number) => {
+    const baseXP = 250;
+    const exponent = 1.5;
+    let level = 1;
+    let requiredXP = baseXP;
+    while (xp >= requiredXP) {
+        level++;
+        xp -= requiredXP;
+        requiredXP = Math.floor(baseXP * Math.pow(level, exponent));
+    }
+    const xpForNextLevel = Math.floor(baseXP * Math.pow(level, exponent));
+    const progressPercentage = Math.max(0, Math.min(100, (xp / xpForNextLevel) * 100));
+
+    return { level, currentXPInLevel: xp, xpForNextLevel, progressPercentage };
+};
+
 
 // --- Components defined outside of the main component to prevent re-creation on render ---
 const InfoCard = ({ user, updateUser }: { user: any, updateUser: (data: any) => void }) => {
