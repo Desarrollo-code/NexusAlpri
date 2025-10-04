@@ -19,10 +19,9 @@ import {
   Notebook,
   FileText,
   AlertTriangle, 
-  ServerCrash, // Ícono para el error 500
-  Trophy, // Ícono para Leaderboard
-  Sparkles, // Ícono para Motivaciones
-  Award, // Ícono para Certificados
+  ServerCrash,
+  Sparkles,
+  Award,
 } from 'lucide-react';
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -31,13 +30,6 @@ const NAVIGATION_ITEMS: NavItem[] = [
     label: 'Panel Principal',
     icon: LayoutGrid,
     path: '/dashboard',
-    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
-  },
-  {
-    id: 'leaderboard',
-    label: 'Progreso y Ranking',
-    icon: Trophy,
-    path: '/leaderboard',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
   {
@@ -69,7 +61,7 @@ const NAVIGATION_ITEMS: NavItem[] = [
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
   {
-    id: 'announcements',
+    id: 'communications',
     label: 'Comunicaciones',
     icon: Megaphone,
     path: '/announcements',
