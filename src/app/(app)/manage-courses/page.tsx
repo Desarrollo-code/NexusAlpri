@@ -1,10 +1,10 @@
-
+// src/app/(app)/manage-courses/page.tsx
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
-import { PlusCircle, List, Edit, Users, Grid, ListPlus, Loader2, AlertTriangle, ShieldAlert, MoreVertical, Archive, ArchiveRestore, Trash2, Eye, HelpCircle, LineChart, BookOpen, Layers, Check } from 'lucide-react';
+import { PlusCircle, List, Edit, Users, Grid, ListPlus, Loader2, AlertTriangle, ShieldAlert, MoreVertical, Archive, ArchiveRestore, Trash2, Eye, HelpCircle, LineChart, BookOpen, Layers, Check, Award } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import type { Course as AppCourseType, CourseStatus, UserRole, User } from '@/types';
@@ -42,7 +42,6 @@ import { manageCoursesTour } from '@/lib/tour-steps';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getRoleBadgeVariant, getRoleInSpanish } from '@/lib/security-log-utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { CircularProgress } from '@/components/ui/circular-progress';
 import Image from 'next/image';
 import { mapApiCourseToAppCourse } from '@/lib/course-utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -435,10 +434,10 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, onAssign, isProc
     onAssign?: () => void,
     isProcessing: boolean,
 }) => {
-    const handleAction = (e: React.MouseEvent, action: () => void) => {
+    const handleAction = (e: React.MouseEvent, action?: () => void) => {
         e.stopPropagation();
         e.preventDefault();
-        action();
+        action?.();
     };
 
     return (
@@ -464,4 +463,3 @@ const ManagementDropdown = ({ course, onStatusChange, onDelete, onAssign, isProc
         </DropdownMenu>
     );
 }
-

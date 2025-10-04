@@ -1,4 +1,3 @@
-
 // src/components/certificates/certificate-preview.tsx
 'use client';
 import React, { CSSProperties } from 'react';
@@ -82,7 +81,7 @@ export function CertificatePreview({
             >
                 Completado el {completionDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
             </div>
-            {score !== undefined && scoreStyle && (
+            {score !== undefined && score !== null && scoreStyle && (
                  <div
                     className="absolute text-center"
                     style={{

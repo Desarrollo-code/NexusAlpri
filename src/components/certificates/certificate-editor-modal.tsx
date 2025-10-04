@@ -1,4 +1,3 @@
-
 // src/components/certificates/certificate-editor-modal.tsx
 'use client';
 
@@ -74,7 +73,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
         setIsUploading(true);
         setUploadProgress(0);
         try {
-            const result = await uploadWithProgress('/api/upload/settings-image', file, setUploadProgress);
+            const result = await uploadWithProgress('/api/upload/settings-image', file, (progress) => setUploadProgress(progress));
             setBackgroundImageUrl(result.url);
             toast({ title: 'Imagen Subida' });
         } catch (err) {
@@ -109,6 +108,11 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
         const payload = {
             name,
             backgroundImageUrl: finalImageUrl,
+            // Valores por defecto para las nuevas propiedades de posición
+            textColor: '#000000',
+            studentNamePosition: { x: 50, y: 45, fontSize: 48, fontWeight: 'bold', textAlign: 'center' },
+            courseNamePosition: { x: 50, y: 60, fontSize: 24, fontWeight: 'normal', textAlign: 'center' },
+            datePosition: { x: 50, y: 75, fontSize: 18, fontWeight: 'normal', textAlign: 'center' },
         };
         
         const endpoint = template ? `/api/certificates/templates/${template.id}` : '/api/certificates/templates';
@@ -131,7 +135,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
         }
     };
     
-    const fakeTemplateForPreview = {
+    const fakeTemplateForPreview: Partial<CertificateTemplate> = {
         id: 'preview',
         name,
         backgroundImageUrl: finalImageUrl || '',
@@ -198,7 +202,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                                 </div>
                             </div>
                         ) : (
-                            <UploadArea inputId="cert-image-upload" onFileSelect={handleImageUpload} disabled={isSubmitting} title="Sube tu fondo" description="Recomendado: 1123x794px" />
+                            <UploadArea inputId="cert-image-upload" onFileSelect={(file) => handleImageUpload(file)} disabled={isSubmitting} title="Sube tu fondo" description="Recomendado: 1123x794px" />
                         )}
                          <input type="file" id="cert-image-upload" className="hidden" accept="image/png, image/jpeg, image/svg+xml, image/webp" onChange={(e) => handleImageUpload(e.target.files ? e.target.files[0] : null)} />
                     </div>
