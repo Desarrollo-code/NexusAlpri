@@ -2,6 +2,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { addXp, XP_CONFIG, checkFirstReaction } from '@/lib/gamification';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,14 +30,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         });
 
         if (existingReaction) {
-            // If the same reaction is sent, remove it (toggle off)
             if (existingReaction.reaction === reaction) {
                 await prisma.announcementReaction.delete({
                     where: { id: existingReaction.id }
                 });
                 return NextResponse.json({ message: 'Reacción eliminada' });
             } else {
-                // If a different reaction is sent, update it
                 const updatedReaction = await prisma.announcementReaction.update({
                     where: { id: existingReaction.id },
                     data: { reaction },
@@ -44,7 +43,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
                 return NextResponse.json(updatedReaction);
             }
         } else {
-            // If no reaction exists, create a new one
             const newReaction = await prisma.announcementReaction.create({
                 data: {
                     userId: session.id,
@@ -52,6 +50,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
                     reaction,
                 },
             });
+            
+            // --- Gamification ---
+            await addXp(session.id, XP_CONFIG.REACT_TO_ANNOUNCEMENT || 1); // Fallback a 1 si no está definido
+            await checkFirstReaction(session.id);
+            // --------------------
+
             return NextResponse.json(newReaction, { status: 201 });
         }
     } catch (error) {
