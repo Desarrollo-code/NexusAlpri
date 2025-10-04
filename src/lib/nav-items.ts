@@ -70,7 +70,7 @@ const NAVIGATION_ITEMS: NavItem[] = [
   },
   {
     id: 'announcements',
-    label: 'Anuncios',
+    label: 'Comunicaciones',
     icon: Megaphone,
     path: '/announcements',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
@@ -80,13 +80,6 @@ const NAVIGATION_ITEMS: NavItem[] = [
     label: 'Calendario',
     icon: CalendarDays,
     path: '/calendar',
-    roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
-  },
-  {
-    id: 'notifications',
-    label: 'Notificaciones',
-    icon: Bell,
-    path: '/notifications',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
    {
