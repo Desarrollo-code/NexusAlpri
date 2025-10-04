@@ -92,9 +92,8 @@ export async function PUT(
           imageUrl: courseData.imageUrl,
           category: courseData.category,
           status: courseData.status,
-          isMandatory: courseData.isMandatory, // <-- Añadir campo
           publicationDate: courseData.publicationDate ? new Date(courseData.publicationDate) : null,
-          prerequisiteId: courseData.prerequisiteId,
+          certificateTemplateId: courseData.certificateTemplateId, // <-- AÑADIDO
         },
       });
       

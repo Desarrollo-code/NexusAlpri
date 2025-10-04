@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 'use client';
 
@@ -8,14 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3, Star, Layers3, SaveIcon, Sparkles } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, XCircle, Replace, Pencil, Eye, MoreVertical, Archive, Crop, Copy, FilePlus2, ChevronDown, BookOpenText, Video, FileText, Lightbulb, File as FileGenericIcon, BarChart3, Star, Layers3, SaveIcon, Sparkles, Award } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState, ChangeEvent, useCallback, useMemo } from 'react';
 import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, LessonType, CourseStatus, Quiz as AppQuiz, Question as AppQuestion, AnswerOption as AppAnswerOption, ContentBlock } from '@/types';
 import Image from 'next/image';
 import { useToast } from "@/hooks/use-toast";
-import type { LessonTemplate, TemplateBlock } from '@prisma/client';
+import type { LessonTemplate, TemplateBlock, CertificateTemplate as PrismaCertificateTemplate } from '@prisma/client';
 import { useAuth } from '@/contexts/auth-context';
 import {
     AlertDialog,
@@ -48,7 +47,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
-import { Switch } from '@/components/ui/switch';
 
 
 // === TIPOS E INTERFACES ===
@@ -309,8 +307,6 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
-    const [allCoursesForPrereq, setAllCoursesForPrereq] = useState<Pick<AppCourse, 'id' | 'title'>[]>([]);
-
     
     const [itemToDeleteDetails, setItemToDeleteDetails] = useState<any>(null);
     
@@ -318,8 +314,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [localCoverImagePreview, setLocalCoverImagePreview] = useState<string | null>(null);
 
-
     const [templates, setTemplates] = useState<ApiTemplate[]>([]);
+    const [certificateTemplates, setCertificateTemplates] = useState<PrismaCertificateTemplate[]>([]);
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [activeModuleIndexForTemplate, setActiveModuleIndexForTemplate] = useState<number | null>(null);
 
@@ -370,22 +366,19 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             }
         };
 
-        const fetchAllCourses = async () => {
+        const fetchCertificateTemplates = async () => {
             try {
-                const res = await fetch('/api/courses?simple=true');
-                if (res.ok) {
-                    const data = await res.json();
-                    setAllCoursesForPrereq(data.courses.filter((c: AppCourse) => c.id !== courseId));
-                }
-            } catch(e) {
-                 console.error("Failed to fetch courses for prerequisite selector", e);
+                const res = await fetch('/api/certificates/templates');
+                if (res.ok) setCertificateTemplates(await res.json());
+            } catch (e) {
+                console.error("Failed to fetch certificate templates", e);
             }
         }
 
         if (user) {
             fetchCourseData();
             fetchTemplates();
-            fetchAllCourses();
+            fetchCertificateTemplates();
         }
     }, [courseId, user, router, toast, setPageTitle]);
     
@@ -764,14 +757,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <Separator />
-                            <div className="flex items-center justify-between">
-                                <Label htmlFor="isMandatory" className="text-base font-medium">Curso Obligatorio</Label>
-                                <Switch id="isMandatory" checked={course.isMandatory} onCheckedChange={(v) => updateCourseField('isMandatory', v)} disabled={isSaving}/>
-                            </div>
-                            <Separator />
-                             <div>
-                                <Label htmlFor="prerequisite">Prerrequisito del Curso</Label>
+                            <Separator/>
+                             <div><Label htmlFor="prerequisite">Prerrequisito del Curso</Label>
                                 <Select value={course.prerequisiteId || 'none'} onValueChange={v => updateCourseField('prerequisiteId', v === 'none' ? null : v)} disabled={isSaving}>
                                     <SelectTrigger id="prerequisite"><SelectValue placeholder="Ninguno"/></SelectTrigger>
                                     <SelectContent>
@@ -783,6 +770,20 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                                     </SelectContent>
                                 </Select>
                                  <p className="text-xs text-muted-foreground mt-1">Elige un curso que deba ser completado antes de poder inscribirse a este.</p>
+                            </div>
+                            <Separator />
+                             <div><Label htmlFor="certificateTemplate">Plantilla de Certificado</Label>
+                                <Select value={course.certificateTemplateId || 'none'} onValueChange={v => updateCourseField('certificateTemplateId', v === 'none' ? null : v)} disabled={isSaving}>
+                                    <SelectTrigger id="certificateTemplate"><SelectValue placeholder="Sin certificado"/></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">Sin certificado</SelectItem>
+                                        <Separator/>
+                                        {certificateTemplates.map(t => (
+                                            <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                 <p className="text-xs text-muted-foreground mt-1">Elige el diseño del certificado que se generará al completar el curso.</p>
                             </div>
                         </CardContent>
                     </Card>
