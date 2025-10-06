@@ -89,24 +89,24 @@ export default function LandingPage() {
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-4">
-                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-white">
+                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-foreground">
                     Despierta el Potencial.
                     <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-blue-500">Transforma tu Equipo.</span>
                   </h1>
-                  <p className="max-w-[600px] text-slate-300 md:text-xl">
+                  <p className="max-w-[600px] text-muted-foreground md:text-xl">
                     NexusAlpri es la plataforma de e-learning corporativa que se adapta a ti. Intuitiva, potente y segura.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button asChild size="lg" className="bg-white text-slate-900 font-bold hover:bg-slate-200 transition-transform hover:scale-105 shadow-lg">
+                  <Button asChild size="lg">
                     <Link
                       href="/sign-up"
                     >
                       Empezar Ahora
                     </Link>
                   </Button>
-                  <Button variant="outline" asChild size="lg" className="bg-transparent text-white border-white/50 hover:bg-white/10 hover:text-white">
+                  <Button variant="outline" asChild size="lg">
                     <Link
                       href="/about"
                     >
@@ -115,7 +115,7 @@ export default function LandingPage() {
                   </Button>
                 </div>
               </div>
-               <div className="mx-auto aspect-square overflow-hidden rounded-xl w-full relative bg-white/10">
+               <div className="mx-auto aspect-square overflow-hidden rounded-xl w-full relative bg-muted">
                 <Image
                   src={landingImageUrl}
                   alt="Hero"
@@ -130,15 +130,15 @@ export default function LandingPage() {
           </div>
         </section>
         
-        <section className="w-full bg-black/20 backdrop-blur-sm py-12 md:py-16 mt-12 md:mt-16 border-y border-white/10">
+        <section className="w-full bg-muted/50 py-12 md:py-16 mt-12 md:mt-16 border-y">
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <div className="inline-block rounded-lg bg-pink-500/20 text-pink-400 px-3 py-1 text-sm font-semibold">
+                        <div className="inline-block rounded-lg bg-secondary text-secondary-foreground px-3 py-1 text-sm font-semibold">
                             Características Principales
                         </div>
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-white">Una Plataforma Todo en Uno</h2>
-                        <p className="max-w-[900px] text-slate-300 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">Una Plataforma Todo en Uno</h2>
+                        <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                             Desde la creación de contenido hasta el análisis de resultados, todo lo que necesitas para potenciar el talento de tu equipo está aquí.
                         </p>
                     </div>
@@ -147,14 +147,14 @@ export default function LandingPage() {
                    {features.map((feature) => (
                      <div 
                         key={feature.title}
-                        className="relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-slate-900/60 shadow-lg hover:shadow-primary/20 hover:-translate-y-2 border border-white/10 card-border-animated"
+                        className="relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-card shadow-sm hover:shadow-primary/20 hover:-translate-y-2 border card-border-animated"
                       >
                        <div className="relative z-10 flex flex-col items-start justify-start h-full">
-                         <div className="mb-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 p-3 rounded-lg border border-white/10">
+                         <div className="mb-4 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 p-3 rounded-lg border">
                             <GradientIcon icon={feature.icon} size="xl" />
                          </div>
-                         <h3 className="text-xl font-bold font-headline mb-2 text-white">{feature.title}</h3>
-                         <p className="text-sm text-slate-400">{feature.description}</p>
+                         <h3 className="text-xl font-bold font-headline mb-2 text-foreground">{feature.title}</h3>
+                         <p className="text-sm text-muted-foreground">{feature.description}</p>
                        </div>
                      </div>
                    ))}
@@ -165,7 +165,7 @@ export default function LandingPage() {
         <section className="w-full py-12 md:py-16">
             <div className="container px-4 md:px-6">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
-                     <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-2xl bg-white/10">
+                     <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-lg bg-muted">
                         <Image
                             src={benefitsImageUrl}
                             alt="Benefits"
@@ -180,8 +180,8 @@ export default function LandingPage() {
                           <div key={benefit.title} className="flex items-start gap-4">
                             <GradientIcon icon={benefit.icon} size="xl" className={i === 1 ? "text-pink-400" : "text-blue-400"}/>
                             <div className="flex-grow">
-                                <h3 className="text-xl font-bold text-white">{benefit.title}</h3>
-                                <p className="text-slate-300">{benefit.description}</p>
+                                <h3 className="text-xl font-bold text-foreground">{benefit.title}</h3>
+                                <p className="text-muted-foreground">{benefit.description}</p>
                             </div>
                           </div>
                        ))}
@@ -190,19 +190,19 @@ export default function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full bg-black/20 backdrop-blur-sm py-12 md:py-16 border-y border-white/10">
+        <section className="w-full bg-muted/50 py-12 md:py-16 border-y">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <div className="inline-block rounded-lg bg-pink-500/20 text-pink-400 px-3 py-1 text-sm font-semibold">
+                        <div className="inline-block rounded-lg bg-secondary text-secondary-foreground px-3 py-1 text-sm font-semibold">
                             Testimonios
                         </div>
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-white">Lo que Nuestros Clientes Dicen</h2>
+                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">Lo que Nuestros Clientes Dicen</h2>
                     </div>
                 </div>
                  <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 py-12">
                     {testimonials.map((testimonial) => (
-                        <Card key={testimonial.name} className="bg-slate-900/60 text-white border-white/10 shadow-lg">
+                        <Card key={testimonial.name} className="bg-card">
                            <CardContent className="pt-6">
                              <blockquote className="text-lg font-semibold leading-snug">
                                “{testimonial.testimony}”
@@ -213,7 +213,7 @@ export default function LandingPage() {
                                 <Image className="rounded-full" src={testimonial.avatar} height={40} width={40} alt={testimonial.name} data-ai-hint="portrait person" quality={100} />
                                 <div>
                                     <p className="font-semibold">{testimonial.name}</p>
-                                    <p className="text-sm text-slate-400">{testimonial.role}</p>
+                                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                                 </div>
                               </div>
                            </CardFooter>
@@ -225,11 +225,11 @@ export default function LandingPage() {
         
          <section className="w-full text-center py-12 md:py-16">
             <div className="container px-4 md:px-6">
-                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-white">¿Listo para Empezar?</h2>
-                 <p className="max-w-2xl mx-auto mt-4 text-slate-300 md:text-xl">
+                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-foreground">¿Listo para Empezar?</h2>
+                 <p className="max-w-2xl mx-auto mt-4 text-muted-foreground md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar.
                  </p>
-                  <Button asChild size="lg" className="mt-8 bg-white text-slate-900 font-bold hover:bg-slate-200 transition-transform hover:scale-105 shadow-lg shadow-white/10">
+                  <Button asChild size="lg" className="mt-8">
                     <Link href="/sign-up">
                       Crear Mi Cuenta Gratis
                     </Link>

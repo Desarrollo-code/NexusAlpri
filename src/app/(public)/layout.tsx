@@ -9,8 +9,6 @@ import { Footer } from '@/components/layout/footer';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 import { ColorfulLoader } from '@/components/ui/colorful-loader';
-import { DecorativeHeaderBackground } from '@/components/layout/decorative-header-background';
-
 
 export default function PublicLayout({
   children,
@@ -20,8 +18,7 @@ export default function PublicLayout({
   const { user, isLoading } = useAuth();
   
   return (
-    <div className="relative flex flex-col min-h-screen items-center antialiased bg-black text-white">
-        <DecorativeHeaderBackground />
+    <div className="relative flex flex-col min-h-screen items-center antialiased bg-background text-foreground">
         
         {/* Usamos el estado del usuario para decidir qué barra mostrar */}
         {user ? <AuthenticatedPublicHeader /> : <PublicTopBar />}
