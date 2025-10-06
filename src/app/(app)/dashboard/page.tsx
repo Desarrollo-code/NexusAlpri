@@ -309,7 +309,7 @@ function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: 
               </Button>
             </div>
             {myCourses.length > 0 ? (
-              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {myCourses.map((course, index) => (
                   <CourseCard key={course.id} course={course} userRole="STUDENT" priority={index < 2}/>
                 ))}
@@ -399,7 +399,7 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
                     </Button>
                 </div>
               {taughtCourses.length > 0 ? (
-                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                     {taughtCourses.map(course => (
                       <CourseCard 
                         key={course.id}
@@ -646,7 +646,7 @@ async function getInstructorDashboardData(session: PrismaUser) {
             where: { instructorId: session.id },
             include: { _count: { select: { modules: true } } },
             orderBy: { createdAt: 'desc' },
-            take: 3,
+            take: 4,
         }), [], 'taughtCourses'),
         safeQuery(prisma.announcement.findMany({
             take: 2, orderBy: { date: 'desc' },
