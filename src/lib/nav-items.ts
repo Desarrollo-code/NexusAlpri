@@ -1,11 +1,8 @@
 import type { NavItem, UserRole } from '@/types';
 import {
-  Users,
-  Settings,
   Bell,
   GitCommitHorizontal,
-  AlertTriangle, 
-  ServerCrash,
+  Settings,
 } from 'lucide-react';
 import { 
     IconLayoutGrid, 
@@ -23,7 +20,8 @@ import {
     IconAward,
     IconBarChart3,
     IconUsersRound,
-    IconServer
+    IconServer,
+    IconShieldAlert
 } from '@/components/icons';
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -135,14 +133,14 @@ const NAVIGATION_ITEMS: NavItem[] = [
       {
         id: 'security-audit',
         label: 'Seguridad',
-        icon: IconServer,
+        icon: IconShieldAlert,
         path: '/security-audit',
         roles: ['ADMINISTRATOR']
       },
       {
         id: 'settings',
         label: 'Configuración',
-        icon: Settings,
+        icon: IconSettings,
         path: '/settings',
         roles: ['ADMINISTRATOR']
       },

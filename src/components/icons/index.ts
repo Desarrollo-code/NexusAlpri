@@ -41,3 +41,5 @@ export { IconTrendingUp } from './icon-trending-up';
 export { IconSparkles } from './icon-sparkles';
 export { IconAward } from './icon-award';
 export { IconBarChart3 } from './icon-bar-chart-3';
+export { IconShieldAlert } from './icon-shield-alert';
+export { IconSettings } from './icon-settings';
