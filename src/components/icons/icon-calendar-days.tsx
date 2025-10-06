@@ -15,9 +15,15 @@ export const IconCalendarDays = (props: SVGProps<SVGSVGElement>) => (
     strokeLinejoin="round"
     {...props}
   >
-    <path d="M8 2v4" />
-    <path d="M16 2v4" />
-    <rect width="18" height="18" x="3" y="4" rx="2" />
-    <path d="M3 10h18" />
+    <defs>
+        <linearGradient id="calendar-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style={{ stopColor: '#818cf8', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#a78bfa', stopOpacity: 1 }} />
+        </linearGradient>
+    </defs>
+    <rect width="18" height="18" x="3" y="4" rx="2" stroke="url(#calendar-gradient)" fill="url(#calendar-gradient)" fillOpacity="0.1" />
+    <path d="M16 2v4" stroke="url(#calendar-gradient)" />
+    <path d="M8 2v4" stroke="url(#calendar-gradient)" />
+    <path d="M3 10h18" stroke="url(#calendar-gradient)" />
   </svg>
 );
