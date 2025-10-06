@@ -1,34 +1,17 @@
 // src/app/(public)/about/page.tsx
+'use client'; // Convertido a Client Component
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Database, Code, Wind, Feather } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
-import prisma from '@/lib/prisma';
-import { cn } from '@/lib/utils';
-import type { PlatformSettings } from '@/types';
+import { useAuth } from '@/contexts/auth-context'; // Importar el hook de autenticación
 import { GradientIcon } from '@/components/ui/gradient-icon';
 
-export const dynamic = 'force-dynamic';
-
-async function getPageSettings(): Promise<Pick<PlatformSettings, 'aboutImageUrl'>> {
-    try {
-        const settings = await prisma.platformSettings.findFirst({
-            select: { aboutImageUrl: true }
-        });
-        return {
-            aboutImageUrl: settings?.aboutImageUrl || "https://placehold.co/600x400.png"
-        };
-    } catch (error) {
-        console.error("Failed to fetch settings for About page, using defaults:", error);
-        return {
-            aboutImageUrl: "https://placehold.co/600x400.png"
-        };
-    }
-}
-
-
-export default async function AboutPage() {
-  const { aboutImageUrl } = await getPageSettings();
+export default function AboutPage() {
+  // Obtener la configuración desde el contexto en lugar de la base de datos
+  const { settings } = useAuth();
+  const aboutImageUrl = settings?.aboutImageUrl || "https://placehold.co/600x400.png";
 
   const techStack = [
     { name: 'Next.js', description: 'Framework de React para producción.', icon: Code, color: "text-blue-400" },
@@ -39,13 +22,13 @@ export default async function AboutPage() {
   ];
 
   return (
-    <div className="flex-1 z-10 text-slate-800 space-y-8 md:space-y-10 w-full">
+    <div className="flex-1 z-10 w-full">
         <section className="w-full">
           <div className="container px-4 md:px-6">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-2xl bg-white/10 order-first lg:order-last">
                 <Image
-                  src={aboutImageUrl!}
+                  src={aboutImageUrl}
                   alt="About Us"
                   fill
                   quality={100}
@@ -54,7 +37,7 @@ export default async function AboutPage() {
                 />
               </div>
               <div className="space-y-4 order-last lg:order-first">
-                <div className="inline-block rounded-lg bg-accent/20 text-accent px-3 py-1 text-sm font-semibold">
+                <div className="inline-block rounded-lg bg-pink-500/20 text-pink-400 px-3 py-1 text-sm font-semibold">
                   Nuestra Misión
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline text-white">
@@ -68,11 +51,11 @@ export default async function AboutPage() {
           </div>
         </section>
 
-        <section className="w-full py-8 md:py-12 bg-slate-900/40 backdrop-blur-sm border-y border-white/10">
+        <section className="w-full py-12 md:py-16 mt-12 md:mt-16 bg-black/20 backdrop-blur-sm border-y border-white/10">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-accent/20 text-accent px-3 py-1 text-sm font-semibold">
+                <div className="inline-block rounded-lg bg-pink-500/20 text-pink-400 px-3 py-1 text-sm font-semibold">
                   Tecnología
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-white">Construido con Herramientas Modernas</h2>

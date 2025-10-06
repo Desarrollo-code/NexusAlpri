@@ -1,15 +1,14 @@
 // src/app/(public)/page.tsx
+'use client'; // Convertido a Client Component
+
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Layers3, BarChart3, Users, ShieldCheck, Zap, Heart, BookOpen, UserCheck } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import prisma from '@/lib/prisma';
-import type { PlatformSettings } from '@/types';
+import React from 'react';
+import { useAuth } from '@/contexts/auth-context'; // Importar el hook de autenticación
 import { GradientIcon } from '@/components/ui/gradient-icon';
-
-export const dynamic = 'force-dynamic';
 
 const features = [
   {
@@ -62,35 +61,11 @@ const benefits = [
   },
 ];
 
-async function getPageSettings(): Promise<Partial<PlatformSettings>> {
-    try {
-        const settings = await prisma.platformSettings.findFirst({
-            select: {
-                platformName: true,
-                landingImageUrl: true,
-                benefitsImageUrl: true
-            }
-        });
-        return {
-            platformName: settings?.platformName || "NexusAlpri",
-            landingImageUrl: settings?.landingImageUrl || "https://placehold.co/600x600.png",
-            benefitsImageUrl: settings?.benefitsImageUrl || "https://placehold.co/600x400.png"
-        };
-    } catch (error) {
-        console.error("Failed to fetch settings for Landing page, using defaults:", error);
-        return {
-            platformName: "NexusAlpri",
-            landingImageUrl: "https://placehold.co/600x600.png",
-            benefitsImageUrl: "https://placehold.co/600x400.png"
-        };
-    }
-}
-
-
-export default async function LandingPage() {
-  const settings = await getPageSettings();
-  const landingImageUrl = settings?.landingImageUrl;
-  const benefitsImageUrl = settings?.benefitsImageUrl;
+export default function LandingPage() {
+  // Obtener la configuración desde el contexto en lugar de la base de datos
+  const { settings } = useAuth();
+  const landingImageUrl = settings?.landingImageUrl || "https://placehold.co/600x600.png";
+  const benefitsImageUrl = settings?.benefitsImageUrl || "https://placehold.co/600x400.png";
 
   const testimonials = [
     {
@@ -108,7 +83,7 @@ export default async function LandingPage() {
   ]
 
   return (
-      <div className="flex-1 z-10 text-slate-800 space-y-8 md:space-y-10 w-full">
+      <div className="flex-1 z-10 w-full">
         <section className="w-full">
           <div className="container px-4 md:px-6">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
@@ -117,14 +92,14 @@ export default async function LandingPage() {
                   <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline text-white">
                     Despierta el Potencial.
                     <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-pink-400">Transforma tu Equipo.</span>
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-blue-500">Transforma tu Equipo.</span>
                   </h1>
                   <p className="max-w-[600px] text-slate-300 md:text-xl">
                     NexusAlpri es la plataforma de e-learning corporativa que se adapta a ti. Intuitiva, potente y segura.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button asChild size="lg" className="bg-white text-blue-600 font-bold hover:bg-slate-200 transition-transform hover:scale-105 shadow-lg">
+                  <Button asChild size="lg" className="bg-white text-slate-900 font-bold hover:bg-slate-200 transition-transform hover:scale-105 shadow-lg">
                     <Link
                       href="/sign-up"
                     >
@@ -142,7 +117,7 @@ export default async function LandingPage() {
               </div>
                <div className="mx-auto aspect-square overflow-hidden rounded-xl w-full relative bg-white/10">
                 <Image
-                  src={landingImageUrl!}
+                  src={landingImageUrl}
                   alt="Hero"
                   fill
                   className="object-cover"
@@ -155,11 +130,11 @@ export default async function LandingPage() {
           </div>
         </section>
         
-        <section className="w-full bg-slate-900/40 backdrop-blur-sm py-8 md:py-12 border-y border-white/10">
+        <section className="w-full bg-black/20 backdrop-blur-sm py-12 md:py-16 mt-12 md:mt-16 border-y border-white/10">
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <div className="inline-block rounded-lg bg-accent/20 text-accent px-3 py-1 text-sm font-semibold">
+                        <div className="inline-block rounded-lg bg-pink-500/20 text-pink-400 px-3 py-1 text-sm font-semibold">
                             Características Principales
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-white">Una Plataforma Todo en Uno</h2>
@@ -187,12 +162,12 @@ export default async function LandingPage() {
             </div>
         </section>
 
-        <section className="w-full py-8 md:py-12">
+        <section className="w-full py-12 md:py-16">
             <div className="container px-4 md:px-6">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
                      <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-2xl bg-white/10">
                         <Image
-                            src={benefitsImageUrl!}
+                            src={benefitsImageUrl}
                             alt="Benefits"
                             fill
                             className="object-cover"
@@ -203,7 +178,7 @@ export default async function LandingPage() {
                     <div className="space-y-8">
                        {benefits.map((benefit, i) => (
                           <div key={benefit.title} className="flex items-start gap-4">
-                            <GradientIcon icon={benefit.icon} size="xl" className={i === 1 ? "text-accent" : "text-primary"}/>
+                            <GradientIcon icon={benefit.icon} size="xl" className={i === 1 ? "text-pink-400" : "text-blue-400"}/>
                             <div className="flex-grow">
                                 <h3 className="text-xl font-bold text-white">{benefit.title}</h3>
                                 <p className="text-slate-300">{benefit.description}</p>
@@ -215,11 +190,11 @@ export default async function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full bg-slate-900/40 backdrop-blur-sm py-8 md:py-12 border-y border-white/10">
+        <section className="w-full bg-black/20 backdrop-blur-sm py-12 md:py-16 border-y border-white/10">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <div className="inline-block rounded-lg bg-accent/20 text-accent px-3 py-1 text-sm font-semibold">
+                        <div className="inline-block rounded-lg bg-pink-500/20 text-pink-400 px-3 py-1 text-sm font-semibold">
                             Testimonios
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-white">Lo que Nuestros Clientes Dicen</h2>
@@ -248,13 +223,13 @@ export default async function LandingPage() {
             </div>
         </section>
         
-         <section className="w-full text-center py-8">
+         <section className="w-full text-center py-12 md:py-16">
             <div className="container px-4 md:px-6">
                  <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-white">¿Listo para Empezar?</h2>
                  <p className="max-w-2xl mx-auto mt-4 text-slate-300 md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar.
                  </p>
-                  <Button asChild size="lg" className="mt-8 bg-white text-blue-600 font-bold hover:bg-slate-200 transition-transform hover:scale-105 shadow-lg shadow-white/10">
+                  <Button asChild size="lg" className="mt-8 bg-white text-slate-900 font-bold hover:bg-slate-200 transition-transform hover:scale-105 shadow-lg shadow-white/10">
                     <Link href="/sign-up">
                       Crear Mi Cuenta Gratis
                     </Link>

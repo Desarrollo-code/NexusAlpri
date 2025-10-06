@@ -58,30 +58,32 @@ export async function deleteSession() {
 }
 
 export const getUserFromSession = cache(async (): Promise<PrismaUser | null> => {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('session')?.value;
-  if (!sessionCookie) {
-    return null;
-  }
-
-  const session = await decrypt(sessionCookie);
-  if (!session?.userId) {
-    return null;
-  }
-
   try {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('session')?.value;
+    
+    if (!sessionCookie) {
+      return null;
+    }
+
+    const session = await decrypt(sessionCookie);
+    if (!session?.userId) {
+      return null;
+    }
+    
     const user = await prisma.user.findUnique({
       where: { id: session.userId },
     });
 
-    // If a user is found, make sure they are active before returning
     if (user && !user.isActive) {
-        return null; // Treat inactive users as if they are not logged in
+        return null;
     }
 
     return user || null;
   } catch (error) {
-    console.error("Error al obtener el usuario desde la base de datos:", error);
+    // If any error occurs (e.g., DB down), we can't get the user.
+    // This is safer than letting the error propagate.
+    console.error("Error in getUserFromSession, returning null:", error);
     return null;
   }
 });
