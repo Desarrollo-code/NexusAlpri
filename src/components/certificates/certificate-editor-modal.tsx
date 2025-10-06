@@ -181,7 +181,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-5xl h-[90vh] flex flex-col md:flex-row p-0">
+            <DialogContent className="max-w-7xl h-[90vh] flex flex-col md:flex-row p-0">
                 <div className="w-full md:w-1/3 min-w-[320px] flex flex-col bg-muted/50 border-r">
                     <DialogHeader className="p-4 border-b">
                         <DialogTitle className="flex items-center gap-2 text-xl font-bold"><Award className="h-5 w-5 text-primary"/>{template ? 'Editar Plantilla' : 'Nueva Plantilla'}</DialogTitle>
