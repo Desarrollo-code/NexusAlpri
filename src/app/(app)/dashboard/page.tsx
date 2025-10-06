@@ -255,7 +255,7 @@ function AdminDashboard({ stats, logs, announcements, onParticipationChange }: {
   );
 }
 
-function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: { stats: { enrolled: number, completed: number }, announcements: AnnouncementType[], myCourses: EnrolledCourse[], assignedCourses: AppCourseType[] | null }) {
+function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: { stats: { enrolled: number, completed: number }, announcements: AnnouncementType[], myCourses: EnrolledCourse[], assignedCourses: AppCourseType[] }) {
   return (
     <div className="space-y-8">
        {assignedCourses && assignedCourses.length > 0 && (
@@ -309,8 +309,8 @@ function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: 
               </Button>
             </div>
             {myCourses.length > 0 ? (
-              <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                {myCourses.map((course, index) => (
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                {myCourses.slice(0, 3).map((course, index) => (
                   <CourseCard key={course.id} course={course} userRole="STUDENT" priority={index < 2}/>
                 ))}
               </div>
@@ -399,8 +399,8 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
                     </Button>
                 </div>
               {taughtCourses.length > 0 ? (
-                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                    {taughtCourses.map(course => (
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                    {taughtCourses.slice(0, 3).map(course => (
                       <CourseCard 
                         key={course.id}
                         course={course}
@@ -545,7 +545,7 @@ export default function DashboardPage() {
       case 'INSTRUCTOR':
         return data?.instructorStats ? <InstructorDashboard stats={data.instructorStats} announcements={data.recentAnnouncements || []} taughtCourses={data.taughtCourses || []} /> : null;
       case 'STUDENT':
-        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={data.recentAnnouncements || []} myCourses={data.myDashboardCourses || []} assignedCourses={data.assignedCourses || null} /> : null;
+        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={data.recentAnnouncements || []} myCourses={data.myDashboardCourses || []} assignedCourses={data.assignedCourses || []} /> : null;
       default:
         return <p>Rol de usuario no reconocido.</p>;
     }
@@ -666,3 +666,4 @@ async function getInstructorDashboardData(session: PrismaUser) {
         recentAnnouncements: announcementsData,
     };
 }
+
