@@ -1,6 +1,5 @@
 import type { NavItem, UserRole } from '@/types';
 import {
-  LayoutDashboard,
   BookOpen,
   GraduationCap,
   Folder,
@@ -15,7 +14,6 @@ import {
   BarChart3,
   Bell,
   GitCommitHorizontal,
-  LayoutGrid,
   Notebook,
   FileText,
   AlertTriangle, 
@@ -23,12 +21,13 @@ import {
   Sparkles,
   Award,
 } from 'lucide-react';
+import { IconLayoutGrid } from '@/components/icons';
 
 const NAVIGATION_ITEMS: NavItem[] = [
   {
     id: 'dashboard',
     label: 'Panel Principal',
-    icon: LayoutGrid,
+    icon: IconLayoutGrid,
     path: '/dashboard',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
