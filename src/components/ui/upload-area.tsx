@@ -10,18 +10,9 @@ interface UploadAreaProps {
   disabled?: boolean;
   className?: string;
   inputId?: string;
-  title?: string;
-  description?: string;
 }
 
-export function UploadArea({ 
-    onFileSelect, 
-    disabled, 
-    className, 
-    inputId = "file-upload",
-    title = "Arrastra y suelta o haz clic",
-    description = "Sube un archivo para adjuntar"
-}: UploadAreaProps) {
+export function UploadArea({ onFileSelect, disabled, className, inputId = "file-upload" }: UploadAreaProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -73,7 +64,7 @@ export function UploadArea({
   return (
     <div 
       className={cn(
-        "group relative w-full h-24 flex flex-row items-center justify-center p-4 bg-card border-2 border-dashed border-border/50 rounded-lg cursor-pointer transition-all duration-300",
+        "group w-full h-32 flex flex-col items-center justify-center p-4 bg-card border-2 border-dashed border-border/50 rounded-lg cursor-pointer transition-all duration-300",
         "hover:border-primary/70 hover:bg-primary/5",
         isDragging && "border-primary bg-primary/10",
         disabled && "cursor-not-allowed opacity-60",
@@ -92,18 +83,17 @@ export function UploadArea({
         onChange={handleFileChange}
         className="hidden"
         disabled={disabled}
-        accept="image/png, image/jpeg, image/svg+xml, image/webp"
       />
-      <div className="flex items-center justify-center gap-4 transition-transform duration-300 group-hover:scale-105">
-         <div className="flex items-center justify-center w-14 h-14 rounded-lg bg-background/50 dark:bg-black/30 border flex-shrink-0">
-            <UploadCloud className="h-8 w-8 text-muted-foreground transition-colors group-hover:text-primary" />
+      <div className="flex flex-col items-center justify-center gap-2 transition-transform duration-300 group-hover:scale-105">
+         <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-background/50 dark:bg-black/30 border">
+            <UploadCloud className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
          </div>
-         <div className="text-left hidden md:block">
+         <div className="text-center">
             <p className="text-sm font-semibold text-foreground">
-                {isDragging ? 'Suelta el archivo aquí' : title}
+                {isDragging ? 'Suelta el archivo aquí' : 'Arrastra y suelta o haz clic'}
             </p>
              <p className="text-xs text-muted-foreground">
-                {description}
+                Sube un archivo para adjuntar
             </p>
          </div>
       </div>

@@ -23,7 +23,7 @@ const DraggableElement = ({ id, position, children, onDragEnd, containerRef, fon
     position: 'absolute' as 'absolute',
     left: `${position.x}%`,
     top: `${position.y}%`,
-    transform: `translate(-50%, -50%)`,
+    transform: 'translate(-50%, -50%)',
     fontSize: `${position.fontSize}px`,
     fontWeight: position.fontWeight,
     textAlign: position.textAlign,

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Save, Image as ImageIcon, Replace, XCircle, Award, Eye, Move, Text, Palette as PaletteIcon, Type, MousePointerClick } from 'lucide-react';
+import { Loader2, Save, Image as ImageIcon, Replace, XCircle, Award, Eye, Move, Text, Palette as PaletteIcon, Type, MousePointerClick, CheckSquare } from 'lucide-react';
 import type { CertificateTemplate } from '@prisma/client';
 import { UploadArea } from '../ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
@@ -24,6 +24,7 @@ import { CertificateInteractablePreview } from './certificate-interactable-previ
 import { fontMap } from '@/lib/fonts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Separator } from '../ui/separator';
+import { Switch } from '../ui/switch';
 
 interface CertificateEditorModalProps {
     isOpen: boolean;
@@ -50,7 +51,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
     const [textColor, setTextColor] = useState('#000000');
     const [fontFamilyHeadline, setFontFamilyHeadline] = useState('Space Grotesk');
     const [fontFamilyBody, setFontFamilyBody] = useState('Inter');
-    const [scorePosition, setScorePosition] = useState<any>(null);
+    const [showScore, setShowScore] = useState(false);
 
     // Form state for element positions
     const [positions, setPositions] = useState({
@@ -80,7 +81,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                     date: (template.datePosition as any) || positions.date,
                     score: (template.scorePosition as any) || positions.score,
                 });
-                setScorePosition(template.scorePosition);
+                setShowScore(!!template.scorePosition);
             } else {
                 // Reset for a new template
                 setName('');
@@ -94,7 +95,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                     date: { x: 50, y: 75, fontSize: 18, fontWeight: 'normal', textAlign: 'center' },
                     score: { x: 80, y: 85, fontSize: 20, fontWeight: 'bold', textAlign: 'center' },
                 });
-                setScorePosition(null);
+                setShowScore(false);
             }
             setLocalImagePreview(null);
             setIsUploading(false);
@@ -151,7 +152,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
             studentNamePosition: positions.studentName,
             courseNamePosition: positions.courseName,
             datePosition: positions.date,
-            scorePosition: scorePosition ? positions.score : null,
+            scorePosition: showScore ? positions.score : null,
         };
         
         const endpoint = template ? `/api/certificates/templates/${template.id}` : '/api/certificates/templates';
@@ -174,13 +175,13 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
         studentNamePosition: positions.studentName,
         courseNamePosition: positions.courseName,
         datePosition: positions.date,
-        scorePosition: scorePosition ? positions.score : null,
+        scorePosition: showScore ? positions.score : null,
     };
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-5xl h-[90vh] flex p-0">
-                <div className="w-1/3 min-w-[320px] flex flex-col bg-muted/50 border-r">
+            <DialogContent className="max-w-5xl h-[90vh] flex flex-col md:flex-row p-0">
+                <div className="w-full md:w-1/3 min-w-[320px] flex flex-col bg-muted/50 border-r">
                     <DialogHeader className="p-4 border-b">
                         <DialogTitle className="flex items-center gap-2"><Award className="h-5 w-5 text-primary"/>{template ? 'Editar Plantilla' : 'Nueva Plantilla'}</DialogTitle>
                     </DialogHeader>
@@ -190,7 +191,6 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                             <Input id="template-name" value={name} onChange={e => setName(e.target.value)} required disabled={isSubmitting}/>
                         </div>
                         <UploadWidget
-                           label="Imagen de Fondo"
                            id="cert-image-upload"
                            currentImageUrl={finalImageUrl}
                            onFileSelect={(file) => file && handleImageUpload(file)}
@@ -205,7 +205,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                         <div className="space-y-1"><Label htmlFor="fontHeadline" className="flex items-center gap-2"><Type className="h-4 w-4"/>Fuente de Títulos</Label><Select value={fontFamilyHeadline} onValueChange={setFontFamilyHeadline}><SelectTrigger id="fontHeadline"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
                         <div className="space-y-1"><Label htmlFor="fontBody" className="flex items-center gap-2"><Text className="h-4 w-4"/>Fuente del Cuerpo</Label><Select value={fontFamilyBody} onValueChange={setFontFamilyBody}><SelectTrigger id="fontBody"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
                         <Separator/>
-                        <div className="flex items-center justify-between"><Label htmlFor="showScore">Mostrar Calificación</Label><Input type="checkbox" id="showScore" checked={!!scorePosition} onChange={(e) => setScorePosition(e.target.checked ? positions.score : null)} /></div>
+                        <div className="flex items-center justify-between"><Label htmlFor="showScore" className="flex items-center gap-2"><CheckSquare className="h-4 w-4"/>Mostrar Calificación</Label><Switch id="showScore" checked={showScore} onCheckedChange={setShowScore} /></div>
                     </form>
                     <DialogFooter className="p-4 border-t sticky bottom-0 bg-muted/50">
                         <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
@@ -226,7 +226,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                            template={fakeTemplateForPreview}
                            positions={positions}
                            onPositionsChange={setPositions}
-                           showScore={!!scorePosition}
+                           showScore={showScore}
                         />
                     </div>
                 </div>
