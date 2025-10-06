@@ -30,11 +30,12 @@ import {
   HelpCircle,
   TrendingUp,
   AlertCircleIcon,
+  Check,
 } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import type { AdminDashboardStats, SecurityLog as AppSecurityLog } from '@/types';
-import type { Announcement as AnnouncementType, UserRole, Course as AppCourseType, EnrolledCourse } from '@/types';
+import type { Announcement as AnnouncementType, UserRole, Course as AppCourseType, EnrolledCourse, CalendarEvent } from '@/types';
 import { AnnouncementCard } from '@/components/announcement-card';
 import type { Announcement as PrismaAnnouncement, Course as PrismaCourse, SecurityLog, User as PrismaUser } from '@prisma/client';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -52,6 +53,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useTour } from '@/contexts/tour-context';
 import { adminDashboardTour, studentDashboardTour, instructorDashboardTour } from '@/lib/tour-steps';
 import { MetricCard } from '@/components/analytics/metric-card';
+import { useToast } from '@/hooks/use-toast';
 
 
 // --- TYPE DEFINITIONS & MAPPERS ---
@@ -67,7 +69,7 @@ interface DashboardData {
     securityLogs: SecurityLogWithUser[];
     taughtCourses: AppCourseType[];
     myDashboardCourses: EnrolledCourse[];
-    assignedCourses: AppCourseType[] | null; // <-- Añadido
+    assignedCourses: AppCourseType[] | null;
 }
 
 
@@ -94,8 +96,28 @@ const activityChartConfig = {
 } satisfies ChartConfig;
 
 
-function AdminDashboard({ stats, logs, announcements }: { stats: Partial<AdminDashboardStats>, logs: SecurityLogWithUser[], announcements: AnnouncementType[] }) {
+function AdminDashboard({ stats, logs, announcements, onParticipationChange }: { stats: Partial<AdminDashboardStats>, logs: SecurityLogWithUser[], announcements: AnnouncementType[], onParticipationChange: () => void }) {
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+
+  const handleParticipate = async (event: CalendarEvent) => {
+      try {
+          const response = await fetch('/api/events/participate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ eventId: event.parentId || event.id, occurrenceDate: new Date(event.start).toISOString() }),
+          });
+          if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.message || 'No se pudo confirmar la participación.');
+          }
+          toast({ title: "¡Bien hecho!", description: `Has confirmado tu participación en "${event.title}".` });
+          onParticipationChange(); // Trigger a re-fetch in the parent
+      } catch (err) {
+          toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      }
+  }
+
   return (
     <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4" id="admin-stats-cards">
@@ -104,6 +126,30 @@ function AdminDashboard({ stats, logs, announcements }: { stats: Partial<AdminDa
             <MetricCard title="Usuarios Activos" value={stats.recentLogins || 0} icon={Activity} description="Últimos 7 días" gradient="bg-gradient-orange" />
             <MetricCard title="Nuevas Inscripciones" value={stats.newEnrollmentsLast7Days || 0} icon={UserPlus} description="Últimos 7 días" gradient="bg-gradient-purple" />
         </div>
+        
+        {stats.interactiveEventsToday && stats.interactiveEventsToday.length > 0 && (
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 {stats.interactiveEventsToday.map(event => (
+                    <Card key={event.id} className={cn("relative overflow-hidden text-white flex flex-col justify-between", event.color ? `bg-event-${event.color}` : 'bg-primary')}>
+                         <CardHeader>
+                            <CardTitle>{event.title}</CardTitle>
+                            <CardDescription className="text-white/80">{event.description}</CardDescription>
+                         </CardHeader>
+                         <CardFooter>
+                              {event.hasParticipated ? (
+                                <Button disabled variant="secondary" className="w-full bg-white/30 hover:bg-white/40">
+                                    <CheckCircle className="mr-2 h-4 w-4"/> ¡Completado!
+                                </Button>
+                              ) : (
+                                <Button onClick={() => handleParticipate(event)} variant="secondary" className="w-full bg-white/30 hover:bg-white/40">
+                                  <Check className="mr-2 h-4 w-4"/> ¡Hecho!
+                                </Button>
+                              )}
+                         </CardFooter>
+                    </Card>
+                 ))}
+             </div>
+        )}
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <main className="lg:col-span-2 space-y-6">
@@ -496,7 +542,7 @@ export default function DashboardPage() {
   const renderContentForRole = () => {
     switch (user.role) {
       case 'ADMINISTRATOR':
-        return data?.adminStats ? <AdminDashboard stats={data.adminStats} logs={data.securityLogs || []} announcements={data.recentAnnouncements || []} /> : null;
+        return data?.adminStats ? <AdminDashboard stats={data.adminStats} logs={data.securityLogs || []} announcements={data.recentAnnouncements || []} onParticipationChange={fetchDashboardData}/> : null;
       case 'INSTRUCTOR':
         return data?.instructorStats ? <InstructorDashboard stats={data.instructorStats} announcements={data.recentAnnouncements || []} taughtCourses={data.taughtCourses || []} /> : null;
       case 'STUDENT':
