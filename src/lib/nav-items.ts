@@ -1,27 +1,30 @@
 import type { NavItem, UserRole } from '@/types';
 import {
-  BookOpen,
-  GraduationCap,
-  Folder,
-  Megaphone,
   Users,
   Settings,
-  BookMarked,
-  ShieldAlert,
-  TrendingUp,
-  CalendarDays,
-  Shield,
-  BarChart3,
   Bell,
   GitCommitHorizontal,
-  Notebook,
-  FileText,
   AlertTriangle, 
   ServerCrash,
-  Sparkles,
-  Award,
 } from 'lucide-react';
-import { IconLayoutGrid } from '@/components/icons';
+import { 
+    IconLayoutGrid, 
+    IconBookOpen,
+    IconGraduationCap,
+    IconNotebook,
+    IconFolder,
+    IconMegaphone,
+    IconCalendarDays,
+    IconFileText,
+    IconShield,
+    IconBookMarked,
+    IconTrendingUp,
+    IconSparkles,
+    IconAward,
+    IconBarChart3,
+    IconUsersRound,
+    IconServer
+} from '@/components/icons';
 
 const NAVIGATION_ITEMS: NavItem[] = [
   {
@@ -34,105 +37,105 @@ const NAVIGATION_ITEMS: NavItem[] = [
   {
     id: 'courses',
     label: 'Catálogo de Cursos',
-    icon: BookOpen,
+    icon: IconBookOpen,
     path: '/courses',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
   },
   {
     id: 'my-courses',
     label: 'Mis Cursos',
-    icon: GraduationCap,
+    icon: IconGraduationCap,
     path: '/my-courses',
     roles: ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR']
   },
   {
     id: 'my-notes',
     label: 'Mis Apuntes',
-    icon: Notebook,
+    icon: IconNotebook,
     path: '/my-notes',
     roles: ['STUDENT', 'INSTRUCTOR', 'ADMINISTRATOR'],
   },
   {
     id: 'resources',
     label: 'Biblioteca',
-    icon: Folder,
+    icon: IconFolder,
     path: '/resources',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
   {
     id: 'communications',
     label: 'Comunicaciones',
-    icon: Megaphone,
+    icon: IconMegaphone,
     path: '/announcements',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
   {
     id: 'calendar',
     label: 'Calendario',
-    icon: CalendarDays,
+    icon: IconCalendarDays,
     path: '/calendar',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT']
   },
    {
     id: 'forms',
     label: 'Formularios',
-    icon: FileText,
+    icon: IconFileText,
     path: '/forms',
     roles: ['ADMINISTRATOR', 'INSTRUCTOR', 'STUDENT'],
   },
   {
     id: 'admin',
     label: 'Administración',
-    icon: Shield,
+    icon: IconShield,
     roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
     color: 'hsl(var(--destructive))',
     children: [
       {
         id: 'manage-courses',
         label: 'Gestionar Cursos',
-        icon: BookMarked,
+        icon: IconBookMarked,
         path: '/manage-courses',
         roles: ['ADMINISTRATOR', 'INSTRUCTOR']
       },
       {
         id: 'enrollments',
         label: 'Inscripciones',
-        icon: TrendingUp,
+        icon: IconTrendingUp,
         path: '/enrollments',
         roles: ['ADMINISTRATOR', 'INSTRUCTOR']
       },
        {
         id: 'motivations',
         label: 'Motivaciones',
-        icon: Sparkles,
+        icon: IconSparkles,
         path: '/admin/motivations',
         roles: ['ADMINISTRATOR', 'INSTRUCTOR'],
       },
       {
         id: 'certificates',
         label: 'Certificados',
-        icon: Award,
+        icon: IconAward,
         path: '/admin/certificates',
         roles: ['ADMINISTRATOR'],
       },
       {
         id: 'analytics',
         label: 'Analíticas',
-        icon: BarChart3,
+        icon: IconBarChart3,
         path: '/analytics',
         roles: ['ADMINISTRATOR']
       },
       {
         id: 'users',
         label: 'Usuarios',
-        icon: Users,
+        icon: IconUsersRound,
         path: '/users',
         roles: ['ADMINISTRATOR']
       },
       {
         id: 'security-audit',
         label: 'Seguridad',
-        icon: ShieldAlert,
+        icon: IconServer,
         path: '/security-audit',
         roles: ['ADMINISTRATOR']
       },
