@@ -545,7 +545,7 @@ export default function DashboardPage() {
       case 'INSTRUCTOR':
         return data?.instructorStats ? <InstructorDashboard stats={data.instructorStats} announcements={data.recentAnnouncements || []} taughtCourses={data.taughtCourses || []} /> : null;
       case 'STUDENT':
-        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={data.recentAnnouncements || []} myDashboardCourses={data.myDashboardCourses || []} assignedCourses={data.assignedCourses || null} /> : null;
+        return data?.studentStats ? <StudentDashboard stats={data.studentStats} announcements={data.recentAnnouncements || []} myCourses={data.myDashboardCourses || []} assignedCourses={data.assignedCourses || null} /> : null;
       default:
         return <p>Rol de usuario no reconocido.</p>;
     }
@@ -646,7 +646,7 @@ async function getInstructorDashboardData(session: PrismaUser) {
             where: { instructorId: session.id },
             include: { _count: { select: { modules: true } } },
             orderBy: { createdAt: 'desc' },
-            take: 4,
+            take: 3,
         }), [], 'taughtCourses'),
         safeQuery(prisma.announcement.findMany({
             take: 2, orderBy: { date: 'desc' },
