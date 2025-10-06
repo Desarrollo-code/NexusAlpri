@@ -304,6 +304,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     const { setPageTitle, setHeaderActions, setShowBackButton } = useTitle();
 
     const [course, setCourse] = useState<AppCourse | null>(null);
+    const [allCoursesForPrereq, setAllCoursesForPrereq] = useState<AppCourse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
@@ -323,13 +324,22 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     // --- Data Fetching ---
     useEffect(() => {
+        const fetchAllCoursesForPrereq = async () => {
+            try {
+                const res = await fetch('/api/courses?simple=true');
+                if (!res.ok) return;
+                const data = await res.json();
+                setAllCoursesForPrereq((data.courses || []).filter((c: AppCourse) => c.id !== courseId));
+            } catch (e) { console.error(e); }
+        };
+
         const fetchCourseData = async () => {
             if (courseId === 'new') {
                 setCourse({
                     id: generateUniqueId('course'),
                     title: 'Nuevo Curso sin Título',
                     description: 'Añade una descripción aquí.',
-                    instructor: user?.name || 'N/A',
+                    instructor: user as any,
                     instructorId: user?.id,
                     status: 'DRAFT',
                     category: '',
@@ -337,6 +347,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                     modulesCount: 0,
                     prerequisiteId: null,
                     isMandatory: false,
+                    certificateTemplateId: null,
                 });
                 setIsLoading(false);
                 setPageTitle('Crear Nuevo Curso');
@@ -379,6 +390,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             fetchCourseData();
             fetchTemplates();
             fetchCertificateTemplates();
+            fetchAllCoursesForPrereq();
         }
     }, [courseId, user, router, toast, setPageTitle]);
     
