@@ -21,8 +21,8 @@ export const IconUsersRound = (props: SVGProps<SVGSVGElement>) => (
             <stop offset="100%" style={{ stopColor: '#3B82F6', stopOpacity: 1 }} />
         </linearGradient>
     </defs>
-    <path d="M18 21a8 8 0 0 0-16 0" stroke="url(#users-gradient)" />
-    <circle cx="10" cy="8" r="5" stroke="url(#users-gradient)" />
+    <path d="M18 21a8 8 0 0 0-16 0" stroke="url(#users-gradient)" fill="url(#users-gradient)" fillOpacity="0.2"/>
+    <circle cx="10" cy="8" r="5" stroke="url(#users-gradient)" fill="url(#users-gradient)" fillOpacity="0.2"/>
     <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-4-2" stroke="url(#users-gradient)" />
   </svg>
 );

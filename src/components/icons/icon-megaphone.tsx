@@ -21,7 +21,7 @@ export const IconMegaphone = (props: SVGProps<SVGSVGElement>) => (
         <stop offset="100%" style={{ stopColor: '#D946EF', stopOpacity: 1 }} />
       </linearGradient>
     </defs>
-    <path d="m3 11 18-5v12L3 14v-3z" stroke="url(#megaphone-gradient)" />
+    <path d="m3 11 18-5v12L3 14v-3z" stroke="url(#megaphone-gradient)" fill="url(#megaphone-gradient)" fillOpacity="0.2"/>
     <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" stroke="url(#megaphone-gradient)" />
   </svg>
 );

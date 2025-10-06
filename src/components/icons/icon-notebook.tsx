@@ -24,6 +24,6 @@ export const IconNotebook = (props: SVGProps<SVGSVGElement>) => (
     <path d="M2 6h4" stroke="url(#notebook-gradient)" />
     <path d="M2 12h4" stroke="url(#notebook-gradient)" />
     <path d="M2 18h4" stroke="url(#notebook-gradient)" />
-    <path d="M19.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4L14 2" stroke="url(#notebook-gradient)" />
+    <path d="M19.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4L14 2" stroke="url(#notebook-gradient)" fill="url(#notebook-gradient)" fillOpacity="0.1" />
   </svg>
 );

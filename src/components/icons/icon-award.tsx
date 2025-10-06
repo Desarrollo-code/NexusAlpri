@@ -21,7 +21,7 @@ export const IconAward = (props: SVGProps<SVGSVGElement>) => (
         <stop offset="100%" style={{ stopColor: '#F59E0B', stopOpacity: 1 }} />
       </linearGradient>
     </defs>
-    <circle cx="12" cy="8" r="6" stroke="url(#award-gradient)" />
-    <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" stroke="url(#award-gradient)" />
+    <circle cx="12" cy="8" r="6" stroke="url(#award-gradient)" fill="url(#award-gradient)" fillOpacity="0.2" />
+    <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" stroke="url(#award-gradient)" fill="url(#award-gradient)" fillOpacity="0.2"/>
   </svg>
 );

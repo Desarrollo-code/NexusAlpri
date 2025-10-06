@@ -21,6 +21,6 @@ export const IconFolder = (props: SVGProps<SVGSVGElement>) => (
         <stop offset="100%" style={{ stopColor: '#F97316', stopOpacity: 1 }} />
       </linearGradient>
     </defs>
-    <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L8.6 3.3a2 2 0 0 0-1.7-.9H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z" stroke="url(#folder-gradient)" />
+    <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L8.6 3.3a2 2 0 0 0-1.7-.9H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z" stroke="url(#folder-gradient)" fill="url(#folder-gradient)" fillOpacity="0.2"/>
   </svg>
 );

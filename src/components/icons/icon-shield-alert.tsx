@@ -25,7 +25,7 @@ export const IconShieldAlert = (props: SVGProps<SVGSVGElement>) => (
             <stop offset="100%" style={{ stopColor: '#F97316', stopOpacity: 1 }} />
         </linearGradient>
     </defs>
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="url(#shield-alert-gradient)"/>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="url(#shield-alert-gradient)" fill="url(#shield-alert-gradient)" fillOpacity="0.2"/>
     <path d="M12 8v4" stroke="url(#shield-alert-accent-gradient)"/>
     <path d="M12 16h.01" stroke="url(#shield-alert-accent-gradient)"/>
   </svg>

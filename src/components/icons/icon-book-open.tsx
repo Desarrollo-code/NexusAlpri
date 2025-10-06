@@ -21,7 +21,7 @@ export const IconBookOpen = (props: SVGProps<SVGSVGElement>) => (
         <stop offset="100%" style={{ stopColor: 'hsl(var(--accent))', stopOpacity: 1 }} />
       </linearGradient>
     </defs>
-    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" stroke="url(#book-open-gradient)" />
-    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" stroke="url(#book-open-gradient)" />
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" stroke="url(#book-open-gradient)" fill="url(#book-open-gradient)" fillOpacity="0.2" />
+    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" stroke="url(#book-open-gradient)" fill="url(#book-open-gradient)" fillOpacity="0.2" />
   </svg>
 );
