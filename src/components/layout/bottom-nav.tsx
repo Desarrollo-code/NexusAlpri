@@ -23,7 +23,7 @@ export function BottomNav() {
   }
   
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card/80 backdrop-blur-sm border-t z-50 shadow-[0_-5px_15px_-5px_hsl(var(--foreground)_/_0.1)]">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-slate-900/80 backdrop-blur-sm border-t border-white/10 z-50 shadow-[0_-5px_15px_-5px_hsl(var(--foreground)_/_0.1)]">
       <div className="mx-auto flex h-full max-w-md items-center justify-around px-2">
         {navItems.map((item) => {
           const isActive = (item.href === '/' && pathname === '/') || (item.href !== '/' && pathname.startsWith(item.href));
@@ -34,8 +34,8 @@ export function BottomNav() {
               className={cn(
                 'flex flex-col items-center justify-center gap-1 w-full h-full text-sm font-medium transition-colors',
                 isActive
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-primary'
+                  ? 'text-white'
+                  : 'text-slate-400 hover:text-white'
               )}
             >
               <item.icon className="h-6 w-6" />

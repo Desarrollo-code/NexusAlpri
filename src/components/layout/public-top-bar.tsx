@@ -18,17 +18,16 @@ export function PublicTopBar() {
     { href: '/about', label: 'Nosotros', icon: Info },
   ];
   
-  // No mostrar esta barra si el usuario está logueado o si aún está cargando la sesión.
   if (isLoading || user) {
       return null;
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-blue-800 shadow-md">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-black/30 backdrop-blur-sm border-b border-white/10">
       <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-16">
         <div className="flex items-center justify-start flex-1">
           <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
-            <div className={cn("w-12 h-12 flex items-center justify-center flex-shrink-0 rounded-lg relative overflow-hidden")}>
+            <div className={cn("w-10 h-10 flex items-center justify-center flex-shrink-0 rounded-lg relative overflow-hidden")}>
               {settings?.logoUrl ? (
                   <div className="relative w-full h-full">
                       <Image src={settings.logoUrl} alt="Logo" fill data-ai-hint="logo" quality={100} className="object-contain" />
@@ -44,7 +43,7 @@ export function PublicTopBar() {
         </div>
         
         <nav className="hidden md:flex items-center justify-center flex-1">
-          <div className="flex items-center gap-1 bg-white/10 rounded-full p-1 shadow-sm">
+          <div className="flex items-center gap-1 bg-black/20 border border-white/10 rounded-full p-1 shadow-sm">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -64,7 +63,7 @@ export function PublicTopBar() {
         </nav>
         
         <div className="flex items-center justify-end flex-1">
-            <Button asChild className="hidden md:flex bg-white text-blue-800 font-bold hover:bg-slate-200 transition-colors shadow-lg">
+            <Button asChild className="hidden md:flex bg-white text-blue-600 font-bold hover:bg-slate-200 transition-colors shadow-lg">
             <Link href="/sign-in">
                 Acceder
             </Link>

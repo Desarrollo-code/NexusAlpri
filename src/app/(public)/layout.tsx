@@ -18,11 +18,12 @@ export default function PublicLayout({
 }) {
   const { user, isLoading } = useAuth();
   
-  // El layout ahora siempre renderiza la estructura, y los componentes internos deciden si mostrarse.
   return (
-    <div className={cn("relative flex flex-col min-h-screen items-center bg-sky-100 antialiased")}>
+    <div className={cn(
+        "relative flex flex-col min-h-screen items-center antialiased",
+        "bg-gradient-to-br from-accent/70 via-primary to-blue-600"
+    )}>
         
-        {/* Los componentes de la barra superior ahora manejan su propia lógica de visibilidad */}
         <PublicTopBar />
         <AuthenticatedPublicHeader />
         
