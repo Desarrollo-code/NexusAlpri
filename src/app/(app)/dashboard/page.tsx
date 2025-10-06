@@ -309,7 +309,7 @@ function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: 
               </Button>
             </div>
             {myCourses.length > 0 ? (
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 {myCourses.map((course, index) => (
                   <CourseCard key={course.id} course={course} userRole="STUDENT" priority={index < 2}/>
                 ))}
@@ -399,7 +399,7 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
                     </Button>
                 </div>
               {taughtCourses.length > 0 ? (
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {taughtCourses.map(course => (
                       <CourseCard 
                         key={course.id}
@@ -571,4 +571,98 @@ export default function DashboardPage() {
 
     </div>
   );
+}
+
+// src/api/dashboard/data/route.ts
+async function getStudentDashboardData(session: PrismaUser) {
+    const [enrolledData, announcementsData, assignedCoursesData] = await Promise.all([
+        safeQuery(prisma.enrollment.findMany({
+            where: { userId: session.id },
+            include: { course: { include: { instructor: { select: { name: true, id: true, avatar: true } }, _count: { select: { modules: true } } } }, progress: true },
+            orderBy: { enrolledAt: 'desc' },
+            take: 3,
+        }), [], 'enrolledData'),
+        safeQuery(prisma.announcement.findMany({
+            take: 2, orderBy: { date: 'desc' },
+            include: { 
+                author: { select: { id: true, name: true, avatar: true, role: true } },
+                attachments: true, 
+                reactions: { select: { userId: true, reaction: true, user: { select: { id: true, name: true, avatar: true } } } }, 
+                _count: { select: { reads: true, reactions: true } },
+            },
+        }), [], 'announcementsData'),
+        safeQuery(prisma.courseAssignment.findMany({
+            where: { 
+                userId: session.id,
+                // Excluir los que ya están inscritos
+                course: {
+                    enrollments: {
+                        none: {
+                            userId: session.id
+                        }
+                    }
+                }
+            },
+            include: {
+                course: {
+                    include: {
+                        instructor: { select: { id: true, name: true, avatar: true } },
+                        _count: { select: { modules: true } },
+                    }
+                }
+            },
+            orderBy: { assignedAt: 'desc' },
+            take: 2,
+        }), [], 'assignedCoursesData'),
+    ]);
+
+    const totalEnrollments = await safeQuery(prisma.enrollment.count({ where: { userId: session.id } }), 0, 'totalEnrollments');
+    const completedCount = await safeQuery(prisma.courseProgress.count({ where: { userId: session.id, progressPercentage: 100 } }), 0, 'completedCount');
+
+    const mappedCourses: EnrolledCourse[] = enrolledData.map(item => ({
+        id: item.course.id, title: item.course.title, description: item.course.description, 
+        instructor: { id: item.course.instructor?.id || '', name: item.course.instructor?.name || 'N/A', avatar: item.course.instructor?.avatar || null },
+        imageUrl: item.course.imageUrl, modulesCount: item.course._count.modules || 0,
+        enrolledAt: item.enrolledAt.toISOString(), isEnrolled: true, instructorId: item.course.instructorId, status: 'PUBLISHED',
+        progressPercentage: item.progress?.progressPercentage || 0,
+        modules: [],
+        category: item.course.category || undefined,
+        publicationDate: item.course.publicationDate,
+        isMandatory: item.course.isMandatory
+    }));
+
+    const mappedAssignedCourses: AppCourseType[] = assignedCoursesData.map(assignment => mapApiCourseToAppCourse(assignment.course as any));
+
+    return {
+        studentStats: { enrolled: totalEnrollments, completed: completedCount },
+        myDashboardCourses: mappedCourses,
+        recentAnnouncements: announcementsData,
+        assignedCourses: mappedAssignedCourses,
+    };
+}
+async function getInstructorDashboardData(session: PrismaUser) {
+    const [taughtCoursesResponse, announcementsData] = await Promise.all([
+        safeQuery(prisma.course.findMany({
+            where: { instructorId: session.id },
+            include: { _count: { select: { modules: true } } },
+            orderBy: { createdAt: 'desc' },
+            take: 3,
+        }), [], 'taughtCourses'),
+        safeQuery(prisma.announcement.findMany({
+            take: 2, orderBy: { date: 'desc' },
+            include: { 
+                author: { select: { id: true, name: true, avatar: true, role: true } },
+                attachments: true, 
+                reactions: { select: { userId: true, reaction: true, user: { select: { id: true, name: true, avatar: true } } } }, 
+                _count: { select: { reads: true, reactions: true } },
+            },
+        }), [], 'announcementsData')
+    ]);
+    const totalTaughtCourses = await safeQuery(prisma.course.count({ where: { instructorId: session.id } }), 0, 'totalTaughtCourses');
+    
+    return {
+        instructorStats: { taught: totalTaughtCourses },
+        taughtCourses: taughtCoursesResponse.map(c => mapApiCourseToAppCourse(c as any)),
+        recentAnnouncements: announcementsData,
+    };
 }
