@@ -1,4 +1,4 @@
-
+// src/components/layout/app-watermark.tsx
 'use client';
 
 import { useAuth } from "@/contexts/auth-context";
@@ -17,8 +17,8 @@ export default function AppWatermark() {
       return (
         <div className={cn(
             "fixed z-[9999] pointer-events-none",
-             // En móvil, se posiciona más abajo y con menor opacidad.
-            "bottom-4 md:bottom-4 right-4 opacity-30 md:opacity-50"
+             // En móvil, se posiciona más arriba para no chocar con la barra de navegación.
+            "bottom-20 md:bottom-4 right-4 opacity-30 md:opacity-50"
         )}>
           <Image 
             src={settings.watermarkUrl} 
