@@ -21,7 +21,8 @@ import {
     IconBarChart3,
     IconUsersRound,
     IconServer,
-    IconShieldAlert
+    IconShieldAlert,
+    IconSettings, 
 } from '@/components/icons';
 
 const NAVIGATION_ITEMS: NavItem[] = [
