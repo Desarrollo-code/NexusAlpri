@@ -23,7 +23,7 @@ export function PublicTopBar() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-sm border-b">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-b from-blue-900 via-cyan-800 to-rose-900 backdrop-blur-sm border-b border-blue-800/50">
       <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-16">
         <div className="flex items-center justify-start flex-1">
           <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
@@ -36,22 +36,22 @@ export function PublicTopBar() {
                   <div className="w-full h-full rounded-md bg-muted" />
               )}
             </div>
-            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-foreground">
+            <span className="text-xl font-bold font-headline tracking-wide whitespace-nowrap text-white">
               {settings?.platformName || 'NexusAlpri'}
             </span>
           </Link>
         </div>
         
         <nav className="hidden md:flex items-center justify-center flex-1">
-          <div className="flex items-center gap-1 bg-muted p-1 rounded-full shadow-sm">
+          <div className="flex items-center gap-1 bg-white/10 p-1 rounded-full shadow-sm backdrop-blur-sm">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Button key={item.href} variant="ghost" asChild className={cn(
-                    "transition-colors rounded-full h-9",
+                    "transition-colors rounded-full h-9 text-white/80",
                     isActive 
-                      ? "bg-background text-primary font-semibold shadow" 
-                      : "text-muted-foreground hover:bg-background/70 hover:text-foreground"
+                      ? "bg-white/20 text-white font-semibold shadow" 
+                      : "hover:bg-white/20"
                 )}>
                     <Link href={item.href}>
                         {item.label}
@@ -63,7 +63,7 @@ export function PublicTopBar() {
         </nav>
         
         <div className="flex items-center justify-end flex-1">
-            <Button asChild className="hidden md:flex">
+            <Button asChild className="hidden md:flex bg-white/90 text-slate-900 hover:bg-white">
             <Link href="/sign-in">
                 Acceder
             </Link>
