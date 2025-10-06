@@ -25,6 +25,7 @@ import { fontMap } from '@/lib/fonts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 
 interface CertificateEditorModalProps {
     isOpen: boolean;
@@ -186,9 +187,9 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                         <DialogTitle className="flex items-center gap-2 text-xl font-bold"><Award className="h-5 w-5 text-primary"/>{template ? 'Editar Plantilla' : 'Nueva Plantilla'}</DialogTitle>
                     </DialogHeader>
                     <form id="template-form" onSubmit={handleFormSubmit} className="flex-1 overflow-y-auto thin-scrollbar p-4 space-y-4">
-                        <div className="space-y-2">
-                           <h4 className="font-semibold text-sm text-muted-foreground">Identidad Visual</h4>
-                            <div className="p-4 border rounded-lg bg-background space-y-4">
+                        <Card>
+                            <CardHeader><CardTitle className="text-base flex items-center gap-2"><ImageIcon className="h-4 w-4"/> Identidad Visual</CardTitle></CardHeader>
+                            <CardContent className="space-y-4">
                                 <div className="space-y-1">
                                     <Label htmlFor="template-name">Nombre</Label>
                                     <Input id="template-name" value={name} onChange={e => setName(e.target.value)} required disabled={isSubmitting}/>
@@ -203,24 +204,24 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                                    isUploading={isUploading}
                                    uploadProgress={uploadProgress}
                                 />
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
                         
-                        <div className="space-y-2">
-                            <h4 className="font-semibold text-sm text-muted-foreground">Estilos de Texto</h4>
-                             <div className="p-4 border rounded-lg bg-background space-y-4">
-                                <div className="space-y-1"><Label htmlFor="textColor" className="flex items-center gap-2"><PaletteIcon className="h-4 w-4"/>Color del Texto</Label><Input id="textColor" type="color" value={textColor} onChange={e => setTextColor(e.target.value)} className="w-full p-1 h-10" /></div>
-                                <div className="space-y-1"><Label htmlFor="fontHeadline" className="flex items-center gap-2"><Type className="h-4 w-4"/>Fuente de Títulos</Label><Select value={fontFamilyHeadline} onValueChange={setFontFamilyHeadline}><SelectTrigger id="fontHeadline"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
-                                <div className="space-y-1"><Label htmlFor="fontBody" className="flex items-center gap-2"><Text className="h-4 w-4"/>Fuente del Cuerpo</Label><Select value={fontFamilyBody} onValueChange={setFontFamilyBody}><SelectTrigger id="fontBody"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
-                             </div>
-                        </div>
+                        <Card>
+                            <CardHeader><CardTitle className="text-base flex items-center gap-2"><PaletteIcon className="h-4 w-4"/> Estilos de Texto</CardTitle></CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-1"><Label htmlFor="textColor" className="flex items-center gap-2">Color del Texto</Label><Input id="textColor" type="color" value={textColor} onChange={e => setTextColor(e.target.value)} className="w-full p-1 h-10" /></div>
+                                <div className="space-y-1"><Label htmlFor="fontHeadline" className="flex items-center gap-2">Fuente de Títulos</Label><Select value={fontFamilyHeadline} onValueChange={setFontFamilyHeadline}><SelectTrigger id="fontHeadline"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
+                                <div className="space-y-1"><Label htmlFor="fontBody" className="flex items-center gap-2">Fuente del Cuerpo</Label><Select value={fontFamilyBody} onValueChange={setFontFamilyBody}><SelectTrigger id="fontBody"><SelectValue/></SelectTrigger><SelectContent>{availableFonts.map(f => <SelectItem key={f.value} value={f.value} style={{fontFamily: (fontMap[f.value] as any)?.style.fontFamily}}>{f.label}</SelectItem>)}</SelectContent></Select></div>
+                             </CardContent>
+                        </Card>
 
-                         <div className="space-y-2">
-                             <h4 className="font-semibold text-sm text-muted-foreground">Opciones Adicionales</h4>
-                             <div className="p-4 border rounded-lg bg-background">
+                         <Card>
+                             <CardHeader><CardTitle className="text-base flex items-center gap-2"><CheckSquare className="h-4 w-4"/> Opciones Adicionales</CardTitle></CardHeader>
+                             <CardContent>
                                 <div className="flex items-center justify-between"><Label htmlFor="showScore" className="flex items-center gap-2 font-medium">Mostrar Calificación</Label><Switch id="showScore" checked={showScore} onCheckedChange={setShowScore} /></div>
-                            </div>
-                         </div>
+                            </CardContent>
+                         </Card>
                     </form>
                     <DialogFooter className="p-4 border-t sticky bottom-0 bg-muted/50 backdrop-blur-sm">
                         <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
@@ -253,7 +254,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
 const UploadWidget = ({ id, label, currentImageUrl, onFileSelect, onRemove, disabled, isUploading, uploadProgress }: any) => {
   return (
     <div className="space-y-2">
-        <Label htmlFor={id}>{label}</Label>
+        <Label>{label}</Label>
         {currentImageUrl && !isUploading ? (
              <div className="relative w-full aspect-video rounded-lg border overflow-hidden bg-muted/20 p-2">
                 <Image src={currentImageUrl} alt="Previsualización" fill className="object-contain p-2" />
@@ -272,9 +273,8 @@ const UploadWidget = ({ id, label, currentImageUrl, onFileSelect, onRemove, disa
                 </div>
             </div>
         ) : (
-            <UploadArea onFileSelect={onFileSelect} disabled={disabled} />
+            <UploadArea onFileSelect={onFileSelect} disabled={disabled} inputId={id}/>
         )}
-         <input type="file" id={id} className="hidden" accept="image/png, image/jpeg, image/svg+xml, image/webp" onChange={(e) => onFileSelect(e.target.files ? e.target.files[0] : null)} />
-    </div>
+      </div>
   );
 };
