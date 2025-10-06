@@ -2,7 +2,6 @@ import type { NavItem, UserRole } from '@/types';
 import {
   Bell,
   GitCommitHorizontal,
-  Settings,
 } from 'lucide-react';
 import { 
     IconLayoutGrid, 
@@ -20,7 +19,6 @@ import {
     IconAward,
     IconBarChart3,
     IconUsersRound,
-    IconServer,
     IconShieldAlert,
     IconSettings, 
 } from '@/components/icons';
