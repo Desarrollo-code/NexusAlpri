@@ -28,11 +28,13 @@ const config: Config = {
     },
     extend: {
       backgroundImage: {
-        'gradient-blue': 'linear-gradient(to right bottom, #3b82f6, #60a5fa)',
-        'gradient-green': 'linear-gradient(to right bottom, #16a34a, #4ade80)',
-        'gradient-purple': 'linear-gradient(to right bottom, #7e22ce, #a855f7)',
-        'gradient-orange': 'linear-gradient(to right bottom, #f97316, #fb923c)',
-        'gradient-pink': 'linear-gradient(to right bottom, #db2777, #f472b6)',
+        'gradient-blue': 'linear-gradient(to right bottom, hsl(var(--chart-1)), hsl(var(--chart-1)/0.8))',
+        'gradient-green': 'linear-gradient(to right bottom, hsl(var(--chart-2)), hsl(var(--chart-2)/0.8))',
+        'gradient-purple': 'linear-gradient(to right bottom, hsl(var(--chart-5)), hsl(var(--chart-5)/0.8))',
+        'gradient-orange': 'linear-gradient(to right bottom, hsl(var(--chart-4)), hsl(var(--chart-4)/0.8))',
+        'gradient-pink': 'linear-gradient(to right bottom, hsl(var(--chart-3)), hsl(var(--chart-3)/0.8))',
+        'gradient-public-br': 'linear-gradient(to bottom right, var(--tw-gradient-from), var(--tw-gradient-to))',
+        'gradient-public-b': 'linear-gradient(to bottom, var(--tw-gradient-from), var(--tw-gradient-to))',
       },
       borderRadius: {
         lg: "var(--radius)",
