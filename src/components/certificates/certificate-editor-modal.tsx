@@ -207,7 +207,7 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                         <Separator/>
                         <div className="flex items-center justify-between"><Label htmlFor="showScore" className="flex items-center gap-2"><CheckSquare className="h-4 w-4"/>Mostrar Calificación</Label><Switch id="showScore" checked={showScore} onCheckedChange={setShowScore} /></div>
                     </form>
-                    <DialogFooter className="p-4 border-t sticky bottom-0 bg-muted/50">
+                    <DialogFooter className="p-4 border-t sticky bottom-0 bg-muted/50 backdrop-blur-sm">
                         <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
                         <Button type="submit" form="template-form" disabled={isSubmitting || !name || !finalImageUrl}>
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
@@ -256,7 +256,7 @@ const UploadWidget = ({ id, currentImageUrl, onFileSelect, onRemove, disabled, i
                 </div>
             </div>
         ) : (
-            <UploadArea inputId={id} onFileSelect={onFileSelect} disabled={disabled} />
+            <UploadArea onFileSelect={onFileSelect} disabled={disabled} />
         )}
          <input type="file" id={id} className="hidden" accept="image/png, image/jpeg, image/svg+xml, image/webp" onChange={(e) => onFileSelect(e.target.files ? e.target.files[0] : null)} />
     </div>
