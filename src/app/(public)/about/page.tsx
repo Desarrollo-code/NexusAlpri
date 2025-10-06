@@ -42,7 +42,7 @@ export default async function AboutPage() {
         <section className="w-full">
           <div className="container px-4 md:px-6">
             <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
-               <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-2xl bg-slate-100 order-first lg:order-last">
+               <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-2xl bg-white/50 order-first lg:order-last">
                 <Image
                   src={aboutImageUrl!}
                   alt="About Us"
@@ -53,7 +53,7 @@ export default async function AboutPage() {
                 />
               </div>
               <div className="space-y-4 order-last lg:order-first">
-                <div className="inline-block rounded-lg bg-blue-100 text-blue-800 px-3 py-1 text-sm font-semibold">
+                <div className="inline-block rounded-lg bg-orange-100 text-orange-800 px-3 py-1 text-sm font-semibold">
                   Nuestra Misión
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline text-slate-900">
@@ -67,11 +67,11 @@ export default async function AboutPage() {
           </div>
         </section>
 
-        <section className="w-full py-8 md:py-12 bg-slate-50">
+        <section className="w-full py-8 md:py-12 bg-white/50">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-blue-100 text-blue-800 px-3 py-1 text-sm font-semibold">
+                <div className="inline-block rounded-lg bg-orange-100 text-orange-800 px-3 py-1 text-sm font-semibold">
                   Tecnología
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Construido con Herramientas Modernas</h2>
@@ -82,7 +82,7 @@ export default async function AboutPage() {
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3 lg:max-w-none mt-12">
               {techStack.map((tech) => (
-                <Card key={tech.name} className="hover:border-blue-300 transition-colors bg-white">
+                <Card key={tech.name} className="hover:border-blue-300 transition-colors bg-white shadow-lg hover:shadow-xl">
                   <CardHeader className="flex flex-row items-center gap-4">
                     <div className={'bg-blue-100 p-3 rounded-full'}>
                         {React.cloneElement(tech.icon, { className: cn("h-6 w-6", tech.color) })}

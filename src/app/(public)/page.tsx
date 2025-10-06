@@ -12,32 +12,32 @@ export const dynamic = 'force-dynamic';
 
 const features = [
   {
-    icon: <Layers3 className="h-10 w-10 text-blue-600" />,
+    icon: <Layers3 className="h-10 w-10 text-orange-500" />,
     title: 'Gestión de Contenido Intuitiva',
     description: 'Crea y organiza cursos con un editor de arrastrar y soltar, sin complicaciones técnicas.',
   },
   {
-    icon: <BarChart3 className="h-10 w-10 text-blue-600" />,
+    icon: <BarChart3 className="h-10 w-10 text-orange-500" />,
     title: 'Seguimiento y Analíticas',
     description: 'Mide el progreso y el rendimiento con dashboards detallados para tomar decisiones informadas.',
   },
   {
-    icon: <Users className="h-10 w-10 text-blue-600" />,
+    icon: <Users className="h-10 w-10 text-orange-500" />,
     title: 'Roles y Permisos Granulares',
     description: 'Un sistema robusto (Admin, Instructor, Estudiante) para administrar el acceso de forma segura.',
   },
   {
-    icon: <ShieldCheck className="h-10 w-10 text-blue-600" />,
+    icon: <ShieldCheck className="h-10 w-10 text-orange-500" />,
     title: 'Seguridad Corporativa',
     description: 'Políticas de seguridad, auditorías y control total sobre los datos de tu organización.',
   },
    {
-    icon: <Zap className="h-10 w-10 text-blue-600" />,
+    icon: <Zap className="h-10 w-10 text-orange-500" />,
     title: 'Experiencia de Usuario Moderna',
     description: 'Una interfaz rápida, intuitiva y optimizada para cualquier dispositivo, centrada en el aprendizaje.',
   },
   {
-    icon: <Heart className="h-10 w-10 text-blue-600" />,
+    icon: <Heart className="h-10 w-10 text-orange-500" />,
     title: 'Gamificación Integrada',
     description: 'Involucra a tus equipos con puntos de experiencia y logros para aumentar la motivación.',
   }
@@ -123,14 +123,14 @@ export default async function LandingPage() {
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button asChild size="lg" className="bg-blue-600 text-white hover:bg-blue-700">
+                  <Button asChild size="lg" className="bg-orange-500 text-white hover:bg-orange-600 shadow-lg shadow-orange-500/20">
                     <Link
                       href="/sign-up"
                     >
                       Empezar Ahora
                     </Link>
                   </Button>
-                  <Button variant="outline" asChild size="lg">
+                  <Button variant="outline" asChild size="lg" className="bg-white/50 border-slate-300 hover:bg-white">
                     <Link
                       href="/about"
                     >
@@ -139,7 +139,7 @@ export default async function LandingPage() {
                   </Button>
                 </div>
               </div>
-               <div className="mx-auto aspect-square overflow-hidden rounded-xl w-full relative bg-slate-100">
+               <div className="mx-auto aspect-square overflow-hidden rounded-xl w-full relative bg-white/50">
                 <Image
                   src={landingImageUrl!}
                   alt="Hero"
@@ -154,11 +154,11 @@ export default async function LandingPage() {
           </div>
         </section>
         
-        <section className="w-full bg-slate-50 py-8 md:py-12">
+        <section className="w-full bg-white/50 py-8 md:py-12">
             <div className="container px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <div className="inline-block rounded-lg bg-blue-100 text-blue-800 px-3 py-1 text-sm font-semibold">
+                        <div className="inline-block rounded-lg bg-orange-100 text-orange-800 px-3 py-1 text-sm font-semibold">
                             Características Principales
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline text-slate-900">Una Plataforma Todo en Uno</h2>
@@ -174,7 +174,7 @@ export default async function LandingPage() {
                         className="relative rounded-2xl p-6 text-left h-full transition-all duration-300 overflow-hidden bg-white shadow-lg hover:shadow-xl hover:-translate-y-2 border"
                       >
                        <div className="relative z-10 flex flex-col items-start justify-start h-full">
-                         <div className="mb-4 bg-blue-100 p-3 rounded-lg">
+                         <div className="mb-4 bg-orange-100 p-3 rounded-lg">
                             {feature.icon}
                          </div>
                          <h3 className="text-xl font-bold font-headline mb-2 text-slate-800">{feature.title}</h3>
@@ -189,7 +189,7 @@ export default async function LandingPage() {
         <section className="w-full py-8 md:py-12">
             <div className="container px-4 md:px-6">
                 <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
-                     <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-2xl">
+                     <div className="mx-auto aspect-video overflow-hidden rounded-xl w-full relative shadow-2xl bg-white/50">
                         <Image
                             src={benefitsImageUrl!}
                             alt="Benefits"
@@ -214,11 +214,11 @@ export default async function LandingPage() {
             </div>
         </section>
         
-        <section className="w-full bg-slate-50 py-8 md:py-12">
+        <section className="w-full bg-white/50 py-8 md:py-12">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center">
                     <div className="space-y-2">
-                        <div className="inline-block rounded-lg bg-blue-100 text-blue-800 px-3 py-1 text-sm font-semibold">
+                        <div className="inline-block rounded-lg bg-orange-100 text-orange-800 px-3 py-1 text-sm font-semibold">
                             Testimonios
                         </div>
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Lo que Nuestros Clientes Dicen</h2>
@@ -226,7 +226,7 @@ export default async function LandingPage() {
                 </div>
                  <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 py-12">
                     {testimonials.map((testimonial) => (
-                        <Card key={testimonial.name} className="bg-white">
+                        <Card key={testimonial.name} className="bg-white shadow-lg">
                            <CardContent className="pt-6">
                              <blockquote className="text-lg font-semibold leading-snug text-slate-800">
                                “{testimonial.testimony}”
@@ -253,7 +253,7 @@ export default async function LandingPage() {
                  <p className="max-w-2xl mx-auto mt-4 text-slate-600 md:text-xl">
                     Únete a las empresas que ya están revolucionando su forma de capacitar.
                  </p>
-                  <Button asChild size="lg" className="mt-8 bg-blue-600 text-white hover:bg-blue-700">
+                  <Button asChild size="lg" className="mt-8 bg-orange-500 text-white hover:bg-orange-600 shadow-lg shadow-orange-500/30">
                     <Link href="/sign-up">
                       Crear Mi Cuenta Gratis
                     </Link>
