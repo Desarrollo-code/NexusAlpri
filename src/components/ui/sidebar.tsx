@@ -136,7 +136,6 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
-    if (item.path === '/') return activeItem === '/';
     if (item.path === '/dashboard') return activeItem === item.path;
     return activeItem.startsWith(item.path);
   }, [activeItem, item.path]);
@@ -183,23 +182,60 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
 export const SidebarFooter = () => {
   const { isCollapsed, toggleSidebar, isMobile } = useSidebar();
+  const { user, logout } = useAuth();
+  
+  if (isMobile || !user) return null;
 
-  if (isMobile) return null; // No collapse button on mobile
+  const userContent = (
+    <div className={cn("flex items-center gap-3 w-full overflow-hidden", isCollapsed && "justify-center")}>
+        <Avatar className="h-9 w-9 shrink-0">
+          <AvatarImage src={user.avatar || undefined} />
+          <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
+        </Avatar>
+        {!isCollapsed && (
+            <div className="flex-grow overflow-hidden">
+                <p className="text-sm font-semibold text-sidebar-foreground truncate">{user.name}</p>
+                <p className="text-xs text-sidebar-muted-foreground truncate">{user.email}</p>
+            </div>
+        )}
+        <Button onClick={logout} variant="ghost" size="icon" className={cn("h-8 w-8 shrink-0 text-sidebar-muted-foreground hover:bg-destructive/20 hover:text-destructive", !isCollapsed && "ml-auto")}>
+            <LogOut className="h-4 w-4" />
+        </Button>
+    </div>
+  );
 
   return (
-    <div className={cn("p-3 border-t border-sidebar-border flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
-        <Button
-          onClick={toggleSidebar}
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "h-8 w-8 text-sidebar-muted-foreground hover:bg-white/10 hover:text-sidebar-foreground transition-transform duration-300",
-            isCollapsed && "rotate-180"
-          )}
-        >
-          <ChevronsLeft className="h-4 w-4" />
-          <span className="sr-only">Toggle Sidebar</span>
-        </Button>
+    <div className={cn("p-3 border-t border-sidebar-border")}>
+      {isCollapsed ? (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Link href="/profile">{userContent}</Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" align="center" sideOffset={10}>
+                    <p className="font-semibold">{user.name}</p>
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+      ) : (
+        <Link href="/profile">{userContent}</Link>
+      )}
+      
+       <div className={cn("pt-3 mt-3 border-t border-sidebar-border flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
+            <Button
+              onClick={toggleSidebar}
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-8 w-8 text-sidebar-muted-foreground hover:bg-white/10 hover:text-sidebar-foreground transition-transform duration-300",
+                isCollapsed && "rotate-180"
+              )}
+            >
+              <ChevronsLeft className="h-4 w-4" />
+              <span className="sr-only">Toggle Sidebar</span>
+            </Button>
+        </div>
     </div>
   );
 };
