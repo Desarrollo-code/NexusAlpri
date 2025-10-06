@@ -23,7 +23,7 @@ export function PublicTopBar() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-black/30 backdrop-blur-sm border-b border-white/10">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-b from-blue-900 via-cyan-800 to-rose-900 backdrop-blur-sm border-b border-blue-800/50">
       <div className="container mx-auto flex items-center justify-between px-4 lg:px-6 h-16">
         <div className="flex items-center justify-start flex-1">
           <Link href="/" className="flex items-center justify-center gap-3" prefetch={false}>
