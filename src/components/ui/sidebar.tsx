@@ -198,9 +198,6 @@ export const SidebarFooter = () => {
                 <p className="text-xs text-sidebar-muted-foreground truncate">{user.email}</p>
             </div>
         )}
-        <Button onClick={logout} variant="ghost" size="icon" className={cn("h-8 w-8 shrink-0 text-sidebar-muted-foreground hover:bg-destructive/20 hover:text-destructive", !isCollapsed && "ml-auto")}>
-            <LogOut className="h-4 w-4" />
-        </Button>
     </div>
   );
 
