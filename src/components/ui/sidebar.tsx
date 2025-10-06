@@ -136,9 +136,12 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
 
   const isActive = useMemo(() => {
     if (!activeItem || !item.path) return false;
+    // La lógica exacta de la ruta raíz
     if (item.path === '/dashboard') return activeItem === item.path;
+    // La lógica para las demás rutas que pueden tener sub-rutas
     return activeItem.startsWith(item.path);
   }, [activeItem, item.path]);
+
 
   const showText = !isCollapsed || isMobile;
   
@@ -215,7 +218,7 @@ export const SidebarFooter = () => {
         <Link href="/profile">{userContent}</Link>
       )}
       
-       <div className={cn("pt-3 mt-3 border-t border-sidebar-border flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
+       <div className={cn("flex items-center", isCollapsed ? "justify-center" : "justify-end")}>
             <Button
               onClick={toggleSidebar}
               variant="ghost"
