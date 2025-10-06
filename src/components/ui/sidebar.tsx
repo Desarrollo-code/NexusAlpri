@@ -147,13 +147,9 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
         "flex items-center gap-3 py-3 rounded-lg transition-all duration-300 font-medium group/menu-item relative",
         isCollapsed && !isMobile ? "justify-center px-0" : "px-4",
         isActive
-          ? "bg-sidebar-accent/10 text-sidebar-foreground"
+          ? "bg-primary text-primary-foreground shadow"
           : "text-sidebar-muted-foreground hover:bg-white/5 hover:text-sidebar-foreground"
       )}>
-        <span className={cn(
-            "absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1.5 rounded-r-full bg-gradient-to-b from-primary to-accent transition-all duration-300",
-            isActive ? "opacity-100 scale-100" : "opacity-0 scale-0"
-        )} />
         <GradientIcon icon={item.icon} isActive={isActive} />
         {showText && <span className="whitespace-nowrap">{item.label}</span>}
       </div>
