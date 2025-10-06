@@ -309,7 +309,7 @@ function StudentDashboard({ stats, announcements, myCourses, assignedCourses }: 
               </Button>
             </div>
             {myCourses.length > 0 ? (
-              <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
                 {myCourses.map((course, index) => (
                   <CourseCard key={course.id} course={course} userRole="STUDENT" priority={index < 2}/>
                 ))}
@@ -399,7 +399,7 @@ function InstructorDashboard({ stats, announcements, taughtCourses }: { stats: {
                     </Button>
                 </div>
               {taughtCourses.length > 0 ? (
-                <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
                     {taughtCourses.map(course => (
                       <CourseCard 
                         key={course.id}
