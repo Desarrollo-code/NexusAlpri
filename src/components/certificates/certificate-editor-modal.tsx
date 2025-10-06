@@ -224,12 +224,14 @@ export function CertificateEditorModal({ isOpen, onClose, template, onSave }: Ce
                          </Card>
                     </form>
                     <DialogFooter className="p-4 border-t sticky bottom-0 bg-muted/50 backdrop-blur-sm">
-                        <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
-                        <Button type="submit" form="template-form" disabled={isSubmitting || !name || !finalImageUrl}>
-                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                            <Save className="mr-2 h-4 w-4"/>
-                            Guardar Plantilla
-                        </Button>
+                        <div className="flex justify-end gap-2 w-full">
+                            <Button variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
+                            <Button type="submit" form="template-form" disabled={isSubmitting || !name || !finalImageUrl}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                <Save className="mr-2 h-4 w-4"/>
+                                Guardar Plantilla
+                            </Button>
+                        </div>
                     </DialogFooter>
                 </div>
                 <div className="flex-1 flex flex-col p-4">
@@ -264,7 +266,7 @@ const UploadWidget = ({ id, label, currentImageUrl, onFileSelect, onRemove, disa
                 </div>
             </div>
         ) : isUploading ? (
-             <div className="w-full aspect-video flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
+             <div className="w-full h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg bg-muted/50 p-2 relative">
                 {currentImageUrl && <Image src={currentImageUrl} alt="Subiendo" fill className="object-contain opacity-30 p-2"/>}
                 <div className="z-10 text-center space-y-2">
                     <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
@@ -275,6 +277,14 @@ const UploadWidget = ({ id, label, currentImageUrl, onFileSelect, onRemove, disa
         ) : (
             <UploadArea onFileSelect={onFileSelect} disabled={disabled} inputId={id}/>
         )}
-      </div>
+      <input
+        type="file"
+        id={id}
+        onChange={(e) => onFileSelect(e.target.files ? e.target.files[0] : null)}
+        disabled={disabled || isUploading}
+        accept="image/png, image/jpeg, image/svg+xml, image/webp"
+        className="hidden"
+      />
+    </div>
   );
 };
