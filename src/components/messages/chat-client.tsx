@@ -136,12 +136,28 @@ export function ChatClient() {
 
     const newChatUserId = searchParams.get('new');
     
+    // El callback que se pasa al hook
     const handleNewMessage = useCallback((newMessage: Message) => {
-        setMessages(prevMessages => [...prevMessages, newMessage]);
-        // Actualizar la lista de conversaciones para que el último mensaje se muestre
-        setConversations(prev => prev.map(c => c.id === newMessage.conversationId ? {...c, messages: [newMessage]} : c).sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()));
-    }, []);
+        // Solo actualiza si el mensaje pertenece a la conversación activa
+        if (activeConversation && newMessage.conversationId === activeConversation.id) {
+            setMessages(prevMessages => [...prevMessages, newMessage]);
+        }
+        // Actualiza el último mensaje en la lista de conversaciones
+        setConversations(prev => {
+            const convoIndex = prev.findIndex(c => c.id === newMessage.conversationId);
+            if (convoIndex > -1) {
+                const updatedConvo = { ...prev[convoIndex], messages: [newMessage], updatedAt: newMessage.createdAt };
+                const restConvos = prev.filter(c => c.id !== newMessage.conversationId);
+                // Mover la conversación actualizada al principio de la lista
+                return [updatedConvo, ...restConvos];
+            }
+            // Si la conversación es nueva para este usuario, la recargamos
+            fetchConversations();
+            return prev;
+        });
+    }, [activeConversation]);
 
+    // Usamos el hook para la conversación activa
     useRealtimeChat(activeConversation?.id ?? null, handleNewMessage);
     
     // Fetch all conversations
@@ -172,7 +188,6 @@ export function ChatClient() {
                 .then(data => setMessages(Array.isArray(data) ? data : []))
                 .catch(() => toast({ title: 'Error', description: 'No se pudieron cargar los mensajes.', variant: 'destructive'}));
         } else if (activeConversation && activeConversation.id.startsWith('temp-')) {
-            // Es una nueva conversación, no hay mensajes que cargar.
             setMessages([]);
         }
     }, [activeConversation, toast]);
@@ -183,18 +198,32 @@ export function ChatClient() {
             const existingConvo = conversations.find(c => c.participants.some(p => p.id === newChatUserId));
             if (existingConvo) {
                 setActiveConversation(existingConvo);
-                router.replace('/messages', { scroll: false }); // Limpiar URL
+                router.replace('/messages', { scroll: false }); 
             } else {
                 setIsNewChatModalOpen(true);
             }
         }
     }, [newChatUserId, conversations, router]);
     
-    const handleSendMessage = async (e: React.FormEvent, recipientId: string) => {
+    const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
+        const recipientId = activeConversation?.participants[0]?.id;
         if (!newMessage.trim() || !recipientId) return;
 
         setIsSending(true);
+        const tempMessageId = `temp-${Date.now()}`;
+        const tempMessage: Message = {
+            id: tempMessageId,
+            content: newMessage,
+            createdAt: new Date().toISOString(),
+            authorId: user!.id,
+            author: user!,
+        };
+        
+        // Optimistic update
+        setMessages(prev => [...prev, tempMessage]);
+        setNewMessage('');
+        
         try {
             const response = await fetch('/api/conversations', {
                 method: 'POST',
@@ -204,19 +233,20 @@ export function ChatClient() {
             const sentMessage = await response.json();
             if (!response.ok) throw new Error(sentMessage.message || 'Error al enviar el mensaje');
             
-            setNewMessage('');
+            // Replace temporary message with the real one from the server
+            setMessages(prev => prev.map(m => m.id === tempMessageId ? sentMessage : m));
             
-            // Si era una conversación temporal, la reemplazamos por la real
-            // y la hacemos la activa.
+            // If it was a temporary conversation, fetch all conversations to get the new one with its real ID.
             if (activeConversation?.id.startsWith('temp-')) {
-                const convoRes = await fetch('/api/conversations');
-                const allConvos = await convoRes.json();
-                const realConvo = allConvos.find((c: Conversation) => c.participants.some(p => p.id === recipientId));
+                await fetchConversations();
+                const realConvo = conversations.find(c => c.participants.some(p => p.id === recipientId));
                 if (realConvo) setActiveConversation(realConvo);
             }
-
+            
         } catch (err) {
             toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+            // Revert optimistic update
+            setMessages(prev => prev.filter(m => m.id !== tempMessageId));
         } finally {
             setIsSending(false);
         }
@@ -228,7 +258,6 @@ export function ChatClient() {
         if (existingConvo) {
             setActiveConversation(existingConvo);
         } else {
-            // Crea una conversación "falsa" para mostrar en la UI inmediatamente
             const tempConvo: Conversation = {
                 id: `temp-${recipient.id}`,
                 participants: [{...recipient}],
@@ -240,7 +269,6 @@ export function ChatClient() {
         }
     };
     
-    // Obtener la lista de usuarios para un nuevo chat
     useEffect(() => {
         if(isNewChatModalOpen) {
             fetch('/api/users/list')
@@ -294,7 +322,7 @@ export function ChatClient() {
                         </div>
                         <MessageArea messages={messages} currentUser={user} otherParticipant={otherParticipant}/>
                         <div className="p-4 border-t">
-                            <form onSubmit={(e) => handleSendMessage(e, otherParticipant.id)} className="flex items-start gap-2">
+                            <form onSubmit={handleSendMessage} className="flex items-start gap-2">
                                 <Textarea 
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
@@ -305,7 +333,7 @@ export function ChatClient() {
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' && !e.shiftKey) {
                                             e.preventDefault();
-                                            handleSendMessage(e, otherParticipant.id);
+                                            handleSendMessage(e);
                                         }
                                     }}
                                 />
