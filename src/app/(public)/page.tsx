@@ -5,13 +5,11 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Layers3, UserCog, Feather, Shield, ArrowRight } from 'lucide-react';
+import { Layers3, UserCog, Feather, Shield, ArrowRight, GraduationCap, Users } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { GradientIcon } from '@/components/ui/gradient-icon';
-import { IconGraduationCap } from '@/components/icons/icon-graduation-cap';
 import { IconUsersRound } from '@/components/icons/icon-users-round';
-import { IconUserCog } from '@/components/icons/icon-user-cog';
 import { IconBookOpen } from '@/components/icons';
 import { IconBarChart3 } from '@/components/icons';
 
@@ -51,17 +49,17 @@ const features = [
 
 const benefits = [
   {
-    icon: IconGraduationCap,
+    icon: GraduationCap,
     title: 'Para Estudiantes',
     description: 'Aprende a tu ritmo, sigue tu progreso y obtén certificados.',
   },
   {
-    icon: IconUserCog,
+    icon: UserCog,
     title: 'Para Instructores',
     description: 'Crea contenido interactivo y analiza el rendimiento de tus alumnos.',
   },
   {
-    icon: IconUsersRound,
+    icon: Users,
     title: 'Para Administradores',
     description: 'Control total sobre usuarios, contenido y la configuración de la plataforma.',
   },
@@ -150,7 +148,7 @@ export default function LandingPage() {
                             <GradientIcon icon={feature.icon} size="xl" className="w-full h-full flex items-center justify-center" />
                          </div>
                          <h3 className="text-xl font-bold font-headline mb-2">{feature.title}</h3>
-                         <p className="text-sm text-slate-800/80">{feature.description}</p>
+                         <p className="text-sm text-slate-900/80">{feature.description}</p>
                        </div>
                      </div>
                    ))}
@@ -172,12 +170,12 @@ export default function LandingPage() {
                         />
                      </div>
                     <div className="space-y-8">
-                       {benefits.map((benefit, i) => {
+                       {benefits.map((benefit) => {
                           const Icon = benefit.icon;
                           return (
                             <div key={benefit.title} className="flex items-start gap-4">
-                              <div className="w-12 h-12 flex-shrink-0">
-                                <Icon className="w-full h-full" />
+                              <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                                <Icon className="w-6 h-6" />
                               </div>
                               <div className="flex-grow">
                                   <h3 className="text-xl font-bold">{benefit.title}</h3>
