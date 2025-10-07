@@ -9,9 +9,6 @@ import { Layers3, UserCog, Feather, ArrowRight, GraduationCap, Users, Shield } f
 import React from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { GradientIcon } from '@/components/ui/gradient-icon';
-import { IconUsersRound } from '@/components/icons/icon-users-round';
-import { IconBookOpen } from '@/components/icons';
-import { IconBarChart3 } from '@/components/icons';
 
 
 const features = [
@@ -21,7 +18,7 @@ const features = [
     description: 'Crea cursos con un editor visual, combinando videos, quizzes y documentos sin esfuerzo.',
   },
   {
-    icon: IconBarChart3,
+    icon: BarChart3,
     title: 'Analíticas de Progreso',
     description: 'Obtén métricas claras sobre el avance de tus equipos para tomar decisiones basadas en datos.',
   },
@@ -41,7 +38,7 @@ const features = [
     description: 'Una interfaz rápida, intuitiva y optimizada para cualquier dispositivo, diseñada para aprender sin fricciones.',
   },
   {
-    icon: IconBookOpen,
+    icon: BookOpen,
     title: 'Biblioteca de Recursos',
     description: 'Centraliza manuales, políticas y guías importantes en un único repositorio accesible para todos.',
   }
@@ -144,8 +141,8 @@ export default function LandingPage() {
                           }}
                         />
                        <div className="relative z-10 flex flex-col items-start justify-start h-full">
-                         <div className="w-full h-20 mb-4 bg-black rounded-lg flex items-center justify-center">
-                            <GradientIcon icon={feature.icon} className="w-16 h-16" />
+                         <div className="w-full h-16 mb-4 bg-black rounded-lg flex items-center justify-center">
+                            <GradientIcon icon={feature.icon} className="w-10 h-10" />
                          </div>
                          <h3 className="text-xl font-bold font-headline mb-2">{feature.title}</h3>
                          <p className="text-sm text-slate-900/80">{feature.description}</p>
