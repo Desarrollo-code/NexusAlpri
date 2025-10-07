@@ -45,8 +45,8 @@ export const GradientIcon = ({
             </>
           ) : (
              <>
-              <stop offset="0%" style={{ stopColor: '#22D3EE', stopOpacity: 1 }} />
-              <stop offset="100%" style={{ stopColor: '#3B82F6', stopOpacity: 1 }} />
+              <stop offset="0%" style={{ stopColor: '#f472b6', stopOpacity: 1 }} /> 
+              <stop offset="100%" style={{ stopColor: '#fb923c', stopOpacity: 1 }} />
             </>
           )}
         </linearGradient>
